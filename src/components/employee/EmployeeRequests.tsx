@@ -59,8 +59,8 @@ export default function EmployeeRequests({ business, user }: EmployeeRequestsPro
         toast.success(t('employee.requests.rejected_success'))
       }
     } catch (error) {
-      console.error('Error processing request:', error)
       toast.error(t('employee.requests.error'))
+      throw error
     } finally {
       setIsProcessing(null)
     }

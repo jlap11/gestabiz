@@ -100,8 +100,8 @@ export function ServiceForm({
       toast.success(service ? t('services.updated') : t('services.created'))
       onClose()
     } catch (error) {
-      console.error('Error submitting service:', error)
       toast.error(t('common.error'))
+      throw error
     } finally {
       setLoading(false)
     }
@@ -328,8 +328,8 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
 
       setServices(data || [])
     } catch (error) {
-      console.error('Error fetching services:', error)
       toast.error(t('services.fetchError'))
+      throw error
     } finally {
       setLoading(false)
     }
@@ -337,46 +337,36 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
 
   useEffect(() => {
     if (businessId) {
-      fetchServices()
+      void fetchServices().catch(() => {})
     }
   }, [businessId])
 
   const handleCreateService = async (serviceData: Partial<Service>) => {
-    try {
-      const { data, error } = await supabase
-        .from('services')
-        .insert(serviceData)
-        .select()
-        .single()
+    const { data, error } = await supabase
+      .from('services')
+      .insert(serviceData)
+      .select()
+      .single()
 
-      if (error) throw error
+    if (error) throw error
 
-      setServices(prev => [...prev, data])
-    } catch (error) {
-      console.error('Error creating service:', error)
-      throw error
-    }
+    setServices(prev => [...prev, data])
   }
 
   const handleUpdateService = async (serviceData: Partial<Service>) => {
     if (!editingService) return
 
-    try {
-      const { data, error } = await supabase
-        .from('services')
-        .update(serviceData)
-        .eq('id', editingService.id)
-        .select()
-        .single()
+    const { data, error } = await supabase
+      .from('services')
+      .update(serviceData)
+      .eq('id', editingService.id)
+      .select()
+      .single()
 
-      if (error) throw error
+    if (error) throw error
 
-      setServices(prev => prev.map(s => s.id === editingService.id ? data : s))
-      setEditingService(null)
-    } catch (error) {
-      console.error('Error updating service:', error)
-      throw error
-    }
+    setServices(prev => prev.map(s => s.id === editingService.id ? data : s))
+    setEditingService(null)
   }
 
   const handleDeleteService = async (serviceId: string) => {
@@ -393,8 +383,8 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
       setServices(prev => prev.filter(s => s.id !== serviceId))
       toast.success(t('services.deleted'))
     } catch (error) {
-      console.error('Error deleting service:', error)
       toast.error(t('services.deleteError'))
+      throw error
     }
   }
 
@@ -468,7 +458,7 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDeleteService(service.id)}
+                      onClick={() => { void handleDeleteService(service.id).catch(() => {}) }}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>

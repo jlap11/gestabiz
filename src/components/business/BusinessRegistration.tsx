@@ -50,8 +50,9 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
     }
   })
 
-  const [businessServices, setBusinessServices] = useState<Omit<Service, 'id' | 'business_id'>[]>([
-    { name: '', description: '', duration: 60, price: 0, category: '', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+  type LocalService = Omit<Service, 'id' | 'business_id'> & { _key: string }
+  const [businessServices, setBusinessServices] = useState<LocalService[]>([
+    { _key: uuidv4(), name: '', description: '', duration: 60, price: 0, category: '', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ])
 
   const businessCategories = [
@@ -98,7 +99,7 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
   const addService = () => {
     setBusinessServices(prev => [
       ...prev,
-      { name: '', description: '', duration: 60, price: 0, category: '', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      { _key: uuidv4(), name: '', description: '', duration: 60, price: 0, category: '', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
     ])
   }
 
@@ -161,7 +162,7 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
       }
 
       // Create services
-      const newServices: Service[] = validServices.map(service => ({
+  const newServices: Service[] = validServices.map(service => ({
         id: uuidv4(),
         business_id: businessId,
         name: service.name,
@@ -181,8 +182,8 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
       toast.success(t('business.registration.success'))
       onBusinessCreated(newBusiness)
     } catch (error) {
-      console.error('Error creating business:', error)
       toast.error(t('business.registration.error'))
+      throw error
     } finally {
       setIsSubmitting(false)
     }
@@ -200,7 +201,6 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
           toast.success(t('business.registration.location_detected'))
         },
         (error) => {
-          console.error('Geolocation error:', error)
           toast.error(t('business.registration.location_error'))
         }
       )
@@ -461,7 +461,7 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
                 </div>
                 <div className="space-y-4">
                   {businessServices.map((service, index) => (
-                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                    <div key={service._key} className="p-4 border rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <Badge variant="secondary">
                           {t('business.registration.service')} {index + 1}

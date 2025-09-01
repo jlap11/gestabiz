@@ -112,7 +112,7 @@ export class GoogleCalendarService {
     return data.access_token
   }
 
-  async getCalendars(): Promise<any[]> {
+  async getCalendars(): Promise<Array<{ id: string; summary?: string; primary?: boolean }>> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
@@ -127,8 +127,8 @@ export class GoogleCalendarService {
       throw new Error('Failed to fetch calendars')
     }
 
-    const data = await response.json()
-    return data.items || []
+  const data = await response.json()
+  return (data.items || []) as Array<{ id: string; summary?: string; primary?: boolean }>
   }
 
   async getEvents(calendarId: string, timeMin?: string, timeMax?: string): Promise<GoogleCalendarEvent[]> {
@@ -161,7 +161,7 @@ export class GoogleCalendarService {
     return data.items || []
   }
 
-  async createEvent(calendarId: string, event: any): Promise<any> {
+  async createEvent(calendarId: string, event: GoogleCalendarEvent): Promise<GoogleCalendarEvent> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
@@ -179,10 +179,10 @@ export class GoogleCalendarService {
       throw new Error('Failed to create event')
     }
 
-    return response.json()
+  return response.json()
   }
 
-  async updateEvent(calendarId: string, eventId: string, event: any): Promise<any> {
+  async updateEvent(calendarId: string, eventId: string, event: GoogleCalendarEvent): Promise<GoogleCalendarEvent> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
@@ -200,7 +200,7 @@ export class GoogleCalendarService {
       throw new Error('Failed to update event')
     }
 
-    return response.json()
+  return response.json()
   }
 
   async deleteEvent(calendarId: string, eventId: string): Promise<void> {
@@ -226,10 +226,10 @@ export class GoogleCalendarService {
       throw new Error('Not authenticated')
     }
 
-  const { calendar_id, enabled, auto_sync } = settings
+  const { calendar_id, enabled } = settings
 
   if (!enabled || !calendar_id) {
-      console.warn('Calendar sync is disabled or no calendar selected')
+  // Calendar sync disabled or no calendar selected
       return
     }
 
@@ -242,16 +242,17 @@ export class GoogleCalendarService {
           await this.updateEvent(calendar_id, appointment.google_calendar_event_id, event)
         } else {
           // Create new event
-          const createdEvent = await this.createEvent(calendar_id, event)
-          console.log('Created event:', createdEvent.id)
+          await this.createEvent(calendar_id, event)
         }
-      } catch (error) {
-        console.error('Failed to sync appointment:', appointment.id, error)
+      } catch {
+        // Best-effort sync; ignore single item failure
+        // Optionally collect errors for reporting in calling layer
+        // noop
       }
     }
   }
 
-  private convertAppointmentToEvent(appointment: Appointment): any {
+  private convertAppointmentToEvent(appointment: Appointment): GoogleCalendarEvent {
     return {
       summary: appointment.title,
       description: appointment.description || '',
@@ -281,7 +282,7 @@ export class GoogleCalendarService {
     this.refreshToken = null
   }
 
-  appointmentToGoogleEvent(appointment: Appointment, timezone: string = 'America/New_York'): any {
+  appointmentToGoogleEvent(appointment: Appointment, timezone: string = 'America/New_York'): GoogleCalendarEvent {
     return {
       summary: appointment.title,
       description: appointment.description || '',

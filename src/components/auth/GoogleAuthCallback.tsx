@@ -60,7 +60,7 @@ export default function GoogleAuthCallback() {
             }, window.location.origin)
 
             window.close()
-          } catch (error) {
+          } catch {
             // Send error to parent window
             window.opener?.postMessage({
               type: 'GOOGLE_AUTH_ERROR',
@@ -72,8 +72,7 @@ export default function GoogleAuthCallback() {
           // No code parameter, just close
           window.close()
         }
-      } catch (error) {
-        console.error('Error in GoogleAuthCallback:', error)
+  } catch {
         // Send error to parent window
         window.opener?.postMessage({
           type: 'GOOGLE_AUTH_ERROR',

@@ -78,8 +78,8 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
       
       toast.success(t('profile.success'))
     } catch (error) {
-      console.error('Error updating profile:', error)
       toast.error(t('profile.error'))
+      throw error
     } finally {
       setIsUpdating(false)
     }

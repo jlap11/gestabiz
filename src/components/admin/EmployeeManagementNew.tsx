@@ -99,8 +99,8 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
 
       toast.success(t('employee.approvalSuccess'))
     } catch (error) {
-      console.error(error)
       toast.error(t('employee.approvalError'))
+      throw error
     }
   }
 
@@ -124,8 +124,8 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
       setRejectionReason('')
       setSelectedRequest(null)
     } catch (error) {
-      console.error(error)
       toast.error(t('employee.rejectionError'))
+      throw error
     }
   }
 
@@ -147,8 +147,8 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
   localStorage.setItem('users', JSON.stringify(updatedUsers))
       toast.success(t('employee.removeSuccess'))
     } catch (error) {
-      console.error(error)
       toast.error(t('employee.removeError'))
+      throw error
     }
   }
 

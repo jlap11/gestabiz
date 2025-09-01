@@ -7,7 +7,6 @@ import {
   Business, 
   Client, 
   DashboardStats,
-  BusinessAnalytics,
   User 
 } from '@/types'
 import { toast } from 'sonner'
@@ -26,15 +25,14 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
   const [services, setServices] = useState<Service[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [businesses, setBusinesses] = useState<Business[]>([])
-  const [clients, setClients] = useState<Client[]>([])
+  const [clients] = useState<Client[]>([])
   const [stats, setStats] = useState<DashboardStats | null>(null)
 
   // Error handler
-  const handleError = useCallback((error: any, operation: string) => {
-    const message = error?.message || `Error in ${operation}`
+  const handleError = useCallback((error: unknown, operation: string) => {
+    const message = (error as { message?: string })?.message || `Error in ${operation}`
     setError(message)
     toast.error(message)
-    console.error(`${operation} error:`, error)
   }, [])
 
   // Fetch appointments
@@ -404,7 +402,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
           employee_id: appointment.user_id,
           start_time: appointment.start_time!,
           end_time: appointment.end_time!,
-          status: appointment.status || 'pending',
+          status: appointment.status || 'scheduled',
           notes: appointment.notes || '',
           price: appointment.price,
           currency: appointment.currency || 'MXN',

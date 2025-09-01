@@ -100,7 +100,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       revenueData,
       statusCounts
     }
-  }, [appointments, language, t])
+  }, [appointments, language, t, locale])
 
   // Today's appointments
   const todayAppointments = useMemo(() => {

@@ -22,6 +22,7 @@ import {
   
 } from '@phosphor-icons/react'
 import { format, subWeeks, subMonths, subYears, parseISO } from 'date-fns'
+import { toast } from 'sonner'
 import { es } from 'date-fns/locale'
 
 interface ComprehensiveReportsProps {
@@ -245,7 +246,8 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
       setAnalytics(analyticsData)
     } catch (error) {
-      console.error('Error generating analytics:', error)
+      toast.error('No se pudieron generar los reportes')
+      throw error
     } finally {
       setIsLoading(false)
     }

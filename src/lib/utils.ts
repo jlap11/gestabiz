@@ -268,12 +268,12 @@ export const sortBy = <T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 
 }
 
 // Debounce utility
-export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
+export const debounce = <A extends unknown[], R>(
+  func: (...args: A) => R,
   wait: number
-): ((...args: Parameters<T>) => void) => {
+): ((...args: A) => void) => {
   let timeout: NodeJS.Timeout
-  return (...args: Parameters<T>) => {
+  return (...args: A) => {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
   }

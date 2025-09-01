@@ -82,12 +82,9 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
 
     // Sync with Google Calendar if connected
     if (isConnected) {
-      try {
-        await syncSingleAppointment(savedAppointment)
-      } catch (error) {
-        console.error('Failed to sync with Google Calendar:', error)
-        // Don't show error to user, sync will happen on next auto-sync
-      }
+      await syncSingleAppointment(savedAppointment).catch(() => {
+        /* ignore: auto-sync intent, no UI disruption */
+      })
     }
     
     setShowForm(false)
@@ -102,12 +99,9 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
       
       // Remove from Google Calendar if connected
       if (isConnected && appointmentToDelete) {
-        try {
-          await deleteSyncedAppointment(appointmentToDelete)
-        } catch (error) {
-          console.error('Failed to delete from Google Calendar:', error)
-          // Don't show error to user, sync will handle it
-        }
+        await deleteSyncedAppointment(appointmentToDelete).catch(() => {
+          /* ignore: auto-sync cleanup will handle discrepancies */
+        })
       }
       
       toast.success('Cita eliminada exitosamente')

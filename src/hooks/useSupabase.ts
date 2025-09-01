@@ -255,8 +255,9 @@ export const useAppointments = (userId?: string) => {
       if (error) throw new Error(error.message)
       return (data || []) as Appointment[]
     } catch (err) {
-      console.error('Failed to fetch upcoming appointments:', err)
-      return []
+  const message = err instanceof Error ? err.message : 'Failed to fetch upcoming appointments'
+  setError(message)
+  return []
     }
   }, [userId])
 
@@ -274,8 +275,9 @@ export const useAppointments = (userId?: string) => {
       if (error) throw new Error(error.message)
       return (data || []) as Appointment[]
     } catch (err) {
-      console.error('Failed to fetch appointments by date range:', err)
-      return []
+  const message = err instanceof Error ? err.message : 'Failed to fetch appointments by date range'
+  setError(message)
+  return []
     }
   }, [userId])
 
@@ -305,7 +307,7 @@ export const useAppointments = (userId?: string) => {
     }
 
     const handleRealtime = (payload: any) => {
-      console.log('Appointment change:', payload)
+  // console.log('Appointment change:', payload)
       if (payload.eventType === 'INSERT') {
         const newRow = payload.new as Appointment
         addAppointment(newRow)
@@ -531,6 +533,7 @@ export const useBrowserExtensionData = () => {
 // Notification processing hook
 export const useNotificationProcessor = (userId?: string) => {
   const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const processNotifications = useCallback(async () => {
     if (!userId || processing) return
@@ -551,7 +554,7 @@ export const useNotificationProcessor = (userId?: string) => {
         throw new Error('Failed to process notifications')
       }
     } catch (err) {
-      console.error('Error processing notifications:', err)
+      setError(err instanceof Error ? err.message : 'Failed to process notifications')
     } finally {
       setProcessing(false)
     }
@@ -559,6 +562,7 @@ export const useNotificationProcessor = (userId?: string) => {
 
   return {
     processNotifications,
-    processing
+    processing,
+    error
   }
 }

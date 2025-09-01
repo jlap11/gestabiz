@@ -156,8 +156,8 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
       toast.success(appointment ? t('appointments.updated') : t('appointments.created'))
       onClose()
     } catch (error) {
-      console.error('Error submitting appointment:', error)
       toast.error(t('common.error'))
+      throw error
     } finally {
       setLoading(false)
     }
@@ -390,21 +390,23 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
     const startISO = new Date(`${date}T${startTime}:00`).toISOString()
     const endISO = new Date(`${date}T${endTime}:00`).toISOString()
 
-    onSave({
+  const payload: Partial<Appointment> = {
       user_id: user.id,
       client_id: clientId,
       title: title.trim(),
       description: description.trim(),
       start_time: startISO,
       end_time: endISO,
-      status,
+  status: status,
       // legacy helpers for UI rendering
       date,
       startTime,
       endTime,
       client_name: selectedClient?.name || '',
       clientName: selectedClient?.name || ''
-    } as any)
+  }
+  // status está asegurado por el estado local, forzamos tipo requerido para el handler
+  onSave(payload as Omit<Appointment, 'id' | 'userId' | 'createdAt' | 'updatedAt'>)
   }
 
   return (

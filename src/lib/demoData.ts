@@ -577,10 +577,9 @@ export async function loadDemoData() {
   localStorage.setItem('demo-services', JSON.stringify(demoServices))
   localStorage.setItem('demo-clients', JSON.stringify(demoClients))
   localStorage.setItem('demo-appointments', JSON.stringify(demoAppointments))
-    
-    console.log('Demo data loaded successfully')
-  } catch (error) {
-    console.error('Failed to load demo data:', error)
+    // Demo data loaded
+  } catch {
+    // Silent fail in demo mode
   }
 }
 

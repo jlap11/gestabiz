@@ -61,8 +61,8 @@ export function sortAppointments(appointments: Appointment[], sortBy: 'date' | '
   const bClient = b.clientName || b.client_name || ''
   const statusOrder = ['scheduled', 'completed', 'cancelled', 'no_show'] as const
   const priorityOrder = ['high', 'medium', 'low'] as const
-  let aPriorityCache: any = (a.priority || 'low') as any
-  let bPriorityCache: any = (b.priority || 'low') as any
+  const aPriorityCache: 'low' | 'medium' | 'high' = (a.priority || 'low')
+  const bPriorityCache: 'low' | 'medium' | 'high' = (b.priority || 'low')
 
     switch (sortBy) {
       case 'date':
@@ -74,7 +74,7 @@ export function sortAppointments(appointments: Appointment[], sortBy: 'date' | '
         break
       
       case 'status':
-    comparison = statusOrder.indexOf(a.status as any) - statusOrder.indexOf(b.status as any)
+  comparison = statusOrder.indexOf(a.status as typeof statusOrder[number]) - statusOrder.indexOf(b.status as typeof statusOrder[number])
         break
       
       case 'priority':
@@ -134,7 +134,7 @@ export function getAvailableTimeSlots(appointments: Appointment[], date: string,
   const endHour = parseInt(workingHours.end.split(':')[0])
   const endMinute = parseInt(workingHours.end.split(':')[1])
 
-  let currentTime = new Date()
+  const currentTime = new Date()
   currentTime.setHours(startHour, startMinute, 0, 0)
   
   const endTime = new Date()

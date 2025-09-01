@@ -31,6 +31,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - `useSupabase.ts` ofrece hooks de auth, appointments, settings y dashboard y suscribe en tiempo real vía `subscriptionService`.
 - Estado y feedback: usa `useAppState()` para controles de carga/errores y `useAsyncOperation()` para envolver operaciones async con toasts (`sonner`).
 - i18n: `LanguageProvider` expone `t(key, params)` y utilidades de formato (`formatDate`, `formatCurrency`). Texto nuevo debe ir en `src/lib/translations.ts`.
+- Para cada ajuste se debe tener en cuenta la parte de supabase, debe quedar coherencia entre lo desarrollado con el cliente de supabase.
 
 ## Puntos de integración externos
 - Supabase: tablas como `appointments`, `services`, `locations`, `businesses`, `profiles`, `user_settings`; realtime en canal de `appointments` filtrado por `user_id`.

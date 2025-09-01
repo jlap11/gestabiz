@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calendar, Users, Clock, Plus, TrendUp } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { AppointmentForm } from './AppointmentForm'
 import AppointmentsView from './AppointmentsView'
 import ClientsView from './ClientsView'
@@ -80,8 +81,8 @@ function Dashboard({
       await createAppointment(appointmentData)
       setShowAppointmentForm(false)
       refetch() // Refresh data
-    } catch (error) {
-      console.error('Error creating appointment:', error)
+  } catch {
+  toast.error(t('appointments.createError') || 'Error creating appointment')
     }
   }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,14 +16,9 @@ import {
   Clock, 
   Phone, 
   EnvelopeSimple as Mail, 
-  Globe, 
   Plus, 
-  PencilSimple as Edit, 
   Trash,
-  Gear as Settings,
-  CurrencyDollar as DollarSign,
-  Users,
-  Star
+  Gear as Settings
 } from '@phosphor-icons/react'
 
 interface BusinessManagementProps {
@@ -35,7 +30,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
   const [locations, setLocations] = useKV<Location[]>(`locations-${user.business_id}`, [])
   const [services, setServices] = useKV<Service[]>(`services-${user.business_id}`, [])
   
-  const [isEditing, setIsEditing] = useState(false)
+  // const [isEditing, setIsEditing] = useState(false)
   const [editingLocation, setEditingLocation] = useState<Location | null>(null)
   const [editingService, setEditingService] = useState<Service | null>(null)
 
@@ -62,7 +57,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
   }
 
   // Initialize business if not exists
-  const initializeBusiness = () => {
+  const initializeBusiness = useCallback(() => {
     if (!business) {
       const newBusiness: Business = {
         id: user.business_id || `business-${Date.now()}`,
@@ -98,11 +93,11 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
       }
       setBusiness(newBusiness)
     }
-  }
+  }, [business, setBusiness, user])
 
   React.useEffect(() => {
     initializeBusiness()
-  }, [])
+  }, [initializeBusiness])
 
   const handleBusinessUpdate = (updatedBusiness: Partial<Business>) => {
     if (!business) return

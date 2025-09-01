@@ -72,8 +72,8 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
       setMessage('')
       onRequestSent()
     } catch (error) {
-      console.error('Error sending join request:', error)
       toast.error(t('employee.join.request_error'))
+      throw error
     } finally {
       setIsSubmitting(false)
     }

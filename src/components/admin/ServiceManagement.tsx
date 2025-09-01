@@ -116,8 +116,8 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
         max_participants: 1
       })
     } catch (error) {
-      console.error(error)
       toast.error(t('message.error'))
+      throw error
     }
   }
 
@@ -132,8 +132,8 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
       setServices(prev => prev.filter(service => service.id !== serviceId))
       toast.success('Servicio eliminado exitosamente')
     } catch (error) {
-      console.error(error)
       toast.error(t('message.error'))
+      throw error
     }
   }
 

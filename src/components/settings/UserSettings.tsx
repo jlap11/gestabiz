@@ -71,8 +71,8 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
       onUserUpdate(updatedUser)
       toast.success(t('settings.preferences_saved'))
     } catch (error) {
-      console.error('Error updating notification preferences:', error)
       toast.error('Error updating preferences')
+      throw error
     }
   }
 
@@ -92,21 +92,12 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
       onUserUpdate(updatedUser)
       toast.success(t('settings.preferences_saved'))
     } catch (error) {
-      console.error('Error updating language:', error)
       toast.error('Error updating language')
+      throw error
     }
   }
 
-  const getThemeIcon = (themeValue: string) => {
-    switch (themeValue) {
-      case 'light':
-        return <Sun className="h-4 w-4" />
-      case 'dark':
-        return <Moon className="h-4 w-4" />
-      default:
-        return <Monitor className="h-4 w-4" />
-    }
-  }
+  //
 
   return (
     <div className="space-y-6">
