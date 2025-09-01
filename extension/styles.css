@@ -1,0 +1,377 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 380px;
+    min-height: 500px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F8FAFC;
+    color: #1E293B;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.logo h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3B82F6;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #64748B;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background-color: #F1F5F9;
+    color: #3B82F6;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #E2E8F0;
+    border-top: 3px solid #3B82F6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+    color: #64748B;
+    font-size: 14px;
+}
+
+/* Auth State */
+.auth-state {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.auth-message p {
+    color: #64748B;
+    margin-bottom: 20px;
+}
+
+.login-btn {
+    background-color: #3B82F6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.login-btn:hover {
+    background-color: #2563EB;
+}
+
+/* Main Content */
+.hidden {
+    display: none !important;
+}
+
+/* Stats */
+.stats {
+    display: flex;
+    padding: 16px 20px;
+    gap: 20px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #3B82F6;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Section */
+.section {
+    padding: 20px;
+}
+
+.section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1E293B;
+}
+
+/* Appointments List */
+.appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.appointment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    transition: all 0.2s ease;
+}
+
+.appointment-item:hover {
+    border-color: #3B82F6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.appointment-item.urgent {
+    border-left: 4px solid #EF4444;
+    background-color: #FEF2F2;
+}
+
+.appointment-item.soon {
+    border-left: 4px solid #F59E0B;
+    background-color: #FFFBEB;
+}
+
+.appointment-info {
+    flex: 1;
+}
+
+.appointment-title {
+    font-weight: 600;
+    color: #1E293B;
+    margin-bottom: 4px;
+}
+
+.appointment-client {
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 6px;
+}
+
+.appointment-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time {
+    font-size: 13px;
+    font-weight: 500;
+    color: #3B82F6;
+}
+
+.time-until {
+    font-size: 12px;
+    color: #64748B;
+    background-color: #F1F5F9;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.appointment-actions {
+    margin-left: 12px;
+}
+
+.view-btn {
+    background-color: #F1F5F9;
+    color: #3B82F6;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+    background-color: #3B82F6;
+    color: white;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 16px;
+    text-align: center;
+}
+
+.empty-state svg {
+    color: #94A3B8;
+}
+
+.empty-state p {
+    color: #64748B;
+    margin-bottom: 8px;
+}
+
+.create-btn {
+    background-color: #10B981;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.create-btn:hover {
+    background-color: #059669;
+}
+
+/* Actions */
+.actions {
+    padding: 20px;
+    border-top: 1px solid #E2E8F0;
+    background-color: #FFFFFF;
+}
+
+.open-app-btn {
+    width: 100%;
+    background-color: #3B82F6;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.open-app-btn:hover {
+    background-color: #2563EB;
+}
+
+/* Error State */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+    text-align: center;
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.error-message svg {
+    color: #EF4444;
+}
+
+.error-message p {
+    color: #64748B;
+}
+
+.retry-btn {
+    background-color: #6B7280;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.retry-btn:hover {
+    background-color: #4B5563;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}

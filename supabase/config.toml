@@ -1,0 +1,68 @@
+# Project settings
+project_id = "your-project-id"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54322
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://your-domain.com"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+secure_password_change_enabled = true
+enable_manual_linking = false
+
+[auth.external.google]
+enabled = true
+client_id = "your-google-client-id"
+secret = "your-google-client-secret"
+redirect_uri = "http://localhost:54322/auth/v1/callback"
+
+[auth.external.apple]
+enabled = false
+
+[auth.external.facebook]
+enabled = false
+
+[db]
+port = 54322
+major_version = 15
+
+[realtime]
+enabled = true
+port = 54323
+# The percentage of a connection's buffer that when reached will log a warning
+buffer_log_percent = 10
+# The maximum number of changes to track per subscription
+max_changes = 100
+# The maximum length of a websocket message
+max_record_bytes = 281474976710656
+# The maximum total length of all the records in a single websocket message
+max_request_bytes = 1048576
+
+[storage]
+enabled = true
+port = 54324
+file_size_limit = "50MB"
+image_transformation = {
+  enabled = true
+}
+
+[edge_functions]
+enabled = true
+port = 54325
+
+[analytics]
+enabled = false
+
+[inbucket]
+enabled = false
+port = 54326
+smtp_port = 54327
+pop3_port = 54328

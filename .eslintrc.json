@@ -1,0 +1,75 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "@typescript-eslint",
+    "react-hooks"
+  ],
+  "rules": {
+    // React specific rules
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "react/display-name": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    
+    // TypeScript specific rules
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    
+    // General code quality rules
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-debugger": "error",
+    "no-unused-vars": "off", // Handled by @typescript-eslint/no-unused-vars
+    "prefer-const": "error",
+    "no-var": "error",
+    "object-shorthand": "error",
+    "prefer-arrow-callback": "error",
+    
+    // Import organization
+    "sort-imports": ["error", {
+      "ignoreDeclarationSort": true,
+      "ignoreMemberSort": false,
+      "memberSyntaxSortOrder": ["none", "all", "multiple", "single"]
+    }],
+    
+    // Best practices
+    "eqeqeq": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "no-alert": "error"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "*.min.js",
+    "vite.config.ts"
+  ]
+}
