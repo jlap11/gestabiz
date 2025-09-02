@@ -37,6 +37,26 @@ function createMockClient() {
     expires_at: Date.now() + 3600000
   }
 
+  // helper stubs to keep nesting shallow
+  function stubSingleOk() { return Promise.resolve({ data: null, error: null as unknown as { code: string; message: string } }) }
+  function stubSingleNotFound() { return Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } }) }
+  function stubSelect() { return { single: stubSingleOk } }
+  function stubEqUpdate() { return { select: stubSelect } }
+  function makeQuery() {
+    return {
+      eq: (_c?: string, _v?: unknown) => makeQuery(),
+      in: (_c?: string, _v?: unknown[]) => makeQuery(),
+      gt: (_c?: string, _v?: unknown) => makeQuery(),
+      gte: (_c?: string, _v?: unknown) => makeQuery(),
+      lte: (_c?: string, _v?: unknown) => makeQuery(),
+      order: (_c?: string, _o?: unknown) => Promise.resolve({ data: [], error: null }),
+      limit: (_n?: number) => makeQuery(),
+      select: (_columns?: string) => makeQuery(),
+      single: stubSingleNotFound,
+      maybeSingle: () => Promise.resolve({ data: null, error: null })
+    }
+  }
+
   const client = {
     auth: {
       getSession: () => Promise.resolve({ 
@@ -69,20 +89,21 @@ function createMockClient() {
         error: null 
       })
     },
-     from: (_table: string) => {
-       const single = () => Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } })
-       const eq = () => ({ single })
-       const select = (_columns?: string) => ({ eq, then: (resolve: (arg: { data: unknown[]; error: null }) => unknown) => resolve({ data: [], error: null }) })
-       const insert = () => Promise.resolve({ data: [], error: null })
-       const update = () => Promise.resolve({ data: [], error: null })
-       const del = () => Promise.resolve({ data: [], error: null })
-       const upsert = () => Promise.resolve({ data: [], error: null })
-       return { select, insert, update, delete: del, upsert }
-     },
-    channel: () => ({
-      on: () => ({}),
-      subscribe: () => ({})
-    })
+     from: (_table: string) => ({
+       ...makeQuery(),
+       insert: (_payload: unknown) => ({ select: () => ({ single: stubSingleOk }) }),
+       update: (_payload: unknown) => ({ eq: (_c?: string, _v?: unknown) => stubEqUpdate() }),
+       delete: () => ({ eq: (_c?: string, _v?: unknown) => Promise.resolve({ error: null }) }),
+       upsert: (_payload: unknown) => ({ select: () => ({ single: stubSingleOk }) })
+     }),
+    channel: (_name: string) => {
+      const ch = {
+        on: () => ch,
+        subscribe: () => ch
+      }
+      return ch
+    },
+    removeChannel: (_: unknown) => {}
   } as unknown
 
   return client as SupabaseLike

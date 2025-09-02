@@ -299,7 +299,7 @@ export const useAppointments = (userId?: string) => {
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
-        .eq('user_id', userId)
+  .eq('employee_id', userId)
         .order('start_time', { ascending: true })
       if (error) throw new Error(error.message)
       setAppointments((data || []) as Appointment[])
@@ -317,7 +317,7 @@ export const useAppointments = (userId?: string) => {
     
     setLoading(true)
     try {
-      const insert = { ...appointmentData, user_id: userId }
+  const insert = { ...appointmentData, employee_id: userId }
       const { data, error } = await supabase
         .from('appointments')
         .insert(insert)
@@ -388,7 +388,7 @@ export const useAppointments = (userId?: string) => {
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
-        .eq('user_id', userId)
+  .eq('employee_id', userId)
         .gt('start_time', now)
         .order('start_time', { ascending: true })
         .limit(limit)
@@ -408,7 +408,7 @@ export const useAppointments = (userId?: string) => {
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
-        .eq('user_id', userId)
+  .eq('employee_id', userId)
         .gte('start_time', startDate)
         .lte('start_time', endDate)
         .order('start_time', { ascending: true })
@@ -468,7 +468,7 @@ export const useAppointments = (userId?: string) => {
       .channel('appointments-changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'appointments', filter: `user_id=eq.${userId}` },
+  { event: '*', schema: 'public', table: 'appointments', filter: `employee_id=eq.${userId}` },
         handleRealtime
       )
       .subscribe()

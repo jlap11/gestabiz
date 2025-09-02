@@ -1,4 +1,4 @@
-import type { Business, Location, Service, Appointment } from '@/types'
+import type { Business, Location, Service, Appointment, UserSettings } from '@/types'
 import type { Row } from '@/lib/supabaseTyped'
 
 export function normalizeService(row: Row<'services'>): Service {
@@ -94,4 +94,61 @@ export function normalizeAppointmentStatus(s: string): Appointment['status'] {
     'scheduled','confirmed','in_progress','completed','cancelled','no_show','rescheduled'
   ]
   return (allowed as string[]).includes(s) ? (s as Appointment['status']) : 'scheduled'
+}
+
+// User settings normalizer (shared)
+type AnyRecord = Record<string, unknown>
+const asString = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v : fallback)
+const asNumber = (v: unknown, fallback = 0): number => {
+  if (typeof v === 'number') return v
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
+const asBoolean = (v: unknown, fallback = false): boolean => (typeof v === 'boolean' ? v : Boolean(v ?? fallback))
+const asNumberArray = (v: unknown, fallback: number[] = []): number[] => (
+  Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number') : fallback
+)
+const isTheme = (v: unknown): v is UserSettings['theme'] => v === 'light' || v === 'dark' || v === 'system'
+const isDateFormat = (v: unknown): v is UserSettings['date_format'] => v === 'DD/MM/YYYY' || v === 'MM/DD/YYYY' || v === 'YYYY-MM-DD'
+const isTimeFormat = (v: unknown): v is UserSettings['time_format'] => v === '12h' || v === '24h'
+const isLanguage = (v: unknown): v is UserSettings['language'] => v === 'es' || v === 'en'
+
+export function normalizeUserSettings(row: AnyRecord | null | undefined): UserSettings {
+  const email_notifications = (row?.email_notifications as AnyRecord) ?? {}
+  const whatsapp_notifications = (row?.whatsapp_notifications as AnyRecord) ?? {}
+  const business_hours = (row?.business_hours as AnyRecord) ?? {}
+  const lang = asString(row?.language, '')
+  const theme = isTheme(row?.theme) ? row?.theme : 'system'
+  return {
+    id: asString(row?.id, ''),
+    user_id: asString(row?.user_id, ''),
+    theme,
+    language: isLanguage(lang) ? lang : 'es',
+    timezone: asString(row?.timezone, 'America/Mexico_City'),
+    default_appointment_duration: asNumber(row?.default_appointment_duration, 60),
+    business_hours: {
+      start: asString(business_hours?.start, '09:00'),
+      end: asString(business_hours?.end, '18:00'),
+      days: asNumberArray(business_hours?.days, [1,2,3,4,5]),
+    },
+    auto_reminders: asBoolean(row?.auto_reminders, true),
+    reminder_times: asNumberArray(row?.reminder_times, [1440, 60, 15]),
+    email_notifications: {
+      appointment_reminders: asBoolean(email_notifications?.appointment_reminders, true),
+      appointment_confirmations: asBoolean(email_notifications?.appointment_confirmations, true),
+      appointment_cancellations: asBoolean(email_notifications?.appointment_cancellations, true),
+      daily_digest: asBoolean(email_notifications?.daily_digest, false),
+      weekly_report: asBoolean(email_notifications?.weekly_report, false),
+      marketing: asBoolean(email_notifications?.marketing, false),
+    },
+    whatsapp_notifications: {
+      appointment_reminders: asBoolean(whatsapp_notifications?.appointment_reminders, false),
+      appointment_confirmations: asBoolean(whatsapp_notifications?.appointment_confirmations, false),
+      follow_ups: asBoolean(whatsapp_notifications?.follow_ups, false),
+    },
+  date_format: isDateFormat(row?.date_format) ? row?.date_format : 'DD/MM/YYYY',
+  time_format: isTimeFormat(row?.time_format) ? row?.time_format : '24h',
+    created_at: asString(row?.created_at, new Date().toISOString()),
+    updated_at: asString(row?.updated_at, new Date().toISOString()),
+  }
 }

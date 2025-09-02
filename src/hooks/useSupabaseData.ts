@@ -10,8 +10,8 @@ import {
   User,
 } from '@/types'
 // removed isValidAppointmentStatus in favor of normalizeAppointmentStatus
-import type { Row } from '@/lib/supabaseTyped'
-import { normalizeService, normalizeLocation, normalizeBusiness, normalizeAppointmentStatus } from '@/lib/normalizers'
+import { normalizeAppointmentStatus } from '@/lib/normalizers'
+import { appointmentsService, servicesService, locationsService, businessesService, statsService } from '@/lib/services'
 import { toast } from 'sonner'
 
 interface UseSupabaseDataOptions {
@@ -46,65 +46,51 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      let query = supabase
-        .from('appointments')
-        .select(`
-          *,
-          service:services(name, duration_minutes, price),
-          location:locations(name, address),
-          client:profiles!appointments_client_id_fkey(full_name, email, phone),
-          employee:profiles!appointments_employee_id_fkey(full_name)
-        `)
+      // Usar el servicio con filtros por rol/negocio
+      const raw = await appointmentsService.list({
+        businessId,
+        employeeId: user.role === 'employee' ? user.id : undefined,
+        clientId: user.role === 'client' ? user.id : undefined,
+        // date range opcional se deja fuera aquí
+      })
 
-      // Filter by business if provided
-      if (businessId) {
-        query = query.eq('business_id', businessId)
-      } else if (user.role === 'employee') {
-        // Employees only see their appointments
-        query = query.eq('employee_id', user.id)
-      } else if (user.role === 'client') {
-        // Clients only see their appointments
-        query = query.eq('client_id', user.id)
-      } else if (user.role === 'admin') {
-        // Admins see all appointments for their businesses
-        const { data: userBusinesses } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-
-        if (userBusinesses && userBusinesses.length > 0) {
-          query = query.in('business_id', userBusinesses.map(b => b.id))
-        }
+      type RawAppointment = Partial<Appointment> & {
+        employee_id?: string
+        user_id?: string
+        service?: { name?: string }
+        client?: { full_name?: string; email?: string; phone?: string }
+        location?: string | { name?: string; address?: string }
       }
 
-      const { data, error } = await query.order('start_time', { ascending: true })
-
-      if (error) throw error
-
-      const formattedAppointments: Appointment[] = (data || []).map(apt => ({
-        id: apt.id,
-        business_id: apt.business_id,
-        location_id: apt.location_id,
-        service_id: apt.service_id,
-        user_id: apt.employee_id || '',
-        client_id: apt.client_id,
-        title: `${apt.service?.name || 'Cita'} - ${apt.client?.full_name || 'Cliente'}`,
-        description: apt.notes || '',
-        client_name: apt.client?.full_name || 'Cliente',
-        client_email: apt.client?.email || '',
-        client_phone: apt.client?.phone || '',
-        start_time: apt.start_time,
-        end_time: apt.end_time,
-        status: normalizeAppointmentStatus(String(apt.status)),
-        location: apt.location?.name || '',
-        notes: apt.notes || '',
-        price: apt.price,
-        currency: apt.currency || 'MXN',
-        reminder_sent: apt.reminder_sent,
-        created_at: apt.created_at,
-        updated_at: apt.updated_at,
-        created_by: apt.client_id
-      }))
+      const formattedAppointments: Appointment[] = (raw || []).map(_apt => {
+        const apt = _apt as RawAppointment
+        const rawLocation = (apt as unknown as { location?: string | { name?: string } }).location
+        const locationName = typeof rawLocation === 'string' ? rawLocation : rawLocation?.name
+        return {
+          id: apt.id!,
+          business_id: apt.business_id!,
+          location_id: apt.location_id,
+          service_id: apt.service_id,
+          user_id: apt.user_id || apt.employee_id || '',
+          client_id: apt.client_id!,
+          title: apt.title || `${apt.service?.name || 'Cita'} - ${apt.client?.full_name || 'Cliente'}`,
+          description: apt.description || apt.notes || '',
+          client_name: apt.client_name || apt.client?.full_name || 'Cliente',
+          client_email: apt.client_email || apt.client?.email || '',
+          client_phone: apt.client_phone || apt.client?.phone || '',
+          start_time: apt.start_time!,
+          end_time: apt.end_time!,
+          status: normalizeAppointmentStatus(String(apt.status || 'scheduled')),
+          location: locationName || '',
+          notes: apt.notes || apt.description || '',
+          price: apt.price,
+          currency: apt.currency || 'MXN',
+          reminder_sent: apt.reminder_sent ?? false,
+          created_at: apt.created_at || apt.start_time!,
+          updated_at: apt.updated_at || apt.start_time!,
+          created_by: apt.created_by || apt.client_id!
+        }
+      })
 
       setAppointments(formattedAppointments)
       return formattedAppointments
@@ -124,29 +110,12 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      let query = supabase
-        .from('services')
-        .select('*')
-        .eq('is_active', true)
-
-      if (businessId) {
-        query = query.eq('business_id', businessId)
-      } else if (user.role === 'admin') {
-        // Get services for user's businesses
-        const { data: userBusinesses } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-
-        if (userBusinesses && userBusinesses.length > 0) {
-          query = query.in('business_id', userBusinesses.map(b => b.id))
-        }
+      let svcBusinessIds = businessId ? [businessId] : undefined
+      if (user.role === 'admin' && !businessId) {
+        const { data: userBusinesses } = await supabase.from('businesses').select('id').eq('owner_id', user.id)
+        svcBusinessIds = (userBusinesses || []).map(b => b.id)
       }
-
-      const { data, error } = await query.order('name')
-
-      if (error) throw error
-  const formattedServices: Service[] = ((data as Row<'services'>[] | null) || []).map(normalizeService)
+      const formattedServices = await servicesService.list({ businessIds: svcBusinessIds, activeOnly: true })
 
       setServices(formattedServices)
       return formattedServices
@@ -166,29 +135,12 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      let query = supabase
-        .from('locations')
-        .select('*')
-        .eq('is_active', true)
-
-      if (businessId) {
-        query = query.eq('business_id', businessId)
-      } else if (user.role === 'admin') {
-        // Get locations for user's businesses
-        const { data: userBusinesses } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-
-        if (userBusinesses && userBusinesses.length > 0) {
-          query = query.in('business_id', userBusinesses.map(b => b.id))
-        }
+      let locBusinessIds = businessId ? [businessId] : undefined
+      if (user.role === 'admin' && !businessId) {
+        const { data: userBusinesses } = await supabase.from('businesses').select('id').eq('owner_id', user.id)
+        locBusinessIds = (userBusinesses || []).map(b => b.id)
       }
-
-  const { data, error } = await query.order('name')
-
-      if (error) throw error
-  const formattedLocations: Location[] = ((data as Row<'locations'>[] | null) || []).map(normalizeLocation)
+      const formattedLocations = await locationsService.list({ businessIds: locBusinessIds, activeOnly: true })
 
       setLocations(formattedLocations)
       return formattedLocations
@@ -208,29 +160,14 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      let query = supabase.from('businesses').select('*')
-
+      let formattedBusinesses: Business[] = []
       if (user.role === 'admin') {
-        query = query.eq('owner_id', user.id)
+        formattedBusinesses = await businessesService.list({ ownerId: user.id })
       } else if (user.role === 'employee') {
-        // Get businesses where user is an employee
-        const { data: employeeBusinesses } = await supabase
-          .from('business_employees')
-          .select('business_id')
-          .eq('employee_id', user.id)
-          .eq('status', 'approved')
-
-        if (employeeBusinesses && employeeBusinesses.length > 0) {
-          query = query.in('id', employeeBusinesses.map(eb => eb.business_id))
-        } else {
-          return []
-        }
+        formattedBusinesses = await businessesService.listByEmployee(user.id)
+      } else {
+        formattedBusinesses = await businessesService.list()
       }
-
-      const { data, error } = await query.order('name')
-
-      if (error) throw error
-  const formattedBusinesses: Business[] = ((data as Row<'businesses'>[] | null) || []).map(normalizeBusiness)
 
       setBusinesses(formattedBusinesses)
       return formattedBusinesses
@@ -250,60 +187,12 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      // Default to current month if no date range provided
-      const startDate = dateRange?.start || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-      const endDate = dateRange?.end || new Date().toISOString()
-
-      // Base query for appointments
-      let appointmentsQuery = supabase
-        .from('appointments')
-        .select('*')
-        .gte('start_time', startDate)
-        .lte('start_time', endDate)
-
-      if (businessId) {
-        appointmentsQuery = appointmentsQuery.eq('business_id', businessId)
-      } else if (user.role === 'admin') {
-        const { data: userBusinesses } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-
-        if (userBusinesses && userBusinesses.length > 0) {
-          appointmentsQuery = appointmentsQuery.in('business_id', userBusinesses.map(b => b.id))
-        }
-      }
-
-      const { data: appointmentsData, error: appointmentsError } = await appointmentsQuery
-
-      if (appointmentsError) throw appointmentsError
-
-      const appointments = appointmentsData || []
-
-      // Calculate stats
-      const stats: DashboardStats = {
-        total_appointments: appointments.length,
-        scheduled_appointments: appointments.filter(a => a.status === 'scheduled' || a.status === 'confirmed').length,
-        completed_appointments: appointments.filter(a => a.status === 'completed').length,
-        cancelled_appointments: appointments.filter(a => a.status === 'cancelled').length,
-        no_show_appointments: appointments.filter(a => a.status === 'no_show').length,
-        upcoming_today: 0, // Will be calculated separately
-        upcoming_week: 0, // Will be calculated separately
-        revenue_total: appointments.filter(a => a.status === 'completed').reduce((sum, a) => sum + (a.price || 0), 0),
-        revenue_this_month: appointments.filter(a => a.status === 'completed').reduce((sum, a) => sum + (a.price || 0), 0),
-        average_appointment_value: 0,
-        client_retention_rate: 0,
-        popular_services: [],
-        popular_times: [],
-        employee_performance: [],
-        location_performance: []
-      }
-
-      // Calculate average appointment value
-      const completedWithPrice = appointments.filter(a => a.status === 'completed' && a.price > 0)
-      stats.average_appointment_value = completedWithPrice.length > 0 
-        ? stats.revenue_total / completedWithPrice.length 
-        : 0
+      const stats = await statsService.getDashboardStats({
+        businessId,
+        ownerId: user.role === 'admin' ? user.id : undefined,
+        employeeId: user.role === 'employee' ? user.id : undefined,
+        dateRange
+      })
 
       setStats(stats)
       return stats
@@ -326,30 +215,31 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert({
-          business_id: appointment.business_id!,
-          location_id: appointment.location_id,
-          service_id: appointment.service_id!,
-          client_id: appointment.client_id!,
-          employee_id: appointment.user_id,
-          start_time: appointment.start_time!,
-          end_time: appointment.end_time!,
-          status: appointment.status || 'scheduled',
-          notes: appointment.notes || '',
-          price: appointment.price,
-          currency: appointment.currency || 'MXN',
-          reminder_sent: false
-        })
-        .select()
-        .single()
-
-      if (error) throw error
+      const created = await appointmentsService.create({
+        business_id: appointment.business_id!,
+        location_id: appointment.location_id,
+        service_id: appointment.service_id!,
+        client_id: appointment.client_id!,
+        user_id: appointment.user_id!, // employee assigned
+        title: appointment.title || 'Cita',
+        description: appointment.description || '',
+        client_name: appointment.client_name || '',
+        client_email: appointment.client_email,
+        client_phone: appointment.client_phone,
+        start_time: appointment.start_time!,
+        end_time: appointment.end_time!,
+        status: appointment.status || 'scheduled',
+        location: appointment.location,
+        notes: appointment.notes || '',
+        price: appointment.price,
+        currency: appointment.currency || 'MXN',
+        reminder_sent: false,
+        created_by: user.id
+      })
 
       toast.success('Cita creada correctamente')
-      await fetchAppointments() // Refresh appointments
-  return data
+      await fetchAppointments()
+      return created
     } catch (error) {
       handleError(error, 'create appointment')
   return
@@ -366,25 +256,18 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase
-        .from('appointments')
-        .update({
-          start_time: updates.start_time,
-          end_time: updates.end_time,
-          status: updates.status,
-          notes: updates.notes,
-          price: updates.price,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
+      const updated = await appointmentsService.update(id, {
+        start_time: updates.start_time,
+        end_time: updates.end_time,
+        status: updates.status,
+        notes: updates.notes,
+        price: updates.price,
+        updated_at: new Date().toISOString()
+      })
 
       toast.success('Cita actualizada correctamente')
-      await fetchAppointments() // Refresh appointments
-      return data
+      await fetchAppointments()
+      return updated
     } catch (error) {
       handleError(error, 'update appointment')
       return null
@@ -401,15 +284,9 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
+      await appointmentsService.remove(id)
       toast.success('Cita eliminada correctamente')
-      await fetchAppointments() // Refresh appointments
+      await fetchAppointments()
       return true
     } catch (error) {
       handleError(error, 'delete appointment')
