@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -103,22 +103,6 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
     }
   })
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-green-500">{t('recurring.active')}</Badge>
-      case 'at_risk':
-        return <Badge variant="secondary" className="bg-yellow-500 text-black">En Riesgo</Badge>
-      case 'inactive':
-        return <Badge variant="destructive">{t('recurring.inactive')}</Badge>
-      default:
-        return null
-    }
-  }
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-  }
 
   const sendWhatsAppMessage = async (client: Client, type: 'follow_up' | 'welcome') => {
     setSendingMessage(client.id)
@@ -126,23 +110,10 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
     try {
       // Simulate sending WhatsApp message
       await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      let message = ''
-      if (type === 'follow_up') {
-        message = t('whatsapp.follow_up', { name: client.name })
-      } else {
-        message = t('whatsapp.welcome', { 
-          name: client.name,
-          date: formatDate(new Date(), 'long', language),
-          time: '10:00 AM'
-        })
-      }
-      
-      // In a real implementation, this would call the WhatsApp Business API
-      console.log(`Sending WhatsApp message to ${client.whatsapp}: ${message}`)
+      // Here you'd call WhatsApp Business API using the proper template/message
       
       toast.success(t('recurring.message_sent'))
-    } catch (error) {
+    } catch {
       toast.error(t('message.error'))
     } finally {
       setSendingMessage(null)
@@ -317,11 +288,13 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
   )
 }
 
+type Lang = 'es' | 'en'
+
 interface ClientCardProps {
   analytics: ClientAnalytics
   onSendWhatsApp: (client: Client, type: 'follow_up' | 'welcome') => Promise<void>
   sendingMessage: string | null
-  language: string
+  language: Lang
   t: (key: string, params?: Record<string, string>) => string
   showFollowUpAction?: boolean
 }
@@ -333,25 +306,21 @@ function ClientCard({
   language, 
   t, 
   showFollowUpAction = false 
-}: ClientCardProps) {
+}: Readonly<ClientCardProps>) {
   const { client } = analytics
   
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-green-500">{t('recurring.active')}</Badge>
-      case 'at_risk':
-        return <Badge variant="secondary" className="bg-yellow-500 text-black">En Riesgo</Badge>
-      case 'inactive':
-        return <Badge variant="destructive">{t('recurring.inactive')}</Badge>
-      default:
-        return null
-    }
+  const renderClientStatusBadge = (status: string) => {
+    if (status === 'active') return <Badge variant="default" className="bg-green-500">{t('recurring.active')}</Badge>
+    if (status === 'at_risk') return <Badge variant="secondary" className="bg-yellow-500 text-black">En Riesgo</Badge>
+    if (status === 'inactive') return <Badge variant="destructive">{t('recurring.inactive')}</Badge>
+    return null
   }
+
+  // Reuse top-level getStatusBadge
 
   return (
     <Card>
@@ -391,20 +360,20 @@ function ClientCard({
                 </div>
                 <div>
                   <span className="text-muted-foreground">{t('recurring.average_spend')}: </span>
-                  <span className="font-medium">{formatCurrency(analytics.averageSpend, 'EUR', language as any)}</span>
+                  <span className="font-medium">{formatCurrency(analytics.averageSpend, 'EUR', language)}</span>
                 </div>
                 {analytics.lastAppointment && (
                   <div>
                     <span className="text-muted-foreground">{t('recurring.last_visit')}: </span>
                     <span className="font-medium">
-                      {formatDate(analytics.lastAppointment, 'short', language as any)}
+                      {formatDate(analytics.lastAppointment, 'short', language)}
                     </span>
                   </div>
                 )}
               </div>
               
               <div className="flex items-center gap-2">
-                {getStatusBadge(analytics.status)}
+                {renderClientStatusBadge(analytics.status)}
                 {analytics.daysSinceLastVisit > 30 && analytics.daysSinceLastVisit < Infinity && (
                   <Badge variant="outline">
                     {analytics.daysSinceLastVisit} días sin visitar
@@ -418,7 +387,7 @@ function ClientCard({
             <div className="text-right text-sm">
               <div className="font-medium flex items-center gap-1">
                 <CurrencyDollar size={14} />
-                {formatCurrency(analytics.totalSpent, 'EUR', language as any)}
+                {formatCurrency(analytics.totalSpent, 'EUR', language)}
               </div>
               <div className="text-muted-foreground">Total gastado</div>
             </div>

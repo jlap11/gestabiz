@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useKV } from '@/lib/useKV'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+// Removed unused Select imports
 import { Badge } from '@/components/ui/badge'
 import { Building, MagnifyingGlass as Search, MapPin, Clock } from '@phosphor-icons/react'
 import { toast } from 'sonner'
@@ -20,7 +20,7 @@ interface JoinBusinessProps {
 
 export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps) {
   const { t } = useLanguage()
-  const [businesses, setBusinesses] = useKV<Business[]>('businesses', [])
+  const [businesses] = useKV<Business[]>('businesses', [])
   const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>('employee-requests', [])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
@@ -93,12 +93,7 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
     return `${hours.open} - ${hours.close}`
   }
 
-  const hasExistingRequest = (businessId: string) => {
-    return employeeRequests.some(request => 
-      request.business_id === businessId && 
-      request.user_id === user.id
-    )
-  }
+  // hasExistingRequest helper not used in render
 
   const getRequestStatus = (businessId: string) => {
     const request = employeeRequests.find(request => 
@@ -152,14 +147,13 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
                             {t(`business.categories.${business.category}`)}
                           </Badge>
                         </div>
-                        {requestStatus && (
-                          <Badge 
-                            variant={requestStatus === 'pending' ? 'outline' : requestStatus === 'approved' ? 'default' : 'destructive'}
-                            className="text-xs"
-                          >
-                            {t(`employee.requests.status.${requestStatus}`)}
-                          </Badge>
-                        )}
+                        {requestStatus && (() => {
+                          let variant: 'outline' | 'default' | 'destructive'
+                          if (requestStatus === 'pending') variant = 'outline'
+                          else if (requestStatus === 'approved') variant = 'default'
+                          else variant = 'destructive'
+                          return <Badge variant={variant} className="text-xs">{t(`employee.requests.status.${requestStatus}`)}</Badge>
+                        })()}
                       </div>
 
                       {business.description && (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { User as SupabaseUser, Session, AuthError } from '@supabase/supabase-js'
+import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { User } from '@/types'
 import { toast } from 'sonner'
@@ -104,7 +104,7 @@ export function useAuth() {
       }
 
       // If no profile exists, create one
-      const newProfile = {
+      const newProfile: import('@/types/database').Database['public']['Tables']['profiles']['Insert'] = {
         id: supabaseUser.id,
         email: supabaseUser.email!,
         full_name: supabaseUser.user_metadata?.full_name || '',
@@ -119,7 +119,7 @@ export function useAuth() {
             push: true,
             whatsapp: false
           }
-        },
+        } as unknown as import('@/types/database').Json,
         is_active: true
       }
 
@@ -159,7 +159,7 @@ export function useAuth() {
         permissions: [],
         timezone: 'America/Mexico_City'
       }
-    } catch (error) {
+  } catch {
       // Error converting user - return null
       return null
     }
@@ -191,13 +191,13 @@ export function useAuth() {
         } else if (mounted) {
           setState(prev => ({ ...prev, loading: false }))
         }
-      } catch (error) {
+  } catch {
         // Error in getInitialSession
         if (mounted) {
           setState(prev => ({ 
             ...prev, 
             loading: false, 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+    error: 'Unknown error' 
           }))
         }
       }
@@ -265,8 +265,8 @@ export function useAuth() {
 
       setState(prev => ({ ...prev, loading: false }))
       return { success: true, needsEmailConfirmation: !authData.session }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido'
+  } catch {
+      const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
@@ -303,8 +303,8 @@ export function useAuth() {
       }
 
       return { success: false, error: 'No se pudo autenticar' }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido'
+  } catch {
+      const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
@@ -316,7 +316,7 @@ export function useAuth() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+  const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
@@ -331,8 +331,8 @@ export function useAuth() {
 
       // OAuth redirect will handle the rest
       return { success: true }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido'
+  } catch {
+      const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
@@ -362,8 +362,8 @@ export function useAuth() {
 
       toast.success('Sesión cerrada correctamente')
       return { success: true }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido'
+  } catch {
+      const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
@@ -388,8 +388,8 @@ export function useAuth() {
       setState(prev => ({ ...prev, loading: false }))
       toast.success('Revisa tu email para restablecer tu contraseña')
       return { success: true }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido'
+  } catch {
+      const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
@@ -440,8 +440,8 @@ export function useAuth() {
 
       toast.success('Perfil actualizado correctamente')
       return { success: true, user: updatedUser }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error desconocido'
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }

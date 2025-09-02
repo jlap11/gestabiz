@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Phone, Clock, Globe, Building, Star } from '@phosphor-icons/react'
+import { MapPin, Phone, Clock, Building, Star } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { Business, User, Service } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -22,8 +22,8 @@ interface BusinessRegistrationProps {
 
 export default function BusinessRegistration({ user, onBusinessCreated, onCancel }: BusinessRegistrationProps) {
   const { t } = useLanguage()
-  const [businesses, setBusinesses] = useKV<Business[]>('businesses', [])
-  const [services, setServices] = useKV<Service[]>('services', [])
+  const [, setBusinesses] = useKV<Business[]>('businesses', [])
+  const [, setServices] = useKV<Service[]>('services', [])
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [formData, setFormData] = useState({

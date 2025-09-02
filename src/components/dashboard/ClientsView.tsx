@@ -34,14 +34,14 @@ export default function ClientsView({ user }: ClientsViewProps) {
   )
 
   const getClientAppointmentCount = (clientId: string) => {
-    return appointments.filter(apt => apt.clientId === clientId).length
+    return appointments.filter(apt => apt.client_id === clientId).length
   }
 
   const getClientUpcomingAppointments = (clientId: string) => {
     const today = new Date().toISOString().split('T')[0]
     return appointments.filter(apt => {
-      const aptDate = (apt as any).date as string | undefined
-      return apt.clientId === clientId && aptDate && aptDate >= today && apt.status === 'scheduled'
+      const aptDate = apt.start_time.split('T')[0]
+      return apt.client_id === clientId && aptDate >= today && apt.status === 'scheduled'
     }).length
   }
 
@@ -74,7 +74,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
       )
       toast.success('Client updated successfully')
     } else {
-      const newClient: any = {
+      const newClient: Client = {
         id: crypto.randomUUID(),
         business_id: user.business_id || user.id,
         name: name.trim(),

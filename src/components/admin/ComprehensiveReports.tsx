@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { User, BusinessAnalytics, ReportFilters, Appointment, Client, ClientAnalytics } from '@/types'
+import { User, BusinessAnalytics, ReportFilters, Appointment, Client } from '@/types'
 import { useKV } from '@/lib/useKV'
 import { 
   ChartBar as BarChart3,
@@ -14,11 +14,10 @@ import {
   Calendar, 
   CurrencyDollar as DollarSign, 
   Clock,
-  MapPin,
+  
   Star,
   WarningCircle as AlertTriangle,
   ChatCircle as MessageSquare,
-  Download,
   
 } from '@phosphor-icons/react'
 import { format, subWeeks, subMonths, subYears, parseISO } from 'date-fns'
@@ -36,9 +35,11 @@ interface RecurringClient {
   last_appointment: string
   days_since_last: number
   total_appointments: number
-  status: 'active' | 'at_risk' | 'lost'
+  status: RecurringStatus
   whatsapp?: string
 }
+
+type RecurringStatus = 'active' | 'at_risk' | 'lost'
 
 interface PeakHour {
   hour: number
@@ -72,7 +73,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
   const [isLoading, setIsLoading] = useState(false)
 
   // Generate comprehensive analytics
-  const generateAnalytics = () => {
+  const generateAnalytics = useCallback(() => {
     setIsLoading(true)
     
     try {
@@ -251,13 +252,13 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [appointments, clients, filters])
 
   useEffect(() => {
     generateAnalytics()
-  }, [filters, appointments, clients])
+  }, [generateAnalytics])
 
-  const handlePresetChange = (preset: string) => {
+  const handlePresetChange = (preset: 'week' | 'month' | 'quarter' | 'year') => {
     const now = new Date()
     let start: Date
 
@@ -278,12 +279,12 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         return
     }
 
-    setFilters({
+  setFilters({
       ...filters,
       date_range: {
         start: format(start, 'yyyy-MM-dd'),
         end: format(now, 'yyyy-MM-dd'),
-        preset: preset as any
+    preset
       }
     })
   }
@@ -315,7 +316,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: RecurringStatus) => {
     switch (status) {
       case 'active': return <Star className="h-4 w-4" />
       case 'at_risk': return <AlertTriangle className="h-4 w-4" />
@@ -324,7 +325,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
     }
   }
 
-  const getStatusLabel = (status: 'active' | 'at_risk' | 'lost') => {
+  const getStatusLabel = (status: RecurringStatus) => {
     if (status === 'active') return 'Activo'
     if (status === 'at_risk') return 'En Riesgo'
     return 'Perdido'

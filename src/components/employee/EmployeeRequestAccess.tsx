@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building, UserPlus, MagnifyingGlass as Search, MapPin } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
@@ -34,7 +33,7 @@ interface EmployeeRequestAccessProps {
   onClose: () => void
 }
 
-export default function EmployeeRequestAccess({ user, open, onClose }: EmployeeRequestAccessProps) {
+export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<EmployeeRequestAccessProps>) {
   const { t } = useLanguage()
   const [businesses] = useKV<Business[]>('businesses', [])
   const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>(`employee-requests-all`, [])
@@ -105,7 +104,7 @@ export default function EmployeeRequestAccess({ user, open, onClose }: EmployeeR
       setSelectedBusiness(null)
       setMessage('')
       setSearchTerm('')
-    } catch (error) {
+  } catch {
       toast.error(t('employee.requestError'))
     } finally {
       setIsLoading(false)

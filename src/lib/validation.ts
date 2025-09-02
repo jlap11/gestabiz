@@ -12,7 +12,7 @@ export interface FormValidationResult {
 
 // Individual field validators
 export const validators = {
-  required: (value: any): ValidationResult => {
+  required: (value: unknown): ValidationResult => {
     const isValid = value !== null && value !== undefined && value !== ''
     return {
       isValid,
@@ -161,7 +161,7 @@ export const validators = {
 
 // Validation schema builder
 export class ValidationSchema {
-  private rules: Record<string, Array<(value: any) => ValidationResult>> = {}
+  private rules: Record<string, Array<(value: unknown) => ValidationResult>> = {}
 
   field(name: string) {
     if (!this.rules[name]) {
@@ -219,14 +219,14 @@ export class ValidationSchema {
         this.rules[name].push(validators.password)
         return this.field(name)
       },
-      custom: (validator: (value: any) => ValidationResult) => {
+  custom: (validator: (value: unknown) => ValidationResult) => {
         this.rules[name].push(validator)
         return this.field(name)
       }
     }
   }
 
-  validate(data: Record<string, any>): FormValidationResult {
+  validate(data: Record<string, unknown>): FormValidationResult {
     const errors: Record<string, string> = {}
     let isValid = true
 
@@ -234,7 +234,7 @@ export class ValidationSchema {
       const value = data[fieldName]
       
       for (const rule of fieldRules) {
-        const result = rule(value)
+  const result = rule(value)
         if (!result.isValid && result.error) {
           errors[fieldName] = result.error
           isValid = false
@@ -297,12 +297,12 @@ export const passwordChangeSchema = new ValidationSchema()
 
 // Utility function to validate a single field
 export const validateField = (
-  value: any, 
+  value: unknown, 
   validatorNames: string[], 
-  options?: Record<string, any>
+  options?: { min?: number; max?: number }
 ): ValidationResult => {
   for (const validatorName of validatorNames) {
-    let validator: (value: any) => ValidationResult
+    let validator: (value: unknown) => ValidationResult
     
     switch (validatorName) {
       case 'required':
@@ -345,7 +345,7 @@ export const validateField = (
         continue
     }
     
-    const result = validator(value)
+  const result = validator(value)
     if (!result.isValid) {
       return result
     }
@@ -356,8 +356,8 @@ export const validateField = (
 
 // Real-time validation hook helper
 export const createFieldValidator = (schema: ValidationSchema) => {
-  return (fieldName: string, value: any) => {
-    const data = { [fieldName]: value }
+  return (fieldName: string, value: unknown) => {
+  const data: Record<string, unknown> = { [fieldName]: value }
     const result = schema.validate(data)
     return {
       isValid: !result.errors[fieldName],

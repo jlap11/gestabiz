@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'blocked'>('all')
   const [activeTab, setActiveTab] = useState<'all' | 'recurring' | 'at_risk' | 'lost'>('all')
 
-  const generateClientAnalytics = (client: Client): ClientAnalytics => {
+  const generateClientAnalytics = useCallback((client: Client): ClientAnalytics => {
     const daysSince = client.last_appointment
       ? Math.floor((Date.now() - new Date(client.last_appointment).getTime()) / 86400000)
       : Math.floor((Date.now() - new Date(client.created_at).getTime()) / 86400000)
@@ -61,7 +61,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
       preferred_employee: user.name,
       lifetime_value: client.total_appointments * 50
     }
-  }
+  }, [user.name])
 
   const filteredClients = useMemo(() => {
     return clients.filter(client => {
@@ -73,7 +73,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
       if (activeTab === 'lost') return matchesSearch && matchesStatus && analytics.days_since_last_appointment > 120
       return matchesSearch && matchesStatus
     })
-  }, [clients, searchTerm, statusFilter, activeTab])
+  }, [clients, searchTerm, statusFilter, activeTab, generateClientAnalytics])
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
@@ -100,7 +100,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
     recurring: clients.filter(c => c.is_recurring).length,
     atRisk: clients.filter(c => generateClientAnalytics(c).days_since_last_appointment > 60 && generateClientAnalytics(c).days_since_last_appointment <= 120).length,
     lost: clients.filter(c => generateClientAnalytics(c).days_since_last_appointment > 120).length
-  }), [clients])
+  }), [clients, generateClientAnalytics])
 
   // Narrowing helpers for onValueChange without type assertions
   const onStatusChange = (v: string) => {

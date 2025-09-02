@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useKV } from '@/lib/useKV'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
 import { Check, X, User, Clock, EnvelopeSimple as Mail, Phone } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { User as UserType, Business, EmployeeRequest } from '@/types'
@@ -13,11 +12,11 @@ import { format } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
 
 interface EmployeeRequestsProps {
-  business: Business
-  user: UserType
+  business: Readonly<Business>
+  user: Readonly<UserType>
 }
 
-export default function EmployeeRequests({ business, user }: EmployeeRequestsProps) {
+export default function EmployeeRequests({ business, user }: Readonly<EmployeeRequestsProps>) {
   const { t, language } = useLanguage()
   const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>('employee-requests', [])
   const [users, setUsers] = useKV<UserType[]>('users', [])

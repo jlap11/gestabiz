@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { User, UserCircle, Upload, FloppyDisk as Save } from '@phosphor-icons/react'
+import { UserCircle, Upload, FloppyDisk as Save } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { User as UserType } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -21,7 +21,7 @@ interface UserProfileProps {
 
 export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
   const { t, language } = useLanguage()
-  const [users, setUsers] = useKV<UserType[]>('users', [])
+  const [, setUsers] = useKV<UserType[]>('users', [])
   const [isUpdating, setIsUpdating] = useState(false)
   
   const [formData, setFormData] = useState({

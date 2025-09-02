@@ -17,7 +17,7 @@ interface DashboardProps {
   stats: DashboardStats | null
   loading: boolean
   refetch: () => void
-  createAppointment: (appointment: Partial<Appointment>) => Promise<any>
+  createAppointment: (appointment: Partial<Appointment>) => Promise<Appointment | void | null>
 }
 
 function Dashboard({ 

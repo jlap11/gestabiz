@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { User } from '@/types'
 import { useKV } from '@/lib/useKV'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useTheme } from '@/contexts'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import UserProfile from './UserProfile'
@@ -33,7 +33,7 @@ interface UserSettingsComponentProps {
 export default function UserSettingsComponent({ user, onUserUpdate }: UserSettingsComponentProps) {
   const { t, language, setLanguage } = useLanguage()
   const { theme, setTheme } = useTheme()
-  const [users, setUsers] = useKV<User[]>('users', [])
+  const [, setUsers] = useKV<User[]>('users', [])
   
   const [notificationPreferences, setNotificationPreferences] = useState(
     user.notification_preferences || {
@@ -154,7 +154,7 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
                     <Button
                       key={themeOption.value}
                       variant={theme === themeOption.value ? 'default' : 'outline'}
-                      onClick={() => setTheme(themeOption.value as any)}
+                      onClick={() => setTheme(themeOption.value as 'light' | 'dark' | 'system')}
                       className="flex items-center gap-2 h-auto p-3 justify-start"
                     >
                       {themeOption.icon}

@@ -1,5 +1,6 @@
 // Theme management
-export * from './ThemeContext'
+export * from './ThemeProvider'
+export * from './useTheme'
 
 // Language and internationalization
 export * from './LanguageContext'

@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
 import { useLanguage, formatCurrency } from '@/contexts/LanguageContext'
+import type { Language } from '@/contexts/LanguageContext'
 import { User, Service } from '@/types'
 
 interface ServiceManagementProps {
@@ -218,7 +219,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Precio Promedio</p>
-                <p className="text-2xl font-bold">{formatCurrency(averagePrice, 'EUR', language as any)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(averagePrice, 'EUR', language as Language)}</p>
               </div>
               <CurrencyDollar className="h-8 w-8 text-primary" />
             </div>
@@ -353,7 +354,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <CurrencyDollar size={14} />
-                          {formatCurrency(service.price, 'EUR', language as any)}
+                          {formatCurrency(service.price, 'EUR', language as Language)}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -403,7 +404,7 @@ interface ServiceCardProps {
   service: Service
   onEdit: (service: Service) => void
   onDelete: (serviceId: string) => void
-  language: string
+  language: Language
   t: (key: string) => string
 }
 
@@ -458,7 +459,7 @@ function ServiceCard({ service, onEdit, onDelete, language, t }: Readonly<Servic
             </div>
             <div className="flex items-center gap-1 font-semibold text-primary">
               <CurrencyDollar size={14} />
-              <span>{formatCurrency(service.price, 'EUR', language as any)}</span>
+              <span>{formatCurrency(service.price, 'EUR', language)}</span>
             </div>
           </div>
 

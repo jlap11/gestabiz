@@ -1,7 +1,141 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { User, Appointment, UserSettings, DashboardStats, UpcomingAppointment } from '@/types'
+import { User, Appointment, UserSettings, DashboardStats, UpcomingAppointment, isValidLanguage, isValidUserRole } from '@/types'
 import supabase from '@/lib/supabase'
 import { toast } from 'sonner'
+import { getRolePermissions } from '@/lib/permissions'
+
+// Internal helpers
+type AnyRecord = Record<string, unknown>
+
+const asString = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v : fallback)
+const asNumber = (v: unknown, fallback = 0): number => {
+  if (typeof v === 'number') return v
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
+const asBoolean = (v: unknown, fallback = false): boolean => (typeof v === 'boolean' ? v : Boolean(v ?? fallback))
+const asNumberArray = (v: unknown, fallback: number[] = []): number[] => (
+  Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number') : fallback
+)
+
+const isTheme = (v: unknown): v is UserSettings['theme'] => v === 'light' || v === 'dark' || v === 'system'
+const isDateFormat = (v: unknown): v is UserSettings['date_format'] => v === 'DD/MM/YYYY' || v === 'MM/DD/YYYY' || v === 'YYYY-MM-DD'
+const isTimeFormat = (v: unknown): v is UserSettings['time_format'] => v === '12h' || v === '24h'
+
+const defaultNotificationPrefs = (): User['notification_preferences'] => ({
+  email: true,
+  push: false,
+  browser: true,
+  whatsapp: false,
+  reminder_24h: true,
+  reminder_1h: true,
+  reminder_15m: false,
+  daily_digest: false,
+  weekly_report: false,
+})
+
+const normalizeUserSettings = (row: AnyRecord | null | undefined): UserSettings => {
+  const email_notifications = (row?.email_notifications as AnyRecord) ?? {}
+  const whatsapp_notifications = (row?.whatsapp_notifications as AnyRecord) ?? {}
+  const business_hours = (row?.business_hours as AnyRecord) ?? {}
+  const lang = asString(row?.language, '')
+  const theme = isTheme(row?.theme) ? row?.theme : 'system'
+  return {
+    id: asString(row?.id, ''),
+    user_id: asString(row?.user_id, ''),
+    theme,
+    language: isValidLanguage(lang) ? lang : 'es',
+    timezone: asString(row?.timezone, 'America/Mexico_City'),
+    default_appointment_duration: asNumber(row?.default_appointment_duration, 60),
+    business_hours: {
+      start: asString(business_hours?.start, '09:00'),
+      end: asString(business_hours?.end, '18:00'),
+      days: asNumberArray(business_hours?.days, [1,2,3,4,5]),
+    },
+    auto_reminders: asBoolean(row?.auto_reminders, true),
+    reminder_times: asNumberArray(row?.reminder_times, [1440, 60, 15]),
+    email_notifications: {
+      appointment_reminders: asBoolean(email_notifications?.appointment_reminders, true),
+      appointment_confirmations: asBoolean(email_notifications?.appointment_confirmations, true),
+      appointment_cancellations: asBoolean(email_notifications?.appointment_cancellations, true),
+      daily_digest: asBoolean(email_notifications?.daily_digest, false),
+      weekly_report: asBoolean(email_notifications?.weekly_report, false),
+      marketing: asBoolean(email_notifications?.marketing, false),
+    },
+    whatsapp_notifications: {
+      appointment_reminders: asBoolean(whatsapp_notifications?.appointment_reminders, false),
+      appointment_confirmations: asBoolean(whatsapp_notifications?.appointment_confirmations, false),
+      follow_ups: asBoolean(whatsapp_notifications?.follow_ups, false),
+    },
+  date_format: isDateFormat(row?.date_format) ? row?.date_format : 'DD/MM/YYYY',
+  time_format: isTimeFormat(row?.time_format) ? row?.time_format : '24h',
+    created_at: asString(row?.created_at, new Date().toISOString()),
+    updated_at: asString(row?.updated_at, new Date().toISOString()),
+  }
+}
+
+const buildDomainUser = (
+  authUser: { id: string; email?: string | null; user_metadata?: AnyRecord | null },
+  profileRow?: AnyRecord | null,
+  settings?: UserSettings | null,
+): User => {
+  const metadata = authUser.user_metadata ?? {}
+  const roleRaw = (profileRow?.role as string) ?? (metadata?.role as string) ?? 'client'
+  const role = isValidUserRole(roleRaw) ? roleRaw : 'client'
+
+  const name = (profileRow?.full_name as string) || (metadata?.full_name as string) || (metadata?.name as string) || authUser.email || 'Usuario'
+  const avatar_url = (profileRow?.avatar_url as string) || (metadata?.avatar_url as string) || (metadata?.picture as string) || undefined
+  const langCandidate = asString(settings?.language ?? metadata?.locale, '')
+  const language = isValidLanguage(langCandidate) ? langCandidate : 'es'
+  const timezone = settings?.timezone ?? (metadata?.timezone as string) ?? 'America/Mexico_City'
+  const notification_preferences: User['notification_preferences'] = settings
+    ? {
+        email: Boolean(settings.email_notifications.appointment_reminders || settings.email_notifications.appointment_confirmations),
+        push: false,
+        browser: true,
+        whatsapp: Boolean(settings.whatsapp_notifications.appointment_reminders || settings.whatsapp_notifications.appointment_confirmations),
+        reminder_24h: settings.reminder_times?.includes(1440) ?? true,
+        reminder_1h: settings.reminder_times?.includes(60) ?? true,
+        reminder_15m: settings.reminder_times?.includes(15) ?? false,
+        daily_digest: Boolean(settings.email_notifications.daily_digest),
+        weekly_report: Boolean(settings.email_notifications.weekly_report),
+      }
+    : defaultNotificationPrefs()
+
+  return {
+    id: authUser.id,
+    email: authUser.email ?? '',
+    name,
+    avatar_url,
+    timezone,
+    role,
+    business_id: (profileRow?.business_id as string) || undefined,
+    location_id: (profileRow?.location_id as string) || undefined,
+    phone: (profileRow?.phone as string) || undefined,
+    language,
+    notification_preferences,
+    permissions: getRolePermissions(role),
+  created_at: asString(profileRow?.created_at, new Date().toISOString()),
+    updated_at: (profileRow?.updated_at as string) || undefined,
+    is_active: (profileRow?.is_active as boolean) ?? true,
+    last_login: new Date().toISOString(),
+  }
+}
+
+const loadUser = async (authUser: { id: string; email?: string | null; user_metadata?: AnyRecord | null }): Promise<User> => {
+  // Best-effort fetch of profile and settings; tolerate missing rows
+  const [{ data: profile }, { data: rawSettings }] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+    supabase.from('user_settings').select('*').eq('user_id', authUser.id).maybeSingle?.() ?? supabase.from('user_settings').select('*').eq('user_id', authUser.id).single(),
+  ]).then(async (results) => {
+    // Some Supabase clients may not have maybeSingle; normalize results
+    const [p, s] = results as Array<{ data: AnyRecord | null }>
+    return [p, s]
+  })
+
+  const settings = rawSettings ? normalizeUserSettings(rawSettings) : null
+  return buildDomainUser(authUser, profile, settings)
+}
 
 // Authentication hook
 export const useAuth = () => {
@@ -13,8 +147,13 @@ export const useAuth = () => {
     // Get initial session
     const getSession = async () => {
       try {
-  const { user } = await supabase.auth.getUser().then(r => ({ user: r.data.user }))
-        setUser(user as User)
+        const { user: authUser } = await supabase.auth.getUser().then(r => ({ user: r.data.user }))
+        if (authUser) {
+          const mapped = await loadUser({ id: authUser.id, email: authUser.email, user_metadata: authUser.user_metadata as AnyRecord })
+          setUser(mapped)
+        } else {
+          setUser(null)
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -28,7 +167,8 @@ export const useAuth = () => {
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          setUser(session.user as User)
+          const mapped = await loadUser({ id: session.user.id, email: session.user.email, user_metadata: session.user.user_metadata as AnyRecord })
+          setUser(mapped)
           setError(null)
         } else if (event === 'SIGNED_OUT') {
           setUser(null)
@@ -306,7 +446,7 @@ export const useAppointments = (userId?: string) => {
       setAppointments(next)
     }
 
-    const handleRealtime = (payload: any) => {
+  const handleRealtime = (payload) => {
   // console.log('Appointment change:', payload)
       if (payload.eventType === 'INSERT') {
         const newRow = payload.new as Appointment
@@ -368,7 +508,7 @@ export const useUserSettings = (userId?: string) => {
         .eq('user_id', userId)
         .single()
       if (error) throw new Error(error.message)
-      setSettings(data as UserSettings)
+  setSettings(normalizeUserSettings(data as AnyRecord))
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch settings'
       setError(message)
@@ -389,9 +529,9 @@ export const useUserSettings = (userId?: string) => {
         .single()
       if (error) throw new Error(error.message)
       
-      setSettings(data as UserSettings)
+  setSettings(normalizeUserSettings(data as AnyRecord))
       toast.success('Settings updated successfully!')
-      return data as UserSettings
+  return normalizeUserSettings(data as AnyRecord)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update settings'
       setError(message)

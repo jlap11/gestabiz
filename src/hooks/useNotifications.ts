@@ -12,7 +12,7 @@ export function useNotifications() {
     weeklyReport: false
   })
 
-  const [notificationQueue, setNotificationQueue] = useKV<Array<{
+  const [, setNotificationQueue] = useKV<Array<{
     id: string
     appointmentId: string
     scheduledFor: string

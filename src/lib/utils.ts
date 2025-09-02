@@ -240,11 +240,11 @@ export const roundToDecimals = (num: number, decimals = 2) => {
 }
 
 // Array utilities
-export const groupBy = <T, K extends keyof any>(
+export const groupBy = <T, K extends PropertyKey>(
   array: T[], 
   key: (item: T) => K
 ): Record<K, T[]> => {
-  return array.reduce((groups, item) => {
+  return array.reduce<Record<K, T[]>>((groups, item) => {
     const group = key(item)
     groups[group] = groups[group] || []
     groups[group].push(item)
@@ -272,7 +272,7 @@ export const debounce = <A extends unknown[], R>(
   func: (...args: A) => R,
   wait: number
 ): ((...args: A) => void) => {
-  let timeout: NodeJS.Timeout
+  let timeout: ReturnType<typeof setTimeout>
   return (...args: A) => {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)

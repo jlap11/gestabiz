@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { useKV } from '@/lib/useKV'
 import { toast } from 'sonner'
 import { googleCalendarService } from '@/lib/googleCalendar'
-import { CalendarSyncSettings, Appointment, User, GoogleCalendarEvent } from '@/types'
+import { CalendarSyncSettings, Appointment, User } from '@/types'
 
 export function useGoogleCalendarSync(user: User | null) {
   const [syncSettings, setSyncSettings] = useKV<CalendarSyncSettings | null>(
@@ -61,6 +61,7 @@ export function useGoogleCalendarSync(user: User | null) {
     } finally {
       setIsConnecting(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, setSyncSettings])
 
   const disconnectGoogleCalendar = useCallback(async () => {
@@ -100,6 +101,7 @@ export function useGoogleCalendarSync(user: User | null) {
     } finally {
       setIsSyncing(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, syncSettings, setSyncSettings])
 
   const exportAppointmentsToGoogle = useCallback(async () => {

@@ -16,7 +16,7 @@ interface UseFormReturn<T> {
   isValid: boolean
   isSubmitting: boolean
   isDirty: boolean
-  setValue: (name: keyof T, value: any) => void
+  setValue: <K extends keyof T>(name: K, value: T[K]) => void
   setValues: (values: Partial<T>) => void
   setError: (name: keyof T, error: string) => void
   setErrors: (errors: Record<string, string>) => void
@@ -26,14 +26,14 @@ interface UseFormReturn<T> {
   setFieldTouched: (name: keyof T) => void
   validateField: (name: keyof T) => boolean
   validateForm: () => boolean
-  handleChange: (name: keyof T) => (value: any) => void
+  handleChange: <K extends keyof T>(name: K) => (value: T[K]) => void
   handleBlur: (name: keyof T) => () => void
   handleSubmit: (e?: React.FormEvent) => Promise<void>
   reset: () => void
   resetField: (name: keyof T) => void
 }
 
-export function useForm<T extends Record<string, any>>({
+export function useForm<T extends Record<string, unknown>>({
   initialValues,
   validationSchema,
   onSubmit,
@@ -87,7 +87,7 @@ export function useForm<T extends Record<string, any>>({
   }, [values, validationSchema])
 
   // Field setters
-  const setValue = useCallback((name: keyof T, value: any) => {
+  const setValue = useCallback(<K extends keyof T>(name: K, value: T[K]) => {
     setValuesState(prev => ({
       ...prev,
       [name]: value
@@ -144,7 +144,7 @@ export function useForm<T extends Record<string, any>>({
   }, [setTouched, validateOnBlur, validateSingleField])
 
   // Event handlers
-  const handleChange = useCallback((name: keyof T) => (value: any) => {
+  const handleChange = useCallback(<K extends keyof T>(name: K) => (value: T[K]) => {
     setValue(name, value)
   }, [setValue])
 
@@ -225,7 +225,7 @@ export function useForm<T extends Record<string, any>>({
 export function useFieldValidation<T>(
   value: T,
   validators: string[],
-  options?: Record<string, any>
+  options?: Record<string, unknown>
 ) {
   const [error, setError] = useState<string | undefined>()
   const [touched, setTouched] = useState(false)
@@ -235,7 +235,7 @@ export function useFieldValidation<T>(
     // This is a simplified version
     setError(undefined)
     return true
-  }, [value, validators, options])
+  }, [])
 
   const onBlur = useCallback(() => {
     setTouched(true)

@@ -31,8 +31,8 @@ export default function GoogleCalendarIntegration({ user }: GoogleCalendarIntegr
   const handleConnect = async () => {
     try {
       await connectGoogleCalendar()
-    } catch (error) {
-    toast.error('Failed to connect Google Calendar') // NOTE: handled in code by removing unused error bindings if present
+    } catch {
+      toast.error('Failed to connect Google Calendar')
     }
   }
 
@@ -45,8 +45,8 @@ export default function GoogleCalendarIntegration({ user }: GoogleCalendarIntegr
   const handleSyncNow = async () => {
     try {
       await syncWithGoogleCalendar()
-    } catch (error) {
-    toast.error('Sync failed') // NOTE: handled in code by removing unused error bindings if present
+    } catch {
+      toast.error('Sync failed')
     }
   }
 

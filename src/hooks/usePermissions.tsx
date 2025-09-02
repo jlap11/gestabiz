@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useMemo } from 'react'
 import { User, Permission, UserRole } from '@/types'
 import { userHasPermission, getRolePermissions, ROLE_DESCRIPTIONS } from '@/lib/permissions'
@@ -127,7 +128,7 @@ export function PermissionGuard({
   locationId,
   fallback = null,
   children
-}: PermissionGuardProps) {
+}: Readonly<PermissionGuardProps>) {
   const permissions = usePermissions(user)
   const businessPermissions = useBusinessPermissions(user, businessId)
   const locationPermissions = useLocationPermissions(user, locationId)

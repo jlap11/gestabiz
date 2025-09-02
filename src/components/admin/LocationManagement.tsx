@@ -21,11 +21,8 @@ import {
   Clock,
   Phone,
   EnvelopeSimple as Mail,
-  Globe,
   Building,
-  Star,
-  Users,
-  Calendar
+  Star
 } from '@phosphor-icons/react'
 
 interface LocationManagementProps {

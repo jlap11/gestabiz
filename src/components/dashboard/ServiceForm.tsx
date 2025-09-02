@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -315,7 +315,7 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
   const [editingService, setEditingService] = useState<Service | null>(null)
 
   // Fetch services
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -333,13 +333,13 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
     } finally {
       setLoading(false)
     }
-  }
+  }, [businessId, t])
 
   useEffect(() => {
     if (businessId) {
       void fetchServices().catch(() => {})
     }
-  }, [businessId])
+  }, [businessId, fetchServices])
 
   const handleCreateService = async (serviceData: Partial<Service>) => {
     const { data, error } = await supabase

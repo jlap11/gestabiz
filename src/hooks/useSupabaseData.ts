@@ -211,6 +211,15 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
         phone: location.phone,
         latitude: location.latitude,
         longitude: location.longitude,
+        business_hours: {
+          monday: { open: '09:00', close: '17:00', is_open: true },
+          tuesday: { open: '09:00', close: '17:00', is_open: true },
+          wednesday: { open: '09:00', close: '17:00', is_open: true },
+          thursday: { open: '09:00', close: '17:00', is_open: true },
+          friday: { open: '09:00', close: '17:00', is_open: true },
+          saturday: { open: '09:00', close: '17:00', is_open: true },
+          sunday: { open: '09:00', close: '17:00', is_open: false }
+        },
         is_active: location.is_active,
         created_at: location.created_at,
         updated_at: location.updated_at
@@ -385,7 +394,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
   const createAppointment = useCallback(async (appointment: Partial<Appointment>) => {
     if (!user) {
       toast.error('Debes estar autenticado para crear citas')
-      return null
+      return
     }
 
     try {
@@ -415,10 +424,10 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
 
       toast.success('Cita creada correctamente')
       await fetchAppointments() // Refresh appointments
-      return data
+  return data
     } catch (error) {
       handleError(error, 'create appointment')
-      return null
+  return
     } finally {
       setLoading(false)
     }

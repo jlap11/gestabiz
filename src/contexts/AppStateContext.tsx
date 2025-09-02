@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useReducer, useMemo } from 'react'
 import { toast } from 'sonner'
 
@@ -50,9 +51,10 @@ function appReducer(state: AppState, action: AppAction): AppState {
           [action.payload.key]: action.payload.loading
         }
       }
-    case 'CLEAR_LOADING_STATE':
-      const { [action.payload]: removed, ...remaining } = state.loadingStates
+    case 'CLEAR_LOADING_STATE': {
+      const { [action.payload]: _removed, ...remaining } = state.loadingStates
       return { ...state, loadingStates: remaining }
+    }
     case 'CLEAR_ALL_LOADING':
       return { ...state, isLoading: false, loadingStates: {} }
     default:
@@ -62,7 +64,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 const AppStateContext = createContext<AppContextType | undefined>(undefined)
 
-export function AppStateProvider({ children }: { children: React.ReactNode }) {
+export function AppStateProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [state, dispatch] = useReducer(appReducer, initialState)
 
   const contextValue = useMemo(() => ({

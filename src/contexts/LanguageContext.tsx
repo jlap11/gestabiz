@@ -1,12 +1,13 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import { useKV } from '@/lib/useKV'
 import { translations } from '@/lib/translations'
 
-type Language = 'es' | 'en'
+export type Language = 'es' | 'en'
 
-// Helper function to get nested translation value
-function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj)
+// Helper to get nested translation value with safe typing
+function getNestedValue<T extends Record<string, unknown>>(obj: T, path: string): string | undefined {
+  return path.split('.').reduce<unknown>((current, key) => (current as Record<string, unknown> | undefined)?.[key], obj) as string | undefined
 }
 
 interface LanguageContextType {
@@ -17,7 +18,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
+export function LanguageProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [language, setLanguage] = useKV<Language>('user-language', 'es')
 
   // Translation function with memoization
@@ -46,8 +47,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = language
   }, [language])
 
+  const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t])
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   )

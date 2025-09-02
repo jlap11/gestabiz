@@ -7,7 +7,9 @@ import "./main.css"
 import "./index.css"
 
 // Simple error fallback component
-function ErrorFallback({ error }: { error: Error }) {
+// Entry file intentionally has no exports; suppress Fast Refresh warning for this file
+// eslint-disable-next-line react-refresh/only-export-components
+function ErrorFallback({ error }: Readonly<{ error: Error }>) {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="text-center space-y-4 max-w-md">

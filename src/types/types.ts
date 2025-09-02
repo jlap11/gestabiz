@@ -63,7 +63,7 @@ export interface UserLegacy {
   name: string
   avatar?: string
   createdAt: string
-  preferences?: any
+  preferences?: Record<string, unknown>
 }
 
 // Business information

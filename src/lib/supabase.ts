@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/types/database'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-key'
@@ -8,7 +7,7 @@ const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || supabaseUrl.incl
 // For development purposes, we'll create a mock client if real credentials aren't available
 export const supabase = isDemoMode 
   ? createMockClient()
-  : createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  : createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
@@ -17,6 +16,7 @@ export const supabase = isDemoMode
     })
 
 // Mock client for development when Supabase isn't configured
+type SupabaseLike = ReturnType<typeof createClient>
 function createMockClient() {
   const mockUser = {
     id: 'demo-user-id',
@@ -37,19 +37,19 @@ function createMockClient() {
     expires_at: Date.now() + 3600000
   }
 
-  return {
+  const client = {
     auth: {
       getSession: () => Promise.resolve({ 
         data: { session: mockSession }, 
         error: null 
       }),
       getUser: () => Promise.resolve({ data: { user: mockUser }, error: null }),
-      onAuthStateChange: (callback: any) => {
+  onAuthStateChange: (callback: (event: string, session: typeof mockSession) => void) => {
         // Simulate logged in state for demo
         setTimeout(() => {
           callback('SIGNED_IN', mockSession)
         }, 100)
-        return { data: { subscription: { unsubscribe: () => {} } } }
+  return { data: { subscription: { unsubscribe: () => {} } } }
       },
       signInWithPassword: () => Promise.resolve({ 
         data: { user: mockUser, session: mockSession }, 
@@ -69,23 +69,23 @@ function createMockClient() {
         error: null 
       })
     },
-    from: (table: string) => ({
-      select: (columns?: string) => ({
-        eq: () => ({
-          single: () => Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } })
-        }),
-        then: (resolve: any) => resolve({ data: [], error: null })
-      }),
-      insert: () => Promise.resolve({ data: [], error: null }),
-      update: () => Promise.resolve({ data: [], error: null }),
-      delete: () => Promise.resolve({ data: [], error: null }),
-      upsert: () => Promise.resolve({ data: [], error: null })
-    }),
+     from: (_table: string) => {
+       const single = () => Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } })
+       const eq = () => ({ single })
+       const select = (_columns?: string) => ({ eq, then: (resolve: (arg: { data: unknown[]; error: null }) => unknown) => resolve({ data: [], error: null }) })
+       const insert = () => Promise.resolve({ data: [], error: null })
+       const update = () => Promise.resolve({ data: [], error: null })
+       const del = () => Promise.resolve({ data: [], error: null })
+       const upsert = () => Promise.resolve({ data: [], error: null })
+       return { select, insert, update, delete: del, upsert }
+     },
     channel: () => ({
       on: () => ({}),
       subscribe: () => ({})
     })
-  } as any
+  } as unknown
+
+  return client as SupabaseLike
 }
 
 // Auth helpers

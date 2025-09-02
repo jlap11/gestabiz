@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,19 +13,17 @@ import { toast } from 'sonner'
 import { 
   Building, 
   MapPin, 
-  Clock, 
-  Phone, 
-  EnvelopeSimple as Mail, 
   Plus, 
   Trash,
-  Gear as Settings
+  Gear as Settings,
+  Star
 } from '@phosphor-icons/react'
 
 interface BusinessManagementProps {
-  user: User
+  user: Readonly<User>
 }
 
-export default function BusinessManagement({ user }: BusinessManagementProps) {
+export default function BusinessManagement({ user }: Readonly<BusinessManagementProps>) {
   const [business, setBusiness] = useKV<Business | null>(`business-${user.business_id}`, null)
   const [locations, setLocations] = useKV<Location[]>(`locations-${user.business_id}`, [])
   const [services, setServices] = useKV<Service[]>(`services-${user.business_id}`, [])
@@ -35,7 +33,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
   const [editingService, setEditingService] = useState<Service | null>(null)
 
   // Default business hours
-  const defaultBusinessHours = {
+  const defaultBusinessHours = useMemo(() => ({
     monday: { open: '09:00', close: '18:00', closed: false },
     tuesday: { open: '09:00', close: '18:00', closed: false },
     wednesday: { open: '09:00', close: '18:00', closed: false },
@@ -43,7 +41,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
     friday: { open: '09:00', close: '18:00', closed: false },
     saturday: { open: '09:00', close: '14:00', closed: false },
     sunday: { open: '09:00', close: '14:00', closed: true }
-  }
+  }), [])
 
   // Default location hours (uses is_open per Location type)
   const defaultLocationHours: Location['business_hours'] = {
@@ -93,7 +91,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
       }
       setBusiness(newBusiness)
     }
-  }, [business, setBusiness, user])
+  }, [business, setBusiness, user, defaultBusinessHours])
 
   React.useEffect(() => {
     initializeBusiness()
@@ -458,9 +456,9 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
                     </div>
                   ) : (
                     locations.map((location) => (
-                      <div 
+                      <button 
                         key={location.id} 
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                        className={`text-left p-3 border rounded-lg transition-colors ${
                           editingLocation?.id === location.id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                         }`}
                         onClick={() => setEditingLocation(location)}
@@ -492,7 +490,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
                             </Button>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     ))
                   )}
                 </div>
@@ -618,9 +616,9 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
                     </div>
                   ) : (
                     services.map((service) => (
-                      <div 
+                      <button 
                         key={service.id} 
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                        className={`text-left p-3 border rounded-lg transition-colors ${
                           editingService?.id === service.id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                         }`}
                         onClick={() => setEditingService(service)}
@@ -652,7 +650,7 @@ export default function BusinessManagement({ user }: BusinessManagementProps) {
                             </Button>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     ))
                   )}
                 </div>

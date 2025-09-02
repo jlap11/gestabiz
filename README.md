@@ -1,7 +1,5 @@
 # AppointSync Pro — Gestión de Citas (Web · Móvil · Extensión) con Supabase
 
-![AppointSync Pro](https://via.placeholder.com/200x80/0ea5e9/ffffff?text=AppointSync+Pro)
-
 AppointSync Pro es un monorepo que reúne la app web (React/Vite), la app móvil (Expo/React Native) y una extensión de navegador, con backend en Supabase y sincronización en tiempo real. Incluye modo demo para explorar la UI sin backend.
 
 ---
