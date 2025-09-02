@@ -7,8 +7,11 @@ import {
   Business, 
   Client, 
   DashboardStats,
-  User 
+  User,
 } from '@/types'
+// removed isValidAppointmentStatus in favor of normalizeAppointmentStatus
+import type { Row } from '@/lib/supabaseTyped'
+import { normalizeService, normalizeLocation, normalizeBusiness, normalizeAppointmentStatus } from '@/lib/normalizers'
 import { toast } from 'sonner'
 
 interface UseSupabaseDataOptions {
@@ -92,7 +95,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
         client_phone: apt.client?.phone || '',
         start_time: apt.start_time,
         end_time: apt.end_time,
-        status: apt.status,
+        status: normalizeAppointmentStatus(String(apt.status)),
         location: apt.location?.name || '',
         notes: apt.notes || '',
         price: apt.price,
@@ -143,20 +146,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       const { data, error } = await query.order('name')
 
       if (error) throw error
-
-      const formattedServices: Service[] = (data || []).map(service => ({
-        id: service.id,
-        business_id: service.business_id,
-        name: service.name,
-        description: service.description,
-        duration: service.duration_minutes,
-        price: service.price,
-        currency: service.currency || 'MXN',
-        category: service.category || 'General',
-        is_active: service.is_active,
-        created_at: service.created_at,
-        updated_at: service.updated_at
-      }))
+  const formattedServices: Service[] = ((data as Row<'services'>[] | null) || []).map(normalizeService)
 
       setServices(formattedServices)
       return formattedServices
@@ -195,35 +185,10 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
         }
       }
 
-      const { data, error } = await query.order('name')
+  const { data, error } = await query.order('name')
 
       if (error) throw error
-
-      const formattedLocations: Location[] = (data || []).map(location => ({
-        id: location.id,
-        business_id: location.business_id,
-        name: location.name,
-        address: location.address,
-        city: location.city,
-        state: location.state || '',
-        country: location.country,
-        postal_code: location.postal_code || '',
-        phone: location.phone,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        business_hours: {
-          monday: { open: '09:00', close: '17:00', is_open: true },
-          tuesday: { open: '09:00', close: '17:00', is_open: true },
-          wednesday: { open: '09:00', close: '17:00', is_open: true },
-          thursday: { open: '09:00', close: '17:00', is_open: true },
-          friday: { open: '09:00', close: '17:00', is_open: true },
-          saturday: { open: '09:00', close: '17:00', is_open: true },
-          sunday: { open: '09:00', close: '17:00', is_open: false }
-        },
-        is_active: location.is_active,
-        created_at: location.created_at,
-        updated_at: location.updated_at
-      }))
+  const formattedLocations: Location[] = ((data as Row<'locations'>[] | null) || []).map(normalizeLocation)
 
       setLocations(formattedLocations)
       return formattedLocations
@@ -265,47 +230,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       const { data, error } = await query.order('name')
 
       if (error) throw error
-
-      const formattedBusinesses: Business[] = (data || []).map(business => ({
-        id: business.id,
-        name: business.name,
-        description: business.description || '',
-        category: 'Services', // Default category
-        logo_url: business.logo_url,
-        website: business.website,
-        phone: business.phone,
-        email: business.email,
-        address: business.address,
-        city: business.city,
-        state: business.state,
-        country: business.country,
-        postal_code: business.postal_code,
-        latitude: business.latitude,
-        longitude: business.longitude,
-        business_hours: business.business_hours || {
-          monday: { open: '09:00', close: '17:00', closed: false },
-          tuesday: { open: '09:00', close: '17:00', closed: false },
-          wednesday: { open: '09:00', close: '17:00', closed: false },
-          thursday: { open: '09:00', close: '17:00', closed: false },
-          friday: { open: '09:00', close: '17:00', closed: false },
-          saturday: { open: '09:00', close: '17:00', closed: false },
-          sunday: { open: '09:00', close: '17:00', closed: true }
-        },
-        timezone: 'America/Mexico_City',
-        owner_id: business.owner_id,
-        settings: business.settings || {
-          appointment_buffer: 15,
-          advance_booking_days: 30,
-          cancellation_policy: 24,
-          auto_confirm: false,
-          require_deposit: false,
-          deposit_percentage: 0,
-          currency: 'MXN'
-        },
-        created_at: business.created_at,
-        updated_at: business.updated_at,
-        is_active: business.is_active
-      }))
+  const formattedBusinesses: Business[] = ((data as Row<'businesses'>[] | null) || []).map(normalizeBusiness)
 
       setBusinesses(formattedBusinesses)
       return formattedBusinesses
@@ -358,7 +283,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       // Calculate stats
       const stats: DashboardStats = {
         total_appointments: appointments.length,
-        scheduled_appointments: appointments.filter(a => a.status === 'pending' || a.status === 'confirmed').length,
+        scheduled_appointments: appointments.filter(a => a.status === 'scheduled' || a.status === 'confirmed').length,
         completed_appointments: appointments.filter(a => a.status === 'completed').length,
         cancelled_appointments: appointments.filter(a => a.status === 'cancelled').length,
         no_show_appointments: appointments.filter(a => a.status === 'no_show').length,

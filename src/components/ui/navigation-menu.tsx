@@ -57,8 +57,6 @@ function NavigationMenuItem({
   )
 }
 
-// ...imports moved to top...
-
 function NavigationMenuTrigger({
   className,
   children,
