@@ -96,6 +96,67 @@ export function normalizeAppointmentStatus(s: string): Appointment['status'] {
   return (allowed as string[]).includes(s) ? (s as Appointment['status']) : 'scheduled'
 }
 
+// Mapear estado de dominio -> enum de DB
+export function toDbAppointmentStatus(s: Appointment['status']): 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' {
+  switch (s) {
+    case 'scheduled':
+      return 'pending'
+    case 'in_progress':
+      // No existe en DB, usamos "confirmed" como aproximación para permitir recordatorios
+      return 'confirmed'
+    case 'rescheduled':
+      // No existe en DB; tratamos como confirmado tras reprogramar
+      return 'confirmed'
+    case 'confirmed':
+      return 'confirmed'
+    case 'completed':
+      return 'completed'
+    case 'cancelled':
+      return 'cancelled'
+    case 'no_show':
+      return 'no_show'
+    default:
+      return 'pending'
+  }
+}
+
+// Normalizador de citas desde la tabla de DB (campos mínimos)
+export function normalizeAppointment(row: Row<'appointments'>): Appointment {
+  return {
+    id: row.id,
+    business_id: row.business_id,
+    location_id: row.location_id ?? undefined,
+    service_id: row.service_id,
+    user_id: row.employee_id ?? '',
+    client_id: row.client_id,
+    // Campos no presentes en la tabla: defaults seguros
+    title: '',
+    client_name: '',
+    client_email: undefined,
+    client_phone: undefined,
+    client_whatsapp: undefined,
+    description: row.notes ?? undefined,
+    notes: row.client_notes ?? undefined,
+    start_time: row.start_time,
+    end_time: row.end_time,
+    status: normalizeAppointmentStatus(row.status),
+    location: undefined,
+    price: row.price ?? undefined,
+    currency: row.currency ?? undefined,
+    reminder_sent: row.reminder_sent,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    created_by: row.cancelled_by ?? '',
+    cancelled_reason: row.cancel_reason ?? undefined,
+    rescheduled_from: undefined,
+    google_calendar_event_id: undefined,
+    // Legacy opcionales
+    tags: undefined,
+    priority: undefined,
+    reminderSent: undefined,
+  }
+}
+
 // User settings normalizer (shared)
 type AnyRecord = Record<string, unknown>
 const asString = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v : fallback)

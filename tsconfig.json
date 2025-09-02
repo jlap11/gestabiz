@@ -25,11 +25,15 @@
       "@/*": [
         "./src/*"
       ]
-    }
+  },
+  "types": ["vitest"]
   },
   "include": [
-    "src",
-    "vite.config.ts"
+  "src",
+  "vite.config.ts",
+  "vitest.config.ts",
+  "tests/**/*.ts",
+  "tests/**/*.tsx"
   ],
   "exclude": [
     "src/mobile/**",

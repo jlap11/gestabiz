@@ -2,7 +2,11 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-key'
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || supabaseUrl.includes('demo.supabase.co')
+// Permite activar demo mode también vía process.env (útil en tests)
+type GlobalWithProcess = typeof globalThis & { process?: { env?: Record<string, string | undefined> } }
+const gwp = globalThis as GlobalWithProcess
+const demoFlag = typeof gwp !== 'undefined' && gwp.process?.env?.VITE_DEMO_MODE === 'true'
+const isDemoMode = demoFlag || import.meta.env.VITE_DEMO_MODE === 'true' || supabaseUrl.includes('demo.supabase.co')
 
 // For development purposes, we'll create a mock client if real credentials aren't available
 export const supabase = isDemoMode 
@@ -37,70 +41,73 @@ function createMockClient() {
     expires_at: Date.now() + 3600000
   }
 
-  // helper stubs to keep nesting shallow
-  function stubSingleOk() { return Promise.resolve({ data: null, error: null as unknown as { code: string; message: string } }) }
+  // helper stubs to keep nesting shallow and lint clean
+  function stubSingleOk() {
+    return Promise.resolve({ data: null, error: null as unknown as { code: string; message: string } })
+  }
   function stubSingleNotFound() { return Promise.resolve({ data: null, error: { code: 'PGRST116', message: 'No rows found' } }) }
   function stubSelect() { return { single: stubSingleOk } }
   function stubEqUpdate() { return { select: stubSelect } }
   function makeQuery() {
-    return {
-      eq: (_c?: string, _v?: unknown) => makeQuery(),
-      in: (_c?: string, _v?: unknown[]) => makeQuery(),
-      gt: (_c?: string, _v?: unknown) => makeQuery(),
-      gte: (_c?: string, _v?: unknown) => makeQuery(),
-      lte: (_c?: string, _v?: unknown) => makeQuery(),
-      order: (_c?: string, _o?: unknown) => Promise.resolve({ data: [], error: null }),
-      limit: (_n?: number) => makeQuery(),
-      select: (_columns?: string) => makeQuery(),
+    const api = {
+      select: (_columns?: string) => api,
+      eq: (_c?: string, _v?: unknown) => api,
+      neq: (_c?: string, _v?: unknown) => api,
+      in: (_c?: string, _v?: unknown[]) => api,
+      gt: (_c?: string, _v?: unknown) => api,
+      gte: (_c?: string, _v?: unknown) => api,
+      lt: (_c?: string, _v?: unknown) => api,
+      lte: (_c?: string, _v?: unknown) => api,
+      order: (_c?: string, _o?: unknown) => api,
+      limit: (_n?: number) => api,
+      range: (_from?: number, _to?: number) => api,
       single: stubSingleNotFound,
-      maybeSingle: () => Promise.resolve({ data: null, error: null })
+      maybeSingle: () => Promise.resolve({ data: null, error: null }),
+      then: (onfulfilled: (v: { data: unknown[]; error: null }) => unknown) => Promise.resolve(onfulfilled({ data: [], error: null }))
     }
+    return api
   }
 
   const client = {
     auth: {
-      getSession: () => Promise.resolve({ 
-        data: { session: mockSession }, 
-        error: null 
-      }),
+      getSession: () => Promise.resolve({ data: { session: mockSession }, error: null }),
       getUser: () => Promise.resolve({ data: { user: mockUser }, error: null }),
-  onAuthStateChange: (callback: (event: string, session: typeof mockSession) => void) => {
+      onAuthStateChange: (callback: (event: string, session: typeof mockSession) => void) => {
         // Simulate logged in state for demo
-        setTimeout(() => {
-          callback('SIGNED_IN', mockSession)
-        }, 100)
-  return { data: { subscription: { unsubscribe: () => {} } } }
+        setTimeout(() => { callback('SIGNED_IN', mockSession) }, 100)
+        return { data: { subscription: { unsubscribe: () => {} } } }
       },
-      signInWithPassword: () => Promise.resolve({ 
-        data: { user: mockUser, session: mockSession }, 
-        error: null 
-      }),
-      signUp: () => Promise.resolve({ 
-        data: { user: mockUser, session: mockSession }, 
-        error: null 
-      }),
-      signInWithOAuth: () => Promise.resolve({ 
-        data: { provider: 'google', url: 'mock-url' }, 
-        error: null 
-      }),
+      signInWithPassword: () => Promise.resolve({ data: { user: mockUser, session: mockSession }, error: null }),
+      signUp: () => Promise.resolve({ data: { user: mockUser, session: mockSession }, error: null }),
+      signInWithOAuth: () => Promise.resolve({ data: { provider: 'google', url: 'mock-url' }, error: null }),
       signOut: () => Promise.resolve({ error: null }),
-      resetPasswordForEmail: () => Promise.resolve({ 
-        data: {}, 
-        error: null 
-      })
+      resetPasswordForEmail: () => Promise.resolve({ data: {}, error: null })
     },
-     from: (_table: string) => ({
-       ...makeQuery(),
-       insert: (_payload: unknown) => ({ select: () => ({ single: stubSingleOk }) }),
-       update: (_payload: unknown) => ({ eq: (_c?: string, _v?: unknown) => stubEqUpdate() }),
-       delete: () => ({ eq: (_c?: string, _v?: unknown) => Promise.resolve({ error: null }) }),
-       upsert: (_payload: unknown) => ({ select: () => ({ single: stubSingleOk }) })
-     }),
-    channel: (_name: string) => {
-      const ch = {
-        on: () => ch,
-        subscribe: () => ch
+    from: (_table: string) => {
+      const q = makeQuery()
+      return {
+        select: q.select,
+        eq: q.eq,
+        neq: q.neq,
+        in: q.in,
+        gt: q.gt,
+        gte: q.gte,
+        lt: q.lt,
+        lte: q.lte,
+        order: q.order,
+        limit: q.limit,
+        range: q.range,
+        single: q.single,
+        maybeSingle: q.maybeSingle,
+        then: q.then,
+        insert: (_payload: unknown) => ({ select: () => ({ single: stubSingleOk }) }),
+        update: (_payload: unknown) => ({ eq: (_c?: string, _v?: unknown) => stubEqUpdate() }),
+        delete: () => ({ eq: (_c?: string, _v?: unknown) => Promise.resolve({ error: null }) }),
+        upsert: (_payload: unknown) => ({ select: () => ({ single: stubSingleOk }) })
       }
+    },
+    channel: (_name: string) => {
+      const ch = { on: () => ch, subscribe: () => ch }
       return ch
     },
     removeChannel: (_: unknown) => {}
