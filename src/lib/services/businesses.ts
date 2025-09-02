@@ -1,25 +1,42 @@
 import supabase from '@/lib/supabase'
 import type { Business } from '@/types'
 import { normalizeBusiness } from '@/lib/normalizers'
-import type { Row } from '@/lib/supabaseTyped'
+import type { Insert, Row, Update } from '@/lib/supabaseTyped'
+import type { Json } from '@/types/database'
 
 export interface BusinessQuery {
   ownerId?: string
   ids?: string[]
+  activeOnly?: boolean
 }
 
 export const businessesService = {
+  _buildDbUpdates(updates: Partial<Business>): Update<'businesses'> {
+    const db: Update<'businesses'> = {}
+    const nullableScalars: Array<keyof Update<'businesses'> & keyof Business> = [
+      'name','description','phone','email','address','city','state','country','postal_code','latitude','longitude','logo_url','website'
+    ]
+    const dbAssign = db as unknown as Record<string, unknown>
+    for (const k of nullableScalars) {
+      const v = updates[k]
+      if (v !== undefined) dbAssign[k as string] = v ?? null
+    }
+    if (updates.business_hours !== undefined) db.business_hours = updates.business_hours as unknown as Json
+    if (updates.settings !== undefined) db.settings = updates.settings as unknown as Json
+    if (updates.is_active !== undefined) db.is_active = updates.is_active
+    return db
+  },
   async list(q: BusinessQuery = {}): Promise<Business[]> {
     let query = supabase.from('businesses').select('*')
-  if (q.ids?.length) { query = query.in('id', q.ids) }
-  else if (q.ownerId) { query = query.eq('owner_id', q.ownerId) }
-    const { data, error } = await query.order('name')
+    if (q.ids?.length) query = query.in('id', q.ids)
+    else if (q.ownerId) query = query.eq('owner_id', q.ownerId)
+    if (q.activeOnly !== false) query = query.eq('is_active', true)
+    const { data, error } = await query.order('created_at', { ascending: false })
     if (error) throw error
     return ((data as Row<'businesses'>[] | null) || []).map(normalizeBusiness)
   },
 
   async listByEmployee(employeeId: string): Promise<Business[]> {
-    // Fetch businesses linked to employee via relation table
     const { data, error } = await supabase
       .from('business_employees')
       .select('businesses:business_id(*)')
@@ -38,13 +55,33 @@ export const businessesService = {
   },
 
   async create(payload: Omit<Business, 'id' | 'created_at' | 'updated_at'>): Promise<Business> {
-    const { data, error } = await supabase.from('businesses').insert(payload).select().single()
+    const insertRow: Insert<'businesses'> = {
+      name: payload.name,
+      description: payload.description ?? null,
+      owner_id: payload.owner_id,
+      phone: payload.phone ?? null,
+      email: payload.email ?? null,
+      address: payload.address ?? null,
+      city: payload.city ?? null,
+      state: payload.state ?? null,
+      country: payload.country ?? null,
+      postal_code: payload.postal_code ?? null,
+      latitude: payload.latitude ?? null,
+      longitude: payload.longitude ?? null,
+      logo_url: payload.logo_url ?? null,
+      website: payload.website ?? null,
+      business_hours: payload.business_hours as unknown as Json,
+      settings: payload.settings as unknown as Json,
+      is_active: payload.is_active ?? true,
+    }
+    const { data, error } = await supabase.from('businesses').insert(insertRow).select().single()
     if (error) throw error
     return normalizeBusiness(data as Row<'businesses'>)
   },
 
   async update(id: string, updates: Partial<Business>): Promise<Business> {
-    const { data, error } = await supabase.from('businesses').update(updates).eq('id', id).select().single()
+    const dbUpdates = this._buildDbUpdates(updates)
+    const { data, error } = await supabase.from('businesses').update(dbUpdates).eq('id', id).select().single()
     if (error) throw error
     return normalizeBusiness(data as Row<'businesses'>)
   },
