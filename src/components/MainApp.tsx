@@ -1,8 +1,7 @@
  
 import React from 'react'
-import { User } from '@/types'
 import { useLanguage } from '@/contexts'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthSimple } from '@/hooks/useAuthSimple'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
 import { Button } from '@/components/ui/button'
 import { generateHandle } from '@/lib/utils'
@@ -13,20 +12,32 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Dashboard from '@/components/dashboard/Dashboard'
 
 interface MainAppProps {
-  user: User
   onLogout: () => void
-  onUserUpdate?: (user: User) => void
 }
 
-function MainApp({ user, onLogout, onUserUpdate }: Readonly<MainAppProps>) {
+function MainApp({ onLogout }: Readonly<MainAppProps>) {
   const { t } = useLanguage()
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuthSimple()
   const [showProfile, setShowProfile] = React.useState(false)
-  const handleText = user.username ? `@${user.username}` : generateHandle(user.name)
-  const initials = React.useMemo(() => user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2), [user.name])
-
+  
+  // Calcular valores dependientes
+  const handleText = React.useMemo(() => {
+    if (!user) return ''
+    return user.username ? `@${user.username}` : generateHandle(user.name)
+  }, [user])
+  
+  const initials = React.useMemo(() => 
+    user ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) : '', 
+    [user]
+  )
+  
   // Initialize Supabase data loading
   const supabaseData = useSupabaseData({ user, autoFetch: true })
+  
+  // Si no hay usuario autenticado, no renderizar nada (el App.tsx maneja esto)
+  if (!user) {
+    return null
+  }
 
   const handleLogout = async () => {
     await signOut()
@@ -35,7 +46,7 @@ function MainApp({ user, onLogout, onUserUpdate }: Readonly<MainAppProps>) {
 
   const renderCurrentView = () => (
     showProfile 
-      ? <ProfilePage user={user} onClose={() => setShowProfile(false)} onUserUpdate={onUserUpdate} /> 
+      ? <ProfilePage user={user} onClose={() => setShowProfile(false)} /> 
       : <Dashboard user={user} {...supabaseData} />
   )
 

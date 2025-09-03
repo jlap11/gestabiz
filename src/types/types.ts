@@ -223,6 +223,7 @@ export interface Appointment {
   end_time: string
   status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
   location?: string
+  site_name?: string
   notes?: string
   price?: number
   currency?: string

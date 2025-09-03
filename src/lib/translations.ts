@@ -317,7 +317,18 @@ export const translations = {
       upcomingToday: 'Upcoming Today',
       quickActions: 'Quick Actions',
       recentActivity: 'Recent Activity',
-      comingSoon: 'Coming soon...'
+      comingSoon: 'Coming soon...',
+      upcomingWeek: 'Upcoming Week',
+      nextSevenDays: 'Next 7 Days',
+      todaySchedule: 'Today\'s Schedule',
+      noAppointmentsToday: 'No appointments scheduled for today',
+      noUpcomingAppointments: 'No upcoming appointments',
+      totalRevenue: 'Total Revenue',
+      thisMonth: 'This Month',
+      avgAppointmentValue: 'Avg Appointment Value',
+      perAppointment: 'Per Appointment',
+      weeklyAppointments: 'Weekly Appointments',
+      appointmentStatus: 'Appointment Status'
     },
 
     // Appointments
@@ -892,7 +903,18 @@ export const translations = {
       upcomingToday: 'Próximas Hoy',
       quickActions: 'Acciones Rápidas',
       recentActivity: 'Actividad Reciente',
-      comingSoon: 'Próximamente...'
+      comingSoon: 'Próximamente...',
+      upcomingWeek: 'Próxima Semana',
+      nextSevenDays: 'Próximos 7 Días',
+      todaySchedule: 'Agenda de Hoy',
+      noAppointmentsToday: 'No hay citas programadas para hoy',
+      noUpcomingAppointments: 'No hay citas próximas',
+      totalRevenue: 'Ingresos Totales',
+      thisMonth: 'Este Mes',
+      avgAppointmentValue: 'Valor Promedio por Cita',
+      perAppointment: 'Por Cita',
+      weeklyAppointments: 'Citas Semanales',
+      appointmentStatus: 'Estado de Citas'
     },
 
     // Appointments

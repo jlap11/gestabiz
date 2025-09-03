@@ -119,6 +119,7 @@ CREATE TABLE public.appointments (
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
     status appointment_status DEFAULT 'pending' NOT NULL,
+    site_name TEXT,
     notes TEXT,
     client_notes TEXT,
     price DECIMAL(10, 2),

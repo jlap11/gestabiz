@@ -11,7 +11,9 @@ import { User } from '@/types'
 import { Eye, EyeOff, Mail, Lock, User as UserIcon, Phone, Globe } from 'lucide-react'
 import { APP_CONFIG } from '@/constants'
 
-interface AuthScreenProps { onLogin: (user: User) => void }
+interface AuthScreenProps { 
+  onLogin?: (user: User) => void 
+}
 
 export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
   // Estado para recordar datos
@@ -57,7 +59,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
       ])
 
       if (result.success && result.user) {
-        onLogin(result.user)
+        onLogin?.(result.user)
       }
     } catch {
       // Error/timeout - liberar botón silenciosamente
@@ -312,7 +314,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
                   variant="secondary"
                   className="w-full"
                   disabled={isSigningIn || isGoogleAuth}
-                  onClick={() => onLogin({} as unknown as User)}
+                  onClick={() => onLogin?.({} as unknown as User)}
                 >
                   {t('auth.loginAsDemo')}
                 </Button>

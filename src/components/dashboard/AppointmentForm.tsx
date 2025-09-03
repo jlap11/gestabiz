@@ -30,6 +30,8 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
     business_id: string
     service_id: string
     location_id: string
+    site_name: string
+    title: string
     client_name: string
     client_email: string
     client_phone: string
@@ -44,6 +46,8 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
     business_id: '',
     service_id: '',
     location_id: '',
+    site_name: '',
+    title: '',
     client_name: '',
     client_email: '',
     client_phone: '',
@@ -70,6 +74,8 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         business_id: appointment.business_id,
         service_id: appointment.service_id || '',
         location_id: appointment.location_id || '',
+        site_name: appointment.site_name || '',
+        title: appointment.title || '',
         client_name: appointment.client_name,
         client_email: appointment.client_email || '',
         client_phone: appointment.client_phone || '',
@@ -85,6 +91,8 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         business_id: defaultBusinessId,
         service_id: '',
         location_id: '',
+        site_name: '',
+        title: '',
         client_name: '',
         client_email: '',
         client_phone: '',
@@ -149,12 +157,13 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         business_id: formData.business_id,
         service_id: formData.service_id,
         location_id: formData.location_id || undefined,
+        site_name: formData.site_name,
         client_id: user.id,
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
         status: formData.status,
         notes: formData.notes,
-        title: `${services.find(s => s.id === formData.service_id)?.name || 'Cita'} - ${formData.client_name}`,
+        title: formData.title.trim() || `${services.find(s => s.id === formData.service_id)?.name || 'Cita'} - ${formData.client_name}`,
         client_name: formData.client_name,
         client_email: formData.client_email,
         client_phone: formData.client_phone
@@ -190,6 +199,14 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="site_name">Nombre del sitio/negocio/local</Label>
+            <Input id="site_name" value={formData.site_name} onChange={e => handleInputChange('site_name', e.target.value)} placeholder="Ejemplo: Barbería Central, Café Luna..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="title">Título de la cita *</Label>
+            <Input id="title" value={formData.title} onChange={e => handleInputChange('title', e.target.value)} placeholder="Ejemplo: Corte de cabello, Consulta médica..." required />
+          </div>
           {user.role === 'admin' && businesses.length > 1 && (
             <div className="space-y-2">
               <Label htmlFor="business">{t('appointments.business')}</Label>
