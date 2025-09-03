@@ -18,12 +18,14 @@ import {
   Gear as Settings,
   Star
 } from '@phosphor-icons/react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface BusinessManagementProps {
   user: Readonly<User>
 }
 
 export default function BusinessManagement({ user }: Readonly<BusinessManagementProps>) {
+  const { t } = useLanguage()
   const [business, setBusiness] = useKV<Business | null>(`business-${user.business_id}`, null)
   const [locations, setLocations] = useKV<Location[]>(`locations-${user.business_id}`, [])
   const [services, setServices] = useKV<Service[]>(`services-${user.business_id}`, [])
@@ -106,7 +108,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
       updated_at: new Date().toISOString()
     }
     setBusiness(updated)
-    toast.success('Información del negocio actualizada')
+  toast.success(t('business.management.updated'))
   }
 
   const handleAddLocation = () => {
@@ -131,7 +133,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
     
     setLocations([...locations, newLocation])
     setEditingLocation(newLocation)
-    toast.success('Nueva sede creada')
+  toast.success(t('locations.location_created'))
   }
 
   const handleUpdateLocation = (updatedLocation: Partial<Location>) => {
@@ -147,7 +149,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
       loc.id === editingLocation.id ? updated : loc
     ))
     setEditingLocation(updated)
-    toast.success('Sede actualizada')
+  toast.success(t('locations.location_updated'))
   }
 
   const handleDeleteLocation = (locationId: string) => {
@@ -155,7 +157,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
     if (editingLocation?.id === locationId) {
       setEditingLocation(null)
     }
-    toast.success('Sede eliminada')
+  toast.success(t('locations.location_deleted'))
   }
 
   const handleAddService = () => {
@@ -176,7 +178,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
     
     setServices([...services, newService])
     setEditingService(newService)
-    toast.success('Nuevo servicio creado')
+  toast.success(t('services.service_created'))
   }
 
   const handleUpdateService = (updatedService: Partial<Service>) => {
@@ -192,7 +194,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
       svc.id === editingService.id ? updated : svc
     ))
     setEditingService(updated)
-    toast.success('Servicio actualizado')
+  toast.success(t('services.service_updated'))
   }
 
   const handleDeleteService = (serviceId: string) => {
@@ -200,7 +202,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
     if (editingService?.id === serviceId) {
       setEditingService(null)
     }
-    toast.success('Servicio eliminado')
+  toast.success(t('services.service_deleted'))
   }
 
   if (!business) {
@@ -208,13 +210,13 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Configura tu negocio</h3>
+          <h3 className="text-lg font-medium mb-2">{t('business.management.configure_title')}</h3>
           <p className="text-muted-foreground mb-4">
-            Primero necesitas configurar la información básica de tu negocio
+            {t('business.management.configure_description')}
           </p>
           <Button onClick={initializeBusiness}>
             <Plus className="h-4 w-4 mr-2" />
-            Crear Negocio
+            {t('business.management.create_business')}
           </Button>
         </div>
       </div>
@@ -226,19 +228,17 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestión del Negocio</h1>
-          <p className="text-muted-foreground">
-            Administra la información, sedes y servicios de tu negocio
-          </p>
+          <h1 className="text-3xl font-bold">{t('business.management.title')}</h1>
+          <p className="text-muted-foreground">{t('business.management.subtitle')}</p>
         </div>
       </div>
 
       <Tabs defaultValue="business" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="business">Negocio</TabsTrigger>
-          <TabsTrigger value="locations">Sedes</TabsTrigger>
-          <TabsTrigger value="services">Servicios</TabsTrigger>
-          <TabsTrigger value="settings">Configuración</TabsTrigger>
+          <TabsTrigger value="business">{t('nav.business')}</TabsTrigger>
+          <TabsTrigger value="locations">{t('locations.title')}</TabsTrigger>
+          <TabsTrigger value="services">{t('services.title')}</TabsTrigger>
+          <TabsTrigger value="settings">{t('settings.title')}</TabsTrigger>
         </TabsList>
 
         {/* Business Information */}
@@ -247,76 +247,76 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building className="h-5 w-5" />
-                Información del Negocio
+                {t('business.registration.business_name')} & {t('business.registration.description')}
               </CardTitle>
               <CardDescription>
-                Información básica y de contacto de tu negocio
+                {t('business.management.info_description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="business-name">Nombre del Negocio</Label>
+                    <Label htmlFor="business-name">{t('business.registration.business_name')}</Label>
                     <Input
                       id="business-name"
                       value={business.name}
                       onChange={(e) => handleBusinessUpdate({ name: e.target.value })}
-                      placeholder="Nombre de tu negocio"
+                      placeholder={t('business.registration.placeholders.business_name')}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="business-description">Descripción</Label>
+                    <Label htmlFor="business-description">{t('business.registration.description')}</Label>
                     <Textarea
                       id="business-description"
                       value={business.description || ''}
                       onChange={(e) => handleBusinessUpdate({ description: e.target.value })}
-                      placeholder="Describe tu negocio y servicios"
+                      placeholder={t('business.registration.placeholders.description')}
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="business-website">Sitio Web</Label>
+                    <Label htmlFor="business-website">{t('business.registration.website')}</Label>
                     <Input
                       id="business-website"
                       value={business.website || ''}
                       onChange={(e) => handleBusinessUpdate({ website: e.target.value })}
-                      placeholder="https://www.tunegocio.com"
+                      placeholder={t('business.registration.placeholders.website')}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="business-phone">Teléfono</Label>
+                    <Label htmlFor="business-phone">{t('business.registration.phone')}</Label>
                     <Input
                       id="business-phone"
                       value={business.phone || ''}
                       onChange={(e) => handleBusinessUpdate({ phone: e.target.value })}
-                      placeholder="+57 300 123 4567"
+                      placeholder={t('business.registration.placeholders.phone')}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="business-email">Email</Label>
+                    <Label htmlFor="business-email">{t('business.registration.email')}</Label>
                     <Input
                       id="business-email"
                       type="email"
                       value={business.email || ''}
                       onChange={(e) => handleBusinessUpdate({ email: e.target.value })}
-                      placeholder="contacto@tunegocio.com"
+                      placeholder={t('auth.emailPlaceholder')}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="business-address">Dirección</Label>
+                    <Label htmlFor="business-address">{t('business.registration.address')}</Label>
                     <Input
                       id="business-address"
                       value={business.address}
                       onChange={(e) => handleBusinessUpdate({ address: e.target.value })}
-                      placeholder="Calle 123 #45-67"
+                      placeholder={t('business.registration.placeholders.address')}
                     />
                   </div>
                 </div>
@@ -324,39 +324,39 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="business-city">Ciudad</Label>
+                  <Label htmlFor="business-city">{t('business.registration.city')}</Label>
                   <Input
                     id="business-city"
                     value={business.city}
                     onChange={(e) => handleBusinessUpdate({ city: e.target.value })}
-                    placeholder="Bogotá"
+                    placeholder={t('business.registration.placeholders.city')}
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="business-state">Departamento</Label>
+                  <Label htmlFor="business-state">{t('locations.country') || 'State'}</Label>
                   <Input
                     id="business-state"
                     value={business.state}
                     onChange={(e) => handleBusinessUpdate({ state: e.target.value })}
-                    placeholder="Cundinamarca"
+                    placeholder={t('locations.country') || ''}
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="business-postal">Código Postal</Label>
+                  <Label htmlFor="business-postal">{t('business.registration.postal_code')}</Label>
                   <Input
                     id="business-postal"
                     value={business.postal_code}
                     onChange={(e) => handleBusinessUpdate({ postal_code: e.target.value })}
-                    placeholder="110111"
+                    placeholder={t('business.registration.placeholders.postal_code')}
                   />
                 </div>
               </div>
 
               {/* Business Hours */}
               <div>
-                <Label className="text-base font-medium">Horarios de Atención</Label>
+                <Label className="text-base font-medium">{t('business.registration.business_hours')}</Label>
                 <div className="mt-4 space-y-3">
       {Object.entries(business.business_hours).map(([day, hours]) => (
                     <div key={day} className="flex items-center justify-between p-3 border rounded-lg">
@@ -373,13 +373,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                           }}
                         />
                         <div className="font-medium capitalize w-20">
-                          {day === 'monday' ? 'Lunes' :
-                           day === 'tuesday' ? 'Martes' :
-                           day === 'wednesday' ? 'Miércoles' :
-                           day === 'thursday' ? 'Jueves' :
-                           day === 'friday' ? 'Viernes' :
-                           day === 'saturday' ? 'Sábado' :
-                           'Domingo'}
+                          {t(`business.registration.days.${day}`)}
                         </div>
                       </div>
                       
@@ -414,7 +408,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                           />
                         </div>
                       ) : (
-                        <Badge variant="secondary">Cerrado</Badge>
+                        <Badge variant="secondary">{t('business.hours.closed')}</Badge>
                       )}
                     </div>
                   ))}
@@ -428,12 +422,12 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
         <TabsContent value="locations" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Sedes</h2>
-              <p className="text-muted-foreground">Gestiona las ubicaciones de tu negocio</p>
+              <h2 className="text-2xl font-bold">{t('locations.title')}</h2>
+              <p className="text-muted-foreground">{t('locations.location_details')}</p>
             </div>
             <Button onClick={handleAddLocation}>
               <Plus className="h-4 w-4 mr-2" />
-              Agregar Sede
+              {t('locations.new_location')}
             </Button>
           </div>
 
@@ -441,9 +435,9 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
             {/* Locations List */}
             <Card>
               <CardHeader>
-                <CardTitle>Sedes Registradas</CardTitle>
+                <CardTitle>{t('locations.title')}</CardTitle>
                 <CardDescription>
-                  {locations.length} {locations.length === 1 ? 'sede registrada' : 'sedes registradas'}
+                  {locations.length} {locations.length === 1 ? t('locations.main_location') : t('locations.title')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -451,8 +445,8 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                   {locations.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No hay sedes registradas</p>
-                      <p className="text-sm">Agrega la primera sede de tu negocio</p>
+                      <p>{t('locations.no_locations')}</p>
+                      <p className="text-sm">{t('locations.new_location')}</p>
                     </div>
                   ) : (
                     locations.map((location) => (
@@ -476,7 +470,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                           
                           <div className="flex items-center gap-2">
                             <Badge variant={location.is_active ? "default" : "secondary"}>
-                              {location.is_active ? 'Activa' : 'Inactiva'}
+                              {location.is_active ? t('locations.active') : t('common.disabled') || 'Inactive'}
                             </Badge>
                             <Button
                               size="sm"
@@ -501,71 +495,71 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
             {editingLocation && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Editar Sede</CardTitle>
-                  <CardDescription>Información de la sede seleccionada</CardDescription>
+                  <CardTitle>{t('locations.edit_location')}</CardTitle>
+                  <CardDescription>{t('locations.location_details')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="location-name">Nombre de la Sede</Label>
+                    <Label htmlFor="location-name">{t('locations.name')}</Label>
                     <Input
                       id="location-name"
                       value={editingLocation.name}
                       onChange={(e) => handleUpdateLocation({ name: e.target.value })}
-                      placeholder="Sede Principal"
+                      placeholder={t('locations.main_location')}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="location-address">Dirección</Label>
+                    <Label htmlFor="location-address">{t('locations.address')}</Label>
                     <Input
                       id="location-address"
                       value={editingLocation.address}
                       onChange={(e) => handleUpdateLocation({ address: e.target.value })}
-                      placeholder="Calle 123 #45-67"
+                      placeholder={t('business.registration.placeholders.address')}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="location-city">Ciudad</Label>
+                      <Label htmlFor="location-city">{t('locations.city')}</Label>
                       <Input
                         id="location-city"
                         value={editingLocation.city}
                         onChange={(e) => handleUpdateLocation({ city: e.target.value })}
-                        placeholder="Bogotá"
+                        placeholder={t('business.registration.placeholders.city')}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="location-state">Departamento</Label>
+                      <Label htmlFor="location-state">{t('locations.country')}</Label>
                       <Input
                         id="location-state"
                         value={editingLocation.state}
                         onChange={(e) => handleUpdateLocation({ state: e.target.value })}
-                        placeholder="Cundinamarca"
+                        placeholder={t('locations.country')}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="location-phone">Teléfono</Label>
+                      <Label htmlFor="location-phone">{t('locations.phone')}</Label>
                       <Input
                         id="location-phone"
                         value={editingLocation.phone || ''}
                         onChange={(e) => handleUpdateLocation({ phone: e.target.value })}
-                        placeholder="+57 300 123 4567"
+                        placeholder={t('business.registration.placeholders.phone')}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="location-email">Email</Label>
+                      <Label htmlFor="location-email">{t('locations.email')}</Label>
                       <Input
                         id="location-email"
                         type="email"
                         value={editingLocation.email || ''}
                         onChange={(e) => handleUpdateLocation({ email: e.target.value })}
-                        placeholder="sede@negocio.com"
+                        placeholder={t('auth.emailPlaceholder')}
                       />
                     </div>
                   </div>
@@ -576,7 +570,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                       checked={editingLocation.is_active}
                       onCheckedChange={(checked) => handleUpdateLocation({ is_active: checked })}
                     />
-                    <Label htmlFor="location-active">Sede activa</Label>
+                    <Label htmlFor="location-active">{t('locations.active')}</Label>
                   </div>
                 </CardContent>
               </Card>
@@ -588,12 +582,12 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
         <TabsContent value="services" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Servicios</h2>
-              <p className="text-muted-foreground">Gestiona los servicios que ofreces</p>
+              <h2 className="text-2xl font-bold">{t('services.title')}</h2>
+              <p className="text-muted-foreground">{t('services.service_details')}</p>
             </div>
             <Button onClick={handleAddService}>
               <Plus className="h-4 w-4 mr-2" />
-              Agregar Servicio
+              {t('services.new_service')}
             </Button>
           </div>
 
@@ -601,9 +595,9 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
             {/* Services List */}
             <Card>
               <CardHeader>
-                <CardTitle>Servicios Ofrecidos</CardTitle>
+                <CardTitle>{t('services.title')}</CardTitle>
                 <CardDescription>
-                  {services.length} {services.length === 1 ? 'servicio disponible' : 'servicios disponibles'}
+                  {services.length} {services.length === 1 ? t('services.new_service') : t('services.title')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -611,8 +605,8 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                   {services.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No hay servicios registrados</p>
-                      <p className="text-sm">Agrega los servicios que ofreces</p>
+                      <p>{t('services.no_services')}</p>
+                      <p className="text-sm">{t('services.new_service')}</p>
                     </div>
                   ) : (
                     services.map((service) => (
@@ -636,7 +630,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                           
                           <div className="flex items-center gap-2">
                             <Badge variant={service.is_active ? "default" : "secondary"}>
-                              {service.is_active ? 'Activo' : 'Inactivo'}
+                              {service.is_active ? t('services.active') : t('common.disabled') || 'Inactive'}
                             </Badge>
                             <Button
                               size="sm"
@@ -661,34 +655,34 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
             {editingService && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Editar Servicio</CardTitle>
-                  <CardDescription>Información del servicio seleccionado</CardDescription>
+                  <CardTitle>{t('services.edit_service')}</CardTitle>
+                  <CardDescription>{t('services.service_details')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="service-name">Nombre del Servicio</Label>
+                    <Label htmlFor="service-name">{t('services.name')}</Label>
                     <Input
                       id="service-name"
                       value={editingService.name}
                       onChange={(e) => handleUpdateService({ name: e.target.value })}
-                      placeholder="Consulta General"
+                      placeholder={t('services.service_name') || ''}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="service-description">Descripción</Label>
+                    <Label htmlFor="service-description">{t('services.description')}</Label>
                     <Textarea
                       id="service-description"
                       value={editingService.description || ''}
                       onChange={(e) => handleUpdateService({ description: e.target.value })}
-                      placeholder="Describe el servicio que ofreces"
+                      placeholder={t('business.registration.placeholders.service_description')}
                       rows={3}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="service-duration">Duración (minutos)</Label>
+                      <Label htmlFor="service-duration">{t('services.duration')} ({t('services.minutes')})</Label>
                       <Input
                         id="service-duration"
                         type="number"
@@ -700,7 +694,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                     </div>
                     
                     <div>
-                      <Label htmlFor="service-price">Precio</Label>
+                      <Label htmlFor="service-price">{t('services.price')}</Label>
                       <div className="flex">
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
                           $
@@ -719,12 +713,12 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                   </div>
 
                   <div>
-                    <Label htmlFor="service-category">Categoría</Label>
+                    <Label htmlFor="service-category">{t('services.category')}</Label>
                     <Input
                       id="service-category"
                       value={editingService.category || ''}
                       onChange={(e) => handleUpdateService({ category: e.target.value })}
-                      placeholder="Consultas, Tratamientos, etc."
+                      placeholder={t('business.registration.placeholders.service_category')}
                     />
                   </div>
 
@@ -734,7 +728,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                       checked={editingService.is_active}
                       onCheckedChange={(checked) => handleUpdateService({ is_active: checked })}
                     />
-                    <Label htmlFor="service-active">Servicio activo</Label>
+                    <Label htmlFor="service-active">{t('services.active')}</Label>
                   </div>
                 </CardContent>
               </Card>
@@ -748,16 +742,16 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Configuración del Negocio
+                {t('business.management.settings_title')}
               </CardTitle>
               <CardDescription>
-                Ajustes generales para el funcionamiento de tu negocio
+                {t('business.management.settings_description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="default-duration">Duración por defecto (minutos)</Label>
+                  <Label htmlFor="default-duration">{t('services.duration')} ({t('services.minutes')})</Label>
                   <Input
                     id="default-duration"
                     type="number"
@@ -772,12 +766,12 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                     step="15"
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Duración estándar para nuevas citas
+                    {t('appointments.duration')}
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="booking-advance">Días de anticipación para reservas</Label>
+                  <Label htmlFor="booking-advance">{t('reports.period_selection')}</Label>
                   <Input
                     id="booking-advance"
                     type="number"
@@ -791,13 +785,13 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                     min="1"
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Cuántos días en el futuro pueden reservar los clientes
+                    {t('calendar.book_appointment')}
                   </p>
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="cancellation-policy">Política de Cancelación</Label>
+                <Label htmlFor="cancellation-policy">{t('appointments.cancel_appointment')}</Label>
                 <Input
                   id="cancellation-policy"
                   type="number"
@@ -808,7 +802,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                       cancellation_policy: parseInt(e.target.value) || 24
                     }
                   })}
-                  placeholder="Horas de antelación para cancelar"
+                  placeholder={t('appointments.cancel_appointment')}
                 />
               </div>
 
@@ -823,7 +817,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                     }
                   })}
                 />
-                <Label htmlFor="auto-confirm">Confirmación automática de citas</Label>
+                <Label htmlFor="auto-confirm">{t('appointments.confirmed')}</Label>
               </div>
             </CardContent>
           </Card>

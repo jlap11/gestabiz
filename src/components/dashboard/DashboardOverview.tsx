@@ -17,13 +17,13 @@ import {
 } from 'recharts'
 import { 
   Clock, 
-  CurrencyDollar as DollarSign, 
-  TrendUp as TrendingUp, 
-  WarningCircle as AlertCircle,
+  DollarSign, 
+  TrendingUp, 
+  AlertCircle,
   CheckCircle as CheckCircleIcon,
   XCircle as XCircleIcon,
-  Calendar as CalendarDays
-} from '@phosphor-icons/react'
+  CalendarDays
+} from 'lucide-react'
 import { User, Appointment, DashboardStats } from '@/types'
 import { useLanguage } from '@/contexts'
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from 'date-fns'
@@ -36,7 +36,7 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
-  const { appointments, stats } = props
+  const { appointments, stats, user } = props
   const { t, language } = useLanguage()
   const locale = language === 'es' ? es : undefined
 
@@ -185,6 +185,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
           </CardContent>
         </Card>
 
+        {user.role !== 'client' && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -201,7 +202,9 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
             </p>
           </CardContent>
         </Card>
+        )}
 
+        {user.role !== 'client' && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -218,60 +221,23 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
             </p>
           </CardContent>
         </Card>
+        )}
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Appointments by Day Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('dashboard.weeklyAppointments')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analyticsData.appointmentsByDay}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
-                  }}
-                />
-                <Bar dataKey="completed" fill="#10b981" name={t('status.completed')} />
-                <Bar dataKey="confirmed" fill="#3b82f6" name={t('status.confirmed')} />
-                <Bar dataKey="cancelled" fill="#ef4444" name={t('status.cancelled')} />
-                <Bar dataKey="no_show" fill="#6b7280" name={t('status.noShow')} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Status Distribution Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('dashboard.appointmentStatus')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {analyticsData.statusData.length > 0 ? (
+      {user.role !== 'client' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Appointments by Day Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('dashboard.weeklyAppointments')}</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={analyticsData.statusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {analyticsData.statusData.map((entry) => (
-                      <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                    ))}
-                  </Pie>
+                <BarChart data={analyticsData.appointmentsByDay}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))', 
@@ -279,18 +245,59 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
                       borderRadius: '6px'
                     }}
                   />
-                </PieChart>
+                  <Bar dataKey="completed" fill="#10b981" name={t('status.completed')} />
+                  <Bar dataKey="confirmed" fill="#3b82f6" name={t('status.confirmed')} />
+                  <Bar dataKey="cancelled" fill="#ef4444" name={t('status.cancelled')} />
+                  <Bar dataKey="no_show" fill="#6b7280" name={t('status.noShow')} />
+                </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                {t('dashboard.noDataAvailable')}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
 
-      {/* Revenue Chart */}
+          {/* Status Distribution Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('dashboard.appointmentStatus')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analyticsData.statusData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={analyticsData.statusData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {analyticsData.statusData.map((entry) => (
+                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                  {t('dashboard.noDataAvailable')}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Revenue Chart (admins/empleados) */}
+      {user.role !== 'client' && (
       <Card>
         <CardHeader>
           <CardTitle>{t('dashboard.weeklyRevenue')}</CardTitle>
@@ -320,6 +327,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
           </ResponsiveContainer>
         </CardContent>
       </Card>
+      )}
 
       {/* Today's Schedule & Upcoming Appointments */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

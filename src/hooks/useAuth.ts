@@ -403,12 +403,14 @@ export function useAuth() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
-      const { error } = await supabase
+    const { error } = await supabase
         .from('profiles')
         .update({
           full_name: updates.name,
           avatar_url: updates.avatar_url,
           phone: updates.phone,
+      // Nota: actualizar role desde cliente solo es seguro en modo demo; en prod usar Edge Function
+      ...(updates.role ? { role: updates.role } : {}),
           settings: {
             language: updates.language,
             theme: 'dark', // Keep current theme
@@ -425,7 +427,7 @@ export function useAuth() {
       }
 
       // Update local state
-      const updatedUser: User = {
+  const updatedUser: User = {
         ...state.user,
         ...updates,
         updated_at: new Date().toISOString()

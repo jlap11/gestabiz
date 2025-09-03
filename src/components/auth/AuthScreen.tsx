@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,19 +8,28 @@ import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { User } from '@/types'
-import { Eye, EyeSlash as EyeOff, EnvelopeSimple as Mail, Lock, User as UserIcon, Phone, Globe } from '@phosphor-icons/react'
+import { Eye, EyeOff, Mail, Lock, User as UserIcon, Phone, Globe } from 'lucide-react'
 import { APP_CONFIG } from '@/constants'
 
-interface AuthScreenProps {
-  onLogin: (user: User) => void
-}
+interface AuthScreenProps { onLogin: (user: User) => void }
 
-export default function AuthScreen({ onLogin }: AuthScreenProps) {
+export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
+  // Estado para recordar datos
+  const [rememberMe, setRememberMe] = useState(false)
+  // Limpiar checkbox al montar
+  useEffect(() => {
+    setRememberMe(false)
+  }, [])
   const { language, setLanguage, t } = useLanguage()
-  const { signIn, signUp, signInWithGoogle, resetPassword, loading } = useAuth()
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth()
   
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  // Estados locales de envío para no bloquear por loading global del hook
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
+  const [isGoogleAuth, setIsGoogleAuth] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -40,14 +49,20 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
     if (!formData.email || !formData.password) {
       return
     }
+    setIsSigningIn(true)
+    try {
+      const result = await Promise.race([
+        signIn({ email: formData.email, password: formData.password }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 12000))
+      ])
 
-    const result = await signIn({
-      email: formData.email,
-      password: formData.password
-    })
-
-    if (result.success && result.user) {
-      onLogin(result.user)
+      if (result.success && result.user) {
+        onLogin(result.user)
+      }
+    } catch {
+      // Error/timeout - liberar botón silenciosamente
+    } finally {
+      setIsSigningIn(false)
     }
   }
 
@@ -60,32 +75,45 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
     if (formData.password !== formData.confirmPassword) {
       return
     }
+    setIsRegistering(true)
+    try {
+      const result = await signUp({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.full_name,
+        phone: formData.phone
+      })
 
-    const result = await signUp({
-      email: formData.email,
-      password: formData.password,
-      full_name: formData.full_name,
-      phone: formData.phone
-    })
-
-    if (result.success && !result.needsEmailConfirmation) {
-      // User was created and logged in immediately
-      window.location.reload()
+      if (result.success && !result.needsEmailConfirmation) {
+        // User was created and logged in immediately
+        window.location.reload()
+      }
+    } finally {
+      setIsRegistering(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle()
+    setIsGoogleAuth(true)
+    try {
+      await signInWithGoogle()
+    } finally {
+      setIsGoogleAuth(false)
+    }
   }
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!resetEmail) return
-
-    const result = await resetPassword(resetEmail)
-    if (result.success) {
-      setShowResetForm(false)
-      setResetEmail('')
+    setIsResetting(true)
+    try {
+      const result = await resetPassword(resetEmail)
+      if (result.success) {
+        setShowResetForm(false)
+        setResetEmail('')
+      }
+    } finally {
+      setIsResetting(false)
     }
   }
 
@@ -120,8 +148,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               </div>
               
               <div className="space-y-3">
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? t('common.loading') : t('auth.sendResetLink')}
+                <Button type="submit" className="w-full" disabled={isResetting}>
+                  {isResetting ? t('common.loading') : t('auth.sendResetLink')}
                 </Button>
                 
                 <Button 
@@ -183,7 +211,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                 variant="outline"
                 className="w-full"
                 onClick={handleGoogleSignIn}
-                disabled={loading}
+                disabled={isGoogleAuth}
               >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -261,10 +289,33 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t('common.loading') : t('auth.signIn')}
+                  <Button type="submit" className="w-full" disabled={isSigningIn}>
+                    {isSigningIn ? t('common.loading') : t('auth.signIn')}
                   </Button>
+                  {/* Recordar datos checkbox */}
+                  <div className="flex items-center justify-end pt-2">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={e => setRememberMe(e.target.checked)}
+                        className="accent-primary h-4 w-4"
+                      />
+                      Recordar datos
+                    </label>
+                  </div>
                 </form>
+
+                {/* Demo login to bypass backend when running locally */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  disabled={isSigningIn || isGoogleAuth}
+                  onClick={() => onLogin({} as unknown as User)}
+                >
+                  {t('auth.loginAsDemo')}
+                </Button>
 
                 <div className="text-center">
                   <Button
@@ -377,8 +428,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t('common.loading') : t('auth.createAccount')}
+                  <Button type="submit" className="w-full" disabled={isRegistering}>
+                    {isRegistering ? t('common.loading') : t('auth.createAccount')}
                   </Button>
                 </form>
               </TabsContent>

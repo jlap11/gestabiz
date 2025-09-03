@@ -1,6 +1,9 @@
 # Supabase Configuration
 # Copy this to supabase/config.toml
 
+[project]
+ref = "dkancockzvcqorqbwtyh"
+
 [api]
 enabled = true
 port = 54321

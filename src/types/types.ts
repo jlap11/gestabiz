@@ -31,6 +31,7 @@ export interface User {
   id: string
   email: string
   name: string // Changed from full_name for consistency
+  username?: string
   avatar_url?: string
   timezone?: string
   role: UserRole

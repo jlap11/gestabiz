@@ -204,6 +204,17 @@ export const slugify = (str: string) => {
     .replace(/(^-+)|(-+$)/g, '')
 }
 
+// Social handle generator (Instagram-like):
+// - lowercased
+// - spaces/hyphens -> dots
+// - prefixed with '@'
+export const generateHandle = (name: string) => {
+  const base = slugify(name)
+    .replace(/-+/g, '.')
+    .replace(/\.{2,}/g, '.')
+  return `@${base}`
+}
+
 export const truncate = (str: string, length: number, suffix = '...') => {
   if (str.length <= length) return str
   return str.substring(0, length) + suffix

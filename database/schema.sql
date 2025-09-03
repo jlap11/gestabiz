@@ -243,21 +243,7 @@ CREATE POLICY "Users can update own profile" ON public.profiles
 CREATE POLICY "Users can insert own profile" ON public.profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
 
--- ============================================================================
--- BUSINESSES POLICIES
--- ============================================================================
--- Business owners can manage their businesses
-CREATE POLICY "Owners can manage their businesses" ON public.businesses
-    FOR ALL USING (auth.uid() = owner_id);
-
--- Employees can read businesses they work for
-CREATE POLICY "Employees can read their businesses" ON public.businesses
-    FOR SELECT USING (
-        auth.uid() IN (
-            SELECT employee_id FROM public.business_employees 
-            WHERE business_id = businesses.id AND status = 'approved'
-        )
-    );
+-- Policies moved to database/rls-policies.sql as the single source of truth.
 
 -- ============================================================================
 -- LOCATIONS POLICIES
@@ -279,24 +265,7 @@ CREATE POLICY "Employees can read business locations" ON public.locations
         )
     );
 
--- ============================================================================
--- BUSINESS EMPLOYEES POLICIES
--- ============================================================================
--- Business owners can manage employees
-CREATE POLICY "Business owners can manage employees" ON public.business_employees
-    FOR ALL USING (
-        auth.uid() IN (
-            SELECT owner_id FROM public.businesses WHERE id = business_employees.business_id
-        )
-    );
-
--- Users can read their own employee records
-CREATE POLICY "Users can read own employee records" ON public.business_employees
-    FOR SELECT USING (auth.uid() = employee_id);
-
--- Users can apply to become employees (insert only)
-CREATE POLICY "Users can apply as employees" ON public.business_employees
-    FOR INSERT WITH CHECK (auth.uid() = employee_id);
+-- Policies moved to database/rls-policies.sql as the single source of truth.
 
 -- ============================================================================
 -- SERVICES POLICIES

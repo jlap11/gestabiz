@@ -83,9 +83,9 @@ supabase functions deploy appointment-actions
 
 #### En Supabase Dashboard
 Ve a **Project Settings > API** y obtén:
-- `Project URL`
-- `anon public key`
-- `service_role key` (solo para edge functions)
+- `Project URL` 
+- `anon public key` 
+- `service_role key` (solo para edge functions) 
 
 #### En tu aplicación (.env.local)
 ```env

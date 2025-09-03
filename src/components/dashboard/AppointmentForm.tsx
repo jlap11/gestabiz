@@ -7,11 +7,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Clock, User as UserIcon, MapPin } from '@phosphor-icons/react'
+import { Calendar, Clock, User as UserIcon, MapPin } from 'lucide-react'
 import { Appointment, Client, User } from '@/types'
 import { useLanguage } from '@/contexts'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
 import { toast } from 'sonner'
+import { COUNTRY_CODES, COUNTRY_PHONE_EXAMPLES } from '@/constants'
 
 export interface AppointmentFormProps {
   isOpen: boolean
@@ -53,6 +54,13 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
     status: 'scheduled'
   })
   const [loading, setLoading] = useState(false)
+  // Phone prefix for client phone
+  const initialClientPrefix = (() => {
+    const regex = /^\+(\d{1,3})/
+    const match = regex.exec(appointment?.client_phone || '')
+    return match ? `+${match[1]}` : '+52'
+  })()
+  const [clientPhonePrefix, setClientPhonePrefix] = useState<string>(initialClientPrefix)
 
   useEffect(() => {
     if (appointment) {
@@ -257,7 +265,36 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="clientPhone">{t('appointments.clientPhone')}</Label>
-                  <Input id="clientPhone" type="tel" placeholder={t('appointments.clientPhonePlaceholder')} value={formData.client_phone} onChange={(e) => handleInputChange('client_phone', e.target.value)} />
+                  <div className="flex gap-2">
+                    <Select value={clientPhonePrefix} onValueChange={(v) => {
+                      setClientPhonePrefix(v)
+                      const local = (formData.client_phone || '').replace(/^\+\d{1,4}\s?/, '')
+                      handleInputChange('client_phone', `${v} ${local}`.trim())
+                    }}>
+                      <SelectTrigger className="w-24">
+                        {(() => {
+                          const sel = COUNTRY_CODES.find(c => c.code === clientPhonePrefix)
+                          const flag = sel ? sel.label.split(' ')[0] : ''
+                          return <span className="truncate">{`${flag} ${clientPhonePrefix}`}</span>
+                        })()}
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRY_CODES.map(cc => (
+                          <SelectItem key={cc.code} value={cc.code}>{cc.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id="clientPhone"
+                      type="tel"
+                      placeholder={COUNTRY_PHONE_EXAMPLES[clientPhonePrefix] || t('appointments.clientPhone')}
+                      value={(formData.client_phone || '').replace(/^\+\d{1,4}\s?/, '')}
+                      onChange={(e) => {
+                        const local = e.target.value.replace(/[^\d\s-()]/g, '')
+                        handleInputChange('client_phone', `${clientPhonePrefix} ${local}`.trim())
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -350,7 +387,10 @@ export interface LegacyAppointmentFormProps {
 export default function LegacyAppointmentForm({ user, clients, appointment, onSave, onCancel }: Readonly<LegacyAppointmentFormProps>) {
   const { t } = useLanguage()
   const [title, setTitle] = useState(appointment?.title || '')
-  const [clientId, setClientId] = useState(appointment?.client_id || (clients[0]?.id ?? ''))
+  // Si es cliente final, usar su propio id por defecto y ocultar selección
+  const [clientId, setClientId] = useState(
+    appointment?.client_id || (user.role === 'client' ? user.id : (clients[0]?.id ?? ''))
+  )
   const [date, setDate] = useState<string>(() => appointment ? new Date(appointment.start_time).toISOString().split('T')[0] : '')
   const [startTime, setStartTime] = useState<string>(() => appointment ? new Date(appointment.start_time).toTimeString().slice(0,5) : '')
   const [endTime, setEndTime] = useState<string>(() => appointment ? new Date(appointment.end_time).toTimeString().slice(0,5) : '')
@@ -385,14 +425,16 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     const selectedClient = clients.find(c => c.id === clientId)
-    if (!title.trim() || !clientId || !date || !startTime || !endTime) return
+    // Para cliente final, forzar clientId = user.id
+    const effectiveClientId = user.role === 'client' ? user.id : clientId
+    if (!title.trim() || !effectiveClientId || !date || !startTime || !endTime) return
 
     const startISO = new Date(`${date}T${startTime}:00`).toISOString()
     const endISO = new Date(`${date}T${endTime}:00`).toISOString()
 
   const payload: Partial<Appointment> = {
       user_id: user.id,
-      client_id: clientId,
+      client_id: effectiveClientId,
       title: title.trim(),
       description: description.trim(),
       start_time: startISO,
@@ -402,8 +444,8 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
       date,
       startTime,
       endTime,
-      client_name: selectedClient?.name || '',
-      clientName: selectedClient?.name || ''
+      client_name: user.role === 'client' ? (user.name || '') : (selectedClient?.name || ''),
+      clientName: user.role === 'client' ? (user.name || '') : (selectedClient?.name || '')
   }
   // status está asegurado por el estado local, forzamos tipo requerido para el handler
   onSave(payload as Omit<Appointment, 'id' | 'userId' | 'createdAt' | 'updatedAt'>)
@@ -426,27 +468,29 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="client">{t('appointments.client') || 'Client'}</Label>
-                <Select value={clientId} onValueChange={setClientId} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('appointments.selectClient') || 'Select client'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.length === 0 ? (
-                      <SelectItem value="no-clients" disabled>
-                        {t('clients.none') || 'No clients available'}
-                      </SelectItem>
-                    ) : (
-                      clients.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
+              {user.role !== 'client' && (
+                <div className="space-y-2">
+                  <Label htmlFor="client">{t('appointments.client') || 'Client'}</Label>
+                  <Select value={clientId} onValueChange={setClientId} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('appointments.selectClient') || 'Select client'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.length === 0 ? (
+                        <SelectItem value="no-clients" disabled>
+                          {t('clients.none') || 'No clients available'}
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
+                      ) : (
+                        clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="date">{t('appointments.date') || 'Date'}</Label>

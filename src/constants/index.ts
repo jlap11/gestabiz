@@ -101,8 +101,8 @@ export const REGEX_PATTERNS = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   PHONE: /^[+]?[\d\s-()]{8,}$/,
   PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
-  TIME_24H: /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-  POSTAL_CODE: /^[0-9]{5}(-[0-9]{4})?$/
+  TIME_24H: /^([01]?\d|2[0-3]):[0-5]\d$/,
+  POSTAL_CODE: /^\d{5}(-\d{4})?$/
 } as const
 
 // Error Messages
@@ -141,3 +141,31 @@ export const FEATURES = {
   ONLINE_PAYMENTS: false,
   MULTI_LOCATION: true
 } as const
+
+// Country calling codes (minimal curated list for UI selectors)
+export const COUNTRY_CODES = [
+  { code: '+52', country: 'MX', label: '🇲🇽 +52 (México)' },
+  { code: '+57', country: 'CO', label: '🇨🇴 +57 (Colombia)' },
+  { code: '+1', country: 'US', label: '🇺🇸 +1 (EE. UU./Canadá)' },
+  { code: '+34', country: 'ES', label: '🇪🇸 +34 (España)' },
+  { code: '+55', country: 'BR', label: '🇧🇷 +55 (Brasil)' },
+  { code: '+54', country: 'AR', label: '🇦🇷 +54 (Argentina)' },
+  { code: '+56', country: 'CL', label: '🇨🇱 +56 (Chile)' },
+  { code: '+51', country: 'PE', label: '🇵🇪 +51 (Perú)' },
+  { code: '+593', country: 'EC', label: '🇪🇨 +593 (Ecuador)' },
+  { code: '+502', country: 'GT', label: '🇬🇹 +502 (Guatemala)' }
+] as const
+
+// Local phone examples (only local part, without prefix) per country prefix
+export const COUNTRY_PHONE_EXAMPLES: Record<string, string> = {
+  '+52': '55 1234 5678',      // MX
+  '+57': '300 123 4567',      // CO (mobile)
+  '+1': '(555) 123-4567',     // US/CA
+  '+34': '612 34 56 78',      // ES (mobile)
+  '+55': '11 91234-5678',     // BR (São Paulo mobile)
+  '+54': '11 2345-6789',      // AR (Buenos Aires)
+  '+56': '9 6123 4567',       // CL (mobile)
+  '+51': '912 345 678',       // PE (mobile)
+  '+593': '099 123 4567',     // EC (mobile)
+  '+502': '5123 4567'         // GT
+}

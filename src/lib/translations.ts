@@ -16,6 +16,7 @@ export const translations = {
       no: 'No',
       close: 'Close',
       open: 'Open',
+  disabled: 'Disabled',
       search: 'Search',
       filter: 'Filter',
       sort: 'Sort',
@@ -23,6 +24,7 @@ export const translations = {
       back: 'Back',
       next: 'Next',
       previous: 'Previous',
+  of: 'of',
       submit: 'Submit',
       reset: 'Reset',
       clear: 'Clear',
@@ -103,6 +105,17 @@ export const translations = {
 
     // Business Registration
     business: {
+      management: {
+        title: 'Business Management',
+        subtitle: 'Manage your business information, locations and services',
+        configure_title: 'Set up your business',
+        configure_description: 'First, configure your business basic information',
+        create_business: 'Create Business',
+        info_description: 'Basic and contact information for your business',
+        settings_title: 'Business Settings',
+        settings_description: 'General settings for how your business operates',
+        updated: 'Business information updated'
+      },
       registration: {
         title: 'Register Your Business',
   business_description: 'Create your business profile to start managing appointments',
@@ -237,6 +250,8 @@ export const translations = {
       title: 'Profile',
       personal_info: 'Personal Information',
       name: 'Full Name',
+  username: 'Username',
+  username_hint: 'Letters, numbers, dots and underscores only.',
       email: 'Email',
       phone: 'Phone',
       avatar: 'Profile Picture',
@@ -281,7 +296,8 @@ export const translations = {
     dashboard: {
       title: 'Dashboard',
       welcome: 'Welcome back, {{name}}!',
-      overview: 'Here\'s what\'s happening with your business today',
+  overview: 'Here\'s what\'s happening with your business today',
+  overview_client: 'Here\'s what\'s happening with your appointments today',
       quick_stats: 'Quick Stats',
       recent_appointments: 'Recent Appointments',
       upcoming_appointments: 'Upcoming Appointments',
@@ -402,6 +418,7 @@ export const translations = {
       title: 'Reports',
       business_overview: 'Business Overview',
       period_selection: 'Period Selection',
+  this_quarter: 'This Quarter',
       this_week: 'This Week',
       this_month: 'This Month',
       last_year: 'Last Year',
@@ -423,6 +440,98 @@ export const translations = {
       new_clients: 'New Clients',
       returning_clients: 'Returning Clients',
       no_data_available: 'No data available for selected period'
+    },
+    admin: {
+      clientManagement: {
+        search_placeholder: 'Search clients by name, email or phone...',
+        filter_by_status: 'Filter by status',
+        all_statuses: 'All statuses',
+        status: {
+          active: 'Active',
+          inactive: 'Inactive',
+          blocked: 'Blocked',
+          unknown: 'Unknown',
+          active_plural: 'Active',
+          inactive_plural: 'Inactive',
+          blocked_plural: 'Blocked'
+        },
+        tabs: {
+          all: 'All',
+          recurring: 'Recurring',
+          at_risk: 'At Risk',
+          lost: 'Lost'
+        },
+        empty: {
+          title: 'No clients found',
+          description_search: 'Try different search terms',
+          description_category: 'There are no clients in this category'
+        },
+        badges: {
+          total_appointments: 'Total Appointments',
+          total_value: 'Total Value'
+        },
+        last_appointment_prefix: 'Last appointment',
+        never: 'Never',
+        actions: {
+          schedule: 'Schedule',
+          contact: 'Contact'
+        },
+        risk: {
+          at_risk: 'Client at risk ({{days}} days)',
+          lost: 'Lost client ({{days}} days)'
+        },
+        whatsapp: {
+          missing: 'Client has no WhatsApp number',
+          message_template: 'Hi {{name}}, hope you are well. Would you like to book your next appointment?'
+        }
+      },
+      comprehensiveReports: {
+        title: 'Advanced Reports',
+        subtitle: 'Detailed analysis of your business performance',
+        actions: { update: 'Refresh', updating: 'Refreshing...' },
+        metrics: {
+          total_appointments: 'Total Appointments',
+          revenue: 'Revenue',
+          average: 'Average',
+          completion_rate: 'Completion Rate',
+          new_in_period: 'new this period'
+        },
+        tabs: { summary: 'Summary' },
+        descriptions: {
+          by_status: 'Distribution by status in the selected period',
+          client_metrics: 'Retention and growth metrics',
+          peak_hours: 'Days and hours with the most appointments scheduled',
+          employee_performance: 'Productivity and efficiency statistics',
+          top_services: 'Most demanded and profitable services',
+          recurring_clients: 'Frequent clients and activity status analysis'
+        },
+        cards: {
+          peak_hours: 'Highest Demand Hours',
+          recurring_clients: 'Recurring Clients',
+          client_analysis: 'Client Analysis'
+        },
+        labels: {
+          active_clients: 'Active Clients',
+          retention_rate: 'Retention Rate',
+          efficiency: 'efficiency',
+          average_short: 'avg',
+          days: 'days',
+          at: 'at',
+          last_visit: 'Last visit'
+        },
+        status: {
+          active: 'Active',
+          at_risk: 'At Risk',
+          lost: 'Lost'
+        },
+        whatsapp: {
+          missing: 'This client has no WhatsApp configured',
+          message_template: 'Hi {{name}}! We noticed it has been a while since your last visit. Would you like to schedule a new appointment? We miss you! 😊'
+        },
+        errors: {
+          generate_failed: 'Could not generate reports'
+        }
+      }
     },
 
     // Calendar
@@ -482,6 +591,7 @@ export const translations = {
       no: 'No',
       close: 'Cerrar',
       open: 'Abrir',
+  disabled: 'Inactivo',
       search: 'Buscar',
       filter: 'Filtrar',
       sort: 'Ordenar',
@@ -489,6 +599,7 @@ export const translations = {
       back: 'Atrás',
       next: 'Siguiente',
       previous: 'Anterior',
+  of: 'de',
       submit: 'Enviar',
       reset: 'Restablecer',
       clear: 'Limpiar',
@@ -569,6 +680,17 @@ export const translations = {
 
     // Business Registration
     business: {
+      management: {
+        title: 'Gestión del Negocio',
+        subtitle: 'Administra la información, sedes y servicios de tu negocio',
+        configure_title: 'Configura tu negocio',
+        configure_description: 'Primero configura la información básica de tu negocio',
+        create_business: 'Crear Negocio',
+        info_description: 'Información básica y de contacto de tu negocio',
+        settings_title: 'Configuración del Negocio',
+        settings_description: 'Ajustes generales para el funcionamiento de tu negocio',
+        updated: 'Información del negocio actualizada'
+      },
       registration: {
         title: 'Registra tu Negocio',
   business_description: 'Crea el perfil de tu negocio para comenzar a gestionar citas',
@@ -703,6 +825,8 @@ export const translations = {
       title: 'Perfil',
       personal_info: 'Información Personal',
       name: 'Nombre Completo',
+  username: 'Usuario',
+  username_hint: 'Solo letras, números, puntos y guiones bajos.',
       email: 'Correo Electrónico',
       phone: 'Teléfono',
       avatar: 'Foto de Perfil',
@@ -747,7 +871,8 @@ export const translations = {
     dashboard: {
       title: 'Panel Principal',
       welcome: '¡Bienvenido de vuelta, {{name}}!',
-      overview: 'Esto es lo que está pasando con tu negocio hoy',
+  overview: 'Esto es lo que está pasando con tu negocio hoy',
+  overview_client: 'Esto es lo que está pasando con tus citas hoy',
       quick_stats: 'Estadísticas Rápidas',
       recent_appointments: 'Citas Recientes',
       upcoming_appointments: 'Próximas Citas',
@@ -868,6 +993,7 @@ export const translations = {
       title: 'Reportes',
       business_overview: 'Resumen del Negocio',
       period_selection: 'Selección de Período',
+  this_quarter: 'Este Trimestre',
       this_week: 'Esta Semana',
       this_month: 'Este Mes',
       last_year: 'Último Año',
@@ -889,6 +1015,98 @@ export const translations = {
       new_clients: 'Clientes Nuevos',
       returning_clients: 'Clientes Recurrentes',
       no_data_available: 'No hay datos disponibles para el período seleccionado'
+    },
+    admin: {
+      clientManagement: {
+        search_placeholder: 'Buscar clientes por nombre, email o teléfono...',
+        filter_by_status: 'Filtrar por estado',
+        all_statuses: 'Todos los estados',
+        status: {
+          active: 'Activo',
+          inactive: 'Inactivo',
+          blocked: 'Bloqueado',
+          unknown: 'Desconocido',
+          active_plural: 'Activos',
+          inactive_plural: 'Inactivos',
+          blocked_plural: 'Bloqueados'
+        },
+        tabs: {
+          all: 'Todos',
+          recurring: 'Recurrentes',
+          at_risk: 'En Riesgo',
+          lost: 'Perdidos'
+        },
+        empty: {
+          title: 'No se encontraron clientes',
+          description_search: 'Prueba con otros términos de búsqueda',
+          description_category: 'No hay clientes en esta categoría'
+        },
+        badges: {
+          total_appointments: 'Total Citas',
+          total_value: 'Valor Total'
+        },
+        last_appointment_prefix: 'Última cita',
+        never: 'Nunca',
+        actions: {
+          schedule: 'Agendar',
+          contact: 'Contactar'
+        },
+        risk: {
+          at_risk: 'Cliente en riesgo ({{days}} días)',
+          lost: 'Cliente perdido ({{days}} días)'
+        },
+        whatsapp: {
+          missing: 'Cliente no tiene WhatsApp registrado',
+          message_template: 'Hola {{name}}, esperamos que estés bien. Te esperamos pronto para tu próxima cita.'
+        }
+      },
+      comprehensiveReports: {
+        title: 'Reportes Avanzados',
+        subtitle: 'Análisis detallado del rendimiento de tu negocio',
+        actions: { update: 'Actualizar', updating: 'Actualizando...' },
+        metrics: {
+          total_appointments: 'Citas Totales',
+          revenue: 'Ingresos',
+          average: 'Promedio',
+          completion_rate: 'Tasa de Finalización',
+          new_in_period: 'nuevos este período'
+        },
+        tabs: { summary: 'Resumen' },
+        descriptions: {
+          by_status: 'Distribución por estado en el período seleccionado',
+          client_metrics: 'Métricas de retención y crecimiento',
+          peak_hours: 'Los días y horas con más citas programadas',
+          employee_performance: 'Estadísticas de productividad y eficiencia',
+          top_services: 'Los servicios con mayor demanda y rentabilidad',
+          recurring_clients: 'Análisis de clientes frecuentes y estado de actividad'
+        },
+        cards: {
+          peak_hours: 'Horarios con Mayor Demanda',
+          recurring_clients: 'Clientes Recurrentes',
+          client_analysis: 'Análisis de Clientes'
+        },
+        labels: {
+          active_clients: 'Clientes Activos',
+          retention_rate: 'Tasa de Retención',
+          efficiency: 'eficiencia',
+          average_short: 'prom',
+          days: 'días',
+          at: 'a las',
+          last_visit: 'Última visita'
+        },
+        status: {
+          active: 'Activo',
+          at_risk: 'En Riesgo',
+          lost: 'Perdido'
+        },
+        whatsapp: {
+          missing: 'Este cliente no tiene WhatsApp configurado',
+          message_template: '¡Hola {{name}}! Hemos notado que hace tiempo no vienes a vernos. ¿Te gustaría agendar una nueva cita? ¡Te extrañamos! 😊'
+        },
+        errors: {
+          generate_failed: 'No se pudieron generar los reportes'
+        }
+      }
     },
 
     // Calendar

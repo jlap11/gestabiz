@@ -24,7 +24,8 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
-import { useLanguage, formatCurrency } from '@/contexts/LanguageContext'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { formatCurrency } from '@/lib/i18n'
 import type { Language } from '@/contexts/LanguageContext'
 import { User, Service } from '@/types'
 

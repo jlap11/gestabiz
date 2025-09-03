@@ -17,6 +17,27 @@ ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================================
+-- Helper functions (SECURITY DEFINER) para evitar recursión en políticas
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.is_business_owner(bid uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.businesses b
+    WHERE b.id = bid AND b.owner_id = auth.uid()
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_business_member(bid uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.business_employees be
+    WHERE be.business_id = bid AND be.employee_id = auth.uid() AND be.status = 'approved'
+  );
+$$;
+
+-- ============================================================================
 -- PROFILES
 -- ============================================================================
 DROP POLICY IF EXISTS sel_profiles ON public.profiles;
@@ -38,12 +59,7 @@ DROP POLICY IF EXISTS upd_businesses ON public.businesses;
 DROP POLICY IF EXISTS del_businesses ON public.businesses;
 CREATE POLICY sel_businesses ON public.businesses
   FOR SELECT USING (
-    owner_id = auth.uid() OR EXISTS (
-      SELECT 1 FROM public.business_employees be
-      WHERE be.business_id = businesses.id
-        AND be.employee_id = auth.uid()
-        AND be.status = 'approved'
-    )
+    is_business_owner(id) OR is_business_member(id)
   );
 CREATE POLICY ins_businesses ON public.businesses
   FOR INSERT WITH CHECK (owner_id = auth.uid());
@@ -59,38 +75,20 @@ DROP POLICY IF EXISTS sel_locations ON public.locations;
 DROP POLICY IF EXISTS all_locations_owner ON public.locations;
 CREATE POLICY sel_locations ON public.locations
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.businesses b
-      WHERE b.id = locations.business_id
-        AND (
-          b.owner_id = auth.uid() OR EXISTS (
-            SELECT 1 FROM public.business_employees be
-            WHERE be.business_id = b.id AND be.employee_id = auth.uid() AND be.status = 'approved'
-          )
-        )
-    )
+    is_business_owner(locations.business_id) OR is_business_member(locations.business_id)
   );
 CREATE POLICY all_locations_owner ON public.locations
-  FOR ALL USING (
-    auth.uid() IN (
-      SELECT owner_id FROM public.businesses WHERE id = locations.business_id
-    )
-  );
-
+  FOR ALL USING (is_business_owner(locations.business_id));
+  
 -- ============================================================================
 -- BUSINESS EMPLOYEES
 -- ============================================================================
-DROP POLICY IF EXISTS all_business_employees_owner ON public.business_employees;
 DROP POLICY IF EXISTS sel_business_employees_self ON public.business_employees;
 DROP POLICY IF EXISTS ins_business_employees_self ON public.business_employees;
-CREATE POLICY all_business_employees_owner ON public.business_employees
-  FOR ALL USING (
-    auth.uid() IN (
-      SELECT owner_id FROM public.businesses WHERE id = business_employees.business_id
-    )
-  );
 CREATE POLICY sel_business_employees_self ON public.business_employees
-  FOR SELECT USING (auth.uid() = employee_id);
+  FOR SELECT USING (
+    auth.uid() = employee_id OR is_business_owner(business_id)
+  );
 CREATE POLICY ins_business_employees_self ON public.business_employees
   FOR INSERT WITH CHECK (auth.uid() = employee_id);
 
@@ -101,23 +99,10 @@ DROP POLICY IF EXISTS sel_services ON public.services;
 DROP POLICY IF EXISTS all_services_owner ON public.services;
 CREATE POLICY sel_services ON public.services
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.businesses b
-      WHERE b.id = services.business_id
-        AND (
-          b.owner_id = auth.uid() OR EXISTS (
-            SELECT 1 FROM public.business_employees be
-            WHERE be.business_id = b.id AND be.employee_id = auth.uid() AND be.status = 'approved'
-          )
-        )
-    )
+    is_business_owner(services.business_id) OR is_business_member(services.business_id)
   );
 CREATE POLICY all_services_owner ON public.services
-  FOR ALL USING (
-    auth.uid() IN (
-      SELECT owner_id FROM public.businesses WHERE id = services.business_id
-    )
-  );
+  FOR ALL USING (is_business_owner(services.business_id));
 
 -- ============================================================================
 -- APPOINTMENTS

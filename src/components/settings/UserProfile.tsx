@@ -1,41 +1,81 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useKV } from '@/lib/useKV'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+// Badge removed along with role/permission chips
 import { Separator } from '@/components/ui/separator'
-import { UserCircle, Upload, FloppyDisk as Save } from '@phosphor-icons/react'
+import { User as UserIcon, Upload, Save, AtSign } from 'lucide-react'
 import { toast } from 'sonner'
 import { User as UserType } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { slugify } from '@/lib/utils'
 import { format } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
+import { COUNTRY_CODES, COUNTRY_PHONE_EXAMPLES } from '@/constants'
 
 interface UserProfileProps {
   user: UserType
   onUserUpdate: (user: UserType) => void
 }
 
-export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
+export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfileProps>) {
   const { t, language } = useLanguage()
   const [, setUsers] = useKV<UserType[]>('users', [])
   const [isUpdating, setIsUpdating] = useState(false)
   
   const [formData, setFormData] = useState({
     name: user.name,
+  username: user.username || '',
     email: user.email,
     phone: user.phone || '',
     avatar_url: user.avatar_url || ''
   })
+
+  // Extract prefix for selector from existing phone, default to MX +52
+  const initialPrefix = (() => {
+    const regex = /^\+(\d{1,3})/
+    const match = regex.exec(user.phone || '')
+    if (match) return `+${match[1]}`
+    return '+52'
+  })()
+  const [phonePrefix, setPhonePrefix] = useState<string>(initialPrefix)
+
+  // Sync with incoming user and auto-fill missing fields
+  useEffect(() => {
+    setFormData(prev => {
+      const next = { ...prev }
+      if (!prev.name && user.name) { next.name = user.name }
+      if (!prev.email && user.email) { next.email = user.email }
+      if (!prev.phone && user.phone) { next.phone = user.phone }
+      if (!prev.avatar_url && user.avatar_url) { next.avatar_url = user.avatar_url }
+      if (!prev.username) {
+        const suggested = user.username?.trim() || slugify(user.name).replace(/-+/g, '.')
+        next.username = suggested
+      }
+      return next
+    })
+  }, [user])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
+  }
+
+  const handlePhoneChange = (value: string) => {
+    const local = value.replace(/[^\d\s-()]/g, '')
+    setFormData(prev => ({ ...prev, phone: `${phonePrefix} ${local}`.trim() }))
+  }
+
+  const handlePrefixChange = (prefix: string) => {
+    setPhonePrefix(prefix)
+    const localPart = (formData.phone || '').replace(/^\+\d{1,4}\s?/, '')
+    setFormData(prev => ({ ...prev, phone: `${prefix} ${localPart}`.trim() }))
   }
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +101,8 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
     try {
       const updatedUser = {
         ...user,
-        name: formData.name,
+  name: formData.name,
+  username: formData.username?.toLowerCase(),
         email: formData.email,
         phone: formData.phone,
         avatar_url: formData.avatar_url,
@@ -75,6 +116,11 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
 
       // Update current user
       onUserUpdate(updatedUser)
+      try {
+        window.localStorage.setItem('current-user', JSON.stringify(updatedUser))
+      } catch {
+        // noop
+      }
       
       toast.success(t('profile.success'))
     } catch (error) {
@@ -85,18 +131,7 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return <Badge variant="default">{t('role.admin')}</Badge>
-      case 'employee':
-        return <Badge variant="secondary">{t('role.employee')}</Badge>
-      case 'client':
-        return <Badge variant="outline">{t('role.client')}</Badge>
-      default:
-        return null
-    }
-  }
+  // Role/permission chips removed for simplified profile view
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -112,7 +147,7 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <UserCircle className="h-5 w-5" />
+            <UserIcon className="h-5 w-5" />
             {t('profile.title')}
           </CardTitle>
           <CardDescription>
@@ -141,9 +176,7 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
             </div>
             <div className="space-y-1">
               <h3 className="text-lg font-semibold">{user.name}</h3>
-              <div className="flex items-center gap-2">
-                {getRoleBadge(user.role)}
-              </div>
+              {/* Role badge removed */}
               <p className="text-sm text-muted-foreground">
                 {t('profile.joined_on')}: {formatDate(user.created_at)}
               </p>
@@ -157,74 +190,51 @@ export default function UserProfile({ user, onUserUpdate }: UserProfileProps) {
             <h4 className="font-semibold">{t('profile.personal_info')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">
-                  {t('profile.name')}
-                </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder={t('profile.name')}
-                />
+                <Label htmlFor="username">@{t('profile.username') || 'usuario'}</Label>
+                <div className="flex items-center gap-2">
+                  <AtSign className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value.replace(/[^a-z0-9_.]/gi, '').toLowerCase())}
+                    placeholder="tu.usuario"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">{t('profile.username_hint') || 'Letras, números, puntos y guiones bajos.'}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">
-                  {t('profile.email')}
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder={t('profile.email')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">
-                  {t('profile.phone')}
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="+1 (555) 123-4567"
-                />
+                <Label htmlFor="phone">{t('profile.phone')}</Label>
+                <div className="flex gap-2">
+                  <Select value={phonePrefix} onValueChange={handlePrefixChange}>
+                    <SelectTrigger className="w-24">
+                      {(() => {
+                        const sel = COUNTRY_CODES.find(c => c.code === phonePrefix)
+                        const flag = sel ? sel.label.split(' ')[0] : ''
+                        return <span className="truncate">{`${flag} ${phonePrefix}`}</span>
+                      })()}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRY_CODES.map(cc => (
+                        <SelectItem key={cc.code} value={cc.code}>{cc.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={(formData.phone || '').replace(/^\+\d{1,4}\s?/, '')}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder={COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">{`${phonePrefix} ${COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}`}</p>
               </div>
             </div>
           </div>
 
           <Separator />
 
-          {/* Business Information */}
-          {user.business_id && (
-            <div className="space-y-4">
-              <h4 className="font-semibold">{t('profile.business_info')}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('profile.role')}</Label>
-                  <div className="flex items-center gap-2">
-                    {getRoleBadge(user.role)}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('profile.permissions')}</Label>
-                  <div className="flex flex-wrap gap-1">
-                    {user.permissions?.slice(0, 3).map(permission => (
-                      <Badge key={permission} variant="outline" className="text-xs">
-                        {permission.replace('_', ' ')}
-                      </Badge>
-                    ))}
-                    {user.permissions?.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{user.permissions.length - 3} more
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Business information removed for this simplified view */}
 
           {/* Save Changes */}
           <div className="flex justify-end pt-4">

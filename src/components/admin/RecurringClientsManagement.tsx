@@ -17,7 +17,8 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
-import { useLanguage, formatDate, formatCurrency } from '@/contexts/LanguageContext'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { formatDate, formatCurrency } from '@/lib/i18n'
 import { Client, Appointment, User } from '@/types'
 
 interface RecurringClientsManagementProps {

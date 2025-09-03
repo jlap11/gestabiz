@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Calendar, Clock, User, PencilSimple, Trash, SortAscending } from '@phosphor-icons/react'
+import { Plus, Calendar, Clock, User, Pencil as PencilSimple, Trash, ArrowUpAZ as SortAscending } from 'lucide-react'
 import { User as UserType, Appointment, Client, AppointmentFilter } from '@/types'
 import AppointmentForm from './AppointmentForm'
 import AdvancedFilters from './AdvancedFilters'
@@ -35,9 +35,12 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
   }, [appointments, processNotifications])
 
   const filteredAndSortedAppointments = useMemo(() => {
-    const filtered = filterAppointments(appointments, filter)
-    return sortAppointments(filtered, sortBy, sortOrder)
-  }, [appointments, filter, sortBy, sortOrder])
+    let base = filterAppointments(appointments, filter)
+    if (user.role === 'client') {
+      base = base.filter(apt => ['scheduled', 'confirmed', 'in_progress'].includes(apt.status))
+    }
+    return sortAppointments(base, sortBy, sortOrder)
+  }, [appointments, filter, sortBy, sortOrder, user.role])
 
   const availableTags = useMemo(() => {
     const allTags = appointments.flatMap(apt => apt.tags || [])
@@ -208,9 +211,9 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Gestión de Citas</h2>
+          <h2 className="text-2xl font-bold">{user.role === 'client' ? 'Mis Citas' : 'Gestión de Citas'}</h2>
           <p className="text-muted-foreground">
-            Administra y realiza seguimiento de todas tus citas
+            {user.role === 'client' ? 'Revisa tus próximas y pasadas reservas' : 'Administra y realiza seguimiento de todas tus citas'}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -235,10 +238,12 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
               <SortAscending className={`h-4 w-4 transition-transform ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
             </Button>
           </div>
-          <Button onClick={() => setShowForm(true)} className="gap-2">
-            <Plus size={16} />
-            Nueva Cita
-          </Button>
+          {user.role !== 'client' && (
+            <Button onClick={() => setShowForm(true)} className="gap-2">
+              <Plus size={16} />
+              Nueva Cita
+            </Button>
+          )}
         </div>
       </div>
 

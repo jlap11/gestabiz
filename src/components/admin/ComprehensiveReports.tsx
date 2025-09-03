@@ -8,21 +8,21 @@ import { Separator } from '@/components/ui/separator'
 import { User, BusinessAnalytics, ReportFilters, Appointment, Client } from '@/types'
 import { useKV } from '@/lib/useKV'
 import { 
-  ChartBar as BarChart3,
-  TrendUp as TrendingUp,
-  Users, 
-  Calendar, 
-  CurrencyDollar as DollarSign, 
+  BarChart3,
+  TrendingUp,
+  Users,
+  Calendar,
+  DollarSign,
   Clock,
-  
   Star,
-  WarningCircle as AlertTriangle,
-  ChatCircle as MessageSquare,
-  
-} from '@phosphor-icons/react'
+  AlertTriangle,
+  MessageSquare,
+} from 'lucide-react'
 import { format, subWeeks, subMonths, subYears, parseISO } from 'date-fns'
 import { toast } from 'sonner'
-import { es } from 'date-fns/locale'
+import { es as esLocale, enUS } from 'date-fns/locale'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { formatCurrency } from '@/lib/i18n'
 
 interface ComprehensiveReportsProps {
   user: User
@@ -58,6 +58,8 @@ interface EmployeePerformance {
 
 export default function ComprehensiveReports(props: Readonly<ComprehensiveReportsProps>) {
   const { user } = props
+  const { t, language } = useLanguage()
+  const dfLocale = language === 'es' ? esLocale : enUS
   const [appointments] = useKV<Appointment[]>(`appointments-${user.business_id}`, [])
   const [clients] = useKV<Client[]>(`clients-${user.business_id}`, [])
   const [analytics, setAnalytics] = useState<BusinessAnalytics | null>(null)
@@ -247,12 +249,12 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
       setAnalytics(analyticsData)
     } catch (error) {
-      toast.error('No se pudieron generar los reportes')
+    toast.error(t('admin.comprehensiveReports.errors.generate_failed'))
       throw error
     } finally {
       setIsLoading(false)
     }
-  }, [appointments, clients, filters])
+  }, [appointments, clients, filters, t])
 
   useEffect(() => {
     generateAnalytics()
@@ -291,11 +293,11 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
   const sendWhatsAppMessage = async (client: RecurringClient) => {
     if (!client.whatsapp) {
-      alert('Este cliente no tiene WhatsApp configurado')
+      alert(t('admin.comprehensiveReports.whatsapp.missing'))
       return
     }
 
-    const message = `¡Hola ${client.name}! Hemos notado que hace tiempo no vienes a vernos. ¿Te gustaría agendar una nueva cita? ¡Te extrañamos! 😊`
+    const message = t('admin.comprehensiveReports.whatsapp.message_template', { name: client.name })
     
     // In a real implementation, this would call your WhatsApp API
     const whatsappUrl = `https://wa.me/${client.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
@@ -303,8 +305,11 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
   }
 
   const getDayName = (dayIndex: number) => {
-    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-    return days[dayIndex]
+    // Build a date for the current week starting Sunday (0) and add dayIndex
+    const base = new Date(2020, 7, 2) // Sunday, Aug 2, 2020
+    const d = new Date(base)
+    d.setDate(base.getDate() + dayIndex)
+    return format(d, 'EEE', { locale: dfLocale })
   }
 
   const getStatusColor = (status: string) => {
@@ -326,9 +331,9 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
   }
 
   const getStatusLabel = (status: RecurringStatus) => {
-    if (status === 'active') return 'Activo'
-    if (status === 'at_risk') return 'En Riesgo'
-    return 'Perdido'
+  if (status === 'active') return t('admin.comprehensiveReports.status.active')
+  if (status === 'at_risk') return t('admin.comprehensiveReports.status.at_risk')
+  return t('admin.comprehensiveReports.status.lost')
   }
 
   if (!analytics) {
@@ -347,28 +352,26 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
       {/* Header with filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Reportes Avanzados</h1>
-          <p className="text-muted-foreground">
-            Análisis detallado del rendimiento de tu negocio
-          </p>
+          <h1 className="text-3xl font-bold">{t('admin.comprehensiveReports.title')}</h1>
+          <p className="text-muted-foreground">{t('admin.comprehensiveReports.subtitle')}</p>
         </div>
         
         <div className="flex items-center gap-4">
           <Select value={filters.date_range.preset} onValueChange={handlePresetChange}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Período" />
+              <SelectValue placeholder={t('reports.period_selection')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Última semana</SelectItem>
-              <SelectItem value="month">Último mes</SelectItem>
-              <SelectItem value="quarter">Último trimestre</SelectItem>
-              <SelectItem value="year">Último año</SelectItem>
+              <SelectItem value="week">{t('reports.this_week')}</SelectItem>
+              <SelectItem value="month">{t('reports.this_month')}</SelectItem>
+              <SelectItem value="quarter">{t('reports.this_quarter')}</SelectItem>
+              <SelectItem value="year">{t('reports.last_year')}</SelectItem>
             </SelectContent>
           </Select>
           
           <Button variant="outline" onClick={generateAnalytics} disabled={isLoading}>
             <BarChart3 className="h-4 w-4 mr-2" />
-            {isLoading ? 'Actualizando...' : 'Actualizar'}
+            {isLoading ? t('admin.comprehensiveReports.actions.updating') : t('admin.comprehensiveReports.actions.update')}
           </Button>
         </div>
       </div>
@@ -377,46 +380,46 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Citas Totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.comprehensiveReports.metrics.total_appointments')}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.appointments.total}</div>
             <p className="text-xs text-muted-foreground">
-              {analytics.appointments.completed} completadas
+              {analytics.appointments.completed} {t('appointments.completed')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.comprehensiveReports.metrics.revenue')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€{analytics.appointments.revenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(analytics.appointments.revenue, 'EUR', language)}</div>
             <p className="text-xs text-muted-foreground">
-              Promedio: €{(analytics.appointments.revenue / Math.max(analytics.appointments.completed, 1)).toFixed(2)} por cita
+              {t('admin.comprehensiveReports.metrics.average')}: {formatCurrency((analytics.appointments.revenue / Math.max(analytics.appointments.completed, 1)), 'EUR', language)} {t('appointments.appointment_details').toLowerCase()}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clientes</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('nav.clients')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.clients.total}</div>
             <p className="text-xs text-muted-foreground">
-              {analytics.clients.new} nuevos este período
+              {analytics.clients.new} {t('admin.comprehensiveReports.metrics.new_in_period')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Finalización</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('admin.comprehensiveReports.metrics.completion_rate')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -426,7 +429,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                 : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {analytics.appointments.cancelled} canceladas
+              {analytics.appointments.cancelled} {t('appointments.cancelled')}
             </p>
           </CardContent>
         </Card>
@@ -435,23 +438,23 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
       {/* Detailed reports tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Resumen</TabsTrigger>
-          <TabsTrigger value="peak-hours">Horarios Pico</TabsTrigger>
-          <TabsTrigger value="employees">Empleados</TabsTrigger>
-          <TabsTrigger value="services">Servicios</TabsTrigger>
-          <TabsTrigger value="clients">Clientes</TabsTrigger>
+          <TabsTrigger value="overview">{t('admin.comprehensiveReports.tabs.summary')}</TabsTrigger>
+          <TabsTrigger value="peak-hours">{t('reports.peak_hours')}</TabsTrigger>
+          <TabsTrigger value="employees">{t('nav.employees')}</TabsTrigger>
+          <TabsTrigger value="services">{t('nav.services')}</TabsTrigger>
+          <TabsTrigger value="clients">{t('nav.clients')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Estado de Citas</CardTitle>
-                <CardDescription>Distribución por estado en el período seleccionado</CardDescription>
+                <CardTitle>{t('reports.appointments_by_status')}</CardTitle>
+                <CardDescription>{t('admin.comprehensiveReports.descriptions.by_status')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Completadas</span>
+                  <span className="text-sm">{t('appointments.completed')}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
                       <div 
@@ -465,7 +468,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Canceladas</span>
+                  <span className="text-sm">{t('appointments.cancelled')}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
                       <div 
@@ -479,7 +482,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">No Show</span>
+                  <span className="text-sm">{t('appointments.no_show')}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
                       <div 
@@ -497,31 +500,31 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
             <Card>
               <CardHeader>
-                <CardTitle>Análisis de Clientes</CardTitle>
-                <CardDescription>Métricas de retención y crecimiento</CardDescription>
+                <CardTitle>{t('admin.comprehensiveReports.cards.client_analysis')}</CardTitle>
+                <CardDescription>{t('admin.comprehensiveReports.descriptions.client_metrics')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Clientes Activos</span>
+                  <span className="text-sm">{t('admin.comprehensiveReports.labels.active_clients')}</span>
                   <span className="text-lg font-bold text-green-600">
                     {recurringClients.filter(c => c.status === 'active').length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">En Riesgo</span>
+                  <span className="text-sm">{t('admin.comprehensiveReports.status.at_risk')}</span>
                   <span className="text-lg font-bold text-yellow-600">
                     {recurringClients.filter(c => c.status === 'at_risk').length}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Perdidos</span>
+                  <span className="text-sm">{t('admin.comprehensiveReports.status.lost')}</span>
                   <span className="text-lg font-bold text-red-600">
                     {recurringClients.filter(c => c.status === 'lost').length}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Tasa de Retención</span>
+                  <span className="text-sm font-medium">{t('admin.comprehensiveReports.labels.retention_rate')}</span>
                   <span className="text-lg font-bold text-primary">
                     {analytics.clients.total > 0 
                       ? (((analytics.clients.total - analytics.clients.lost) / analytics.clients.total) * 100).toFixed(1)
@@ -536,8 +539,8 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         <TabsContent value="peak-hours" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Horarios con Mayor Demanda</CardTitle>
-              <CardDescription>Los días y horas con más citas programadas</CardDescription>
+              <CardTitle>{t('admin.comprehensiveReports.cards.peak_hours')}</CardTitle>
+              <CardDescription>{t('admin.comprehensiveReports.descriptions.peak_hours')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -549,10 +552,10 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       </div>
                       <div>
                         <p className="font-medium">
-                          {getDayName(peak.day_of_week)} a las {peak.hour.toString().padStart(2, '0')}:00
+                          {getDayName(peak.day_of_week)} {t('admin.comprehensiveReports.labels.at')} {peak.hour.toString().padStart(2, '0')}:00
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {peak.appointment_count} citas en este horario
+                          {peak.appointment_count} {t('appointments.title').toLowerCase()}
                         </p>
                       </div>
                     </div>
@@ -570,8 +573,8 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         <TabsContent value="employees" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Rendimiento de Empleados</CardTitle>
-              <CardDescription>Estadísticas de productividad y eficiencia</CardDescription>
+              <CardTitle>{t('reports.employee_performance')}</CardTitle>
+              <CardDescription>{t('admin.comprehensiveReports.descriptions.employee_performance')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -584,14 +587,14 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       <div>
                         <p className="font-medium">{employee.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {employee.appointments_completed} de {employee.appointments_total} citas completadas
+                          {employee.appointments_completed} {t('common.of') ?? 'de'} {employee.appointments_total} {t('appointments.completed')}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">€{employee.revenue.toFixed(2)}</p>
+                      <p className="font-bold">{formatCurrency(employee.revenue, 'EUR', language)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {employee.efficiency_rate.toFixed(1)}% eficiencia
+                        {employee.efficiency_rate.toFixed(1)}% {t('admin.comprehensiveReports.labels.efficiency')}
                       </p>
                     </div>
                   </div>
@@ -604,8 +607,8 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         <TabsContent value="services" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Servicios Más Populares</CardTitle>
-              <CardDescription>Los servicios con mayor demanda y rentabilidad</CardDescription>
+              <CardTitle>{t('reports.top_services')}</CardTitle>
+              <CardDescription>{t('admin.comprehensiveReports.descriptions.top_services')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -618,14 +621,14 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       <div>
                         <p className="font-medium">{service.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {service.bookings} citas programadas
+                          {service.bookings} {t('appointments.title').toLowerCase()}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">€{service.revenue.toFixed(2)}</p>
+                      <p className="font-bold">{formatCurrency(service.revenue, 'EUR', language)}</p>
                       <p className="text-sm text-muted-foreground">
-                        €{service.average_price.toFixed(2)} promedio
+                        {formatCurrency(service.average_price, 'EUR', language)} {t('admin.comprehensiveReports.labels.average_short')}
                       </p>
                     </div>
                   </div>
@@ -638,8 +641,8 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         <TabsContent value="clients" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Clientes Recurrentes</CardTitle>
-              <CardDescription>Análisis de clientes frecuentes y estado de actividad</CardDescription>
+              <CardTitle>{t('admin.comprehensiveReports.cards.recurring_clients')}</CardTitle>
+              <CardDescription>{t('admin.comprehensiveReports.descriptions.recurring_clients')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -655,13 +658,13 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       <div>
                         <p className="font-medium">{client.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {client.total_appointments} citas • Última visita: {client.last_appointment ? format(parseISO(client.last_appointment), 'dd/MM/yyyy', { locale: es }) : 'Nunca'}
+                          {client.total_appointments} {t('appointments.title').toLowerCase()} • {t('admin.comprehensiveReports.labels.last_visit')}: {client.last_appointment ? format(parseISO(client.last_appointment), 'dd/MM/yyyy', { locale: dfLocale }) : t('admin.clientManagement.never')}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
-                        {client.days_since_last} días
+                        {client.days_since_last} {t('admin.comprehensiveReports.labels.days')}
                       </span>
                       {(client.status === 'at_risk' || client.status === 'lost') && client.whatsapp && (
                         <Button
@@ -671,7 +674,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                           className="ml-2"
                         >
                           <MessageSquare className="h-4 w-4 mr-1" />
-                          WhatsApp
+                          {t('clients.send_whatsapp')}
                         </Button>
                       )}
                     </div>

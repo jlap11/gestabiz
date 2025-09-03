@@ -4,12 +4,13 @@ import { useLanguage } from '@/contexts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, Users, Clock, Plus, TrendUp } from '@phosphor-icons/react'
+import { Calendar, Users, Clock, Plus, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppointmentForm } from './AppointmentForm'
 import AppointmentsView from './AppointmentsView'
 import ClientsView from './ClientsView'
 import { DashboardOverview } from './DashboardOverview'
+import BusinessRegistration from '@/components/business/BusinessRegistration'
 
 interface DashboardProps {
   user: User
@@ -30,6 +31,7 @@ function Dashboard({
 }: Readonly<DashboardProps>) {
   const { t } = useLanguage()
   const [showAppointmentForm, setShowAppointmentForm] = useState(false)
+  const [showBusinessRegistration, setShowBusinessRegistration] = useState(false)
 
   // Calculate today's appointments
   const today = new Date().toISOString().split('T')[0]
@@ -45,7 +47,7 @@ function Dashboard({
     return aptDate >= new Date() && aptDate <= nextWeek
   })
 
-  const dashboardStats = [
+  const allStats = [
     {
       title: t('dashboard.todayAppointments'),
       value: todayAppointments.length.toString(),
@@ -53,6 +55,7 @@ function Dashboard({
       color: 'text-blue-600',
       change: '+12%'
     },
+    // Métricas de negocio (ocultas para cliente)
     {
       title: t('dashboard.totalClients'),
       value: stats?.total_appointments?.toString() || '0',
@@ -75,6 +78,10 @@ function Dashboard({
       change: '+5%'
     }
   ]
+
+  const dashboardStats = user.role === 'client'
+    ? [allStats[0], allStats[3]]
+    : allStats
 
   const handleCreateAppointment = async (appointmentData: Partial<Appointment>) => {
     try {
@@ -106,7 +113,7 @@ function Dashboard({
             {t('dashboard.welcome', { name: user.name })}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('dashboard.overview')}
+            {user.role === 'client' ? t('dashboard.overview_client') : t('dashboard.overview')}
           </p>
         </div>
         
@@ -117,6 +124,19 @@ function Dashboard({
           </Button>
         )}
       </div>
+
+      {/* CTA crear negocio si no tiene uno */}
+      {!user.business_id && user.role !== 'client' && (
+        <Card className="bg-muted/30 border-dashed border-2">
+          <CardContent className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div>
+              <p className="font-medium">{t('business.cta.no_business') || 'Aún no tienes un negocio creado.'}</p>
+              <p className="text-sm text-muted-foreground">{t('business.cta.create_hint') || 'Crea tu negocio para empezar a agendar y gestionar tus citas.'}</p>
+            </div>
+            <Button onClick={() => setShowBusinessRegistration(true)}>{t('business.cta.create_button') || 'Crear negocio'}</Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -131,7 +151,7 @@ function Dashboard({
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
               <div className="flex items-center text-xs text-muted-foreground">
-                <TrendUp className="h-3 w-3 mr-1" />
+                <TrendingUp className="h-3 w-3 mr-1" />
                 {stat.change} from last month
               </div>
             </CardContent>
@@ -176,6 +196,28 @@ function Dashboard({
           onSubmit={handleCreateAppointment}
           user={user}
         />
+      )}
+
+      {/* Business Registration Modal */}
+      {showBusinessRegistration && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-background rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-auto">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold">{t('business.registration.title') || 'Registrar Negocio'}</h3>
+              <Button variant="ghost" onClick={() => setShowBusinessRegistration(false)}>✕</Button>
+            </div>
+            <div className="p-4">
+              <BusinessRegistration
+                user={user}
+                onBusinessCreated={() => {
+                  setShowBusinessRegistration(false)
+                  refetch()
+                }}
+                onCancel={() => setShowBusinessRegistration(false)}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
