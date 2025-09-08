@@ -8,6 +8,7 @@ export const translations = {
       edit: 'Edit',
       create: 'Create',
       update: 'Update',
+      saving: 'Saving...',
       loading: 'Loading...',
       error: 'Error',
       success: 'Success',
@@ -30,6 +31,17 @@ export const translations = {
       clear: 'Clear',
       select: 'Select',
       required: 'Required'
+    },
+
+    // Validations
+    validation: {
+      startTimeRequired: 'Start time is required',
+      futureTimeRequired: 'Appointment time must be in the future',
+      serviceRequired: 'Service selection is required',
+      businessRequired: 'Business selection is required',
+      clientNameRequired: 'Client name is required',
+      dateRequired: 'Date is required',
+      invalidTimeRange: 'Invalid time range'
     },
 
     // Authentication
@@ -155,7 +167,8 @@ export const translations = {
         error: 'Error creating business',
         validation: {
           required_fields: 'Please fill in all required fields',
-          at_least_one_service: 'Please add at least one service'
+          at_least_one_service: 'Please add at least one service',
+          clientNameRequired: 'Client name is required'
         },
         placeholders: {
           business_name: 'Enter your business name',
@@ -336,17 +349,23 @@ export const translations = {
       title: 'Appointments',
       new_appointment: 'New Appointment',
       edit_appointment: 'Edit Appointment',
+      create: 'Create Appointment',
+      edit: 'Edit Appointment',
       appointment_details: 'Appointment Details',
       client_name: 'Client Name',
       client_email: 'Client Email',
       client_phone: 'Client Phone',
       service: 'Service',
+      selectService: 'Select a service',
       employee: 'Employee',
       date: 'Date',
+      startTime: 'Start Time',
+      endTime: 'End Time (Auto-calculated)',
       time: 'Time',
       duration: 'Duration',
       price: 'Price',
       notes: 'Notes',
+      notesPlaceholder: 'Additional notes about the appointment...',
       status: 'Status',
       pending: 'Pending',
       confirmed: 'Confirmed',
@@ -594,6 +613,7 @@ export const translations = {
       edit: 'Editar',
       create: 'Crear',
       update: 'Actualizar',
+      saving: 'Guardando...',
       loading: 'Cargando...',
       error: 'Error',
       success: 'Éxito',
@@ -616,6 +636,17 @@ export const translations = {
       clear: 'Limpiar',
       select: 'Seleccionar',
       required: 'Requerido'
+    },
+
+    // Validations
+    validation: {
+      startTimeRequired: 'La hora de inicio es requerida',
+      futureTimeRequired: 'La hora de la cita debe ser en el futuro',
+      serviceRequired: 'La selección de servicio es requerida',
+      businessRequired: 'La selección de negocio es requerida',
+      clientNameRequired: 'El nombre del cliente es requerido',
+      dateRequired: 'La fecha es requerida',
+      invalidTimeRange: 'Rango de tiempo inválido'
     },
 
     // Authentication
@@ -741,7 +772,8 @@ export const translations = {
         error: 'Error al crear el negocio',
         validation: {
           required_fields: 'Por favor completa todos los campos requeridos',
-          at_least_one_service: 'Por favor agrega al menos un servicio'
+          at_least_one_service: 'Por favor agrega al menos un servicio',
+          clientNameRequired: 'El nombre del cliente es obligatorio'
         },
         placeholders: {
           business_name: 'Ingresa el nombre de tu negocio',
@@ -883,7 +915,8 @@ export const translations = {
       title: 'Panel Principal',
       welcome: '¡Bienvenido de vuelta, {{name}}!',
   overview: 'Esto es lo que está pasando con tu negocio hoy',
-  overview_client: 'Esto es lo que está pasando con tus citas hoy',
+  overview_client: 'Aquí puedes ver el estado de tus citas. ¿Quieres agendar una nueva?',
+  schedule_appointment: 'Agendar cita',
       quick_stats: 'Estadísticas Rápidas',
       recent_appointments: 'Citas Recientes',
       upcoming_appointments: 'Próximas Citas',
@@ -922,17 +955,23 @@ export const translations = {
       title: 'Citas',
       new_appointment: 'Nueva Cita',
       edit_appointment: 'Editar Cita',
+      create: 'Crear Cita',
+      edit: 'Editar Cita',
       appointment_details: 'Detalles de la Cita',
       client_name: 'Nombre del Cliente',
       client_email: 'Email del Cliente',
       client_phone: 'Teléfono del Cliente',
       service: 'Servicio',
+      selectService: 'Selecciona un servicio',
       employee: 'Empleado',
       date: 'Fecha',
+      startTime: 'Hora de Inicio',
+      endTime: 'Hora de Fin (Auto-calculada)',
       time: 'Hora',
       duration: 'Duración',
       price: 'Precio',
       notes: 'Notas',
+      notesPlaceholder: 'Notas adicionales sobre la cita...',
       status: 'Estado',
       pending: 'Pendiente',
       confirmed: 'Confirmada',

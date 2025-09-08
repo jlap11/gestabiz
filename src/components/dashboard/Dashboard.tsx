@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calendar, Users, Clock, Plus, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppointmentForm } from './AppointmentForm'
+import { updateClientAppointmentsKV } from '@/lib/updateClientAppointmentsKV'
 import AppointmentsView from './AppointmentsView'
 import ClientsView from './ClientsView'
 import { DashboardOverview } from './DashboardOverview'
@@ -85,11 +86,18 @@ function Dashboard({
 
   const handleCreateAppointment = async (appointmentData: Partial<Appointment>) => {
     try {
-      await createAppointment(appointmentData)
+      const created = await createAppointment(appointmentData)
+      // Si es cliente, actualiza el storage local para que el panel se refresque
+      if (user.role === 'client' && created) {
+        updateClientAppointmentsKV(user.business_id || user.id, {
+          ...appointmentData,
+          ...created,
+        })
+      }
       setShowAppointmentForm(false)
       refetch() // Refresh data
-  } catch {
-  toast.error(t('appointments.createError') || 'Error creating appointment')
+    } catch {
+      toast.error(t('appointments.createError') || 'Error creating appointment')
     }
   }
 
@@ -112,11 +120,18 @@ function Dashboard({
           <h1 className="text-3xl font-bold text-foreground">
             {t('dashboard.welcome', { name: user.name })}
           </h1>
-          <p className="text-muted-foreground mt-2">
-            {user.role === 'client' ? t('dashboard.overview_client') : t('dashboard.overview')}
-          </p>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-muted-foreground">
+              {user.role === 'client' ? t('dashboard.overview_client') : t('dashboard.overview')}
+            </p>
+            {user.role === 'client' && (
+              <Button onClick={() => setShowAppointmentForm(true)} size="sm" className="ml-2">
+                <Plus className="h-4 w-4 mr-1" />
+                {t('dashboard.schedule_appointment')}
+              </Button>
+            )}
+          </div>
         </div>
-        
         {user.role !== 'client' && (
           <Button onClick={() => setShowAppointmentForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -162,20 +177,24 @@ function Dashboard({
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">{t('dashboard.overview')}</TabsTrigger>
+          {user.role !== 'client' && (
+            <TabsTrigger value="overview">{t('dashboard.overview')}</TabsTrigger>
+          )}
           <TabsTrigger value="appointments">{t('nav.appointments')}</TabsTrigger>
           {user.role !== 'client' && (
             <TabsTrigger value="clients">{t('nav.clients')}</TabsTrigger>
           )}
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <DashboardOverview 
-            user={user}
-            appointments={appointments}
-            stats={stats}
-          />
-        </TabsContent>
+        {user.role !== 'client' && (
+          <TabsContent value="overview" className="space-y-4">
+            <DashboardOverview 
+              user={user}
+              appointments={appointments}
+              stats={stats}
+            />
+          </TabsContent>
+        )}
 
         <TabsContent value="appointments" className="space-y-4">
           <AppointmentsView user={user} />

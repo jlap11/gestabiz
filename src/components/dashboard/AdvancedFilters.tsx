@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { CustomDateInput } from '@/components/ui/custom-date-input'
 // Removed unused Select components imports
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { CalendarBlank, Funnel, MagnifyingGlass, X } from '@phosphor-icons/react'
+import { Funnel, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { AppointmentFilter, Client } from '@/types'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -155,43 +155,35 @@ export default function AdvancedFilters({
               </div>
 
               {/* Date Range */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label>Rango de Fechas</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarBlank className="mr-2 h-4 w-4" />
-                      {dateRange.from ? (
-                        dateRange.to ? (
-                          <>
-                            {format(dateRange.from, "dd MMM", { locale: es })} -{" "}
-                            {format(dateRange.to, "dd MMM yyyy", { locale: es })}
-                          </>
-                        ) : (
-                          format(dateRange.from, "dd MMM yyyy", { locale: es })
-                        )
-                      ) : (
-                        "Seleccionar fechas"
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      initialFocus
-                      mode="range"
-                      defaultMonth={dateRange.from}
-                      selected={{ from: dateRange.from, to: dateRange.to }}
-                      onSelect={(range) => {
-                        setDateRange(range || {})
-                        if (range?.from && range?.to) {
-                          setTimeout(handleDateRangeChange, 100)
-                        }
-                      }}
-                      numberOfMonths={2}
-                      locale={es}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="grid grid-cols-1 gap-3">
+                  <CustomDateInput
+                    id="dateFrom"
+                    label="Desde"
+                    value={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                    onChange={(value) => {
+                      const newDate = value ? new Date(value) : undefined
+                      setDateRange(prev => ({ ...prev, from: newDate }))
+                      if (newDate && dateRange.to) {
+                        setTimeout(handleDateRangeChange, 100)
+                      }
+                    }}
+                  />
+                  <CustomDateInput
+                    id="dateTo"
+                    label="Hasta"
+                    value={dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                    onChange={(value) => {
+                      const newDate = value ? new Date(value) : undefined
+                      setDateRange(prev => ({ ...prev, to: newDate }))
+                      if (dateRange.from && newDate) {
+                        setTimeout(handleDateRangeChange, 100)
+                      }
+                    }}
+                    min={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined}
+                  />
+                </div>
               </div>
 
               <Separator />
