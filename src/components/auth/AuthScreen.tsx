@@ -308,16 +308,6 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
                   </div>
                 </form>
 
-                {/* Demo login to bypass backend when running locally */}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full"
-                  disabled={isSigningIn || isGoogleAuth}
-                  onClick={() => onLogin?.({} as unknown as User)}
-                >
-                  {t('auth.loginAsDemo')}
-                </Button>
 
                 <div className="text-center">
                   <Button

@@ -26,56 +26,10 @@ export interface AppointmentFormProps {
 
 export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }: Readonly<AppointmentFormProps>) {
   const [loading, setLoading] = useState(false);
-  const { t } = useLanguage()
+  const { t } = useLanguage();
   const supabaseData = useSupabaseData({ user, autoFetch: false });
-  let services = supabaseData.services;
-  let businesses = supabaseData.businesses;
-
-  // Simulación de servicios y negocios para clientes demo usando useMemo
-  const demoData = React.useMemo(() => {
-    if (user.role !== 'client') return {};
-    const now = new Date().toISOString();
-    const demoServices = [
-      { id: 'srv-1', business_id: 'spa-1', name: 'Masaje relajante', duration: 60, price: 500, category: 'spa', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-2', business_id: 'spa-1', name: 'Facial hidratante', duration: 45, price: 400, category: 'spa', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-3', business_id: 'nails-1', name: 'Manicure tradicional', duration: 40, price: 250, category: 'nails', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-4', business_id: 'nails-1', name: 'Pedicure spa', duration: 50, price: 350, category: 'nails', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-5', business_id: 'nails-2', name: 'Uñas acrílicas', duration: 90, price: 600, category: 'nails', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-6', business_id: 'nails-2', name: 'Decorado artístico', duration: 60, price: 450, category: 'nails', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-7', business_id: 'spa-2', name: 'Masaje descontracturante', duration: 60, price: 550, category: 'spa', is_active: true, created_at: now, updated_at: now },
-      { id: 'srv-8', business_id: 'spa-2', name: 'Spa de pies', duration: 45, price: 300, category: 'spa', is_active: true, created_at: now, updated_at: now }
-    ];
-    const defaultHours = {
-      monday: { open: '09:00', close: '18:00', closed: false },
-      tuesday: { open: '09:00', close: '18:00', closed: false },
-      wednesday: { open: '09:00', close: '18:00', closed: false },
-      thursday: { open: '09:00', close: '18:00', closed: false },
-      friday: { open: '09:00', close: '18:00', closed: false },
-      saturday: { open: '10:00', close: '15:00', closed: false },
-      sunday: { open: '', close: '', closed: true }
-    };
-    const defaultSettings = {
-      appointment_buffer: 15,
-      advance_booking_days: 30,
-      cancellation_policy: 24,
-      auto_confirm: true,
-      require_deposit: false,
-      deposit_percentage: 0,
-      currency: 'MXN'
-    };
-    const demoBusinesses = [
-      { id: 'spa-1', name: 'Spa Relajante', description: 'Masajes y faciales', category: 'spa', owner_id: 'demo', created_at: '', updated_at: '', business_hours: defaultHours, settings: defaultSettings },
-      { id: 'nails-1', name: 'Uñas Bonitas', description: 'Manicure y Pedicure', category: 'nails', owner_id: 'demo', created_at: '', updated_at: '', business_hours: defaultHours, settings: defaultSettings },
-      { id: 'nails-2', name: 'Nail Art Studio', description: 'Arte en uñas y gelish', category: 'nails', owner_id: 'demo', created_at: '', updated_at: '', business_hours: defaultHours, settings: defaultSettings },
-      { id: 'spa-2', name: 'Spa Zen', description: 'Spa y relajación', category: 'spa', owner_id: 'demo', created_at: '', updated_at: '', business_hours: defaultHours, settings: defaultSettings }
-    ];
-    return { services: demoServices, businesses: demoBusinesses };
-  }, [user.role]);
-
-  if (user.role === 'client' && demoData.services && demoData.businesses) {
-    services = demoData.services;
-    businesses = demoData.businesses;
-  }
+  const services = supabaseData.services;
+  const businesses = supabaseData.businesses;
 
 
   type FormState = {
