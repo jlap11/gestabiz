@@ -1,0 +1,25 @@
+ID,Fecha_Creacion,Negocio,Nombre_Servicio,Descripcion,Duracion_Minutos,Precio_MXN,Activo
+c71af8ef-02d9-4848-92b2-b866abbe8044,12/9/2025,"Barbería Clásica Carlos","Afeitado Navaja","Afeitado tradicional con navaja",20,150,Sí
+a23ea84b-e74c-411a-85ec-5a93253bd921,12/9/2025,"Barbería Clásica Carlos","Corte + Barba","Paquete corte y arreglo de barba",45,280,Sí
+1e7b980c-f26e-4ed5-9210-8a14dd1dfa86,12/9/2025,"Barbería Clásica Carlos","Corte Tradicional","Corte de cabello clásico para caballero",30,180,Sí
+fbd91106-76d1-4ae4-8eba-38a300102948,12/9/2025,"Clínica Dental Luis","Blanqueamiento","Blanqueamiento dental profesional",90,2500,Sí
+221f2747-1add-47a8-a064-290aa43ae326,12/9/2025,"Clínica Dental Luis","Consulta Odontológica","Revisión dental general",30,400,Sí
+e3df18e5-f837-41c3-9cbb-3f26de9d54c6,12/9/2025,"Clínica Dental Luis","Limpieza Dental","Profilaxis y limpieza dental",45,600,Sí
+fc35bb64-0742-423c-8e14-fd2fd6d6e752,12/9/2025,"Consultorio Médico Ana","Chequeo Preventivo","Examen médico preventivo completo",60,800,Sí
+e60fe326-4a3c-4af2-aea1-a6d6a0a32b59,12/9/2025,"Consultorio Médico Ana","Consulta General","Consulta médica general",30,500,Sí
+0af0c4dc-2aa6-465d-b834-16750b7b27bf,12/9/2025,"Estética Sofía Beauty","Depilación Láser","Sesión de depilación láser",30,750,Sí
+56be015f-a009-4f08-8cf4-3124ec8c922d,12/9/2025,"Estética Sofía Beauty","Facial Anti-edad","Tratamiento facial antienvejecimiento",60,900,Sí
+f7345255-b232-47d9-a2f9-7af836c78da6,12/9/2025,"Estudio Fotográfico Fernando","Sesión de Retratos","Sesión fotográfica de retratos",60,1200,Sí
+c1323394-3aa9-4968-9643-54ffea7b1c61,12/9/2025,"Estudio Fotográfico Fernando","Sesión Familiar","Sesión fotográfica familiar",90,1800,Sí
+fd1a9545-e200-426e-993d-89029253fcc3,12/9/2025,"Gimnasio Valeria Fit","Clase Grupal Yoga","Clase de yoga en grupo",45,200,Sí
+b0bda79d-b068-49b9-aa9c-81f07b1fc98f,12/9/2025,"Gimnasio Valeria Fit","Entrenamiento Personal","Sesión de entrenamiento personalizado",60,450,Sí
+c7a19f6a-c710-4c75-a6ba-c8bdeddd3a15,12/9/2025,"Salón Camila Style","Corte y Peinado","Corte y peinado profesional",45,400,Sí
+3d35e62e-4670-40fb-ac1c-61095c0c6966,12/9/2025,"Salón Camila Style","Tinte Completo","Coloración completa del cabello",120,800,Sí
+c8d46b88-5439-4384-b02b-0041d9ffaf26,12/9/2025,"Spa Relax María","Facial Hidratante","Tratamiento facial con hidratación profunda",45,650,Sí
+5113ca8c-b891-4535-8cf5-7f4695b64cbb,12/9/2025,"Spa Relax María","Manicure Completo","Cuidado completo de uñas de manos",30,350,Sí
+5e4dbcb6-9957-4597-ae00-9d7d786d26f1,12/9/2025,"Spa Relax María","Masaje Relajante","Masaje completo de relajación muscular",60,800,Sí
+b1ec7b76-42d2-4a00-9875-b5a602f97328,12/9/2025,"Taller Mecánico Ricardo","Cambio de Aceite","Cambio de aceite y filtros",30,350,Sí
+83934d78-3559-4334-a575-d19934df351a,12/9/2025,"Taller Mecánico Ricardo","Revisión General","Diagnóstico completo del vehículo",60,500,Sí
+cf4f097c-c371-45a4-992c-a4a4a3574e82,12/9/2025,"Veterinaria Diego","Baño y Corte","Baño completo y corte de pelo",45,300,Sí
+7e02cadd-5924-4a9e-9944-83712caa2c2c,12/9/2025,"Veterinaria Diego","Consulta Veterinaria","Consulta médica veterinaria",30,350,Sí
+54d14a29-a715-4952-a58a-317199dba11e,12/9/2025,"Veterinaria Diego","Vacunación","Aplicación de vacunas",15,200,Sí

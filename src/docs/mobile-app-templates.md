@@ -5,7 +5,7 @@ This directory contains template files for the React Native/Expo mobile app.
 ## Project Structure
 
 ```
-AppointmentProMobile/
+BookioMobile/
 ├── App.tsx
 ├── app.json
 ├── package.json
@@ -171,9 +171,9 @@ export function useAuth() {
 
 ```bash
 # Create new Expo project
-npx create-expo-app AppointmentProMobile --template blank-typescript
+npx create-expo-app BookioMobile --template blank-typescript
 
-cd AppointmentProMobile
+cd BookioMobile
 
 # Install dependencies
 npm install @supabase/supabase-js

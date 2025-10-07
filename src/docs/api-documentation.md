@@ -1,6 +1,6 @@
-# AppointmentPro API Documentation
+# Bookio API Documentation
 
-This document describes the complete API for the AppointmentPro micro SaaS system.
+This document describes the complete API for the Bookio micro SaaS system.
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@ This document describes the complete API for the AppointmentPro micro SaaS syste
 
 ## Authentication
 
-AppointmentPro uses Supabase Auth with support for:
+Bookio uses Supabase Auth with support for:
 - Email/Password authentication
 - Google OAuth
 - Apple OAuth (mobile)
@@ -570,4 +570,4 @@ const healthCheck = async () => {
 }
 ```
 
-This API documentation provides a complete reference for integrating with the AppointmentPro system across all platforms.
+This API documentation provides a complete reference for integrating with the Bookio system across all platforms.

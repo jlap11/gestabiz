@@ -1,0 +1,142 @@
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Calendar, Clock, MapPin, User, Scissors } from 'lucide-react';
+import { format } from 'date-fns';
+
+interface WizardData {
+  serviceId: string | null;
+  service: { name: string; duration: number; price?: number } | null;
+  date: Date | null;
+  startTime: string | null;
+  endTime: string | null;
+  notes: string;
+  locationId: string | null;
+  location: { name: string } | null;
+}
+
+interface ConfirmationStepProps {
+  readonly wizardData: WizardData;
+  readonly onUpdateNotes: (notes: string) => void;
+  readonly onSubmit: () => void;
+}
+
+interface InfoRowProps {
+  readonly icon: React.ReactNode;
+  readonly label: string;
+  readonly value: string;
+}
+
+function InfoRow({ icon, label, value }: InfoRowProps) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="text-[#8b5cf6] mt-1">{icon}</div>
+      <div className="flex-1">
+        <p className="text-xs text-[#94a3b8]">{label}</p>
+        <p className="text-sm text-white font-medium">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+export function ConfirmationStep({
+  wizardData,
+  onUpdateNotes,
+}: ConfirmationStepProps) {
+  const { service, date, startTime, endTime, notes, location } = wizardData;
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white mb-2">New Appointment</h2>
+        <p className="text-[#94a3b8]">Confirm the details below to finalize the booking</p>
+      </div>
+
+      {/* Appointment Summary Card */}
+      <Card className="bg-[#2d2640] border-white/5 p-6">
+        <div className="space-y-4">
+          {/* Header con icono */}
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="h-5 w-5 text-[#8b5cf6]" />
+            <h3 className="text-lg font-semibold text-white">Appointment Summary</h3>
+          </div>
+
+          {/* Service */}
+          <InfoRow
+            icon={<Scissors className="h-5 w-5" />}
+            label="Service"
+            value={service?.name || 'Not selected'}
+          />
+
+          <Separator className="bg-white/10" />
+
+          {/* Date */}
+          <InfoRow
+            icon={<Calendar className="h-5 w-5" />}
+            label="Date"
+            value={date ? format(date, 'EEEE, MMMM d, yyyy') : 'Not selected'}
+          />
+
+          {/* Time */}
+          <InfoRow
+            icon={<Clock className="h-5 w-5" />}
+            label="Time"
+            value={startTime && endTime ? `${startTime} - ${endTime}` : 'Not selected'}
+          />
+
+          {/* Location */}
+          {location && (
+            <InfoRow
+              icon={<MapPin className="h-5 w-5" />}
+              label="Location"
+              value={location.name}
+            />
+          )}
+
+          {/* Employee (placeholder) */}
+          <InfoRow
+            icon={<User className="h-5 w-5" />}
+            label="Employee"
+            value="Auto-assigned"
+          />
+
+          {/* Price */}
+          {service?.price && (
+            <>
+              <Separator className="bg-white/10" />
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-[#94a3b8] font-medium">Total</span>
+                <span className="text-2xl font-bold text-[#ff8c00]">
+                  ${service.price.toFixed(2)}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
+
+      {/* Notes Section */}
+      <div className="space-y-3">
+        <label htmlFor="appointment-notes" className="text-sm font-medium text-white">
+          Optional Notes
+        </label>
+        <Textarea
+          id="appointment-notes"
+          value={notes}
+          onChange={(e) => onUpdateNotes(e.target.value)}
+          placeholder="Add any special requests or notes..."
+          className="bg-[#1e293b] border-white/10 text-white placeholder:text-[#64748b] min-h-[100px]
+                     focus:border-[#8b5cf6] focus:ring-[#8b5cf6]/20"
+        />
+      </div>
+
+      {/* Footer info */}
+      <div className="text-center pt-4">
+        <p className="text-xs text-[#94a3b8]">
+          You will receive a confirmation via email and WhatsApp
+        </p>
+      </div>
+    </div>
+  );
+}

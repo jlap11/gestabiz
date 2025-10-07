@@ -240,7 +240,7 @@ async function exportAppointmentsToGoogle(
         extendedProperties: {
           private: {
             appointmentId: appointment.id,
-            source: 'AppointmentPro'
+            source: 'Bookio'
           }
         }
       }
@@ -352,7 +352,7 @@ async function importEventsFromGoogle(
   for (const event of events) {
     try {
       // Skip events that originated from our app
-      if (event.extendedProperties?.private?.source === 'AppointmentPro') {
+      if (event.extendedProperties?.private?.source === 'Bookio') {
         continue
       }
 

@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useKV } from '@/lib/useKV'
 import { NotificationSettings, Appointment } from '@/types'
 import { toast } from 'sonner'
@@ -45,7 +46,7 @@ export function useNotifications() {
     })
   }
 
-  const processNotifications = (appointments: Appointment[]) => {
+  const processNotifications = useCallback((appointments: Appointment[]) => {
     const now = new Date()
     
     setNotificationQueue(current => {
@@ -81,7 +82,7 @@ export function useNotifications() {
       const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
       return updatedQueue.filter(n => new Date(n.scheduledFor) > oneDayAgo)
     })
-  }
+  }, [setNotificationQueue])
 
   const updateSettings = (newSettings: Partial<NotificationSettings>) => {
     setSettings(current => ({ ...current, ...newSettings }))

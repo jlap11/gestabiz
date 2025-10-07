@@ -1,8 +1,8 @@
-# AppointmentPro - Complete Deployment Guide
+# Bookio - Complete Deployment Guide
 
 ## 🚀 Deployment Overview
 
-This guide covers deploying the complete AppointmentPro ecosystem:
+This guide covers deploying the complete Bookio ecosystem:
 - **Web Application** (React/Vite) → Vercel
 - **Database & Backend** → Supabase
 - **Edge Functions** → Supabase Functions
@@ -181,8 +181,8 @@ Update `app.config.js`:
 ```javascript
 export default {
   expo: {
-    name: "AppointmentPro",
-    slug: "appointmentpro",
+    name: "Bookio",
+    slug: "Bookio",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -200,14 +200,14 @@ export default {
     ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.yourcompany.appointmentpro"
+      bundleIdentifier: "com.yourcompany.Bookio"
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#FFFFFF"
       },
-      package: "com.yourcompany.appointmentpro"
+      package: "com.yourcompany.Bookio"
     },
     web: {
       favicon: "./assets/favicon.png"
@@ -486,6 +486,6 @@ vercel env ls
 
 ---
 
-**🎉 Congratulations! Your AppointmentPro system is now live and ready for users!**
+**🎉 Congratulations! Your Bookio system is now live and ready for users!**
 
 For support or questions, refer to the individual service documentation or create an issue in the repository.

@@ -1,10 +1,24 @@
-import { ComponentProps, forwardRef, useState, useEffect, useRef } from "react"
+import { ComponentProps, forwardRef, useState, useEffect, useRef, useMemo } from "react"
 import DatePicker from "react-datepicker"
 import { format, parse } from "date-fns"
 import { es } from "date-fns/locale"
 import { CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
 import "react-datepicker/dist/react-datepicker.css"
+
+// Extracted PopperContainer component
+const PopperContainer = ({ children, popperRef }: { children: React.ReactNode, popperRef: React.RefObject<HTMLDivElement | null> }) => (
+  <div
+    ref={popperRef}
+    style={{position:'relative', background: '#18181b', borderRadius: '8px', padding: '0'}}
+  >
+    {children}
+  </div>
+)
+
+// Factory function for popper container to avoid inline component warnings
+const createPopperContainer = (popperRef: React.RefObject<HTMLDivElement | null>) => 
+  (props: { children: React.ReactNode }) => <PopperContainer popperRef={popperRef}>{props.children}</PopperContainer>
 
 interface CustomDateInputProps extends Omit<ComponentProps<"input">, "type" | "value" | "onChange"> {
     label?: string
@@ -37,6 +51,9 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
 
         const minDate = min ? parse(min, 'yyyy-MM-dd', new Date()) : undefined
         const maxDate = max ? parse(max, 'yyyy-MM-dd', new Date()) : undefined
+        
+        // Memoize the popper container function to prevent re-creation on every render
+        const popperContainerFn = useMemo(() => createPopperContainer(popperRef), [popperRef])
 
         // Inject CSS styles into document head
         useEffect(() => {
@@ -267,14 +284,7 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
               className
             )}
             popperClassName="z-50"
-            popperContainer={({ children }) => (
-              <div
-                ref={popperRef}
-                style={{position:'relative', background: '#18181b', borderRadius: '8px', padding: '0'}}
-              >
-                {children}
-              </div>
-            )}
+            popperContainer={popperContainerFn}
           />
           {/* Custom calendar icon */}
           <CalendarDays

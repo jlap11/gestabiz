@@ -90,12 +90,12 @@ serve(async (req) => {
 
               <div style="margin: 30px 0; text-align: center;">
                 <p style="margin: 0; color: #6c757d;">
-                  Este es un recordatorio automático enviado por AppointmentPro.
+                  Este es un recordatorio automático enviado por Bookio.
                 </p>
               </div>
 
               <div style="border-top: 1px solid #e1e5e9; padding-top: 20px; margin-top: 30px; text-align: center; color: #6c757d; font-size: 12px;">
-                <p>AppointmentPro - Sistema de Gestión de Citas</p>
+                <p>Bookio - Sistema de Gestión de Citas</p>
                 <p>Si tienes alguna pregunta, contacta directamente con tu proveedor de servicios.</p>
               </div>
             </div>
@@ -117,7 +117,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'AppointmentPro <noreply@your-domain.com>',
+        from: 'Bookio <noreply@your-domain.com>',
         to: [appointment.users.email],
         subject: emailSubject,
         html: emailBody,

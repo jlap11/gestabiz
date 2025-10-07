@@ -21,7 +21,7 @@
    - Go to "APIs & Services" > "Credentials"
    - Click "Create Credentials" > "OAuth 2.0 Client IDs"
    - Application type: "Web application"
-   - Name: "AppointmentPro Calendar Sync"
+   - Name: "Bookio Calendar Sync"
    - Authorized redirect URIs:
      - `http://localhost:5173/auth/google/callback` (development)
      - `https://your-domain.com/auth/google/callback` (production)

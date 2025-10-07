@@ -1,4 +1,4 @@
--- AppointmentPro Database Schema for Supabase
+-- Bookio Database Schema for Supabase
 -- This script sets up all tables, RLS policies, and functions needed for the appointment management system
 
 -- Enable required extensions
@@ -243,7 +243,7 @@ CREATE INDEX idx_sync_conflicts_resolved ON sync_conflicts(resolved_at);
 -- Insert sample user (this would typically be handled by Supabase Auth)
 /*
 INSERT INTO users (id, email, full_name, timezone) VALUES 
-    ('550e8400-e29b-41d4-a716-446655440000', 'demo@appointmentpro.com', 'Demo User', 'America/New_York');
+    ('550e8400-e29b-41d4-a716-446655440000', 'demo@Bookio.com', 'Demo User', 'America/New_York');
 
 -- Insert sample user settings
 INSERT INTO user_settings (user_id) VALUES 

@@ -1,4 +1,4 @@
-# AppointmentPro - Guía Completa de Despliegue
+# Bookio - Guía Completa de Despliegue
 
 Esta guía te llevará paso a paso para desplegar tu aplicación completa de gestión de citas con **React Native (móvil)**, **React (web)**, **Browser Extension**, y **Supabase (backend)**.
 
@@ -117,7 +117,7 @@ VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
 
 # App Settings
-VITE_APP_NAME=AppointmentPro
+VITE_APP_NAME=Bookio
 VITE_APP_URL=https://your-domain.com
 
 # Analytics (opcional)
@@ -179,10 +179,10 @@ O usa la integración de GitHub en Vercel para deploy automático.
 
 ```bash
 # Crear proyecto Expo
-npx create-expo-app AppointmentProMobile --template
+npx create-expo-app BookioMobile --template
 
 # Navegar al directorio
-cd AppointmentProMobile
+cd BookioMobile
 
 # Instalar dependencias necesarias
 npx expo install expo-notifications expo-device expo-constants expo-auth-session
@@ -194,8 +194,8 @@ npm install @supabase/supabase-js @react-navigation/native @react-navigation/sta
 ```json
 {
   "expo": {
-    "name": "AppointmentPro",
-    "slug": "appointmentpro",
+    "name": "Bookio",
+    "slug": "Bookio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -208,14 +208,14 @@ npm install @supabase/supabase-js @react-navigation/native @react-navigation/sta
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.appointmentpro"
+      "bundleIdentifier": "com.yourcompany.Bookio"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.yourcompany.appointmentpro"
+      "package": "com.yourcompany.Bookio"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -334,7 +334,7 @@ Crea iconos en `src/browser-extension/icons/`:
 
 ```bash
 # Crear package para Chrome Web Store
-zip -r appointmentpro-extension.zip src/browser-extension/
+zip -r Bookio-extension.zip src/browser-extension/
 
 # Subir a Chrome Web Store Developer Dashboard
 # https://chrome.google.com/webstore/devconsole
@@ -352,7 +352,7 @@ VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
 
 # App
-VITE_APP_NAME=AppointmentPro
+VITE_APP_NAME=Bookio
 VITE_APP_URL=http://localhost:5173
 
 # Features
@@ -370,7 +370,7 @@ VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
 
 # App
-VITE_APP_NAME=AppointmentPro
+VITE_APP_NAME=Bookio
 VITE_APP_URL=https://your-domain.com
 
 # Features
@@ -478,7 +478,7 @@ VITE_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 
 ## 🚀 URLs de Ejemplo Finales
 
-- **Web App**: `https://appointmentpro.vercel.app`
+- **Web App**: `https://Bookio.vercel.app`
 - **Mobile App**: Apps stores (iOS/Android)
 - **Browser Extension**: Chrome Web Store
 - **Backend**: `https://your-project.supabase.co`
@@ -494,4 +494,4 @@ Si tienes problemas durante el despliegue:
 3. Comprueba las configuraciones de CORS
 4. Valida las credenciales de APIs externas
 
-¡Tu aplicación AppointmentPro está lista para producción! 🎉
+¡Tu aplicación Bookio está lista para producción! 🎉

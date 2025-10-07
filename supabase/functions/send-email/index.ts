@@ -112,7 +112,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'AppointmentPro <no-reply@appointmentpro.com>',
+        from: 'Bookio <no-reply@Bookio.com>',
         to: [to],
         subject: emailSubject,
         html: emailContent.replace(/\n/g, '<br>'),

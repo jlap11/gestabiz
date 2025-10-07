@@ -10,7 +10,7 @@ function App() {
       <div className="max-w-md mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>AppointmentPro - Debug Mode</CardTitle>
+            <CardTitle>Bookio - Debug Mode</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">¡Sistema funcionando correctamente!</p>

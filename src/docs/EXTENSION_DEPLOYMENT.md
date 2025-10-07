@@ -1,11 +1,11 @@
-# AppointmentPro - Browser Extension Deployment Guide
+# Bookio - Browser Extension Deployment Guide
 
 ## Chrome/Edge Extension Setup
 
 ### 1. Project Structure
 
 ```
-appointmentpro-extension/
+Bookio-extension/
 ├── manifest.json
 ├── popup.html
 ├── popup.css
@@ -27,7 +27,7 @@ Create `manifest.json`:
 ```json
 {
   "manifest_version": 3,
-  "name": "AppointmentPro",
+  "name": "Bookio",
   "version": "1.0.0",
   "description": "Quick access to your upcoming appointments",
   "permissions": [
@@ -44,7 +44,7 @@ Create `manifest.json`:
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "AppointmentPro",
+    "default_title": "Bookio",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -72,15 +72,15 @@ Create `popup.html`:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AppointmentPro</title>
+  <title>Bookio</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <img src="icons/icon48.png" alt="AppointmentPro" class="logo">
-      <h1>AppointmentPro</h1>
+      <img src="icons/icon48.png" alt="Bookio" class="logo">
+      <h1>Bookio</h1>
       <button id="refreshBtn" class="refresh-btn" title="Refresh">⟳</button>
     </div>
 
@@ -727,7 +727,7 @@ Create `content.js` for web app integration:
 3. **Package for distribution**:
    ```bash
    # Create a zip file with all extension files
-   zip -r appointmentpro-extension.zip . -x "*.git*" "node_modules/*" "*.DS_Store"
+   zip -r Bookio-extension.zip . -x "*.git*" "node_modules/*" "*.DS_Store"
    ```
 
 ### 10. Store Submission

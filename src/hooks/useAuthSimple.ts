@@ -33,7 +33,12 @@ export function useAuthSimple() {
         
         if (error) {
           console.log('❌ Session error:', error.message)
-          setState(prev => ({ ...prev, loading: false, error: error.message }))
+          // Limpiar localStorage si hay error de sesión
+          if (error.message.includes('Failed to fetch') || error.message.includes('refresh')) {
+            console.log('🧹 Limpiando localStorage debido a sesión corrupta...')
+            localStorage.clear()
+          }
+          setState(prev => ({ ...prev, loading: false, error: null, session: null, user: null }))
           return
         }
 
@@ -84,10 +89,15 @@ export function useAuthSimple() {
         }
       } catch (error) {
         console.log('💥 Error in getInitialSession:', error)
+        // Limpiar localStorage en caso de error de conexión
+        console.log('🧹 Limpiando localStorage debido a error de conexión...')
+        localStorage.clear()
         setState(prev => ({ 
           ...prev, 
           loading: false, 
-          error: 'Error loading session' 
+          error: null,
+          session: null,
+          user: null
         }))
       }
     }

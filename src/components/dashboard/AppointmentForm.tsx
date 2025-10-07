@@ -27,9 +27,19 @@ export interface AppointmentFormProps {
 export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }: Readonly<AppointmentFormProps>) {
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
-  const supabaseData = useSupabaseData({ user, autoFetch: false });
-  const services = supabaseData.services;
-  const businesses = supabaseData.businesses;
+  const supabaseData = useSupabaseData({ user, autoFetch: true });
+  
+  // Solo usar datos reales de Supabase
+  const memoBusinesses = useMemo(() => {
+    return supabaseData.businesses || [];
+  }, [supabaseData.businesses]);
+
+  const memoServices = useMemo(() => {
+    return supabaseData.services || [];
+  }, [supabaseData.services]);
+
+  const businesses = memoBusinesses;
+  const services = memoServices;
 
 
   type FormState = {

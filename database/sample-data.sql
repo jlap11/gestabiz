@@ -1,11 +1,11 @@
--- Sample data for testing AppointmentPro
+-- Sample data for testing Bookio
 -- Run this after the main schema to populate with test data
 
 -- Insert sample users (these would normally be created via Supabase Auth)
 -- Note: In production, users are created automatically via the auth trigger
 INSERT INTO public.users (id, email, full_name) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'admin@appointmentpro.com', 'Admin User'),
-  ('22222222-2222-2222-2222-222222222222', 'demo@appointmentpro.com', 'Demo User')
+  ('11111111-1111-1111-1111-111111111111', 'admin@Bookio.com', 'Admin User'),
+  ('22222222-2222-2222-2222-222222222222', 'demo@Bookio.com', 'Demo User')
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert user settings for sample users
@@ -114,7 +114,7 @@ INSERT INTO public.appointments (
     'Morning Standup',
     'Daily team standup meeting',
     'Development Team',
-    'team@appointmentpro.com',
+    'team@Bookio.com',
     null,
     CURRENT_DATE,
     '09:30',

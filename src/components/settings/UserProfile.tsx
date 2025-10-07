@@ -3,11 +3,8 @@ import { useKV } from '@/lib/useKV'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-// Badge removed along with role/permission chips
-import { Separator } from '@/components/ui/separator'
-import { User as UserIcon, Upload, Save, AtSign } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { User as UserType } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -29,7 +26,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
   
   const [formData, setFormData] = useState({
     name: user.name,
-  username: user.username || '',
+    username: user.username || '',
     email: user.email,
     phone: user.phone || '',
     avatar_url: user.avatar_url || ''
@@ -101,8 +98,8 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
     try {
       const updatedUser = {
         ...user,
-  name: formData.name,
-  username: formData.username?.toLowerCase(),
+        name: formData.name,
+        username: formData.username?.toLowerCase(),
         email: formData.email,
         phone: formData.phone,
         avatar_url: formData.avatar_url,
@@ -131,8 +128,6 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
     }
   }
 
-  // Role/permission chips removed for simplified profile view
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return format(date, 'PPP', { locale: language === 'es' ? es : enUS })
@@ -144,111 +139,125 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserIcon className="h-5 w-5" />
-            {t('profile.title')}
-          </CardTitle>
-          <CardDescription>
-            {t('profile.personal_info')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Avatar Section */}
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={formData.avatar_url} alt={formData.name} />
-                <AvatarFallback className="text-lg">
-                  {getInitials(formData.name)}
-                </AvatarFallback>
-              </Avatar>
-              <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors">
-                <Upload className="h-4 w-4" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
+      <div className="rounded-2xl bg-zinc-900/80 border border-fuchsia-700/40 shadow-lg p-8 flex flex-col md:flex-row items-center gap-8">
+        {/* Avatar grande y botón de upload */}
+        <div className="relative flex flex-col items-center">
+          <div className="rounded-full bg-gradient-to-br from-fuchsia-500 via-purple-500 to-indigo-500 p-1 shadow-lg">
+            <Avatar className="h-28 w-28 border-4 border-zinc-950">
+              <AvatarImage src={formData.avatar_url} alt={formData.name} />
+              <AvatarFallback className="text-3xl">{getInitials(formData.name)}</AvatarFallback>
+            </Avatar>
+          </div>
+          <label className="absolute bottom-2 right-2 bg-fuchsia-600 text-white rounded-full p-2 cursor-pointer hover:bg-fuchsia-700 shadow transition-colors border-2 border-zinc-950">
+            <Upload className="h-5 w-5" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+          </label>
+        </div>
+        <div className="flex-1 w-full space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div>
+              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                <span>👤</span> {user.name}
+              </h3>
+              <p className="text-sm text-fuchsia-400 font-medium mt-1">@{formData.username}</p>
+            </div>
+            <div className="text-right">
+              <span className="inline-flex items-center gap-1 text-xs bg-zinc-800 text-zinc-200 px-3 py-1 rounded-full">
+                <span>🗓️</span> {t('profile.joined_on')}: {formatDate(user.created_at)}
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-fuchsia-400">Nombre</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✨</span>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={e => handleInputChange('name', e.target.value)}
+                  className="w-full"
                 />
-              </label>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold">{user.name}</h3>
-              {/* Role badge removed */}
-              <p className="text-sm text-muted-foreground">
-                {t('profile.joined_on')}: {formatDate(user.created_at)}
-              </p>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Personal Information */}
-          <div className="space-y-4">
-            <h4 className="font-semibold">{t('profile.personal_info')}</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">@{t('profile.username') || 'usuario'}</Label>
-                <div className="flex items-center gap-2">
-                  <AtSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value.replace(/[^a-z0-9_.]/gi, '').toLowerCase())}
-                    placeholder="tu.usuario"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">{t('profile.username_hint') || 'Letras, números, puntos y guiones bajos.'}</p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">{t('profile.phone')}</Label>
-                <div className="flex gap-2">
-                  <Select value={phonePrefix} onValueChange={handlePrefixChange}>
-                    <SelectTrigger className="w-24">
-                      {(() => {
-                        const sel = COUNTRY_CODES.find(c => c.code === phonePrefix)
-                        const flag = sel ? sel.label.split(' ')[0] : ''
-                        return <span className="truncate">{`${flag} ${phonePrefix}`}</span>
-                      })()}
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRY_CODES.map(cc => (
-                        <SelectItem key={cc.code} value={cc.code}>{cc.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={(formData.phone || '').replace(/^\+\d{1,4}\s?/, '')}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder={COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">{`${phonePrefix} ${COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}`}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-fuchsia-400">Username</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">@</span>
+                <Input
+                  id="username"
+                  value={formData.username}
+                  onChange={e => handleInputChange('username', e.target.value)}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
 
-          <Separator />
-
-          {/* Business information removed for this simplified view */}
-
-          {/* Save Changes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-fuchsia-400">Teléfono</Label>
+              <div className="flex gap-2 items-center">
+                <span className="text-xl">📱</span>
+                <Select value={phonePrefix} onValueChange={handlePrefixChange}>
+                  <SelectTrigger className="w-24">
+                    {(() => {
+                      const sel = COUNTRY_CODES.find(c => c.code === phonePrefix)
+                      const flag = sel ? sel.label.split(' ')[0] : ''
+                      return <span className="truncate">{`${flag} ${phonePrefix}`}</span>
+                    })()}
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRY_CODES.map(cc => (
+                      <SelectItem key={cc.code} value={cc.code}>{cc.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={(formData.phone || '').replace(/^\+\d{1,4}\s?/, '')}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  placeholder={COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}
+                  className="w-full"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">{`${phonePrefix} ${COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}`}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-fuchsia-400">Correo</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✉️</span>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={e => handleInputChange('email', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </div>
+          
           <div className="flex justify-end pt-4">
             <Button 
               onClick={handleSaveProfile} 
               disabled={isUpdating}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-semibold px-6 py-2 rounded shadow"
             >
-              <Save className="h-4 w-4" />
+              <span>💾</span>
               {isUpdating ? t('profile.saving') : t('profile.save_changes')}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
--- AppointmentPro Enhanced Database Schema
+-- Bookio Enhanced Database Schema
 -- Complete schema for multi-tenant appointment management system with roles
 
 -- Enable necessary extensions

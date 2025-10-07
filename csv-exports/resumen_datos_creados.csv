@@ -1,0 +1,9 @@
+Tipo,Descripcion,Cantidad,Observaciones
+Usuarios,Total usuarios creados,30,Usuarios de prueba con emails @example.com
+Usuarios,Administradores,10,Usuarios con rol admin (propietarios de negocios)
+Usuarios,Empleados,10,Usuarios con rol employee (trabajadores)
+Usuarios,Clientes,10,Usuarios con rol client (consumidores)
+Negocios,Total negocios,10,Negocios con propietarios asignados
+Servicios,Total servicios,24,Servicios distribuidos entre todos los negocios
+Asignaciones,Empleado-Negocio,10,Relaciones de empleados trabajando en negocios
+Fecha,Generacion datos,12/9/2025,Fecha de creación de estos datos de prueba

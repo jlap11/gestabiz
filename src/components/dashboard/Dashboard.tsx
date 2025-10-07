@@ -5,13 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calendar, Users, Clock, Plus, TrendingUp } from 'lucide-react'
-import { toast } from 'sonner'
-import { AppointmentForm } from './AppointmentForm'
-import { updateClientAppointmentsKV } from '@/lib/updateClientAppointmentsKV'
+import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import AppointmentsView from './AppointmentsView'
 import ClientsView from './ClientsView'
 import { DashboardOverview } from './DashboardOverview'
 import BusinessRegistration from '@/components/business/BusinessRegistration'
+import ClientDashboard from './ClientDashboard'
 
 interface DashboardProps {
   user: User
@@ -84,23 +83,6 @@ function Dashboard({
     ? [allStats[0], allStats[3]]
     : allStats
 
-  const handleCreateAppointment = async (appointmentData: Partial<Appointment>) => {
-    try {
-      const created = await createAppointment(appointmentData)
-      // Si es cliente, actualiza el storage local para que el panel se refresque
-      if (user.role === 'client' && created) {
-        updateClientAppointmentsKV(user.business_id || user.id, {
-          ...appointmentData,
-          ...created,
-        })
-      }
-      setShowAppointmentForm(false)
-      refetch() // Refresh data
-    } catch {
-      toast.error(t('appointments.createError') || 'Error creating appointment')
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -109,6 +91,18 @@ function Dashboard({
           <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
+    )
+  }
+
+  // Si es cliente, usar el nuevo ClientDashboard
+  if (user.role === 'client') {
+    return (
+      <ClientDashboard 
+        user={user}
+        appointments={appointments}
+        createAppointment={createAppointment}
+        refetch={refetch}
+      />
     )
   }
 
@@ -207,15 +201,12 @@ function Dashboard({
         )}
       </Tabs>
 
-      {/* Appointment Form Modal */}
-      {showAppointmentForm && (
-        <AppointmentForm
-          isOpen={showAppointmentForm}
-          onClose={() => setShowAppointmentForm(false)}
-          onSubmit={handleCreateAppointment}
-          user={user}
-        />
-      )}
+      {/* Appointment Wizard Modal */}
+      <AppointmentWizard
+        open={showAppointmentForm}
+        onClose={() => setShowAppointmentForm(false)}
+        businessId={user.business_id || ''}
+      />
 
       {/* Business Registration Modal */}
       {showBusinessRegistration && (

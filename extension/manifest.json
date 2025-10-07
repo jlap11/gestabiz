@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AppointmentPro - Quick Access",
+  "name": "Bookio - Quick Access",
   "version": "1.0.0",
   "description": "Quick access to your upcoming appointments from any webpage",
   "permissions": [
@@ -17,7 +17,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "AppointmentPro",
+    "default_title": "Bookio",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

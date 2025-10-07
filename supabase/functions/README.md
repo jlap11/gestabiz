@@ -23,7 +23,7 @@ EMAIL_PROVIDER=resend  # or 'sendgrid' or 'dev'
 
 # Resend Configuration (Recommended)
 RESEND_API_KEY=your_resend_api_key_here
-FROM_EMAIL=AppointmentPro <noreply@yourdomain.com>
+FROM_EMAIL=Bookio <noreply@yourdomain.com>
 
 # SendGrid Configuration (Alternative)
 SENDGRID_API_KEY=your_sendgrid_api_key_here

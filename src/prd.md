@@ -1,8 +1,8 @@
-# AppointmentPro - Enhanced Product Requirements Document
+# Bookio - Enhanced Product Requirements Document
 
 ## Core Purpose & Success
 
-**Mission Statement**: AppointmentPro is a comprehensive, multi-tenant appointment management system that empowers businesses to manage their scheduling, client relationships, and operations efficiently across web, mobile, and browser extension platforms with advanced analytics and automated communications.
+**Mission Statement**: Bookio is a comprehensive, multi-tenant appointment management system that empowers businesses to manage their scheduling, client relationships, and operations efficiently across web, mobile, and browser extension platforms with advanced analytics and automated communications.
 
 **Success Indicators**: 
 - Businesses can manage multiple locations, employees, and services seamlessly

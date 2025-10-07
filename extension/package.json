@@ -1,12 +1,12 @@
 {
-  "name": "appointmentpro-extension",
+  "name": "Bookio-extension",
   "version": "1.0.0",
-  "description": "Quick access to your AppointmentPro appointments from any webpage",
+  "description": "Quick access to your Bookio appointments from any webpage",
   "scripts": {
     "build": "npm run clean && npm run copy-files && npm run create-zip",
     "clean": "rm -rf dist",
     "copy-files": "mkdir -p dist && cp -r *.html *.js *.css *.json icons dist/",
-    "create-zip": "cd dist && zip -r ../appointmentpro-extension.zip .",
+    "create-zip": "cd dist && zip -r ../Bookio-extension.zip .",
     "dev": "npm run copy-files && cd dist && python3 -m http.server 8080",
     "validate": "node scripts/validate-manifest.js"
   },

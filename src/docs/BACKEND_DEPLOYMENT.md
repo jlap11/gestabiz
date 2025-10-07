@@ -1,11 +1,11 @@
-# AppointmentPro - Backend Setup & Deployment Guide
+# Bookio - Backend Setup & Deployment Guide
 
 ## Supabase Setup
 
 ### 1. Create Supabase Project
 
 1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Choose a project name (e.g., "appointmentpro")
+2. Choose a project name (e.g., "Bookio")
 3. Set a strong database password
 4. Select your preferred region
 

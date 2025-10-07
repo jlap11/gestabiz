@@ -1,8 +1,8 @@
-# AppointmentPro - Complete Deployment Guide
+# Bookio - Complete Deployment Guide
 
 ## Overview
 
-AppointmentPro is a comprehensive appointment management system consisting of:
+Bookio is a comprehensive appointment management system consisting of:
 - **Web Application** (React/Vite)
 - **Mobile Application** (React Native/Expo)
 - **Browser Extension** (Chrome/Edge)
@@ -41,7 +41,7 @@ FROM_EMAIL=noreply@your-domain.com
 # App URLs
 APP_URL=https://your-app-domain.com
 WEB_APP_URL=https://your-app-domain.com
-MOBILE_APP_SCHEME=appointmentpro://
+MOBILE_APP_SCHEME=Bookio://
 ```
 
 ### Step 3: Deploy Edge Functions
@@ -88,7 +88,7 @@ Create `.env` file in project root:
 ```bash
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_APP_NAME=AppointmentPro
+VITE_APP_NAME=Bookio
 VITE_APP_URL=https://your-app-domain.com
 ```
 
@@ -132,7 +132,7 @@ Create `.env` file in `src/mobile/`:
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-EXPO_PUBLIC_APP_NAME=AppointmentPro
+EXPO_PUBLIC_APP_NAME=Bookio
 EXPO_PUBLIC_WEB_APP_URL=https://your-app-domain.com
 ```
 
@@ -236,7 +236,7 @@ cd src/browser-extension
 mkdir icons
 
 # Zip the extension
-zip -r appointmentpro-extension.zip . -x "*.DS_Store" "node_modules/*"
+zip -r Bookio-extension.zip . -x "*.DS_Store" "node_modules/*"
 ```
 
 ### Step 3: Chrome Web Store
@@ -401,6 +401,6 @@ Maintain documentation for:
 
 ## Conclusion
 
-This deployment guide covers the complete setup of AppointmentPro across all platforms. The system is designed to be scalable, maintainable, and user-friendly. Regular monitoring and maintenance will ensure optimal performance and user experience.
+This deployment guide covers the complete setup of Bookio across all platforms. The system is designed to be scalable, maintainable, and user-friendly. Regular monitoring and maintenance will ensure optimal performance and user experience.
 
 For support or questions, refer to the individual service documentation or create issues in the project repository.

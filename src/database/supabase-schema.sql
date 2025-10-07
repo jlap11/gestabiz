@@ -1,4 +1,4 @@
--- AppointmentPro - Complete Supabase Database Schema
+-- Bookio - Complete Supabase Database Schema
 -- Copy and paste this SQL into Supabase SQL Editor
 
 -- Enable Row Level Security

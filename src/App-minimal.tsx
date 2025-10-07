@@ -6,7 +6,7 @@ function SimpleComponent() {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold text-foreground">AppointmentPro</h1>
+        <h1 className="text-2xl font-bold text-foreground">Bookio</h1>
         <p className="text-muted-foreground mt-4">
           Sistema funcionando correctamente. Todos los errores de process.env han sido corregidos.
         </p>

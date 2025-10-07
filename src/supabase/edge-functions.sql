@@ -1,4 +1,4 @@
--- Supabase Edge Functions for AppointmentPro
+-- Supabase Edge Functions for Bookio
 -- Copy these functions to your Supabase project
 
 -- =====================================================
@@ -87,7 +87,7 @@ serve(async (req) => {
     // Send email using your preferred email service (SendGrid, Resend, etc.)
     const emailData = {
       to: appointment.client_email,
-      from: appointment.business.email || 'noreply@appointmentpro.com',
+      from: appointment.business.email || 'noreply@Bookio.com',
       subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

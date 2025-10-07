@@ -64,8 +64,8 @@ serve(async (req) => {
         subject: subject
       }],
       from: { 
-        email: Deno.env.get('FROM_EMAIL') || 'noreply@appointmentpro.com',
-        name: 'AppointmentPro'
+        email: Deno.env.get('FROM_EMAIL') || 'noreply@Bookio.com',
+        name: 'Bookio'
       },
       content: [
         {
@@ -127,7 +127,7 @@ Usage examples:
 POST /functions/v1/send-email
 {
   "to": "client@example.com",
-  "subject": "Recordatorio de Cita - AppointmentPro",
+  "subject": "Recordatorio de Cita - Bookio",
   "html": "<h1>Recordatorio</h1><p>Tu cita es mañana a las 10:00 AM</p>",
   "text": "Recordatorio: Tu cita es mañana a las 10:00 AM"
 }
@@ -136,7 +136,7 @@ POST /functions/v1/send-email
 POST /functions/v1/send-email
 {
   "to": "client@example.com",
-  "subject": "Cita Confirmada - AppointmentPro",
+  "subject": "Cita Confirmada - Bookio",
   "html": "<h1>Cita Confirmada</h1><p>Tu cita ha sido confirmada para el 15 de enero a las 2:00 PM</p>"
 }
 
@@ -144,7 +144,7 @@ POST /functions/v1/send-email
 POST /functions/v1/send-email
 {
   "to": "admin@business.com",
-  "subject": "Reporte Semanal - AppointmentPro",
+  "subject": "Reporte Semanal - Bookio",
   "html": "<h1>Reporte Semanal</h1><p>Esta semana tuviste 25 citas, 20 completadas...</p>"
 }
 */

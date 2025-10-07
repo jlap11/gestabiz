@@ -10,7 +10,7 @@ function App() {
       <div className="max-w-md mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>AppointmentPro</CardTitle>
+            <CardTitle>Bookio</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">Sistema de gestión de citas funcionando!</p>

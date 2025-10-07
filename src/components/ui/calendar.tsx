@@ -1,54 +1,312 @@
-import { ComponentProps } from "react"
-import { es } from 'date-fns/locale'
-import { DayPicker } from "react-day-picker"
+import { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-import { cn } from "@/lib/utils"
-
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: ComponentProps<typeof DayPicker>) {
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      locale={{ ...es, options: { weekStartsOn: 1 } }}
-      className={cn("p-4 bg-white dark:bg-gray-900 border rounded-xl shadow-lg", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-between items-center px-3 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg mb-4",
-        caption_label: "text-lg font-semibold text-gray-900 dark:text-white tracking-wide",
-        nav: "flex items-center space-x-2",
-        nav_button: cn(
-          "h-9 w-9 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200 flex items-center justify-center"
-        ),
-        nav_button_previous: "",
-        nav_button_next: "",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex mb-2",
-        head_cell: "text-gray-600 dark:text-gray-300 rounded-lg flex-1 font-medium text-sm text-center py-3 bg-gray-50 dark:bg-gray-800 mx-0.5 first:ml-0 last:mr-0",
-        row: "flex w-full mb-1",
-        cell: "flex-1 text-center p-0 focus-within:relative focus-within:z-20 mx-0.5 first:ml-0 last:mr-0",
-        day: cn(
-          "h-10 w-full p-0 font-medium text-gray-700 dark:text-gray-200 aria-selected:opacity-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300 rounded-lg transition-all duration-200 border border-transparent hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-sm cursor-pointer relative"
-        ),
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 focus:from-blue-600 focus:to-blue-700 shadow-md border-blue-500 hover:shadow-lg transform hover:scale-105",
-        day_today: "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-600 font-bold shadow-sm",
-        day_outside:
-          "day-outside text-gray-400 dark:text-gray-500 opacity-40 aria-selected:bg-blue-500/10 aria-selected:text-blue-600 dark:aria-selected:text-blue-400 aria-selected:opacity-60",
-        day_disabled: "text-gray-300 dark:text-gray-600 opacity-30 cursor-not-allowed",
-        day_range_middle:
-          "aria-selected:bg-blue-50 dark:aria-selected:bg-blue-900/20 aria-selected:text-blue-700 dark:aria-selected:text-blue-300",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      {...props}
-    />
-  )
+interface CalendarDay {
+  date: Date
+  isCurrentMonth: boolean
+  isToday: boolean
+  isSelected: boolean
 }
 
-export { Calendar }
+export interface CalendarProps {
+  selected?: Date
+  onSelect?: (date: Date | undefined) => void
+  disabled?: (date: Date) => boolean
+  className?: string
+}
+
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+]
+
+const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+
+export const Calendar = ({ selected, onSelect, disabled, className }: CalendarProps) => {
+  const [currentDate, setCurrentDate] = useState(selected || new Date())
+  const [animationDirection, setAnimationDirection] = useState<'left' | 'right'>('right')
+  const [isYearPickerOpen, setIsYearPickerOpen] = useState(false)
+
+  const today = useMemo(() => new Date(), [])
+  
+  const currentMonth = currentDate.getMonth()
+  const currentYear = currentDate.getFullYear()
+
+  const calendarDays = useMemo(() => {
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1)
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0)
+    const firstDayWeekday = firstDayOfMonth.getDay()
+    const daysInMonth = lastDayOfMonth.getDate()
+    
+    const days: CalendarDay[] = []
+    
+    // Días del mes anterior
+    for (let i = firstDayWeekday - 1; i >= 0; i--) {
+      const date = new Date(currentYear, currentMonth, -i)
+      days.push({
+        date,
+        isCurrentMonth: false,
+        isToday: false,
+        isSelected: false
+      })
+    }
+    
+    // Días del mes actual
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day)
+      const isToday = date.toDateString() === today.toDateString()
+      const isSelected = Boolean(selected && selected instanceof Date && date.toDateString() === selected.toDateString())
+      
+      days.push({
+        date,
+        isCurrentMonth: true,
+        isToday,
+        isSelected
+      })
+    }
+    
+    // Completar con días del siguiente mes
+    const remainingDays = 42 - days.length // 6 semanas * 7 días
+    for (let day = 1; day <= remainingDays; day++) {
+      const date = new Date(currentYear, currentMonth + 1, day)
+      days.push({
+        date,
+        isCurrentMonth: false,
+        isToday: false,
+        isSelected: false
+      })
+    }
+    
+    return days
+  }, [currentYear, currentMonth, selected, today])
+
+  const handleDateClick = (date: Date, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return
+    if (disabled?.(date)) return
+    
+    const newDate = new Date(date)
+    onSelect?.(newDate)
+  }
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setAnimationDirection(direction === 'prev' ? 'left' : 'right')
+    
+    setCurrentDate(prev => {
+      const newDate = new Date(prev)
+      if (direction === 'prev') {
+        newDate.setMonth(newDate.getMonth() - 1)
+      } else {
+        newDate.setMonth(newDate.getMonth() + 1)
+      }
+      return newDate
+    })
+  }
+
+  const handleYearChange = (year: number) => {
+    setCurrentDate(prev => new Date(year, prev.getMonth(), 1))
+    setIsYearPickerOpen(false)
+  }
+
+  const slideVariants = {
+    enter: (direction: string) => ({
+      x: direction === 'right' ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: string) => ({
+      x: direction === 'right' ? -300 : 300,
+      opacity: 0,
+    }),
+  }
+
+  const yearOptions = useMemo(() => {
+    const years: number[] = []
+    const currentYear = new Date().getFullYear()
+    for (let i = currentYear - 50; i <= currentYear + 50; i++) {
+      years.push(i)
+    }
+    return years
+  }, [])
+
+  return (
+    <div className={`w-full max-w-md p-4 sm:p-6 ${className || ''}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigateMonth('prev')}
+          className="h-8 w-8 rounded-full hover:bg-secondary/80 transition-colors duration-200"
+        >
+          <ChevronLeft size={16} />
+        </Button>
+        
+        <div className="flex items-center gap-2">
+          <motion.h2 
+            className="text-xl font-medium text-foreground tracking-tight"
+            key={currentMonth}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {MONTHS[currentMonth]}
+          </motion.h2>
+          
+          <Button
+            variant="ghost"
+            onClick={() => setIsYearPickerOpen(!isYearPickerOpen)}
+            className="text-xl font-medium hover:bg-secondary/80 transition-colors duration-200 px-2"
+          >
+            {currentYear}
+          </Button>
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigateMonth('next')}
+          className="h-8 w-8 rounded-full hover:bg-secondary/80 transition-colors duration-200"
+        >
+          <ChevronRight size={16} />
+        </Button>
+      </div>
+
+      {/* Year Picker */}
+      <AnimatePresence>
+        {isYearPickerOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden mb-4"
+          >
+            <div className="max-h-32 overflow-y-auto bg-secondary/50 rounded-lg p-2">
+              {yearOptions.map(year => (
+                <Button
+                  key={year}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleYearChange(year)}
+                  className={`w-full justify-start text-sm ${
+                    year === currentYear ? 'bg-accent text-accent-foreground' : ''
+                  }`}
+                >
+                  {year}
+                </Button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Weekdays */}
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
+        {WEEKDAYS.map((day) => (
+          <div
+            key={day}
+            className="h-7 sm:h-8 flex items-center justify-center text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="relative overflow-hidden">
+        <AnimatePresence mode="wait" custom={animationDirection}>
+          <motion.div
+            key={`${currentYear}-${currentMonth}`}
+            custom={animationDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+            className="grid grid-cols-7 gap-0.5 sm:gap-1"
+          >
+            {calendarDays.map((day, index) => {
+              const isDisabled = disabled ? disabled(day.date) : false
+              
+              return (
+                <motion.button
+                  key={`${day.date.toISOString()}-${index}`}
+                  onClick={() => handleDateClick(day.date, day.isCurrentMonth)}
+                  disabled={!day.isCurrentMonth || isDisabled}
+                  className={`
+                    h-9 w-9 sm:h-10 sm:w-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 relative
+                    ${day.isCurrentMonth && !isDisabled
+                      ? 'hover:bg-secondary/80 cursor-pointer' 
+                      : 'text-muted-foreground/30 cursor-default'
+                    }
+                    ${day.isSelected 
+                      ? 'bg-accent text-accent-foreground shadow-lg' 
+                      : 'text-foreground'
+                    }
+                    ${day.isToday && !day.isSelected 
+                      ? 'ring-2 ring-accent/50' 
+                      : ''
+                    }
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                  whileHover={day.isCurrentMonth && !isDisabled ? { scale: 1.05 } : {}}
+                  whileTap={day.isCurrentMonth && !isDisabled ? { scale: 0.95 } : {}}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ 
+                    delay: index * 0.01,
+                    duration: 0.2 
+                  }}
+                >
+                  {day.date.getDate()}
+                  
+                  {day.isToday && (
+                    <motion.div
+                      className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-accent rounded-full"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: index * 0.01 + 0.2 }}
+                    />
+                  )}
+                </motion.button>
+              )
+            })}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Selected Date Display */}
+      <AnimatePresence>
+        {selected && selected instanceof Date && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="mt-6 pt-4 border-t border-border"
+          >
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-1">Fecha seleccionada</p>
+              <p className="text-lg font-medium text-foreground">
+                {selected.toLocaleDateString('es-ES', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}

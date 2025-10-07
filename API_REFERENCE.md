@@ -1,6 +1,6 @@
-# AppointmentPro API Documentation
+# Bookio API Documentation
 
-This document describes the complete API structure for AppointmentPro, including database schema, Edge Functions, and frontend integration patterns.
+This document describes the complete API structure for Bookio, including database schema, Edge Functions, and frontend integration patterns.
 
 ## 🏗 Database Schema
 
@@ -629,4 +629,4 @@ supabase secrets set SENDGRID_API_KEY=your_key
 supabase secrets set FROM_EMAIL=noreply@yourdomain.com
 ```
 
-This API documentation provides a comprehensive reference for all backend interactions in AppointmentPro. Use it as a guide for implementing new features or troubleshooting existing functionality.
+This API documentation provides a comprehensive reference for all backend interactions in Bookio. Use it as a guide for implementing new features or troubleshooting existing functionality.

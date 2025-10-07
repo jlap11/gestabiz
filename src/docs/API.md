@@ -1,8 +1,8 @@
-# AppointmentPro API Documentation
+# Bookio API Documentation
 
 ## Overview
 
-AppointmentPro uses Supabase as its backend, providing:
+Bookio uses Supabase as its backend, providing:
 - **PostgreSQL Database** with Row Level Security
 - **Real-time Subscriptions** for live updates
 - **Edge Functions** for server-side logic
@@ -493,4 +493,4 @@ test('should create, read, update, delete appointment', async () => {
 })
 ```
 
-This API documentation provides comprehensive coverage of all AppointmentPro backend functionality, including examples, best practices, and testing approaches.
+This API documentation provides comprehensive coverage of all Bookio backend functionality, including examples, best practices, and testing approaches.

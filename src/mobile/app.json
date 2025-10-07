@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AppointmentPro",
-    "slug": "appointmentpro-mobile",
+    "name": "Bookio",
+    "slug": "Bookio-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.appointmentpro.mobile",
+      "bundleIdentifier": "com.Bookio.mobile",
       "infoPlist": {
         "NSCalendarsUsageDescription": "This app needs access to calendar to sync appointments.",
         "NSRemindersUsageDescription": "This app needs access to reminders to create appointment reminders."
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.appointmentpro.mobile",
+      "package": "com.Bookio.mobile",
       "permissions": [
         "CALENDAR",
         "WRITE_CALENDAR",
@@ -54,6 +54,6 @@
         "projectId": "your-eas-project-id"
       }
     },
-    "scheme": "appointmentpro"
+    "scheme": "Bookio"
   }
 }

@@ -176,8 +176,8 @@ async function sendEmailNotification(notification: Notification): Promise<boolea
             subject: emailData.subject
           }],
           from: { 
-            email: Deno.env.get('FROM_EMAIL') || 'noreply@appointmentpro.com',
-            name: 'AppointmentPro'
+            email: Deno.env.get('FROM_EMAIL') || 'noreply@Bookio.com',
+            name: 'Bookio'
           },
           content: [
             { type: 'text/plain', value: emailData.text },
@@ -280,7 +280,7 @@ function generateEmailHTML(notification: Notification): string {
                 </a>
             </div>
             <div class="footer">
-                <p>This is an automated reminder from AppointmentPro</p>
+                <p>This is an automated reminder from Bookio</p>
                 <p>To stop receiving these emails, update your notification preferences in the app</p>
             </div>
         </div>
@@ -308,7 +308,7 @@ ${appointment?.location ? `- Location: ${appointment.location}` : ''}
 
 View your appointment: ${Deno.env.get('APP_URL') || 'https://your-app-url.com'}
 
-This is an automated reminder from AppointmentPro.
+This is an automated reminder from Bookio.
 To stop receiving these emails, update your notification preferences in the app.
   `
 }

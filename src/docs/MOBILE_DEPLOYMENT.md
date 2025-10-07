@@ -1,12 +1,12 @@
-# AppointmentPro - Mobile App Deployment Guide
+# Bookio - Mobile App Deployment Guide
 
 ## React Native / Expo Setup
 
 ### 1. Initialize Expo Project
 
 ```bash
-npx create-expo-app AppointmentProMobile
-cd AppointmentProMobile
+npx create-expo-app BookioMobile
+cd BookioMobile
 ```
 
 ### 2. Install Dependencies
@@ -30,8 +30,8 @@ npm install --save-dev @types/react @types/react-native
 ```json
 {
   "expo": {
-    "name": "AppointmentPro",
-    "slug": "appointmentpro",
+    "name": "Bookio",
+    "slug": "Bookio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -49,7 +49,7 @@ npm install --save-dev @types/react @types/react-native
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.appointmentpro",
+      "bundleIdentifier": "com.yourcompany.Bookio",
       "buildNumber": "1"
     },
     "android": {
@@ -57,7 +57,7 @@ npm install --save-dev @types/react @types/react-native
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.yourcompany.appointmentpro",
+      "package": "com.yourcompany.Bookio",
       "versionCode": 1,
       "permissions": [
         "NOTIFICATIONS",
@@ -376,4 +376,4 @@ npx expo install expo-analytics-amplitude
 npx expo install expo-error-recovery
 ```
 
-This guide provides a complete setup for deploying the AppointmentPro mobile application using React Native and Expo. The app will sync with the same Supabase backend as the web application.
+This guide provides a complete setup for deploying the Bookio mobile application using React Native and Expo. The app will sync with the same Supabase backend as the web application.

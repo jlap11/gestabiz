@@ -1,8 +1,8 @@
-# 🚀 AppointmentPro - Refactorización Final y Integración Completa con Supabase
+# 🚀 Bookio - Refactorización Final y Integración Completa con Supabase
 
 ## 📋 Resumen Ejecutivo
 
-Se ha completado una refactorización y modernización completa de AppointmentPro, transformando la aplicación demo en una solución de producción completamente funcional con Supabase como backend integral.
+Se ha completado una refactorización y modernización completa de Bookio, transformando la aplicación demo en una solución de producción completamente funcional con Supabase como backend integral.
 
 ## ✅ Implementaciones Completadas
 
@@ -58,7 +58,7 @@ Se ha completado una refactorización y modernización completa de AppointmentPr
 ## 🗂️ Estructura del Proyecto Optimizada
 
 ```
-AppointmentPro/
+Bookio/
 ├── 🔧 Configuración
 │   ├── .env.local (variables de entorno)
 │   ├── supabase/config.toml
@@ -251,7 +251,7 @@ AppointmentPro/
 
 ## 🎉 Conclusión
 
-AppointmentPro está ahora completamente preparada para producción con:
+Bookio está ahora completamente preparada para producción con:
 
 - ✅ **Autenticación real** y segura con Supabase
 - ✅ **Base de datos robusta** con PostgreSQL

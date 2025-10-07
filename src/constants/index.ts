@@ -5,7 +5,7 @@
 
 // App Configuration
 export const APP_CONFIG = {
-  NAME: 'AppointmentPro',
+  NAME: 'Bookio',
   VERSION: '1.0.0',
   DESCRIPTION: 'Sistema de Gestión de Citas',
   DEFAULT_LOCALE: 'es',

@@ -159,7 +159,7 @@ function generateEmailContent(notification: any): EmailData {
               </p>
             </div>
             <p style="color: #64748B; font-size: 14px;">
-              Este es un recordatorio automático de tu sistema AppointmentPro.
+              Este es un recordatorio automático de tu sistema Bookio.
             </p>
           </div>
         `,
@@ -235,7 +235,7 @@ async function sendEmail(emailData: EmailData): Promise<boolean> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'AppointmentPro <noreply@appointmentpro.com>',
+        from: 'Bookio <noreply@Bookio.com>',
         to: [emailData.to],
         subject: emailData.subject,
         html: emailData.html,

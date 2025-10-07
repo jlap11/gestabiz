@@ -26,7 +26,7 @@ browser-extension/
 ```json
 {
   "manifest_version": 3,
-  "name": "AppointmentPro - Quick Appointments",
+  "name": "Bookio - Quick Appointments",
   "version": "1.0.0",
   "description": "Quick access to your upcoming appointments and schedule management",
   "permissions": [
@@ -41,7 +41,7 @@ browser-extension/
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "AppointmentPro",
+    "default_title": "Bookio",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -80,8 +80,8 @@ browser-extension/
     <!-- Header -->
     <div class="header">
       <div class="logo">
-        <img src="icons/icon48.png" alt="AppointmentPro" class="logo-icon">
-        <span class="logo-text">AppointmentPro</span>
+        <img src="icons/icon48.png" alt="Bookio" class="logo-icon">
+        <span class="logo-text">Bookio</span>
       </div>
       <div class="sync-status" id="sync-status">
         <span class="sync-dot"></span>
@@ -106,8 +106,8 @@ browser-extension/
       <div class="not-logged-in" id="not-logged-in" style="display: none;">
         <div class="icon">🔐</div>
         <h3>Please Log In</h3>
-        <p>Log in to your AppointmentPro account to see your appointments here.</p>
-        <button class="btn btn-primary" id="login-btn">Open AppointmentPro</button>
+        <p>Log in to your Bookio account to see your appointments here.</p>
+        <button class="btn btn-primary" id="login-btn">Open Bookio</button>
       </div>
 
       <!-- Appointments List -->
@@ -892,7 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ### background.js
 ```javascript
-// Background script for AppointmentPro extension
+// Background script for Bookio extension
 
 // Configuration
 const CONFIG = {
@@ -904,7 +904,7 @@ const CONFIG = {
 
 // Installation and update handlers
 chrome.runtime.onInstalled.addListener(({ reason }) => {
-  console.log('AppointmentPro extension installed/updated:', reason)
+  console.log('Bookio extension installed/updated:', reason)
   
   // Set up periodic sync
   chrome.alarms.create('syncAppointments', { 
@@ -1149,13 +1149,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 
 // Initial setup
-console.log('AppointmentPro background script loaded')
+console.log('Bookio background script loaded')
 updateBadge()
 ```
 
 ### content.js
 ```javascript
-// Content script for AppointmentPro extension
+// Content script for Bookio extension
 // Runs on the web app to detect authentication state
 
 (function() {
@@ -1166,7 +1166,7 @@ updateBadge()
     return
   }
   
-  console.log('AppointmentPro content script loaded')
+  console.log('Bookio content script loaded')
   
   // Check for authentication state changes
   let lastAuthState = null
@@ -1244,8 +1244,8 @@ updateBadge()
 
 1. **Create the extension directory:**
    ```bash
-   mkdir appointmentpro-extension
-   cd appointmentpro-extension
+   mkdir Bookio-extension
+   cd Bookio-extension
    ```
 
 2. **Add all files above to the directory**

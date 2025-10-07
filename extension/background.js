@@ -1,5 +1,5 @@
 // Background service worker for Chrome extension
-console.log('AppointmentPro background script loaded')
+console.log('Bookio background script loaded')
 
 const SUPABASE_URL = 'your-supabase-url'
 const SUPABASE_ANON_KEY = 'your-supabase-anon-key'

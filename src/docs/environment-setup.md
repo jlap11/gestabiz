@@ -9,7 +9,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=https://your-app-domain.com
-NEXT_PUBLIC_APP_NAME=AppointmentPro
+NEXT_PUBLIC_APP_NAME=Bookio
 
 # Email Service (Optional - for notifications)
 SENDGRID_API_KEY=your-sendgrid-api-key
@@ -25,8 +25,8 @@ import 'dotenv/config'
 
 export default {
   expo: {
-    name: "AppointmentPro",
-    slug: "appointmentpro",
+    name: "Bookio",
+    slug: "Bookio",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -41,7 +41,7 @@ export default {
     ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.yourcompany.appointmentpro",
+      bundleIdentifier: "com.yourcompany.Bookio",
       buildNumber: "1"
     },
     android: {
@@ -49,7 +49,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#1a1a1a"
       },
-      package: "com.yourcompany.appointmentpro",
+      package: "com.yourcompany.Bookio",
       versionCode: 1
     },
     web: {
@@ -94,7 +94,7 @@ FROM_EMAIL=noreply@your-domain.com
 
 # App URLs
 APP_URL=https://your-app-domain.com
-MOBILE_APP_URL=appointmentpro://
+MOBILE_APP_URL=Bookio://
 
 # Push Notifications
 EXPO_ACCESS_TOKEN=your-expo-access-token

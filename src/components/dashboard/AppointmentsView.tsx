@@ -1,13 +1,14 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useKV } from '@/lib/useKV'
-import { Button } from '@/components/ui/button'
+// import { Button } from '@/components/ui/button'
+import RecommendedBusinesses from './RecommendedBusinesses'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from 'lucide-react'
 import { User as UserType, Appointment } from '@/types'
 import type { AppointmentFilter } from '@/types/types'
 import { filterAppointments, sortAppointments } from '@/lib/appointmentUtils'
-import { useNotifications } from '@/hooks/useNotifications'
+// import { useNotifications } from '@/hooks/useNotifications' // Disabled to prevent infinite loop
 import { useGoogleCalendarSync } from '@/hooks/useGoogleCalendarSync'
 
 interface AppointmentsViewProps {
@@ -20,13 +21,13 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
   const sortBy: 'date' | 'client' | 'status' | 'priority' = 'date'
   const sortOrder: 'asc' | 'desc' = 'desc'
   
-  const { processNotifications } = useNotifications()
+  // const { processNotifications } = useNotifications() // Disabled to prevent infinite loop
   useGoogleCalendarSync(user)
 
-  // Process notifications on appointments change
-  useEffect(() => {
-    processNotifications(appointments)
-  }, [appointments, processNotifications])
+  // Process notifications on appointments change - DISABLED to prevent infinite loop
+  // useEffect(() => {
+  //   processNotifications(appointments)
+  // }, [appointments, processNotifications])
 
   const filteredAndSortedAppointments = useMemo(() => {
     let base = filterAppointments(appointments, filter)
@@ -138,15 +139,7 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
       {/* Columna secundaria: Recomendados */}
       {user.role === 'client' && (
         <div>
-          <h2 className="text-2xl font-bold mb-4">Recomendados para ti</h2>
-          {/* Placeholder de recomendados, aquí iría la lógica real */}
-          <Card>
-            <CardContent className="py-8 text-center">
-              <h3 className="text-lg font-semibold mb-2">Sitios, negocios o locales recomendados</h3>
-              <p className="text-muted-foreground mb-4">Pronto verás recomendaciones personalizadas según tus búsquedas y reservas.</p>
-              <Button variant="outline">Ver todos los recomendados</Button>
-            </CardContent>
-          </Card>
+          <RecommendedBusinesses />
         </div>
       )}
     </div>

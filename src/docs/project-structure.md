@@ -1,10 +1,10 @@
-# AppointmentPro - Complete Project Structure
+# Bookio - Complete Project Structure
 
-This document outlines the complete project structure for the AppointmentPro micro SaaS across all three platforms.
+This document outlines the complete project structure for the Bookio micro SaaS across all three platforms.
 
 ## Project Overview
 
-AppointmentPro is a comprehensive appointment management system with:
+Bookio is a comprehensive appointment management system with:
 - **Web Application** (React/Vite + Supabase)
 - **Mobile Application** (React Native/Expo)
 - **Browser Extension** (Chrome/Edge)
@@ -13,7 +13,7 @@ AppointmentPro is a comprehensive appointment management system with:
 ## Repository Structure
 
 ```
-AppointmentPro/
+Bookio/
 ├── web-app/                          # React web application
 │   ├── public/
 │   ├── src/
@@ -403,4 +403,4 @@ const CONFIG = {
 - Load balancing for high traffic
 - Database connection pooling
 
-This structure provides a complete, scalable architecture for the AppointmentPro micro SaaS system across all three platforms.
+This structure provides a complete, scalable architecture for the Bookio micro SaaS system across all three platforms.

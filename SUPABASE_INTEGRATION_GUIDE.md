@@ -1,13 +1,13 @@
-# AppointmentPro - Guía de Integración con Supabase
+# Bookio - Guía de Integración con Supabase
 
 ## 📋 Descripción General
 
-Esta documentación describe cómo configurar y desplegar AppointmentPro con Supabase como backend completo. La aplicación incluye autenticación real, base de datos PostgreSQL, notificaciones automáticas y funciones edge.
+Esta documentación describe cómo configurar y desplegar Bookio con Supabase como backend completo. La aplicación incluye autenticación real, base de datos PostgreSQL, notificaciones automáticas y funciones edge.
 
 ## 🏗️ Arquitectura de la Aplicación
 
 ```
-AppointmentPro/
+Bookio/
 ├── Frontend (React + TypeScript + Vite)
 ├── Backend (Supabase)
 │   ├── PostgreSQL Database
@@ -92,7 +92,7 @@ Ve a **Project Settings > API** y obtén:
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu-anon-key
 VITE_APP_URL=http://localhost:5173
-VITE_APP_NAME=AppointmentPro
+VITE_APP_NAME=Bookio
 ```
 
 #### Para Edge Functions (Supabase Secrets)
@@ -121,7 +121,7 @@ supabase secrets set TWILIO_WHATSAPP_FROM=whatsapp:+1234567890
    VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
    VITE_SUPABASE_ANON_KEY=tu-anon-key
    VITE_APP_URL=https://tu-app.vercel.app
-   VITE_APP_NAME=AppointmentPro
+   VITE_APP_NAME=Bookio
    ```
 
 3. **Configurar dominios:**

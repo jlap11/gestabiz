@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AppointmentPro",
-    "slug": "appointmentpro",
+    "name": "Bookio",
+    "slug": "Bookio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.appointmentpro.app",
+      "bundleIdentifier": "com.Bookio.app",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to take photos for appointments.",
         "NSMicrophoneUsageDescription": "This app uses the microphone for voice notes."
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.appointmentpro.app",
+      "package": "com.Bookio.app",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
