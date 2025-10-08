@@ -5,6 +5,7 @@ import { useKV } from '@/lib/useKV'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import supabase from '@/lib/supabase'
 import { 
   Calendar, 
   Clock, 
@@ -13,7 +14,8 @@ import {
   CalendarCheck,
   CalendarX,
   Trash2,
-  UserCircle2
+  UserCircle2,
+  CalendarPlus
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -45,6 +47,8 @@ export default function ClientDashboard({
     `appointments-${user.business_id || user.id}`, 
     []
   )
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   // Combinar appointments del servidor con los locales
   const allAppointments = useMemo(() => {
@@ -146,6 +150,95 @@ export default function ClientDashboard({
     // Por ejemplo, actualizar el estado global o navegar a otra vista
   }
 
+  // Función para confirmar cita
+  const handleConfirmAppointment = async (appointmentId: string) => {
+    setConfirmingId(appointmentId)
+    
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ 
+          status: 'confirmed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointmentId)
+
+      if (error) {
+        toast.error(`Error al confirmar la cita: ${error.message}`)
+        return
+      }
+
+      toast.success('✅ Cita confirmada exitosamente')
+      refetch() // Recargar la lista de citas
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado'
+      toast.error(`Error al confirmar: ${message}`)
+    } finally {
+      setConfirmingId(null)
+    }
+  }
+
+  // Función para agregar a Google Calendar
+  const handleAddToGoogleCalendar = (appointment: Appointment) => {
+    try {
+      // Crear URL de Google Calendar
+      const startDate = new Date(appointment.start_time)
+      const endDate = new Date(appointment.end_time || appointment.start_time)
+      
+      // Si no hay end_time, agregar 1 hora por defecto
+      if (!appointment.end_time) {
+        endDate.setHours(endDate.getHours() + 1)
+      }
+
+      // Formatear fechas para Google Calendar (formato: YYYYMMDDTHHmmssZ)
+      const formatGoogleDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+      }
+
+      const title = encodeURIComponent(appointment.title || 'Cita')
+      const details = encodeURIComponent(appointment.notes || 'Cita agendada')
+      const location = encodeURIComponent(appointment.location || '')
+      const dates = `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`
+
+      const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`
+
+      // Abrir en nueva ventana
+      window.open(googleCalendarUrl, '_blank')
+      toast.success('📅 Abriendo Google Calendar...')
+    } catch (error) {
+      toast.error('Error al abrir Google Calendar')
+    }
+  }
+
+  // Función para eliminar cita
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
+      return
+    }
+
+    setDeletingId(appointmentId)
+    
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId)
+
+      if (error) {
+        toast.error(`Error al eliminar la cita: ${error.message}`)
+        return
+      }
+
+      toast.success('Cita eliminada exitosamente')
+      refetch() // Recargar la lista de citas
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado'
+      toast.error(`Error al eliminar: ${message}`)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
       {/* Header Section - Compact like reference */}
@@ -169,7 +262,7 @@ export default function ClientDashboard({
                     className="bg-[#252032] border-white/10 text-white hover:bg-[#2d2640] hover:text-white"
                   >
                     <UserCircle2 className="h-5 w-5 mr-2" />
-                    <span className="capitalize">{user.role}</span>
+                    <span className="capitalize">{user.activeRole}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-[#252032] border-white/10 text-white">
@@ -180,8 +273,8 @@ export default function ClientDashboard({
                     className="hover:bg-white/5 focus:bg-white/5 cursor-pointer"
                   >
                     <span className="flex items-center w-full justify-between">
-                      <span className={user.role === 'admin' ? 'text-[#6820F7]' : ''}>Admin</span>
-                      {user.role === 'admin' && <span className="text-[#6820F7]">✓</span>}
+                      <span className={user.activeRole === 'admin' ? 'text-[#6820F7]' : ''}>Admin</span>
+                      {user.activeRole === 'admin' && <span className="text-[#6820F7]">✓</span>}
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
@@ -189,8 +282,8 @@ export default function ClientDashboard({
                     className="hover:bg-white/5 focus:bg-white/5 cursor-pointer"
                   >
                     <span className="flex items-center w-full justify-between">
-                      <span className={user.role === 'employee' ? 'text-[#6820F7]' : ''}>Employee</span>
-                      {user.role === 'employee' && <span className="text-[#6820F7]">✓</span>}
+                      <span className={user.activeRole === 'employee' ? 'text-[#6820F7]' : ''}>Employee</span>
+                      {user.activeRole === 'employee' && <span className="text-[#6820F7]">✓</span>}
                     </span>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
@@ -198,8 +291,8 @@ export default function ClientDashboard({
                     className="hover:bg-white/5 focus:bg-white/5 cursor-pointer"
                   >
                     <span className="flex items-center w-full justify-between">
-                      <span className={user.role === 'client' ? 'text-[#6820F7]' : ''}>Client</span>
-                      {user.role === 'client' && <span className="text-[#6820F7]">✓</span>}
+                      <span className={user.activeRole === 'client' ? 'text-[#6820F7]' : ''}>Client</span>
+                      {user.activeRole === 'client' && <span className="text-[#6820F7]">✓</span>}
                     </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -292,16 +385,39 @@ export default function ClientDashboard({
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        className="text-gray-400 hover:text-white hover:bg-white/5"
+                        className="text-gray-400 hover:text-green-400 hover:bg-white/5"
+                        onClick={() => handleConfirmAppointment(appointment.id)}
+                        disabled={confirmingId === appointment.id || appointment.status === 'confirmed'}
+                        title={appointment.status === 'confirmed' ? 'Ya confirmada' : 'Confirmar cita'}
                       >
-                        <CalendarCheck className="h-5 w-5" />
+                        {confirmingId === appointment.id ? (
+                          <span className="animate-spin">⏳</span>
+                        ) : (
+                          <CalendarCheck className="h-5 w-5" />
+                        )}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-gray-400 hover:text-blue-400 hover:bg-white/5"
+                        onClick={() => handleAddToGoogleCalendar(appointment)}
+                        title="Agregar a Google Calendar"
+                      >
+                        <CalendarPlus className="h-5 w-5" />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="icon"
                         className="text-gray-400 hover:text-red-400 hover:bg-white/5"
+                        onClick={() => handleDeleteAppointment(appointment.id)}
+                        disabled={deletingId === appointment.id}
+                        title="Eliminar cita"
                       >
-                        <Trash2 className="h-5 w-5" />
+                        {deletingId === appointment.id ? (
+                          <span className="animate-spin">⏳</span>
+                        ) : (
+                          <Trash2 className="h-5 w-5" />
+                        )}
                       </Button>
                     </div>
                   </CardContent>
@@ -366,13 +482,29 @@ export default function ClientDashboard({
                             {appointment.location || 'Location'}
                           </td>
                           <td className="px-6 py-4">
-                            <Button 
-                              variant="link" 
-                              size="sm"
-                              className="text-[#8B5CF6] hover:text-[#a78bfa] font-semibold p-0 h-auto"
-                            >
-                              Rebook
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="link" 
+                                size="sm"
+                                className="text-[#8B5CF6] hover:text-[#a78bfa] font-semibold p-0 h-auto"
+                              >
+                                Rebook
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteAppointment(appointment.id)}
+                                disabled={deletingId === appointment.id}
+                                className="text-gray-400 hover:text-red-400 p-1 h-auto"
+                                title="Eliminar cita"
+                              >
+                                {deletingId === appointment.id ? (
+                                  <span className="animate-spin text-sm">⏳</span>
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -390,6 +522,11 @@ export default function ClientDashboard({
         open={showAppointmentForm}
         onClose={() => setShowAppointmentForm(false)}
         businessId={user.business_id || ''}
+        userId={user.id}
+        onSuccess={() => {
+          refetch(); // Recargar citas después de crear una nueva
+          setShowAppointmentForm(false);
+        }}
       />
     </div>
   )

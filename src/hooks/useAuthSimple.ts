@@ -45,13 +45,22 @@ export function useAuthSimple() {
         if (session?.user) {
           console.log('✅ Session found, user:', session.user.email)
           
-          // Crear usuario simplificado
+          // Crear usuario simplificado con soporte multi-rol
           const user: User = {
             id: session.user.id,
             email: session.user.email!,
             name: session.user.email!.split('@')[0],
             username: session.user.email!.split('@')[0],
-            role: 'client',
+            roles: [{
+              id: 'simple-client-role',
+              user_id: session.user.id,
+              role: 'client',
+              business_id: null,
+              is_active: true,
+              created_at: new Date().toISOString()
+            }],
+            activeRole: 'client',
+            role: 'client', // Legacy support
             business_id: undefined,
             location_id: undefined,
             phone: '',
@@ -116,7 +125,16 @@ export function useAuthSimple() {
             email: session.user.email!,
             name: session.user.email!.split('@')[0],
             username: session.user.email!.split('@')[0],
-            role: 'client',
+            roles: [{
+              id: 'simple-client-role-2',
+              user_id: session.user.id,
+              role: 'client',
+              business_id: null,
+              is_active: true,
+              created_at: new Date().toISOString()
+            }],
+            activeRole: 'client',
+            role: 'client', // Legacy support
             business_id: undefined,
             location_id: undefined,
             phone: '',

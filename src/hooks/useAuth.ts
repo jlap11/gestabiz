@@ -41,7 +41,16 @@ export function useAuth() {
           email: 'demo@example.com',
           name: 'Demo User',
           avatar_url: undefined,
-          role: 'admin',
+          roles: [{ 
+            id: 'demo-role-1', 
+            user_id: 'demo-user-id',
+            role: 'admin', 
+            business_id: null,
+            is_active: true,
+            created_at: new Date().toISOString()
+          }],
+          activeRole: 'admin',
+          role: 'admin', // Legacy support
           phone: '+1234567890',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -74,14 +83,97 @@ export function useAuth() {
         return null
       }
 
-      // If profile exists, return it
+      // If profile exists, fetch user roles and return complete user object
       if (profile) {
+        // Fetch user roles from user_roles table
+        const { data: userRoles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select(`
+            id,
+            role,
+            business_id,
+            is_active,
+            businesses:business_id (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', profile.id)
+          .order('is_active', { ascending: false })
+
+        if (rolesError) {
+          // If error fetching roles, use legacy single role from profile
+          return {
+            id: profile.id,
+            email: profile.email,
+            name: profile.full_name || '',
+            avatar_url: profile.avatar_url,
+            roles: [{ 
+              id: 'legacy-role', 
+              user_id: profile.id,
+              role: profile.role, 
+              business_id: null,
+              is_active: true,
+              created_at: profile.created_at
+            }],
+            activeRole: profile.active_role || profile.role,
+            role: profile.active_role || profile.role, // Legacy support
+            phone: profile.phone,
+            created_at: profile.created_at,
+            updated_at: profile.updated_at,
+            is_active: profile.is_active,
+            language: profile.settings?.language || 'es',
+            notification_preferences: {
+              email: true,
+              push: true,
+              browser: true,
+              whatsapp: false,
+              reminder_24h: true,
+              reminder_1h: true,
+              reminder_15m: false,
+              daily_digest: false,
+              weekly_report: false
+            },
+            permissions: [],
+            timezone: 'America/Mexico_City'
+          }
+        }
+
+        // Map roles with business information
+        const mappedRoles = (userRoles || []).map(r => {
+          let businessName: string | undefined
+          if (r.businesses) {
+            businessName = Array.isArray(r.businesses) ? r.businesses[0]?.name : (r.businesses as { name?: string }).name
+          }
+          
+          return {
+            id: r.id,
+            user_id: profile.id,
+            role: r.role,
+            business_id: r.business_id,
+            business_name: businessName,
+            is_active: r.is_active,
+            created_at: new Date().toISOString() // Use current time as fallback
+          }
+        })
+
+        // Determine active role
+        const activeRole = profile.active_role || mappedRoles.find(r => r.is_active)?.role || mappedRoles[0]?.role || 'client'
+        const activeRoleAssignment = mappedRoles.find(r => r.role === activeRole)
+
         return {
           id: profile.id,
           email: profile.email,
           name: profile.full_name || '',
           avatar_url: profile.avatar_url,
-          role: profile.role,
+          roles: mappedRoles,
+          activeRole,
+          activeBusiness: activeRoleAssignment?.business_id ? {
+            id: activeRoleAssignment.business_id,
+            name: activeRoleAssignment.business_name || ''
+          } : undefined,
+          role: activeRole, // Legacy support
+          business_id: activeRoleAssignment?.business_id || undefined, // Legacy support
           phone: profile.phone,
           created_at: profile.created_at,
           updated_at: profile.updated_at,
@@ -134,12 +226,31 @@ export function useAuth() {
         return null
       }
 
+      // Create initial client role for new user
+      await supabase
+        .from('user_roles')
+        .insert({
+          user_id: createdProfile.id,
+          role: 'client',
+          business_id: null,
+          is_active: true
+        })
+
       return {
         id: createdProfile.id,
         email: createdProfile.email,
         name: createdProfile.full_name || '',
         avatar_url: createdProfile.avatar_url,
-        role: createdProfile.role,
+        roles: [{
+          id: 'initial-client-role',
+          user_id: createdProfile.id,
+          role: 'client',
+          business_id: null,
+          is_active: true,
+          created_at: createdProfile.created_at
+        }],
+        activeRole: 'client',
+        role: 'client', // Legacy support
         phone: createdProfile.phone,
         created_at: createdProfile.created_at,
         updated_at: createdProfile.updated_at,

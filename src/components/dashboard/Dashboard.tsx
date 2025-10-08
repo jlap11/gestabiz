@@ -79,7 +79,7 @@ function Dashboard({
     }
   ]
 
-  const dashboardStats = user.role === 'client'
+  const dashboardStats = user.activeRole === 'client'
     ? [allStats[0], allStats[3]]
     : allStats
 
@@ -95,7 +95,7 @@ function Dashboard({
   }
 
   // Si es cliente, usar el nuevo ClientDashboard
-  if (user.role === 'client') {
+  if (user.activeRole === 'client') {
     return (
       <ClientDashboard 
         user={user}
@@ -106,6 +106,7 @@ function Dashboard({
     )
   }
 
+  // From this point on, user.activeRole is either 'admin' or 'employee'
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -116,26 +117,18 @@ function Dashboard({
           </h1>
           <div className="flex items-center gap-4 mt-2">
             <p className="text-muted-foreground">
-              {user.role === 'client' ? t('dashboard.overview_client') : t('dashboard.overview')}
+              {t('dashboard.overview')}
             </p>
-            {user.role === 'client' && (
-              <Button onClick={() => setShowAppointmentForm(true)} size="sm" className="ml-2">
-                <Plus className="h-4 w-4 mr-1" />
-                {t('dashboard.schedule_appointment')}
-              </Button>
-            )}
           </div>
         </div>
-        {user.role !== 'client' && (
-          <Button onClick={() => setShowAppointmentForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('appointments.create')}
-          </Button>
-        )}
+        <Button onClick={() => setShowAppointmentForm(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('appointments.create')}
+        </Button>
       </div>
 
       {/* CTA crear negocio si no tiene uno */}
-      {!user.business_id && user.role !== 'client' && (
+      {!user.business_id && (
         <Card className="bg-muted/30 border-dashed border-2">
           <CardContent className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div>
@@ -171,16 +164,16 @@ function Dashboard({
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          {user.role !== 'client' && (
+          {user.activeRole !== 'client' && (
             <TabsTrigger value="overview">{t('dashboard.overview')}</TabsTrigger>
           )}
           <TabsTrigger value="appointments">{t('nav.appointments')}</TabsTrigger>
-          {user.role !== 'client' && (
+          {user.activeRole !== 'client' && (
             <TabsTrigger value="clients">{t('nav.clients')}</TabsTrigger>
           )}
         </TabsList>
 
-        {user.role !== 'client' && (
+        {user.activeRole !== 'client' && (
           <TabsContent value="overview" className="space-y-4">
             <DashboardOverview 
               user={user}
@@ -194,7 +187,7 @@ function Dashboard({
           <AppointmentsView user={user} />
         </TabsContent>
 
-        {user.role !== 'client' && (
+        {user.activeRole !== 'client' && (
           <TabsContent value="clients" className="space-y-4">
             <ClientsView user={user} />
           </TabsContent>

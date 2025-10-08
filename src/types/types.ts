@@ -1,6 +1,17 @@
 // User roles enum
 export type UserRole = 'admin' | 'employee' | 'client'
 
+// User role assignment (a user can have multiple roles)
+export interface UserRoleAssignment {
+  id: string
+  user_id: string
+  role: UserRole
+  business_id: string | null  // null for client role, required for admin/employee
+  business_name?: string
+  is_active: boolean
+  created_at: string
+}
+
 // Permission types
 export type Permission = 
   | 'read_appointments' 
@@ -34,8 +45,22 @@ export interface User {
   username?: string
   avatar_url?: string
   timezone?: string
+  
+  // Multi-role support
+  roles: UserRoleAssignment[]  // All roles assigned to this user
+  activeRole: UserRole  // Currently selected role
+  activeBusiness?: {  // Business context when in admin/employee role
+    id: string
+    name: string
+  }
+  
+  // Legacy single role (deprecated, kept for backward compatibility)
+  /** @deprecated Use activeRole instead */
   role: UserRole
+  
+  /** @deprecated Use activeBusiness.id instead */
   business_id?: string
+  
   location_id?: string
   phone?: string
   language: 'es' | 'en'

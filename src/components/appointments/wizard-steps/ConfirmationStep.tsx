@@ -13,7 +13,9 @@ interface WizardData {
   endTime: string | null;
   notes: string;
   locationId: string | null;
-  location: { name: string } | null;
+  location: { name: string; address?: string | null } | null;
+  employeeId: string | null;
+  employee: { full_name: string | null; email: string } | null;
 }
 
 interface ConfirmationStepProps {
@@ -44,7 +46,7 @@ export function ConfirmationStep({
   wizardData,
   onUpdateNotes,
 }: ConfirmationStepProps) {
-  const { service, date, startTime, endTime, notes, location } = wizardData;
+  const { service, date, startTime, endTime, notes, location, employee } = wizardData;
 
   return (
     <div className="p-6 space-y-6">
@@ -87,19 +89,27 @@ export function ConfirmationStep({
 
           {/* Location */}
           {location && (
-            <InfoRow
-              icon={<MapPin className="h-5 w-5" />}
-              label="Location"
-              value={location.name}
-            />
+            <>
+              <Separator className="bg-white/10" />
+              <InfoRow
+                icon={<MapPin className="h-5 w-5" />}
+                label="Location"
+                value={location.name}
+              />
+            </>
           )}
 
-          {/* Employee (placeholder) */}
-          <InfoRow
-            icon={<User className="h-5 w-5" />}
-            label="Employee"
-            value="Auto-assigned"
-          />
+          {/* Employee */}
+          {employee && (
+            <>
+              <Separator className="bg-white/10" />
+              <InfoRow
+                icon={<User className="h-5 w-5" />}
+                label="Professional"
+                value={employee.full_name || employee.email}
+              />
+            </>
+          )}
 
           {/* Price */}
           {service?.price && (

@@ -9,23 +9,34 @@ interface ServiceSelectionProps {
   readonly businessId: string;
   readonly selectedServiceId: string | null;
   readonly onSelectService: (service: Service) => void;
+  readonly preloadedServices?: Service[]; // Datos pre-cargados
 }
 
 export function ServiceSelection({
   businessId,
   selectedServiceId,
   onSelectService,
+  preloadedServices,
 }: ServiceSelectionProps) {
   const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!preloadedServices);
 
   const loadServices = useCallback(async () => {
+    // Si ya tenemos datos pre-cargados, usarlos (MÁS RÁPIDO)
+    if (preloadedServices) {
+      setServices(preloadedServices);
+      setLoading(false);
+      return;
+    }
+
+    // Si no, hacer la consulta tradicional
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('services')
         .select('*')
-        .eq('business_id', businessId);
+        .eq('business_id', businessId)
+        .eq('is_active', true);
 
       if (error) throw error;
       setServices((data as Service[]) || []);
@@ -34,7 +45,7 @@ export function ServiceSelection({
     } finally {
       setLoading(false);
     }
-  }, [businessId]);
+  }, [businessId, preloadedServices]);
 
   useEffect(() => {
     loadServices();

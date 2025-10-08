@@ -154,7 +154,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
               <button
                 type="button"
                 onClick={() => setShowResetForm(true)}
-                className="text-[#6820F7] hover:text-[#8040ff] transition-colors"
+                className="text-[#6820F7] hover:text-[#8040ff] transition-colors cursor-pointer"
               >
                 Forgot your password?
               </button>
@@ -214,7 +214,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
           {/* Sign up link */}
           <div className="mt-6 text-center text-sm">
             <span className="text-gray-400">Don't have an account? </span>
-            <button className="text-[#20F7D0] hover:text-[#1ce0bc] font-medium transition-colors">
+            <button className="text-[#20F7D0] hover:text-[#1ce0bc] font-medium transition-colors cursor-pointer">
               Sign up
             </button>
           </div>

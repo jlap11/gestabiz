@@ -20,34 +20,36 @@ export function usePermissions(user: User | null) {
       }
     }
 
-    const rolePermissions = getRolePermissions(user.role)
-    const isAdmin = user.role === 'admin'
-    const isEmployee = user.role === 'employee'
-    const isClient = user.role === 'client'
+    // Use activeRole instead of legacy role field
+    const activeRole = user.activeRole
+    const rolePermissions = getRolePermissions(activeRole)
+    const isAdmin = activeRole === 'admin'
+    const isEmployee = activeRole === 'employee'
+    const isClient = activeRole === 'client'
 
     return {
       hasPermission: (permission: Permission) => 
-        userHasPermission(user.role, user.permissions, permission),
+        userHasPermission(activeRole, user.permissions, permission),
       
       rolePermissions,
       
       canRead: (resource: string) => 
-        userHasPermission(user.role, user.permissions, `read_${resource}` as Permission),
+        userHasPermission(activeRole, user.permissions, `read_${resource}` as Permission),
       
       canWrite: (resource: string) => 
-        userHasPermission(user.role, user.permissions, `write_${resource}` as Permission),
+        userHasPermission(activeRole, user.permissions, `write_${resource}` as Permission),
       
       canDelete: (resource: string) => 
-        userHasPermission(user.role, user.permissions, `delete_${resource}` as Permission),
+        userHasPermission(activeRole, user.permissions, `delete_${resource}` as Permission),
       
       canManage: (resource: string) => 
-        userHasPermission(user.role, user.permissions, `manage_${resource}` as Permission),
+        userHasPermission(activeRole, user.permissions, `manage_${resource}` as Permission),
       
       isAdmin,
       isEmployee,
       isClient,
       
-      roleDescription: ROLE_DESCRIPTIONS[user.role] || ''
+      roleDescription: ROLE_DESCRIPTIONS[activeRole] || ''
     }
   }, [user])
 

@@ -64,7 +64,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
     location_id: '',
     site_name: '',
     title: '',
-    client_name: user.role === 'client' ? (user.name || 'Cliente') : '',
+    client_name: user.activeRole === 'client' ? (user.name || 'Cliente') : '',
     client_email: '',
     client_phone: '',
     date: '',
@@ -84,7 +84,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         location_id: appointment.location_id || '',
         site_name: appointment.site_name || '',
         title: appointment.title || '',
-        client_name: appointment.client_name || (user.role === 'client' ? (user.name || 'Cliente') : ''),
+        client_name: appointment.client_name || (user.activeRole === 'client' ? (user.name || 'Cliente') : ''),
         client_email: appointment.client_email || '',
         client_phone: appointment.client_phone || '',
         date: startDate.toISOString().split('T')[0],
@@ -101,7 +101,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         location_id: '',
         site_name: '',
         title: '',
-        client_name: user.role === 'client' ? (user.name || 'Cliente') : '',
+        client_name: user.activeRole === 'client' ? (user.name || 'Cliente') : '',
         client_email: '',
         client_phone: '',
         date: '',
@@ -111,7 +111,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         status: 'scheduled'
       });
     }
-  }, [appointment, businesses, user.role, user.name]);
+  }, [appointment, businesses, user.activeRole, user.name]);
 
   useEffect(() => {
     if (formData.service_id && formData.start_time) {
@@ -129,7 +129,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
     setFormData(prev => ({
       ...prev,
       [field]: value,
-      ...(user.role === 'client' && { client_name: user.name || 'Cliente' })
+      ...(user.activeRole === 'client' && { client_name: user.name || 'Cliente' })
     }))
   }
 
@@ -205,7 +205,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personalización para cliente: solo campos esenciales */}
-          {user.role === 'client' ? (
+          {user.activeRole === 'client' ? (
             <>
               <div className="space-y-2">
                 <Label htmlFor="business">Negocio *</Label>
@@ -312,7 +312,7 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
   const [title, setTitle] = useState(appointment?.title || '')
   // Si es cliente final, usar su propio id por defecto y ocultar selección
   const [clientId, setClientId] = useState(
-    appointment?.client_id || (user.role === 'client' ? user.id : (clients[0]?.id ?? ''))
+    appointment?.client_id || (user.activeRole === 'client' ? user.id : (clients[0]?.id ?? ''))
   )
   const [date, setDate] = useState<string>(() => appointment ? new Date(appointment.start_time).toISOString().split('T')[0] : '')
   const [startTime, setStartTime] = useState<string>(() => appointment ? new Date(appointment.start_time).toTimeString().slice(0,5) : '')
@@ -349,7 +349,7 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
     e.preventDefault()
     const selectedClient = clients.find(c => c.id === clientId)
     // Para cliente final, forzar clientId = user.id
-    const effectiveClientId = user.role === 'client' ? user.id : clientId
+    const effectiveClientId = user.activeRole === 'client' ? user.id : clientId
     if (!title.trim() || !effectiveClientId || !date || !startTime || !endTime) return
 
     const startISO = new Date(`${date}T${startTime}:00`).toISOString()
@@ -367,8 +367,8 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
       date,
       startTime,
       endTime,
-      client_name: user.role === 'client' ? (user.name || '') : (selectedClient?.name || ''),
-      clientName: user.role === 'client' ? (user.name || '') : (selectedClient?.name || '')
+      client_name: user.activeRole === 'client' ? (user.name || '') : (selectedClient?.name || ''),
+      clientName: user.activeRole === 'client' ? (user.name || '') : (selectedClient?.name || '')
   }
   // status está asegurado por el estado local, forzamos tipo requerido para el handler
   onSave(payload as Omit<Appointment, 'id' | 'userId' | 'createdAt' | 'updatedAt'>)
@@ -391,7 +391,7 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
 
-              {user.role !== 'client' && (
+              {user.activeRole !== 'client' && (
                 <div className="space-y-2">
                   <Label htmlFor="client">{t('appointments.client') || 'Client'}</Label>
                   <Select value={clientId} onValueChange={setClientId} required>

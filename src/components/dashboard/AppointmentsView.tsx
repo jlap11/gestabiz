@@ -31,11 +31,11 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
 
   const filteredAndSortedAppointments = useMemo(() => {
     let base = filterAppointments(appointments, filter)
-    if (user.role === 'client') {
+    if (user.activeRole === 'client') {
       base = base.filter(apt => ['scheduled', 'confirmed', 'in_progress'].includes(apt.status))
     }
     return sortAppointments(base, sortBy, sortOrder)
-  }, [appointments, filter, user.role])
+  }, [appointments, filter, user.activeRole])
 
   // Agrupación de citas por mes y día
   const groupedAppointments = useMemo(() => {
@@ -83,7 +83,7 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
 
   // Render principal
   return (
-    <div className={user.role === 'client' ? 'grid grid-cols-1 md:grid-cols-2 gap-8' : 'space-y-6'}>
+    <div className={user.activeRole === 'client' ? 'grid grid-cols-1 md:grid-cols-2 gap-8' : 'space-y-6'}>
       {/* Columna principal: Citas programadas */}
       <div>
         <h2 className="text-2xl font-bold mb-2">Citas programadas</h2>
@@ -137,7 +137,7 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
       </div>
 
       {/* Columna secundaria: Recomendados */}
-      {user.role === 'client' && (
+      {user.activeRole === 'client' && (
         <div>
           <RecommendedBusinesses />
         </div>

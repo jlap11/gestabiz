@@ -67,7 +67,7 @@ export default function AppLayout({
 
   const filteredMenuItems = menuItems.filter(item => {
     if (!item.roles) return true
-    return item.roles.includes(user.role)
+    return item.roles.includes(user.activeRole)
   })
 
   return (

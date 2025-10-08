@@ -185,7 +185,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
           </CardContent>
         </Card>
 
-        {user.role !== 'client' && (
+        {user.activeRole !== 'client' && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -204,7 +204,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
         </Card>
         )}
 
-        {user.role !== 'client' && (
+        {user.activeRole !== 'client' && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -225,7 +225,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       </div>
 
       {/* Charts Row */}
-      {user.role !== 'client' && (
+      {user.activeRole !== 'client' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Appointments by Day Chart */}
           <Card>
@@ -297,7 +297,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       )}
 
       {/* Revenue Chart (admins/empleados) */}
-      {user.role !== 'client' && (
+      {user.activeRole !== 'client' && (
       <Card>
         <CardHeader>
           <CardTitle>{t('dashboard.weeklyRevenue')}</CardTitle>
