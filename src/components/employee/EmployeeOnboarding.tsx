@@ -20,7 +20,10 @@ export function EmployeeOnboarding({ user, onRequestCreated }: EmployeeOnboardin
   const [showScanner, setShowScanner] = useState(false)
   const [requestStatus, setRequestStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const { createRequest, isLoading, requests } = useEmployeeRequests({ userId: user.id })
+  const { createRequest, isLoading, requests } = useEmployeeRequests({ 
+    userId: user.id,
+    autoFetch: false // Don't auto-fetch during onboarding - no businessId yet
+  })
 
   // Filter to show only pending and approved requests
   const pendingRequests = requests.filter((r) => r.status === 'pending')

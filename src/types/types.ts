@@ -92,13 +92,62 @@ export interface UserLegacy {
   preferences?: Record<string, unknown>
 }
 
+// Business category types (DEPRECATED - usar BusinessCategory interface)
+export type BusinessCategoryEnum = 
+  | 'health'        // Salud (médicos, dentistas, fisioterapia)
+  | 'beauty'        // Belleza (peluquerías, spas, estética)
+  | 'fitness'       // Fitness (gimnasios, yoga, entrenadores)
+  | 'education'     // Educación (tutorías, cursos, academias)
+  | 'consulting'    // Consultoría (coaches, asesores)
+  | 'professional'  // Servicios profesionales (abogados, contadores)
+  | 'maintenance'   // Mantenimiento (mecánicos, técnicos)
+  | 'food'          // Alimentos (restaurantes, chefs)
+  | 'entertainment' // Entretenimiento (fotografía, eventos)
+  | 'other'         // Otros
+
+// Legal entity type
+export type LegalEntityType = 'company' | 'individual'
+
+// Business Category from database (jerarquía: categorías principales y subcategorías)
+export interface BusinessCategory {
+  id: string
+  created_at: string
+  updated_at: string
+  name: string
+  slug: string
+  description?: string
+  icon_name?: string
+  is_active: boolean
+  sort_order: number
+  parent_id?: string | null // NULL = categoría principal, UUID = subcategoría
+  // Computed properties (frontend only)
+  subcategories?: BusinessCategory[] // Subcategorías de esta categoría principal
+  parent?: BusinessCategory // Categoría principal de esta subcategoría
+}
+
+// Relación N:M entre negocios y subcategorías (máximo 3 por negocio)
+export interface BusinessSubcategory {
+  id: string
+  created_at: string
+  business_id: string
+  subcategory_id: string
+  subcategory?: BusinessCategory // Populated cuando se hace join
+}
+
 // Business information
 export interface Business {
   id: string
   name: string
   description?: string
-  category: string
+  category_id?: string // FK to business_categories (categoría PRINCIPAL)
+  legal_entity_type?: LegalEntityType // Empresa o independiente
+  tax_id?: string // NIT, RUT, or Cédula
+  legal_name?: string // Razón social or full legal name
+  registration_number?: string // Registro mercantil
   logo_url?: string
+  // Computed properties (frontend only - se cargan con joins)
+  category?: BusinessCategory // Categoría principal poblada
+  subcategories?: BusinessSubcategory[] // Máximo 3 subcategorías
   website?: string
   phone?: string
   email?: string
@@ -152,21 +201,21 @@ export interface Location {
   longitude?: number
   phone?: string
   email?: string
-  business_hours: {
-    [key: string]: {
-      open: string
-      close: string
-      is_open: boolean
-    }
-  }
-  // Extended (optional) fields
-  website?: string
   description?: string
+  images?: string[] // Array of image URLs from Supabase Storage
+  business_hours: {
+    monday: { open: string; close: string; closed: boolean }
+    tuesday: { open: string; close: string; closed: boolean }
+    wednesday: { open: string; close: string; closed: boolean }
+    thursday: { open: string; close: string; closed: boolean }
+    friday: { open: string; close: string; closed: boolean }
+    saturday: { open: string; close: string; closed: boolean }
+    sunday: { open: string; close: string; closed: boolean }
+  }
   is_active: boolean
   is_main?: boolean
   created_at: string
   updated_at: string
-  created_by?: string
   amenities?: string[]
   capacity?: number
 }

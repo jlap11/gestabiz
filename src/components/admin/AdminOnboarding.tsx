@@ -1,58 +1,73 @@
 import { useState } from 'react'
-import { Building2, MapPin, Phone, Mail, Calendar, Info, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Building2, MapPin, Phone, Mail, Info, Loader2, CheckCircle, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { PhoneInput } from '@/components/ui/PhoneInput'
+import { useBusinessCategories } from '@/hooks/useBusinessCategories'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import type { User } from '@/types/types'
+import type { User, LegalEntityType } from '@/types/types'
 
 interface AdminOnboardingProps {
   user: User
   onBusinessCreated?: () => void
 }
 
-const BUSINESS_CATEGORIES = [
-  'Salón de belleza',
-  'Barbería',
-  'Spa',
-  'Clínica médica',
-  'Clínica dental',
-  'Gimnasio',
-  'Estudio de yoga',
-  'Centro de masajes',
-  'Peluquería',
-  'Centro de estética',
-  'Consultorio psicológico',
-  'Veterinaria',
-  'Taller mecánico',
-  'Centro de reparación',
-  'Otro',
-]
-
 export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProps) {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [categoryFilter, setCategoryFilter] = useState('') // For filtering categories
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]) // Max 3
+  const [subcategoryDescriptions, setSubcategoryDescriptions] = useState<Record<string, string>>({}) // Descriptions per subcategory
+  const [phonePrefix, setPhonePrefix] = useState('+57') // Colombia default
+  
   // Form data
   const [formData, setFormData] = useState({
+    // Basic info
     name: '',
-    category: '',
+    category_id: '', // Changed from category to category_id
     description: '',
+    // Legal info
+    legal_entity_type: 'individual' as LegalEntityType,
+    tax_id: '',
+    legal_name: '',
+    registration_number: '',
+    // Contact & location
     phone: '',
     email: '',
     address: '',
     city: '',
     state: '',
-    country: 'México',
+    country: 'Colombia',
     postal_code: '',
   })
 
+  // Fetch business categories from database
+  const { mainCategories, categories, isLoading: categoriesLoading } = useBusinessCategories()
+  
+  // Filter MAIN categories by search term (frontend filter)
+  const filteredMainCategories = mainCategories.filter(cat => 
+    cat.name.toLowerCase().includes(categoryFilter.toLowerCase())
+  )
+  
+  // Get subcategories of selected main category
+  const availableSubcategories = formData.category_id
+    ? categories.find(c => c.id === formData.category_id)?.subcategories || []
+    : []
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    
+    // Reset subcategories when changing main category
+    if (field === 'category_id') {
+      setSelectedSubcategories([])
+    }
   }
 
   const handleSubmit = async () => {
@@ -60,18 +75,58 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
     try {
       // Validate required fields
-      if (!formData.name || !formData.category) {
+      if (!formData.name || !formData.category_id) {
         toast.error('Nombre y categoría son obligatorios')
         return
       }
 
-      // Create business with default settings
+      // Validate tax_id format for Colombia
+      if (formData.tax_id) {
+        const taxId = formData.tax_id.trim()
+        if (formData.legal_entity_type === 'company') {
+          // NIT should be 9-10 digits
+          if (!/^\d{9,10}$/.test(taxId)) {
+            toast.error('NIT inválido. Debe tener 9-10 dígitos')
+            return
+          }
+        } else {
+          // Cédula should be 6-10 digits
+          if (!/^\d{6,10}$/.test(taxId)) {
+            toast.error('Cédula inválida. Debe tener 6-10 dígitos')
+            return
+          }
+        }
+        
+        // Check if tax_id already exists
+        const { data: existingBusiness, error: checkError } = await supabase
+          .from('businesses')
+          .select('id, name')
+          .eq('tax_id', taxId)
+          .maybeSingle()
+        
+        if (checkError) {
+          toast.error('Error al verificar el NIT/Cédula')
+          return
+        }
+        
+        if (existingBusiness) {
+          toast.error(`Este NIT/Cédula ya está registrado para el negocio "${existingBusiness.name}"`)
+          return
+        }
+      }
+
+      // Step 1: Create business WITHOUT logo first
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
           name: formData.name.trim(),
-          category: formData.category,
+          category_id: formData.category_id, // FK to business_categories
           description: formData.description.trim() || null,
+          legal_entity_type: formData.legal_entity_type,
+          tax_id: formData.tax_id.trim() || null,
+          legal_name: formData.legal_name.trim() || null,
+          registration_number: formData.registration_number.trim() || null,
+          logo_url: null, // Will be updated after upload
           phone: formData.phone.trim() || null,
           email: formData.email.trim() || null,
           address: formData.address.trim() || null,
@@ -96,7 +151,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
             auto_confirm: false,
             require_deposit: false,
             deposit_percentage: 0,
-            currency: 'MXN',
+            currency: 'COP',
           },
           is_active: true,
         })
@@ -106,6 +161,65 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
       if (businessError) throw businessError
 
       toast.success(`¡Negocio "${formData.name}" creado exitosamente!`)
+
+      // Step 2: Insert selected subcategories (máximo 3) with descriptions
+      if (selectedSubcategories.length > 0 && business) {
+        try {
+          const subcategoryInserts = selectedSubcategories.map(subcatId => ({
+            business_id: business.id,
+            subcategory_id: subcatId,
+            description: subcategoryDescriptions[subcatId] || null,
+          }))
+
+          const { error: subcatError } = await supabase
+            .from('business_subcategories')
+            .insert(subcategoryInserts)
+
+          if (subcatError) throw subcatError
+
+          toast.success(`${selectedSubcategories.length} subcategoría(s) asignada(s)`)
+        } catch {
+          // Don't fail if subcategories fail
+          toast.warning('Negocio creado, pero hubo un problema al asignar subcategorías')
+        }
+      }
+
+      // Step 3: Upload logo if exists (NOW user is owner, RLS will allow it)
+      if (logoFile && business) {
+        try {
+          // Upload to business-logos/{business.id}/logo.ext
+          const fileExt = logoFile.name.split('.').pop()
+          const fileName = `logo.${fileExt}`
+          const filePath = `${business.id}/${fileName}`
+
+          const { error: uploadError } = await supabase.storage
+            .from('business-logos')
+            .upload(filePath, logoFile, {
+              upsert: true,
+              contentType: logoFile.type,
+            })
+
+          if (uploadError) throw uploadError
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('business-logos')
+            .getPublicUrl(filePath)
+
+          // Update business with logo URL
+          const { error: updateError } = await supabase
+            .from('businesses')
+            .update({ logo_url: urlData.publicUrl })
+            .eq('id', business.id)
+
+          if (updateError) throw updateError
+
+          toast.success('Logo subido correctamente')
+        } catch {
+          // Don't fail the whole operation if logo upload fails
+          toast.warning('Negocio creado, pero hubo un problema al subir el logo')
+        }
+      }
 
       // Show invitation code
       if (business) {
@@ -120,14 +234,14 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
       onBusinessCreated?.()
     } catch (error) {
-      console.error('Error creating business:', error)
-      toast.error('Error al crear negocio')
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
+      toast.error(`Error al crear negocio: ${errorMsg}`)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const isStep1Valid = formData.name.trim().length > 0 && formData.category.length > 0
+  const isStep1Valid = formData.name.trim().length > 0 && formData.category_id.length > 0
   const isStep2Valid = true // Contact info is optional
 
   return (
@@ -164,68 +278,380 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
           <div className={`h-2 w-24 rounded-full ${step >= 3 ? 'bg-[#6820F7]' : 'bg-white/10'}`} />
         </div>
 
-        {/* Step 1: Basic Info */}
+        {/* Step 1: Basic Info + Legal Info + Logo */}
         {step === 1 && (
-          <Card className="bg-[#252032] border-white/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Building2 className="h-5 w-5 text-violet-500" />
-                Información básica
-              </CardTitle>
-              <CardDescription className="text-gray-400">Datos principales de tu negocio</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Business Name */}
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-white">
-                  Nombre del negocio <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="Ej: Salón de Belleza María"
-                />
-              </div>
+          <div className="space-y-6">
+            {/* Basic Information Card */}
+            <Card className="bg-[#252032] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Building2 className="h-5 w-5 text-violet-500" />
+                  Información básica
+                </CardTitle>
+                <CardDescription className="text-gray-400">Datos principales de tu negocio</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Business Name */}
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium text-white">
+                    Nombre del negocio <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    placeholder="Ej: Salón de Belleza María"
+                    className="bg-[#1a1a1a] border-white/10"
+                  />
+                </div>
 
-              {/* Category */}
-              <div className="space-y-2">
-                <label htmlFor="category" className="text-sm font-medium">
-                  Categoría <span className="text-red-500">*</span>
-                </label>
-                <Select value={formData.category} onValueChange={(value) => handleChange('category', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BUSINESS_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Category - Main Category with Filter */}
+                <div className="space-y-2">
+                  <label htmlFor="category" className="text-sm font-medium text-white">
+                    Categoría Principal <span className="text-red-500">*</span>
+                  </label>
+                  {categoriesLoading ? (
+                    <div className="flex items-center justify-center py-3 bg-[#1a1a1a] rounded-md border border-white/10">
+                      <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
+                      <span className="ml-2 text-sm text-gray-400">Cargando categorías...</span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Category Selector */}
+                      <Select 
+                        value={formData.category_id} 
+                        onValueChange={(value) => {
+                          handleChange('category_id', value)
+                          setSelectedSubcategories([]) // Reset subcategories when main category changes
+                        }}
+                      >
+                        <SelectTrigger className="bg-[#1a1a1a] border-white/10">
+                          <SelectValue placeholder="Selecciona una categoría principal" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                          {/* Search/Filter Input inside dropdown */}
+                          <div className="px-2 pt-2 pb-1 sticky top-0 bg-[#1a1a1a] border-b border-white/10 z-10">
+                            <Input
+                              type="text"
+                              placeholder="Buscar categoría..."
+                              value={categoryFilter}
+                              onChange={(e) => setCategoryFilter(e.target.value)}
+                              className="bg-[#252032] border-white/10 h-8 text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                          
+                          {filteredMainCategories.length > 0 ? (
+                            filteredMainCategories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="px-2 py-6 text-center text-sm text-gray-400">
+                              No se encontraron categorías
+                            </div>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </>
+                  )}
+                  {mainCategories.length === 0 && !categoriesLoading && (
+                    <p className="text-sm text-red-400">No hay categorías disponibles</p>
+                  )}
+                </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium">
-                  Descripción
-                </label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder="Describe tu negocio..."
-                  rows={3}
-                />
-              </div>
+                {/* Subcategories - Only show if main category selected and has subcategories */}
+                {formData.category_id && availableSubcategories.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-white">
+                      Subcategorías (máximo 3)
+                    </label>
+                    <p className="text-xs text-gray-400">
+                      Selecciona hasta 3 subcategorías que describan mejor tu negocio
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-[#1a1a1a] rounded-md border border-white/10">
+                      {availableSubcategories.map((subcat) => {
+                        const isSelected = selectedSubcategories.includes(subcat.id)
+                        const canSelect = selectedSubcategories.length < 3 || isSelected
+                        
+                        return (
+                          <button
+                            key={subcat.id}
+                            type="button"
+                            disabled={!canSelect}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedSubcategories(prev => prev.filter(id => id !== subcat.id))
+                              } else if (selectedSubcategories.length < 3) {
+                                setSelectedSubcategories(prev => [...prev, subcat.id])
+                              }
+                            }}
+                            className={`p-2 rounded-md text-sm text-left transition-colors ${
+                              isSelected
+                                ? 'bg-violet-500/20 border-2 border-violet-500 text-white'
+                                : canSelect
+                                ? 'bg-[#252032] border border-white/10 text-gray-300 hover:border-violet-500/50'
+                                : 'bg-[#252032] border border-white/5 text-gray-500 cursor-not-allowed'
+                            }`}
+                          >
+                            {subcat.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      {selectedSubcategories.length}/3 subcategorías seleccionadas
+                    </p>
+                    
+                    {/* Subcategory Descriptions */}
+                    {selectedSubcategories.length > 0 && (
+                      <div className="mt-4 space-y-3">
+                        <p className="text-sm font-medium text-white">
+                          Descripción por Subcategoría
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Describe brevemente los servicios específicos de cada subcategoría
+                        </p>
+                        {selectedSubcategories.map((subcatId) => {
+                          const subcat = availableSubcategories.find(s => s.id === subcatId)
+                          if (!subcat) return null
+                          
+                          return (
+                            <div key={subcatId} className="space-y-1">
+                              <label className="text-xs font-medium text-gray-300">
+                                {subcat.name}
+                              </label>
+                              <Textarea
+                                value={subcategoryDescriptions[subcatId] || ''}
+                                onChange={(e) => setSubcategoryDescriptions(prev => ({
+                                  ...prev,
+                                  [subcatId]: e.target.value
+                                }))}
+                                placeholder={`Ej: Servicios específicos de ${subcat.name}...`}
+                                className="bg-[#1a1a1a] border-white/10 text-gray-300 min-h-[80px]"
+                              />
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              <Button onClick={() => setStep(2)} className="w-full" size="lg" disabled={!isStep1Valid}>
-                Continuar
-              </Button>
-            </CardContent>
-          </Card>
+                {/* General Description */}
+                <div className="space-y-2">
+                  <label htmlFor="description" className="text-sm font-medium text-white">
+                    Descripción General del Negocio *
+                  </label>
+                  <p className="text-xs text-gray-400">
+                    Describe brevemente los servicios generales que ofrece tu negocio
+                  </p>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    placeholder="Describe tu negocio..."
+                    rows={3}
+                    className="bg-[#1a1a1a] border-white/10"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Legal Information Card */}
+            <Card className="bg-[#252032] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Mail className="h-5 w-5 text-violet-500" />
+                  Información legal
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Datos legales para Colombia (opcional pero recomendado)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Legal Entity Type */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-white">Tipo de entidad</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('legal_entity_type', 'company')}
+                      className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                        formData.legal_entity_type === 'company'
+                          ? 'border-violet-500 bg-violet-500/10'
+                          : 'border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="font-medium text-white">Empresa</div>
+                      <div className="text-xs text-gray-400 mt-1">Negocio registrado con NIT</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('legal_entity_type', 'individual')}
+                      className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                        formData.legal_entity_type === 'individual'
+                          ? 'border-violet-500 bg-violet-500/10'
+                          : 'border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="font-medium text-white">Independiente</div>
+                      <div className="text-xs text-gray-400 mt-1">Persona natural con cédula</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tax ID */}
+                <div className="space-y-2">
+                  <label htmlFor="tax_id" className="text-sm font-medium text-white">
+                    {formData.legal_entity_type === 'company' ? 'NIT' : 'Cédula de Ciudadanía'}
+                  </label>
+                  <Input
+                    id="tax_id"
+                    value={formData.tax_id}
+                    onChange={(e) => handleChange('tax_id', e.target.value.replace(/\D/g, ''))}
+                    placeholder={
+                      formData.legal_entity_type === 'company'
+                        ? 'Ej: 900123456'
+                        : 'Ej: 1234567890'
+                    }
+                    className="bg-[#1a1a1a] border-white/10"
+                  />
+                  <p className="text-xs text-gray-400">
+                    {formData.legal_entity_type === 'company'
+                      ? 'Número de Identificación Tributaria (9-10 dígitos)'
+                      : 'Número de cédula de ciudadanía (6-10 dígitos)'}
+                  </p>
+                </div>
+
+                {/* Legal Name */}
+                <div className="space-y-2">
+                  <label htmlFor="legal_name" className="text-sm font-medium text-white">
+                    {formData.legal_entity_type === 'company' ? 'Razón Social' : 'Nombre Completo'}
+                  </label>
+                  <Input
+                    id="legal_name"
+                    value={formData.legal_name}
+                    onChange={(e) => handleChange('legal_name', e.target.value)}
+                    placeholder={
+                      formData.legal_entity_type === 'company'
+                        ? 'Ej: Salón de Belleza María S.A.S.'
+                        : 'Ej: María Pérez González'
+                    }
+                    className="bg-[#1a1a1a] border-white/10"
+                  />
+                </div>
+
+                {/* Registration Number (only for companies) */}
+                {formData.legal_entity_type === 'company' && (
+                  <div className="space-y-2">
+                    <label htmlFor="registration_number" className="text-sm font-medium text-white">
+                      Registro Mercantil (opcional)
+                    </label>
+                    <Input
+                      id="registration_number"
+                      value={formData.registration_number}
+                      onChange={(e) => handleChange('registration_number', e.target.value)}
+                      placeholder="Número de registro en Cámara de Comercio"
+                      className="bg-[#1a1a1a] border-white/10"
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Logo Upload Card */}
+            <Card className="bg-[#252032] border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Building2 className="h-5 w-5 text-violet-500" />
+                  Logo del negocio
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Sube el logo de tu negocio (opcional, se subirá al crear el negocio)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {logoPreview ? (
+                    <div className="space-y-4">
+                      <div className="relative w-48 h-48 mx-auto">
+                        <img
+                          src={logoPreview}
+                          alt="Preview logo"
+                          className="w-full h-full object-cover rounded-lg border-2 border-violet-500/20"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-8 w-8"
+                          onClick={() => {
+                            setLogoFile(null)
+                            setLogoPreview(null)
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setLogoFile(null)
+                          setLogoPreview(null)
+                        }}
+                        className="w-full"
+                      >
+                        Cambiar imagen
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-white/10 rounded-lg p-8 text-center hover:border-violet-500/50 transition-colors cursor-pointer"
+                      onClick={() => document.getElementById('logo-input')?.click()}
+                    >
+                      <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-sm text-gray-300 mb-2">
+                        Click para seleccionar o arrastra una imagen
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, WEBP (máx. 2MB)
+                      </p>
+                      <Input
+                        id="logo-input"
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            // Validate file size (2MB max)
+                            if (file.size > 2 * 1024 * 1024) {
+                              toast.error('El archivo es muy grande. Máximo 2MB')
+                              return
+                            }
+                            setLogoFile(file)
+                            // Create preview URL
+                            const reader = new FileReader()
+                            reader.onload = (event) => {
+                              setLogoPreview(event.target?.result as string)
+                            }
+                            reader.readAsDataURL(file)
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button onClick={() => setStep(2)} className="w-full" size="lg" disabled={!isStep1Valid}>
+              Continuar
+            </Button>
+          </div>
         )}
 
         {/* Step 2: Contact & Location */}
@@ -245,12 +671,12 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                   <Phone className="h-4 w-4" />
                   Teléfono
                 </label>
-                <Input
-                  id="phone"
-                  type="tel"
+                <PhoneInput
                   value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="+52 555 123 4567"
+                  onChange={(value) => handleChange('phone', value)}
+                  prefix={phonePrefix}
+                  onPrefixChange={setPhonePrefix}
+                  placeholder="Número de teléfono"
                 />
               </div>
 
@@ -339,7 +765,9 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Categoría</p>
-                  <p className="font-medium">{formData.category}</p>
+                  <p className="font-medium">
+                    {categories.find(c => c.id === formData.category_id)?.name || 'No seleccionada'}
+                  </p>
                 </div>
                 {formData.description && (
                   <div>
@@ -367,7 +795,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
               {/* Default Settings Info */}
               <Alert>
-                <Calendar className="h-4 w-4" />
+                <Info className="h-4 w-4" />
                 <AlertTitle>Configuración predeterminada</AlertTitle>
                 <AlertDescription className="text-xs space-y-1">
                   <p>• Horario: Lunes a Viernes 9:00-18:00, Sábado 9:00-14:00</p>

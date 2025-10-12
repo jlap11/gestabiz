@@ -43,6 +43,8 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 - **Supabase**: SOLO en la nube (no hay instancia local). Ver `SUPABASE_INTEGRATION_GUIDE.md`, `src/docs/deployment-guide.md` y `supabase/functions/README.md` para CLI, Edge Functions y cron.
   - **MCP configurado**: Servidor Model Context Protocol disponible para operaciones directas de base de datos.
   - **Modelo actualizado (2025-10-11)**: Ver `DATABASE_REDESIGN_ANALYSIS.md` para el nuevo modelo con servicios por sede/empleado, reviews, transacciones y analytics.
+  - **Sistema de Categorías (2025-11-10)**: Sistema jerárquico con 15 categorías principales y ~60 subcategorías. Máximo 3 subcategorías por negocio. Ver `SISTEMA_CATEGORIAS_RESUMEN.md` y `EJECUTAR_SOLO_CATEGORIAS.sql`.
+  - **Sistema de Notificaciones (2025-12-20)**: Sistema multicanal completo (Email/SMS/WhatsApp) con AWS SES/SNS, recordatorios automáticos, preferencias por usuario y negocio. Ver `BUSINESS_NOTIFICATION_SETTINGS_COMPLETADO.md` y `GUIA_PRUEBAS_SISTEMA_NOTIFICACIONES.md`.
 
 ## Convenciones y patrones del proyecto
 - Alias de paths: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`).
@@ -57,15 +59,35 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 - Para cada ajuste se debe tener en cuenta la parte de supabase, debe quedar coherencia entre lo desarrollado con el cliente de supabase.
 
 ## Puntos de integración externos
-- **Supabase Cloud**: tablas como `appointments`, `services`, `locations`, `businesses`, `profiles` (no `user_settings` aún); realtime en canal de `appointments` filtrado por `user_id`.
-  - **MCP Disponible**: Usar servidor MCP para operaciones SQL directas cuando sea necesario. Tablas operativas: `profiles`, `businesses`, `appointments`, `services`, `locations`, `notifications`.
+- **Supabase Cloud**: tablas como `appointments`, `services`, `locations`, `businesses`, `profiles`; realtime en canal de `appointments` filtrado por `user_id`.
+  - **MCP Disponible**: Usar servidor MCP para operaciones SQL directas cuando sea necesario.
+  - **Tablas del sistema de notificaciones (2025-12-20)**: 
+    - `business_notification_settings`: Configuración de canales, tiempos de recordatorio, prioridades
+    - `user_notification_preferences`: Preferencias individuales por tipo y canal
+    - `notification_log`: Registro de todas las notificaciones enviadas con tracking
+    - `job_vacancies`: Vacantes laborales publicadas por negocios
+    - `job_applications`: Aplicaciones de usuarios a vacantes
+  - **IMPORTANTE - business_employees usa `employee_id` NO `user_id`**: Al hacer queries con business_employees siempre usar `employee_id = auth.uid()` nunca `user_id = auth.uid()`
+  - **Edge Functions desplegadas**:
+    - `send-notification`: Envío multi-canal (Email via AWS SES, SMS via AWS SNS, WhatsApp)
+    - `process-reminders`: Procesador automático de recordatorios (ejecuta cada 5 min via cron)
   - **Políticas RLS**: Configuradas y funcionando correctamente sin recursión infinita.
+- **Amazon Web Services**: 
+  - **SES (Simple Email Service)**: Envío de emails transaccionales ($0.10/1000 emails)
+  - **SNS (Simple Notification Service)**: Envío de SMS ($0.00645/SMS en US)
+  - Variables requeridas: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `SES_FROM_EMAIL`
+- **WhatsApp Business API**: Envío de mensajes WhatsApp
+  - Variables requeridas: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`
 - Google Calendar: `src/lib/googleCalendar.ts` maneja OAuth (client-side) con `VITE_GOOGLE_CLIENT_ID`/`VITE_GOOGLE_CLIENT_SECRET` y métodos `getCalendars/getEvents/create/update/delete` y `syncAppointments`. No colocar secretos sensibles en código cliente.
-- Notificaciones: Edge Functions descritas en `supabase/functions/README.md` y `src/docs/deployment-guide.md` (p. ej., `send-notifications`, `send-confirmation`) con cron opcional.
+- **Sistema de Notificaciones**: Ver `SISTEMA_NOTIFICACIONES_COMPLETO.md` y `SISTEMA_RECORDATORIOS_AUTOMATICOS.md` para documentación completa.
+  - 17 tipos de notificaciones soportadas (citas, verificaciones, empleados, vacantes, sistema)
+  - Sistema de fallback automático entre canales
+  - Recordatorios automáticos configurables por negocio
+  - Preferencias granulares por usuario (tipo + canal)
 - **IMPORTANTE - Gestión de archivos temporales**: Cada vez que se cree un archivo temporal para realizar acciones en Supabase (testing, migraciones, etc.), debe ser eliminado al final de completar la solicitud.
 - Cada vez que se haga un cambio a nivel de Supabase, debe hacerse el deploy correspondiente o aplicar la migración según corresponda.
 - Cada vez que se haga un cambio en Supabase, debe actualizarse este archivo de instrucciones con la nueva estructura, según sea necesario.
-- Cada vez que se vaya a ejecutar un comando de Supabase CLI, debe agregarse "npx supabase" al inicio del comando, por ejemplo: "npx supabase functions deploy send-notification-reminders".
+- Cada vez que se vaya a ejecutar un comando de Supabase CLI, debe agregarse "npx supabase" al inicio del comando, por ejemplo: "npx supabase functions deploy send-notification".
 
 ## Prácticas específicas al añadir/editar código
 - **Operaciones con Supabase**: 
@@ -97,6 +119,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 
 ## Archivos clave de referencia
 - Tipos y contratos: `src/types/types.ts`
+- **AdminDashboard**: Header con dropdown integrado para cambiar entre negocios y crear nuevos (12/10/2025). Ver `DROPDOWN_NEGOCIOS_HEADER.md`
 - Cliente Supabase: `src/lib/supabase.ts` (y servicios móviles: `src/mobile/src/lib/supabase.ts`)
 - Hooks de datos: `src/hooks/useSupabaseData.ts`, `src/hooks/useSupabase.ts`
 - Estado/toasts: `src/contexts/AppStateContext.tsx`

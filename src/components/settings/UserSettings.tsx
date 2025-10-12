@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
@@ -12,6 +11,7 @@ import { useTheme } from '@/contexts'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import UserProfile from './UserProfile'
+import { NotificationSettings } from './NotificationSettings'
 import { 
   User as UserIcon, 
   Bell, 
@@ -19,10 +19,7 @@ import {
   Globe, 
   Moon,
   Sun,
-  Monitor,
-  EnvelopeSimple as Mail,
-  DeviceMobile as Smartphone,
-  ChatsCircle as MessageCircle
+  Monitor
 } from '@phosphor-icons/react'
 
 interface UserSettingsComponentProps {
@@ -34,47 +31,6 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
   const { t, language, setLanguage } = useLanguage()
   const { theme, setTheme } = useTheme()
   const [, setUsers] = useKV<User[]>('users', [])
-  
-  const [notificationPreferences, setNotificationPreferences] = useState(
-    user.notification_preferences || {
-      email: true,
-      push: true,
-      browser: true,
-      whatsapp: false,
-      reminder_24h: true,
-      reminder_1h: true,
-      reminder_15m: false,
-      daily_digest: false,
-      weekly_report: true
-    }
-  )
-
-  const handleNotificationChange = async (key: string, value: boolean) => {
-    const newPreferences = {
-      ...notificationPreferences,
-      [key]: value
-    }
-    
-    setNotificationPreferences(newPreferences)
-    
-    try {
-      const updatedUser = {
-        ...user,
-        notification_preferences: newPreferences,
-        updated_at: new Date().toISOString()
-      }
-
-      await setUsers(prev => 
-        prev.map(u => u.id === user.id ? updatedUser : u)
-      )
-
-      onUserUpdate(updatedUser)
-      toast.success(t('settings.preferences_saved'))
-    } catch (error) {
-      toast.error('Error updating preferences')
-      throw error
-    }
-  }
 
   const handleLanguageChange = async (newLanguage: 'es' | 'en') => {
     try {
@@ -187,172 +143,7 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                {t('settings.notifications')}
-              </CardTitle>
-              <CardDescription>
-                Configure how and when you receive notifications
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Notification Channels */}
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Notification Channels</Label>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <Label>{t('settings.email_notifications')}</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive notifications via email
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.email}
-                      onCheckedChange={(checked) => handleNotificationChange('email', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Smartphone className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <Label>{t('settings.push_notifications')}</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive push notifications on your device
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.push}
-                      onCheckedChange={(checked) => handleNotificationChange('push', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <Label>{t('settings.browser_notifications')}</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Show browser notifications
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.browser}
-                      onCheckedChange={(checked) => handleNotificationChange('browser', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <Label>{t('settings.whatsapp_notifications')}</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive notifications via WhatsApp
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.whatsapp}
-                      onCheckedChange={(checked) => handleNotificationChange('whatsapp', checked)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Reminder Settings */}
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Appointment Reminders</Label>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('settings.reminder_24h')}</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Send reminder 24 hours before appointment
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.reminder_24h}
-                      onCheckedChange={(checked) => handleNotificationChange('reminder_24h', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('settings.reminder_1h')}</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Send reminder 1 hour before appointment
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.reminder_1h}
-                      onCheckedChange={(checked) => handleNotificationChange('reminder_1h', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('settings.reminder_15m')}</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Send reminder 15 minutes before appointment
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.reminder_15m}
-                      onCheckedChange={(checked) => handleNotificationChange('reminder_15m', checked)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Digest Settings */}
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Digest & Reports</Label>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('settings.daily_digest')}</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Daily summary of your appointments
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.daily_digest}
-                      onCheckedChange={(checked) => handleNotificationChange('daily_digest', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('settings.weekly_report')}</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Weekly business performance report
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notificationPreferences.weekly_report}
-                      onCheckedChange={(checked) => handleNotificationChange('weekly_report', checked)}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <NotificationSettings userId={user.id} />
         </TabsContent>
       </Tabs>
     </div>

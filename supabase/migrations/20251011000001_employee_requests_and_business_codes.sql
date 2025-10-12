@@ -61,10 +61,10 @@ CREATE TABLE IF NOT EXISTS employee_requests (
 );
 
 -- Indexes for employee_requests
-CREATE INDEX idx_employee_requests_business_id ON employee_requests(business_id);
-CREATE INDEX idx_employee_requests_user_id ON employee_requests(user_id);
-CREATE INDEX idx_employee_requests_status ON employee_requests(status);
-CREATE INDEX idx_employee_requests_created_at ON employee_requests(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_employee_requests_business_id ON employee_requests(business_id);
+CREATE INDEX IF NOT EXISTS idx_employee_requests_user_id ON employee_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_employee_requests_status ON employee_requests(status);
+CREATE INDEX IF NOT EXISTS idx_employee_requests_created_at ON employee_requests(created_at DESC);
 
 -- =====================================================
 -- 3. Function to generate unique invitation codes
