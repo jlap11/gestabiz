@@ -10,83 +10,130 @@ interface Employee {
   full_name: string | null;
   role: string;
   avatar_url: string | null;
-}
-
-interface BusinessEmployeeJoin {
-  employee_id: string;
+  expertise_level?: number; // Nivel de experiencia 1-5
+  average_rating?: number; // Calificación promedio
+  total_reviews?: number; // Total de reviews
 }
 
 interface EmployeeSelectionProps {
   businessId: string;
+  locationId: string; // NUEVO: Sede seleccionada
   serviceId: string;
   selectedEmployeeId: string | null;
   onSelectEmployee: (employee: Employee) => void;
-  preloadedEmployees?: Employee[]; // Datos pre-cargados
 }
 
 export function EmployeeSelection({ 
   businessId, 
+  locationId,
   serviceId,
   selectedEmployeeId, 
   onSelectEmployee,
-  preloadedEmployees 
 }: Readonly<EmployeeSelectionProps>) {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(!preloadedEmployees);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Si ya tenemos datos pre-cargados, usarlos (MÁS RÁPIDO)
-    if (preloadedEmployees) {
-      setEmployees(preloadedEmployees);
-      setLoading(false);
-      return;
-    }
-
-    // Si no, hacer la consulta tradicional
-    const fetchEmployees = async () => {
-      if (!businessId) {
+    /**
+     * NUEVA LÓGICA: Filtrar empleados que:
+     * 1. Ofrezcan el servicio seleccionado (employee_services)
+     * 2. Estén asignados a la sede seleccionada o sin sede específica
+     * 3. Estén activos y aprobados
+     * 4. Incluir nivel de experiencia y calificaciones
+     */
+    const fetchEmployeesForService = async () => {
+      if (!businessId || !locationId || !serviceId) {
+        setEmployees([]);
         setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
-        // 1. Obtener IDs de empleados asignados al negocio
-        const { data: assignments, error: assignError } = await supabase
-          .from('business_employees')
-          .select('employee_id')
+        // Consulta de employee_services para obtener empleados que ofrecen el servicio
+        // en la sede seleccionada, ordenados por expertise_level (mayor primero)
+        const { data: employeeServices, error: servicesError } = await supabase
+          .from('employee_services')
+          .select(`
+            employee_id,
+            expertise_level,
+            employee:profiles!employee_services_employee_id_fkey(
+              id,
+              email,
+              full_name,
+              role,
+              avatar_url
+            )
+          `)
+          .eq('service_id', serviceId)
+          .eq('location_id', locationId)
           .eq('business_id', businessId)
-          .eq('status', 'approved')
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .order('expertise_level', { ascending: false });
 
-        if (assignError) {
-          toast.error(`Error al cargar asignaciones: ${assignError.message}`);
+        if (servicesError) {
+          toast.error(`Error al cargar profesionales: ${servicesError.message}`);
           setEmployees([]);
           return;
         }
 
-        // 2. Obtener IDs
-        const employeeIds = (assignments || []).map((item: BusinessEmployeeJoin) => item.employee_id);
+        if (!employeeServices || employeeServices.length === 0) {
+          setEmployees([]);
+          return;
+        }
+
+        // Obtener IDs de empleados (usando 'any' para evitar conflictos de tipos con Supabase)
+        const employeeIds = employeeServices
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((es: any) => es.employee?.id)
+          .filter((id: string | undefined): id is string => id !== null && id !== undefined);
 
         if (employeeIds.length === 0) {
           setEmployees([]);
           return;
         }
 
-        // 3. Consulta separada para obtener datos de empleados
-        const { data: employeesData, error: empError } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, role, avatar_url')
-          .in('id', employeeIds)
-          .order('full_name');
+        // Obtener calificaciones promedio de reviews para cada empleado
+        const { data: reviews } = await supabase
+          .from('reviews')
+          .select('employee_id, rating')
+          .in('employee_id', employeeIds)
+          .eq('is_visible', true);
 
-        if (empError) {
-          toast.error(`Error al cargar profesionales: ${empError.message}`);
-          setEmployees([]);
-          return;
-        }
+        // Calcular rating promedio y total reviews por empleado
+        const reviewStats = reviews?.reduce((acc: Record<string, { avg: number; count: number }>, review) => {
+          const empId = review.employee_id;
+          if (!empId) return acc;
+          
+          if (!acc[empId]) {
+            acc[empId] = { avg: 0, count: 0 };
+          }
+          acc[empId].avg += review.rating;
+          acc[empId].count += 1;
+          return acc;
+        }, {} as Record<string, { avg: number; count: number }>);
 
-        setEmployees(employeesData || []);
+        // Mapear empleados con expertise y ratings
+        const mappedEmployees: Employee[] = employeeServices
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((es: any) => {
+            if (!es.employee) return null;
+            
+            const stats = reviewStats?.[es.employee_id];
+            return {
+              id: es.employee.id,
+              email: es.employee.email,
+              full_name: es.employee.full_name,
+              role: es.employee.role,
+              avatar_url: es.employee.avatar_url,
+              expertise_level: es.expertise_level,
+              average_rating: stats ? Math.round((stats.avg / stats.count) * 10) / 10 : 0,
+              total_reviews: stats?.count || 0,
+            } as Employee;
+          })
+          .filter((emp): emp is Employee => emp !== null);
+
+        setEmployees(mappedEmployees);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error inesperado';
         toast.error(`Error: ${message}`);
@@ -96,8 +143,8 @@ export function EmployeeSelection({
       }
     };
 
-    fetchEmployees();
-  }, [businessId, serviceId, preloadedEmployees]);
+    fetchEmployeesForService();
+  }, [businessId, serviceId, locationId]);
 
   if (loading) {
     return (

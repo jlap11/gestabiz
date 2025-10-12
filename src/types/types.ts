@@ -129,6 +129,10 @@ export interface Business {
     deposit_percentage: number
     currency: string
   }
+  // New fields for invitation system
+  invitation_code?: string
+  last_activity_at?: string
+  first_client_at?: string
   created_at: string
   updated_at: string
   is_active?: boolean
@@ -668,3 +672,297 @@ export interface BusinessPlan {
 
 // Service interface
 // (Removed duplicate Service and Location interfaces defined below; merged into the primary definitions above.)
+
+// ============================================================================
+// NUEVO MODELO DE DATOS (2025-10-11)
+// ============================================================================
+
+// Transaction types and categories
+export type TransactionType = 'income' | 'expense';
+
+export type TransactionCategory = 
+  // Income categories
+  | 'appointment_payment'
+  | 'product_sale'
+  | 'tip'
+  | 'membership'
+  | 'package'
+  | 'other_income'
+  // Expense categories
+  | 'salary'
+  | 'commission'
+  | 'rent'
+  | 'utilities'
+  | 'supplies'
+  | 'maintenance'
+  | 'marketing'
+  | 'tax'
+  | 'insurance'
+  | 'equipment'
+  | 'training'
+  | 'other_expense';
+
+// Location Services - Servicios disponibles en cada sede
+export interface LocationService {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  location_id: string;
+  service_id: string;
+  is_active: boolean;
+  notes?: string;
+  // Populated fields
+  service?: Service;
+  location?: Location;
+}
+
+// Employee Services - Servicios que ofrece cada empleado
+export interface EmployeeService {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  employee_id: string;
+  service_id: string;
+  business_id: string;
+  location_id: string;
+  expertise_level: 1 | 2 | 3 | 4 | 5; // 1=Principiante, 5=Experto
+  is_active: boolean;
+  commission_percentage?: number;
+  notes?: string;
+  // Populated fields
+  employee?: User;
+  service?: Service;
+  location?: Location;
+}
+
+// Reviews - Calificaciones de clientes
+export interface Review {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  business_id: string;
+  appointment_id: string;
+  client_id: string;
+  employee_id?: string;
+  rating: 1 | 2 | 3 | 4 | 5;
+  comment?: string;
+  response?: string;
+  response_at?: string;
+  response_by?: string;
+  is_visible: boolean;
+  is_verified: boolean; // Cliente verificado que asistió
+  helpful_count: number;
+  // Populated fields (from joins)
+  client?: User;
+  employee?: User;
+  appointment?: Appointment;
+  // Denormalized fields for quick display
+  client_name?: string;
+  employee_name?: string;
+}
+
+// Transactions - Ingresos y Egresos
+export interface Transaction {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  business_id: string;
+  location_id?: string;
+  type: TransactionType;
+  category: TransactionCategory;
+  amount: number;
+  currency: string;
+  description?: string;
+  appointment_id?: string;
+  employee_id?: string;
+  created_by?: string;
+  transaction_date: string; // DATE format
+  payment_method?: string;
+  reference_number?: string;
+  metadata?: Record<string, unknown>;
+  is_verified: boolean;
+  verified_by?: string;
+  verified_at?: string;
+  // Populated fields
+  location?: Location;
+  appointment?: Appointment;
+  employee?: User;
+}
+
+// Employee Performance View
+export interface EmployeePerformance {
+  employee_id: string;
+  employee_name: string;
+  email: string;
+  avatar_url?: string;
+  business_id: string;
+  business_name: string;
+  location_id?: string;
+  location_name?: string;
+  position: 'employee' | 'manager';
+  services_offered: number;
+  total_appointments: number;
+  completed_appointments: number;
+  cancelled_appointments: number;
+  completion_rate: number;
+  average_rating: number;
+  total_reviews: number;
+  total_revenue: number;
+  total_paid: number;
+}
+
+// Financial Summary View
+export interface FinancialSummary {
+  business_id: string;
+  business_name: string;
+  location_id?: string;
+  location_name?: string;
+  period: string; // Month timestamp
+  total_income: number;
+  total_expenses: number;
+  net_profit: number;
+  income_transactions: number;
+  expense_transactions: number;
+  appointment_count: number;
+}
+
+// Location Services Availability View
+export interface LocationServiceAvailability {
+  location_id: string;
+  location_name: string;
+  business_id: string;
+  business_name: string;
+  service_id: string;
+  service_name: string;
+  duration_minutes: number;
+  price: number;
+  category?: string;
+  available_at_location: boolean;
+  employees_offering: number;
+  average_rating: number;
+  total_reviews: number;
+}
+
+// Extended Business interface with new fields
+export interface BusinessExtended extends Business {
+  total_reviews: number;
+  average_rating: number;
+  total_appointments: number;
+  total_revenue: number;
+}
+
+// Extended Appointment interface with new fields
+export interface AppointmentExtended extends Appointment {
+  is_location_exception: boolean;
+  original_location_id?: string;
+}
+
+// Extended Business Employee with location assignment
+export interface BusinessEmployee {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  business_id: string;
+  employee_id: string;
+  location_id?: string; // Sede asignada por defecto
+  role: 'employee' | 'manager';
+  status: 'pending' | 'approved' | 'rejected';
+  hired_at?: string;
+  is_active: boolean;
+  // Populated fields
+  employee?: User;
+  business?: Business;
+  location?: Location;
+}
+
+// Filters for new entities
+export interface ReviewFilters {
+  business_id?: string;
+  employee_id?: string;
+  client_id?: string;
+  rating?: number[];
+  is_verified?: boolean;
+  date_range?: {
+    start: string;
+    end: string;
+  };
+}
+
+export interface TransactionFilters {
+  business_id?: string;
+  location_id?: string;
+  type?: TransactionType[];
+  category?: TransactionCategory[];
+  date_range?: {
+    start: string;
+    end: string;
+  };
+  is_verified?: boolean;
+  min_amount?: number;
+  max_amount?: number;
+}
+
+export interface EmployeeServiceFilters {
+  employee_id?: string;
+  service_id?: string;
+  business_id?: string;
+  location_id?: string;
+  is_active?: boolean;
+  min_expertise_level?: number;
+}
+
+// ============================================================================
+// FIN NUEVO MODELO DE DATOS
+// ============================================================================
+
+// ============================================================================
+// EMPLOYEE REQUESTS & BUSINESS INVITATION SYSTEM
+// ============================================================================
+
+// Employee request status
+export type EmployeeRequestStatus = 'pending' | 'approved' | 'rejected'
+
+// Employee request interface
+export interface EmployeeRequest {
+  id: string
+  business_id: string
+  user_id: string
+  invitation_code: string
+  status: EmployeeRequestStatus
+  created_at: string
+  responded_at?: string
+  responded_by?: string
+  message?: string
+  // Populated fields
+  business?: Business
+  user?: User
+  responder?: User
+}
+
+// Extended Business interface with invitation code
+export interface BusinessWithInvitation extends Business {
+  invitation_code: string
+  last_activity_at: string
+  first_client_at?: string
+  is_active: boolean
+}
+
+// QR Code data structure
+export interface BusinessInvitationQRData {
+  type: 'business_invitation'
+  business_id: string
+  business_name: string
+  invitation_code: string
+  generated_at: string
+}
+
+// Business inactivity check result
+export interface BusinessInactivityStatus {
+  business_id: string
+  business_name: string
+  days_inactive: number
+  should_deactivate: boolean // >30 days
+  should_delete: boolean // >1 year without clients
+  last_activity_at: string
+  first_client_at?: string
+}

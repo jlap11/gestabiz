@@ -219,7 +219,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
         className={cn(
           "bg-[#0f172a] border-white/10 text-white p-0 overflow-hidden",
           "w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[75vw]",
-          currentStep === 4 ? "!max-w-md" : "!max-w-[1200px]",
+          "!max-w-[1200px]",
           "[&>button]:hidden" // Ocultar el botón de cerrar por defecto del DialogContent
         )}
       >
@@ -300,6 +300,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           {currentStep === 3 && (
             <EmployeeSelection
               businessId={wizardData.businessId || businessId || ''}
+              locationId={wizardData.locationId || ''}
               serviceId={wizardData.serviceId || ''}
               selectedEmployeeId={wizardData.employeeId}
               onSelectEmployee={(employee) => {
@@ -308,7 +309,6 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
                   employee 
                 });
               }}
-              preloadedEmployees={dataCache.employees}
             />
           )}
 

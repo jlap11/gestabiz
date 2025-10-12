@@ -1,4 +1,14 @@
-# Guía rápida## Construcción y ejecución (local)
+# Guía rápida
+
+## Sistema de Roles Dinámicos ⭐ IMPORTANTE
+Los roles NO se guardan en la base de datos. Se calculan dinámicamente basándose en relaciones:
+- **ADMIN**: El usuario es `owner_id` de un negocio en la tabla `businesses`
+- **EMPLOYEE**: El usuario existe en `business_employees` para un negocio
+- **CLIENT**: Siempre disponible (todos pueden reservar citas)
+
+Un usuario puede tener múltiples roles simultáneamente (admin de negocio A, employee de negocio B, client para reservar). El hook `useUserRoles` calcula los roles disponibles dinámicamente y solo guarda el contexto activo en localStorage. Ver `DYNAMIC_ROLES_SYSTEM.md` para detalles completos.
+
+## Construcción y ejecución (local)
 - Web (Vite): scripts en `package.json` raíz
   - dev: `npm run dev`; build: `npm run build`; preview: `npm run preview`; lint: `npm run lint`; type-check: `npm run type-check`.
   - Variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, opcional `VITE_DEMO_MODE=true` para usar cliente Supabase simulado.
@@ -8,7 +18,7 @@
 - Extensión: `extension/` y `src/browser-extension/`
   - `npm run build` (copia/zip), `npm run dev` para servidor estático local; carga "unpacked" en Chrome.
 - **Supabase**: SOLO en la nube (no hay instancia local). Ver `SUPABASE_INTEGRATION_GUIDE.md`, `src/docs/deployment-guide.md` y `supabase/functions/README.md` para CLI, Edge Functions y cron.
-  - **MCP configurado**: Servidor Model Context Protocol disponible para operaciones directas de base de datos.tes en este repo (appointsync-pro)
+  - **MCP configurado**: Servidor Model Context Protocol disponible para operaciones directas de base de datos.
 
 Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectura, flujos de desarrollo y convenciones propias del proyecto.
 
@@ -29,8 +39,10 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - `npm run start|android|ios|web`, builds con EAS `build:*` y `submit:*`.
   - Env: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 - Extensión: `extension/` y `src/browser-extension/`
-  - `npm run build` (copia/zip), `npm run dev` para servidor estático local; carga “unpacked” en Chrome.
-- Supabase: ver `SUPABASE_INTEGRATION_GUIDE.md`, `src/docs/deployment-guide.md` y `supabase/functions/README.md` para CLI, Edge Functions y cron.
+  - `npm run build` (copia/zip), `npm run dev` para servidor estático local; carga "unpacked" en Chrome.
+- **Supabase**: SOLO en la nube (no hay instancia local). Ver `SUPABASE_INTEGRATION_GUIDE.md`, `src/docs/deployment-guide.md` y `supabase/functions/README.md` para CLI, Edge Functions y cron.
+  - **MCP configurado**: Servidor Model Context Protocol disponible para operaciones directas de base de datos.
+  - **Modelo actualizado (2025-10-11)**: Ver `DATABASE_REDESIGN_ANALYSIS.md` para el nuevo modelo con servicios por sede/empleado, reviews, transacciones y analytics.
 
 ## Convenciones y patrones del proyecto
 - Alias de paths: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`).

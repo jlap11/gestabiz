@@ -55,28 +55,25 @@ export function RoleSelector({
   const employeeRoles = roles.filter(r => r.role === 'employee')
   const clientRoles = roles.filter(r => r.role === 'client')
 
+  console.log('[RoleSelector] Render - roles:', roles)
+  console.log('[RoleSelector] Render - activeRole:', activeRole)
+  console.log('[RoleSelector] Render - adminRoles:', adminRoles.length, 'employeeRoles:', employeeRoles.length, 'clientRoles:', clientRoles.length)
+
   const handleRoleSelect = (roleAssignment: UserRoleAssignment) => {
+    console.log('[RoleSelector] handleRoleSelect called with:', roleAssignment)
+    console.log('[RoleSelector] Calling onRoleChange with:', roleAssignment.role, roleAssignment.business_id || undefined)
     onRoleChange(roleAssignment.role, roleAssignment.business_id || undefined)
     setIsOpen(false)
   }
 
-  if (roles.length <= 1) {
-    // If user only has one role, don't show selector
-    return (
-      <div className={cn('flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50', className)}>
-        <ActiveIcon className={cn('h-4 w-4', activeRoleConfig.color)} />
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">{activeRoleConfig.label}</span>
-          {activeBusiness && (
-            <span className="text-xs text-muted-foreground">{activeBusiness.name}</span>
-          )}
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        console.log('[RoleSelector] Dropdown state changed:', open)
+        setIsOpen(open)
+      }}
+    >
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -104,12 +101,12 @@ export function RoleSelector({
         <DropdownMenuSeparator />
 
         {/* Admin Roles */}
-        {adminRoles.length > 0 && (
-          <>
-            <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
-              Como Administrador
-            </DropdownMenuLabel>
-            {adminRoles.map((roleAssignment) => {
+        <>
+          <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
+            Como Administrador
+          </DropdownMenuLabel>
+          {adminRoles.length > 0 ? (
+            adminRoles.map((roleAssignment) => {
               const Icon = ROLE_CONFIG.admin.icon
               const isActive = activeRole === 'admin' && activeBusiness?.id === roleAssignment.business_id
               
@@ -134,18 +131,35 @@ export function RoleSelector({
                   )}
                 </DropdownMenuItem>
               )
-            })}
-            <DropdownMenuSeparator />
-          </>
-        )}
+            })
+          ) : (
+            <DropdownMenuItem
+              onClick={() => {
+                console.log('[RoleSelector] Direct onClick - Switching to admin (create business)')
+                onRoleChange('admin', undefined)
+                setIsOpen(false)
+              }}
+              className="flex items-center gap-3 cursor-pointer"
+            >
+              <Briefcase className={cn('h-4 w-4', ROLE_CONFIG.admin.color)} />
+              <div className="flex flex-col flex-1">
+                <span className="text-sm font-medium">Admin</span>
+                <span className="text-xs text-muted-foreground">
+                  Crear negocio
+                </span>
+              </div>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+        </>
 
         {/* Employee Roles */}
-        {employeeRoles.length > 0 && (
-          <>
-            <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
-              Como Empleado
-            </DropdownMenuLabel>
-            {employeeRoles.map((roleAssignment) => {
+        <>
+          <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
+            Como Empleado
+          </DropdownMenuLabel>
+          {employeeRoles.length > 0 ? (
+            employeeRoles.map((roleAssignment) => {
               const Icon = ROLE_CONFIG.employee.icon
               const isActive = activeRole === 'employee' && activeBusiness?.id === roleAssignment.business_id
               
@@ -170,10 +184,27 @@ export function RoleSelector({
                   )}
                 </DropdownMenuItem>
               )
-            })}
-            <DropdownMenuSeparator />
-          </>
-        )}
+            })
+          ) : (
+            <DropdownMenuItem
+              onClick={() => {
+                console.log('[RoleSelector] Direct onClick - Switching to employee (join business)')
+                onRoleChange('employee', undefined)
+                setIsOpen(false)
+              }}
+              className="flex items-center gap-3 cursor-pointer"
+            >
+              <Users className={cn('h-4 w-4', ROLE_CONFIG.employee.color)} />
+              <div className="flex flex-col flex-1">
+                <span className="text-sm font-medium">Empleado</span>
+                <span className="text-xs text-muted-foreground">
+                  Unirse a negocio
+                </span>
+              </div>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+        </>
 
         {/* Client Role */}
         {clientRoles.length > 0 && (

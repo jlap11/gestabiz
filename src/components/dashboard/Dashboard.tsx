@@ -19,6 +19,7 @@ interface DashboardProps {
   loading: boolean
   refetch: () => void
   createAppointment: (appointment: Partial<Appointment>) => Promise<Appointment | void | null>
+  roleSelector?: React.ReactNode // Para pasar al ClientDashboard
 }
 
 function Dashboard({ 
@@ -27,7 +28,8 @@ function Dashboard({
   stats, 
   loading, 
   refetch, 
-  createAppointment 
+  createAppointment,
+  roleSelector
 }: Readonly<DashboardProps>) {
   const { t } = useLanguage()
   const [showAppointmentForm, setShowAppointmentForm] = useState(false)
@@ -95,6 +97,7 @@ function Dashboard({
   }
 
   // Si es cliente, usar el nuevo ClientDashboard
+  // El RoleSelector ahora está en el Layout, no lo pasamos aquí
   if (user.activeRole === 'client') {
     return (
       <ClientDashboard 

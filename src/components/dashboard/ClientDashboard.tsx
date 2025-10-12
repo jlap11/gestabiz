@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { User, Appointment, UserRole } from '@/types'
+import { User, Appointment } from '@/types'
 import { useLanguage } from '@/contexts'
 import { useKV } from '@/lib/useKV'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,17 +14,8 @@ import {
   CalendarCheck,
   CalendarX,
   Trash2,
-  UserCircle2,
   CalendarPlus
 } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import { toast } from 'sonner'
 
@@ -144,11 +135,7 @@ export default function ClientDashboard({
     )
   }
 
-  const handleRoleChange = (newRole: 'admin' | 'employee' | 'client') => {
-    toast.info(`Switching to ${newRole} role...`)
-    // Aquí puedes implementar la lógica para cambiar de rol
-    // Por ejemplo, actualizar el estado global o navegar a otra vista
-  }
+
 
   // Función para confirmar cita
   const handleConfirmAppointment = async (appointmentId: string) => {
@@ -241,75 +228,8 @@ export default function ClientDashboard({
 
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
-      {/* Header Section - Compact like reference */}
-      <div className="border-b border-white/5">
-        <div className="px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
-                Welcome back, {user.name?.split(' ')[0] || 'User'}!
-              </h1>
-              <p className="text-gray-400 text-sm">
-                Here's a look at your upcoming appointments.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Role Selector Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="bg-[#252032] border-white/10 text-white hover:bg-[#2d2640] hover:text-white"
-                  >
-                    <UserCircle2 className="h-5 w-5 mr-2" />
-                    <span className="capitalize">{user.activeRole}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-[#252032] border-white/10 text-white">
-                  <DropdownMenuLabel className="text-gray-400">Switch Role</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem 
-                    onClick={() => handleRoleChange('admin')}
-                    className="hover:bg-white/5 focus:bg-white/5 cursor-pointer"
-                  >
-                    <span className="flex items-center w-full justify-between">
-                      <span className={user.activeRole === 'admin' ? 'text-[#6820F7]' : ''}>Admin</span>
-                      {user.activeRole === 'admin' && <span className="text-[#6820F7]">✓</span>}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleRoleChange('employee')}
-                    className="hover:bg-white/5 focus:bg-white/5 cursor-pointer"
-                  >
-                    <span className="flex items-center w-full justify-between">
-                      <span className={user.activeRole === 'employee' ? 'text-[#6820F7]' : ''}>Employee</span>
-                      {user.activeRole === 'employee' && <span className="text-[#6820F7]">✓</span>}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleRoleChange('client')}
-                    className="hover:bg-white/5 focus:bg-white/5 cursor-pointer"
-                  >
-                    <span className="flex items-center w-full justify-between">
-                      <span className={user.activeRole === 'client' ? 'text-[#6820F7]' : ''}>Client</span>
-                      {user.activeRole === 'client' && <span className="text-[#6820F7]">✓</span>}
-                    </span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button 
-                onClick={() => setShowAppointmentForm(true)}
-                className="bg-[#FF8C00] hover:bg-[#FF7A00] text-white font-semibold px-6"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Book New Appointment
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      {/* Header is now in Layout - no need to render here */}
+      
       <div className="px-6 py-8 space-y-8">
         {/* Upcoming Appointments Section */}
         <section>

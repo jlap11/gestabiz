@@ -13,6 +13,7 @@ import {
   Clock
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import LayoutHeader from './LayoutHeader'
 
 interface AdminLayoutProps {
   user: User
@@ -20,6 +21,10 @@ interface AdminLayoutProps {
   currentView: string
   onNavigate: (view: string) => void
   onLogout: () => void
+  headerTitle?: string
+  headerSubtitle?: string
+  roleSelector?: React.ReactNode
+  actionButton?: React.ReactNode
 }
 
 interface MenuItem {
@@ -33,7 +38,11 @@ export default function AdminLayout({
   children, 
   currentView, 
   onNavigate,
-  onLogout 
+  onLogout,
+  headerTitle,
+  headerSubtitle,
+  roleSelector,
+  actionButton
 }: Readonly<AdminLayoutProps>) {
   const isCollapsed = false
 
@@ -88,11 +97,11 @@ export default function AdminLayout({
     .slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] flex">
+    <div className="h-screen bg-[#1a1a1a] flex overflow-hidden">
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-[#0f0f0f] border-r border-white/5 flex flex-col transition-all duration-300",
+          "bg-[#0f0f0f] border-r border-white/5 flex flex-col transition-all duration-300 h-full",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
@@ -183,8 +192,22 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto">
-        {children}
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Header - always visible */}
+        {roleSelector && (
+          <LayoutHeader
+            user={user}
+            title={headerTitle}
+            subtitle={headerSubtitle}
+            roleSelector={roleSelector}
+            actionButton={actionButton}
+          />
+        )}
+        
+        {/* Content - scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          {children}
+        </div>
       </main>
     </div>
   )
