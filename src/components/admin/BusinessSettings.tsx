@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Building2, Save, Bell } from 'lucide-react'
+import { Building2, Save, Bell, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import type { Business } from '@/types/types'
 import { BusinessNotificationSettings } from './settings/BusinessNotificationSettings'
+import { NotificationTracking } from './settings/NotificationTracking'
 
 interface BusinessSettingsProps {
   business: Business
@@ -78,38 +79,45 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Building2 className="h-8 w-8 text-violet-500" />
+        <Building2 className="h-8 w-8 text-primary" />
         <div>
-          <h2 className="text-2xl font-bold text-white">Configuración del Negocio</h2>
-          <p className="text-gray-400 text-sm">Actualiza la información de tu negocio</p>
+          <h2 className="text-2xl font-bold text-foreground">Configuración del Negocio</h2>
+          <p className="text-muted-foreground text-sm">Actualiza la información de tu negocio</p>
         </div>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="bg-[#252032] border border-white/10 p-1 inline-flex w-auto mb-6">
+        <TabsList className="bg-card border border-border p-1 inline-flex w-auto mb-6">
           <TabsTrigger
             value="general"
-            className="data-[state=active]:bg-violet-500 data-[state=active]:text-white"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <Building2 className="h-4 w-4 mr-2" />
             General
           </TabsTrigger>
           <TabsTrigger
             value="notifications"
-            className="data-[state=active]:bg-violet-500 data-[state=active]:text-white"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <Bell className="h-4 w-4 mr-2" />
             Notificaciones
+          </TabsTrigger>
+          <TabsTrigger
+            value="tracking"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            <History className="h-4 w-4 mr-2" />
+            Historial
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
           <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Información Básica</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Información Básica</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Información general de tu negocio
             </CardDescription>
           </CardHeader>
@@ -139,10 +147,10 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         </Card>
 
         {/* Contact Information */}
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Información de Contacto</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Información de Contacto</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Cómo pueden contactarte tus clientes
             </CardDescription>
           </CardHeader>
@@ -183,10 +191,10 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         </Card>
 
         {/* Address Information */}
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Dirección</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Dirección</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Ubicación principal de tu negocio
             </CardDescription>
           </CardHeader>
@@ -226,10 +234,10 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         </Card>
 
         {/* Legal Information */}
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Información Legal</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Información Legal</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Datos fiscales y legales de tu negocio
             </CardDescription>
           </CardHeader>
@@ -261,7 +269,7 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
           <Button
             type="submit"
             disabled={isSaving}
-            className="bg-violet-500 hover:bg-violet-600 text-white"
+            className="bg-primary hover:bg-primary/90"
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? 'Guardando...' : 'Guardar Cambios'}
@@ -272,6 +280,10 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
 
         <TabsContent value="notifications">
           <BusinessNotificationSettings businessId={business.id} />
+        </TabsContent>
+
+        <TabsContent value="tracking">
+          <NotificationTracking businessId={business.id} />
         </TabsContent>
       </Tabs>
     </div>

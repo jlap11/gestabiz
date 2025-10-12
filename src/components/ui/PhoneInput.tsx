@@ -85,7 +85,7 @@ export function PhoneInput({
     <div className={`flex gap-2 ${className}`}>
       {/* Prefix Selector */}
       <Select value={prefix} onValueChange={handlePrefixChange} disabled={disabled}>
-        <SelectTrigger className="w-[140px] bg-[#1a1a1a] border-white/10">
+        <SelectTrigger className="w-[140px] bg-background border-border">
           <SelectValue>
             {COUNTRY_CODES.find(c => c.code === prefix) ? (
               <span className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export function PhoneInput({
               <div className="flex items-center gap-2">
                 <span className="text-lg">{country.flag}</span>
                 <span className="text-sm">{country.code}</span>
-                <span className="text-xs text-gray-400">{country.name}</span>
+                <span className="text-xs text-muted-foreground">{country.name}</span>
               </div>
             </SelectItem>
           ))}
@@ -117,7 +117,7 @@ export function PhoneInput({
         onChange={handleNumberChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="flex-1 bg-[#1a1a1a] border-white/10"
+        className="flex-1 bg-background border-border"
         maxLength={15} // Max 15 digits for phone number
       />
     </div>

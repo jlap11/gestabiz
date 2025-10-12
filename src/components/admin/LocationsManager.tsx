@@ -232,12 +232,12 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Sedes</h2>
-          <p className="text-gray-400 text-sm">Gestiona las ubicaciones de tu negocio</p>
+          <h2 className="text-2xl font-bold text-foreground">Sedes</h2>
+          <p className="text-muted-foreground text-sm">Gestiona las ubicaciones de tu negocio</p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-violet-500 hover:bg-violet-600 text-white"
+          className="bg-primary hover:bg-primary/90"
         >
           <Plus className="h-4 w-4 mr-2" />
           Agregar Sede
@@ -246,16 +246,16 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
       {/* Locations Grid */}
       {locations.length === 0 ? (
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <MapPin className="h-16 w-16 text-gray-600 mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No hay sedes aún</h3>
-            <p className="text-gray-400 text-center mb-4">
+            <MapPin className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No hay sedes aún</h3>
+            <p className="text-muted-foreground text-center mb-4">
               Agrega tu primera sede para empezar a recibir citas
             </p>
             <Button
               onClick={() => handleOpenDialog()}
-              className="bg-violet-500 hover:bg-violet-600 text-white"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Primera Sede
@@ -265,11 +265,11 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {locations.map((location) => (
-            <Card key={location.id} className="bg-[#252032] border-white/10 hover:border-white/20 transition-colors">
+            <Card key={location.id} className="bg-card border-border hover:border-border/80 transition-colors">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-white text-lg">{location.name}</CardTitle>
+                    <CardTitle className="text-foreground text-lg">{location.name}</CardTitle>
                     {!location.is_active && (
                       <Badge variant="secondary" className="mt-2 text-xs">
                         Inactiva
@@ -281,7 +281,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenDialog(location)}
-                      className="text-gray-400 hover:text-white"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -289,7 +289,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(location.id)}
-                      className="text-gray-400 hover:text-red-400"
+                      className="text-muted-foreground hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -299,8 +299,8 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               <CardContent className="space-y-3">
                 {location.address && (
                   <div className="flex items-start gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-300">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">
                       {location.address}
                       {location.city && `, ${location.city}`}
                       {location.state && `, ${location.state}`}
@@ -309,26 +309,26 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                 )}
                 {location.phone && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">{location.phone}</span>
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{location.phone}</span>
                   </div>
                 )}
                 {location.email && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">{location.email}</span>
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{location.email}</span>
                   </div>
                 )}
                 {location.business_hours && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">Horarios configurados</span>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Horarios configurados</span>
                   </div>
                 )}
                 {location.images && location.images.length > 0 && (
                   <div className="flex items-center gap-2 text-sm">
-                    <ImageIcon className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">{location.images.length} imagen(es)</span>
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{location.images.length} imagen(es)</span>
                   </div>
                 )}
               </CardContent>
@@ -339,12 +339,12 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="bg-[#252032] border-white/10 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingLocation ? 'Editar Sede' : 'Crear Nueva Sede'}
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               {editingLocation
                 ? 'Actualiza la información de la sede'
                 : 'Completa la información de la nueva sede'}
@@ -479,7 +479,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(url)}
-                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-primary-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -526,7 +526,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               </Button>
               <Button
                 type="submit"
-                className="bg-violet-500 hover:bg-violet-600 text-white"
+                className="bg-primary hover:bg-primary/90"
                 disabled={isSaving}
               >
                 {isSaving ? 'Guardando...' : editingLocation ? 'Actualizar' : 'Crear'}

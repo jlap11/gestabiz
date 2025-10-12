@@ -241,7 +241,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
       case 'email': return 'text-blue-500'
       case 'sms': return 'text-green-500'
       case 'whatsapp': return 'text-emerald-500'
-      default: return 'text-gray-500'
+      default: return 'text-muted-foreground'
     }
   }
 
@@ -258,13 +258,13 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
   return (
     <div className="space-y-6">
       {/* Canales Habilitados */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Bell className="h-5 w-5" />
             Canales de Notificación
           </CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardDescription className="text-muted-foreground">
             Selecciona qué canales estarán disponibles para enviar notificaciones
           </CardDescription>
         </CardHeader>
@@ -272,11 +272,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="flex items-center gap-2 text-white">
+                <Label className="flex items-center gap-2 text-foreground">
                   <Envelope className="h-4 w-4 text-blue-500" />
                   Email
                 </Label>
-                <p className="text-sm text-gray-400">Notificaciones por correo electrónico</p>
+                <p className="text-sm text-muted-foreground">Notificaciones por correo electrónico</p>
               </div>
               <Switch
                 checked={settings.email_enabled}
@@ -286,11 +286,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="flex items-center gap-2 text-white">
+                <Label className="flex items-center gap-2 text-foreground">
                   <Phone className="h-4 w-4 text-green-500" />
                   SMS
                 </Label>
-                <p className="text-sm text-gray-400">Mensajes de texto vía AWS SNS</p>
+                <p className="text-sm text-muted-foreground">Mensajes de texto vía AWS SNS</p>
               </div>
               <Switch
                 checked={settings.sms_enabled}
@@ -300,11 +300,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="flex items-center gap-2 text-white">
+                <Label className="flex items-center gap-2 text-foreground">
                   <WhatsappLogo className="h-4 w-4 text-emerald-500" />
                   WhatsApp
                 </Label>
-                <p className="text-sm text-gray-400">Mensajes vía WhatsApp Business API</p>
+                <p className="text-sm text-muted-foreground">Mensajes vía WhatsApp Business API</p>
               </div>
               <Switch
                 checked={settings.whatsapp_enabled}
@@ -316,17 +316,17 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
       </Card>
 
       {/* Prioridad de Canales */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Prioridad de Canales</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-foreground">Prioridad de Canales</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Orden en que se intentarán los canales si uno falla
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {settings.channel_priority.map((channel, index) => (
-              <div key={channel} className="flex items-center justify-between p-3 border border-white/10 rounded-lg bg-[#1a1a1a]">
+              <div key={channel} className="flex items-center justify-between p-3 border border-border rounded-lg bg-background">
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-sm text-muted-foreground">#{index + 1}</span>
                   <span className={cn('flex items-center gap-2', getChannelColor(channel))}>
@@ -361,19 +361,19 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               checked={settings.use_fallback}
               onCheckedChange={(checked) => updateSettings({ use_fallback: checked })}
             />
-            <Label className="text-white">Usar sistema de respaldo (intentar siguiente canal si falla)</Label>
+            <Label className="text-foreground">Usar sistema de respaldo (intentar siguiente canal si falla)</Label>
           </div>
         </CardContent>
       </Card>
 
       {/* Tiempos de Recordatorio */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Clock className="h-5 w-5" />
             Tiempos de Recordatorio
           </CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardDescription className="text-muted-foreground">
             Define cuándo enviar recordatorios antes de las citas (en minutos)
           </CardDescription>
         </CardHeader>
@@ -394,7 +394,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
 
           <div className="space-y-2">
             {settings.reminder_times.sort((a, b) => b - a).map(minutes => (
-              <div key={minutes} className="flex items-center justify-between p-3 border border-white/10 rounded-lg bg-[#1a1a1a]">
+              <div key={minutes} className="flex items-center justify-between p-3 border border-border rounded-lg bg-background">
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{formatMinutesToHuman(minutes)} antes</span>
@@ -410,7 +410,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               </div>
             ))}
             {settings.reminder_times.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">
+              <p className="text-sm text-muted-foreground text-center py-4">
                 No hay recordatorios configurados
               </p>
             )}
@@ -419,10 +419,10 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
       </Card>
 
       {/* Tipos de Notificación */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Configuración por Tipo de Notificación</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-foreground">Configuración por Tipo de Notificación</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Personaliza qué canales usar para cada tipo de notificación
           </CardDescription>
         </CardHeader>
@@ -430,11 +430,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           {NOTIFICATION_TYPE_CONFIGS.map(config => {
               const notifSettings = settings.notification_types[config.key] || { enabled: false, channels: [] }
             return (
-              <div key={config.key} className="space-y-3 pb-4 border-b border-white/10 last:border-0">
+              <div key={config.key} className="space-y-3 pb-4 border-b border-border last:border-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-white">{config.label}</Label>
-                    <p className="text-sm text-gray-400">{config.description}</p>
+                    <Label className="text-foreground">{config.label}</Label>
+                    <p className="text-sm text-muted-foreground">{config.description}</p>
                   </div>
                   <Switch
                     checked={notifSettings.enabled}
@@ -479,17 +479,17 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
       </Card>
 
       {/* Horarios de Envío */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Horarios de Envío</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-foreground">Horarios de Envío</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Define el rango horario en que se pueden enviar notificaciones
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-white">Desde</Label>
+              <Label className="text-foreground">Desde</Label>
               <Input
                 type="time"
                 value={settings.send_notifications_from}
@@ -497,7 +497,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Hasta</Label>
+              <Label className="text-foreground">Hasta</Label>
               <Input
                 type="time"
                 value={settings.send_notifications_until}
@@ -507,7 +507,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white">Zona Horaria</Label>
+            <Label className="text-foreground">Zona Horaria</Label>
             <select
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={settings.timezone}
@@ -522,16 +522,16 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
       </Card>
 
       {/* Configuración de Contactos */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Configuración de Contactos</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-foreground">Configuración de Contactos</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Datos de contacto del remitente para cada canal
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-white">Nombre del remitente (Email)</Label>
+            <Label className="text-foreground">Nombre del remitente (Email)</Label>
             <Input
               placeholder="Mi Negocio"
               value={settings.email_from_name}
@@ -540,7 +540,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white">Email del remitente</Label>
+            <Label className="text-foreground">Email del remitente</Label>
             <Input
               type="email"
               placeholder="noreply@minegocio.com"
@@ -549,10 +549,10 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
             />
           </div>
 
-          <Separator className="bg-white/10" />
+          <Separator className="bg-border" />
 
           <div className="space-y-2">
-            <Label className="text-white">Número de teléfono AWS SNS (SMS)</Label>
+            <Label className="text-foreground">Número de teléfono AWS SNS (SMS)</Label>
             <Input
               placeholder="+1234567890"
               value={settings.twilio_phone_number}
@@ -561,7 +561,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white">Número de WhatsApp Business</Label>
+            <Label className="text-foreground">Número de WhatsApp Business</Label>
             <Input
               placeholder="+1234567890"
               value={settings.whatsapp_phone_number}
@@ -572,13 +572,13 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
       </Card>
 
       {/* Configuración Avanzada */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Configuración Avanzada</CardTitle>
+          <CardTitle className="text-foreground">Configuración Avanzada</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-white">Máximo de reintentos</Label>
+            <Label className="text-foreground">Máximo de reintentos</Label>
             <Input
               type="number"
               min="1"
@@ -586,7 +586,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               value={settings.max_retry_attempts}
               onChange={(e) => updateSettings({ max_retry_attempts: parseInt(e.target.value) || 3 })}
             />
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Número de veces que se reintentará enviar una notificación fallida
             </p>
           </div>
@@ -599,14 +599,13 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           variant="outline" 
           onClick={loadSettings} 
           disabled={saving}
-          className="border-white/10 text-white hover:bg-white/10"
         >
           Descartar cambios
         </Button>
         <Button 
           onClick={saveSettings} 
           disabled={saving}
-          className="bg-violet-500 hover:bg-violet-600 text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {saving ? 'Guardando...' : 'Guardar configuración'}
         </Button>

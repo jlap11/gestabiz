@@ -16,16 +16,16 @@ export default function LayoutHeader({
   actionButton,
 }: Readonly<LayoutHeaderProps>) {
   return (
-    <div className="bg-[#252032] border-b border-white/10">
+    <div className="bg-card border-b border-border">
       <div className="px-6 py-4">
         <div className="flex items-start justify-between">
           {/* Title Section */}
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               {title || `Welcome back, ${user.name?.split(' ')[0] || 'User'}!`}
             </h1>
             {subtitle && (
-              <p className="text-gray-400 text-xs mt-1">
+              <p className="text-muted-foreground text-xs mt-1">
                 {subtitle}
               </p>
             )}

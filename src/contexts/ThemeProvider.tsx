@@ -3,7 +3,7 @@ import { useKV } from '@/lib/useKV'
 import { ThemeContext, Theme } from './theme-core'
 
 export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [theme, setTheme] = useKV<Theme>('theme-preference', 'dark')
+  const [theme, setTheme] = useKV<Theme>('theme-preference', 'light')
 
   // Calculate effective theme
   const effectiveTheme = useMemo(() => {

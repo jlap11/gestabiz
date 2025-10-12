@@ -237,19 +237,19 @@ export function ImageUploader({
 
         <div className="flex flex-col items-center gap-2">
           {isUploading ? (
-            <Loader2 className="h-10 w-10 text-violet-500 animate-spin" />
+            <Loader2 className="h-10 w-10 text-primary animate-spin" />
           ) : (
-            <Upload className="h-10 w-10 text-gray-400" />
+            <Upload className="h-10 w-10 text-muted-foreground" />
           )}
 
           <div className="space-y-1">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <p className="text-sm font-medium text-foreground">
               {isUploading ? 'Subiendo...' : 'Click para seleccionar o arrastra imágenes aquí'}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               PNG, JPG, WEBP hasta {maxSizeMB}MB • Máximo {maxFiles} imagen(es)
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               {previews.length}/{maxFiles} imagen(es) cargada(s)
             </p>
           </div>
@@ -262,7 +262,7 @@ export function ImageUploader({
           {previews.map((preview) => (
             <div
               key={preview.id}
-              className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 aspect-square"
+              className="relative group rounded-lg overflow-hidden border border-border bg-muted aspect-square"
             >
               {/* Image */}
               {preview.url ? (
@@ -273,16 +273,16 @@ export function ImageUploader({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-12 w-12 text-gray-400" />
+                  <ImageIcon className="h-12 w-12 text-muted-foreground" />
                 </div>
               )}
 
               {/* Upload progress */}
               {preview.isUploading && (
                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
-                  <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  <Loader2 className="h-8 w-8 text-foreground animate-spin" />
                   <Progress value={preview.progress} className="w-3/4" />
-                  <span className="text-xs text-white">{Math.round(preview.progress)}%</span>
+                  <span className="text-xs text-foreground">{Math.round(preview.progress)}%</span>
                 </div>
               )}
 
@@ -290,7 +290,7 @@ export function ImageUploader({
               {!preview.isUploading && (
                 <button
                   onClick={() => handleRemove(preview)}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                   title="Eliminar imagen"
                 >
                   <X className="h-4 w-4" />

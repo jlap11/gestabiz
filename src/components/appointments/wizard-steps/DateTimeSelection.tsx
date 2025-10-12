@@ -68,22 +68,22 @@ export function DateTimeSelection({
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      <h3 className="text-xl font-semibold text-white mb-6">
+      <h3 className="text-xl font-semibold text-foreground mb-6">
         Select Date & Time
       </h3>
 
       {service && (
-        <div className="mb-6 p-3 bg-[#2d2640] rounded-lg border border-white/10">
-          <p className="text-sm text-[#94a3b8]">Selected service:</p>
-          <p className="text-white font-semibold">
-            {service.name} <span className="text-[#94a3b8] font-normal">({service.duration} min)</span>
+        <div className="mb-6 p-3 bg-card rounded-lg border border-border">
+          <p className="text-sm text-muted-foreground">Selected service:</p>
+          <p className="text-foreground font-semibold">
+            {service.name} <span className="text-muted-foreground font-normal">({service.duration} min)</span>
           </p>
         </div>
       )}
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Calendario */}
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-gray-200 dark:border-white/10 shadow-sm w-full lg:w-auto lg:flex-shrink-0">
+        <div className="bg-card rounded-xl border border-border shadow-sm w-full lg:w-auto lg:flex-shrink-0">
           <Calendar
             selected={selectedDate || undefined}
             onSelect={(date) => date && onSelectDate(date)}
@@ -96,7 +96,7 @@ export function DateTimeSelection({
         <div className="flex-1 space-y-4 min-w-0">
           {selectedDate ? (
             <>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Available on {format(selectedDate, 'MMMM d, yyyy')}
               </h3>
 
@@ -109,9 +109,9 @@ export function DateTimeSelection({
                     variant={selectedTime === slot.time ? "default" : "outline"}
                     className={cn(
                       "relative w-full h-12 text-base font-medium transition-all",
-                      selectedTime === slot.time && "bg-[#8b5cf6] text-white border-[#8b5cf6] hover:bg-[#7c3aed]",
-                      selectedTime !== slot.time && slot.available && "bg-[#1e293b] border-white/10 text-white hover:border-[#8b5cf6]",
-                      !slot.available && "opacity-40 cursor-not-allowed bg-[#0f172a]"
+                      selectedTime === slot.time && "bg-primary text-primary-foreground border-primary hover:bg-primary/90",
+                      selectedTime !== slot.time && slot.available && "bg-card border-border text-foreground hover:border-primary",
+                      !slot.available && "opacity-40 cursor-not-allowed bg-muted"
                     )}
                   >
                     {slot.time}
@@ -119,7 +119,7 @@ export function DateTimeSelection({
                     {/* Badge HOT para horarios populares */}
                     {slot.isPopular && slot.available && (
                       <Badge
-                        className="absolute -top-2 -right-2 bg-[#ff8c00] text-white text-xs px-2 py-0.5 
+                        className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-0.5 
                                  font-bold uppercase tracking-wide shadow-md border-none"
                       >
                         HOT

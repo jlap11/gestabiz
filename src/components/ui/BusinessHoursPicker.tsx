@@ -73,8 +73,8 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
   return (
     <div className={className}>
       <div className="flex items-center gap-2 mb-4">
-        <Clock className="h-5 w-5 text-violet-500" />
-        <h3 className="text-sm font-medium text-white">Horarios de atención</h3>
+        <Clock className="h-5 w-5 text-primary" />
+        <h3 className="text-sm font-medium text-foreground">Horarios de atención</h3>
       </div>
 
       <div className="space-y-3">
@@ -85,14 +85,14 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
           return (
             <div
               key={day.key}
-              className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1a1a] border border-white/10"
+              className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
             >
               {/* Day name */}
               <div className="flex items-center gap-2 w-24">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/10 text-violet-500 font-medium text-sm">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-medium text-sm">
                   {day.short}
                 </div>
-                <span className="text-sm font-medium text-white">{day.label}</span>
+                <span className="text-sm font-medium text-foreground">{day.label}</span>
               </div>
 
               {/* Time inputs or "Cerrado" */}
@@ -102,28 +102,28 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                     type="time"
                     value={schedule.open}
                     onChange={(e) => handleDayChange(day.key, 'open', e.target.value)}
-                    className="w-28 bg-[#252032] border-white/10"
+                    className="w-28 bg-background border-border"
                   />
-                  <span className="text-gray-400">-</span>
+                  <span className="text-muted-foreground">-</span>
                   <Input
                     type="time"
                     value={schedule.close}
                     onChange={(e) => handleDayChange(day.key, 'close', e.target.value)}
-                    className="w-28 bg-[#252032] border-white/10"
+                    className="w-28 bg-background border-border"
                   />
 
                   {/* Copy to all button */}
                   <button
                     type="button"
                     onClick={() => handleCopyToAll(day.key)}
-                    className="text-xs text-violet-400 hover:text-violet-300 whitespace-nowrap ml-2"
+                    className="text-xs text-primary hover:text-primary/80 whitespace-nowrap ml-2"
                     title="Copiar a todos los días"
                   >
                     Copiar a todos
                   </button>
                 </div>
               ) : (
-                <div className="flex-1 text-sm text-gray-400">Cerrado</div>
+                <div className="flex-1 text-sm text-muted-foreground">Cerrado</div>
               )}
 
               {/* Closed checkbox */}
@@ -135,7 +135,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 />
                 <Label
                   htmlFor={`closed-${day.key}`}
-                  className="text-xs text-gray-400 cursor-pointer"
+                  className="text-xs text-muted-foreground cursor-pointer"
                 >
                   Cerrado
                 </Label>
@@ -146,8 +146,8 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
       </div>
 
       {/* Quick presets */}
-      <div className="mt-4 p-3 rounded-lg bg-violet-500/5 border border-violet-500/20">
-        <p className="text-xs text-gray-400 mb-2">Plantillas rápidas:</p>
+      <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
+        <p className="text-xs text-muted-foreground mb-2">Plantillas rápidas:</p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -163,7 +163,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 sunday: { open: '00:00', close: '00:00', closed: true },
               })
             }}
-            className="px-3 py-1.5 text-xs rounded-md bg-[#252032] hover:bg-[#2a2540] text-white border border-white/10 transition-colors"
+            className="px-3 py-1.5 text-xs rounded-md bg-card hover:bg-muted text-foreground border border-border transition-colors"
           >
             Lun-Vie 9-18, Sáb 9-14
           </button>
@@ -181,7 +181,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 sunday: { open: '00:00', close: '00:00', closed: true },
               })
             }}
-            className="px-3 py-1.5 text-xs rounded-md bg-[#252032] hover:bg-[#2a2540] text-white border border-white/10 transition-colors"
+            className="px-3 py-1.5 text-xs rounded-md bg-card hover:bg-muted text-foreground border border-border transition-colors"
           >
             Lun-Sáb 9-18
           </button>
@@ -199,7 +199,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 sunday: schedule,
               })
             }}
-            className="px-3 py-1.5 text-xs rounded-md bg-[#252032] hover:bg-[#2a2540] text-white border border-white/10 transition-colors"
+            className="px-3 py-1.5 text-xs rounded-md bg-card hover:bg-muted text-foreground border border-border transition-colors"
           >
             Lun-Dom 10-20 (cierra Miércoles)
           </button>

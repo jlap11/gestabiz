@@ -198,7 +198,7 @@ export default function RecommendedBusinesses() {
           <div key={b.id} className="rounded-xl overflow-hidden bg-zinc-900/60 border border-zinc-800 hover:border-fuchsia-500/40 transition-colors">
             <div className="relative h-40 w-full bg-zinc-800">
               <img src={b.image} alt={b.name} className="object-cover w-full h-full" />
-              <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded bg-black/50 text-white flex items-center gap-1">
+              <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded bg-card/90 text-foreground border border-border flex items-center gap-1">
                 <CategoryEmoji category={b.category} />
                 <span>{t(`business.categories.${b.category}`, { name: b.category }) || b.category}</span>
               </div>

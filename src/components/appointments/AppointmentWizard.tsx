@@ -217,7 +217,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
         className={cn(
-          "bg-[#0f172a] border-white/10 text-white p-0 overflow-hidden",
+          "bg-card border-border text-foreground p-0 overflow-hidden",
           "w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[75vw]",
           "!max-w-[1200px]",
           "[&>button]:hidden" // Ocultar el botón de cerrar por defecto del DialogContent
@@ -225,14 +225,14 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
       >
         {/* Header */}
         {currentStep < 6 && (
-          <div className="px-6 pt-6 pb-4 border-b border-white/10">
+          <div className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-foreground">
                 New Appointment
               </h2>
               <button
                 onClick={handleClose}
-                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 disabled={isSubmitting}
               >
                 <X className="h-6 w-6" />
@@ -350,12 +350,12 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
 
         {/* Footer with navigation buttons */}
         {currentStep < 6 && (
-          <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-border flex items-center justify-between">
             <Button
               variant="outline"
               onClick={handleBack}
               disabled={currentStep === (businessId ? 1 : 0) || isSubmitting}
-              className="bg-transparent border-white/20 text-white hover:bg-white/5"
+              className="bg-transparent border-border text-foreground hover:bg-muted"
             >
               ← Back
             </Button>
@@ -364,7 +364,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
               <Button
                 onClick={handleNext}
                 disabled={!canProceed() || isSubmitting}
-                className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Next Step →
               </Button>
@@ -377,7 +377,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
                   }
                 }}
                 disabled={isSubmitting}
-                className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {isSubmitting ? (
                   <>

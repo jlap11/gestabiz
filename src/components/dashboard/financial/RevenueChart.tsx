@@ -264,7 +264,7 @@ export function RevenueChart({
                       }}
                       title={`${t('financial.income')}: ${formatCurrency(point.income)}`}
                     >
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card text-foreground border border-border text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                         {formatCurrency(point.income)}
                       </div>
                     </div>
@@ -278,7 +278,7 @@ export function RevenueChart({
                       }}
                       title={`${t('financial.expenses')}: ${formatCurrency(point.expenses)}`}
                     >
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card text-foreground border border-border text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                         {formatCurrency(point.expenses)}
                       </div>
                     </div>
@@ -295,7 +295,7 @@ export function RevenueChart({
                       }}
                       title={`${t('financial.profit')}: ${formatCurrency(point.profit)}`}
                     >
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card text-foreground border border-border text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                         {formatCurrency(point.profit)}
                       </div>
                     </div>

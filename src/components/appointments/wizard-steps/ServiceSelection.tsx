@@ -89,7 +89,7 @@ export function ServiceSelection({
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold text-white mb-6">
+      <h3 className="text-xl font-semibold text-foreground mb-6">
         Select a Service
       </h3>
 
@@ -102,12 +102,12 @@ export function ServiceSelection({
               key={service.id}
               onClick={() => onSelectService(service)}
               className={cn(
-                "relative bg-[#2d2640] border-2 rounded-xl overflow-hidden",
+                "relative bg-card border-2 rounded-xl overflow-hidden",
                 "cursor-pointer transition-all duration-200",
-                "hover:border-[#8b5cf6] hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20",
+                "hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20",
                 isSelected
-                  ? "border-[#8b5cf6] bg-[#8b5cf6]/10"
-                  : "border-white/10"
+                  ? "border-primary bg-primary/10"
+                  : "border-border"
               )}
             >
               {/* Imagen fotográfica real del servicio */}
@@ -122,22 +122,22 @@ export function ServiceSelection({
                 {isSelected && (
                   <div
                     className={cn(
-                      "absolute top-3 right-3 w-8 h-8 bg-[#8b5cf6] rounded-full",
+                      "absolute top-3 right-3 w-8 h-8 bg-primary rounded-full",
                       "flex items-center justify-center",
                       "animate-in zoom-in duration-200"
                     )}
                   >
-                    <Check className="w-5 h-5 text-white" />
+                    <Check className="w-5 h-5 text-primary-foreground" />
                   </div>
                 )}
               </div>
 
               {/* Label debajo de la imagen */}
-              <div className="p-3 text-center bg-[#1e293b]/50">
-                <h3 className="text-base font-semibold text-white truncate">
+              <div className="p-3 text-center bg-muted/50">
+                <h3 className="text-base font-semibold text-foreground truncate">
                   {service.name}
                 </h3>
-                <p className="text-xs text-[#94a3b8] mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {service.duration} min
                 </p>
               </div>

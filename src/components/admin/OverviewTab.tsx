@@ -137,7 +137,7 @@ export function OverviewTab({ business }: OverviewTabProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
         {[...Array(8)].map((_, i) => (
-          <Card key={i} className="bg-[#252032] border-white/10">
+          <Card key={i} className="bg-card border-border">
             <CardHeader>
               <Skeleton className="h-4 w-24" />
             </CardHeader>
@@ -153,7 +153,7 @@ export function OverviewTab({ business }: OverviewTabProps) {
   if (!stats) {
     return (
       <div className="flex items-center justify-center p-12">
-        <p className="text-gray-400">No se pudieron cargar las estadísticas</p>
+        <p className="text-muted-foreground">No se pudieron cargar las estadísticas</p>
       </div>
     )
   }
@@ -222,9 +222,9 @@ export function OverviewTab({ business }: OverviewTabProps) {
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
-          <Card key={stat.title} className="bg-[#252032] border-white/10 hover:border-white/20 transition-colors">
+          <Card key={stat.title} className="bg-card border-border hover:border-primary/20 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
               <div className={`${stat.bgColor} p-2 rounded-lg`}>
@@ -232,7 +232,7 @@ export function OverviewTab({ business }: OverviewTabProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{stat.value}</div>
+              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -240,35 +240,35 @@ export function OverviewTab({ business }: OverviewTabProps) {
 
       {/* Revenue Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-green-400" />
               Ingresos del Mes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-foreground">
               ${stats.monthlyRevenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Basado en citas completadas este mes
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-violet-400" />
               Valor Promedio por Cita
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">
+            <div className="text-3xl font-bold text-foreground">
               ${stats.averageAppointmentValue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Promedio de ingresos por cita completada
             </p>
           </CardContent>
@@ -282,10 +282,10 @@ export function OverviewTab({ business }: OverviewTabProps) {
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-amber-400 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-white mb-1">
+                <h3 className="font-semibold text-foreground mb-1">
                   Configuración Incompleta
                 </h3>
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-foreground/90">
                   {stats.totalLocations === 0 && stats.totalServices === 0
                     ? 'Necesitas agregar sedes y servicios para empezar a recibir citas.'
                     : stats.totalLocations === 0
@@ -311,28 +311,28 @@ export function OverviewTab({ business }: OverviewTabProps) {
       ) : null}
 
       {/* Business Info Summary */}
-      <Card className="bg-[#252032] border-white/10">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Información del Negocio</CardTitle>
+          <CardTitle className="text-foreground">Información del Negocio</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-400">Nombre</p>
-              <p className="text-white font-medium">{business.name}</p>
+              <p className="text-sm text-muted-foreground">Nombre</p>
+              <p className="text-foreground font-medium">{business.name}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400">Categoría</p>
+              <p className="text-sm text-muted-foreground">Categoría</p>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary">{business.category?.name || 'Sin categoría'}</Badge>
               </div>
             </div>
             {business.subcategories && business.subcategories.length > 0 && (
               <div className="md:col-span-2">
-                <p className="text-sm text-gray-400 mb-2">Subcategorías</p>
+                <p className="text-sm text-muted-foreground mb-2">Subcategorías</p>
                 <div className="flex flex-wrap gap-2">
                   {business.subcategories.map((sub) => (
-                    <Badge key={sub.id} variant="outline" className="border-white/20">
+                    <Badge key={sub.id} variant="outline" className="border-border">
                       {sub.subcategory?.name}
                     </Badge>
                   ))}
@@ -341,20 +341,20 @@ export function OverviewTab({ business }: OverviewTabProps) {
             )}
             {business.description && (
               <div className="md:col-span-2">
-                <p className="text-sm text-gray-400">Descripción</p>
-                <p className="text-white">{business.description}</p>
+                <p className="text-sm text-muted-foreground">Descripción</p>
+                <p className="text-foreground">{business.description}</p>
               </div>
             )}
             {business.phone && (
               <div>
-                <p className="text-sm text-gray-400">Teléfono</p>
-                <p className="text-white">{business.phone}</p>
+                <p className="text-sm text-muted-foreground">Teléfono</p>
+                <p className="text-foreground">{business.phone}</p>
               </div>
             )}
             {business.email && (
               <div>
-                <p className="text-sm text-gray-400">Email</p>
-                <p className="text-white">{business.email}</p>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-foreground">{business.email}</p>
               </div>
             )}
           </div>

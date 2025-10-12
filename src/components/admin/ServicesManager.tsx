@@ -333,12 +333,12 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Servicios</h2>
-          <p className="text-gray-400 text-sm">Gestiona los servicios que ofreces</p>
+          <h2 className="text-2xl font-bold text-foreground">Servicios</h2>
+          <p className="text-muted-foreground text-sm">Gestiona los servicios que ofreces</p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-violet-500 hover:bg-violet-600 text-white"
+          className="bg-primary hover:bg-primary/90"
         >
           <Plus className="h-4 w-4 mr-2" />
           Agregar Servicio
@@ -347,16 +347,16 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
 
       {/* Services Grid */}
       {services.length === 0 ? (
-        <Card className="bg-[#252032] border-white/10">
+        <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Briefcase className="h-16 w-16 text-gray-600 mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No hay servicios aún</h3>
-            <p className="text-gray-400 text-center mb-4">
+            <Briefcase className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No hay servicios aún</h3>
+            <p className="text-muted-foreground text-center mb-4">
               Agrega tu primer servicio para que los clientes puedan reservar citas
             </p>
             <Button
               onClick={() => handleOpenDialog()}
-              className="bg-violet-500 hover:bg-violet-600 text-white"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Primer Servicio
@@ -366,7 +366,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((service) => (
-            <Card key={service.id} className="bg-[#252032] border-white/10 hover:border-white/20 transition-colors">
+            <Card key={service.id} className="bg-card border-border hover:border-border/80 transition-colors">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -377,7 +377,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                         className="w-full h-32 object-cover rounded-lg mb-3"
                       />
                     )}
-                    <CardTitle className="text-white text-lg">{service.name}</CardTitle>
+                    <CardTitle className="text-foreground text-lg">{service.name}</CardTitle>
                     {!service.is_active && (
                       <Badge variant="secondary" className="mt-2 text-xs">
                         Inactivo
@@ -389,7 +389,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenDialog(service)}
-                      className="text-gray-400 hover:text-white"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -397,7 +397,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(service.id)}
-                      className="text-gray-400 hover:text-red-400"
+                      className="text-muted-foreground hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -406,17 +406,17 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               </CardHeader>
               <CardContent className="space-y-3">
                 {service.description && (
-                  <p className="text-sm text-gray-300 line-clamp-2">{service.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
                 )}
                 <div className="flex items-center gap-2 text-sm">
                   <DollarSign className="h-4 w-4 text-green-400" />
-                  <span className="text-white font-semibold">
+                  <span className="text-foreground font-semibold">
                     ${service.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-blue-400" />
-                  <span className="text-gray-300">{service.duration} minutos</span>
+                  <span className="text-muted-foreground">{service.duration} minutos</span>
                 </div>
               </CardContent>
             </Card>
@@ -426,12 +426,12 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="bg-[#252032] border-white/10 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingService ? 'Editar Servicio' : 'Crear Nuevo Servicio'}
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               {editingService
                 ? 'Actualiza la información del servicio'
                 : 'Completa la información del nuevo servicio'}
@@ -503,7 +503,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                   <button
                     type="button"
                     onClick={() => handleChange('image_url', '')}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-primary-foreground rounded-full p-1"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -524,7 +524,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
             {locations.length > 0 && (
               <div>
                 <Label className="mb-2 block">Disponible en las siguientes sedes:</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-white/10 rounded-lg p-3">
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
                   {locations.map((location) => (
                     <div key={location.id} className="flex items-center gap-2">
                       <Checkbox
@@ -534,9 +534,9 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                       />
                       <label
                         htmlFor={`location-${location.id}`}
-                        className="text-sm text-white cursor-pointer flex items-center gap-2"
+                        className="text-sm text-foreground cursor-pointer flex items-center gap-2"
                       >
-                        <MapPin className="h-3 w-3 text-gray-400" />
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
                         {location.name}
                       </label>
                     </div>
@@ -554,7 +554,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
             {employees.length > 0 && (
               <div>
                 <Label className="mb-2 block">Prestado por:</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-white/10 rounded-lg p-3">
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
                   {employees.map((employee) => (
                     <div key={employee.id} className="flex items-center gap-2">
                       <Checkbox
@@ -564,9 +564,9 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                       />
                       <label
                         htmlFor={`employee-${employee.id}`}
-                        className="text-sm text-white cursor-pointer flex items-center gap-2"
+                        className="text-sm text-foreground cursor-pointer flex items-center gap-2"
                       >
-                        <Users className="h-3 w-3 text-gray-400" />
+                        <Users className="h-3 w-3 text-muted-foreground" />
                         {employee.profiles?.full_name || employee.profiles?.email || 'Sin nombre'}
                       </label>
                     </div>
@@ -598,7 +598,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               </Button>
               <Button
                 type="submit"
-                className="bg-violet-500 hover:bg-violet-600 text-white"
+                className="bg-primary hover:bg-primary/90"
                 disabled={isSaving}
               >
                 {isSaving ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear'}

@@ -3,10 +3,10 @@
 ## Sistema de Roles Dinámicos ⭐ IMPORTANTE
 Los roles NO se guardan en la base de datos. Se calculan dinámicamente basándose en relaciones:
 - **ADMIN**: El usuario es `owner_id` de un negocio en la tabla `businesses`
-- **EMPLOYEE**: El usuario existe en `business_employees` para un negocio
+- **EMPLOYEE**: Siempre disponible (todos pueden solicitar unirse a un negocio). Si existe en `business_employees`, tiene acceso completo; si no, verá onboarding
 - **CLIENT**: Siempre disponible (todos pueden reservar citas)
 
-Un usuario puede tener múltiples roles simultáneamente (admin de negocio A, employee de negocio B, client para reservar). El hook `useUserRoles` calcula los roles disponibles dinámicamente y solo guarda el contexto activo en localStorage. Ver `DYNAMIC_ROLES_SYSTEM.md` para detalles completos.
+**Todos los usuarios tienen acceso a los 3 roles** para poder iterar entre ellos. Un usuario puede ser admin de negocio A, employee de negocio B, y client para reservar en cualquier negocio. El hook `useUserRoles` calcula los roles disponibles dinámicamente y solo guarda el contexto activo en localStorage. Ver `DYNAMIC_ROLES_SYSTEM.md` para detalles completos.
 
 ## Construcción y ejecución (local)
 - Web (Vite): scripts en `package.json` raíz
@@ -45,6 +45,14 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - **Modelo actualizado (2025-10-11)**: Ver `DATABASE_REDESIGN_ANALYSIS.md` para el nuevo modelo con servicios por sede/empleado, reviews, transacciones y analytics.
   - **Sistema de Categorías (2025-11-10)**: Sistema jerárquico con 15 categorías principales y ~60 subcategorías. Máximo 3 subcategorías por negocio. Ver `SISTEMA_CATEGORIAS_RESUMEN.md` y `EJECUTAR_SOLO_CATEGORIAS.sql`.
   - **Sistema de Notificaciones (2025-12-20)**: Sistema multicanal completo (Email/SMS/WhatsApp) con AWS SES/SNS, recordatorios automáticos, preferencias por usuario y negocio. Ver `BUSINESS_NOTIFICATION_SETTINGS_COMPLETADO.md` y `GUIA_PRUEBAS_SISTEMA_NOTIFICACIONES.md`.
+
+## Sistema de Temas ⭐ NUEVO (2025-01-10)
+La aplicación soporta temas claro y oscuro con persistencia:
+- **ThemeProvider**: `src/contexts/ThemeProvider.tsx` - Context con hook `useKV` para persistencia en localStorage
+- **CSS Variables**: `src/index.css` - Variables semánticas que cambian según tema (`:root` para light, `[data-theme="dark"]` para dark)
+- **ThemeToggle**: `src/components/ui/theme-toggle.tsx` - Componente switch integrado en AdminDashboard header
+- **IMPORTANTE**: NO usar colores hardcodeados (bg-[#1a1a1a], text-white, border-white/10). Usar variables CSS via Tailwind: `bg-background`, `text-foreground`, `border-border`, `bg-card`, `text-muted-foreground`, `bg-primary`, etc.
+- **Estado**: 60% completo (AdminDashboard + 3/5 componentes jobs refactorizados). Ver `TEMA_CLARO_RESUMEN_FINAL.md` para detalles.
 
 ## Convenciones y patrones del proyecto
 - Alias de paths: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`).

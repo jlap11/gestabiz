@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useAuth } from '@/hooks/useAuth'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
+import logoBookio from '@/assets/images/logo_bookio.png'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void 
@@ -59,31 +60,31 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
 
   if (showResetForm) {
     return (
-      <div className="min-h-screen bg-[#1a1625] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-[#252032] rounded-2xl p-8 shadow-2xl">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-card rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">Reset Password</h2>
-            <p className="text-gray-400 text-sm">Enter your email to reset your password</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Reset Password</h2>
+            <p className="text-muted-foreground text-sm">Enter your email to reset your password</p>
           </div>
           <form className="space-y-6">
             <div>
               <Input
                 type="email"
                 placeholder="Email address"
-                className="w-full bg-[#1f1a2e] border-0 text-white placeholder:text-gray-500 h-12 rounded-lg px-4"
+                className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4"
                 required
               />
             </div>
             <Button 
               type="submit"
-              className="w-full bg-[#20F7D0] hover:bg-[#1ce0bc] text-black font-semibold h-12 rounded-lg transition-colors"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-colors"
             >
               Send reset link
             </Button>
             <Button 
               type="button"
               variant="ghost"
-              className="w-full text-gray-400 hover:text-white"
+              className="w-full text-muted-foreground hover:text-foreground"
               onClick={() => setShowResetForm(false)}
             >
               Back to login
@@ -95,24 +96,31 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0a1a] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative gradient blurs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#6820F7]/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#6820F7]/10 rounded-full blur-3xl"></div>
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       
       <div className="w-full max-w-md relative z-10">
         {/* Logo and Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <div className="flex justify-center mb-4">
+            <img 
+              src={logoBookio} 
+              alt="Bookio Logo" 
+              className="w-20 h-20 rounded-2xl object-contain"
+            />
+          </div>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
             {APP_CONFIG.NAME}
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             Welcome back! Please enter your details.
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-[#1a1228] rounded-2xl p-8 shadow-2xl backdrop-blur-xl border border-white/5">
+        <div className="bg-card rounded-2xl p-8 shadow-2xl backdrop-blur-xl border border-border">
           <form onSubmit={handleSignIn} className="space-y-6">
             {/* Email Input */}
             <div className="space-y-2">
@@ -121,7 +129,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
                 placeholder="Email address"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="w-full bg-[#1f1a2e] border-0 text-white placeholder:text-gray-500 h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-[#20F7D0]"
+                className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
                 required
               />
             </div>
@@ -133,7 +141,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                className="w-full bg-[#1f1a2e] border-0 text-white placeholder:text-gray-500 h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-[#20F7D0]"
+                className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
                 required
               />
             </div>
@@ -145,16 +153,16 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
                   id="remember"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  className="border-gray-600 data-[state=checked]:bg-[#6820F7] data-[state=checked]:border-[#6820F7]"
+                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
-                <label htmlFor="remember" className="text-gray-400 cursor-pointer">
+                <label htmlFor="remember" className="text-muted-foreground cursor-pointer">
                   Remember me
                 </label>
               </div>
               <button
                 type="button"
                 onClick={() => setShowResetForm(true)}
-                className="text-[#6820F7] hover:text-[#8040ff] transition-colors cursor-pointer"
+                className="text-primary hover:text-primary/80 transition-colors cursor-pointer"
               >
                 Forgot your password?
               </button>
@@ -164,7 +172,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
             <Button 
               type="submit"
               disabled={isSigningIn}
-              className="w-full bg-[#6820F7] hover:bg-[#7b3dff] text-white font-semibold h-12 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {isSigningIn ? 'Signing in...' : 'Login'}
             </Button>
@@ -172,10 +180,10 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
             {/* Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700"></div>
+                <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-[#1a1228] text-gray-400">
+                <span className="px-4 bg-card text-muted-foreground">
                   Or continue with
                 </span>
               </div>
@@ -187,7 +195,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
               variant="outline"
               onClick={handleGoogleSignIn}
               disabled={isGoogleAuth}
-              className="w-full bg-[#1f1a2e] border-gray-700 hover:bg-[#2a2538] text-white h-12 rounded-lg transition-colors"
+              className="w-full bg-background border-border hover:bg-muted text-foreground h-12 rounded-lg transition-colors"
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -213,8 +221,8 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
 
           {/* Sign up link */}
           <div className="mt-6 text-center text-sm">
-            <span className="text-gray-400">Don't have an account? </span>
-            <button className="text-[#20F7D0] hover:text-[#1ce0bc] font-medium transition-colors cursor-pointer">
+            <span className="text-muted-foreground">Don't have an account? </span>
+            <button className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer">
               Sign up
             </button>
           </div>

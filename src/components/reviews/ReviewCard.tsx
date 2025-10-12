@@ -61,7 +61,7 @@ export function ReviewCard({
               'h-4 w-4',
               star <= rating
                 ? 'fill-yellow-400 text-yellow-400'
-                : 'text-gray-300'
+                : 'text-muted-foreground'
             )}
           />
         ))}

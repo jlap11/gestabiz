@@ -245,12 +245,12 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
   const isStep2Valid = true // Contact info is optional
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Crear tu Negocio</h1>
-          <p className="text-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Crear tu Negocio</h1>
+          <p className="text-muted-foreground">
             Registra tu negocio y empieza a gestionar citas en minutos
           </p>
         </div>
@@ -273,27 +273,27 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
         {/* Progress */}
         <div className="flex items-center justify-center gap-2">
-          <div className={`h-2 w-24 rounded-full ${step >= 1 ? 'bg-[#6820F7]' : 'bg-white/10'}`} />
-          <div className={`h-2 w-24 rounded-full ${step >= 2 ? 'bg-[#6820F7]' : 'bg-white/10'}`} />
-          <div className={`h-2 w-24 rounded-full ${step >= 3 ? 'bg-[#6820F7]' : 'bg-white/10'}`} />
+          <div className={`h-2 w-24 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-border'}`} />
+          <div className={`h-2 w-24 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-border'}`} />
+          <div className={`h-2 w-24 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-border'}`} />
         </div>
 
         {/* Step 1: Basic Info + Legal Info + Logo */}
         {step === 1 && (
           <div className="space-y-6">
             {/* Basic Information Card */}
-            <Card className="bg-[#252032] border-white/10">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Building2 className="h-5 w-5 text-violet-500" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Building2 className="h-5 w-5 text-primary" />
                   Información básica
                 </CardTitle>
-                <CardDescription className="text-gray-400">Datos principales de tu negocio</CardDescription>
+                <CardDescription className="text-muted-foreground">Datos principales de tu negocio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Business Name */}
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium text-white">
+                  <label htmlFor="name" className="text-sm font-medium text-foreground">
                     Nombre del negocio <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -301,19 +301,19 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     placeholder="Ej: Salón de Belleza María"
-                    className="bg-[#1a1a1a] border-white/10"
+                    className="bg-background border-border"
                   />
                 </div>
 
                 {/* Category - Main Category with Filter */}
                 <div className="space-y-2">
-                  <label htmlFor="category" className="text-sm font-medium text-white">
+                  <label htmlFor="category" className="text-sm font-medium text-foreground">
                     Categoría Principal <span className="text-red-500">*</span>
                   </label>
                   {categoriesLoading ? (
-                    <div className="flex items-center justify-center py-3 bg-[#1a1a1a] rounded-md border border-white/10">
-                      <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
-                      <span className="ml-2 text-sm text-gray-400">Cargando categorías...</span>
+                    <div className="flex items-center justify-center py-3 bg-background rounded-md border border-border">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <span className="ml-2 text-sm text-muted-foreground">Cargando categorías...</span>
                     </div>
                   ) : (
                     <>
@@ -325,18 +325,18 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                           setSelectedSubcategories([]) // Reset subcategories when main category changes
                         }}
                       >
-                        <SelectTrigger className="bg-[#1a1a1a] border-white/10">
+                        <SelectTrigger className="bg-background border-border">
                           <SelectValue placeholder="Selecciona una categoría principal" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px]">
                           {/* Search/Filter Input inside dropdown */}
-                          <div className="px-2 pt-2 pb-1 sticky top-0 bg-[#1a1a1a] border-b border-white/10 z-10">
+                          <div className="px-2 pt-2 pb-1 sticky top-0 bg-background border-b border-border z-10">
                             <Input
                               type="text"
                               placeholder="Buscar categoría..."
                               value={categoryFilter}
                               onChange={(e) => setCategoryFilter(e.target.value)}
-                              className="bg-[#252032] border-white/10 h-8 text-sm"
+                              className="bg-card border-border h-8 text-sm"
                               onClick={(e) => e.stopPropagation()}
                               onKeyDown={(e) => e.stopPropagation()}
                             />
@@ -349,7 +349,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                               </SelectItem>
                             ))
                           ) : (
-                            <div className="px-2 py-6 text-center text-sm text-gray-400">
+                            <div className="px-2 py-6 text-center text-sm text-muted-foreground">
                               No se encontraron categorías
                             </div>
                           )}
@@ -365,13 +365,13 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                 {/* Subcategories - Only show if main category selected and has subcategories */}
                 {formData.category_id && availableSubcategories.length > 0 && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">
+                    <label className="text-sm font-medium text-foreground">
                       Subcategorías (máximo 3)
                     </label>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       Selecciona hasta 3 subcategorías que describan mejor tu negocio
                     </p>
-                    <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-[#1a1a1a] rounded-md border border-white/10">
+                    <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-background rounded-md border border-border">
                       {availableSubcategories.map((subcat) => {
                         const isSelected = selectedSubcategories.includes(subcat.id)
                         const canSelect = selectedSubcategories.length < 3 || isSelected
@@ -390,10 +390,10 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                             }}
                             className={`p-2 rounded-md text-sm text-left transition-colors ${
                               isSelected
-                                ? 'bg-violet-500/20 border-2 border-violet-500 text-white'
+                                ? 'bg-primary/20 border-2 border-primary text-foreground'
                                 : canSelect
-                                ? 'bg-[#252032] border border-white/10 text-gray-300 hover:border-violet-500/50'
-                                : 'bg-[#252032] border border-white/5 text-gray-500 cursor-not-allowed'
+                                ? 'bg-card border border-border text-foreground/90 hover:border-primary/50'
+                                : 'bg-card border border-border/50 text-muted-foreground cursor-not-allowed'
                             }`}
                           >
                             {subcat.name}
@@ -401,17 +401,17 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                         )
                       })}
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       {selectedSubcategories.length}/3 subcategorías seleccionadas
                     </p>
                     
                     {/* Subcategory Descriptions */}
                     {selectedSubcategories.length > 0 && (
                       <div className="mt-4 space-y-3">
-                        <p className="text-sm font-medium text-white">
+                        <p className="text-sm font-medium text-foreground">
                           Descripción por Subcategoría
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                           Describe brevemente los servicios específicos de cada subcategoría
                         </p>
                         {selectedSubcategories.map((subcatId) => {
@@ -420,7 +420,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                           
                           return (
                             <div key={subcatId} className="space-y-1">
-                              <label className="text-xs font-medium text-gray-300">
+                              <label className="text-xs font-medium text-foreground/90">
                                 {subcat.name}
                               </label>
                               <Textarea
@@ -430,7 +430,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                                   [subcatId]: e.target.value
                                 }))}
                                 placeholder={`Ej: Servicios específicos de ${subcat.name}...`}
-                                className="bg-[#1a1a1a] border-white/10 text-gray-300 min-h-[80px]"
+                                className="bg-background border-border text-foreground/90 min-h-[80px]"
                               />
                             </div>
                           )
@@ -442,10 +442,10 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
                 {/* General Description */}
                 <div className="space-y-2">
-                  <label htmlFor="description" className="text-sm font-medium text-white">
+                  <label htmlFor="description" className="text-sm font-medium text-foreground">
                     Descripción General del Negocio *
                   </label>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     Describe brevemente los servicios generales que ofrece tu negocio
                   </p>
                   <Textarea
@@ -454,58 +454,58 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                     onChange={(e) => handleChange('description', e.target.value)}
                     placeholder="Describe tu negocio..."
                     rows={3}
-                    className="bg-[#1a1a1a] border-white/10"
+                    className="bg-background border-border"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Legal Information Card */}
-            <Card className="bg-[#252032] border-white/10">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Mail className="h-5 w-5 text-violet-500" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Mail className="h-5 w-5 text-primary" />
                   Información legal
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-muted-foreground">
                   Datos legales para Colombia (opcional pero recomendado)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Legal Entity Type */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-white">Tipo de entidad</label>
+                  <label className="text-sm font-medium text-foreground">Tipo de entidad</label>
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => handleChange('legal_entity_type', 'company')}
                       className={`p-4 rounded-lg border-2 text-left transition-colors ${
                         formData.legal_entity_type === 'company'
-                          ? 'border-violet-500 bg-violet-500/10'
-                          : 'border-white/10 hover:border-white/20'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
                       }`}
                     >
-                      <div className="font-medium text-white">Empresa</div>
-                      <div className="text-xs text-gray-400 mt-1">Negocio registrado con NIT</div>
+                      <div className="font-medium text-foreground">Empresa</div>
+                      <div className="text-xs text-muted-foreground mt-1">Negocio registrado con NIT</div>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleChange('legal_entity_type', 'individual')}
                       className={`p-4 rounded-lg border-2 text-left transition-colors ${
                         formData.legal_entity_type === 'individual'
-                          ? 'border-violet-500 bg-violet-500/10'
-                          : 'border-white/10 hover:border-white/20'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
                       }`}
                     >
-                      <div className="font-medium text-white">Independiente</div>
-                      <div className="text-xs text-gray-400 mt-1">Persona natural con cédula</div>
+                      <div className="font-medium text-foreground">Independiente</div>
+                      <div className="text-xs text-muted-foreground mt-1">Persona natural con cédula</div>
                     </button>
                   </div>
                 </div>
 
                 {/* Tax ID */}
                 <div className="space-y-2">
-                  <label htmlFor="tax_id" className="text-sm font-medium text-white">
+                  <label htmlFor="tax_id" className="text-sm font-medium text-foreground">
                     {formData.legal_entity_type === 'company' ? 'NIT' : 'Cédula de Ciudadanía'}
                   </label>
                   <Input
@@ -517,9 +517,9 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                         ? 'Ej: 900123456'
                         : 'Ej: 1234567890'
                     }
-                    className="bg-[#1a1a1a] border-white/10"
+                    className="bg-background border-border"
                   />
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     {formData.legal_entity_type === 'company'
                       ? 'Número de Identificación Tributaria (9-10 dígitos)'
                       : 'Número de cédula de ciudadanía (6-10 dígitos)'}
@@ -528,7 +528,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
                 {/* Legal Name */}
                 <div className="space-y-2">
-                  <label htmlFor="legal_name" className="text-sm font-medium text-white">
+                  <label htmlFor="legal_name" className="text-sm font-medium text-foreground">
                     {formData.legal_entity_type === 'company' ? 'Razón Social' : 'Nombre Completo'}
                   </label>
                   <Input
@@ -540,14 +540,14 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                         ? 'Ej: Salón de Belleza María S.A.S.'
                         : 'Ej: María Pérez González'
                     }
-                    className="bg-[#1a1a1a] border-white/10"
+                    className="bg-background border-border"
                   />
                 </div>
 
                 {/* Registration Number (only for companies) */}
                 {formData.legal_entity_type === 'company' && (
                   <div className="space-y-2">
-                    <label htmlFor="registration_number" className="text-sm font-medium text-white">
+                    <label htmlFor="registration_number" className="text-sm font-medium text-foreground">
                       Registro Mercantil (opcional)
                     </label>
                     <Input
@@ -555,7 +555,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                       value={formData.registration_number}
                       onChange={(e) => handleChange('registration_number', e.target.value)}
                       placeholder="Número de registro en Cámara de Comercio"
-                      className="bg-[#1a1a1a] border-white/10"
+                      className="bg-background border-border"
                     />
                   </div>
                 )}
@@ -563,13 +563,13 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
             </Card>
 
             {/* Logo Upload Card */}
-            <Card className="bg-[#252032] border-white/10">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Building2 className="h-5 w-5 text-violet-500" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Building2 className="h-5 w-5 text-primary" />
                   Logo del negocio
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-muted-foreground">
                   Sube el logo de tu negocio (opcional, se subirá al crear el negocio)
                 </CardDescription>
               </CardHeader>
@@ -609,14 +609,14 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
                       </Button>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-white/10 rounded-lg p-8 text-center hover:border-violet-500/50 transition-colors cursor-pointer"
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
                       onClick={() => document.getElementById('logo-input')?.click()}
                     >
-                      <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                      <p className="text-sm text-gray-300 mb-2">
+                      <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-sm text-foreground/90 mb-2">
                         Click para seleccionar o arrastra una imagen
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         PNG, JPG, WEBP (máx. 2MB)
                       </p>
                       <Input
@@ -656,13 +656,13 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
         {/* Step 2: Contact & Location */}
         {step === 2 && (
-          <Card className="bg-[#252032] border-white/10">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <MapPin className="h-5 w-5 text-violet-500" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <MapPin className="h-5 w-5 text-primary" />
                 Contacto y ubicación
               </CardTitle>
-              <CardDescription className="text-gray-400">Información de contacto (opcional)</CardDescription>
+              <CardDescription className="text-muted-foreground">Información de contacto (opcional)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Phone */}
@@ -748,17 +748,17 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
 
         {/* Step 3: Review & Create */}
         {step === 3 && (
-          <Card className="bg-[#252032] border-white/10">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <CheckCircle className="h-5 w-5 text-violet-500" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <CheckCircle className="h-5 w-5 text-primary" />
                 Revisar y crear
               </CardTitle>
-              <CardDescription className="text-gray-400">Verifica que todo esté correcto</CardDescription>
+              <CardDescription className="text-muted-foreground">Verifica que todo esté correcto</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Review */}
-              <div className="space-y-3 p-4 rounded-lg bg-[#1a1a1a] border border-white/5">
+              <div className="space-y-3 p-4 rounded-lg bg-background border border-border">
                 <div>
                   <p className="text-sm text-muted-foreground">Nombre</p>
                   <p className="font-medium">{formData.name}</p>

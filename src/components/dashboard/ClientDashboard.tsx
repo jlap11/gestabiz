@@ -123,7 +123,7 @@ export default function ClientDashboard({
       },
       'no-show': { 
         label: 'No Show', 
-        className: 'bg-gray-500/20 text-gray-400 border-gray-500/30 font-medium' 
+        className: 'bg-muted text-muted-foreground border-border font-medium' 
       },
     }
 
@@ -227,14 +227,14 @@ export default function ClientDashboard({
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a]">
+    <div className="min-h-screen bg-background">
       {/* Header is now in Layout - no need to render here */}
       
       <div className="px-6 py-8 space-y-8">
         {/* Upcoming Appointments Section */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-foreground">
               Upcoming Appointments
             </h2>
             {upcomingAppointments.length > 0 && (
@@ -245,16 +245,16 @@ export default function ClientDashboard({
           </div>
 
           {upcomingAppointments.length === 0 ? (
-            <Card className="border-dashed border-2 border-white/10 bg-transparent">
+            <Card className="border-dashed border-2 border-border bg-transparent">
               <CardContent className="py-16 text-center">
-                <CalendarX className="h-16 w-16 mx-auto text-gray-600 mb-4" />
-                <h3 className="text-lg font-semibold mb-2 text-white">No upcoming appointments</h3>
-                <p className="text-gray-400 mb-6">
+                <CalendarX className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2 text-foreground">No upcoming appointments</h3>
+                <p className="text-muted-foreground mb-6">
                   Book your first appointment to get started
                 </p>
                 <Button 
                   onClick={() => setShowAppointmentForm(true)}
-                  className="bg-[#6820F7] hover:bg-[#7b3dff] text-white"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Book Appointment
@@ -266,34 +266,34 @@ export default function ClientDashboard({
               {upcomingAppointments.map((appointment) => (
                 <Card 
                   key={appointment.id}
-                  className="bg-[#252032] border-white/5 hover:border-white/10 transition-all"
+                  className="bg-card border-border hover:border-primary/20 transition-all"
                 >
                   <CardContent className="p-6">
                     {/* Title and Badge */}
                     <div className="flex items-start justify-between mb-4">
-                      <h3 className="text-xl font-semibold text-white">
+                      <h3 className="text-xl font-semibold text-foreground">
                         {appointment.title || 'Appointment'}
                       </h3>
                       {getStatusBadge(appointment.status)}
                     </div>
 
                     {/* Provider */}
-                    <div className="text-gray-400 mb-4">
+                    <div className="text-muted-foreground mb-4">
                       with {appointment.employee_name || 'Provider'}
                     </div>
 
                     {/* Date, Time, Location */}
                     <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-gray-300 text-sm">
+                      <div className="flex items-center gap-2 text-foreground/90 text-sm">
                         <Calendar className="h-4 w-4" />
                         <span>{formatDate(appointment.start_time)}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-300 text-sm">
+                      <div className="flex items-center gap-2 text-foreground/90 text-sm">
                         <Clock className="h-4 w-4" />
                         <span>{formatTime(appointment.start_time)}</span>
                       </div>
                       {appointment.location && (
-                        <div className="flex items-center gap-2 text-gray-300 text-sm">
+                        <div className="flex items-center gap-2 text-foreground/90 text-sm">
                           <MapPin className="h-4 w-4" />
                           <span>{appointment.location}</span>
                         </div>
@@ -301,11 +301,11 @@ export default function ClientDashboard({
                     </div>
 
                     {/* Action Icons */}
-                    <div className="flex gap-3 pt-4 border-t border-white/5">
+                    <div className="flex gap-3 pt-4 border-t border-border">
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        className="text-gray-400 hover:text-green-400 hover:bg-white/5"
+                        className="text-muted-foreground hover:text-green-500 hover:bg-muted"
                         onClick={() => handleConfirmAppointment(appointment.id)}
                         disabled={confirmingId === appointment.id || appointment.status === 'confirmed'}
                         title={appointment.status === 'confirmed' ? 'Ya confirmada' : 'Confirmar cita'}
@@ -319,7 +319,7 @@ export default function ClientDashboard({
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        className="text-gray-400 hover:text-blue-400 hover:bg-white/5"
+                        className="text-muted-foreground hover:text-blue-500 hover:bg-muted"
                         onClick={() => handleAddToGoogleCalendar(appointment)}
                         title="Agregar a Google Calendar"
                       >
@@ -328,7 +328,7 @@ export default function ClientDashboard({
                       <Button 
                         variant="ghost" 
                         size="icon"
-                        className="text-gray-400 hover:text-red-400 hover:bg-white/5"
+                        className="text-muted-foreground hover:text-red-500 hover:bg-muted"
                         onClick={() => handleDeleteAppointment(appointment.id)}
                         disabled={deletingId === appointment.id}
                         title="Eliminar cita"
@@ -351,54 +351,54 @@ export default function ClientDashboard({
         {pastAppointments.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-foreground">
                 Past Appointments
               </h2>
             </div>
 
-            <Card className="bg-[#252032] border-white/5">
+            <Card className="bg-card border-border">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="border-b border-white/5">
+                    <thead className="border-b border-border">
                       <tr>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                           Service
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                           Date & Time
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                           Provider
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                           Location
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-border">
                       {pastAppointments.map((appointment) => (
                         <tr 
                           key={appointment.id}
-                          className="hover:bg-white/5 transition-colors"
+                          className="hover:bg-muted transition-colors"
                         >
                           <td className="px-6 py-4">
-                            <div className="font-medium text-white">
+                            <div className="font-medium text-foreground">
                               {appointment.title || 'Appointment'}
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-300">
+                            <div className="text-sm text-foreground/90">
                               {formatDate(appointment.start_time)}, {formatTime(appointment.start_time)}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-300">
+                          <td className="px-6 py-4 text-sm text-foreground/90">
                             {appointment.employee_name || 'Provider'}
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-300">
+                          <td className="px-6 py-4 text-sm text-foreground/90">
                             {appointment.location || 'Location'}
                           </td>
                           <td className="px-6 py-4">
@@ -415,7 +415,7 @@ export default function ClientDashboard({
                                 size="sm"
                                 onClick={() => handleDeleteAppointment(appointment.id)}
                                 disabled={deletingId === appointment.id}
-                                className="text-gray-400 hover:text-red-400 p-1 h-auto"
+                                className="text-muted-foreground hover:text-red-500 p-1 h-auto"
                                 title="Eliminar cita"
                               >
                                 {deletingId === appointment.id ? (

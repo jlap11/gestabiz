@@ -87,9 +87,9 @@ export function BusinessSelection({
   if (businesses.length === 0) {
     return (
       <div className="p-8 text-center">
-        <Building2 className="w-16 h-16 text-[#64748b] mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-white mb-2">No Businesses Available</h3>
-        <p className="text-[#94a3b8]">
+        <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">No Businesses Available</h3>
+        <p className="text-muted-foreground">
           There are no active businesses at the moment.
         </p>
       </div>
@@ -98,10 +98,10 @@ export function BusinessSelection({
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold text-white mb-2">
+      <h3 className="text-xl font-semibold text-foreground mb-2">
         Select a Business
       </h3>
-      <p className="text-[#94a3b8] mb-6">
+      <p className="text-muted-foreground mb-6">
         Choose the business where you want to book your appointment
       </p>
 
@@ -114,12 +114,12 @@ export function BusinessSelection({
               key={business.id}
               onClick={() => onSelectBusiness(business)}
               className={cn(
-                "relative bg-[#2d2640] border-2 rounded-xl overflow-hidden",
+                "relative bg-card border-2 rounded-xl overflow-hidden",
                 "cursor-pointer transition-all duration-200",
-                "hover:border-[#8b5cf6] hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20",
+                "hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20",
                 isSelected
-                  ? "border-[#8b5cf6] bg-[#8b5cf6]/10"
-                  : "border-white/10"
+                  ? "border-primary bg-primary/10"
+                  : "border-border"
               )}
             >
               {/* Imagen del negocio */}
@@ -134,24 +134,24 @@ export function BusinessSelection({
                 {isSelected && (
                   <div
                     className={cn(
-                      "absolute top-3 right-3 w-8 h-8 bg-[#8b5cf6] rounded-full",
+                      "absolute top-3 right-3 w-8 h-8 bg-primary rounded-full",
                       "flex items-center justify-center",
                       "animate-in zoom-in duration-200"
                     )}
                   >
-                    <Check className="w-5 h-5 text-white" />
+                    <Check className="w-5 h-5 text-primary-foreground" />
                   </div>
                 )}
               </div>
 
               {/* Información del negocio */}
-              <div className="p-4 bg-[#1e293b]/50">
-                <h3 className="text-base font-semibold text-white mb-1">
+              <div className="p-4 bg-muted/50">
+                <h3 className="text-base font-semibold text-foreground mb-1">
                   {business.name}
                 </h3>
                 
                 {business.description && (
-                  <p className="text-xs text-[#94a3b8] mb-2 line-clamp-2">
+                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                     {business.description}
                   </p>
                 )}

@@ -169,10 +169,10 @@ export function EmployeeSelection({
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-white mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
           Selecciona un Profesional
         </h3>
-        <p className="text-gray-400 text-sm">
+        <p className="text-muted-foreground text-sm">
           Elige el profesional con quien deseas tu cita
         </p>
       </div>
@@ -186,14 +186,14 @@ export function EmployeeSelection({
               "relative group rounded-xl p-6 text-left transition-all duration-200 border-2",
               "hover:scale-[1.02] hover:shadow-xl",
               selectedEmployeeId === employee.id
-                ? "bg-purple-500/20 border-purple-500 shadow-lg shadow-purple-500/20"
-                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
+                : "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
             )}
           >
             {/* Selected indicator */}
             {selectedEmployeeId === employee.id && (
-              <div className="absolute top-3 right-3 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">✓</span>
+              <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground text-xs font-bold">✓</span>
               </div>
             )}
 
@@ -203,24 +203,24 @@ export function EmployeeSelection({
                 <img
                   src={employee.avatar_url}
                   alt={employee.full_name || 'Employee'}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-white/20 mb-3"
+                  className="w-20 h-20 rounded-full object-cover border-2 border-border mb-3"
                 />
               ) : (
                 <div className={cn(
                   "w-20 h-20 rounded-full flex items-center justify-center mb-3 border-2",
                   selectedEmployeeId === employee.id 
-                    ? "bg-purple-500/30 border-purple-500" 
-                    : "bg-white/10 border-white/20 group-hover:bg-white/20"
+                    ? "bg-primary/30 border-primary" 
+                    : "bg-muted border-border group-hover:bg-muted/80"
                 )}>
                   <UserCircle2 className={cn(
                     "h-12 w-12",
-                    selectedEmployeeId === employee.id ? "text-purple-400" : "text-gray-400"
+                    selectedEmployeeId === employee.id ? "text-primary" : "text-muted-foreground"
                   )} />
                 </div>
               )}
 
               {/* Employee Name */}
-              <h4 className="text-lg font-semibold text-white text-center">
+              <h4 className="text-lg font-semibold text-foreground text-center">
                 {employee.full_name || 'Profesional'}
               </h4>
 
@@ -228,8 +228,8 @@ export function EmployeeSelection({
               <div className={cn(
                 "mt-2 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1",
                 selectedEmployeeId === employee.id
-                  ? "bg-purple-500/30 text-purple-300"
-                  : "bg-white/10 text-gray-400"
+                  ? "bg-primary/30 text-primary"
+                  : "bg-muted text-muted-foreground"
               )}>
                 <Briefcase className="h-3 w-3" />
                 <span className="capitalize">{employee.role === 'admin' ? 'Administrador' : 'Empleado'}</span>
@@ -238,7 +238,7 @@ export function EmployeeSelection({
 
             {/* Email */}
             <div className="text-center">
-              <p className="text-sm text-gray-400 truncate">
+              <p className="text-sm text-muted-foreground truncate">
                 {employee.email}
               </p>
             </div>
@@ -248,7 +248,7 @@ export function EmployeeSelection({
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star key={star} className="h-4 w-4 fill-current" />
               ))}
-              <span className="text-xs text-gray-400 ml-2">(5.0)</span>
+              <span className="text-xs text-muted-foreground ml-2">(5.0)</span>
             </div>
 
             {/* Hover Effect Border */}

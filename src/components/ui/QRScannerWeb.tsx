@@ -153,7 +153,7 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-black/80">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Camera className="h-6 w-6" />
           Escanear Código QR
         </h2>
@@ -161,7 +161,6 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
           variant="ghost"
           size="icon"
           onClick={onCancel}
-          className="text-white hover:bg-white/20"
         >
           <X className="h-6 w-6" />
         </Button>
@@ -171,7 +170,7 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
       <div className="flex-1 relative overflow-hidden">
         {hasPermission === null && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-white text-center px-6">
+            <p className="text-foreground text-center px-6">
               Solicitando permiso de cámara...
             </p>
           </div>
@@ -181,10 +180,10 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
           <div className="absolute inset-0 flex items-center justify-center p-6">
             <div className="max-w-md text-center">
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-4">
+              <h3 className="text-xl font-bold text-foreground mb-4">
                 Permiso Denegado
               </h3>
-              <p className="text-gray-300 mb-6">
+              <p className="text-muted-foreground mb-6">
                 No tenemos acceso a tu cámara. Por favor habilita el permiso en la configuración de tu navegador.
               </p>
               <Button onClick={onCancel} variant="default">
@@ -207,14 +206,14 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-64 h-64">
                 {/* Corner borders */}
-                <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-violet-500 rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-violet-500 rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-violet-500 rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-violet-500 rounded-br-lg" />
+                <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-primary rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-primary rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-primary rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-lg" />
 
                 {/* Scanning line animation */}
                 {scanning && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent animate-scan" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan" />
                 )}
               </div>
             </div>
@@ -225,7 +224,7 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
             {/* Instructions */}
             <div className="absolute bottom-20 left-0 right-0 flex justify-center">
               <div className="bg-black/60 backdrop-blur-sm px-6 py-3 rounded-lg">
-                <p className="text-white text-center">
+                <p className="text-foreground text-center">
                   Coloca el código QR dentro del marco
                 </p>
               </div>

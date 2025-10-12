@@ -198,7 +198,7 @@ export function TopPerformers({
       case 0:
         return <Trophy className="h-5 w-5 text-yellow-500" />;
       case 1:
-        return <Medal className="h-5 w-5 text-gray-400" />;
+        return <Medal className="h-5 w-5 text-muted-foreground" />;
       case 2:
         return <Award className="h-5 w-5 text-orange-600" />;
       default:

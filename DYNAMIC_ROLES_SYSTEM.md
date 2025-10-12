@@ -11,12 +11,13 @@ Se ha refactorizado el sistema de roles de AppointSync para que funcione de mane
 **Los roles NO se guardan en la base de datos**. En su lugar, se calculan dinámicamente basándose en las relaciones del usuario:
 
 ```
-Usuario puede ser:
-├─ ADMIN de Negocio A (es owner_id en businesses)
-├─ EMPLOYEE de Negocio B (existe en business_employees)
-├─ EMPLOYEE de Negocio C (existe en business_employees)
-└─ CLIENT (siempre, para reservar citas en cualquier negocio)
+Todos los usuarios tienen acceso a los 3 roles:
+├─ ADMIN (si es owner_id en businesses, tiene acceso completo; si no, verá onboarding)
+├─ EMPLOYEE (siempre disponible; si existe en business_employees, tiene acceso; si no, verá onboarding)
+└─ CLIENT (siempre disponible, para reservar citas en cualquier negocio)
 ```
+
+**⭐ IMPORTANTE**: Todos los usuarios pueden iterar entre los 3 roles. Los onboardings guían la configuración cuando no tienen las relaciones necesarias en la BD.
 
 ---
 
@@ -35,11 +36,16 @@ SELECT id, name FROM businesses WHERE owner_id = user.id
 SELECT business_id, businesses(id, name) 
 FROM business_employees 
 WHERE employee_id = user.id
-→ Por cada negocio: rol 'employee'
+→ Por cada negocio: rol 'employee' con business asignado
 
-// 3. Rol cliente (siempre disponible)
+// 3. Rol empleado (siempre disponible)
+→ Si no tiene relación en business_employees, se agrega rol 'employee' sin business_id
+
+// 4. Rol cliente (siempre disponible)
 → rol 'client' (sin business_id)
 ```
+
+**Resultado**: Todos los usuarios tienen al menos 3 roles ['admin', 'employee', 'client']. Los roles con `business_id` tienen acceso completo; los que no, ven onboarding.
 
 ### 2. Almacenamiento Local
 

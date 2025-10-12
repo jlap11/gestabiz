@@ -67,8 +67,8 @@ export function LocationSelection({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-        <span className="ml-3 text-gray-400">Cargando sedes...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Cargando sedes...</span>
       </div>
     );
   }
@@ -76,8 +76,8 @@ export function LocationSelection({
   if (locations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6">
-        <Building2 className="h-16 w-16 text-gray-600 mb-4" />
-        <p className="text-gray-400 text-center">
+        <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground text-center">
           No hay sedes disponibles para este negocio.
         </p>
       </div>
@@ -87,10 +87,10 @@ export function LocationSelection({
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-white mb-2">
+        <h3 className="text-xl font-semibold text-foreground mb-2">
           Selecciona una Sede
         </h3>
-        <p className="text-gray-400 text-sm">
+        <p className="text-muted-foreground text-sm">
           Elige la ubicación donde deseas tu cita
         </p>
       </div>
@@ -104,14 +104,14 @@ export function LocationSelection({
               "relative group rounded-xl p-5 text-left transition-all duration-200 border-2",
               "hover:scale-[1.02] hover:shadow-xl",
               selectedLocationId === location.id
-                ? "bg-purple-500/20 border-purple-500 shadow-lg shadow-purple-500/20"
-                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
+                : "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
             )}
           >
             {/* Selected indicator */}
             {selectedLocationId === location.id && (
-              <div className="absolute top-3 right-3 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">✓</span>
+              <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground text-xs font-bold">✓</span>
               </div>
             )}
 
@@ -119,24 +119,24 @@ export function LocationSelection({
             <div className={cn(
               "w-12 h-12 rounded-lg flex items-center justify-center mb-4",
               selectedLocationId === location.id 
-                ? "bg-purple-500/30" 
-                : "bg-white/10 group-hover:bg-white/20"
+                ? "bg-primary/30" 
+                : "bg-muted group-hover:bg-muted/80"
             )}>
               <MapPin className={cn(
                 "h-6 w-6",
-                selectedLocationId === location.id ? "text-purple-400" : "text-gray-400"
+                selectedLocationId === location.id ? "text-primary" : "text-muted-foreground"
               )} />
             </div>
 
             {/* Location Name */}
-            <h4 className="text-lg font-semibold text-white mb-3">
+            <h4 className="text-lg font-semibold text-foreground mb-3">
               {location.name}
             </h4>
 
             {/* Location Details */}
             <div className="space-y-2 text-sm">
               {location.address && (
-                <div className="flex items-start gap-2 text-gray-400">
+                <div className="flex items-start gap-2 text-muted-foreground">
                   <Building2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span className="line-clamp-2">
                     {location.address}
@@ -147,14 +147,14 @@ export function LocationSelection({
               )}
 
               {location.phone && (
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Phone className="h-4 w-4 flex-shrink-0" />
                   <span>{location.phone}</span>
                 </div>
               )}
 
               {location.country && (
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate">{location.country}</span>
                 </div>

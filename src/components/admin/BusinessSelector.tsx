@@ -29,7 +29,7 @@ export function BusinessSelector({
   if (businesses.length === 1) {
     const business = businesses[0]
     return (
-      <div className={`flex items-center gap-3 bg-[#252032] border border-white/10 rounded-lg px-4 py-3 ${className}`}>
+      <div className={`flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-3 ${className}`}>
         {business.logo_url ? (
           <img
             src={business.logo_url}
@@ -42,7 +42,7 @@ export function BusinessSelector({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-white truncate">{business.name}</h3>
+          <h3 className="font-semibold text-foreground truncate">{business.name}</h3>
           {business.category && (
             <Badge variant="secondary" className="mt-1 text-xs">
               {business.category.name}
@@ -57,7 +57,7 @@ export function BusinessSelector({
   return (
     <div className={`${className}`}>
       <Select value={selectedBusinessId} onValueChange={onSelectBusiness}>
-        <SelectTrigger className="w-full bg-[#252032] border-white/10 hover:bg-[#2a2537] transition-colors">
+        <SelectTrigger className="w-full bg-card border-border hover:bg-muted transition-colors">
           <SelectValue>
             {selectedBusiness ? (
               <div className="flex items-center gap-3">
@@ -73,9 +73,9 @@ export function BusinessSelector({
                   </div>
                 )}
                 <div className="flex flex-col items-start">
-                  <span className="font-semibold text-white">{selectedBusiness.name}</span>
+                  <span className="font-semibold text-foreground">{selectedBusiness.name}</span>
                   {selectedBusiness.category && (
-                    <span className="text-xs text-gray-400">{selectedBusiness.category.name}</span>
+                    <span className="text-xs text-muted-foreground">{selectedBusiness.category.name}</span>
                   )}
                 </div>
               </div>
@@ -85,12 +85,12 @@ export function BusinessSelector({
           </SelectValue>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </SelectTrigger>
-        <SelectContent className="bg-[#252032] border-white/10">
+        <SelectContent className="bg-card border-border">
           {businesses.map((business) => (
             <SelectItem
               key={business.id}
               value={business.id}
-              className="hover:bg-white/5 focus:bg-white/10"
+              className="hover:bg-muted/50 focus:bg-muted"
             >
               <div className="flex items-center gap-3 py-1">
                 {business.logo_url ? (
@@ -105,7 +105,7 @@ export function BusinessSelector({
                   </div>
                 )}
                 <div className="flex flex-col items-start">
-                  <span className="font-semibold text-white">{business.name}</span>
+                  <span className="font-semibold text-foreground">{business.name}</span>
                   {business.category && (
                     <Badge variant="secondary" className="mt-1 text-xs">
                       {business.category.name}
@@ -114,7 +114,7 @@ export function BusinessSelector({
                   {business.subcategories && business.subcategories.length > 0 && (
                     <div className="flex gap-1 mt-1">
                       {business.subcategories.slice(0, 3).map((sub) => (
-                        <span key={sub.id} className="text-xs text-gray-400">
+                        <span key={sub.id} className="text-xs text-muted-foreground">
                           {sub.subcategory?.name}
                         </span>
                       ))}

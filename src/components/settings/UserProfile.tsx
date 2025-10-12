@@ -161,7 +161,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
         <div className="flex-1 w-full space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div>
-              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
                 <span>👤</span> {user.name}
               </h3>
               <p className="text-sm text-fuchsia-400 font-medium mt-1">@{formData.username}</p>

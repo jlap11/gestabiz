@@ -1,20 +1,32 @@
 import { useState } from 'react'
-import { Camera, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
+import { Camera, AlertCircle, Loader2, CheckCircle, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useEmployeeRequests } from '@/hooks/useEmployeeRequests'
 import { QRScannerWeb } from '@/components/ui/QRScannerWeb'
-import type { User } from '@/types/types'
+import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
+import type { User, UserRole } from '@/types/types'
 import type { BusinessInvitationQRData } from '@/components/ui/QRScannerWeb'
 
 interface EmployeeOnboardingProps {
   user: User
   onRequestCreated?: () => void
+  currentRole: UserRole
+  availableRoles: UserRole[]
+  onRoleChange: (role: UserRole) => void
+  onLogout?: () => void
 }
 
-export function EmployeeOnboarding({ user, onRequestCreated }: EmployeeOnboardingProps) {
+export function EmployeeOnboarding({ 
+  user, 
+  onRequestCreated,
+  currentRole,
+  availableRoles,
+  onRoleChange,
+  onLogout
+}: EmployeeOnboardingProps) {
   const [invitationCode, setInvitationCode] = useState('')
   const [message, setMessage] = useState('')
   const [showScanner, setShowScanner] = useState(false)
@@ -62,13 +74,21 @@ export function EmployeeOnboarding({ user, onRequestCreated }: EmployeeOnboardin
     setShowScanner(false)
   }
 
-  return (
-    <div className="min-h-screen bg-[#1a1a1a] p-6">
+  const sidebarItems = [
+    {
+      id: 'onboarding',
+      label: 'Unirse a Negocio',
+      icon: <UserPlus className="h-5 w-5" />
+    }
+  ]
+
+  const onboardingContent = (
+    <div className="p-6">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Únete como Empleado</h1>
-          <p className="text-gray-400">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Únete como Empleado</h1>
+          <p className="text-muted-foreground">
             Para trabajar en un negocio, necesitas un código de invitación proporcionado por el administrador
           </p>
         </div>
@@ -271,13 +291,32 @@ export function EmployeeOnboarding({ user, onRequestCreated }: EmployeeOnboardin
           </Card>
         )}
       </div>
+    </div>
+  )
 
+  return (
+    <UnifiedLayout
+      currentRole={currentRole}
+      availableRoles={availableRoles}
+      onRoleChange={onRoleChange}
+      onLogout={onLogout}
+      sidebarItems={sidebarItems}
+      activePage="onboarding"
+      onPageChange={() => {}} // No navigation in onboarding
+      user={{
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar_url
+      }}
+    >
+      {onboardingContent}
+      
       {/* QR Scanner Modal */}
       <QRScannerWeb
         isOpen={showScanner}
         onScan={handleQRScanned}
         onCancel={() => setShowScanner(false)}
       />
-    </div>
+    </UnifiedLayout>
   )
 }

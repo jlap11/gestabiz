@@ -33,10 +33,10 @@ interface InfoRowProps {
 function InfoRow({ icon, label, value }: InfoRowProps) {
   return (
     <div className="flex items-start gap-3">
-      <div className="text-[#8b5cf6] mt-1">{icon}</div>
+      <div className="text-primary mt-1">{icon}</div>
       <div className="flex-1">
-        <p className="text-xs text-[#94a3b8]">{label}</p>
-        <p className="text-sm text-white font-medium">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm text-foreground font-medium">{value}</p>
       </div>
     </div>
   );
@@ -51,17 +51,17 @@ export function ConfirmationStep({
   return (
     <div className="p-6 space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">New Appointment</h2>
-        <p className="text-[#94a3b8]">Confirm the details below to finalize the booking</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">New Appointment</h2>
+        <p className="text-muted-foreground">Confirm the details below to finalize the booking</p>
       </div>
 
       {/* Appointment Summary Card */}
-      <Card className="bg-[#2d2640] border-white/5 p-6">
+      <Card className="bg-card border-border p-6">
         <div className="space-y-4">
           {/* Header con icono */}
           <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-[#8b5cf6]" />
-            <h3 className="text-lg font-semibold text-white">Appointment Summary</h3>
+            <Calendar className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">Appointment Summary</h3>
           </div>
 
           {/* Service */}
@@ -128,7 +128,7 @@ export function ConfirmationStep({
 
       {/* Notes Section */}
       <div className="space-y-3">
-        <label htmlFor="appointment-notes" className="text-sm font-medium text-white">
+        <label htmlFor="appointment-notes" className="text-sm font-medium text-foreground">
           Optional Notes
         </label>
         <Textarea
@@ -136,8 +136,8 @@ export function ConfirmationStep({
           value={notes}
           onChange={(e) => onUpdateNotes(e.target.value)}
           placeholder="Add any special requests or notes..."
-          className="bg-[#1e293b] border-white/10 text-white placeholder:text-[#64748b] min-h-[100px]
-                     focus:border-[#8b5cf6] focus:ring-[#8b5cf6]/20"
+          className="bg-background border-border text-foreground placeholder:text-muted-foreground min-h-[100px]
+                     focus:border-primary focus:ring-primary/20"
         />
       </div>
 

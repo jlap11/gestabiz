@@ -104,7 +104,22 @@ export function useUserRoles(user: User | null) {
         })
       }
 
-      // 3. Always add client role (everyone can book appointments)
+      // 3. Always add employee role (everyone can be an employee)
+      // Note: Even if user has no business_employees relationship, they can switch to employee role
+      // and will see the employee onboarding to join a business
+      const hasEmployeeRole = roleAssignments.some(r => r.role === 'employee')
+      if (!hasEmployeeRole) {
+        roleAssignments.push({
+          id: `${user.id}-employee`,
+          user_id: user.id,
+          role: 'employee',
+          business_id: null,
+          is_active: true,
+          created_at: user.created_at,
+        })
+      }
+
+      // 4. Always add client role (everyone can book appointments)
       roleAssignments.push({
         id: `${user.id}-client`,
         user_id: user.id,
