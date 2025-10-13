@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
+import { SearchBar, type SearchType } from '@/components/client/SearchBar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import type { Business, UserRole } from '@/types/types'
+
+interface SearchResult {
+  id: string
+  name: string
+  type: SearchType
+  subtitle?: string
+  category?: string
+  location?: string
+}
 
 interface UnifiedLayoutProps {
   children: React.ReactNode
@@ -36,6 +46,8 @@ interface UnifiedLayoutProps {
     email: string
     avatar?: string
   }
+  onSearchResultSelect?: (result: SearchResult) => void
+  onSearchViewMore?: (searchTerm: string, searchType: SearchType) => void
 }
 
 interface SidebarItem {
@@ -63,7 +75,9 @@ export function UnifiedLayout({
   sidebarItems,
   activePage,
   onPageChange,
-  user
+  user,
+  onSearchResultSelect,
+  onSearchViewMore
 }: UnifiedLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
@@ -236,6 +250,12 @@ export function UnifiedLayout({
                   </DropdownMenuContent>
                 )}
               </DropdownMenu>
+            ) : currentRole === 'client' ? (
+              <SearchBar
+                onResultSelect={(result) => onSearchResultSelect?.(result)}
+                onViewMore={(term, type) => onSearchViewMore?.(term, type)}
+                className="flex-1"
+              />
             ) : (
               <div>
                 <h1 className="text-xl font-bold text-foreground">

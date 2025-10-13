@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
-import { Calendar, Clock, Settings } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Calendar, Clock } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
-import UnifiedSettings from '@/components/settings/UnifiedSettings'
 import UserProfile from '@/components/settings/UserProfile'
 import type { UserRole, User } from '@/types/types'
 
@@ -23,6 +22,30 @@ export function EmployeeDashboard({
   businessId
 }: Readonly<EmployeeDashboardProps>) {
   const [activePage, setActivePage] = useState('appointments')
+  const [currentUser, setCurrentUser] = useState(user)
+
+  // Listen for avatar updates and refresh user
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      const updatedUserStr = window.localStorage.getItem('current-user')
+      if (updatedUserStr) {
+        try {
+          const updatedUser = JSON.parse(updatedUserStr)
+          setCurrentUser(updatedUser)
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+
+    window.addEventListener('avatar-updated', handleAvatarUpdate)
+    return () => window.removeEventListener('avatar-updated', handleAvatarUpdate)
+  }, [])
+
+  // Update current user when prop changes
+  useEffect(() => {
+    setCurrentUser(user)
+  }, [user])
 
   const sidebarItems = [
     {
@@ -34,11 +57,6 @@ export function EmployeeDashboard({
       id: 'schedule',
       label: 'Horario',
       icon: <Clock className="h-5 w-5" />
-    },
-    {
-      id: 'settings',
-      label: 'Configuración',
-      icon: <Settings className="h-5 w-5" />
     }
   ]
 
@@ -62,23 +80,10 @@ export function EmployeeDashboard({
         return (
           <div className="p-6">
             <UserProfile 
-              user={user} 
-              onUserUpdate={() => {
-                // Actualización de usuario manejada
+              user={currentUser} 
+              onUserUpdate={(updatedUser) => {
+                setCurrentUser(updatedUser)
               }}
-            />
-          </div>
-        )
-      case 'settings':
-        return (
-          <div className="p-6">
-            <UnifiedSettings 
-              user={user} 
-              onUserUpdate={() => {
-                // Callback para actualizar el usuario si es necesario
-              }}
-              currentRole={currentRole}
-              businessId={businessId}
             />
           </div>
         )
@@ -96,10 +101,10 @@ export function EmployeeDashboard({
       sidebarItems={sidebarItems}
       activePage={activePage}
       onPageChange={setActivePage}
-      user={user ? {
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar_url
+      user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: currentUser.avatar_url
       } : undefined}
     >
       {renderContent()}

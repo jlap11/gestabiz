@@ -1,10 +1,9 @@
-import React, { useState } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Settings } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { LayoutDashboard, MapPin, Briefcase, Users } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
-import UnifiedSettings from '@/components/settings/UnifiedSettings'
 import UserProfile from '@/components/settings/UserProfile'
 import type { Business, UserRole, User } from '@/types/types'
 
@@ -34,6 +33,30 @@ export function AdminDashboard({
   user
 }: Readonly<AdminDashboardProps>) {
   const [activePage, setActivePage] = useState('overview')
+  const [currentUser, setCurrentUser] = useState(user)
+
+  // Listen for avatar updates and refresh user
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      const updatedUserStr = window.localStorage.getItem('current-user')
+      if (updatedUserStr) {
+        try {
+          const updatedUser = JSON.parse(updatedUserStr)
+          setCurrentUser(updatedUser)
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+
+    window.addEventListener('avatar-updated', handleAvatarUpdate)
+    return () => window.removeEventListener('avatar-updated', handleAvatarUpdate)
+  }, [])
+
+  // Update current user when prop changes
+  useEffect(() => {
+    setCurrentUser(user)
+  }, [user])
 
   const sidebarItems = [
     {
@@ -55,11 +78,6 @@ export function AdminDashboard({
       id: 'employees',
       label: 'Empleados',
       icon: <Users className="h-5 w-5" />
-    },
-    {
-      id: 'settings',
-      label: 'Configuración',
-      icon: <Settings className="h-5 w-5" />
     }
   ]
 
@@ -87,25 +105,13 @@ export function AdminDashboard({
         return (
           <div className="p-6">
             <UserProfile 
-              user={user} 
-              onUserUpdate={() => {
-                // Actualización de usuario manejada
+              user={currentUser} 
+              onUserUpdate={(updatedUser) => {
+                setCurrentUser(updatedUser)
                 onUpdate?.()
               }}
             />
           </div>
-        )
-      case 'settings':
-        return (
-          <UnifiedSettings 
-            user={user} 
-            onUserUpdate={() => {
-              // Callback para actualizar el usuario si es necesario
-              onUpdate?.()
-            }}
-            currentRole={currentRole}
-            businessId={business.id}
-          />
         )
       default:
         return <OverviewTab business={business} />
@@ -124,7 +130,11 @@ export function AdminDashboard({
       sidebarItems={sidebarItems}
       activePage={activePage}
       onPageChange={setActivePage}
-      user={user}
+      user={currentUser ? {
+        name: currentUser.name,
+        email: currentUser.email,
+        avatar: currentUser.avatar_url
+      } : undefined}
     >
       <div className="p-6">
         {renderContent()}

@@ -30,30 +30,54 @@ export function DateTimeSelection({
 }: DateTimeSelectionProps) {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
-  useEffect(() => {
-    if (selectedDate) {
-      generateTimeSlots();
-    }
-  }, [selectedDate]);
-
-  const generateTimeSlots = () => {
+  const generateTimeSlots = React.useCallback(() => {
     // Generar slots de 9AM a 5PM
     const slots: TimeSlot[] = [];
     const popularTimes = ['10:00 AM', '03:00 PM']; // Horarios populares de ejemplo
+    const now = new Date();
+    const isToday = selectedDate && 
+      selectedDate.getDate() === now.getDate() &&
+      selectedDate.getMonth() === now.getMonth() &&
+      selectedDate.getFullYear() === now.getFullYear();
 
     for (let hour = 9; hour <= 17; hour++) {
       const time12h = hour > 12 ? `${String(hour - 12).padStart(2, '0')}:00 PM` : `${String(hour).padStart(2, '0')}:00 AM`;
       
+      // Verificar disponibilidad considerando la regla de 90 minutos para hoy
+      let isAvailable = Math.random() > 0.3; // 70% de disponibilidad simulada base
+      
+      if (isToday) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const slotHour = hour;
+        
+        // Calcular diferencia en minutos
+        const slotMinutes = slotHour * 60;
+        const nowMinutes = currentHour * 60 + currentMinute;
+        const minutesDifference = slotMinutes - nowMinutes;
+        
+        // Disponible solo si hay al menos 90 minutos de diferencia
+        if (minutesDifference < 90) {
+          isAvailable = false;
+        }
+      }
+      
       slots.push({
         id: `slot-${hour}`,
         time: time12h,
-        available: Math.random() > 0.3, // 70% de disponibilidad simulada
+        available: isAvailable,
         isPopular: popularTimes.includes(time12h),
       });
     }
 
     setTimeSlots(slots);
-  };
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      generateTimeSlots();
+    }
+  }, [selectedDate, generateTimeSlots]);
 
   const handleTimeSelect = (slot: TimeSlot) => {
     if (!slot.available) return;
@@ -77,6 +101,15 @@ export function DateTimeSelection({
           <p className="text-sm text-muted-foreground">Selected service:</p>
           <p className="text-foreground font-semibold">
             {service.name} <span className="text-muted-foreground font-normal">({service.duration} min)</span>
+          </p>
+        </div>
+      )}
+
+      {/* Mensaje informativo sobre la regla de 90 minutos */}
+      {selectedDate && selectedDate.toDateString() === new Date().toDateString() && (
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            ℹ️ Para citas el mismo día, solo están disponibles horarios con al menos 90 minutos de anticipación.
           </p>
         </div>
       )}

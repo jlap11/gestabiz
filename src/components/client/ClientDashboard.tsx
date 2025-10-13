@@ -1,15 +1,57 @@
-import React, { useState, useEffect } from 'react'
-import { Calendar, User as UserIcon, Settings, Plus, Clock, MapPin, Phone, Mail, FileText } from 'lucide-react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
-import UnifiedSettings from '@/components/settings/UnifiedSettings'
 import UserProfile from '@/components/settings/UserProfile'
+import { ClientCalendarView } from '@/components/client/ClientCalendarView'
+import { ClientHistory } from '@/components/client/ClientHistory'
+import { SearchResults } from '@/components/client/SearchResults'
+import BusinessProfile from '@/components/business/BusinessProfile'
+import ProfessionalProfile from '@/components/user/UserProfile'
+import { useGeolocation } from '@/hooks/useGeolocation'
 import type { UserRole, User } from '@/types/types'
+import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+
+interface SearchResult {
+  id: string
+  name: string
+  type: SearchType
+  subtitle?: string
+  category?: string
+  location?: string
+}
+
+interface SearchResultItem {
+  id: string
+  name: string
+  type: SearchType
+  description?: string
+  rating?: number
+  reviewCount?: number
+  distance?: number
+  createdAt?: string
+  imageUrl?: string
+  category?: string
+  subcategory?: string
+  location?: {
+    address?: string
+    city?: string
+    latitude?: number
+    longitude?: number
+  }
+  business?: {
+    id: string
+    name: string
+  }
+  price?: number
+  currency?: string
+}
 
 // Extended appointment type with relations
 interface AppointmentWithRelations {
@@ -81,6 +123,64 @@ export function ClientDashboard({
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [currentUser, setCurrentUser] = useState(user)
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [preselectedDate, setPreselectedDate] = useState<Date | undefined>(undefined)
+  const [preselectedTime, setPreselectedTime] = useState<string | undefined>(undefined)
+  const [searchModalOpen, setSearchModalOpen] = useState(false)
+  const [searchParams, setSearchParams] = useState<{ term: string; type: SearchType } | null>(null)
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+
+  // Geolocation for proximity-based search
+  const geolocation = useGeolocation({
+    requestOnMount: true,
+    showPermissionPrompt: true
+  })
+
+  // Handle search result selection (from quick search)
+  const handleSearchResultSelect = useCallback((result: SearchResult) => {
+    // Open detailed view for this result
+    if (result.type === 'businesses') {
+      setSelectedBusinessId(result.id)
+    } else if (result.type === 'users') {
+      setSelectedUserId(result.id)
+    }
+    // eslint-disable-next-line no-console
+    console.log('Selected quick search result:', result)
+  }, [])
+
+  // Handle "View More" from search bar
+  const handleSearchViewMore = useCallback((term: string, type: SearchType) => {
+    setSearchParams({ term, type })
+    setSearchModalOpen(true)
+  }, [])
+
+  // Handle result click from SearchResults modal
+  const handleSearchResultItemClick = useCallback((result: SearchResultItem) => {
+    setSearchModalOpen(false)
+    
+    if (result.type === 'businesses') {
+      setSelectedBusinessId(result.id)
+    } else if (result.type === 'users') {
+      setSelectedUserId(result.id)
+    }
+    // eslint-disable-next-line no-console
+    console.log('Selected detailed search result:', result)
+  }, [])
+
+  // Handle booking from business profile
+  const handleBookAppointment = useCallback((serviceId?: string, locationId?: string, employeeId?: string) => {
+    // Close profile modal
+    setSelectedBusinessId(null)
+    setSelectedUserId(null)
+    
+    // Open appointment wizard with preselected values
+    // You can extend AppointmentWizard to accept these props
+    setShowAppointmentWizard(true)
+    
+    // eslint-disable-next-line no-console
+    console.log('Book appointment:', { serviceId, locationId, employeeId })
+  }, [])
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -209,9 +309,9 @@ export function ClientDashboard({
       icon: <Calendar className="h-5 w-5" />
     },
     {
-      id: 'settings',
-      label: 'Configuración',
-      icon: <Settings className="h-5 w-5" />
+      id: 'history',
+      label: 'Historial',
+      icon: <History className="h-5 w-5" />
     }
   ]
 
@@ -234,115 +334,169 @@ export function ClientDashboard({
     return 'Pendiente'
   }
 
+  // Handler para crear cita desde el calendario
+  const handleCreateAppointmentFromCalendar = (date: Date, time?: string) => {
+    setPreselectedDate(date)
+    setPreselectedTime(time)
+    setShowAppointmentWizard(true)
+  }
+
+  // Handler para cerrar el wizard y limpiar las preselecciones
+  const handleCloseWizard = () => {
+    setShowAppointmentWizard(false)
+    setPreselectedDate(undefined)
+    setPreselectedTime(undefined)
+  }
+
   const renderContent = () => {
     switch (activePage) {
       case 'appointments':
         return (
           <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
-              <Button 
-                onClick={() => setShowAppointmentWizard(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Nueva Cita
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                      "h-8",
+                      viewMode !== 'list' && "hover:bg-primary hover:text-primary-foreground"
+                    )}
+                  >
+                    <List className="h-4 w-4 mr-2" />
+                    Lista
+                  </Button>
+                  <Button
+                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('calendar')}
+                    className={cn(
+                      "h-8",
+                      viewMode !== 'calendar' && "hover:bg-primary hover:text-primary-foreground"
+                    )}
+                  >
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Calendario
+                  </Button>
+                </div>
+                <Button 
+                  onClick={() => setShowAppointmentWizard(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Nueva Cita
+                </Button>
+              </div>
             </div>
 
-            {/* Appointments Grid */}
-            {upcomingAppointments.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="pt-6 text-center">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">No tienes citas programadas</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Usa el botón "Nueva Cita" para agendar tu primera cita
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Calendar View */}
+            {viewMode === 'calendar' ? (
+              <ClientCalendarView
+                appointments={appointments}
+                onAppointmentClick={setSelectedAppointment}
+                onCreateAppointment={handleCreateAppointmentFromCalendar}
+              />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {upcomingAppointments.map((appointment) => (
-                  <Card 
-                    key={appointment.id} 
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => setSelectedAppointment(appointment)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        {/* Business Name and Location */}
-                        {(appointment.business?.name || appointment.location?.name) && (
-                          <div className="border-b border-border pb-2">
-                            <p className="text-base font-semibold text-foreground">
-                              {appointment.business?.name}
-                              {appointment.business?.name && appointment.location?.name && ' - '}
-                              <span className="text-sm font-normal text-muted-foreground">
-                                {appointment.location?.name}
-                              </span>
-                            </p>
-                          </div>
-                        )}
-                        
-                        {/* Service Name and Badge */}
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-semibold text-foreground line-clamp-2 flex-1">
-                            {appointment.service?.name || appointment.title}
-                          </h3>
-                          <Badge 
-                            variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
-                            className="flex-shrink-0"
-                          >
-                            {getStatusLabel(appointment.status)}
-                          </Badge>
-                        </div>
-
-                        {/* Date and Time */}
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4 flex-shrink-0" />
-                          <span className="line-clamp-1">
-                            {new Date(appointment.start_time).toLocaleDateString('es', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
-                            })}
-                            {' • '}
-                            {new Date(appointment.start_time).toLocaleTimeString('es', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                        </div>
-
-                        {/* Location/Sede */}
-                        {appointment.location?.name && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 flex-shrink-0" />
-                            <span className="line-clamp-1">{appointment.location.name}</span>
-                          </div>
-                        )}
-
-                        {/* Employee Name */}
-                        {appointment.employee?.full_name && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <UserIcon className="h-4 w-4 flex-shrink-0" />
-                            <span className="line-clamp-1">{appointment.employee.full_name}</span>
-                          </div>
-                        )}
-
-                        {/* Price */}
-                        {(appointment.service?.price || appointment.price) && (
-                          <div className="pt-2 border-t border-border">
-                            <span className="text-lg font-bold text-foreground">
-                              ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-MX')} {appointment.service?.currency || appointment.currency || 'MXN'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+              /* List View */
+              <>
+                {upcomingAppointments.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 text-center">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No tienes citas programadas</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Usa el botón "Nueva Cita" para agendar tu primera cita
+                      </p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {upcomingAppointments.map((appointment) => (
+                      <Card 
+                        key={appointment.id} 
+                        className="cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => setSelectedAppointment(appointment)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            {/* Business Name and Location */}
+                            {(appointment.business?.name || appointment.location?.name) && (
+                              <div className="border-b border-border pb-2">
+                                <p className="text-base font-semibold text-foreground">
+                                  {appointment.business?.name}
+                                  {appointment.business?.name && appointment.location?.name && ' - '}
+                                  <span className="text-sm font-normal text-muted-foreground">
+                                    {appointment.location?.name}
+                                  </span>
+                                </p>
+                              </div>
+                            )}
+                            
+                            {/* Service Name and Badge */}
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-semibold text-foreground line-clamp-2 flex-1">
+                                {appointment.service?.name || appointment.title}
+                              </h3>
+                              <Badge 
+                                variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
+                                className="flex-shrink-0"
+                              >
+                                {getStatusLabel(appointment.status)}
+                              </Badge>
+                            </div>
+
+                            {/* Date and Time */}
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4 flex-shrink-0" />
+                              <span className="line-clamp-1">
+                                {new Date(appointment.start_time).toLocaleDateString('es', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                                {' • '}
+                                {new Date(appointment.start_time).toLocaleTimeString('es', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+
+                            {/* Location/Sede */}
+                            {appointment.location?.name && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <MapPin className="h-4 w-4 flex-shrink-0" />
+                                <span className="line-clamp-1">{appointment.location.name}</span>
+                              </div>
+                            )}
+
+                            {/* Employee Name */}
+                            {appointment.employee?.full_name && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <UserIcon className="h-4 w-4 flex-shrink-0" />
+                                <span className="line-clamp-1">{appointment.employee.full_name}</span>
+                              </div>
+                            )}
+
+                            {/* Price */}
+                            {(appointment.service?.price || appointment.price) && (
+                              <div className="pt-2 border-t border-border">
+                                <span className="text-lg font-bold text-foreground">
+                                  ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-MX')} {appointment.service?.currency || appointment.currency || 'MXN'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )
@@ -357,16 +511,11 @@ export function ClientDashboard({
             />
           </div>
         )
-      case 'settings':
+      case 'history':
         return (
           <div className="p-6">
-            <UnifiedSettings 
-              user={currentUser} 
-              onUserUpdate={(updatedUser) => {
-                setCurrentUser(updatedUser)
-              }}
-              currentRole={currentRole}
-            />
+            <h2 className="text-2xl font-bold text-foreground mb-6">Historial de Citas</h2>
+            {currentUser && <ClientHistory userId={currentUser.id} />}
           </div>
         )
       default:
@@ -394,6 +543,8 @@ export function ClientDashboard({
           email: currentUser.email,
           avatar: currentUser.avatar_url
         } : undefined}
+        onSearchResultSelect={handleSearchResultSelect}
+        onSearchViewMore={handleSearchViewMore}
       >
         {renderContent()}
       </UnifiedLayout>
@@ -402,12 +553,28 @@ export function ClientDashboard({
       {showAppointmentWizard && currentUser && (
         <AppointmentWizard
           open={showAppointmentWizard}
-          onClose={() => setShowAppointmentWizard(false)}
+          onClose={handleCloseWizard}
           userId={currentUser.id}
+          preselectedDate={preselectedDate}
+          preselectedTime={preselectedTime}
           onSuccess={() => {
-            setShowAppointmentWizard(false)
+            handleCloseWizard()
             fetchClientAppointments() // Recargar citas después de crear una nueva
           }}
+        />
+      )}
+
+      {/* Search Results Modal */}
+      {searchModalOpen && searchParams && (
+        <SearchResults
+          searchTerm={searchParams.term}
+          searchType={searchParams.type}
+          userLocation={geolocation.hasLocation ? {
+            latitude: geolocation.latitude!,
+            longitude: geolocation.longitude!
+          } : undefined}
+          onResultClick={handleSearchResultItemClick}
+          onClose={() => setSearchModalOpen(false)}
         />
       )}
 
@@ -635,6 +802,46 @@ export function ClientDashboard({
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Business Profile Modal */}
+      {selectedBusinessId && (
+        <BusinessProfile
+          businessId={selectedBusinessId}
+          onClose={() => setSelectedBusinessId(null)}
+          onBookAppointment={handleBookAppointment}
+          userLocation={
+            geolocation.hasLocation
+              ? {
+                  latitude: geolocation.latitude!,
+                  longitude: geolocation.longitude!
+                }
+              : undefined
+          }
+        />
+      )}
+
+      {/* Professional Profile Modal */}
+      {selectedUserId && (
+        <ProfessionalProfile
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          onBookAppointment={(serviceId, businessId) => {
+            setSelectedUserId(null);
+            // TODO: Open AppointmentWizard with preselected service and business
+            setShowAppointmentWizard(true);
+            // eslint-disable-next-line no-console
+            console.log('Book with professional:', { serviceId, businessId });
+          }}
+          userLocation={
+            geolocation.hasLocation
+              ? {
+                  latitude: geolocation.latitude!,
+                  longitude: geolocation.longitude!
+                }
+              : undefined
+          }
+        />
       )}
     </>
   )

@@ -50,9 +50,9 @@
   --primary: oklch(0.55 0.28 285);
   --primary-foreground: oklch(0.98 0.003 270);
 
-  /* Secondary action colors - Light Gray */
-  --secondary: oklch(0.88 0.08 280);
-  --secondary-foreground: oklch(0.20 0.03 270);
+  /* Secondary action colors - Turquoise/Cyan */
+  --secondary: oklch(0.70 0.15 195);
+  --secondary-foreground: oklch(0.98 0.003 270);
 
   /* Muted colors */
   --muted: oklch(0.92 0.01 270);
@@ -111,8 +111,8 @@
   --primary: oklch(0.55 0.28 285);
   --primary-foreground: oklch(0.98 0.003 270);
 
-  --secondary: oklch(0.20 0.05 280);
-  --secondary-foreground: oklch(0.90 0.01 270);
+  --secondary: oklch(0.65 0.18 195);
+  --secondary-foreground: oklch(0.08 0.020 270);
 
   --muted: oklch(0.16 0.02 270);
   --muted-foreground: oklch(0.65 0.01 270);

@@ -8,6 +8,7 @@ import {
   LocationSelection,
   ServiceSelection,
   EmployeeSelection,
+  EmployeeBusinessSelection,
   DateTimeSelection,
   ConfirmationStep,
   SuccessStep,
@@ -17,6 +18,7 @@ import type { Service, Location } from '@/types/types';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useWizardDataCache } from '@/hooks/useWizardDataCache';
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
 
 interface AppointmentWizardProps {
   open: boolean;
@@ -24,6 +26,8 @@ interface AppointmentWizardProps {
   businessId?: string; // Ahora es opcional
   userId?: string; // ID del usuario autenticado
   onSuccess?: () => void; // Callback después de crear la cita
+  preselectedDate?: Date; // Fecha preseleccionada desde el calendario
+  preselectedTime?: string; // Hora preseleccionada desde el calendario
 }
 
 interface Business {
@@ -49,6 +53,8 @@ interface WizardData {
   service: Service | null;
   employeeId: string | null;
   employee: Employee | null;
+  employeeBusinessId: string | null; // Negocio bajo el cual se hace la reserva (si el empleado tiene múltiples)
+  employeeBusiness: Business | null;
   date: Date | null;
   startTime: string | null;
   endTime: string | null;
@@ -65,7 +71,7 @@ const STEP_LABELS = {
   6: 'Complete'
 };
 
-export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess }: Readonly<AppointmentWizardProps>) {
+export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess, preselectedDate, preselectedTime }: Readonly<AppointmentWizardProps>) {
   // Si se proporciona businessId, empezar en paso 1 (Location), sino en paso 0 (Business)
   const [currentStep, setCurrentStep] = useState(businessId ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,17 +84,78 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
     service: null,
     employeeId: null,
     employee: null,
-    date: null,
-    startTime: null,
+    employeeBusinessId: null,
+    employeeBusiness: null,
+    date: preselectedDate || null,
+    startTime: preselectedTime || null,
     endTime: null,
     notes: '',
   });
 
+  // Hook para obtener los negocios del empleado seleccionado
+  const { businesses: employeeBusinesses, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(wizardData.employeeId, true);
+
   // Pre-cargar todos los datos del wizard cuando se selecciona un negocio
   const dataCache = useWizardDataCache(wizardData.businessId || businessId || null);
 
+  // Determinar si necesitamos mostrar el paso de selección de negocio del empleado
+  const needsEmployeeBusinessSelection = wizardData.employeeId && employeeBusinesses.length > 1;
+
+  // Calcular el número total de pasos dinámicamente
+  const getTotalSteps = () => {
+    let total = businessId ? 6 : 7; // Base: con/sin selección de negocio inicial
+    if (needsEmployeeBusinessSelection) total += 1; // Paso adicional si el empleado tiene múltiples negocios
+    return total;
+  };
+
+  // Mapeo de pasos lógicos a números de paso reales
+  const getStepNumber = (logicalStep: string): number => {
+    const startingStep = businessId ? 1 : 0;
+    const steps: Record<string, number> = {
+      'business': 0,
+      'location': startingStep,
+      'service': startingStep + 1,
+      'employee': startingStep + 2,
+      'employeeBusiness': startingStep + 3,
+      'dateTime': needsEmployeeBusinessSelection ? startingStep + 4 : startingStep + 3,
+      'confirmation': needsEmployeeBusinessSelection ? startingStep + 5 : startingStep + 4,
+      'success': needsEmployeeBusinessSelection ? startingStep + 6 : startingStep + 5,
+    };
+    return steps[logicalStep] ?? currentStep;
+  };
+
   const handleNext = () => {
-    if (currentStep < 6) {
+    // Si estamos en el paso de Employee y tiene múltiples negocios, validar primero
+    if (currentStep === getStepNumber('employee') && needsEmployeeBusinessSelection) {
+      // Validar que el empleado esté vinculado a al menos un negocio
+      if (!isEmployeeOfAnyBusiness) {
+        toast.error('Este profesional no está disponible para reservas en este momento.');
+        return;
+      }
+      // Ir al paso de selección de negocio del empleado
+      setCurrentStep(getStepNumber('employeeBusiness'));
+      return;
+    }
+
+    // Si el empleado tiene solo un negocio, auto-seleccionarlo y saltar el paso
+    if (currentStep === getStepNumber('employee') && employeeBusinesses.length === 1) {
+      updateWizardData({
+        employeeBusinessId: employeeBusinesses[0].id,
+        employeeBusiness: employeeBusinesses[0] as Business,
+      });
+      setCurrentStep(getStepNumber('dateTime'));
+      return;
+    }
+
+    // Si el empleado no tiene negocios, no permitir continuar
+    if (currentStep === getStepNumber('employee') && !isEmployeeOfAnyBusiness) {
+      toast.error('Este profesional no puede aceptar citas. Selecciona otro profesional.');
+      return;
+    }
+
+    // Navegación normal
+    const maxStep = getTotalSteps() - 1;
+    if (currentStep < maxStep) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -112,6 +179,8 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
         service: null,
         employeeId: null,
         employee: null,
+        employeeBusinessId: null,
+        employeeBusiness: null,
         date: null,
         startTime: null,
         endTime: null,
@@ -151,9 +220,13 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
       endDateTime.setMinutes(endDateTime.getMinutes() + duration);
 
       // Crear objeto de cita
+      // IMPORTANTE: Si el empleado trabaja en múltiples negocios, usar employeeBusinessId
+      // en lugar del businessId original (que podría ser diferente)
+      const finalBusinessId = wizardData.employeeBusinessId || wizardData.businessId;
+
       const appointmentData = {
         client_id: userId,
-        business_id: wizardData.businessId,
+        business_id: finalBusinessId,
         service_id: wizardData.serviceId,
         location_id: wizardData.locationId,
         employee_id: wizardData.employeeId,
@@ -195,22 +268,29 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
   };
 
   const canProceed = () => {
-    switch (currentStep) {
-      case 0: // Business Selection
-        return wizardData.businessId !== null;
-      case 1: // Location Selection
-        return wizardData.locationId !== null;
-      case 2: // Service Selection
-        return wizardData.serviceId !== null;
-      case 3: // Employee Selection
-        return wizardData.employeeId !== null;
-      case 4: // Date & Time Selection
-        return wizardData.date !== null && wizardData.startTime !== null;
-      case 5: // Confirmation
-        return true;
-      default:
-        return false;
+    // Verificar según el paso actual usando los números de paso dinámicos
+    if (currentStep === getStepNumber('business')) {
+      return wizardData.businessId !== null;
     }
+    if (currentStep === getStepNumber('location')) {
+      return wizardData.locationId !== null;
+    }
+    if (currentStep === getStepNumber('service')) {
+      return wizardData.serviceId !== null;
+    }
+    if (currentStep === getStepNumber('employee')) {
+      return wizardData.employeeId !== null && isEmployeeOfAnyBusiness;
+    }
+    if (currentStep === getStepNumber('employeeBusiness')) {
+      return wizardData.employeeBusinessId !== null;
+    }
+    if (currentStep === getStepNumber('dateTime')) {
+      return wizardData.date !== null && wizardData.startTime !== null;
+    }
+    if (currentStep === getStepNumber('confirmation')) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -224,7 +304,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
         )}
       >
         {/* Header */}
-        {currentStep < 6 && (
+        {currentStep < getStepNumber('success') && (
           <div className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-foreground">
@@ -242,7 +322,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
             {/* Progress Bar */}
             <ProgressBar 
               currentStep={currentStep} 
-              totalSteps={businessId ? 6 : 7}
+              totalSteps={getTotalSteps()}
               label={STEP_LABELS[currentStep as keyof typeof STEP_LABELS]}
             />
           </div>
@@ -251,10 +331,10 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
         {/* Content Area */}
         <div className={cn(
           "overflow-y-auto",
-          currentStep === 6 ? "max-h-[80vh]" : "max-h-[calc(80vh-180px)]"
+          currentStep === getStepNumber('success') ? "max-h-[80vh]" : "max-h-[calc(80vh-180px)]"
         )}>
           {/* Paso 0: Selección de Negocio */}
-          {currentStep === 0 && (
+          {!businessId && currentStep === getStepNumber('business') && (
             <BusinessSelection
               selectedBusinessId={wizardData.businessId}
               onSelectBusiness={(business) => {
@@ -267,14 +347,14 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           )}
 
           {/* Paso 1: Selección de Sede */}
-          {currentStep === 1 && (
+          {currentStep === getStepNumber('location') && (
             <LocationSelection
               businessId={wizardData.businessId || businessId || ''}
               selectedLocationId={wizardData.locationId}
               onSelectLocation={(location) => {
                 updateWizardData({ 
                   locationId: location.id, 
-                  location: location as Location
+                  location 
                 });
               }}
               preloadedLocations={dataCache.locations}
@@ -282,7 +362,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           )}
 
           {/* Paso 2: Selección de Servicio */}
-          {currentStep === 2 && (
+          {currentStep === getStepNumber('service') && (
             <ServiceSelection
               businessId={wizardData.businessId || businessId || ''}
               selectedServiceId={wizardData.serviceId}
@@ -297,7 +377,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           )}
 
           {/* Paso 3: Selección de Profesional */}
-          {currentStep === 3 && (
+          {currentStep === getStepNumber('employee') && (
             <EmployeeSelection
               businessId={wizardData.businessId || businessId || ''}
               locationId={wizardData.locationId || ''}
@@ -312,8 +392,23 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
             />
           )}
 
+          {/* Paso 3.5: Selección de Negocio del Empleado (CONDICIONAL) */}
+          {needsEmployeeBusinessSelection && currentStep === getStepNumber('employeeBusiness') && (
+            <EmployeeBusinessSelection
+              employeeId={wizardData.employeeId || ''}
+              employeeName={wizardData.employee?.full_name || 'Profesional'}
+              selectedBusinessId={wizardData.employeeBusinessId}
+              onSelectBusiness={(business) => {
+                updateWizardData({
+                  employeeBusinessId: business.id,
+                  employeeBusiness: business as Business,
+                });
+              }}
+            />
+          )}
+
           {/* Paso 4: Selección de Fecha y Hora */}
-          {currentStep === 4 && (
+          {currentStep === getStepNumber('dateTime') && (
             <DateTimeSelection
               service={wizardData.service}
               selectedDate={wizardData.date}
@@ -326,7 +421,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           )}
 
           {/* Paso 5: Confirmación */}
-          {currentStep === 5 && (
+          {currentStep === getStepNumber('confirmation') && (
             <ConfirmationStep
               wizardData={wizardData}
               onUpdateNotes={(notes) => updateWizardData({ notes })}
@@ -340,7 +435,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           )}
 
           {/* Paso 6: Éxito */}
-          {currentStep === 6 && (
+          {currentStep === getStepNumber('success') && (
             <SuccessStep
               appointmentData={wizardData}
               onClose={handleClose}
@@ -349,7 +444,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
         </div>
 
         {/* Footer with navigation buttons */}
-        {currentStep < 6 && (
+        {currentStep < getStepNumber('success') && (
           <div className="px-6 py-4 border-t border-border flex items-center justify-between">
             <Button
               variant="outline"
@@ -360,7 +455,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
               ← Back
             </Button>
 
-            {currentStep < 5 ? (
+            {currentStep < getStepNumber('confirmation') ? (
               <Button
                 onClick={handleNext}
                 disabled={!canProceed() || isSubmitting}
