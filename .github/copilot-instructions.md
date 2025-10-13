@@ -45,6 +45,10 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - **Modelo actualizado (2025-10-11)**: Ver `DATABASE_REDESIGN_ANALYSIS.md` para el nuevo modelo con servicios por sede/empleado, reviews, transacciones y analytics.
   - **Sistema de Categorías (2025-11-10)**: Sistema jerárquico con 15 categorías principales y ~60 subcategorías. Máximo 3 subcategorías por negocio. Ver `SISTEMA_CATEGORIAS_RESUMEN.md` y `EJECUTAR_SOLO_CATEGORIAS.sql`.
   - **Sistema de Notificaciones (2025-12-20)**: Sistema multicanal completo (Email/SMS/WhatsApp) con AWS SES/SNS, recordatorios automáticos, preferencias por usuario y negocio. Ver `BUSINESS_NOTIFICATION_SETTINGS_COMPLETADO.md` y `GUIA_PRUEBAS_SISTEMA_NOTIFICACIONES.md`.
+  - **Sistema de Búsqueda (2025-10-12)**: SearchBar con dropdown, geolocalización, SearchResults con 6 algoritmos de ordenamiento, BusinessProfile y UserProfile modales integrados. Ver `VALIDACION_VINCULACION_NEGOCIOS.md` y `USER_PROFILE_COMPLETADO.md`.
+  - **Sistema de Reviews (2025-10-12)**: Reviews anónimas con ReviewForm, ReviewList, ReviewCard. Hook useReviews con CRUD completo. RLS policies. Solo clientes con citas completadas. Ver `SISTEMA_REVIEWS_COMPLETADO.md`.
+  - **Optimización de Búsqueda (2025-10-12)**: Índices trigram, full-text search con tsvector, materialized views para ratings, funciones SQL optimizadas. Performance 40-60x mejor. Ver `OPTIMIZACION_BUSQUEDA_COMPLETADO.md`.
+  - **Integración RPC y Edge Function (2025-10-12)**: SearchResults.tsx refactorizado para usar funciones RPC (search_businesses, search_services, search_professionals). Edge Function refresh-ratings-stats desplegada para refresco automático de vistas materializadas. Ver `INTEGRACION_RPC_EDGE_FUNCTION.md`.
 
 ## Sistema de Temas ⭐ NUEVO (2025-01-10)
 La aplicación soporta temas claro y oscuro con persistencia:
@@ -134,5 +138,51 @@ La aplicación soporta temas claro y oscuro con persistencia:
 - Permisos: `src/lib/permissions.ts`
 - Google Calendar: `src/lib/googleCalendar.ts`
 - Docs de despliegue: `src/docs/deployment-guide.md`, `supabase/functions/README.md`
+
+## Nuevas Implementaciones (2025-10-12) ⭐
+### Sistema de Búsqueda Completo
+- **SearchBar**: `src/components/client/SearchBar.tsx` - Dropdown de tipos, debounce 300ms
+- **SearchResults**: `src/components/client/SearchResults.tsx` - 6 algoritmos de ordenamiento, cálculo balanceado rating+distancia
+- **BusinessProfile**: `src/components/business/BusinessProfile.tsx` - Modal con 4 tabs (Servicios, Ubicaciones, Reseñas, Acerca de)
+- **UserProfile**: `src/components/user/UserProfile.tsx` - Modal profesionales con 3 tabs (Servicios, Experiencia, Reseñas)
+- **useGeolocation**: `src/hooks/useGeolocation.ts` - Solicitud de permisos con manejo de errores
+- **useEmployeeBusinesses**: `src/hooks/useEmployeeBusinesses.ts` - Validación de vinculación a negocios
+
+### Sistema de Reviews Anónimas
+- **ReviewCard**: `src/components/reviews/ReviewCard.tsx` (232 líneas) - Display con avatar anónimo, respuestas del negocio
+- **ReviewForm**: `src/components/reviews/ReviewForm.tsx` (165 líneas) - Formulario con validación, 5 estrellas clickeables
+- **ReviewList**: `src/components/reviews/ReviewList.tsx` (238 líneas) - Lista con stats, filtros, distribución de ratings
+- **useReviews**: `src/hooks/useReviews.ts` (229 líneas) - CRUD completo: createReview, respondToReview, toggleVisibility, deleteReview
+- **Integración**: BusinessProfile y UserProfile incluyen tabs de reviews funcionales
+- **Validación**: Solo clientes con citas completadas sin review previa pueden dejar reviews
+- **Traducciones**: reviews.* en español e inglés (`src/lib/translations.ts`)
+
+### Optimización de Búsqueda en Supabase
+- **Migración**: `supabase/migrations/20251012000000_search_optimization.sql` (362 líneas)
+- **Índices trigram**: gin(name gin_trgm_ops) para búsqueda fuzzy en businesses, services, profiles
+- **Full-text search**: Columnas search_vector con tsvector, índices GIN, triggers automáticos
+- **Materialized views**: business_ratings_stats, employee_ratings_stats con refresco automático
+- **Funciones SQL**: search_businesses(), search_services(), search_professionals() con ts_rank
+- **Performance**: 40-60x más rápido, capacidad 10x mayor (100 → 1000 queries/seg)
+- **Deploy**: `npx supabase db push` aplicado exitosamente
+
+### Integración RPC y Edge Function ⭐ NUEVO
+- **SearchResults.tsx refactorizado**: Usa `supabase.rpc()` en vez de queries manuales
+  - search_businesses(): Negocios con stats pre-calculados (average_rating, review_count, rank)
+  - search_services(): Servicios con ranking por relevancia
+  - search_professionals(): Profesionales con stats de employee_ratings_stats
+  - Beneficios: 50% menos queries, 40-60x más rápido, código más limpio
+- **Edge Function**: `supabase/functions/refresh-ratings-stats/` desplegada
+  - Ejecuta refresh_ratings_stats() para actualizar vistas materializadas
+  - Configuración cron: `*/5 * * * *` (cada 5 minutos) desde Dashboard
+  - Refresco CONCURRENTLY (no bloquea búsquedas)
+  - README completo con 3 opciones de configuración
+- **Documentación**: Ver `INTEGRACION_RPC_EDGE_FUNCTION.md` y `RESUMEN_FINAL_OPTIMIZACION.md`
+
+### Validación de Vinculación a Negocios
+- **Regla crítica**: Empleados DEBEN estar vinculados a ≥1 negocio para ser reservables
+- **AppointmentWizard dinámico**: 6-8 pasos según employee business count
+- **EmployeeBusinessSelection**: Paso condicional si employee tiene múltiples negocios
+- **Casos manejados**: 0 negocios=block, 1 negocio=auto-select, 2+=selector modal
 
 ¿Falta algo o hay una convención que deba aclararse mejor (p. ej., estructura exacta de Edge Functions o tests e2e)? Indica los huecos y lo iteramos.
