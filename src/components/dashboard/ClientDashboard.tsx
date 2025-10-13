@@ -119,7 +119,7 @@ export default function ClientDashboard({
       },
       scheduled: { 
         label: 'Scheduled', 
-        className: 'bg-purple-500/20 text-purple-400 border-purple-500/30 font-medium' 
+        className: 'bg-primary/20 text-primary border-primary/30 font-medium' 
       },
       'no-show': { 
         label: 'No Show', 

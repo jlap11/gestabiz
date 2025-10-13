@@ -31,4 +31,22 @@ pids
 .file-manifest
 .devcontainer/
 
+# CSV exports and temporary files
+*.csv
+*.tmp
+*.bak
+*.swp
+*~
+
+# Supabase temp
+supabase/.temp/
+supabase/.branches/
+
+# Test and debug files
+**/test-*.tsx
+**/debug-*.tsx
+**/*-test.tsx
+**/*-debug.tsx
+**/*-simple.tsx
+
 

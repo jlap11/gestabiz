@@ -4,8 +4,9 @@ import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
-import { BusinessSettings } from './BusinessSettings'
-import type { Business, UserRole } from '@/types/types'
+import UnifiedSettings from '@/components/settings/UnifiedSettings'
+import UserProfile from '@/components/settings/UserProfile'
+import type { Business, UserRole, User } from '@/types/types'
 
 interface AdminDashboardProps {
   business: Business
@@ -17,11 +18,7 @@ interface AdminDashboardProps {
   currentRole: UserRole
   availableRoles: UserRole[]
   onRoleChange: (role: UserRole) => void
-  user?: {
-    name: string
-    email: string
-    avatar?: string
-  }
+  user: User // Cambiar de opcional a requerido y usar tipo User completo
 }
 
 export function AdminDashboard({ 
@@ -86,8 +83,30 @@ export function AdminDashboard({
             </p>
           </div>
         )
+      case 'profile':
+        return (
+          <div className="p-6">
+            <UserProfile 
+              user={user} 
+              onUserUpdate={() => {
+                // Actualización de usuario manejada
+                onUpdate?.()
+              }}
+            />
+          </div>
+        )
       case 'settings':
-        return <BusinessSettings business={business} onUpdate={onUpdate} />
+        return (
+          <UnifiedSettings 
+            user={user} 
+            onUserUpdate={() => {
+              // Callback para actualizar el usuario si es necesario
+              onUpdate?.()
+            }}
+            currentRole={currentRole}
+            businessId={business.id}
+          />
+        )
       default:
         return <OverviewTab business={business} />
     }

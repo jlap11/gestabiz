@@ -104,7 +104,7 @@ const EXPERIENCE_LEVELS: Record<string, string> = {
 const APPLICATION_STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-500/20 text-yellow-400',
   reviewing: 'bg-blue-500/20 text-blue-400',
-  interview: 'bg-purple-500/20 text-purple-400',
+  interview: 'bg-primary/20 text-primary',
   accepted: 'bg-green-500/20 text-green-400',
   rejected: 'bg-red-500/20 text-red-400',
   withdrawn: 'bg-muted text-muted-foreground'

@@ -1,6 +1,15 @@
-# Bookio — Gestión de Citas (Web · Móvil · Extensión) con Supabase
+# AppointSync Pro — Gestión de Citas (Web · Móvil · Extensión) con Supabase
 
-Bookio es un monorepo que reúne la app web (React/Vite), la app móvil (Expo/React Native) y una extensión de navegador, con backend en Supabase y sincronización en tiempo real. Incluye modo demo para explorar la UI sin backend.
+AppointSync Pro es un monorepo completo que reúne la app web (React/Vite), la app móvil (Expo/React Native) y una extensión de navegador, con backend en Supabase y sincronización en tiempo real. Incluye modo demo para explorar la UI sin backend.
+
+## 🎉 Última Actualización (12 Oct 2025)
+
+- ✅ **Sistema de avatares completo** - Upload con recorte circular, persistencia post-F5
+- ✅ **Fix crítico** - Avatares ahora persisten después de recargar la página
+- ✅ **Query optimizado** - Citas se muestran correctamente con todas sus relaciones
+- ✅ **Proyecto limpio** - Documentación consolidada, migraciones organizadas
+
+Ver **[CHANGELOG.md](./CHANGELOG.md)** para historia completa del proyecto.
 
 ---
 

@@ -45,12 +45,32 @@ export function useAuthSimple() {
         if (session?.user) {
           console.log('✅ Session found, user:', session.user.email)
           
+          // Try to fetch user profile from Supabase (non-blocking)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let profileData: any = null
+          try {
+            const { data, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (profileError) {
+              console.log('⚠️ Profile fetch error (continuing anyway):', profileError.message)
+            } else {
+              profileData = data
+              console.log('📸 Profile data from DB:', profileData)
+            }
+          } catch (err) {
+            console.log('⚠️ Profile fetch exception (continuing anyway):', err)
+          }
+          
           // Crear usuario simplificado con soporte multi-rol
           const user: User = {
             id: session.user.id,
             email: session.user.email!,
-            name: session.user.email!.split('@')[0],
-            username: session.user.email!.split('@')[0],
+            name: profileData?.name || session.user.email!.split('@')[0],
+            username: profileData?.username || session.user.email!.split('@')[0],
             roles: [{
               id: 'simple-client-role',
               user_id: session.user.id,
@@ -63,7 +83,7 @@ export function useAuthSimple() {
             role: 'client', // Legacy support
             business_id: undefined,
             location_id: undefined,
-            phone: '',
+            phone: profileData?.phone || '',
             language: 'es',
             notification_preferences: {
               email: true,
@@ -78,13 +98,13 @@ export function useAuthSimple() {
             },
             permissions: [],
             timezone: 'America/Mexico_City',
-            avatar_url: undefined,
+            avatar_url: profileData?.avatar_url ? `${profileData.avatar_url}?t=${Date.now()}` : undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             is_active: true
           }
           
-          console.log('👤 Created user object:', user)
+          console.log('👤 Created user object with avatar:', user.avatar_url)
           setState(prev => ({
             ...prev,
             user,
@@ -116,56 +136,12 @@ export function useAuthSimple() {
     // Listen for auth changes
     console.log('👂 Setting up auth state listener...')
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('🔔 Auth state changed:', event, session?.user?.email)
         
-        if (session?.user) {
-          const user: User = {
-            id: session.user.id,
-            email: session.user.email!,
-            name: session.user.email!.split('@')[0],
-            username: session.user.email!.split('@')[0],
-            roles: [{
-              id: 'simple-client-role-2',
-              user_id: session.user.id,
-              role: 'client',
-              business_id: null,
-              is_active: true,
-              created_at: new Date().toISOString()
-            }],
-            activeRole: 'client',
-            role: 'client', // Legacy support
-            business_id: undefined,
-            location_id: undefined,
-            phone: '',
-            language: 'es',
-            notification_preferences: {
-              email: true,
-              push: true,
-              browser: true,
-              whatsapp: false,
-              reminder_24h: true,
-              reminder_1h: true,
-              reminder_15m: false,
-              daily_digest: false,
-              weekly_report: false
-            },
-            permissions: [],
-            timezone: 'America/Mexico_City',
-            avatar_url: undefined,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            is_active: true
-          }
-          
-          setState(prev => ({
-            ...prev,
-            user,
-            session,
-            loading: false,
-            error: null
-          }))
-        } else {
+        // Only handle sign out in listener, sign in is handled by getInitialSession
+        if (!session) {
+          console.log('👋 User signed out in listener')
           setState(prev => ({
             ...prev,
             user: null,
@@ -173,6 +149,15 @@ export function useAuthSimple() {
             loading: false,
             error: null
           }))
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token refreshed, keeping current user state')
+          setState(prev => ({
+            ...prev,
+            session,
+            loading: false
+          }))
+        } else {
+          console.log('ℹ️ Auth event', event, '- getInitialSession will handle user creation')
         }
       }
     )

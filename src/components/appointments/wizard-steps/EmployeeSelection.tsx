@@ -149,8 +149,8 @@ export function EmployeeSelection({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-        <span className="ml-3 text-gray-400">Cargando profesionales...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Cargando profesionales...</span>
       </div>
     );
   }

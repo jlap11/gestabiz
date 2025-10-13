@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Calendar, Clock, Settings } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
+import UnifiedSettings from '@/components/settings/UnifiedSettings'
+import UserProfile from '@/components/settings/UserProfile'
 import type { UserRole, User } from '@/types/types'
 
 interface EmployeeDashboardProps {
@@ -8,7 +10,8 @@ interface EmployeeDashboardProps {
   availableRoles: UserRole[]
   onRoleChange: (role: UserRole) => void
   onLogout?: () => void
-  user?: User
+  user: User // Requerido para UnifiedSettings
+  businessId?: string // ID del negocio actual para configuraciones de empleado
 }
 
 export function EmployeeDashboard({ 
@@ -16,7 +19,8 @@ export function EmployeeDashboard({
   availableRoles,
   onRoleChange,
   onLogout,
-  user
+  user,
+  businessId
 }: Readonly<EmployeeDashboardProps>) {
   const [activePage, setActivePage] = useState('appointments')
 
@@ -54,20 +58,32 @@ export function EmployeeDashboard({
             <p className="text-muted-foreground">Gestiona tu disponibilidad - Próximamente</p>
           </div>
         )
+      case 'profile':
+        return (
+          <div className="p-6">
+            <UserProfile 
+              user={user} 
+              onUserUpdate={() => {
+                // Actualización de usuario manejada
+              }}
+            />
+          </div>
+        )
       case 'settings':
         return (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Configuración</h2>
-            <p className="text-muted-foreground">Ajustes del empleado - Próximamente</p>
+            <UnifiedSettings 
+              user={user} 
+              onUserUpdate={() => {
+                // Callback para actualizar el usuario si es necesario
+              }}
+              currentRole={currentRole}
+              businessId={businessId}
+            />
           </div>
         )
       default:
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Mis Citas</h2>
-            <p className="text-muted-foreground">Vista de empleado - Próximamente</p>
-          </div>
-        )
+        return null
     }
   }
 

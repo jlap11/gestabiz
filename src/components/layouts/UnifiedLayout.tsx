@@ -5,7 +5,8 @@ import {
   X,
   ChevronDown,
   Building2,
-  LogOut
+  LogOut,
+  User as UserIcon
 } from 'lucide-react'
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
@@ -68,11 +69,6 @@ export function UnifiedLayout({
 
   // Deduplicate available roles
   const uniqueRoles = Array.from(new Set(availableRoles))
-  
-  // Debug: Log roles for troubleshooting
-  console.log('[UnifiedLayout] 🔍 Available roles (raw):', availableRoles)
-  console.log('[UnifiedLayout] ✅ Unique roles (deduplicated):', uniqueRoles)
-  console.log('[UnifiedLayout] 📊 Current role:', currentRole)
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -287,6 +283,7 @@ export function UnifiedLayout({
                 <DropdownMenuTrigger className="focus:outline-none">
                   {user.avatar ? (
                     <img
+                      key={user.avatar}
                       src={user.avatar}
                       alt={user.name}
                       className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
@@ -304,6 +301,13 @@ export function UnifiedLayout({
                     <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
+                  <DropdownMenuItem
+                    onClick={() => onPageChange('profile')}
+                    className="cursor-pointer"
+                  >
+                    <UserIcon className="h-4 w-4 mr-2" />
+                    Mi Perfil
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onPageChange('settings')}
                     className="cursor-pointer"

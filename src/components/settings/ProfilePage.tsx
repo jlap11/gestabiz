@@ -27,7 +27,7 @@ export default function ProfilePage({ user, onClose, onUserUpdate }: Readonly<Pr
       {!showBusinessForm && (
         <div className="flex justify-end mt-6">
           <button
-            className="px-4 py-2 bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded font-semibold shadow"
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded font-semibold shadow"
             onClick={() => setShowBusinessForm(true)}
           >
             Crear mi negocio

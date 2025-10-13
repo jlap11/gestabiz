@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
-export type StorageBucket = 'business-logos' | 'location-images' | 'service-images'
+export type StorageBucket = 'business-logos' | 'location-images' | 'service-images' | 'user-avatars'
 
 interface UploadOptions {
   maxSizeMB?: number
@@ -26,6 +26,7 @@ const BUCKET_LIMITS: Record<StorageBucket, number> = {
   'business-logos': 2, // 2 MB
   'location-images': 5, // 5 MB
   'service-images': 2, // 2 MB
+  'user-avatars': 2, // 2 MB
 }
 
 export function useFileUpload(bucket: StorageBucket) {

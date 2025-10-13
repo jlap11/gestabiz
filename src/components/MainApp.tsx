@@ -1,4 +1,3 @@
- 
 import React from 'react'
 import { useAuthSimple } from '@/hooks/useAuthSimple'
 import { useUserRoles } from '@/hooks/useUserRoles'
@@ -20,13 +19,6 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   
   // Manage user roles and active role switching
   const { roles, activeRole, activeBusiness, switchRole } = useUserRoles(user)
-  
-  // Debug: Check what roles the user has
-  React.useEffect(() => {
-    console.log('[MainApp] 🎭 User roles from useUserRoles:', roles)
-    console.log('[MainApp] 🎯 Mapped available roles:', roles.map(r => r.role))
-    console.log('[MainApp] 👤 Active role:', activeRole)
-  }, [roles, activeRole])
   
   // Fetch admin businesses if user is admin
   const { businesses, isLoading: isLoadingBusinesses, refetch: refetchBusinesses } = useAdminBusinesses(
@@ -114,7 +106,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
     // Admin with businesses: Show AdminDashboard
     if (activeRole === 'admin' && selectedBusiness) {
       return (
-        <AdminDashboard 
+        <AdminDashboard
           business={selectedBusiness}
           businesses={businesses}
           onSelectBusiness={setSelectedBusinessId}
@@ -124,11 +116,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
           currentRole={activeRole}
           availableRoles={roles.map(r => r.role)}
           onRoleChange={switchRole}
-          user={{
-            name: user?.name || user?.email?.split('@')[0] || 'Usuario',
-            email: user?.email || '',
-            avatar: user?.avatar_url
-          }}
+          user={user}
         />
       )
     }

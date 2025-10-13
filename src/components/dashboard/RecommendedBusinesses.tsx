@@ -189,13 +189,13 @@ export default function RecommendedBusinesses() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold">Recomendados para ti</h3>
-        <button onClick={() => setShowAll(v => !v)} className="px-3 py-1.5 rounded-md border border-fuchsia-500 text-fuchsia-400 hover:bg-fuchsia-500/10">
+        <button onClick={() => setShowAll(v => !v)} className="px-3 py-1.5 rounded-md border border-primary text-primary hover:bg-primary/10">
           {showAll ? 'Ver menos' : 'Ver todos los recomendados'}
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayed.map(b => (
-          <div key={b.id} className="rounded-xl overflow-hidden bg-zinc-900/60 border border-zinc-800 hover:border-fuchsia-500/40 transition-colors">
+          <div key={b.id} className="rounded-xl overflow-hidden bg-zinc-900/60 border border-zinc-800 hover:border-primary/40 transition-colors">
             <div className="relative h-40 w-full bg-zinc-800">
               <img src={b.image} alt={b.name} className="object-cover w-full h-full" />
               <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded bg-card/90 text-foreground border border-border flex items-center gap-1">
@@ -242,7 +242,7 @@ export default function RecommendedBusinesses() {
                   // Funcionalidad de navegación se implementará cuando se agregue el router
                   window.alert(`Próximamente podrás reservar en ${b.name}`)
                 }}
-                className="w-full px-4 py-2 rounded-md bg-fuchsia-600 hover:bg-fuchsia-700 text-white transition-colors"
+                className="w-full px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
               >
                 Ver negocio
               </button>

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Bell, Check, Clock, Envelope, Phone, WhatsappLogo, X } from '@phosphor-icons/react'
 
@@ -37,16 +37,11 @@ const NOTIFICATION_TYPES = [
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export function NotificationSettings({ userId }: { userId: string }) {
-  const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null)
 
-  useEffect(() => {
-    loadPreferences()
-  }, [userId])
-
-  async function loadPreferences() {
+  const loadPreferences = React.useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -82,16 +77,16 @@ export function NotificationSettings({ userId }: { userId: string }) {
       } else {
         setPreferences(data as NotificationPreferences)
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudieron cargar las preferencias',
-      })
+    } catch {
+      toast.error('No se pudieron cargar las preferencias')
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    loadPreferences()
+  }, [loadPreferences])
 
   async function savePreferences() {
     if (!preferences) return
@@ -108,16 +103,11 @@ export function NotificationSettings({ userId }: { userId: string }) {
 
       if (error) throw error
 
-      toast({
-        title: 'Preferencias guardadas',
-        description: 'Tus preferencias de notificación han sido actualizadas',
+      toast.success('Preferencias guardadas', {
+        description: 'Tus preferencias de notificación han sido actualizadas'
       })
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudieron guardar las preferencias',
-      })
+    } catch {
+      toast.error('No se pudieron guardar las preferencias')
     } finally {
       setSaving(false)
     }
