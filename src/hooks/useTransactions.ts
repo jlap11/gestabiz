@@ -228,6 +228,68 @@ export function useTransactions(filters?: TransactionFilters) {
     }
   };
 
+  /**
+   * Crea una transacción con información fiscal completa (subtotal, impuestos, etc.)
+   */
+  const createFiscalTransaction = async (transaction: {
+    business_id: string;
+    location_id?: string;
+    type: TransactionType;
+    category: TransactionCategory;
+    subtotal: number;
+    tax_type?: string;
+    tax_rate?: number;
+    tax_amount?: number;
+    total_amount: number;
+    description?: string;
+    appointment_id?: string;
+    employee_id?: string;
+    transaction_date?: string;
+    payment_method?: string;
+    reference_number?: string;
+    is_tax_deductible?: boolean;
+    metadata?: Record<string, unknown>;
+  }) => {
+    try {
+      const { data, error: insertError } = await supabase
+        .from('transactions')
+        .insert({
+          business_id: transaction.business_id,
+          location_id: transaction.location_id,
+          type: transaction.type,
+          category: transaction.category,
+          amount: transaction.total_amount, // amount es el total para compatibilidad
+          subtotal: transaction.subtotal,
+          tax_type: transaction.tax_type || 'none',
+          tax_rate: transaction.tax_rate || 0,
+          tax_amount: transaction.tax_amount || 0,
+          total_amount: transaction.total_amount,
+          currency: 'COP', // Moneda colombiana
+          description: transaction.description,
+          appointment_id: transaction.appointment_id,
+          employee_id: transaction.employee_id,
+          transaction_date: transaction.transaction_date || new Date().toISOString().split('T')[0],
+          payment_method: transaction.payment_method,
+          reference_number: transaction.reference_number,
+          is_tax_deductible: transaction.is_tax_deductible ?? true,
+          metadata: transaction.metadata || {},
+          is_verified: false,
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      toast.success('Transacción fiscal creada exitosamente');
+      fetchTransactions();
+      return data;
+    } catch (err) {
+      const error = err as Error;
+      toast.error(`Error al crear transacción fiscal: ${error.message}`);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -248,6 +310,7 @@ export function useTransactions(filters?: TransactionFilters) {
     error,
     summary,
     createTransaction,
+    createFiscalTransaction,
     updateTransaction,
     verifyTransaction,
     deleteTransaction,

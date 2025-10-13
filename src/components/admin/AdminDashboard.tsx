@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
+import { AccountingPage } from './AccountingPage'
+import { ReportsPage } from './ReportsPage'
 import UserProfile from '@/components/settings/UserProfile'
 import type { Business, UserRole, User } from '@/types/types'
 
@@ -78,6 +80,16 @@ export function AdminDashboard({
       id: 'employees',
       label: 'Empleados',
       icon: <Users className="h-5 w-5" />
+    },
+    {
+      id: 'accounting',
+      label: 'Contabilidad',
+      icon: <Calculator className="h-5 w-5" />
+    },
+    {
+      id: 'reports',
+      label: 'Reportes',
+      icon: <FileText className="h-5 w-5" />
     }
   ]
 
@@ -101,6 +113,10 @@ export function AdminDashboard({
             </p>
           </div>
         )
+      case 'accounting':
+        return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
+      case 'reports':
+        return <ReportsPage businessId={business.id} user={currentUser} />
       case 'profile':
         return (
           <div className="p-6">
