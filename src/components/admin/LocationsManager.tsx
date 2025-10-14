@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { PhoneInput } from '@/components/ui/PhoneInput'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
@@ -44,6 +45,7 @@ interface Location {
   business_hours?: BusinessHours
   images?: string[]
   is_active: boolean
+  is_primary?: boolean
   created_at: string
   updated_at: string
 }
@@ -65,6 +67,7 @@ const initialFormData: Omit<Location, 'id' | 'created_at' | 'updated_at' | 'busi
   business_hours: undefined,
   images: [],
   is_active: true,
+  is_primary: false,
 }
 
 export function LocationsManager({ businessId }: LocationsManagerProps) {
@@ -141,6 +144,15 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
     setIsSaving(true)
     try {
+      // Si se marca como principal, desmarcar otras sedes principales
+      if (formData.is_primary) {
+        await supabase
+          .from('locations')
+          .update({ is_primary: false })
+          .eq('business_id', businessId)
+          .neq('id', editingLocation?.id || '')
+      }
+
       const locationData = {
         business_id: businessId,
         name: formData.name.trim(),
@@ -155,6 +167,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         business_hours: formData.business_hours || null,
         images: formData.images || [],
         is_active: formData.is_active,
+        is_primary: formData.is_primary || false,
         updated_at: new Date().toISOString(),
       }
 
@@ -269,7 +282,14 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-foreground text-lg">{location.name}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-foreground text-lg">{location.name}</CardTitle>
+                      {location.is_primary && (
+                        <Badge variant="default" className="text-xs">
+                          Principal
+                        </Badge>
+                      )}
+                    </div>
                     {!location.is_active && (
                       <Badge variant="secondary" className="mt-2 text-xs">
                         Inactiva
@@ -339,7 +359,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="bg-card border-border text-foreground max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto">
+  <DialogContent className="bg-card border-border text-foreground max-w-5xl w-[99vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingLocation ? 'Editar Sede' : 'Crear Nueva Sede'}
@@ -411,9 +431,10 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               <Label htmlFor="country">País</Label>
               <Input
                 id="country"
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
+                value="Colombia"
+                readOnly
                 placeholder="País"
+                autoComplete="country"
               />
             </div>
 
@@ -421,12 +442,16 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="phone">Teléfono</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="+52 555 123 4567"
+                <PhoneInput
+                  value={formData.phone || ''}
+                  onChange={val => handleChange('phone', val)}
+                  prefix={formData.phone?.startsWith('+') ? formData.phone.split(' ')[0] : '+57'}
+                  onPrefixChange={prefix => {
+                    // Actualiza el valor completo con el nuevo prefijo
+                    const number = formData.phone?.replace(/^\+\d+\s*/, '') || '';
+                    handleChange('phone', `${prefix} ${number}`)
+                  }}
+                  placeholder="Número de teléfono"
                 />
               </div>
               <div>
@@ -501,18 +526,36 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               </div>
             </div>
 
-            {/* Active Status */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="is_active"
-                checked={formData.is_active}
-                onChange={(e) => handleChange('is_active', e.target.checked)}
-                className="w-4 h-4"
-              />
-              <Label htmlFor="is_active" className="cursor-pointer">
-                Sede activa
-              </Label>
+            {/* Active Status & Primary Location */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => handleChange('is_active', e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="is_active" className="cursor-pointer">
+                  Sede activa
+                </Label>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_primary"
+                  checked={formData.is_primary || false}
+                  onChange={(e) => handleChange('is_primary', e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="is_primary" className="cursor-pointer">
+                  Sede principal
+                </Label>
+                <span className="text-xs text-muted-foreground ml-2">
+                  (Solo puede haber una sede principal por negocio)
+                </span>
+              </div>
             </div>
 
             <DialogFooter>
