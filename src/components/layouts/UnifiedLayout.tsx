@@ -10,7 +10,9 @@ import {
 } from 'lucide-react'
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
-import { SearchBar, type SearchType } from '@/components/client/SearchBar'
+// COMMENTED FOR DEBUGGING: SearchBar causing issues
+// import { SearchBar, type SearchType } from '@/components/client/SearchBar'
+import type { SearchType } from '@/components/client/SearchBar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -256,11 +258,17 @@ export function UnifiedLayout({
                 )}
               </DropdownMenu>
             ) : currentRole === 'client' ? (
-              <SearchBar
-                onResultSelect={(result) => onSearchResultSelect?.(result)}
-                onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                className="flex-1"
-              />
+              <div className="flex-1">
+                {/* COMMENTED FOR DEBUGGING: SearchBar causing issues */}
+                {/* <SearchBar
+                  onResultSelect={(result) => onSearchResultSelect?.(result)}
+                  onViewMore={(term, type) => onSearchViewMore?.(term, type)}
+                  className="flex-1"
+                /> */}
+                <h1 className="text-xl font-bold text-foreground">
+                  AppointSync Pro - Client Mode
+                </h1>
+              </div>
             ) : (
               <div>
                 <h1 className="text-xl font-bold text-foreground">
