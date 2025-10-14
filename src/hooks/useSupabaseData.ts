@@ -296,17 +296,14 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
     }
   }, [user, handleError, fetchAppointments])
 
-  // TEMPORARILY DISABLED FOR DEBUGGING: Auto-fetch causes exponential query cascade
   // Auto-fetch data when user changes
   useEffect(() => {
     if (autoFetch && user) {
-      console.log('[useSupabaseData] Auto-fetch triggered')
-      // COMMENTED OUT: These 5 parallel queries + callbacks in deps cause cascade
-      // fetchAppointments()
-      // fetchServices()
-      // fetchLocations()
-      // fetchBusinesses()
-      // fetchDashboardStats()
+      fetchAppointments()
+      fetchServices()
+      fetchLocations()
+      fetchBusinesses()
+      fetchDashboardStats()
     }
   }, [user, autoFetch, fetchAppointments, fetchServices, fetchLocations, fetchBusinesses, fetchDashboardStats])
 
