@@ -51,6 +51,13 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
     }
   }
 
+  // Solo mostrar si hay problemas (no operational)
+  const hasProblems = supabase !== 'operational' || auth !== 'operational' || database !== 'operational' || storage !== 'operational'
+  
+  if (!hasProblems) {
+    return null
+  }
+
   if (variant === 'minimal') {
     return (
       <button
