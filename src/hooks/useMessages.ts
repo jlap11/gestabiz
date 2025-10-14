@@ -447,8 +447,6 @@ export function useMessages(
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log('🆕 New message:', payload.new)
-
           // Fetch mensaje completo con sender info
           const { data: messageData } = await supabase
             .from('messages')
@@ -481,8 +479,6 @@ export function useMessages(
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          console.log('✏️ Message updated:', payload.new)
-
           setMessages((prev) =>
             prev.map((m) =>
               m.id === payload.new.id ? { ...m, ...(payload.new as Message) } : m
@@ -499,23 +495,18 @@ export function useMessages(
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          console.log('🗑️ Message deleted:', payload.old)
-
           setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
         }
       )
       .subscribe()
 
     messagesChannelRef.current = channel
-
-    console.log('📡 Subscribed to messages:', channelName)
   }, [conversationId, userId])
 
   const unsubscribeFromMessages = useCallback(() => {
     if (messagesChannelRef.current) {
       supabase.removeChannel(messagesChannelRef.current)
       messagesChannelRef.current = null
-      console.log('📡 Unsubscribed from messages')
     }
   }, [])
 

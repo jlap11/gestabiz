@@ -529,17 +529,15 @@ export function useConversations(
         .subscribe()
 
       conversationsChannelRef.current = channel
-
-      console.log('📡 Subscribed to conversations:', channelName)
     },
-    [userId, businessId, fetchConversations]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userId, businessId]
   )
 
   const unsubscribeFromConversations = useCallback(() => {
     if (conversationsChannelRef.current) {
       supabase.removeChannel(conversationsChannelRef.current)
       conversationsChannelRef.current = null
-      console.log('📡 Unsubscribed from conversations')
     }
   }, [])
 
