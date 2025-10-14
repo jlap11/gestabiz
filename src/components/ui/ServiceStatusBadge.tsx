@@ -81,27 +81,31 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Activity className="h-4 w-4" />
-                  Estado de Servicios
+                  Estado de la Conexión
                 </h3>
                 <button 
                   onClick={() => refresh()}
                   className="p-1 hover:bg-muted rounded transition-colors"
-                  title="Actualizar estado"
+                  title="Verificar de nuevo"
                 >
                   <RefreshCw className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
 
               <div className="space-y-2">
-                <ServiceItem label="Supabase" status={supabase} />
-                <ServiceItem label="Autenticación" status={auth} />
-                <ServiceItem label="Base de datos" status={database} />
-                <ServiceItem label="Almacenamiento" status={storage} />
+                <ServiceItem label="Plataforma" status={supabase} />
+                <ServiceItem label="Inicio de Sesión" status={auth} />
+                <ServiceItem label="Datos" status={database} />
+                <ServiceItem label="Archivos" status={storage} />
               </div>
 
               {error && (
                 <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-xs text-red-700 dark:text-red-400">{error}</p>
+                  <p className="text-xs text-red-700 dark:text-red-400">
+                    {error.includes('Supabase') 
+                      ? 'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.'
+                      : error}
+                  </p>
                 </div>
               )}
 
@@ -112,14 +116,9 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
               )}
 
               <div className="mt-4 pt-4 border-t border-border">
-                <a
-                  href="https://supabase.com/dashboard"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline flex items-center gap-1 justify-center"
-                >
-                  Ver Dashboard de Supabase →
-                </a>
+                <p className="text-xs text-muted-foreground text-center">
+                  Si el problema persiste, contáctanos
+                </p>
               </div>
             </div>
           </div>
@@ -134,27 +133,31 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Activity className="h-4 w-4" />
-          Estado de Servicios
+          Estado de la Conexión
         </h3>
         <button 
           onClick={() => refresh()}
           className="p-1 hover:bg-muted rounded transition-colors"
-          title="Actualizar estado"
+          title="Verificar de nuevo"
         >
           <RefreshCw className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 
       <div className="space-y-2">
-        <ServiceItem label="Supabase" status={supabase} />
-        <ServiceItem label="Autenticación" status={auth} />
-        <ServiceItem label="Base de datos" status={database} />
-        <ServiceItem label="Almacenamiento" status={storage} />
+        <ServiceItem label="Plataforma" status={supabase} />
+        <ServiceItem label="Inicio de Sesión" status={auth} />
+        <ServiceItem label="Datos" status={database} />
+        <ServiceItem label="Archivos" status={storage} />
       </div>
 
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-xs text-red-700 dark:text-red-400">{error}</p>
+          <p className="text-xs text-red-700 dark:text-red-400">
+            {error.includes('Supabase') 
+              ? 'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.'
+              : error}
+          </p>
         </div>
       )}
 

@@ -87,10 +87,10 @@ export function useServiceStatus() {
       const responseTime = Date.now() - startTime
       if (responseTime > 10000) {
         supabaseStatus = 'degraded'
-        error = 'Servicios lentos (>10s). El proyecto pudo haber estado pausado.'
+        error = 'La conexión está lenta. Estamos trabajando para mejorarla.'
       } else if (authStatus === 'down' || databaseStatus === 'down') {
         supabaseStatus = 'down'
-        error = 'No se pudo conectar con Supabase. Verifica tu conexión o el estado del proyecto.'
+        error = 'No pudimos conectarnos. Estamos verificando el problema.'
       }
 
     } catch (err) {
