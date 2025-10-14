@@ -22,34 +22,21 @@ export function useAuthSimple() {
   useEffect(() => {
     async function getInitialSession() {
       try {
-        console.log('[useAuthSimple] Getting initial session...')
-        console.log('[useAuthSimple] Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
-        console.log('[useAuthSimple] Supabase Key exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
-        
         // Add timeout to prevent infinite loading (30 seconds for slow Supabase start)
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => reject(new Error('Session timeout after 30s - Supabase may be paused')), 30000)
         })
         
-        console.log('[useAuthSimple] Attempting to connect to Supabase...')
-        const startTime = Date.now()
         const sessionPromise = supabase.auth.getSession()
         
         const { data: { session }, error } = await Promise.race([
           sessionPromise,
           timeoutPromise
-        ]).catch(err => {
-          const elapsedTime = Date.now() - startTime
-          console.log(`[useAuthSimple] Session timeout after ${elapsedTime}ms:`, err.message)
-          console.log('[useAuthSimple] This usually means your Supabase project is paused.')
-          console.log('[useAuthSimple] Visit https://supabase.com/dashboard to wake it up.')
+        ]).catch(() => {
           return { data: { session: null }, error: null }
         }) as { data: { session: Session | null }, error: unknown }
         
-        console.log(`[useAuthSimple] Supabase responded in ${Date.now() - startTime}ms`)
-        
         if (error) {
-          console.log('[useAuthSimple] Session error:', error)
           // Limpiar localStorage si hay error de sesión
           localStorage.clear()
           setState(prev => ({ ...prev, loading: false, error: null, session: null, user: null }))
@@ -57,12 +44,10 @@ export function useAuthSimple() {
         }
         
         if (!session) {
-          console.log('[useAuthSimple] No session found, setting loading to false')
           setState(prev => ({ ...prev, loading: false, session: null, user: null }))
           return
         }
 
-        console.log('[useAuthSimple] Session found, fetching profile for user:', session.user.id)
         if (session?.user) {
           // Try to fetch user profile from Supabase (CRITICAL - must exist)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +60,6 @@ export function useAuthSimple() {
               .single()
             
             if (profileError) {
-              console.log('[useAuthSimple] Profile error:', profileError.message)
               // Usuario huérfano: existe en auth.users pero no en profiles
               // Cerrar sesión automáticamente para evitar inconsistencias
               await supabase.auth.signOut()
@@ -83,10 +67,8 @@ export function useAuthSimple() {
               return
             }
             
-            console.log('[useAuthSimple] Profile loaded:', data?.name)
             profileData = data
-          } catch (err) {
-            console.log('[useAuthSimple] Error loading profile:', err)
+          } catch {
             // En caso de error de red, cerrar sesión por seguridad
             await supabase.auth.signOut()
             setState(prev => ({ ...prev, loading: false, error: null, session: null, user: null }))
@@ -132,7 +114,6 @@ export function useAuthSimple() {
             is_active: true
           }
           
-          console.log('[useAuthSimple] Setting user state and loading to false')
           setState(prev => ({
             ...prev,
             user,
@@ -141,11 +122,9 @@ export function useAuthSimple() {
             error: null
           }))
         } else {
-          console.log('[useAuthSimple] No session user, setting loading to false')
           setState(prev => ({ ...prev, loading: false }))
         }
-      } catch (err) {
-        console.log('[useAuthSimple] Catch block error:', err)
+      } catch {
         // Limpiar localStorage en caso de error de conexión
         localStorage.clear()
         setState(prev => ({ 
