@@ -7,6 +7,9 @@ import {
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
+  PieChart,
+  BarChart3,
+  LineChart,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,10 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useChartData } from '@/hooks/useChartData';
 import type { TransactionFilters } from '@/types/types';
 import { cn } from '@/lib/utils';
+import { IncomeVsExpenseChart } from '@/components/accounting/IncomeVsExpenseChart';
+import { CategoryPieChart } from '@/components/accounting/CategoryPieChart';
+import { MonthlyTrendChart } from '@/components/accounting/MonthlyTrendChart';
 
 interface FinancialDashboardProps {
   businessId: string;
@@ -244,6 +252,45 @@ export function FinancialDashboard({
           </Button>
         </div>
       </Card>
+
+      {/* Gráficos Interactivos */}
+      <Tabs defaultValue="income-expense" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="income-expense">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Ingresos vs Egresos
+          </TabsTrigger>
+          <TabsTrigger value="categories">
+            <PieChart className="h-4 w-4 mr-2" />
+            Por Categoría
+          </TabsTrigger>
+          <TabsTrigger value="trends">
+            <LineChart className="h-4 w-4 mr-2" />
+            Tendencias
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="income-expense" className="space-y-4">
+          <IncomeVsExpenseChart
+            businessId={businessId}
+            filters={filters}
+          />
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-4">
+          <CategoryPieChart
+            businessId={businessId}
+            filters={filters}
+          />
+        </TabsContent>
+
+        <TabsContent value="trends" className="space-y-4">
+          <MonthlyTrendChart
+            businessId={businessId}
+            filters={filters}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

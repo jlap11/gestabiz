@@ -170,3 +170,37 @@
   --radius-2xl: calc(var(--radius) * 3);
   --radius-full: 9999px;
 }
+
+/* ============================================= */
+/* Chat System Animations */
+/* ============================================= */
+
+@layer utilities {
+  /* Animación para typing indicator dots */
+  @keyframes typing-dot {
+    0%, 60%, 100% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(-4px);
+    }
+  }
+
+  .animate-typing-dot {
+    animation: typing-dot 1.4s infinite ease-in-out;
+  }
+
+  .animation-delay-0 {
+    animation-delay: 0ms;
+  }
+
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+}

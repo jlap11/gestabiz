@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
 import { AccountingPage } from './AccountingPage'
 import { ReportsPage } from './ReportsPage'
+import { BusinessSettings } from './BusinessSettings'
+import { PermissionsManager } from './PermissionsManager'
 import UserProfile from '@/components/settings/UserProfile'
 import type { Business, UserRole, User } from '@/types/types'
 
@@ -90,6 +92,11 @@ export function AdminDashboard({
       id: 'reports',
       label: 'Reportes',
       icon: <FileText className="h-5 w-5" />
+    },
+    {
+      id: 'permissions',
+      label: 'Permisos',
+      icon: <Shield className="h-5 w-5" />
     }
   ]
 
@@ -117,6 +124,16 @@ export function AdminDashboard({
         return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
       case 'reports':
         return <ReportsPage businessId={business.id} user={currentUser} />
+      case 'permissions':
+        return (
+          <PermissionsManager 
+            businessId={business.id}
+            ownerId={business.owner_id}
+            currentUserId={currentUser.id}
+          />
+        )
+      case 'settings':
+        return <BusinessSettings business={business} onUpdate={onUpdate} />
       case 'profile':
         return (
           <div className="p-6">
@@ -147,6 +164,7 @@ export function AdminDashboard({
       activePage={activePage}
       onPageChange={setActivePage}
       user={currentUser ? {
+        id: currentUser.id,
         name: currentUser.name,
         email: currentUser.email,
         avatar: currentUser.avatar_url

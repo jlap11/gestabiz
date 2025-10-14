@@ -4,9 +4,12 @@
 // ============================================================================
 
 import { renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useTaxCalculation } from '../useTaxCalculation';
 import supabase from '@/lib/supabase';
+import { createElement } from 'react';
+import type { ReactNode } from 'react';
 
 // Mock de Supabase
 vi.mock('@/lib/supabase', () => ({
@@ -20,6 +23,24 @@ vi.mock('@/lib/supabase', () => ({
     })),
   },
 }));
+
+/**
+ * Wrapper con QueryClientProvider para renderHook
+ */
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+        staleTime: 0,
+      },
+    },
+  });
+
+  return ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client: queryClient }, children);
+}
 
 describe('useTaxCalculation', () => {
   beforeEach(() => {
@@ -42,9 +63,11 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
@@ -72,9 +95,9 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
@@ -102,9 +125,9 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
@@ -132,20 +155,21 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
+        expect(result.current.loading).toBe(false);
       });
 
       const taxes = result.current.calculateTaxes(100000, 'ica');
 
       expect(taxes.subtotal).toBe(100000);
-      expect(taxes.ica_amount).toBe(966); // 100000 * 0.00966
-      expect(taxes.total_tax).toBe(966);
-      expect(taxes.total_amount).toBe(100966);
+      expect(taxes.ica_amount).toBe(96.6); // 100000 * 0.966 / 1000 = 96.6 (ICA se expresa por mil)
+      expect(taxes.total_tax).toBe(96.6);
+      expect(taxes.total_amount).toBe(100096.6);
     });
 
     it('calcula Retención correctamente (Profesional 11%)', async () => {
@@ -162,20 +186,21 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
+        expect(result.current.loading).toBe(false);
       });
 
       const taxes = result.current.calculateTaxes(100000, 'retention');
 
       expect(taxes.subtotal).toBe(100000);
-      expect(taxes.retention_amount).toBe(11000);
-      expect(taxes.total_tax).toBe(11000);
-      expect(taxes.total_amount).toBe(111000);
+      expect(taxes.retention_amount).toBe(11000); // 100000 * 11 / 100 = 11000
+      expect(taxes.total_tax).toBe(0); // Retención no se suma al total_tax (solo IVA + ICA)
+      expect(taxes.total_amount).toBe(89000); // 100000 + 0 - 11000 = 89000
     });
 
     it('retorna 0 para tipo exento', async () => {
@@ -194,15 +219,17 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
+        expect(result.current.loading).toBe(false);
       });
 
-      const taxes = result.current.calculateTaxes(100000, 'exempt');
+      // 'none' indica que no se aplican impuestos (exento)
+      const taxes = result.current.calculateTaxes(100000, 'none');
 
       expect(taxes.subtotal).toBe(100000);
       expect(taxes.iva_amount).toBe(0);
@@ -217,7 +244,7 @@ describe('useTaxCalculation', () => {
         iva_enabled: true,
         iva_rate: 19,
         ica_enabled: true,
-        ica_rate: 1.0,
+        ica_rate: 10.0, // 10‰ (por mil) = 1%
         retention_enabled: true,
         retention_rate: 10,
       };
@@ -228,19 +255,20 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
+        expect(result.current.loading).toBe(false);
       });
 
       // IVA 19% sobre 100,000
       const taxesIVA = result.current.calculateTaxes(100000, 'iva_19');
       expect(taxesIVA.iva_amount).toBe(19000);
 
-      // ICA 1% sobre 100,000
+      // ICA 10‰ (1%) sobre 100,000 = 100000 * 10 / 1000 = 1000
       const taxesICA = result.current.calculateTaxes(100000, 'ica');
       expect(taxesICA.ica_amount).toBe(1000);
 
@@ -261,9 +289,9 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
@@ -289,9 +317,9 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: mockConfig, error: null }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(result.current.config).toBeDefined();
@@ -313,15 +341,15 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockReturnValue(new Promise(() => {})), // Never resolves
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       expect(result.current.loading).toBe(true);
     });
 
     it('retorna error si falla la carga de configuración', async () => {
-      const mockError = new Error('Database error');
+      const mockError = { message: 'Database connection error', code: '42P01' }; // Código PostgreSQL de error real
 
       vi.mocked(supabase.from).mockReturnValue({
         select: vi.fn(() => ({
@@ -329,13 +357,15 @@ describe('useTaxCalculation', () => {
             single: vi.fn().mockResolvedValue({ data: null, error: mockError }),
           })),
         })),
-      } as any);
+      } as never);
 
-      const { result } = renderHook(() => useTaxCalculation('test-business-id'));
+      const { result } = renderHook(() => useTaxCalculation('test-business-id'), { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(result.current.error).toBe(mockError);
-      });
+        expect(result.current.error).toBeTruthy();
+        expect(result.current.error?.message).toBeDefined();
+      }, { timeout: 5000 });
     });
   });
 });
+

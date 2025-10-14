@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import type { Business, UserRole } from '@/types/types'
+import { NotificationBell } from '@/components/notifications'
+import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
 
 interface SearchResult {
   id: string
@@ -42,6 +44,7 @@ interface UnifiedLayoutProps {
   activePage: string
   onPageChange: (page: string) => void
   user?: {
+    id: string
     name: string
     email: string
     avatar?: string
@@ -267,6 +270,9 @@ export function UnifiedLayout({
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-3">
+            {/* Notification Bell - Show for authenticated users */}
+            {user?.id && <NotificationBell userId={user.id} />}
+
             {/* Role Selector - Show if multiple unique roles exist */}
             {uniqueRoles.length > 0 && (
               <DropdownMenu>
@@ -347,6 +353,14 @@ export function UnifiedLayout({
           {children}
         </main>
       </div>
+
+      {/* Floating Chat Button - Visible for all roles */}
+      {user && (
+        <FloatingChatButton 
+          userId={user.id} 
+          businessId={business?.id}
+        />
+      )}
     </div>
   )
 }

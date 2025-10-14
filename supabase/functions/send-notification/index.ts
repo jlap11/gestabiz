@@ -25,8 +25,12 @@ interface NotificationRequest {
   
   data: any // Datos específicos del tipo de notificación
   
-  force_channels?: ('email' | 'sms' | 'whatsapp')[] // Forzar canales específicos
+  force_channels?: ('email' | 'sms' | 'whatsapp' | 'in_app')[] // Forzar canales específicos
   skip_preferences?: boolean // Ignorar preferencias del usuario (para verificaciones)
+  
+  // Campos específicos para notificaciones in-app
+  action_url?: string // URL de navegación al hacer clic
+  priority?: number // -1: low, 0: normal, 1: high, 2: urgent
 }
 
 serve(async (req) => {
@@ -57,26 +61,37 @@ serve(async (req) => {
         let errorMsg = null
 
         switch (channel) {
-          case 'email':
+          case 'email': {
             const emailResult = await sendEmail(request, content)
             sent = emailResult.success
             externalId = emailResult.id
             errorMsg = emailResult.error
             break
+          }
             
-          case 'sms':
+          case 'sms': {
             const smsResult = await sendSMS(request, content)
             sent = smsResult.success
             externalId = smsResult.id
             errorMsg = smsResult.error
             break
+          }
             
-          case 'whatsapp':
+          case 'whatsapp': {
             const waResult = await sendWhatsApp(request, content)
             sent = waResult.success
             externalId = waResult.id
             errorMsg = waResult.error
             break
+          }
+            
+          case 'in_app': {
+            const inAppResult = await sendInAppNotification(supabase, request, content)
+            sent = inAppResult.success
+            externalId = inAppResult.id
+            errorMsg = inAppResult.error
+            break
+          }
         }
 
         // Registrar en notification_log
@@ -148,10 +163,12 @@ serve(async (req) => {
 // Funciones auxiliares
 // ============================================================================
 
+type NotificationChannel = 'email' | 'sms' | 'whatsapp' | 'in_app'
+
 async function determineChannels(
   supabase: any,
   request: NotificationRequest
-): Promise<('email' | 'sms' | 'whatsapp')[]> {
+): Promise<NotificationChannel[]> {
   
   // Si se fuerzan canales específicos
   if (request.force_channels && request.force_channels.length > 0) {
@@ -161,7 +178,7 @@ async function determineChannels(
   // Si se ignoran preferencias (ej: verificaciones)
   if (request.skip_preferences) {
     // Determinar qué canal usar basado en qué contacto está disponible
-    const channels: ('email' | 'sms' | 'whatsapp')[] = []
+    const channels: NotificationChannel[] = []
     if (request.recipient_email) channels.push('email')
     if (request.recipient_whatsapp) channels.push('whatsapp')
     if (request.recipient_phone) channels.push('sms')
@@ -180,7 +197,9 @@ async function determineChannels(
       const typePrefs = userPrefs.notification_preferences[request.type]
       
       if (typePrefs) {
-        const channels: ('email' | 'sms' | 'whatsapp')[] = []
+        const channels: NotificationChannel[] = []
+        // Siempre agregar in_app primero si está habilitado
+        if (userPrefs.in_app_enabled !== false) channels.push('in_app')
         if (typePrefs.email && userPrefs.email_enabled) channels.push('email')
         if (typePrefs.whatsapp && userPrefs.whatsapp_enabled) channels.push('whatsapp')
         if (typePrefs.sms && userPrefs.sms_enabled) channels.push('sms')
@@ -613,6 +632,50 @@ async function sendWhatsApp(request: NotificationRequest, content: any) {
       return { success: false, error: data.error?.message || 'Failed to send WhatsApp' }
     }
   } catch (error) {
-    return { success: false, error: error.message }
+    return { success: false, error: (error as Error).message }
+  }
+}
+
+async function sendInAppNotification(
+  supabase: any,
+  request: NotificationRequest,
+  content: any
+) {
+  if (!request.recipient_user_id) {
+    return { success: false, error: 'Recipient user_id required for in-app notifications' }
+  }
+
+  try {
+    // Usar directamente el tipo del request (ya está alineado con notification_type_enum)
+    // No necesitamos mapeo porque el tipo ya es correcto desde el origen
+    const inAppType = request.type
+
+    // Preparar data JSONB (incluir appointment_id si existe)
+    const notificationData = {
+      ...request.data,
+      ...(request.appointment_id && { appointment_id: request.appointment_id })
+    }
+
+    // Llamar a la función SQL helper para crear la notificación
+    const { data, error } = await supabase.rpc('create_in_app_notification', {
+      p_user_id: request.recipient_user_id,
+      p_type: inAppType,
+      p_title: content.subject,
+      p_body: content.message, // ✅ CORREGIDO: Era p_message, ahora es p_body
+      p_data: notificationData,
+      p_business_id: request.business_id || null,
+      p_priority: request.priority ?? 0,
+      p_action_url: request.action_url || null
+    })
+
+    if (error) {
+      console.error('Error creating in-app notification:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, id: data }
+  } catch (error) {
+    console.error('Exception in sendInAppNotification:', error)
+    return { success: false, error: (error as Error).message }
   }
 }

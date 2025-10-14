@@ -317,7 +317,7 @@ export const useAppointments = (userId?: string) => {
     
     setLoading(true)
     try {
-  const insert = { ...appointmentData, employee_id: userId }
+      const insert = { ...appointmentData, employee_id: userId }
       const { data, error } = await supabase
         .from('appointments')
         .insert(insert)
@@ -325,9 +325,58 @@ export const useAppointments = (userId?: string) => {
         .single()
       if (error) throw new Error(error.message)
       
-      setAppointments(prev => [...prev, data as Appointment])
+      const newAppointment = data as Appointment
+      setAppointments(prev => [...prev, newAppointment])
+      
+      // ✅ Enviar notificaciones in-app (no bloqueantes)
+      try {
+        // Notificación al CLIENTE
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'appointment_new_client',
+            recipient_user_id: appointmentData.client_id,
+            business_id: appointmentData.business_id,
+            appointment_id: newAppointment.id,
+            priority: 1, // Alta prioridad
+            action_url: `/appointments/${newAppointment.id}`,
+            force_channels: ['in_app', 'email'], // In-app + Email
+            data: {
+              appointment_date: appointmentData.start_time,
+              service_id: appointmentData.service_id,
+              location_id: appointmentData.location_id
+            }
+          }
+        })
+        
+        // Notificación al EMPLEADO (si es diferente del creador)
+        const targetEmployeeId = insert.employee_id
+        if (targetEmployeeId && targetEmployeeId !== userId) {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              type: 'appointment_new_employee',
+              recipient_user_id: targetEmployeeId,
+              business_id: appointmentData.business_id,
+              appointment_id: newAppointment.id,
+              priority: 1,
+              action_url: `/appointments/${newAppointment.id}`,
+              force_channels: ['in_app', 'email'],
+              data: {
+                client_id: appointmentData.client_id,
+                appointment_date: appointmentData.start_time,
+                service_id: appointmentData.service_id
+              }
+            }
+          })
+        }
+        
+        // Notificaciones enviadas exitosamente
+      } catch {
+        // No fallar la creación de cita si fallan las notificaciones
+        // Error enviando notificaciones in-app
+      }
+      
       toast.success('Appointment created successfully!')
-      return data as Appointment
+      return newAppointment
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create appointment'
       toast.error(message)
@@ -340,6 +389,9 @@ export const useAppointments = (userId?: string) => {
   const updateAppointment = useCallback(async (id: string, updates: Partial<Appointment>) => {
     setLoading(true)
     try {
+      // Obtener cita actual para comparar cambios
+      const currentAppointment = appointments.find(apt => apt.id === id)
+      
       const { data, error } = await supabase
         .from('appointments')
         .update(updates)
@@ -348,9 +400,92 @@ export const useAppointments = (userId?: string) => {
         .single()
       if (error) throw new Error(error.message)
       
-      setAppointments(prev => prev.map(apt => apt.id === id ? (data as Appointment) : apt))
+      const updatedAppointment = data as Appointment
+      setAppointments(prev => prev.map(apt => apt.id === id ? updatedAppointment : apt))
+      
+      // ✅ Enviar notificaciones según el tipo de cambio (no bloqueantes)
+      try {
+        // Detectar cambio de status
+        if (updates.status && currentAppointment && updates.status !== currentAppointment.status) {
+          let notificationType: string | null = null
+          
+          if (updates.status === 'confirmed') {
+            notificationType = 'appointment_confirmation'
+          } else if (updates.status === 'cancelled') {
+            notificationType = 'appointment_cancellation'
+          }
+          
+          if (notificationType) {
+            // Notificar al cliente
+            await supabase.functions.invoke('send-notification', {
+              body: {
+                type: notificationType,
+                recipient_user_id: updatedAppointment.client_id,
+                business_id: updatedAppointment.business_id,
+                appointment_id: updatedAppointment.id,
+                priority: 1,
+                action_url: `/appointments/${updatedAppointment.id}`,
+                force_channels: ['in_app', 'email'],
+                data: {
+                  appointment_date: updatedAppointment.start_time,
+                  status: updates.status
+                }
+              }
+            })
+          }
+        }
+        
+        // Detectar cambio de fecha/hora (reprogramación)
+        if ((updates.start_time || updates.end_time) && currentAppointment) {
+          const timeChanged = updates.start_time !== currentAppointment.start_time || 
+                             updates.end_time !== currentAppointment.end_time
+          
+          if (timeChanged) {
+            // Notificar reprogramación al cliente
+            await supabase.functions.invoke('send-notification', {
+              body: {
+                type: 'appointment_rescheduled',
+                recipient_user_id: updatedAppointment.client_id,
+                business_id: updatedAppointment.business_id,
+                appointment_id: updatedAppointment.id,
+                priority: 1,
+                action_url: `/appointments/${updatedAppointment.id}`,
+                force_channels: ['in_app', 'email'],
+                data: {
+                  old_start_time: currentAppointment.start_time,
+                  new_start_time: updatedAppointment.start_time,
+                  old_end_time: currentAppointment.end_time,
+                  new_end_time: updatedAppointment.end_time
+                }
+              }
+            })
+            
+            // También notificar al empleado si es diferente del modificador
+            if (updatedAppointment.user_id !== userId) {
+              await supabase.functions.invoke('send-notification', {
+                body: {
+                  type: 'appointment_rescheduled',
+                  recipient_user_id: updatedAppointment.user_id,
+                  business_id: updatedAppointment.business_id,
+                  appointment_id: updatedAppointment.id,
+                  priority: 1,
+                  action_url: `/appointments/${updatedAppointment.id}`,
+                  force_channels: ['in_app'],
+                  data: {
+                    old_start_time: currentAppointment.start_time,
+                    new_start_time: updatedAppointment.start_time
+                  }
+                }
+              })
+            }
+          }
+        }
+      } catch {
+        // No fallar la actualización si fallan las notificaciones
+      }
+      
       toast.success('Appointment updated successfully!')
-      return data as Appointment
+      return updatedAppointment
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update appointment'
       toast.error(message)
@@ -358,11 +493,14 @@ export const useAppointments = (userId?: string) => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [appointments, userId])
 
   const deleteAppointment = useCallback(async (id: string) => {
     setLoading(true)
     try {
+      // Obtener cita antes de eliminarla para enviar notificaciones
+      const appointmentToDelete = appointments.find(apt => apt.id === id)
+      
       const { error } = await supabase
         .from('appointments')
         .delete()
@@ -370,6 +508,52 @@ export const useAppointments = (userId?: string) => {
       if (error) throw new Error(error.message)
       
       setAppointments(prev => prev.filter(apt => apt.id !== id))
+      
+      // ✅ Enviar notificación de cancelación (no bloqueante)
+      if (appointmentToDelete) {
+        try {
+          // Notificar al cliente
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              type: 'appointment_cancellation',
+              recipient_user_id: appointmentToDelete.client_id,
+              business_id: appointmentToDelete.business_id,
+              appointment_id: appointmentToDelete.id,
+              priority: 2, // Urgente
+              action_url: '/appointments',
+              force_channels: ['in_app', 'email'],
+              data: {
+                appointment_date: appointmentToDelete.start_time,
+                service_id: appointmentToDelete.service_id,
+                cancelled_by: userId
+              }
+            }
+          })
+          
+          // Notificar al empleado si es diferente del que cancela
+          if (appointmentToDelete.user_id !== userId) {
+            await supabase.functions.invoke('send-notification', {
+              body: {
+                type: 'appointment_cancellation',
+                recipient_user_id: appointmentToDelete.user_id,
+                business_id: appointmentToDelete.business_id,
+                appointment_id: appointmentToDelete.id,
+                priority: 2,
+                action_url: '/appointments',
+                force_channels: ['in_app'],
+                data: {
+                  appointment_date: appointmentToDelete.start_time,
+                  client_id: appointmentToDelete.client_id,
+                  cancelled_by: userId
+                }
+              }
+            })
+          }
+        } catch {
+          // No fallar la eliminación si fallan las notificaciones
+        }
+      }
+      
       toast.success('Appointment deleted successfully!')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete appointment'
@@ -378,7 +562,7 @@ export const useAppointments = (userId?: string) => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [appointments, userId])
 
   const getUpcomingAppointments = useCallback(async (limit: number = 5) => {
     if (!userId) return []

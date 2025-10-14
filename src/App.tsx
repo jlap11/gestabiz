@@ -3,11 +3,23 @@ import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { APP_CONFIG } from '@/constants'
 import { useAuthSimple } from '@/hooks/useAuthSimple'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Import contexts directly instead of lazy loading them
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { AppStateProvider } from '@/contexts/AppStateContext'
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
 
 // Lazy load main application components
 const AuthScreen = lazy(() => import('@/components/auth/AuthScreen'))
@@ -29,6 +41,7 @@ function AppLoader() {
 function AppContent() {
   const { user, loading, session } = useAuthSimple()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [showLanding, setShowLanding] = useState(true)
 
   // Si estamos cargando la autenticación, mostrar loader
   if (loading) {
@@ -52,8 +65,16 @@ function AppContent() {
     )
   }
 
-  // Si no hay usuario autenticado, mostrar pantalla de login
+  // Si no hay usuario autenticado, mostrar landing o login
   if (!user || !session) {
+    if (showLanding) {
+      const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
+      return (
+        <Suspense fallback={<AppLoader />}>
+          <LandingPage onNavigateToAuth={() => setShowLanding(false)} />
+        </Suspense>
+      )
+    }
     return <AuthScreen />
   }
 
@@ -64,6 +85,7 @@ function AppContent() {
         setIsLoggingOut(true)
         setTimeout(() => {
           setIsLoggingOut(false)
+          setShowLanding(true)
         }, 1500)
       }}
     />
@@ -74,16 +96,18 @@ function App() {
   return (
     <ErrorBoundary>
       <Suspense fallback={<AppLoader />}>
-        <ThemeProvider>
-          <LanguageProvider>
-            <AppStateProvider>
-              <Suspense fallback={<AppLoader />}>
-                <AppContent />
-              </Suspense>
-              <Toaster richColors closeButton />
-            </AppStateProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <LanguageProvider>
+              <AppStateProvider>
+                <Suspense fallback={<AppLoader />}>
+                  <AppContent />
+                </Suspense>
+                <Toaster richColors closeButton />
+              </AppStateProvider>
+            </LanguageProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
       </Suspense>
     </ErrorBoundary>
   )

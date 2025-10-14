@@ -228,16 +228,19 @@ export function calculateIVA(amount: number, taxType: TaxType): number {
     return 0;
   }
   
-  const rate = IVA_RATES[taxType as keyof typeof IVA_RATES] || 0;
+  const rate = IVA_RATES[taxType] || 0;
   return Math.round((amount * rate / 100) * 100) / 100;
 }
 
 /**
  * Calcula el ICA sobre un monto
+ * @param amount - Monto base
+ * @param icaRate - Tasa de ICA en porcentaje (ej: 0.966 para Bogotá)
+ * @returns Valor del ICA calculado
  */
 export function calculateICA(amount: number, icaRate: number): number {
   if (icaRate <= 0) return 0;
-  return Math.round((amount * icaRate / 1000) * 100) / 100; // ICA se expresa por mil
+  return Math.round((amount * icaRate / 100) * 100) / 100;
 }
 
 /**
@@ -257,9 +260,26 @@ export function calculateAllTaxes(
   icaRate: number = 0,
   retentionRate: number = 0
 ): TaxCalculation {
+  // Si taxType es 'none', no calcular ningún impuesto (producto exento)
+  if (taxType === 'none') {
+    return {
+      subtotal,
+      iva_amount: 0,
+      ica_amount: 0,
+      retention_amount: 0,
+      total_tax: 0,
+      total_amount: subtotal,
+    };
+  }
+  
+  // Calcular IVA solo si el taxType es un tipo de IVA
   const iva_amount = calculateIVA(subtotal, taxType);
-  const ica_amount = calculateICA(subtotal, icaRate);
-  const retention_amount = calculateRetention(subtotal, retentionRate);
+  
+  // Calcular ICA si está configurado (puede aplicarse junto con IVA)
+  const ica_amount = icaRate > 0 ? calculateICA(subtotal, icaRate) : 0;
+  
+  // Calcular retención si está configurada (se resta del total)
+  const retention_amount = retentionRate > 0 ? calculateRetention(subtotal, retentionRate) : 0;
   
   const total_tax = iva_amount + ica_amount;
   const total_amount = subtotal + total_tax - retention_amount;

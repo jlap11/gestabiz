@@ -518,6 +518,13 @@ export function ClientDashboard({
             {currentUser && <ClientHistory userId={currentUser.id} />}
           </div>
         )
+      case 'settings':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-foreground mb-6">Configuración</h2>
+            <p className="text-muted-foreground">Configuración de cliente - Próximamente</p>
+          </div>
+        )
       default:
         return (
           <div className="p-6">

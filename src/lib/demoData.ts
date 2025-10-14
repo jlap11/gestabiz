@@ -56,13 +56,13 @@ export const demoLocations: Location[] = [
     phone: '+1 (555) 000-0000',
     email: 'centro@clinicasonrisas.com',
     business_hours: {
-      monday: { open: '08:00', close: '17:00', is_open: true },
-      tuesday: { open: '08:00', close: '17:00', is_open: true },
-      wednesday: { open: '08:00', close: '17:00', is_open: true },
-      thursday: { open: '08:00', close: '17:00', is_open: true },
-      friday: { open: '08:00', close: '17:00', is_open: true },
-      saturday: { open: '09:00', close: '13:00', is_open: true },
-      sunday: { open: '00:00', close: '00:00', is_open: false }
+      monday: { open: '08:00', close: '17:00', closed: false },
+      tuesday: { open: '08:00', close: '17:00', closed: false },
+      wednesday: { open: '08:00', close: '17:00', closed: false },
+      thursday: { open: '08:00', close: '17:00', closed: false },
+      friday: { open: '08:00', close: '17:00', closed: false },
+      saturday: { open: '09:00', close: '13:00', closed: false },
+      sunday: { open: '00:00', close: '00:00', closed: true }
     },
   is_active: true,
   is_main: true,
@@ -84,13 +84,13 @@ export const demoLocations: Location[] = [
     phone: '+1 (555) 000-0001',
     email: 'norte@clinicasonrisas.com',
     business_hours: {
-      monday: { open: '09:00', close: '18:00', is_open: true },
-      tuesday: { open: '09:00', close: '18:00', is_open: true },
-      wednesday: { open: '09:00', close: '18:00', is_open: true },
-      thursday: { open: '09:00', close: '18:00', is_open: true },
-      friday: { open: '09:00', close: '18:00', is_open: true },
-      saturday: { open: '10:00', close: '14:00', is_open: true },
-      sunday: { open: '00:00', close: '00:00', is_open: false }
+      monday: { open: '09:00', close: '18:00', closed: false },
+      tuesday: { open: '09:00', close: '18:00', closed: false },
+      wednesday: { open: '09:00', close: '18:00', closed: false },
+      thursday: { open: '09:00', close: '18:00', closed: false },
+      friday: { open: '09:00', close: '18:00', closed: false },
+      saturday: { open: '10:00', close: '14:00', closed: false },
+      sunday: { open: '00:00', close: '00:00', closed: true }
     },
   is_active: true,
   is_main: false,

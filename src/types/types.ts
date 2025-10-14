@@ -12,8 +12,172 @@ export interface UserRoleAssignment {
   created_at: string
 }
 
-// Permission types
+// =====================================================
+// SISTEMA DE PERMISOS GRANULAR (v2.0 - 13/10/2025)
+// =====================================================
+
+// Tipos de empleado
+export type EmployeeType = 'service_provider' | 'support_staff'
+
+// Business Role (admin o employee)
+export interface BusinessRole {
+  id: string
+  business_id: string
+  user_id: string
+  role: 'admin' | 'employee'
+  employee_type?: EmployeeType
+  assigned_by?: string
+  assigned_at: string
+  is_active: boolean
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+// User Permission (permiso granular)
+export interface UserPermission {
+  id: string
+  business_id: string
+  user_id: string
+  permission: string
+  granted_by?: string
+  granted_at: string
+  expires_at?: string
+  is_active: boolean
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
+// Permission Template
+export interface PermissionTemplate {
+  id: string
+  business_id?: string
+  name: string
+  description?: string
+  role: 'admin' | 'employee'
+  permissions: string[]
+  is_system_template: boolean
+  created_by?: string
+  created_at: string
+  updated_at: string
+}
+
+// Audit Log Entry
+export interface PermissionAuditLog {
+  id: string
+  business_id: string
+  user_id: string
+  action: 'grant' | 'revoke' | 'modify' | 'assign_role' | 'remove_role' | 'role.assign' | 'role.revoke' | 'permission.grant' | 'permission.revoke' | 'template.apply' | 'template.create' | 'template.delete'
+  permission?: string
+  old_value?: string
+  new_value?: string
+  performed_by: string
+  performed_at: string
+  created_at: string
+  notes?: string
+  // Relaciones (JOIN)
+  user?: {
+    id: string
+    name: string
+    email: string
+  }
+  performed_by_user?: {
+    id: string
+    name: string
+    email: string
+  }
+  // Campos calculados para UI
+  user_name?: string
+  performed_by_name?: string
+  role?: 'admin' | 'employee'
+}
+
+// Permisos granulares disponibles (55 permisos)
 export type Permission = 
+  // Business Management (5)
+  | 'business.view'
+  | 'business.edit'
+  | 'business.delete'
+  | 'business.settings'
+  | 'business.categories'
+  
+  // Locations (5)
+  | 'locations.view'
+  | 'locations.create'
+  | 'locations.edit'
+  | 'locations.delete'
+  | 'locations.assign_employees'
+  
+  // Services (5)
+  | 'services.view'
+  | 'services.create'
+  | 'services.edit'
+  | 'services.delete'
+  | 'services.prices'
+  
+  // Employees (8)
+  | 'employees.view'
+  | 'employees.create'
+  | 'employees.edit'
+  | 'employees.delete'
+  | 'employees.assign_services'
+  | 'employees.view_payroll'
+  | 'employees.manage_payroll'
+  | 'employees.set_schedules'
+  
+  // Appointments (7)
+  | 'appointments.view_all'
+  | 'appointments.view_own'
+  | 'appointments.create'
+  | 'appointments.edit'
+  | 'appointments.delete'
+  | 'appointments.assign'
+  | 'appointments.confirm'
+  
+  // Clients (7)
+  | 'clients.view'
+  | 'clients.create'
+  | 'clients.edit'
+  | 'clients.delete'
+  | 'clients.export'
+  | 'clients.communication'
+  | 'clients.history'
+  
+  // Accounting (9)
+  | 'accounting.view'
+  | 'accounting.tax_config'
+  | 'accounting.expenses.view'
+  | 'accounting.expenses.create'
+  | 'accounting.expenses.pay'
+  | 'accounting.payroll.view'
+  | 'accounting.payroll.create'
+  | 'accounting.payroll.config'
+  | 'accounting.export'
+  
+  // Reports (4)
+  | 'reports.view_financial'
+  | 'reports.view_operations'
+  | 'reports.export'
+  | 'reports.analytics'
+  
+  // Permissions Management (5)
+  | 'permissions.view'
+  | 'permissions.assign_admin'
+  | 'permissions.assign_employee'
+  | 'permissions.modify'
+  | 'permissions.revoke'
+  
+  // Notifications (2)
+  | 'notifications.send'
+  | 'notifications.bulk'
+  
+  // Settings (3)
+  | 'settings.view'
+  | 'settings.edit_own'
+  | 'settings.edit_business'
+  
+  // Legacy permissions (backward compatibility)
   | 'read_appointments' 
   | 'write_appointments' 
   | 'delete_appointments'
@@ -1014,4 +1178,379 @@ export interface BusinessInactivityStatus {
   should_delete: boolean // >1 year without clients
   last_activity_at: string
   first_client_at?: string
+}
+
+// =====================================================
+// NOTIFICACIONES IN-APP (v1.0 - 13/10/2025)
+// =====================================================
+
+// Estado de notificación in-app
+export type NotificationStatus = 'unread' | 'read' | 'archived'
+
+// Tipos de notificaciones (100% alineado con notification_type_enum de producción)
+// IMPORTANTE: Estos tipos deben coincidir EXACTAMENTE con el enum en Supabase
+export type InAppNotificationType = 
+  // Citas (7 tipos)
+  | 'appointment_reminder'            // Recordatorio automático programado
+  | 'appointment_confirmation'        // ⚠️ usar confirmation NO confirmed
+  | 'appointment_cancellation'        // ⚠️ usar cancellation NO cancelled
+  | 'appointment_rescheduled'         // Cita reprogramada
+  | 'appointment_new_client'          // Al cliente cuando agenda
+  | 'appointment_new_employee'        // Al empleado cuando le asignan
+  | 'appointment_new_business'        // Al negocio cuando hay nueva cita
+  
+  // Empleados (3 tipos)
+  | 'employee_request_new'            // Al admin cuando recibe solicitud
+  | 'employee_request_accepted'       // Al usuario cuando aceptan
+  | 'employee_request_rejected'       // Al usuario cuando rechazan
+  
+  // Vacantes laborales (5 tipos)
+  | 'job_vacancy_new'                 // Nueva vacante publicada
+  | 'job_application_new'             // Al admin: nueva aplicación
+  | 'job_application_accepted'        // Al aplicante: aceptado
+  | 'job_application_rejected'        // Al aplicante: rechazado
+  | 'job_application_interview'       // Invitación a entrevista
+  
+  // Verificación de contactos (3 tipos)
+  | 'email_verification'              // Verificar email
+  | 'phone_verification_sms'          // Verificar teléfono por SMS
+  | 'phone_verification_whatsapp'     // Verificar teléfono por WhatsApp
+  
+  // Sistema (1 tipo)
+  | 'system_alert'                    // Alertas generales del sistema
+
+// TOTAL: 19 tipos alineados con notification_type_enum de producción
+// Nota: reminder_24h, reminder_1h, reminder_15m se manejan como appointment_reminder con metadata
+
+// Prioridad de notificación
+export type NotificationPriority = -1 | 0 | 1 | 2 // -1=baja, 0=normal, 1=alta, 2=urgente
+
+// Notificación In-App
+export interface InAppNotification {
+  id: string
+  created_at: string
+  updated_at: string
+  read_at?: string
+  
+  // Usuario destinatario
+  user_id: string
+  
+  // Contexto de negocio (opcional)
+  business_id?: string
+  
+  // Tipo y contenido
+  type: InAppNotificationType
+  title: string
+  body: string
+  
+  // Datos adicionales
+  data: {
+    appointment_id?: string
+    business_name?: string
+    employee_name?: string
+    action?: string
+    [key: string]: unknown
+  }
+  
+  // Estado y prioridad
+  status: NotificationStatus
+  priority: NotificationPriority
+  
+  // URL de acción
+  action_url?: string
+  
+  // Soft delete
+  is_deleted: boolean
+}
+
+// Crear notificación in-app (payload)
+export interface CreateInAppNotification {
+  user_id: string
+  type: InAppNotificationType
+  title: string
+  body: string
+  data?: Record<string, unknown>
+  business_id?: string
+  priority?: NotificationPriority
+  action_url?: string
+}
+
+// Estadísticas de notificaciones
+export interface NotificationStats {
+  total: number
+  unread: number
+  read: number
+  archived: number
+  by_type: Record<InAppNotificationType, number>
+  by_priority: Record<NotificationPriority, number>
+}
+
+// =====================================================
+// SISTEMA DE CHAT/MENSAJERÍA (v1.0 - 13/10/2025)
+// =====================================================
+
+// Tipo de conversación
+export type ConversationType = 'direct' | 'group'
+
+// Rol en conversación
+export type ConversationRole = 'member' | 'admin'
+
+// Tipo de mensaje
+export type MessageType = 'text' | 'image' | 'file' | 'system'
+
+// Scope de conversación (para filtrado y contexto)
+export interface ConversationScope {
+  location_id?: string
+  service_id?: string
+  role?: UserRole
+  custom?: Record<string, unknown>
+}
+
+// Conversación
+export interface Conversation {
+  id: string
+  created_at: string
+  updated_at: string
+  
+  // Contexto
+  business_id: string
+  type: ConversationType
+  
+  // Metadata
+  name?: string // Solo para grupos
+  description?: string
+  avatar_url?: string
+  created_by: string
+  
+  // Estado
+  is_archived: boolean
+  last_message_at?: string
+  last_message_preview?: string
+  
+  // Scope flexible
+  scope: ConversationScope
+  
+  // Relaciones (JOIN opcional)
+  business?: {
+    id: string
+    name: string
+    logo_url?: string
+  }
+  creator?: {
+    id: string
+    full_name: string
+    email: string
+    avatar_url?: string
+  }
+  members?: ConversationMember[]
+  last_message?: Message
+  
+  // Campos calculados para UI
+  display_name?: string // Para conversaciones directas: nombre del otro usuario
+  display_avatar?: string
+  unread_count?: number // Del usuario actual
+}
+
+// Miembro de conversación
+export interface ConversationMember {
+  conversation_id: string
+  user_id: string
+  
+  // Metadata
+  joined_at: string
+  role: ConversationRole
+  
+  // Configuración personal
+  muted: boolean
+  notifications_enabled: boolean
+  custom_name?: string
+  
+  // Tracking
+  last_read_at?: string
+  last_seen_at?: string
+  unread_count: number
+  
+  // Relaciones (JOIN opcional)
+  user?: {
+    id: string
+    full_name: string
+    email: string
+    avatar_url?: string
+  }
+}
+
+// Mensaje
+export interface Message {
+  id: string
+  created_at: string
+  updated_at: string
+  edited_at?: string
+  
+  // Relaciones
+  conversation_id: string
+  sender_id?: string // null si fue eliminado el sender
+  
+  // Contenido
+  type: MessageType
+  body?: string
+  metadata: MessageMetadata
+  
+  // Features
+  reply_to?: string
+  is_pinned: boolean
+  pinned_by?: string
+  pinned_at?: string
+  
+  // Soft delete
+  is_deleted: boolean
+  deleted_by?: string
+  deleted_at?: string
+  
+  // Relaciones (JOIN opcional)
+  sender?: {
+    id: string
+    full_name: string
+    email: string
+    avatar_url?: string
+  }
+  reply_to_message?: Message
+  
+  // Estado de entrega y lectura
+  delivery_status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
+  read_by: ReadReceipt[] // Array de quién leyó el mensaje
+  
+  // Campos calculados para UI
+  is_own_message?: boolean // Si el mensaje es del usuario actual
+  is_read?: boolean
+}
+
+// Recibo de lectura de mensaje
+export interface ReadReceipt {
+  user_id: string
+  read_at: string
+}
+
+// Metadata de mensaje (flexible con JSONB)
+export interface MessageMetadata {
+  // Para archivos
+  file_url?: string
+  file_name?: string
+  file_size?: number
+  file_type?: string
+  
+  // Para imágenes
+  image_url?: string
+  image_width?: number
+  image_height?: number
+  image_thumbnail_url?: string
+  
+  // Para mensajes del sistema
+  system_type?: 'user_joined' | 'user_left' | 'conversation_created' | 'name_changed' | 'member_added' | 'member_removed'
+  system_data?: Record<string, unknown>
+  
+  // Extras
+  [key: string]: unknown
+}
+
+// Payload para crear conversación directa
+export interface CreateDirectConversationPayload {
+  business_id: string
+  user_a: string
+  user_b: string
+}
+
+// Payload para crear conversación de grupo
+export interface CreateGroupConversationPayload {
+  business_id: string
+  name: string
+  description?: string
+  avatar_url?: string
+  member_ids: string[]
+  scope?: ConversationScope
+}
+
+// Payload para enviar mensaje
+export interface SendMessagePayload {
+  conversation_id: string
+  type: MessageType
+  body?: string
+  metadata?: MessageMetadata
+  reply_to?: string
+}
+
+// Payload para editar mensaje
+export interface EditMessagePayload {
+  message_id: string
+  body: string
+}
+
+// Payload para eliminar mensaje
+export interface DeleteMessagePayload {
+  message_id: string
+  conversation_id: string
+}
+
+// Payload para agregar miembros a grupo
+export interface AddMembersPayload {
+  conversation_id: string
+  member_ids: string[]
+}
+
+// Payload para remover miembro de grupo
+export interface RemoveMemberPayload {
+  conversation_id: string
+  user_id: string
+}
+
+// Payload para actualizar configuración de miembro
+export interface UpdateMemberSettingsPayload {
+  conversation_id: string
+  muted?: boolean
+  notifications_enabled?: boolean
+  custom_name?: string
+}
+
+// Estadísticas de chat
+export interface ChatStats {
+  total_conversations: number
+  unread_conversations: number
+  total_messages: number
+  messages_sent_today: number
+  active_conversations_today: number
+}
+
+// Filtros para listar conversaciones
+export interface ConversationFilters {
+  business_id?: string
+  type?: ConversationType
+  is_archived?: boolean
+  has_unread?: boolean
+  search?: string // Buscar por nombre o último mensaje
+  limit?: number
+  offset?: number
+}
+
+// Filtros para listar mensajes
+export interface MessageFilters {
+  conversation_id: string
+  before?: string // message_id o timestamp
+  after?: string
+  limit?: number
+  include_deleted?: boolean
+}
+
+// Evento de typing (para realtime)
+export interface TypingEvent {
+  conversation_id: string
+  user_id: string
+  user_name: string
+  is_typing: boolean
+  timestamp: string
+}
+
+// Evento de presencia (para realtime)
+export interface PresenceEvent {
+  user_id: string
+  status: 'online' | 'offline' | 'away'
+  last_seen_at: string
 }

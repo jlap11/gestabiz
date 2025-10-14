@@ -87,6 +87,13 @@ export function EmployeeDashboard({
             />
           </div>
         )
+      case 'settings':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Configuración</h2>
+            <p className="text-muted-foreground">Configuración de empleado - Próximamente</p>
+          </div>
+        )
       default:
         return null
     }
