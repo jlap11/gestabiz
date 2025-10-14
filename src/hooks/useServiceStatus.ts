@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export type ServiceStatus = 'operational' | 'degraded' | 'down' | 'checking'
@@ -21,8 +21,10 @@ export function useServiceStatus() {
     lastChecked: null,
     error: null,
   })
+  
+  const [wasDown, setWasDown] = useState(false)
 
-  const checkHealth = async () => {
+  const checkHealth = useCallback(async () => {
     const startTime = Date.now()
     let supabaseStatus: ServiceStatus = 'operational'
     let authStatus: ServiceStatus = 'operational'
@@ -98,6 +100,20 @@ export function useServiceStatus() {
       error = err instanceof Error ? err.message : 'Error desconocido'
     }
 
+    // Detectar si Supabase se recuperó después de estar caído
+    if (wasDown && supabaseStatus === 'operational') {
+      console.log('[ServiceStatus] Supabase recovered! Reloading page to restore connection...')
+      // Esperar 1 segundo para que el usuario vea el cambio de estado
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    }
+    
+    // Actualizar el estado "wasDown" para la próxima verificación
+    if (supabaseStatus === 'down' && !wasDown) {
+      setWasDown(true)
+    }
+
     setStatus({
       supabase: supabaseStatus,
       auth: authStatus,
@@ -106,16 +122,16 @@ export function useServiceStatus() {
       lastChecked: new Date(),
       error,
     })
-  }
+  }, [wasDown])
 
   useEffect(() => {
     checkHealth()
 
-    // Re-check every 60 seconds
-    const interval = setInterval(checkHealth, 60000)
+    // Re-check every 30 seconds (más frecuente para detectar recovery rápido)
+    const interval = setInterval(checkHealth, 30000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [checkHealth])
 
   return { ...status, refresh: checkHealth }
 }
