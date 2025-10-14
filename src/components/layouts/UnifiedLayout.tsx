@@ -11,7 +11,6 @@ import {
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar, type SearchType } from '@/components/client/SearchBar'
-import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +20,8 @@ import {
 import { cn } from '@/lib/utils'
 import type { Business, UserRole } from '@/types/types'
 import { NotificationBell } from '@/components/notifications'
-import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
+// COMMENTED FOR DEBUGGING: Chat system causing issues
+// import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
 
 interface SearchResult {
   id: string
@@ -271,9 +271,6 @@ export function UnifiedLayout({
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-3">
-            {/* Service Status Badge */}
-            <ServiceStatusBadge variant="minimal" />
-            
             {/* Notification Bell - Show for authenticated users */}
             {user?.id && <NotificationBell userId={user.id} />}
 
@@ -358,13 +355,13 @@ export function UnifiedLayout({
         </main>
       </div>
 
-      {/* Floating Chat Button - Visible for all roles */}
-      {user && (
+      {/* COMMENTED FOR DEBUGGING: Chat system causing issues */}
+      {/* {user && (
         <FloatingChatButton 
           userId={user.id} 
           businessId={business?.id}
         />
-      )}
+      )} */}
     </div>
   )
 }
