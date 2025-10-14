@@ -682,17 +682,14 @@ export function useChat(userId: string | null) {
           table: 'chat_participants',
           filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('[Realtime] Chat participant change:', payload.eventType);
+        () => {
+          // Realtime change detected - refetch conversations
           fetchConversations(); // Safe: fetchConversations is stable (useCallback)
         }
       )
-      .subscribe((status) => {
-        console.log('[Realtime] Chat participants subscription status:', status);
-      });
+      .subscribe();
     
     return () => {
-      console.log('[Realtime] Cleaning up chat participants channel');
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -719,8 +716,6 @@ export function useChat(userId: string | null) {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         async (payload) => {
-          console.log('[Realtime] New chat message:', payload.new.id);
-          
           // Fetch full message with sender info
           const { data: newMessage } = await supabase
             .from('chat_messages')
@@ -754,7 +749,6 @@ export function useChat(userId: string | null) {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         (payload) => {
-          console.log('[Realtime] Message updated:', payload.new.id);
           setMessages(prev => ({
             ...prev,
             [activeConversationId]: prev[activeConversationId]?.map(msg =>
@@ -763,9 +757,7 @@ export function useChat(userId: string | null) {
           }));
         }
       )
-      .subscribe((status) => {
-        console.log('[Realtime] Chat messages subscription status:', status);
-      });
+      .subscribe();
     
     // Subscribe to typing indicators
     const typingChannelName = `chat_typing_${activeConversationId}_${Date.now()}`;
@@ -779,17 +771,13 @@ export function useChat(userId: string | null) {
           table: 'chat_typing_indicators',
           filter: `conversation_id=eq.${activeConversationId}`,
         },
-        (payload) => {
-          console.log('[Realtime] Typing indicator change:', payload.eventType);
+        () => {
           fetchTypingIndicators(activeConversationId); // Safe: fetchTypingIndicators is stable
         }
       )
-      .subscribe((status) => {
-        console.log('[Realtime] Typing indicators subscription status:', status);
-      });
+      .subscribe();
     
     return () => {
-      console.log('[Realtime] Cleaning up chat messages and typing channels');
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(typingChannel);
     };

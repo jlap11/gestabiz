@@ -624,17 +624,14 @@ export const useAppointments = (userId?: string) => {
           table: 'appointments', 
           filter: `employee_id=eq.${userId}` 
         },
-        (payload) => {
-          console.log('[Realtime] Appointment change:', payload.eventType)
+        () => {
+          // Realtime change detected - refetch appointments
           fetchAppointments() // Safe: fetchAppointments is stable (useCallback)
         }
       )
-      .subscribe((status) => {
-        console.log('[Realtime] Appointments subscription status:', status)
-      })
+      .subscribe()
 
     return () => {
-      console.log('[Realtime] Cleaning up appointments channel')
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

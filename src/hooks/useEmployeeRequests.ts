@@ -108,17 +108,14 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
           table: 'employee_requests',
           filter: businessId ? `business_id=eq.${businessId}` : userId ? `user_id=eq.${userId}` : undefined,
         },
-        (payload) => {
-          console.log('[Realtime] Employee request change:', payload.eventType)
+        () => {
+          // Realtime change detected - refetch data
           fetchRequests() // This is safe because fetchRequests is stable (useCallback)
         }
       )
-      .subscribe((status) => {
-        console.log('[Realtime] Employee requests subscription status:', status)
-      })
+      .subscribe()
 
     return () => {
-      console.log('[Realtime] Cleaning up employee requests channel')
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

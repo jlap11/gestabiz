@@ -331,8 +331,6 @@ export function useInAppNotifications(
 
     // Handler de eventos realtime - FIXED: removed from dependency array
     const handleRealtimeEvent = (payload: Record<string, unknown>) => {
-      console.log('[Realtime] In-app notification change:', payload.eventType)
-
       if (payload.eventType === 'INSERT') {
         const newNotification = payload.new as InAppNotification
         upsertNotification(newNotification)
@@ -361,13 +359,10 @@ export function useInAppNotifications(
         },
         handleRealtimeEvent
       )
-      .subscribe((status) => {
-        console.log('[Realtime] In-app notifications subscription status:', status)
-      })
+      .subscribe()
 
     // Cleanup
     return () => {
-      console.log('[Realtime] Cleaning up in-app notifications channel')
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
