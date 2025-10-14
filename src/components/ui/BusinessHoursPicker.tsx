@@ -85,10 +85,10 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
           return (
             <div
               key={day.key}
-              className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 rounded-lg bg-card border border-border"
             >
               {/* Day name */}
-              <div className="flex items-center gap-2 w-24">
+              <div className="flex items-center gap-2 min-w-[100px]">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-medium text-sm">
                   {day.short}
                 </div>
@@ -97,26 +97,26 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
 
               {/* Time inputs or "Cerrado" */}
               {!isClosed ? (
-                <div className="flex items-center gap-2 flex-1">
+                <div className="flex items-center gap-2 flex-1 w-full sm:w-auto">
                   <Input
                     type="time"
                     value={schedule.open}
                     onChange={(e) => handleDayChange(day.key, 'open', e.target.value)}
-                    className="w-28 bg-background border-border"
+                    className="flex-1 sm:w-28 bg-background border-border"
                   />
                   <span className="text-muted-foreground">-</span>
                   <Input
                     type="time"
                     value={schedule.close}
                     onChange={(e) => handleDayChange(day.key, 'close', e.target.value)}
-                    className="w-28 bg-background border-border"
+                    className="flex-1 sm:w-28 bg-background border-border"
                   />
 
                   {/* Copy to all button */}
                   <button
                     type="button"
                     onClick={() => handleCopyToAll(day.key)}
-                    className="text-xs text-primary hover:text-primary/80 whitespace-nowrap ml-2"
+                    className="hidden sm:block text-xs text-primary hover:text-primary/80 whitespace-nowrap ml-2"
                     title="Copiar a todos los días"
                   >
                     Copiar a todos
@@ -127,7 +127,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
               )}
 
               {/* Closed checkbox */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ml-auto sm:ml-0">
                 <Checkbox
                   id={`closed-${day.key}`}
                   checked={isClosed}
@@ -135,7 +135,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 />
                 <Label
                   htmlFor={`closed-${day.key}`}
-                  className="text-xs text-muted-foreground cursor-pointer"
+                  className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap"
                 >
                   Cerrado
                 </Label>
