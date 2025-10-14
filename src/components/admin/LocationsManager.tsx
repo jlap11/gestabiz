@@ -26,6 +26,7 @@ import { PhoneInput } from '@/components/ui/PhoneInput'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { BusinessHoursPicker, type BusinessHours } from '@/components/ui/BusinessHoursPicker'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import { toast } from 'sonner'
@@ -40,7 +41,6 @@ interface Location {
   country?: string
   postal_code?: string
   phone?: string
-  email?: string
   description?: string
   business_hours?: BusinessHours
   images?: string[]
@@ -62,7 +62,6 @@ const initialFormData: Omit<Location, 'id' | 'created_at' | 'updated_at' | 'busi
   country: 'México',
   postal_code: '',
   phone: '',
-  email: '',
   description: '',
   business_hours: undefined,
   images: [],
@@ -77,6 +76,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
   const [editingLocation, setEditingLocation] = useState<Location | null>(null)
   const [formData, setFormData] = useState(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
+  const [pendingImageFiles, setPendingImageFiles] = useState<File[]>([])
 
   const fetchLocations = React.useCallback(async () => {
     setIsLoading(true)
@@ -111,7 +111,6 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         country: location.country || 'México',
         postal_code: location.postal_code || '',
         phone: location.phone || '',
-        email: location.email || '',
         description: location.description || '',
         business_hours: location.business_hours || undefined,
         images: location.images || [],
@@ -128,6 +127,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
     setIsDialogOpen(false)
     setEditingLocation(null)
     setFormData(initialFormData)
+    setPendingImageFiles([]) // Clear pending image files
   }
 
   const handleChange = (field: keyof typeof formData, value: string | boolean | BusinessHours | string[]) => {
@@ -162,7 +162,6 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         country: formData.country?.trim() || null,
         postal_code: formData.postal_code?.trim() || null,
         phone: formData.phone?.trim() || null,
-        email: formData.email?.trim() || null,
         description: formData.description?.trim() || null,
         business_hours: formData.business_hours || null,
         images: formData.images || [],
@@ -170,6 +169,8 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         is_primary: formData.is_primary || false,
         updated_at: new Date().toISOString(),
       }
+
+      let locationId: string | undefined
 
       if (editingLocation) {
         // Update existing location
@@ -179,20 +180,70 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
           .eq('id', editingLocation.id)
 
         if (error) throw error
+        locationId = editingLocation.id
         toast.success('Sede actualizada exitosamente')
       } else {
-        // Create new location
-        const { error } = await supabase
+        // Create new location and get its ID
+        const { data: newLocation, error } = await supabase
           .from('locations')
           .insert(locationData)
+          .select('id')
+          .single()
 
         if (error) throw error
+        if (!newLocation) throw new Error('No se pudo crear la sede')
+        
+        locationId = newLocation.id
+        
+        // Upload pending images if any
+        if (pendingImageFiles.length > 0) {
+          toast.info('Subiendo imágenes...')
+          const uploadedUrls: string[] = []
+          
+          for (const file of pendingImageFiles) {
+            try {
+              const fileName = `${Date.now()}-${file.name}`
+              const filePath = `locations/${locationId}/${fileName}`
+              
+              const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('location-images')
+                .upload(filePath, file, {
+                  cacheControl: '3600',
+                  upsert: false,
+                })
+
+              if (uploadError) {
+                console.error('Error uploading image:', uploadError)
+                continue
+              }
+
+              const { data: urlData } = supabase.storage
+                .from('location-images')
+                .getPublicUrl(uploadData.path)
+
+              uploadedUrls.push(urlData.publicUrl)
+            } catch (err) {
+              console.error('Error processing image:', err)
+            }
+          }
+
+          // Update location with uploaded image URLs
+          if (uploadedUrls.length > 0) {
+            await supabase
+              .from('locations')
+              .update({ images: uploadedUrls })
+              .eq('id', locationId)
+          }
+        }
+        
         toast.success('Sede creada exitosamente')
       }
 
       await fetchLocations()
       handleCloseDialog()
-    } catch {
+      setPendingImageFiles([]) // Clear pending files
+    } catch (err) {
+      console.error('Error saving location:', err)
       toast.error(editingLocation ? 'Error al actualizar la sede' : 'Error al crear la sede')
     } finally {
       setIsSaving(false)
@@ -331,12 +382,6 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">{location.phone}</span>
-                  </div>
-                )}
-                {location.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{location.email}</span>
                   </div>
                 )}
                 {location.business_hours && (
@@ -514,47 +559,66 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                 )}
 
                 {/* Upload New Images */}
-                <ImageUploader
-                  bucket="location-images"
-                  maxFiles={5}
-                  maxSizeMB={5}
-                  existingImages={formData.images || []}
-                  onUploadComplete={handleImagesUploaded}
-                  onUploadError={(error) => toast.error(error)}
-                  folderPath={`locations/${businessId}`}
-                />
+                {editingLocation ? (
+                  // Editing: Upload immediately (location exists)
+                  <ImageUploader
+                    bucket="location-images"
+                    maxFiles={5}
+                    maxSizeMB={5}
+                    existingImages={formData.images || []}
+                    onUploadComplete={handleImagesUploaded}
+                    onUploadError={(error) => toast.error(error)}
+                    folderPath={`locations/${editingLocation.id}`}
+                  />
+                ) : (
+                  // Creating: Delayed upload (location doesn't exist yet)
+                  <ImageUploader
+                    bucket="location-images"
+                    maxFiles={5}
+                    maxSizeMB={5}
+                    delayedUpload={true}
+                    onFileSelected={(file) => {
+                      setPendingImageFiles((prev) => [...prev, file])
+                    }}
+                    onUploadError={(error) => toast.error(error)}
+                    folderPath="temp" // Not used in delayed mode
+                  />
+                )}
               </div>
             </div>
 
             {/* Active Status & Primary Location */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card">
+                <Checkbox
                   id="is_active"
                   checked={formData.is_active}
-                  onChange={(e) => handleChange('is_active', e.target.checked)}
-                  className="w-4 h-4"
+                  onCheckedChange={(checked) => handleChange('is_active', checked === true)}
                 />
-                <Label htmlFor="is_active" className="cursor-pointer">
-                  Sede activa
-                </Label>
+                <div className="flex flex-col">
+                  <Label htmlFor="is_active" className="cursor-pointer text-sm font-medium text-foreground">
+                    Sede activa
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    La sede estará visible y disponible para citas
+                  </span>
+                </div>
               </div>
               
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+              <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card">
+                <Checkbox
                   id="is_primary"
                   checked={formData.is_primary || false}
-                  onChange={(e) => handleChange('is_primary', e.target.checked)}
-                  className="w-4 h-4"
+                  onCheckedChange={(checked) => handleChange('is_primary', checked === true)}
                 />
-                <Label htmlFor="is_primary" className="cursor-pointer">
-                  Sede principal
-                </Label>
-                <span className="text-xs text-muted-foreground ml-2">
-                  (Solo puede haber una sede principal por negocio)
-                </span>
+                <div className="flex flex-col">
+                  <Label htmlFor="is_primary" className="cursor-pointer text-sm font-medium text-foreground">
+                    Sede principal
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    Solo puede haber una sede principal por negocio
+                  </span>
+                </div>
               </div>
             </div>
 

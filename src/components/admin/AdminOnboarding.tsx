@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Building2, MapPin, Phone, Mail, Info, Loader2, CheckCircle, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,12 +6,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { PhoneInput } from '@/components/ui/PhoneInput'
 import { useBusinessCategories } from '@/hooks/useBusinessCategories'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import type { User, LegalEntityType, UserRole } from '@/types/types'
+import { 
+  CountrySelect, 
+  RegionSelect, 
+  CitySelect, 
+  DocumentTypeSelect,
+  PhonePrefixSelect 
+} from '@/components/catalog'
+import { getColombiaId } from '@/hooks/useCatalogs'
+import { testAuthDebug } from '@/test-auth-debug'
+import { testLocationInsert } from '@/test-location-debug'
 
 interface AdminOnboardingProps {
   user: User
@@ -39,6 +48,12 @@ export function AdminOnboarding({
   const [subcategoryDescriptions, setSubcategoryDescriptions] = useState<Record<string, string>>({}) // Descriptions per subcategory
   const [phonePrefix, setPhonePrefix] = useState('+57') // Colombia default
   
+  // Catalog IDs from database
+  const [countryId, setCountryId] = useState<string>('') // Colombia by default
+  const [regionId, setRegionId] = useState<string>('')
+  const [cityId, setCityId] = useState<string>('')
+  const [documentTypeId, setDocumentTypeId] = useState<string>('')
+  
   // Form data
   const [formData, setFormData] = useState({
     // Basic info
@@ -50,18 +65,30 @@ export function AdminOnboarding({
     tax_id: '',
     legal_name: '',
     registration_number: '',
+    document_type_id: '', // UUID from document_types table
     // Contact & location
     phone: '',
     email: '',
     address: '',
-    city: '',
-    state: '',
-    country: 'Colombia',
+    city_id: '', // UUID from cities table
+    region_id: '', // UUID from regions table
+    country_id: '', // UUID from countries table
     postal_code: '',
   })
 
   // Fetch business categories from database
   const { mainCategories, categories, isLoading: categoriesLoading } = useBusinessCategories()
+  
+  // Load Colombia ID on mount
+  useEffect(() => {
+    const loadColombiaId = async () => {
+      const colombiaId = await getColombiaId();
+      if (colombiaId) {
+        handleChange('country_id', colombiaId);
+      }
+    };
+    loadColombiaId();
+  }, []);
   
   // Filter MAIN categories by search term (frontend filter)
   const filteredMainCategories = mainCategories.filter(cat => 
@@ -83,11 +110,44 @@ export function AdminOnboarding({
   }
 
   const handleSubmit = async () => {
-    console.log('[AdminOnboarding] Starting business creation...')
-    console.log('[AdminOnboarding] Form data:', formData)
     setIsLoading(true)
 
     try {
+      // Critical: Verify user authentication and get fresh session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('[AdminOnboarding] Session error:', sessionError);
+        toast.error('Error al verificar autenticación. Por favor recarga la página.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!sessionData?.session?.user) {
+        console.error('[AdminOnboarding] No active session found');
+        toast.error('No estás autenticado. Por favor inicia sesión nuevamente.');
+        setIsLoading(false);
+        return;
+      }
+
+      const authenticatedUserId = sessionData.session.user.id;
+      
+      if (!authenticatedUserId || !user?.id) {
+        console.error('[AdminOnboarding] User ID missing', { authenticatedUserId, userPropId: user?.id });
+        toast.error('ID de usuario no disponible. Por favor recarga la página.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (authenticatedUserId !== user.id) {
+        console.error('[AdminOnboarding] User ID mismatch', { authenticatedUserId, userPropId: user.id });
+        toast.error('Error de autenticación. Por favor cierra sesión y vuelve a iniciar.');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('[AdminOnboarding] Authentication verified:', { userId: authenticatedUserId, email: sessionData.session.user.email });
+
       // Validate required fields
       if (!formData.name || !formData.category_id) {
         toast.error('Nombre y categoría son obligatorios')
@@ -291,6 +351,39 @@ export function AdminOnboarding({
             <p className="text-muted-foreground">
               Registra tu negocio y empieza a gestionar citas en minutos
             </p>
+            
+            {/* DEBUG BUTTONS - TEMPORAL */}
+            <div className="flex gap-2 justify-center">
+              <Button
+                onClick={async () => {
+                  const result = await testAuthDebug();
+                  if (result.success) {
+                    toast.success('✅ Test exitoso - Businesses RLS OK');
+                  } else {
+                    toast.error(`❌ Test falló: ${JSON.stringify(result.error).substring(0, 100)}`);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+              >
+                🔍 Test Business
+              </Button>
+              
+              <Button
+                onClick={async () => {
+                  const result = await testLocationInsert();
+                  if (result.success) {
+                    toast.success('✅ Test exitoso - Locations RLS OK');
+                  } else {
+                    toast.error(`❌ Test falló: ${JSON.stringify(result.error).substring(0, 100)}`);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+              >
+                � Test Location
+              </Button>
+            </div>
           </div>
 
         {/* Important Rules Alert */}
@@ -541,10 +634,28 @@ export function AdminOnboarding({
                   </div>
                 </div>
 
-                {/* Tax ID */}
+                {/* Document Type */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Tipo de documento
+                  </label>
+                  <DocumentTypeSelect
+                    countryId={formData.country_id}
+                    value={documentTypeId}
+                    onChange={(value) => {
+                      setDocumentTypeId(value);
+                      handleChange('document_type_id', value);
+                    }}
+                    forCompany={formData.legal_entity_type === 'company'}
+                    required
+                    className="bg-background border-border"
+                  />
+                </div>
+
+                {/* Tax ID / Document Number */}
                 <div className="space-y-2">
                   <label htmlFor="tax_id" className="text-sm font-medium text-foreground">
-                    {formData.legal_entity_type === 'company' ? 'NIT' : 'Cédula de Ciudadanía'}
+                    Número de documento
                   </label>
                   <Input
                     id="tax_id"
@@ -560,7 +671,7 @@ export function AdminOnboarding({
                   <p className="text-xs text-muted-foreground">
                     {formData.legal_entity_type === 'company'
                       ? 'Número de Identificación Tributaria (9-10 dígitos)'
-                      : 'Número de cédula de ciudadanía (6-10 dígitos)'}
+                      : 'Número de documento de identidad (6-10 dígitos)'}
                   </p>
                 </div>
 
@@ -703,19 +814,27 @@ export function AdminOnboarding({
               <CardDescription className="text-muted-foreground">Información de contacto (opcional)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Phone */}
+              {/* Phone with Prefix */}
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+                <label className="text-sm font-medium flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   Teléfono
                 </label>
-                <PhoneInput
-                  value={formData.phone}
-                  onChange={(value) => handleChange('phone', value)}
-                  prefix={phonePrefix}
-                  onPrefixChange={setPhonePrefix}
-                  placeholder="Número de teléfono"
-                />
+                <div className="flex gap-2">
+                  <PhonePrefixSelect
+                    value={phonePrefix}
+                    onChange={setPhonePrefix}
+                    className="w-32 bg-background border-border"
+                    defaultToColombia
+                  />
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, ''))}
+                    placeholder="Número de teléfono"
+                    className="flex-1 bg-background border-border"
+                  />
+                </div>
               </div>
 
               {/* Email */}
@@ -730,6 +849,7 @@ export function AdminOnboarding({
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
                   placeholder="contacto@tuempresa.com"
+                  className="bg-background border-border"
                 />
               </div>
 
@@ -743,33 +863,58 @@ export function AdminOnboarding({
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                   placeholder="Calle, número, colonia"
+                  className="bg-background border-border"
                 />
               </div>
 
-              {/* City, State */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="city" className="text-sm font-medium">
-                    Ciudad
-                  </label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleChange('city', e.target.value)}
-                    placeholder="Ciudad"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="state" className="text-sm font-medium">
-                    Estado
-                  </label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) => handleChange('state', e.target.value)}
-                    placeholder="Estado"
-                  />
-                </div>
+              {/* Country (Disabled) */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">País</label>
+                <CountrySelect
+                  value={formData.country_id}
+                  onChange={(value) => {
+                    handleChange('country_id', value);
+                    // Reset region and city when country changes
+                    setRegionId('');
+                    setCityId('');
+                    handleChange('region_id', '');
+                    handleChange('city_id', '');
+                  }}
+                  disabled
+                  defaultToColombia
+                  className="bg-background border-border"
+                />
+              </div>
+
+              {/* Region/Department */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Departamento</label>
+                <RegionSelect
+                  countryId={formData.country_id}
+                  value={regionId}
+                  onChange={(value) => {
+                    setRegionId(value);
+                    handleChange('region_id', value);
+                    // Reset city when region changes
+                    setCityId('');
+                    handleChange('city_id', '');
+                  }}
+                  className="bg-background border-border"
+                />
+              </div>
+
+              {/* City */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Ciudad</label>
+                <CitySelect
+                  regionId={regionId}
+                  value={cityId}
+                  onChange={(value) => {
+                    setCityId(value);
+                    handleChange('city_id', value);
+                  }}
+                  className="bg-background border-border"
+                />
               </div>
 
               <div className="flex gap-2">
