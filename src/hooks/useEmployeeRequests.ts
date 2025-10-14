@@ -91,7 +91,21 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
     }
   }, [fetchRequests, autoFetch])
 
-  // Subscribe to realtime changes
+  // REALTIME DISABLED: Polling every 30 seconds instead to prevent Supabase overload
+  useEffect(() => {
+    if (!autoFetch || (!businessId && !userId)) return
+
+    // Poll every 30 seconds
+    const pollInterval = setInterval(() => {
+      fetchRequests()
+    }, 30000)
+
+    return () => {
+      clearInterval(pollInterval)
+    }
+  }, [businessId, userId, autoFetch, fetchRequests])
+
+  /* REALTIME SUBSCRIPTION DISABLED - Causes 200K+ query overload
   useEffect(() => {
     if (!autoFetch || (!businessId && !userId)) return
 
@@ -116,6 +130,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
       supabase.removeChannel(channel)
     }
   }, [businessId, userId, autoFetch, fetchRequests])
+  */
 
   // Create a new employee request
   const createRequest = useCallback(

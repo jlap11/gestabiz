@@ -605,49 +605,22 @@ export const useAppointments = (userId?: string) => {
     }
   }, [userId])
 
-  // Set up real-time subscription
+  // Set up real-time subscription - DISABLED to prevent Supabase overload
   useEffect(() => {
     if (!userId) return
 
     fetchAppointments()
 
-    const upsertAppointment = (row: Appointment) => {
-      const current = appointmentsRef.current
-      const next = current.map(apt => (apt.id === row.id ? row : apt))
-      appointmentsRef.current = next
-      setAppointments(next)
-    }
-    const addAppointment = (row: Appointment) => {
-      const current = appointmentsRef.current
-      const next = [...current, row]
-      appointmentsRef.current = next
-      setAppointments(next)
-    }
-    const removeAppointment = (row: Appointment) => {
-      const current = appointmentsRef.current
-      const next = current.filter(apt => apt.id !== row.id)
-      appointmentsRef.current = next
-      setAppointments(next)
+    // REALTIME DISABLED: Poll every 30 seconds instead to prevent Supabase overload
+    const pollInterval = setInterval(() => {
+      fetchAppointments()
+    }, 30000)
+
+    return () => {
+      clearInterval(pollInterval)
     }
 
-  const handleRealtime = (payload) => {
-  // console.log('Appointment change:', payload)
-      if (payload.eventType === 'INSERT') {
-        const newRow = payload.new as Appointment
-        addAppointment(newRow)
-        return
-      }
-      if (payload.eventType === 'UPDATE') {
-        const newRow = payload.new as Appointment
-        upsertAppointment(newRow)
-        return
-      }
-      if (payload.eventType === 'DELETE') {
-        const oldRow = payload.old as Appointment
-        removeAppointment(oldRow)
-      }
-    }
-
+    /* REALTIME SUBSCRIPTION DISABLED - Causes 200K+ query overload
     const channel = supabase
       .channel('appointments-changes')
       .on(
@@ -660,6 +633,7 @@ export const useAppointments = (userId?: string) => {
     return () => {
       supabase.removeChannel(channel)
     }
+    */
   }, [userId, fetchAppointments])
 
   return {

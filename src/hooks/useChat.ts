@@ -18,7 +18,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { trackChatEvent, ChatEvents } from '@/lib/analytics';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ============================================================================
 // TYPES
@@ -136,9 +135,7 @@ export function useChat(userId: string | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Refs for realtime subscriptions
-  const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
-  const messagesChannelsRef = useRef<Map<string, RealtimeChannel>>(new Map());
+  // Ref for typing timeout (realtime refs removed - now using polling)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // ============================================================================
@@ -666,8 +663,23 @@ export function useChat(userId: string | null) {
   // ============================================================================
   
   /**
-   * Subscribe to conversations changes
+   * Subscribe to conversations changes - DISABLED to prevent Supabase overload
+   * Using 30-second polling instead
    */
+  useEffect(() => {
+    if (!userId) return;
+    
+    // Poll conversations every 30 seconds instead of realtime
+    const pollInterval = setInterval(() => {
+      fetchConversations();
+    }, 30000);
+    
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [userId, fetchConversations]);
+
+  /* REALTIME DISABLED - Causes Supabase query overload
   useEffect(() => {
     if (!userId) return;
     
@@ -702,10 +714,26 @@ export function useChat(userId: string | null) {
       }
     };
   }, [userId, fetchConversations]);
+  */
   
   /**
-   * Subscribe to messages for active conversation
+   * Subscribe to messages for active conversation - DISABLED to prevent Supabase overload
+   * Using 5-second polling for active conversations instead
    */
+  useEffect(() => {
+    if (!userId || !activeConversationId) return;
+    
+    // Poll messages every 5 seconds for active conversation (more frequent for better UX)
+    const pollInterval = setInterval(() => {
+      fetchMessages(activeConversationId);
+    }, 5000);
+    
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [userId, activeConversationId, fetchMessages]);
+
+  /* REALTIME DISABLED - Causes Supabase query overload
   useEffect(() => {
     if (!userId || !activeConversationId) return;
     
@@ -802,6 +830,7 @@ export function useChat(userId: string | null) {
       }
     };
   }, [userId, activeConversationId, fetchTypingIndicators, markMessagesAsRead]);
+  */
   
   // ============================================================================
   // INITIAL LOAD

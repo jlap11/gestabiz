@@ -33,10 +33,23 @@ export function BusinessSelection({
   const loadBusinesses = async () => {
     setLoading(true);
     try {
+      // Solo mostrar negocios que tengan al menos una sede activa
       const { data, error } = await supabase
         .from('businesses')
-        .select('id, name, description, logo_url, address, city, phone')
+        .select(`
+          id, 
+          name, 
+          description, 
+          logo_url, 
+          address, 
+          city, 
+          phone,
+          locations!inner (
+            id
+          )
+        `)
         .eq('is_active', true)
+        .eq('locations.is_active', true)
         .order('name');
 
       if (error) throw error;

@@ -51,6 +51,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
     postal_code: '',
     phone: '',
     email: '',
+    is_primary: false,
     business_hours: {
       monday: { open: '09:00', close: '18:00', is_open: true },
       tuesday: { open: '09:00', close: '18:00', is_open: true },
@@ -83,6 +84,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
       postal_code: '',
       phone: '',
       email: '',
+      is_primary: false,
       business_hours: {
         monday: { open: '09:00', close: '18:00', is_open: true },
         tuesday: { open: '09:00', close: '18:00', is_open: true },
@@ -120,15 +122,20 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
     try {
       if (editingLocation) {
         // Update existing location
-        const updatedLocations = locations.map(loc => 
-          loc.id === editingLocation.id 
-            ? { 
-                ...loc, 
-                ...locationForm,
-                updated_at: new Date().toISOString()
-              }
-            : loc
-        )
+        const updatedLocations = locations.map(loc => {
+          if (loc.id === editingLocation.id) {
+            return { 
+              ...loc, 
+              ...locationForm,
+              updated_at: new Date().toISOString()
+            }
+          }
+          // Si la ubicación editada se marcó como principal, desmarcar las demás
+          if (locationForm.is_primary && loc.is_primary) {
+            return { ...loc, is_primary: false }
+          }
+          return loc
+        })
         setLocations(updatedLocations)
         toast.success('Ubicación actualizada exitosamente')
       } else {
@@ -143,7 +150,18 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
-        setLocations([...locations, newLocation])
+        
+        // Si la nueva ubicación se marca como principal, desmarcar las demás
+        let finalLocations = [...locations, newLocation]
+        if (locationForm.is_primary) {
+          finalLocations = finalLocations.map((loc, idx) => 
+            idx === finalLocations.length - 1 
+              ? loc 
+              : { ...loc, is_primary: false }
+          )
+        }
+        
+        setLocations(finalLocations)
         toast.success('Ubicación creada exitosamente')
       }
       
@@ -209,6 +227,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
       postal_code: location.postal_code,
       phone: location.phone || '',
       email: location.email || '',
+      is_primary: location.is_primary || false,
       business_hours: (location.business_hours as unknown as typeof locationForm.business_hours)
     })
     setEditingLocation(location)
@@ -365,6 +384,25 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                       value={locationForm.email}
                       onChange={(e) => setLocationForm({ ...locationForm, email: e.target.value })}
                       placeholder="sede@negocio.com"
+                    />
+                  </div>
+                  
+                  <div className="col-span-2 flex items-center justify-between p-3 border rounded-lg bg-muted/20">
+                    <div className="flex items-center gap-3">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                      <div>
+                        <Label htmlFor="is-primary" className="text-base font-medium cursor-pointer">
+                          Sede Principal
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Marcar esta ubicación como la sede principal del negocio
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="is-primary"
+                      checked={locationForm.is_primary}
+                      onCheckedChange={(checked) => setLocationForm({ ...locationForm, is_primary: checked })}
                     />
                   </div>
                 </div>
@@ -566,6 +604,14 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {locations.map((location) => (
           <Card key={location.id} className="relative">
+            {location.is_primary && (
+              <div className="absolute -top-2 -right-2">
+                <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600 flex items-center gap-1">
+                  <Star className="h-3 w-3 fill-current" />
+                  Principal
+                </Badge>
+              </div>
+            )}
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -616,14 +662,17 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                   <span className="font-medium text-sm">Horarios</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1 text-xs">
-                  {Object.entries(location.business_hours).map(([day, hours]) => (
-                    <div key={day} className="flex justify-between">
-                      <span className="capitalize">{t(`day.${day}`)}</span>
-                      <span className={hours.is_open ? '' : 'text-muted-foreground'}>
-                        {hours.is_open ? `${hours.open} - ${hours.close}` : 'Cerrado'}
-                      </span>
-                    </div>
-                  ))}
+                  {Object.entries(location.business_hours).map(([day, hours]) => {
+                    const isOpen = 'is_open' in hours ? hours.is_open : !hours.closed
+                    return (
+                      <div key={day} className="flex justify-between">
+                        <span className="capitalize">{t(`day.${day}`)}</span>
+                        <span className={isOpen ? '' : 'text-muted-foreground'}>
+                          {isOpen ? `${hours.open} - ${hours.close}` : 'Cerrado'}
+                        </span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
               

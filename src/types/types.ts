@@ -378,6 +378,7 @@ export interface Location {
   }
   is_active: boolean
   is_main?: boolean
+  is_primary?: boolean // Indica si es la sede principal del negocio (solo puede haber una)
   created_at: string
   updated_at: string
   amenities?: string[]
