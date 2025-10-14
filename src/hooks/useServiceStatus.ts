@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 
 export type ServiceStatus = 'operational' | 'degraded' | 'down' | 'checking'
@@ -102,11 +103,14 @@ export function useServiceStatus() {
 
     // Detectar si Supabase se recuperó después de estar caído
     if (wasDown && supabaseStatus === 'operational') {
-      console.log('[ServiceStatus] Supabase recovered! Reloading page to restore connection...')
-      // Esperar 1 segundo para que el usuario vea el cambio de estado
+      toast.success('Conexión restaurada', {
+        description: 'Recargando página para restablecer la conexión...',
+        duration: 2000,
+      })
+      // Esperar 2 segundos para que el usuario vea el mensaje
       setTimeout(() => {
         window.location.reload()
-      }, 1000)
+      }, 2000)
     }
     
     // Actualizar el estado "wasDown" para la próxima verificación
