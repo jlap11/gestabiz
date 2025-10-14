@@ -10,9 +10,7 @@ import {
 } from 'lucide-react'
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
-// COMMENTED FOR DEBUGGING: SearchBar causing issues
-// import { SearchBar, type SearchType } from '@/components/client/SearchBar'
-import type { SearchType } from '@/components/client/SearchBar'
+import { SearchBar, type SearchType } from '@/components/client/SearchBar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,10 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import type { Business, UserRole } from '@/types/types'
-// COMMENTED FOR DEBUGGING: Notification system causing issues
-// import { NotificationBell } from '@/components/notifications'
-// COMMENTED FOR DEBUGGING: Chat system causing issues
-// import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
+import { NotificationBell } from '@/components/notifications'
+import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
 
 interface SearchResult {
   id: string
@@ -258,17 +254,11 @@ export function UnifiedLayout({
                 )}
               </DropdownMenu>
             ) : currentRole === 'client' ? (
-              <div className="flex-1">
-                {/* COMMENTED FOR DEBUGGING: SearchBar causing issues */}
-                {/* <SearchBar
-                  onResultSelect={(result) => onSearchResultSelect?.(result)}
-                  onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                  className="flex-1"
-                /> */}
-                <h1 className="text-xl font-bold text-foreground">
-                  AppointSync Pro - Client Mode
-                </h1>
-              </div>
+              <SearchBar
+                onResultSelect={(result) => onSearchResultSelect?.(result)}
+                onViewMore={(term, type) => onSearchViewMore?.(term, type)}
+                className="flex-1"
+              />
             ) : (
               <div>
                 <h1 className="text-xl font-bold text-foreground">
@@ -280,8 +270,8 @@ export function UnifiedLayout({
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-3">
-            {/* COMMENTED FOR DEBUGGING: Notification system causing issues */}
-            {/* {user?.id && <NotificationBell userId={user.id} />} */}
+            {/* Notification Bell - Show for authenticated users */}
+            {user?.id && <NotificationBell userId={user.id} />}
 
             {/* Role Selector - Show if multiple unique roles exist */}
             {uniqueRoles.length > 0 && (
@@ -364,13 +354,13 @@ export function UnifiedLayout({
         </main>
       </div>
 
-      {/* COMMENTED FOR DEBUGGING: Chat system causing issues */}
-      {/* {user && (
+      {/* Floating Chat Button - Visible for all roles */}
+      {user && (
         <FloatingChatButton 
           userId={user.id} 
           businessId={business?.id}
         />
-      )} */}
+      )}
     </div>
   )
 }

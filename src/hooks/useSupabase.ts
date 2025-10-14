@@ -605,37 +605,62 @@ export const useAppointments = (userId?: string) => {
     }
   }, [userId])
 
-  // Set up real-time subscription - FIXED: removed fetchAppointments from dependencies
+  // Set up real-time subscription
   useEffect(() => {
     if (!userId) return
 
     fetchAppointments()
 
-    // Create unique channel name to prevent conflicts
-    const channelName = `appointments_${userId}_${Date.now()}`
-    
+    const upsertAppointment = (row: Appointment) => {
+      const current = appointmentsRef.current
+      const next = current.map(apt => (apt.id === row.id ? row : apt))
+      appointmentsRef.current = next
+      setAppointments(next)
+    }
+    const addAppointment = (row: Appointment) => {
+      const current = appointmentsRef.current
+      const next = [...current, row]
+      appointmentsRef.current = next
+      setAppointments(next)
+    }
+    const removeAppointment = (row: Appointment) => {
+      const current = appointmentsRef.current
+      const next = current.filter(apt => apt.id !== row.id)
+      appointmentsRef.current = next
+      setAppointments(next)
+    }
+
+  const handleRealtime = (payload) => {
+  // console.log('Appointment change:', payload)
+      if (payload.eventType === 'INSERT') {
+        const newRow = payload.new as Appointment
+        addAppointment(newRow)
+        return
+      }
+      if (payload.eventType === 'UPDATE') {
+        const newRow = payload.new as Appointment
+        upsertAppointment(newRow)
+        return
+      }
+      if (payload.eventType === 'DELETE') {
+        const oldRow = payload.old as Appointment
+        removeAppointment(oldRow)
+      }
+    }
+
     const channel = supabase
-      .channel(channelName)
+      .channel('appointments-changes')
       .on(
         'postgres_changes',
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'appointments', 
-          filter: `employee_id=eq.${userId}` 
-        },
-        () => {
-          // Realtime change detected - refetch appointments
-          fetchAppointments() // Safe: fetchAppointments is stable (useCallback)
-        }
+  { event: '*', schema: 'public', table: 'appointments', filter: `employee_id=eq.${userId}` },
+        handleRealtime
       )
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]) // ✅ fetchAppointments is stable (useCallback) - intentionally excluded
+  }, [userId, fetchAppointments])
 
   return {
     appointments,
@@ -703,8 +728,7 @@ export const useUserSettings = (userId?: string) => {
 
   useEffect(() => {
     fetchSettings()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // ✅ fetchSettings es estable - solo ejecutar al montar
+  }, [fetchSettings])
 
   return {
     settings,
@@ -767,8 +791,7 @@ export const useDashboardStats = (userId?: string) => {
 
   useEffect(() => {
     fetchStats()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // ✅ fetchStats es estable - solo ejecutar al montar
+  }, [fetchStats])
 
   return {
     stats,
@@ -813,16 +836,17 @@ export const useBrowserExtensionData = () => {
   }, [])
 
   useEffect(() => {
+    // CRITICAL: Fetch once on mount
     fetchUpcomingAppointments()
     
-    // Refresh data every 5 minutes
+    // Refresh data every 5 minutes (same as useServiceStatus)
     const interval = setInterval(() => {
       fetchUpcomingAppointments()
     }, 5 * 60 * 1000)
 
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // ✅ fetchUpcomingAppointments es estable - solo configurar intervalo una vez
+  }, []) // Empty deps! Don't include fetchUpcomingAppointments to prevent infinite loop
 
   return {
     upcomingAppointments,
