@@ -93,7 +93,8 @@ export function ChatLayout({
     return () => {
       unsubscribeFromConversations();
     };
-  }, [userId, businessId, fetchConversations, subscribeToConversations, unsubscribeFromConversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, businessId]); // ✅ Callbacks excluidos para evitar re-subscripciones
 
   // Suscribir a mensajes cuando cambia conversación activa
   useEffect(() => {
@@ -104,7 +105,8 @@ export function ChatLayout({
     return () => {
       unsubscribeFromMessages();
     };
-  }, [activeConversationId, subscribeToMessages, unsubscribeFromMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConversationId]); // ✅ Callbacks excluidos para evitar re-subscripciones
 
   // Marcar conversación como leída cuando se abre
   useEffect(() => {
