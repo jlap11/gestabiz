@@ -605,36 +605,40 @@ export const useAppointments = (userId?: string) => {
     }
   }, [userId])
 
-  // Set up real-time subscription - DISABLED to prevent Supabase overload
+  // Set up real-time subscription - FIXED: removed fetchAppointments from dependencies
   useEffect(() => {
     if (!userId) return
 
     fetchAppointments()
 
-    // REALTIME DISABLED: Poll every 30 seconds instead to prevent Supabase overload
-    const pollInterval = setInterval(() => {
-      fetchAppointments()
-    }, 30000)
-
-    return () => {
-      clearInterval(pollInterval)
-    }
-
-    /* REALTIME SUBSCRIPTION DISABLED - Causes 200K+ query overload
+    // Create unique channel name to prevent conflicts
+    const channelName = `appointments_${userId}_${Date.now()}`
+    
     const channel = supabase
-      .channel('appointments-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'appointments', filter: `employee_id=eq.${userId}` },
-        handleRealtime
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'appointments', 
+          filter: `employee_id=eq.${userId}` 
+        },
+        (payload) => {
+          console.log('[Realtime] Appointment change:', payload.eventType)
+          fetchAppointments() // Safe: fetchAppointments is stable (useCallback)
+        }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[Realtime] Appointments subscription status:', status)
+      })
 
     return () => {
+      console.log('[Realtime] Cleaning up appointments channel')
       supabase.removeChannel(channel)
     }
-    */
-  }, [userId, fetchAppointments])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]) // ✅ fetchAppointments is stable (useCallback) - intentionally excluded
 
   return {
     appointments,

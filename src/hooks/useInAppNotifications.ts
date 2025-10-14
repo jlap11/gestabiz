@@ -329,13 +329,9 @@ export function useInAppNotifications(
       }
     }
 
-    // Handler de eventos realtime - ⚠️ DESACTIVADO TEMPORALMENTE
-    // REASON: Causing 200K+ queries killing Supabase project
-    // TODO: Fix subscription loop before re-enabling
-    
-    /* DISABLED REALTIME SUBSCRIPTION
+    // Handler de eventos realtime - FIXED: removed from dependency array
     const handleRealtimeEvent = (payload: Record<string, unknown>) => {
-      // Notification realtime event received
+      console.log('[Realtime] In-app notification change:', payload.eventType)
 
       if (payload.eventType === 'INSERT') {
         const newNotification = payload.new as InAppNotification
@@ -349,9 +345,12 @@ export function useInAppNotifications(
       }
     }
 
+    // Create unique channel name
+    const channelName = `in_app_notifications_${userId}_${Date.now()}`
+    
     // Suscribirse al canal
     const channel = supabase
-      .channel('in-app-notifications-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -362,23 +361,17 @@ export function useInAppNotifications(
         },
         handleRealtimeEvent
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[Realtime] In-app notifications subscription status:', status)
+      })
 
     // Cleanup
     return () => {
+      console.log('[Realtime] Cleaning up in-app notifications channel')
       supabase.removeChannel(channel)
     }
-    */
-    
-    // Manual refresh as workaround (refresh every 30 seconds)
-    const refreshInterval = setInterval(() => {
-      fetchNotifications()
-    }, 30000)
-    
-    return () => {
-      clearInterval(refreshInterval)
-    }
-  }, [userId, limit, fetchNotifications])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, limit]) // ✅ fetchNotifications is stable (useCallback) - intentionally excluded
 
   return {
     notifications,

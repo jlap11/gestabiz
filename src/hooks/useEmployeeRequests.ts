@@ -91,26 +91,15 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
     }
   }, [fetchRequests, autoFetch])
 
-  // REALTIME DISABLED: Polling every 30 seconds instead to prevent Supabase overload
+  // REALTIME SUBSCRIPTION - Fixed: removed fetchRequests from dependency array
   useEffect(() => {
     if (!autoFetch || (!businessId && !userId)) return
 
-    // Poll every 30 seconds
-    const pollInterval = setInterval(() => {
-      fetchRequests()
-    }, 30000)
-
-    return () => {
-      clearInterval(pollInterval)
-    }
-  }, [businessId, userId, autoFetch, fetchRequests])
-
-  /* REALTIME SUBSCRIPTION DISABLED - Causes 200K+ query overload
-  useEffect(() => {
-    if (!autoFetch || (!businessId && !userId)) return
-
+    // Create stable channel name
+    const channelName = `employee_requests_${businessId || userId}_${Date.now()}`
+    
     const channel = supabase
-      .channel('employee_requests_changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -120,17 +109,20 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
           filter: businessId ? `business_id=eq.${businessId}` : userId ? `user_id=eq.${userId}` : undefined,
         },
         (payload) => {
-          console.log('Employee request change:', payload)
-          fetchRequests() // Refetch on any change
+          console.log('[Realtime] Employee request change:', payload.eventType)
+          fetchRequests() // This is safe because fetchRequests is stable (useCallback)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[Realtime] Employee requests subscription status:', status)
+      })
 
     return () => {
+      console.log('[Realtime] Cleaning up employee requests channel')
       supabase.removeChannel(channel)
     }
-  }, [businessId, userId, autoFetch, fetchRequests])
-  */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessId, userId, autoFetch]) // ✅ fetchRequests is stable (useCallback) - intentionally excluded to prevent re-subscriptions
 
   // Create a new employee request
   const createRequest = useCallback(

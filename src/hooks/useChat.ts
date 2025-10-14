@@ -663,34 +663,17 @@ export function useChat(userId: string | null) {
   // ============================================================================
   
   /**
-   * Subscribe to conversations changes - DISABLED to prevent Supabase overload
-   * Using 30-second polling instead
+   * Subscribe to conversations changes - FIXED: removed fetchConversations from dependencies
    */
   useEffect(() => {
     if (!userId) return;
     
-    // Poll conversations every 30 seconds instead of realtime
-    const pollInterval = setInterval(() => {
-      fetchConversations();
-    }, 30000);
-    
-    return () => {
-      clearInterval(pollInterval);
-    };
-  }, [userId, fetchConversations]);
-
-  /* REALTIME DISABLED - Causes Supabase query overload
-  useEffect(() => {
-    if (!userId) return;
-    
-    // Cleanup previous subscription
-    if (conversationsChannelRef.current) {
-      supabase.removeChannel(conversationsChannelRef.current);
-    }
+    // Create unique channel name
+    const channelName = `chat_participants_${userId}_${Date.now()}`;
     
     // Subscribe to participant changes (for unread count, etc.)
     const channel = supabase
-      .channel('chat_participants_changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -699,53 +682,34 @@ export function useChat(userId: string | null) {
           table: 'chat_participants',
           filter: `user_id=eq.${userId}`,
         },
-        () => {
-          // Refresh conversations on any change
-          fetchConversations();
+        (payload) => {
+          console.log('[Realtime] Chat participant change:', payload.eventType);
+          fetchConversations(); // Safe: fetchConversations is stable (useCallback)
         }
       )
-      .subscribe();
-    
-    conversationsChannelRef.current = channel;
+      .subscribe((status) => {
+        console.log('[Realtime] Chat participants subscription status:', status);
+      });
     
     return () => {
-      if (conversationsChannelRef.current) {
-        supabase.removeChannel(conversationsChannelRef.current);
-      }
+      console.log('[Realtime] Cleaning up chat participants channel');
+      supabase.removeChannel(channel);
     };
-  }, [userId, fetchConversations]);
-  */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // ✅ fetchConversations is stable (useCallback) - intentionally excluded
   
   /**
-   * Subscribe to messages for active conversation - DISABLED to prevent Supabase overload
-   * Using 5-second polling for active conversations instead
+   * Subscribe to messages for active conversation - FIXED: removed callbacks from dependencies
    */
   useEffect(() => {
     if (!userId || !activeConversationId) return;
     
-    // Poll messages every 5 seconds for active conversation (more frequent for better UX)
-    const pollInterval = setInterval(() => {
-      fetchMessages(activeConversationId);
-    }, 5000);
-    
-    return () => {
-      clearInterval(pollInterval);
-    };
-  }, [userId, activeConversationId, fetchMessages]);
-
-  /* REALTIME DISABLED - Causes Supabase query overload
-  useEffect(() => {
-    if (!userId || !activeConversationId) return;
-    
-    // Cleanup previous subscription
-    const existingChannel = messagesChannelsRef.current.get(activeConversationId);
-    if (existingChannel) {
-      supabase.removeChannel(existingChannel);
-    }
+    // Create unique channel name
+    const channelName = `chat_messages_${activeConversationId}_${Date.now()}`;
     
     // Subscribe to new messages
-    const channel = supabase
-      .channel(`chat_messages_${activeConversationId}`)
+    const messagesChannel = supabase
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -755,6 +719,8 @@ export function useChat(userId: string | null) {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         async (payload) => {
+          console.log('[Realtime] New chat message:', payload.new.id);
+          
           // Fetch full message with sender info
           const { data: newMessage } = await supabase
             .from('chat_messages')
@@ -775,7 +741,7 @@ export function useChat(userId: string | null) {
             }));
             
             // Mark as read if conversation is active
-            await markMessagesAsRead(activeConversationId, newMessage.id);
+            markMessagesAsRead(activeConversationId, newMessage.id);
           }
         }
       )
@@ -788,6 +754,7 @@ export function useChat(userId: string | null) {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         (payload) => {
+          console.log('[Realtime] Message updated:', payload.new.id);
           setMessages(prev => ({
             ...prev,
             [activeConversationId]: prev[activeConversationId]?.map(msg =>
@@ -796,13 +763,14 @@ export function useChat(userId: string | null) {
           }));
         }
       )
-      .subscribe();
-    
-    messagesChannelsRef.current.set(activeConversationId, channel);
+      .subscribe((status) => {
+        console.log('[Realtime] Chat messages subscription status:', status);
+      });
     
     // Subscribe to typing indicators
+    const typingChannelName = `chat_typing_${activeConversationId}_${Date.now()}`;
     const typingChannel = supabase
-      .channel(`chat_typing_${activeConversationId}`)
+      .channel(typingChannelName)
       .on(
         'postgres_changes',
         {
@@ -811,26 +779,22 @@ export function useChat(userId: string | null) {
           table: 'chat_typing_indicators',
           filter: `conversation_id=eq.${activeConversationId}`,
         },
-        () => {
-          fetchTypingIndicators(activeConversationId);
+        (payload) => {
+          console.log('[Realtime] Typing indicator change:', payload.eventType);
+          fetchTypingIndicators(activeConversationId); // Safe: fetchTypingIndicators is stable
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Realtime] Typing indicators subscription status:', status);
+      });
     
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      const channelsMap = messagesChannelsRef.current;
-      const msgChannel = channelsMap.get(activeConversationId);
-      if (msgChannel) {
-        supabase.removeChannel(msgChannel);
-        channelsMap.delete(activeConversationId);
-      }
-      if (typingChannel) {
-        supabase.removeChannel(typingChannel);
-      }
+      console.log('[Realtime] Cleaning up chat messages and typing channels');
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(typingChannel);
     };
-  }, [userId, activeConversationId, fetchTypingIndicators, markMessagesAsRead]);
-  */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, activeConversationId]); // ✅ Callbacks are stable (useCallback) - intentionally excluded
   
   // ============================================================================
   // INITIAL LOAD
