@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
@@ -8,6 +8,7 @@ import { AccountingPage } from './AccountingPage'
 import { ReportsPage } from './ReportsPage'
 import { BusinessSettings } from './BusinessSettings'
 import { PermissionsManager } from './PermissionsManager'
+import { BillingDashboard } from '@/components/billing'
 import UserProfile from '@/components/settings/UserProfile'
 import type { Business, UserRole, User } from '@/types/types'
 
@@ -94,6 +95,11 @@ export function AdminDashboard({
       icon: <FileText className="h-5 w-5" />
     },
     {
+      id: 'billing',
+      label: 'Facturación',
+      icon: <CreditCard className="h-5 w-5" />
+    },
+    {
       id: 'permissions',
       label: 'Permisos',
       icon: <Shield className="h-5 w-5" />
@@ -124,6 +130,8 @@ export function AdminDashboard({
         return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
       case 'reports':
         return <ReportsPage businessId={business.id} user={currentUser} />
+      case 'billing':
+        return <BillingDashboard businessId={business.id} />
       case 'permissions':
         return (
           <PermissionsManager 
