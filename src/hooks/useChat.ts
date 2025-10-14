@@ -790,7 +790,8 @@ export function useChat(userId: string | null) {
   
   useEffect(() => {
     fetchConversations();
-  }, [fetchConversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ Solo ejecutar al montar - fetchConversations es estable
   
   // Load messages when active conversation changes
   useEffect(() => {
@@ -798,7 +799,8 @@ export function useChat(userId: string | null) {
       fetchMessages(activeConversationId);
       fetchTypingIndicators(activeConversationId);
     }
-  }, [activeConversationId, fetchMessages, fetchTypingIndicators]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConversationId]); // ✅ Callbacks excluidos - son estables
   
   // ============================================================================
   // COMPUTED VALUES

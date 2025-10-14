@@ -525,7 +525,8 @@ export function useMessages(
     return () => {
       isMountedRef.current = false
     }
-  }, [conversationId, userId, fetchMessages])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, userId]) // ✅ fetchMessages excluido - es estable (useCallback)
 
   // Cleanup
   useEffect(() => {

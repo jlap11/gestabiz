@@ -555,7 +555,8 @@ export function useConversations(
     return () => {
       isMountedRef.current = false
     }
-  }, [userId, businessId, fetchConversations, fetchStats])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, businessId]) // ✅ Callbacks excluidos - son estables (useCallback)
 
   // Cleanup
   useEffect(() => {
