@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import type { Business, UserRole } from '@/types/types'
-import { NotificationBell } from '@/components/notifications'
+// COMMENTED FOR DEBUGGING: Notification system causing issues
+// import { NotificationBell } from '@/components/notifications'
 // COMMENTED FOR DEBUGGING: Chat system causing issues
 // import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
 
@@ -271,8 +272,8 @@ export function UnifiedLayout({
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-3">
-            {/* Notification Bell - Show for authenticated users */}
-            {user?.id && <NotificationBell userId={user.id} />}
+            {/* COMMENTED FOR DEBUGGING: Notification system causing issues */}
+            {/* {user?.id && <NotificationBell userId={user.id} />} */}
 
             {/* Role Selector - Show if multiple unique roles exist */}
             {uniqueRoles.length > 0 && (
