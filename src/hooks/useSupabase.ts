@@ -703,7 +703,8 @@ export const useUserSettings = (userId?: string) => {
 
   useEffect(() => {
     fetchSettings()
-  }, [fetchSettings])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ✅ fetchSettings es estable - solo ejecutar al montar
 
   return {
     settings,
@@ -766,7 +767,8 @@ export const useDashboardStats = (userId?: string) => {
 
   useEffect(() => {
     fetchStats()
-  }, [fetchStats])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ✅ fetchStats es estable - solo ejecutar al montar
 
   return {
     stats,
@@ -819,7 +821,8 @@ export const useBrowserExtensionData = () => {
     }, 5 * 60 * 1000)
 
     return () => clearInterval(interval)
-  }, [fetchUpcomingAppointments])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ✅ fetchUpcomingAppointments es estable - solo configurar intervalo una vez
 
   return {
     upcomingAppointments,

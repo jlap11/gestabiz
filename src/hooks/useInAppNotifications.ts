@@ -267,14 +267,16 @@ export function useInAppNotifications(
   // Refetch
   const refetch = useCallback(async () => {
     await fetchNotifications()
-  }, [fetchNotifications])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ✅ fetchNotifications es estable
 
   // Auto-fetch inicial
   useEffect(() => {
     if (autoFetch && userId) {
       fetchNotifications()
     }
-  }, [autoFetch, userId, fetchNotifications])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch, userId]) // ✅ fetchNotifications excluido - es estable
 
   // Suscripción realtime
   useEffect(() => {

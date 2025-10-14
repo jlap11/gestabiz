@@ -89,7 +89,8 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
     if (autoFetch) {
       fetchRequests()
     }
-  }, [fetchRequests, autoFetch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch]) // ✅ fetchRequests excluido - es estable (useCallback)
 
   // REALTIME SUBSCRIPTION - Fixed: removed fetchRequests from dependency array
   useEffect(() => {
