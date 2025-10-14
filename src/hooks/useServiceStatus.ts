@@ -129,13 +129,17 @@ export function useServiceStatus() {
   }, [wasDown])
 
   useEffect(() => {
+    // CRITICAL: Check health once on mount
     checkHealth()
 
-    // Re-check every 30 seconds (más frecuente para detectar recovery rápido)
-    const interval = setInterval(checkHealth, 30000)
+    // Health check every 5 minutes (not 30 seconds!) to avoid rate limiting
+    const interval = setInterval(() => {
+      checkHealth()
+    }, 300000) // 5 minutes = 300000ms
 
     return () => clearInterval(interval)
-  }, [checkHealth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps! Don't include checkHealth to prevent infinite loop
 
   return { ...status, refresh: checkHealth }
 }
