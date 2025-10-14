@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - Email Confirmation Template</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .preview-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .preview-header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .preview-header h1 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+        }
+        
+        .preview-header p {
+            margin: 0;
+            color: #64748b;
+        }
+        
+        .preview-actions {
+            margin-top: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-right: 10px;
+            background: #a855f7;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #9333ea;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        
+        .iframe-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .device-selector {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        iframe {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .mobile-view {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <h1>📧 Email Confirmation Template - Preview</h1>
+            <p>Preview del template de confirmación de email para Bookio</p>
+            
+            <div class="preview-actions">
+                <div class="device-selector">
+                    <button class="btn" onclick="setView('desktop')">🖥️ Desktop</button>
+                    <button class="btn" onclick="setView('mobile')">📱 Mobile</button>
+                    <button class="btn-secondary btn" onclick="openInNewTab()">🔗 Abrir en Nueva Pestaña</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="iframe-container">
+            <iframe 
+                id="preview-frame"
+                src="./email-confirmation.html" 
+                height="800"
+                scrolling="auto"
+            ></iframe>
+        </div>
+    </div>
+    
+    <script>
+        function setView(type) {
+            const frame = document.getElementById('preview-frame');
+            const container = frame.parentElement;
+            
+            if (type === 'mobile') {
+                container.classList.add('mobile-view');
+                frame.style.height = '900px';
+            } else {
+                container.classList.remove('mobile-view');
+                frame.style.height = '800px';
+            }
+        }
+        
+        function openInNewTab() {
+            window.open('./email-confirmation.html', '_blank');
+        }
+        
+        // Simular variables de Supabase en el preview
+        window.addEventListener('load', function() {
+            const frame = document.getElementById('preview-frame');
+            
+            frame.addEventListener('load', function() {
+                try {
+                    const doc = frame.contentDocument || frame.contentWindow.document;
+                    
+                    // Reemplazar variables de template con valores de ejemplo
+                    const html = doc.body.innerHTML;
+                    const newHtml = html
+                        .replace(/\{\{\s*\.Email\s*\}\}/g, 'usuario@ejemplo.com')
+                        .replace(/\{\{\s*\.ConfirmationURL\s*\}\}/g, 'https://tuapp.supabase.co/auth/v1/verify?token=abc123xyz789&type=signup');
+                    
+                    doc.body.innerHTML = newHtml;
+                } catch (e) {
+                    console.log('Could not access iframe content (might be cross-origin)');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

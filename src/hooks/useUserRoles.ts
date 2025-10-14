@@ -37,11 +37,9 @@ export function useUserRoles(user: User | null) {
   // Fetch user available roles dynamically based on relationships
   const fetchUserRoles = useCallback(async () => {
     if (!user?.id) {
-      console.log('[useUserRoles] No user.id, skipping role fetch')
       return
     }
 
-    console.log('[useUserRoles] Fetching roles for user:', user.id)
     setIsLoading(true)
     try {
       // Build role assignments array based on actual relationships
@@ -52,8 +50,6 @@ export function useUserRoles(user: User | null) {
         .from('businesses')
         .select('id, name')
         .eq('owner_id', user.id)
-      
-      console.log('[useUserRoles] Owned businesses:', ownedBusinesses)
 
       if (businessError && businessError.code !== 'PGRST116') {
         throw businessError
@@ -72,6 +68,16 @@ export function useUserRoles(user: User | null) {
             created_at: user.created_at,
           })
         })
+      } else {
+        // Always add admin role even without businesses (will show onboarding)
+        roleAssignments.push({
+          id: `${user.id}-admin`,
+          user_id: user.id,
+          role: 'admin',
+          business_id: null,
+          is_active: true,
+          created_at: user.created_at,
+        })
       }
 
       // 2. Get businesses where user is employee
@@ -79,8 +85,6 @@ export function useUserRoles(user: User | null) {
         .from('business_employees')
         .select('business_id, businesses(id, name)')
         .eq('employee_id', user.id)
-      
-      console.log('[useUserRoles] Employee businesses:', employeeBusinesses)
 
       if (empError && empError.code !== 'PGRST116') {
         throw empError
@@ -129,28 +133,13 @@ export function useUserRoles(user: User | null) {
         created_at: user.created_at,
       })
 
-      console.log('[useUserRoles] Final role assignments:', roleAssignments)
       setRoles(roleAssignments)
 
-      // Restore previous role context from localStorage or default to first available
+      // Restore previous role context from localStorage
       const currentStoredContext = storedContextRef.current
       
-      // Allow admin/employee roles even without businesses (will show onboarding)
-      const hasStoredRole = currentStoredContext && (
-        roleAssignments.find(r => 
-          r.role === currentStoredContext.role && 
-          (currentStoredContext.businessId ? r.business_id === currentStoredContext.businessId : true)
-        ) ||
-        currentStoredContext.role === 'admin' ||
-        currentStoredContext.role === 'employee' ||
-        currentStoredContext.role === 'client'
-      )
-      
-      console.log('[useUserRoles] Stored context:', currentStoredContext, 'Has stored role?', !!hasStoredRole)
-      
-      if (hasStoredRole && currentStoredContext) {
-        // Restore stored context (even if no business, to trigger onboarding)
-        console.log('[useUserRoles] Restoring stored role:', currentStoredContext.role)
+      if (currentStoredContext) {
+        // Always restore the last used role from localStorage
         setActiveRole(currentStoredContext.role)
         if (currentStoredContext.businessId && currentStoredContext.businessName) {
           setActiveBusiness({
@@ -161,28 +150,10 @@ export function useUserRoles(user: User | null) {
           setActiveBusiness(undefined)
         }
       } else {
-        // Default to first available role (prefer admin > employee > client)
-        console.log('[useUserRoles] No stored context, using default role')
-        const defaultRole = roleAssignments.find(r => r.role === 'admin') 
-          || roleAssignments.find(r => r.role === 'employee')
-          || roleAssignments.find(r => r.role === 'client')
-        
-        if (defaultRole) {
-          setActiveRole(defaultRole.role)
-          if (defaultRole.business_id && defaultRole.business_name) {
-            setActiveBusiness({
-              id: defaultRole.business_id,
-              name: defaultRole.business_name,
-            })
-            setStoredContextRef.current({
-              role: defaultRole.role,
-              businessId: defaultRole.business_id,
-              businessName: defaultRole.business_name,
-            })
-          } else {
-            setStoredContextRef.current({ role: defaultRole.role })
-          }
-        }
+        // No stored context - default to client role (first time user)
+        setActiveRole('client')
+        setActiveBusiness(undefined)
+        setStoredContextRef.current({ role: 'client' })
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -211,10 +182,7 @@ export function useUserRoles(user: User | null) {
   // Function to switch active role (no database update needed!)
   const switchRole = useCallback(
     async (newRole: UserRole, businessId?: string) => {
-      console.log('[useUserRoles] switchRole called:', { newRole, businessId, availableRoles: roles })
-      
       if (!user?.id) {
-        console.log('[useUserRoles] switchRole: No user.id')
         toast.error('Usuario no autenticado')
         return false
       }
@@ -225,14 +193,11 @@ export function useUserRoles(user: User | null) {
         (businessId ? r.business_id === businessId : r.business_id === null)
       )
 
-      console.log('[useUserRoles] switchRole: Has role?', hasRole)
-
       // For admin/employee roles: Allow switching even without business (will show onboarding)
       // For client role: Always available to everyone
       const canSwitch = hasRole || newRole === 'client' || newRole === 'admin' || newRole === 'employee'
 
       if (!canSwitch) {
-        console.log('[useUserRoles] switchRole: Cannot switch to this role')
         toast.error('No tienes acceso a este rol')
         return false
       }
@@ -268,7 +233,6 @@ export function useUserRoles(user: User | null) {
         if (newRole === 'admin') roleLabel = 'Administrador'
         else if (newRole === 'employee') roleLabel = 'Empleado'
         
-        console.log('[useUserRoles] switchRole: Success, role changed to', newRole)
         toast.success(`Cambiado a rol ${roleLabel}`)
 
         // No reload needed - state update will trigger re-render

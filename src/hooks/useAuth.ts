@@ -370,19 +370,60 @@ export function useAuth() {
         return { success: false, error: error.message }
       }
 
-      if (authData.user && !authData.session) {
-        toast.success('Revisa tu email para confirmar tu cuenta')
+      // If user was created successfully
+      if (authData.user) {
+        // If there's a session (email confirmation disabled), create profile and log in
+        if (authData.session) {
+          // Create profile in profiles table
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: authData.user.id,
+              email: authData.user.email,
+              full_name: data.full_name || '',
+              phone: data.phone || '',
+              role: 'client', // Default role
+              is_active: true
+            })
+
+          if (profileError) {
+            // Profile might already exist (duplicate signup attempt)
+            if (profileError.code !== '23505') { // 23505 = unique violation
+              toast.error('Error al crear perfil de usuario')
+              setState(prev => ({ ...prev, loading: false }))
+              return { success: false, error: profileError.message }
+            }
+          }
+
+          // Convert to User and update state
+          const user = await convertToUser(authData.user)
+          setState(prev => ({
+            ...prev,
+            user,
+            session: authData.session,
+            loading: false,
+            error: null
+          }))
+          
+          toast.success(`¡Bienvenido, ${data.full_name || data.email}!`)
+          return { success: true, needsEmailConfirmation: false }
+        } else {
+          // Email confirmation is required
+          toast.success('Revisa tu email para confirmar tu cuenta')
+          setState(prev => ({ ...prev, loading: false }))
+          return { success: true, needsEmailConfirmation: true }
+        }
       }
 
       setState(prev => ({ ...prev, loading: false }))
-      return { success: true, needsEmailConfirmation: !authData.session }
+      return { success: false, error: 'No se pudo crear el usuario' }
   } catch {
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
     }
-  }, [])
+  }, [convertToUser])
 
   // Sign in with email and password
   const signIn = useCallback(async (data: SignInData) => {

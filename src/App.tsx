@@ -39,9 +39,10 @@ function AppLoader() {
 }
 
 function AppContent() {
-  const { user, loading, session } = useAuthSimple()
+  const { user, loading, session, signOut } = useAuthSimple()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [showLanding, setShowLanding] = useState(true)
+  const [showLanding, setShowLanding] = useState(!user && !session) // Solo mostrar landing si NO hay sesión
+  const [forceShowLogin, setForceShowLogin] = useState(false)
 
   // Si estamos cargando la autenticación, mostrar loader
   if (loading) {
@@ -59,33 +60,41 @@ function AppContent() {
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           <h2 className="text-2xl font-bold text-primary">¡Sesión cerrada exitosamente!</h2>
-          <p className="text-muted-foreground">Redirigiendo al inicio de sesión...</p>
+          <p className="text-muted-foreground">Redirigiendo a la página principal...</p>
         </div>
       </div>
     )
   }
 
-  // Si no hay usuario autenticado, mostrar landing o login
-  if (!user || !session) {
-    if (showLanding) {
-      const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
-      return (
-        <Suspense fallback={<AppLoader />}>
-          <LandingPage onNavigateToAuth={() => setShowLanding(false)} />
-        </Suspense>
-      )
-    }
+  // Mostrar landing page si no hay sesión activa
+  if (showLanding && !user && !session) {
+    const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
+    return (
+      <Suspense fallback={<AppLoader />}>
+        <LandingPage 
+          onNavigateToAuth={() => {
+            setShowLanding(false)
+          }} 
+        />
+      </Suspense>
+    )
+  }
+
+  // Si no hay usuario autenticado (o se forzó el login), mostrar AuthScreen
+  if ((!user || !session) || forceShowLogin) {
     return <AuthScreen />
   }
 
   // Usuario autenticado, mostrar app principal
   return (
     <MainApp 
-      onLogout={() => {
+      onLogout={async () => {
         setIsLoggingOut(true)
+        await signOut()
         setTimeout(() => {
           setIsLoggingOut(false)
           setShowLanding(true)
+          setForceShowLogin(false)
         }, 1500)
       }}
     />

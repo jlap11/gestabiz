@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, Clock } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import UserProfile from '@/components/settings/UserProfile'
+import UnifiedSettings from '@/components/settings/UnifiedSettings'
 import type { UserRole, User } from '@/types/types'
 
 interface EmployeeDashboardProps {
@@ -90,8 +91,14 @@ export function EmployeeDashboard({
       case 'settings':
         return (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Configuración</h2>
-            <p className="text-muted-foreground">Configuración de empleado - Próximamente</p>
+            {currentUser && (
+              <UnifiedSettings
+                user={currentUser}
+                onUserUpdate={setCurrentUser}
+                currentRole={currentRole}
+                businessId={businessId}
+              />
+            )}
           </div>
         )
       default:
@@ -109,6 +116,7 @@ export function EmployeeDashboard({
       activePage={activePage}
       onPageChange={setActivePage}
       user={currentUser ? {
+        id: currentUser.id,
         name: currentUser.name,
         email: currentUser.email,
         avatar: currentUser.avatar_url

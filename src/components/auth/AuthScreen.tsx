@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import { useAuth } from '@/hooks/useAuth'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
@@ -12,15 +13,17 @@ interface AuthScreenProps {
 }
 
 export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
-  const { signIn, signInWithGoogle } = useAuth()
+  const { signIn, signUp, signInWithGoogle } = useAuth()
   
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [isGoogleAuth, setIsGoogleAuth] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
+  const [isSignUpMode, setIsSignUpMode] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    name: ''
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -41,6 +44,37 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
 
       if (result.success && result.user) {
         onLogin?.(result.user)
+      }
+    } catch {
+      // Error/timeout
+    } finally {
+      setIsSigningIn(false)
+    }
+  }
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.email || !formData.password || !formData.name) {
+      return
+    }
+    setIsSigningIn(true)
+    try {
+      const result = await Promise.race([
+        signUp({ 
+          email: formData.email, 
+          password: formData.password,
+          full_name: formData.name
+        }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 12000))
+      ])
+
+      if (result.success && !result.needsEmailConfirmation) {
+        // Registration successful and auto-logged in, switch to login mode
+        setIsSignUpMode(false)
+        setFormData({ email: '', password: '', name: '' })
+      } else if (result.success && result.needsEmailConfirmation) {
+        // Show message that they need to confirm email
+        setIsSignUpMode(false)
       }
     } catch {
       // Error/timeout
@@ -114,14 +148,36 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
           <h1 className="text-4xl font-bold text-foreground mb-2">
             {APP_CONFIG.NAME}
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Welcome back! Please enter your details.
+          <p className="text-muted-foreground text-sm mb-4">
+            {isSignUpMode 
+              ? 'Create your account to get started' 
+              : 'Welcome back! Please enter your details.'
+            }
           </p>
+          
+          {/* Service Status Badge */}
+          <div className="flex justify-center mb-4">
+            <ServiceStatusBadge variant="minimal" />
+          </div>
         </div>
 
-        {/* Login Card */}
+        {/* Login/SignUp Card */}
         <div className="bg-card rounded-2xl p-8 shadow-2xl backdrop-blur-xl border border-border">
-          <form onSubmit={handleSignIn} className="space-y-6">
+          <form onSubmit={isSignUpMode ? handleSignUp : handleSignIn} className="space-y-6">
+            {/* Name Input (only for Sign Up) */}
+            {isSignUpMode && (
+              <div className="space-y-2">
+                <Input
+                  type="text"
+                  placeholder="Full name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                  required
+                />
+              </div>
+            )}
+
             {/* Email Input */}
             <div className="space-y-2">
               <Input
@@ -146,35 +202,42 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
               />
             </div>
 
-            {/* Remember me & Forgot password */}
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                />
-                <label htmlFor="remember" className="text-muted-foreground cursor-pointer">
-                  Remember me
-                </label>
+            {/* Remember me & Forgot password (only for Login) */}
+            {!isSignUpMode && (
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  />
+                  <label htmlFor="remember" className="text-muted-foreground cursor-pointer">
+                    Remember me
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowResetForm(true)}
+                  className="text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                >
+                  Forgot your password?
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowResetForm(true)}
-                className="text-primary hover:text-primary/80 transition-colors cursor-pointer"
-              >
-                Forgot your password?
-              </button>
-            </div>
+            )}
 
-            {/* Login Button */}
+            {/* Submit Button */}
             <Button 
               type="submit"
               disabled={isSigningIn}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              {isSigningIn ? 'Signing in...' : 'Login'}
+              {(() => {
+                if (isSigningIn) {
+                  return isSignUpMode ? 'Creating account...' : 'Signing in...'
+                }
+                return isSignUpMode ? 'Create account' : 'Login'
+              })()}
             </Button>
 
             {/* Divider */}
@@ -219,11 +282,20 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
             </Button>
           </form>
 
-          {/* Sign up link */}
+          {/* Sign up/Login toggle link */}
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <button className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer">
-              Sign up
+            <span className="text-muted-foreground">
+              {isSignUpMode ? 'Already have an account? ' : "Don't have an account? "}
+            </span>
+            <button 
+              type="button"
+              onClick={() => {
+                setIsSignUpMode(!isSignUpMode)
+                setFormData({ email: '', password: '', name: '' })
+              }}
+              className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
+            >
+              {isSignUpMode ? 'Sign in' : 'Sign up'}
             </button>
           </div>
         </div>

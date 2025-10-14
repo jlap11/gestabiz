@@ -10,14 +10,26 @@ import { PhoneInput } from '@/components/ui/PhoneInput'
 import { useBusinessCategories } from '@/hooks/useBusinessCategories'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import type { User, LegalEntityType } from '@/types/types'
+import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
+import type { User, LegalEntityType, UserRole } from '@/types/types'
 
 interface AdminOnboardingProps {
   user: User
   onBusinessCreated?: () => void
+  currentRole: UserRole
+  availableRoles: UserRole[]
+  onRoleChange: (role: UserRole) => void
+  onLogout?: () => void
 }
 
-export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProps) {
+export function AdminOnboarding({ 
+  user, 
+  onBusinessCreated,
+  currentRole,
+  availableRoles,
+  onRoleChange,
+  onLogout
+}: Readonly<AdminOnboardingProps>) {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -71,12 +83,15 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
   }
 
   const handleSubmit = async () => {
+    console.log('[AdminOnboarding] Starting business creation...')
+    console.log('[AdminOnboarding] Form data:', formData)
     setIsLoading(true)
 
     try {
       // Validate required fields
       if (!formData.name || !formData.category_id) {
         toast.error('Nombre y categoría son obligatorios')
+        setIsLoading(false)
         return
       }
 
@@ -116,6 +131,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
       }
 
       // Step 1: Create business WITHOUT logo first
+      console.log('[AdminOnboarding] Creating business in Supabase...')
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
@@ -158,6 +174,7 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
         .select()
         .single()
 
+      console.log('[AdminOnboarding] Business creation result:', { business, businessError })
       if (businessError) throw businessError
 
       toast.success(`¡Negocio "${formData.name}" creado exitosamente!`)
@@ -232,11 +249,14 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
         )
       }
 
+      console.log('[AdminOnboarding] Business created successfully, calling onBusinessCreated callback')
       onBusinessCreated?.()
     } catch (error) {
+      console.error('[AdminOnboarding] Error creating business:', error)
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
       toast.error(`Error al crear negocio: ${errorMsg}`)
     } finally {
+      console.log('[AdminOnboarding] Setting loading to false')
       setIsLoading(false)
     }
   }
@@ -244,16 +264,34 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
   const isStep1Valid = formData.name.trim().length > 0 && formData.category_id.length > 0
   const isStep2Valid = true // Contact info is optional
 
+  const sidebarItems = [
+    {
+      id: 'create-business',
+      label: 'Crear Negocio',
+      icon: <Building2 className="h-5 w-5" />
+    }
+  ]
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Crear tu Negocio</h1>
-          <p className="text-muted-foreground">
-            Registra tu negocio y empieza a gestionar citas en minutos
-          </p>
-        </div>
+    <UnifiedLayout
+      currentRole={currentRole}
+      availableRoles={availableRoles}
+      onRoleChange={onRoleChange}
+      onLogout={onLogout}
+      sidebarItems={sidebarItems}
+      activePage="create-business"
+      onPageChange={() => {}}
+      user={user}
+    >
+      <div className="p-6">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Crear tu Negocio</h1>
+            <p className="text-muted-foreground">
+              Registra tu negocio y empieza a gestionar citas en minutos
+            </p>
+          </div>
 
         {/* Important Rules Alert */}
         <Alert>
@@ -838,7 +876,8 @@ export function AdminOnboarding({ user, onBusinessCreated }: AdminOnboardingProp
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </UnifiedLayout>
   )
 }

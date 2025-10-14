@@ -80,7 +80,7 @@ export function useInAppNotifications(
         .from('in_app_notifications')
         .select('*')
         .eq('user_id', userId)
-        .eq('is_deleted', false)
+        .neq('status', 'archived') // Usar status en vez de is_deleted
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -329,7 +329,11 @@ export function useInAppNotifications(
       }
     }
 
-    // Handler de eventos realtime
+    // Handler de eventos realtime - ⚠️ DESACTIVADO TEMPORALMENTE
+    // REASON: Causing 200K+ queries killing Supabase project
+    // TODO: Fix subscription loop before re-enabling
+    
+    /* DISABLED REALTIME SUBSCRIPTION
     const handleRealtimeEvent = (payload: Record<string, unknown>) => {
       // Notification realtime event received
 
@@ -364,7 +368,17 @@ export function useInAppNotifications(
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId, limit])
+    */
+    
+    // Manual refresh as workaround (refresh every 30 seconds)
+    const refreshInterval = setInterval(() => {
+      fetchNotifications()
+    }, 30000)
+    
+    return () => {
+      clearInterval(refreshInterval)
+    }
+  }, [userId, limit, fetchNotifications])
 
   return {
     notifications,

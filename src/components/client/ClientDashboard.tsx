@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import UserProfile from '@/components/settings/UserProfile'
+import UnifiedSettings from '@/components/settings/UnifiedSettings'
 import { ClientCalendarView } from '@/components/client/ClientCalendarView'
 import { ClientHistory } from '@/components/client/ClientHistory'
 import { SearchResults } from '@/components/client/SearchResults'
@@ -521,8 +522,13 @@ export function ClientDashboard({
       case 'settings':
         return (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Configuración</h2>
-            <p className="text-muted-foreground">Configuración de cliente - Próximamente</p>
+            {currentUser && (
+              <UnifiedSettings
+                user={currentUser}
+                onUserUpdate={setCurrentUser}
+                currentRole={currentRole}
+              />
+            )}
           </div>
         )
       default:
@@ -546,6 +552,7 @@ export function ClientDashboard({
         activePage={activePage}
         onPageChange={setActivePage}
         user={currentUser ? {
+          id: currentUser.id,
           name: currentUser.name,
           email: currentUser.email,
           avatar: currentUser.avatar_url

@@ -11,6 +11,7 @@ import {
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar, type SearchType } from '@/components/client/SearchBar'
+import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -270,6 +271,9 @@ export function UnifiedLayout({
 
           {/* Right Side Controls */}
           <div className="flex items-center gap-3">
+            {/* Service Status Badge */}
+            <ServiceStatusBadge variant="minimal" />
+            
             {/* Notification Bell - Show for authenticated users */}
             {user?.id && <NotificationBell userId={user.id} />}
 

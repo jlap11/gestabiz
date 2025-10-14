@@ -99,6 +99,10 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
         <AdminOnboarding
           user={user}
           onBusinessCreated={handleBusinessCreated}
+          currentRole={activeRole}
+          availableRoles={roles.map(r => r.role)}
+          onRoleChange={switchRole}
+          onLogout={handleLogout}
         />
       )
     }

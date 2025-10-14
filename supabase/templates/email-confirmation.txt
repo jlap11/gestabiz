@@ -1,0 +1,30 @@
+Bienvenido a Bookio!
+======================
+
+Hola {{ .Email }},
+
+Gracias por unirte a Bookio, la plataforma que revoluciona la gestión de citas y reservas.
+
+Para completar tu registro, confirma tu dirección de correo electrónico haciendo clic en el siguiente enlace:
+
+{{ .ConfirmationURL }}
+
+Este enlace expirará en 24 horas por seguridad.
+
+Una vez confirmado, podrás:
+- Agendar y gestionar citas fácilmente
+- Crear y administrar tu negocio
+- Invitar a tu equipo de trabajo
+- Acceder a reportes y estadísticas
+- Recibir notificaciones en tiempo real
+
+Si no creaste una cuenta en Bookio, ignora este email.
+
+--
+© 2025 Bookio
+Gestiona tus citas de forma inteligente
+
+Sitio Web: https://bookio.com
+Soporte: https://bookio.com/support
+Privacidad: https://bookio.com/privacy
+Términos: https://bookio.com/terms

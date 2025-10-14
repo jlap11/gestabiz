@@ -652,7 +652,7 @@ export const useAppointments = (userId?: string) => {
       .channel('appointments-changes')
       .on(
         'postgres_changes',
-  { event: '*', schema: 'public', table: 'appointments', filter: `employee_id=eq.${userId}` },
+        { event: '*', schema: 'public', table: 'appointments', filter: `employee_id=eq.${userId}` },
         handleRealtime
       )
       .subscribe()
