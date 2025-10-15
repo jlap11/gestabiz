@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ConversationList } from './ConversationList';
 import { ChatWindow } from './ChatWindow';
 import { ChatErrorBoundary } from './ChatErrorBoundary';
-import { useConversations } from '@/hooks/useConversations';
-import { useMessages } from '@/hooks/useMessages';
+import { useChat } from '@/hooks/useChat';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -39,46 +38,39 @@ export function ChatLayout({
     initialConversationId
   );
 
-  // Hook de conversaciones
+  // Hook de chat unificado
   const {
     conversations,
-    loading: conversationsLoading,
-    error: conversationsError,
-    stats,
-    fetchConversations,
-    markConversationRead,
-    archiveConversation,
-    muteConversation,
-    subscribeToConversations,
-    unsubscribeFromConversations,
-  } = useConversations(userId, businessId);
-
-  // Hook de mensajes (solo si hay conversación activa)
-  const {
-    messages,
-    loading: messagesLoading,
-    error: messagesError,
-    sending,
+    activeMessages,
+    activeConversation: hookActiveConversation,
+    activeTypingUsers,
+    loading,
+    error,
     sendMessage,
-    editMessage,
-    deleteMessage,
-    pinMessage,
-    subscribeToMessages,
-    unsubscribeFromMessages,
-  } = useMessages(activeConversationId, userId);
+    markMessagesAsRead,
+    setActiveConversationId: hookSetActiveConversation,
+    fetchConversations,
+    toggleMuteConversation,
+    togglePinConversation,
+  } = useChat(userId);
 
-  // Conversación activa (del array de conversaciones)
-  const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
+  // Conversación activa (del array de conversaciones o del hook)
+  const activeConversation = hookActiveConversation || conversations.find((c) => c.id === activeConversationId) || null;
+  const messages = activeMessages || [];
 
-  // Error combinado
-  const error = conversationsError || messagesError;
-
-  // Loading combinado
-  const loading = conversationsLoading || messagesLoading;
+  // Debug: Log conversations array changes
+  useEffect(() => {
+    console.log('[ChatLayout] conversations changed:', conversations);
+    console.log('[ChatLayout] conversations.length:', conversations.length);
+    console.log('[ChatLayout] activeConversationId:', activeConversationId);
+    console.log('[ChatLayout] activeConversation:', activeConversation);
+  }, [conversations, activeConversationId, activeConversation]);
 
   // Sincronizar conversationId inicial
   useEffect(() => {
+    console.log('[ChatLayout] initialConversationId changed:', initialConversationId)
     if (initialConversationId) {
+      console.log('[ChatLayout] Setting active conversation to:', initialConversationId)
       setActiveConversationId(initialConversationId);
     }
   }, [initialConversationId]);

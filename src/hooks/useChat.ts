@@ -156,6 +156,8 @@ export function useChat(userId: string | null) {
       setLoading(true);
       setError(null);
       
+      console.log('[useChat] fetchConversations for userId:', userId);
+      
       // Fetch conversations with participant info
       const { data: participantsData, error: participantsError } = await supabase
         .from('chat_participants')
@@ -164,12 +166,15 @@ export function useChat(userId: string | null) {
           conversation:chat_conversations(*)
         `)
         .eq('user_id', userId)
-        .is('left_at', null)
-        .order('conversation.last_message_at', { ascending: false });
+        .is('left_at', null);
+      
+      console.log('[useChat] participantsData:', participantsData);
+      console.log('[useChat] participantsError:', participantsError);
       
       if (participantsError) throw participantsError;
       
-      if (!participantsData) {
+      if (!participantsData || participantsData.length === 0) {
+        console.log('[useChat] No participants found, setting empty conversations');
         setConversations([]);
         return;
       }
@@ -210,9 +215,20 @@ export function useChat(userId: string | null) {
         })
       );
       
+      // Sort by last_message_at (most recent first)
+      conversationsWithUsers.sort((a, b) => {
+        const dateA = new Date(a.last_message_at).getTime();
+        const dateB = new Date(b.last_message_at).getTime();
+        return dateB - dateA;
+      });
+      
+      console.log('[useChat] Final conversationsWithUsers:', conversationsWithUsers);
+      console.log('[useChat] Setting', conversationsWithUsers.length, 'conversations');
+      
       setConversations(conversationsWithUsers as ChatConversation[]);
     } catch (err) {
       const error = err as Error;
+      console.error('[useChat] Error in fetchConversations:', err);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -230,8 +246,7 @@ export function useChat(userId: string | null) {
         .from('chat_messages')
         .select(`
           *,
-          sender:profiles!sender_id(id, full_name, email, avatar_url),
-          reply_to:chat_messages!reply_to_id(id, content, sender_id)
+          sender:profiles(id, full_name, email, avatar_url)
         `)
         .eq('conversation_id', conversationId)
         .is('deleted_at', null)
@@ -251,6 +266,7 @@ export function useChat(userId: string | null) {
       }
     } catch (err) {
       const error = err as Error;
+      console.error('[useChat] Error fetching messages:', err);
       setError(error.message);
     }
   }, [userId]);
@@ -266,7 +282,7 @@ export function useChat(userId: string | null) {
         .from('chat_typing_indicators')
         .select(`
           *,
-          user:profiles!user_id(id, full_name, email, avatar_url)
+          user:profiles(id, full_name, email, avatar_url)
         `)
         .eq('conversation_id', conversationId)
         .neq('user_id', userId)
@@ -390,7 +406,7 @@ export function useChat(userId: string | null) {
         .from('chat_messages')
         .select(`
           *,
-          sender:profiles!sender_id(id, full_name, email, avatar_url)
+          sender:profiles(id, full_name, email, avatar_url)
         `)
         .eq('id', messageId)
         .single();
@@ -701,6 +717,8 @@ export function useChat(userId: string | null) {
   useEffect(() => {
     if (!userId || !activeConversationId) return;
     
+    console.log('[useChat] 🔔 Setting up realtime subscription for conversation:', activeConversationId);
+    
     // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
     // Usar solo IDs estáticos para evitar re-crear el canal en cada render
     const channelName = `chat_messages_${activeConversationId}`;
@@ -717,27 +735,51 @@ export function useChat(userId: string | null) {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         async (payload) => {
+          console.log('[useChat] 📨 New message received:', payload.new);
+          
           // Fetch full message with sender info
           const { data: newMessage } = await supabase
             .from('chat_messages')
             .select(`
               *,
-              sender:profiles!sender_id(id, full_name, email, avatar_url)
+              sender:profiles(id, full_name, email, avatar_url)
             `)
             .eq('id', payload.new.id)
             .single();
           
-          if (newMessage && newMessage.sender_id !== userId) {
-            setMessages(prev => ({
-              ...prev,
-              [activeConversationId]: [
-                ...(prev[activeConversationId] || []),
-                newMessage,
-              ],
-            }));
+          console.log('[useChat] 📨 Full message data:', newMessage);
+          
+          if (newMessage) {
+            // Agregar mensaje SIEMPRE (tanto propios como de otros)
+            // Evitar duplicados: verificar si el mensaje ya existe
+            setMessages(prev => {
+              const existingMessages = prev[activeConversationId] || [];
+              const messageExists = existingMessages.some(m => m.id === newMessage.id);
+              
+              if (messageExists) {
+                console.log('[useChat] ⚠️ Message already exists, skipping duplicate');
+                return prev;
+              }
+              
+              console.log('[useChat] ✅ Adding new message to state');
+              return {
+                ...prev,
+                [activeConversationId]: [
+                  ...existingMessages,
+                  newMessage,
+                ],
+              };
+            });
             
-            // Mark as read if conversation is active
-            markMessagesAsRead(activeConversationId, newMessage.id);
+            // Mark as read SOLO si el mensaje es de otro usuario
+            if (newMessage.sender_id !== userId) {
+              console.log('[useChat] 👀 Marking message as read');
+              markMessagesAsRead(activeConversationId, newMessage.id);
+            }
+            
+            // Actualizar lista de conversaciones para reflejar último mensaje
+            console.log('[useChat] 🔄 Refreshing conversations list');
+            fetchConversations();
           }
         }
       )
@@ -750,6 +792,8 @@ export function useChat(userId: string | null) {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         (payload) => {
+          console.log('[useChat] ✏️ Message updated:', payload.new);
+          
           setMessages(prev => ({
             ...prev,
             [activeConversationId]: prev[activeConversationId]?.map(msg =>
@@ -758,7 +802,9 @@ export function useChat(userId: string | null) {
           }));
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[useChat] 📡 Messages channel status:', status);
+      });
     
     // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
     const typingChannelName = `chat_typing_${activeConversationId}`;

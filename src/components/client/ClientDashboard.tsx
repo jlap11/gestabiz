@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History } from 'lucide-react'
+import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,10 +14,12 @@ import { SearchResults } from '@/components/client/SearchResults'
 import BusinessProfile from '@/components/business/BusinessProfile'
 import ProfessionalProfile from '@/components/user/UserProfile'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { useChat } from '@/hooks/useChat'
 import type { UserRole, User } from '@/types/types'
 import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface SearchResult {
   id: string
@@ -132,6 +134,13 @@ export function ClientDashboard({
   const [searchParams, setSearchParams] = useState<{ term: string; type: SearchType } | null>(null)
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  
+  // Chat state
+  const [chatConversationId, setChatConversationId] = useState<string | null>(null)
+  const [isStartingChat, setIsStartingChat] = useState(false)
+  
+  // Chat hook
+  const { createOrGetConversation } = useChat(user.id)
 
   // Geolocation for proximity-based search
   const geolocation = useGeolocation({
@@ -188,6 +197,44 @@ export function ClientDashboard({
     // eslint-disable-next-line no-console
     console.log('Book appointment:', { businessId: businessIdToUse, serviceId, locationId, employeeId })
   }, [selectedBusinessId])
+  
+  // Handle chat with professional from appointment details
+  const handleStartChatWithProfessional = useCallback(async (professionalId: string, businessId?: string) => {
+    if (!user?.id || !professionalId) {
+      toast.error('No se puede iniciar el chat en este momento')
+      return
+    }
+    
+    console.log('[ClientDashboard] Starting chat with professional:', { professionalId, businessId })
+    setIsStartingChat(true)
+    
+    try {
+      // Crear o obtener conversación con el profesional
+      const conversationId = await createOrGetConversation({
+        other_user_id: professionalId,
+        business_id: businessId,
+        initial_message: '¡Hola! Tengo algunas preguntas sobre mi cita.'
+      })
+      
+      console.log('[ClientDashboard] Conversation created/retrieved:', conversationId)
+      
+      if (conversationId) {
+        // Cerrar modal de detalles
+        setSelectedAppointment(null)
+        
+        // Establecer la conversación activa para abrir el chat
+        setChatConversationId(conversationId)
+        console.log('[ClientDashboard] chatConversationId set to:', conversationId)
+        
+        toast.success('Chat iniciado con el profesional')
+      }
+    } catch (error) {
+      console.error('Error al iniciar chat:', error)
+      toast.error('No se pudo iniciar el chat. Por favor, intenta de nuevo.')
+    } finally {
+      setIsStartingChat(false)
+    }
+  }, [user?.id, createOrGetConversation])
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -566,6 +613,8 @@ export function ClientDashboard({
         } : undefined}
         onSearchResultSelect={handleSearchResultSelect}
         onSearchViewMore={handleSearchViewMore}
+        chatConversationId={chatConversationId}
+        onChatClose={() => setChatConversationId(null)}
       >
         {renderContent()}
       </UnifiedLayout>
@@ -813,7 +862,23 @@ export function ClientDashboard({
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-between gap-3 pt-4">
+                {/* Chat button - only show if there's a professional */}
+                {selectedAppointment.employee?.id && (
+                  <Button
+                    variant="default"
+                    onClick={() => handleStartChatWithProfessional(
+                      selectedAppointment.employee!.id,
+                      selectedAppointment.business_id
+                    )}
+                    disabled={isStartingChat}
+                    className="flex items-center gap-2"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    {isStartingChat ? 'Iniciando chat...' : 'Chatear con el profesional'}
+                  </Button>
+                )}
+                
                 <Button 
                   variant="outline" 
                   onClick={() => setSelectedAppointment(null)}

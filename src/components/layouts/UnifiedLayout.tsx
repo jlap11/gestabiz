@@ -53,6 +53,8 @@ interface UnifiedLayoutProps {
   }
   onSearchResultSelect?: (result: SearchResult) => void
   onSearchViewMore?: (searchTerm: string, searchType: SearchType) => void
+  chatConversationId?: string | null
+  onChatClose?: () => void
 }
 
 interface SidebarItem {
@@ -83,7 +85,9 @@ export function UnifiedLayout({
   onPageChange,
   user,
   onSearchResultSelect,
-  onSearchViewMore
+  onSearchViewMore,
+  chatConversationId,
+  onChatClose
 }: UnifiedLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
@@ -376,6 +380,12 @@ export function UnifiedLayout({
         <FloatingChatButton 
           userId={user.id} 
           businessId={business?.id}
+          initialConversationId={chatConversationId}
+          onOpenChange={(isOpen) => {
+            if (!isOpen && onChatClose) {
+              onChatClose()
+            }
+          }}
         />
       )}
     </div>

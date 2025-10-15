@@ -1,16 +1,37 @@
 import React, { useState } from 'react'
 import { MessageSquare, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ChatLayout } from '@/components/chat/ChatLayout'
+import { SimpleChatLayout } from '@/components/chat/SimpleChatLayout'
 import { cn } from '@/lib/utils'
 
 interface FloatingChatButtonProps {
   userId: string
   businessId?: string
+  initialConversationId?: string | null
+  onOpenChange?: (isOpen: boolean) => void
 }
 
-export function FloatingChatButton({ userId, businessId }: FloatingChatButtonProps) {
+export function FloatingChatButton({ 
+  userId, 
+  businessId,
+  initialConversationId = null,
+  onOpenChange
+}: FloatingChatButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Abrir chat cuando se proporciona conversación inicial
+  React.useEffect(() => {
+    console.log('[FloatingChatButton] initialConversationId changed:', initialConversationId)
+    if (initialConversationId) {
+      console.log('[FloatingChatButton] Opening chat for conversation:', initialConversationId)
+      setIsOpen(true)
+    }
+  }, [initialConversationId])
+  
+  // Notificar cambios en estado de apertura
+  React.useEffect(() => {
+    onOpenChange?.(isOpen)
+  }, [isOpen, onOpenChange])
 
   return (
     <>
@@ -81,7 +102,11 @@ export function FloatingChatButton({ userId, businessId }: FloatingChatButtonPro
 
             {/* Chat Content */}
             <div className="h-[calc(100%-56px)]">
-              <ChatLayout userId={userId} businessId={businessId} />
+              <SimpleChatLayout 
+                userId={userId} 
+                businessId={businessId}
+                initialConversationId={initialConversationId}
+              />
             </div>
           </div>
         </div>
