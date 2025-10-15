@@ -464,7 +464,7 @@ export function useChat(userId: string | null) {
         .rpc('mark_messages_as_read', {
           p_conversation_id: conversationId,
           p_user_id: userId,
-          p_last_message_id: lastMessageId || null,
+          p_message_id: lastMessageId || null,
         });
       
       if (rpcError) throw rpcError;
