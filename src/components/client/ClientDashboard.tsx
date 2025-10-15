@@ -494,7 +494,7 @@ export function ClientDashboard({
                             {(appointment.service?.price || appointment.price) && (
                               <div className="pt-2 border-t border-border">
                                 <span className="text-lg font-bold text-foreground">
-                                  ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-MX')} {appointment.service?.currency || appointment.currency || 'MXN'}
+                                  ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
                                 </span>
                               </div>
                             )}
@@ -806,7 +806,7 @@ export function ClientDashboard({
                       )}
                     </div>
                     <p className="text-2xl font-bold text-foreground">
-                      ${(selectedAppointment.service?.price ?? selectedAppointment.price ?? 0).toLocaleString('es-MX')} {selectedAppointment.service?.currency || selectedAppointment.currency || 'MXN'}
+                      ${(selectedAppointment.service?.price ?? selectedAppointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
                     </p>
                   </div>
                 </div>

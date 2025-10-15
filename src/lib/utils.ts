@@ -221,21 +221,32 @@ export const truncate = (str: string, length: number, suffix = '...') => {
 }
 
 // Number utilities
+/**
+ * Formatea moneda en formato colombiano (COP)
+ * Formato: $30.000 (punto para miles, sin decimales)
+ */
 export const formatCurrency = (
   amount: number, 
-  currency = 'EUR', 
-  locale = 'es-ES'
+  currency = 'COP', 
+  locale = 'es-CO'
 ) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(amount)
 }
 
-export const formatNumber = (num: number, locale = 'es-ES') => {
-  return new Intl.NumberFormat(locale).format(num)
+/**
+ * Formatea número con separador de miles (punto)
+ * Formato: 30.000
+ */
+export const formatNumber = (num: number, locale = 'es-CO') => {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(num)
 }
 
 export const formatPercentage = (value: number, locale = 'es-ES') => {

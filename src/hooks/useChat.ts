@@ -663,13 +663,13 @@ export function useChat(userId: string | null) {
   // ============================================================================
   
   /**
-   * Subscribe to conversations changes - FIXED: removed fetchConversations from dependencies
+   * Subscribe to conversations changes - FIXED: removed Date.now() from channel name
    */
   useEffect(() => {
     if (!userId) return;
     
-    // Create unique channel name
-    const channelName = `chat_participants_${userId}_${Date.now()}`;
+    // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
+    const channelName = `chat_participants_${userId}`;
     
     // Subscribe to participant changes (for unread count, etc.)
     const channel = supabase
@@ -696,13 +696,14 @@ export function useChat(userId: string | null) {
   }, [userId]); // ✅ fetchConversations is stable (useCallback) - intentionally excluded
   
   /**
-   * Subscribe to messages for active conversation - FIXED: removed callbacks from dependencies
+   * Subscribe to messages for active conversation - FIXED: removed Date.now() from channel names
    */
   useEffect(() => {
     if (!userId || !activeConversationId) return;
     
-    // Create unique channel name
-    const channelName = `chat_messages_${activeConversationId}_${Date.now()}`;
+    // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
+    // Usar solo IDs estáticos para evitar re-crear el canal en cada render
+    const channelName = `chat_messages_${activeConversationId}`;
     
     // Subscribe to new messages
     const messagesChannel = supabase
@@ -759,8 +760,8 @@ export function useChat(userId: string | null) {
       )
       .subscribe();
     
-    // Subscribe to typing indicators
-    const typingChannelName = `chat_typing_${activeConversationId}_${Date.now()}`;
+    // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
+    const typingChannelName = `chat_typing_${activeConversationId}`;
     const typingChannel = supabase
       .channel(typingChannelName)
       .on(

@@ -345,8 +345,8 @@ export function useInAppNotifications(
       }
     }
 
-    // Create unique channel name
-    const channelName = `in_app_notifications_${userId}_${Date.now()}`
+    // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
+    const channelName = `in_app_notifications_${userId}`
     
     // Suscribirse al canal
     const channel = supabase

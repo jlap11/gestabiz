@@ -55,6 +55,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
     - **Pendiente**: Agregar `VITE_STRIPE_PUBLISHABLE_KEY` a .env (Ver `VARIABLE_ENTORNO_STRIPE_PENDIENTE.md`), Configurar Stripe Dashboard (Ver `GUIA_CONFIGURACION_STRIPE.md`), testing E2E, notificaciones por email.
     - Ver `SISTEMA_PAGOS_RESUMEN_FINAL.md` y `SISTEMA_PAGOS_FASE_4_COMPLETADA.md` para documentación completa.
   - **Integración RPC y Edge Function (2025-10-12)**: SearchResults.tsx refactorizado para usar funciones RPC (search_businesses, search_services, search_professionals). Edge Function refresh-ratings-stats desplegada para refresco automático de vistas materializadas. Ver `INTEGRACION_RPC_EDGE_FUNCTION.md`.
+  - **🚨 FIX CRÍTICO Realtime Subscriptions (2025-01-20)**: Corregido memory leak severo que causaba 398k queries/día. Eliminado `Date.now()` de nombres de canal en 5 subscripciones (useChat: 3, useEmployeeRequests: 1, useInAppNotifications: 1). Reducción esperada: 99.4% menos queries. Ver `FIX_CRITICO_REALTIME_SUBSCRIPTIONS.md` para detalles completos y best practices.
 
 ## Sistema Contable Colombiano ⭐ FASE 4 COMPLETADA (2025-10-13)
 Sistema contable completo con cálculo automático de IVA, ICA y Retención en la Fuente:

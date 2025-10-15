@@ -342,7 +342,7 @@ export function ServiceSelector({
                     )}
                     <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
                       <span>⏱️ {service.duration_minutes} min</span>
-                      <span>💰 ${service.price.toLocaleString('es-CO')} COP</span>
+                      <span>💰 ${service.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP</span>
                       {service.category && <Badge variant="outline">{service.category}</Badge>}
                     </div>
                   </div>

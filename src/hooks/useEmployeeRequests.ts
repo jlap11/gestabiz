@@ -96,8 +96,9 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
   useEffect(() => {
     if (!autoFetch || (!businessId && !userId)) return
 
-    // Create stable channel name
-    const channelName = `employee_requests_${businessId || userId}_${Date.now()}`
+    // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
+    // Usar solo IDs estáticos para evitar re-crear el canal en cada render
+    const channelName = `employee_requests_${businessId || userId}`
     
     const channel = supabase
       .channel(channelName)

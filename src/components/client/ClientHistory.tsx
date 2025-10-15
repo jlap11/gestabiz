@@ -390,7 +390,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              ${stats.totalSpent.toLocaleString('es-MX')}
+              ${stats.totalSpent.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
             </div>
           </CardContent>
         </Card>

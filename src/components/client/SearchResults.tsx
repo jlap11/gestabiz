@@ -636,7 +636,7 @@ export function SearchResults({
                         {result.price !== undefined && (
                           <div className="pt-2 border-t border-border">
                             <span className="text-base sm:text-lg font-bold text-primary">
-                              ${result.price.toLocaleString('es-MX')} {result.currency || 'MXN'}
+                              ${result.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
                             </span>
                           </div>
                         )}

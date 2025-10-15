@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { UserCircle2, Briefcase, Star, Loader2, Users } from 'lucide-react';
+import { UserCircle2, Briefcase, Star, Loader2, Users, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Employee {
   id: string;
@@ -32,6 +33,7 @@ export function EmployeeSelection({
 }: Readonly<EmployeeSelectionProps>) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth(); // Usuario actual logueado
 
   useEffect(() => {
     /**
@@ -178,18 +180,31 @@ export function EmployeeSelection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {employees.map((employee) => (
-          <button
-            key={employee.id}
-            onClick={() => onSelectEmployee(employee)}
-            className={cn(
-              "relative group rounded-xl p-6 text-left transition-all duration-200 border-2",
-              "hover:scale-[1.02] hover:shadow-xl",
-              selectedEmployeeId === employee.id
-                ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
-                : "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
-            )}
-          >
+        {employees.map((employee) => {
+          // REGLA: Un empleado no puede agendarse cita a sí mismo
+          const isSelf = user?.id === employee.id;
+          
+          return (
+            <button
+              key={employee.id}
+              onClick={() => {
+                if (isSelf) {
+                  toast.error('No puedes agendarte una cita a ti mismo');
+                  return;
+                }
+                onSelectEmployee(employee);
+              }}
+              disabled={isSelf}
+              className={cn(
+                "relative group rounded-xl p-6 text-left transition-all duration-200 border-2",
+                isSelf 
+                  ? "opacity-50 cursor-not-allowed bg-muted/30 border-border/30"
+                  : "hover:scale-[1.02] hover:shadow-xl",
+                !isSelf && selectedEmployeeId === employee.id
+                  ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
+                  : !isSelf && "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
+              )}
+            >
             {/* Selected indicator */}
             {selectedEmployeeId === employee.id && (
               <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
@@ -251,13 +266,25 @@ export function EmployeeSelection({
               <span className="text-xs text-muted-foreground ml-2">(5.0)</span>
             </div>
 
+            {/* Badge: No puedes seleccionarte a ti mismo */}
+            {isSelf && (
+              <div className="absolute inset-0 rounded-xl bg-black/50 flex items-center justify-center">
+                <div className="bg-red-500/90 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
+                  <Ban className="h-4 w-4" />
+                  No puedes agendarte a ti mismo
+                </div>
+              </div>
+            )}
+
             {/* Hover Effect Border */}
             <div className={cn(
               "absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none",
+              isSelf && "hidden", // Ocultar hover si es el mismo usuario
               "bg-gradient-to-br from-purple-500/10 to-transparent"
             )} />
           </button>
-        ))}
+        );
+        })}
       </div>
     </div>
   );
