@@ -15,7 +15,8 @@
     "clean": "rm -rf dist node_modules/.vite",
     "clean:install": "npm run clean && npm install",
     "analyze": "npm run build && npx vite-bundle-analyzer dist",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "pre-deploy": "node scripts/pre-deploy-check.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -59,6 +59,8 @@ export function AdminOnboarding({
     name: '',
     category_id: '', // Changed from category to category_id
     description: '',
+    logo_url: '', // URL del logo (opcional)
+    banner_url: '', // URL del banner (opcional)
     // Legal info
     legal_entity_type: 'individual' as LegalEntityType,
     tax_id: '',
@@ -86,7 +88,7 @@ export function AdminOnboarding({
   // Get subcategories of selected main category
   const availableSubcategories = formData.category_id
     ? categories.find(c => c.id === formData.category_id)?.subcategories || []
-    : []
+    : [] 
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -178,7 +180,7 @@ export function AdminOnboarding({
         }
       }
 
-      // Step 1: Create business WITHOUT logo first
+      // Step 1: Create business with optional logo and banner
       console.log('[AdminOnboarding] Creating business in Supabase...')
       const { data: business, error: businessError } = await supabase
         .from('businesses')
@@ -190,7 +192,8 @@ export function AdminOnboarding({
           tax_id: formData.tax_id.trim() || null,
           legal_name: formData.legal_name.trim() || null,
           registration_number: formData.registration_number.trim() || null,
-          logo_url: null, // Will be updated after upload
+          logo_url: formData.logo_url.trim() || null,
+          banner_url: formData.banner_url.trim() || null,
           phone: formData.phone.trim() || null,
           email: formData.email.trim() || null,
           address: formData.address.trim() || null,
@@ -572,6 +575,68 @@ export function AdminOnboarding({
                     rows={3}
                     className="bg-background border-border"
                   />
+                </div>
+
+                {/* Logo URL */}
+                <div className="space-y-2">
+                  <label htmlFor="logo_url" className="text-sm font-medium text-foreground">
+                    URL del Logo (opcional)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Enlace a la imagen del logo de tu negocio (recomendado cuadrado, 200x200px mínimo)
+                  </p>
+                  <Input
+                    id="logo_url"
+                    type="url"
+                    value={formData.logo_url}
+                    onChange={(e) => handleChange('logo_url', e.target.value)}
+                    placeholder="https://ejemplo.com/mi-logo.png"
+                    className="bg-background border-border"
+                  />
+                  {formData.logo_url && (
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                      <img 
+                        src={formData.logo_url} 
+                        alt="Preview logo" 
+                        className="h-12 w-12 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">Vista previa del logo</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Banner URL */}
+                <div className="space-y-2">
+                  <label htmlFor="banner_url" className="text-sm font-medium text-foreground">
+                    URL del Banner (opcional)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Enlace a la imagen del banner de tu negocio (recomendado panorámico, 1200x400px)
+                  </p>
+                  <Input
+                    id="banner_url"
+                    type="url"
+                    value={formData.banner_url}
+                    onChange={(e) => handleChange('banner_url', e.target.value)}
+                    placeholder="https://ejemplo.com/mi-banner.png"
+                    className="bg-background border-border"
+                  />
+                  {formData.banner_url && (
+                    <div className="space-y-1">
+                      <img 
+                        src={formData.banner_url} 
+                        alt="Preview banner" 
+                        className="w-full h-24 object-cover rounded-md"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">Vista previa del banner</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

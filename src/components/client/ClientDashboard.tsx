@@ -121,6 +121,7 @@ export function ClientDashboard({
 }: Readonly<ClientDashboardProps>) {
   const [activePage, setActivePage] = useState('appointments')
   const [showAppointmentWizard, setShowAppointmentWizard] = useState(false)
+  const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<string | undefined>(undefined)
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [currentUser, setCurrentUser] = useState(user)
@@ -171,17 +172,22 @@ export function ClientDashboard({
 
   // Handle booking from business profile
   const handleBookAppointment = useCallback((serviceId?: string, locationId?: string, employeeId?: string) => {
+    // Guardar el businessId antes de cerrar el modal
+    const businessIdToUse = selectedBusinessId
+    
     // Close profile modal
     setSelectedBusinessId(null)
     setSelectedUserId(null)
     
-    // Open appointment wizard with preselected values
-    // You can extend AppointmentWizard to accept these props
+    // Open appointment wizard with preselected business
+    if (businessIdToUse) {
+      setAppointmentWizardBusinessId(businessIdToUse)
+    }
     setShowAppointmentWizard(true)
     
     // eslint-disable-next-line no-console
-    console.log('Book appointment:', { serviceId, locationId, employeeId })
-  }, [])
+    console.log('Book appointment:', { businessId: businessIdToUse, serviceId, locationId, employeeId })
+  }, [selectedBusinessId])
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -347,6 +353,7 @@ export function ClientDashboard({
     setShowAppointmentWizard(false)
     setPreselectedDate(undefined)
     setPreselectedTime(undefined)
+    setAppointmentWizardBusinessId(undefined) // Limpiar businessId preseleccionado
   }
 
   const renderContent = () => {
@@ -568,6 +575,7 @@ export function ClientDashboard({
         <AppointmentWizard
           open={showAppointmentWizard}
           onClose={handleCloseWizard}
+          businessId={appointmentWizardBusinessId} // Pasar businessId preseleccionado
           userId={currentUser.id}
           preselectedDate={preselectedDate}
           preselectedTime={preselectedTime}

@@ -118,7 +118,7 @@ export function ConfirmationStep({
               <div className="flex justify-between items-center pt-2">
                 <span className="text-[#94a3b8] font-medium">Total</span>
                 <span className="text-2xl font-bold text-[#ff8c00]">
-                  ${service.price.toFixed(2)}
+                  ${service.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
               </div>
             </>

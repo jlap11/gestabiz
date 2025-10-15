@@ -106,7 +106,7 @@ export default function BusinessProfile({
     try {
       setLoading(true);
 
-      // Fetch business basic info with category
+      // Fetch business basic info (sin join, como en SearchResults)
       const { data: businessData, error: businessError } = await supabase
         .from('businesses')
         .select(`
@@ -118,27 +118,41 @@ export default function BusinessProfile({
           website,
           logo_url,
           banner_url,
-          category_id,
-          categories:category_id (
-            name,
-            icon
-          )
+          category_id
         `)
         .eq('id', businessId)
         .single();
 
       if (businessError) throw businessError;
 
-      // Fetch subcategories
-      const { data: subcategoriesData } = await supabase
+      // Fetch category separadamente
+      let categoryData: { name: string; icon_name?: string } | null = null;
+      if (businessData?.category_id) {
+        const { data: catData } = await supabase
+          .from('business_categories')
+          .select('name, icon_name')
+          .eq('id', businessData.category_id)
+          .single();
+        categoryData = catData;
+      }
+
+      // Fetch subcategories IDs
+      const { data: subcategoriesRelData } = await supabase
         .from('business_subcategories')
-        .select(`
-          subcategories:subcategory_id (
-            name
-          )
-        `)
+        .select('subcategory_id')
         .eq('business_id', businessId)
         .limit(3);
+
+      // Fetch subcategories data separadamente
+      let subcategoriesData: Array<{ name: string }> = [];
+      if (subcategoriesRelData && subcategoriesRelData.length > 0) {
+        const subcategoryIds = subcategoriesRelData.map(rel => rel.subcategory_id);
+        const { data: subcatsData } = await supabase
+          .from('business_categories')
+          .select('name')
+          .in('id', subcategoryIds);
+        subcategoriesData = subcatsData || [];
+      }
 
       // Fetch locations
       const { data: locationsData } = await supabase
@@ -183,24 +197,10 @@ export default function BusinessProfile({
         ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length
         : 0;
 
-      // Type-safe mapping
-      const category = Array.isArray(businessData.categories) 
-        ? businessData.categories[0] 
-        : businessData.categories;
-
-      const subcategories = subcategoriesData
-        ?.map(item => {
-          const sub = Array.isArray(item.subcategories) 
-            ? item.subcategories[0] 
-            : item.subcategories;
-          return sub;
-        })
-        .filter(Boolean) || [];
-
       setBusiness({
         ...businessData,
-        category,
-        subcategories,
+        category: categoryData ? { name: categoryData.name, icon: categoryData.icon_name } : undefined,
+        subcategories: subcategoriesData || [],
         locations: locationsData || [],
         services: (servicesData || []).map(s => {
           const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;

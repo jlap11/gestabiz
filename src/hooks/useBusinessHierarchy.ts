@@ -80,8 +80,16 @@ export function useBusinessHierarchy(businessId: string | null, initialFilters?:
     queryFn: async () => {
       if (!businessId) return null;
 
+      // Calcular últimos 30 días por defecto
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+
       const { data, error } = await supabase.rpc('get_business_hierarchy', {
         p_business_id: businessId,
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0],
+        p_filters: {},
       });
 
       if (error) throw new Error(error.message);

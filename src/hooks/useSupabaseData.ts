@@ -314,8 +314,16 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
       setLoading(true)
       setError(null)
 
+      // Calcular últimos 30 días por defecto
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+
       const { data, error: rpcError } = await supabase.rpc('get_business_hierarchy', {
         p_business_id: businessId,
+        p_start_date: startDate.toISOString().split('T')[0],
+        p_end_date: endDate.toISOString().split('T')[0],
+        p_filters: {},
       })
 
       if (rpcError) throw rpcError

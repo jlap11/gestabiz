@@ -54,15 +54,15 @@ const getLevelBadgeColor = (level: number): string => {
 const getLevelLabel = (level: number): string => {
   switch (level) {
     case 0:
-      return 'Owner'
+      return 'Propietario'
     case 1:
-      return 'Admin'
+      return 'Administrador'
     case 2:
-      return 'Manager'
+      return 'Gerente'
     case 3:
-      return 'Lead'
+      return 'Líder'
     case 4:
-      return 'Staff'
+      return 'Personal'
     default:
       return `Nivel ${level}`
   }
@@ -199,8 +199,8 @@ export function EmployeeCard({
               <div>
                 <p className="text-xs text-muted-foreground">Ocupación</p>
                 <p className="font-semibold">
-                  {employee.occupancy_percentage !== null
-                    ? `${employee.occupancy_percentage.toFixed(0)}%`
+                  {employee.occupancy_rate !== null && employee.occupancy_rate !== undefined
+                    ? `${Number(employee.occupancy_rate).toFixed(0)}%`
                     : 'N/A'}
                 </p>
               </div>
@@ -214,8 +214,8 @@ export function EmployeeCard({
               <div>
                 <p className="text-xs text-muted-foreground">Rating</p>
                 <p className="font-semibold">
-                  {employee.average_rating !== null
-                    ? `${employee.average_rating.toFixed(1)} ⭐`
+                  {employee.average_rating !== null && employee.average_rating !== undefined
+                    ? `${Number(employee.average_rating).toFixed(1)} ⭐`
                     : 'N/A'}
                 </p>
               </div>
@@ -229,8 +229,8 @@ export function EmployeeCard({
               <div>
                 <p className="text-xs text-muted-foreground">Revenue</p>
                 <p className="font-semibold">
-                  {employee.total_revenue !== null
-                    ? `$${(employee.total_revenue / 1000).toFixed(0)}k`
+                  {employee.gross_revenue !== null && employee.gross_revenue !== undefined
+                    ? `$${(Number(employee.gross_revenue) / 1000).toFixed(0)}k`
                     : 'N/A'}
                 </p>
               </div>

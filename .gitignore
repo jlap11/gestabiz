@@ -49,4 +49,16 @@ supabase/.branches/
 **/*-debug.tsx
 **/*-simple.tsx
 
+# Vercel
+.vercel
+.vercel/
+*.vercel
+
+# Environment variables (NUNCA commitear!)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
 
