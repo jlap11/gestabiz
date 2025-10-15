@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from './ChatWindow';
 import { ConversationList } from './ConversationList';
@@ -37,12 +37,20 @@ export function SimpleChatLayout({
 
   // Estado para controlar si mostramos lista o chat
   const [showChat, setShowChat] = useState(false);
+  
+  // Ref para el contenedor de mensajes (para auto-scroll)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   console.log('[SimpleChatLayout] userId:', userId);
   console.log('[SimpleChatLayout] initialConversationId:', initialConversationId);
   console.log('[SimpleChatLayout] conversations:', conversations);
   console.log('[SimpleChatLayout] activeConversation:', activeConversation);
   console.log('[SimpleChatLayout] showChat:', showChat);
+
+  // Función para hacer scroll al final
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Fetch inicial
   useEffect(() => {
@@ -58,6 +66,28 @@ export function SimpleChatLayout({
       setShowChat(true);
     }
   }, [initialConversationId, setActiveConversationId]);
+
+  // Auto-scroll cuando llegan nuevos mensajes
+  useEffect(() => {
+    if (activeMessages.length > 0) {
+      console.log('[SimpleChatLayout] 📜 New messages detected, scrolling to bottom');
+      // Pequeño delay para asegurar que el DOM se haya actualizado
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [activeMessages]);
+
+  // Auto-scroll cuando se abre una conversación
+  useEffect(() => {
+    if (showChat && activeConversation) {
+      console.log('[SimpleChatLayout] 📜 Conversation opened, scrolling to bottom');
+      // Delay más largo para la primera carga (esperar fetch de mensajes)
+      setTimeout(() => {
+        scrollToBottom();
+      }, 300);
+    }
+  }, [showChat, activeConversation]);
 
   // Marcar como leído
   useEffect(() => {
@@ -187,35 +217,39 @@ export function SimpleChatLayout({
                     No hay mensajes. ¡Envía el primero!
                   </div>
                 ) : (
-                  activeMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${
-                        message.sender_id === userId ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
+                  <>
+                    {activeMessages.map((message) => (
                       <div
-                        className={`max-w-[85%] rounded-lg px-4 py-2 ${
-                          message.sender_id === userId
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                        key={message.id}
+                        className={`flex ${
+                          message.sender_id === userId ? 'justify-end' : 'justify-start'
                         }`}
                       >
-                        {message.sender_id !== userId && message.sender && (
-                          <div className="text-xs font-semibold mb-1">
-                            {message.sender.full_name || message.sender.email}
+                        <div
+                          className={`max-w-[85%] rounded-lg px-4 py-2 ${
+                            message.sender_id === userId
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          {message.sender_id !== userId && message.sender && (
+                            <div className="text-xs font-semibold mb-1">
+                              {message.sender.full_name || message.sender.email}
+                            </div>
+                          )}
+                          <div className="break-words">{message.content}</div>
+                          <div className="text-xs opacity-70 mt-1">
+                            {new Date(message.sent_at).toLocaleTimeString('es', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </div>
-                        )}
-                        <div className="break-words">{message.content}</div>
-                        <div className="text-xs opacity-70 mt-1">
-                          {new Date(message.sent_at).toLocaleTimeString('es', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                    {/* Elemento invisible para auto-scroll */}
+                    <div ref={messagesEndRef} />
+                  </>
                 )}
               </div>
 
