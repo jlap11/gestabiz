@@ -478,6 +478,25 @@ export function useChat(userId: string | null) {
         )
       );
       
+      // 🔥 FIX: También limpiar notificaciones de chat de esta conversación
+      // Esto sincroniza el badge del botón flotante
+      try {
+        const { error: notifError } = await supabase
+          .from('in_app_notifications')
+          .update({ status: 'read' })
+          .eq('user_id', userId)
+          .eq('type', 'chat_message')
+          .eq('status', 'unread')
+          .like('metadata->>conversation_id', conversationId);
+        
+        if (notifError) {
+          console.error('Error clearing chat notifications:', notifError);
+        }
+      } catch (notifErr) {
+        // No bloquear si falla - logging solo
+        console.error('Failed to clear chat notifications:', notifErr);
+      }
+      
       return count;
     } catch (err: any) {
       console.error('Error marking messages as read:', err);

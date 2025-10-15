@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ReadReceipts } from './ReadReceipts';
 
 interface SimpleChatLayoutProps {
   userId: string;
@@ -91,16 +92,14 @@ export function SimpleChatLayout({
     }
   }, [showChat, activeConversation]);
 
-  // Marcar como leído
+  // Marcar como leído INMEDIATAMENTE al abrir conversación
   useEffect(() => {
     if (activeConversation && activeMessages.length > 0) {
-      const timeout = setTimeout(() => {
-        const lastMessage = activeMessages[activeMessages.length - 1];
-        if (lastMessage) {
-          markMessagesAsRead(activeConversation.id, lastMessage.id);
-        }
-      }, 1000);
-      return () => clearTimeout(timeout);
+      // Marcar como leído inmediatamente (0ms delay)
+      const lastMessage = activeMessages[activeMessages.length - 1];
+      if (lastMessage) {
+        markMessagesAsRead(activeConversation.id, lastMessage.id);
+      }
     }
   }, [activeConversation, activeMessages, markMessagesAsRead]);
 
@@ -224,11 +223,20 @@ export function SimpleChatLayout({
                             </div>
                           )}
                           <div className="break-words">{message.content}</div>
-                          <div className="text-xs opacity-70 mt-1">
+                          <div className="text-xs opacity-70 mt-1 flex items-center gap-1.5">
                             {new Date(message.sent_at).toLocaleTimeString('es', {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
+                            {/* Indicador de visto - Solo para mensajes propios */}
+                            <ReadReceipts
+                              senderId={message.sender_id}
+                              currentUserId={userId}
+                              readBy={message.read_by || []}
+                              deliveredAt={message.delivered_at}
+                              sentAt={message.sent_at}
+                              size="sm"
+                            />
                           </div>
                         </div>
                       </div>

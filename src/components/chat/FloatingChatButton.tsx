@@ -21,8 +21,8 @@ export function FloatingChatButton({
 }: FloatingChatButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   
-  // Obtener contador de notificaciones de chat
-  const { unreadCount } = useInAppNotifications({
+  // Obtener contador de notificaciones de chat con refetch
+  const { unreadCount, refetch } = useInAppNotifications({
     userId,
     autoFetch: true,
     type: 'chat_message', // Solo notificaciones de chat
@@ -40,6 +40,15 @@ export function FloatingChatButton({
   React.useEffect(() => {
     onOpenChange?.(isOpen)
   }, [isOpen, onOpenChange])
+  
+  // 🔥 FIX: Refrescar contador al cerrar el chat
+  const handleClose = React.useCallback(() => {
+    setIsOpen(false)
+    // Esperar 500ms para que las notificaciones se marquen como leídas en Supabase
+    setTimeout(() => {
+      refetch()
+    }, 500)
+  }, [refetch])
 
   return (
     <>
@@ -80,8 +89,8 @@ export function FloatingChatButton({
             role="button"
             tabIndex={0}
             className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
-            onKeyDown={(e) => e.key === 'Escape' && setIsOpen(false)}
+            onClick={handleClose}
+            onKeyDown={(e) => e.key === 'Escape' && handleClose()}
             aria-label="Cerrar chat"
           />
 
@@ -106,7 +115,7 @@ export function FloatingChatButton({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsOpen(false)}
+                onClick={handleClose}
                 className="h-8 w-8 p-0 text-primary-foreground hover:bg-primary-foreground/20"
               >
                 <X className="h-5 w-5" />
