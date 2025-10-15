@@ -481,20 +481,27 @@ export function useChat(userId: string | null) {
       // 🔥 FIX: También limpiar notificaciones de chat de esta conversación
       // Esto sincroniza el badge del botón flotante
       try {
-        const { error: notifError } = await supabase
+        // Usar operador JSONB contains (@>) para filtrar por conversation_id en data column
+        const { data: clearedNotifs, error: notifError } = await supabase
           .from('in_app_notifications')
-          .update({ status: 'read' })
+          .update({ 
+            status: 'read',
+            read_at: new Date().toISOString()
+          })
           .eq('user_id', userId)
-          .eq('type', 'chat_message')
+          .eq('type', 'chat_message_received')
           .eq('status', 'unread')
-          .like('metadata->>conversation_id', conversationId);
+          .contains('data', { conversation_id: conversationId })
+          .select('id');
         
         if (notifError) {
-          console.error('Error clearing chat notifications:', notifError);
+          console.error('[useChat] Error clearing chat notifications:', notifError);
+        } else {
+          console.log(`[useChat] ✅ Cleared ${clearedNotifs?.length || 0} chat notifications for conversation ${conversationId}`);
         }
       } catch (notifErr) {
         // No bloquear si falla - logging solo
-        console.error('Failed to clear chat notifications:', notifErr);
+        console.error('[useChat] Failed to clear chat notifications:', notifErr);
       }
       
       return count;
