@@ -307,6 +307,25 @@ export function useInAppNotifications(
 
     // Helpers para actualizar estado
     const upsertNotification = (notification: InAppNotification) => {
+      // 🔥 FIX: Aplicar filtros antes de procesar
+      // Si hay filtro de tipo y no coincide, ignorar
+      if (type && notification.type !== type) {
+        console.log('[useInAppNotifications] ⏭️ Skipping notification (type mismatch):', notification.type, 'vs', type)
+        return
+      }
+      
+      // Si debe excluir chat y es chat, ignorar
+      if (excludeChatMessages && notification.type === 'chat_message') {
+        console.log('[useInAppNotifications] ⏭️ Skipping chat notification (excludeChatMessages=true)')
+        return
+      }
+      
+      // Si hay filtro de businessId y no coincide, ignorar
+      if (businessId && notification.business_id !== businessId) {
+        console.log('[useInAppNotifications] ⏭️ Skipping notification (businessId mismatch)')
+        return
+      }
+      
       const current = notificationsRef.current
       const exists = current.find(n => n.id === notification.id)
       
@@ -405,8 +424,7 @@ export function useInAppNotifications(
     return () => {
       supabase.removeChannel(channel)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, limit]) // ✅ fetchNotifications is stable (useCallback) - intentionally excluded
+  }, [userId, limit, type, businessId, excludeChatMessages]) // ✅ Incluir filtros para recrear suscripción cuando cambien
 
   return {
     notifications,
