@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LocationSelector } from './LocationSelector';
 import { ServiceSelector } from './ServiceSelector';
+import { WorkScheduleEditor } from './WorkScheduleEditor';
 import supabase from '@/lib/supabase';
 
 interface EmploymentDetailModalProps {
@@ -150,7 +151,7 @@ export function EmploymentDetailModal({
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="info" className="text-xs sm:text-sm">
                 <Building2 className="h-4 w-4 mr-1" />
                 Info
@@ -162,6 +163,12 @@ export function EmploymentDetailModal({
               <TabsTrigger value="services" className="text-xs sm:text-sm">
                 <Briefcase className="h-4 w-4 mr-1" />
                 Servicios
+              </TabsTrigger>
+              <TabsTrigger value="schedule" className="text-xs sm:text-sm">
+                <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Horario
               </TabsTrigger>
               <TabsTrigger value="salary" className="text-xs sm:text-sm">
                 <DollarSign className="h-4 w-4 mr-1" />
@@ -287,7 +294,16 @@ export function EmploymentDetailModal({
               />
             </TabsContent>
 
-            {/* Tab 4: Salario */}
+            {/* Tab 4: Horario */}
+            <TabsContent value="schedule" className="mt-4">
+              <WorkScheduleEditor
+                businessId={businessId}
+                employeeId={employeeId}
+                onScheduleChanged={fetchDetails}
+              />
+            </TabsContent>
+
+            {/* Tab 5: Salario */}
             <TabsContent value="salary" className="mt-4">
               <Card>
                 <CardHeader>

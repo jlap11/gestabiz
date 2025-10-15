@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
+import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness';
 import { ChatWindow } from './ChatWindow';
 import { ConversationList } from './ConversationList';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface SimpleChatLayoutProps {
   userId: string;
@@ -188,27 +190,11 @@ export function SimpleChatLayout({
         <div className="w-full flex flex-col">
           {activeConversation ? (
             <>
-              {/* Header con botón Back */}
-              <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleBackToList}
-                  className="shrink-0"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">
-                    {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
-                  </div>
-                  {activeConversation.other_user?.email && (
-                    <div className="text-sm text-muted-foreground truncate">
-                      {activeConversation.other_user.email}
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Header con botón Back + Avatar + Info */}
+              <ChatHeader
+                activeConversation={activeConversation}
+                onBackToList={handleBackToList}
+              />
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -291,6 +277,81 @@ export function SimpleChatLayout({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * ChatHeader - Header del chat con avatar, nombre y negocio activo
+ */
+interface ChatHeaderProps {
+  activeConversation: NonNullable<ReturnType<typeof useChat>['activeConversation']>;
+  onBackToList: () => void;
+}
+
+function ChatHeader({ activeConversation, onBackToList }: ChatHeaderProps) {
+  const otherUserId = activeConversation.other_user?.id;
+  const activeBusiness = useEmployeeActiveBusiness(otherUserId);
+
+  // Obtener iniciales para el avatar fallback
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  return (
+    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3">
+      {/* Botón Back */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBackToList}
+        className="shrink-0"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+
+      {/* Avatar */}
+      <Avatar className="h-10 w-10 shrink-0">
+        <AvatarImage 
+          src={activeConversation.other_user?.avatar_url || undefined} 
+          alt={activeConversation.other_user?.full_name || 'Usuario'} 
+        />
+        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+          {getInitials(activeConversation.other_user?.full_name)}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Info del usuario */}
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold truncate">
+          {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
+        </div>
+        
+        {/* Mostrar negocio o estado según horario */}
+        {activeBusiness.status === 'active' && activeBusiness.business_name ? (
+          <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
+            <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            {activeBusiness.business_name}
+          </div>
+        ) : activeBusiness.status === 'off-schedule' && activeBusiness.business_name ? (
+          <div className="text-sm text-orange-600 dark:text-orange-400 truncate flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            Fuera de horario laboral
+          </div>
+        ) : activeBusiness.status === 'no-schedule' && activeBusiness.business_name ? (
+          <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            {activeBusiness.business_name} (sin horario)
+          </div>
+        ) : null}
+        {/* Si es cliente (not-employee), no mostrar nada adicional */}
+      </div>
     </div>
   );
 }
