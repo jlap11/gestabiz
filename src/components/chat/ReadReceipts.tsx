@@ -55,14 +55,14 @@ export function ReadReceipts({
   return (
     <div className="flex items-center gap-0.5" title={getTooltipText(isRead, isDelivered, sentAt, deliveredAt)}>
       {isRead ? (
-        // Leído - Doble check con color secundario/accent de la app
-        <CheckCheck className={cn(iconSize, 'text-primary dark:text-primary')} />
+        // Leído - Doble check AZUL BRILLANTE (como WhatsApp)
+        <CheckCheck className={cn(iconSize, 'text-blue-500 dark:text-blue-400')} strokeWidth={2.5} />
       ) : isDelivered ? (
-        // Entregado - Doble check con opacidad media
-        <CheckCheck className={cn(iconSize, 'text-foreground/60 dark:text-foreground/60')} />
+        // Entregado - Doble check gris oscuro (bien visible)
+        <CheckCheck className={cn(iconSize, 'text-gray-600 dark:text-gray-300')} strokeWidth={2.5} />
       ) : (
-        // Enviado - Single check con opacidad baja
-        <Check className={cn(iconSize, 'text-foreground/40 dark:text-foreground/40')} />
+        // Enviado - Single check gris medio (visible)
+        <Check className={cn(iconSize, 'text-gray-500 dark:text-gray-400')} strokeWidth={2.5} />
       )}
     </div>
   )

@@ -98,6 +98,11 @@ export function SimpleChatLayout({
       // Marcar como leído inmediatamente (0ms delay)
       const lastMessage = activeMessages[activeMessages.length - 1];
       if (lastMessage) {
+        console.log('[SimpleChatLayout] 👀 Marking conversation as read:', {
+          conversationId: activeConversation.id,
+          lastMessageId: lastMessage.id,
+          totalMessages: activeMessages.length
+        });
         markMessagesAsRead(activeConversation.id, lastMessage.id);
       }
     }

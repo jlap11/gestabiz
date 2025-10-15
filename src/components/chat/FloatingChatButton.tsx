@@ -25,7 +25,7 @@ export function FloatingChatButton({
   const { unreadCount, refetch } = useInAppNotifications({
     userId,
     autoFetch: true,
-    type: 'chat_message_received', // 🔥 FIX: Tipo correcto de notificación de chat
+    type: 'chat_message', // ✅ FIX: Tipo correcto del enum (sin _received)
     limit: 1
   })
   

@@ -489,19 +489,19 @@ export function useChat(userId: string | null) {
             read_at: new Date().toISOString()
           })
           .eq('user_id', userId)
-          .eq('type', 'chat_message_received')
+          .eq('type', 'chat_message')  // ✅ FIX: Tipo correcto del enum
           .eq('status', 'unread')
           .contains('data', { conversation_id: conversationId })
           .select('id');
         
         if (notifError) {
-          console.error('[useChat] Error clearing chat notifications:', notifError);
+          console.error('[useChat] ❌ Error clearing chat notifications:', notifError);
         } else {
           console.log(`[useChat] ✅ Cleared ${clearedNotifs?.length || 0} chat notifications for conversation ${conversationId}`);
         }
       } catch (notifErr) {
         // No bloquear si falla - logging solo
-        console.error('[useChat] Failed to clear chat notifications:', notifErr);
+        console.error('[useChat] ❌ Failed to clear chat notifications:', notifErr);
       }
       
       return count;

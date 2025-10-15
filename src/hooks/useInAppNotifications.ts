@@ -103,7 +103,7 @@ export function useInAppNotifications(
 
       // Excluir mensajes de chat si se especifica (para campana de notificaciones)
       if (excludeChatMessages) {
-        query = query.neq('type', 'chat_message_received')
+        query = query.neq('type', 'chat_message')  // ✅ FIX: Tipo correcto del enum
       }
 
       const { data, error: fetchError } = await query
