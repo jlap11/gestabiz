@@ -8,10 +8,14 @@ import {
   Client, 
   DashboardStats,
   User,
+  EmployeeHierarchy,
+  HierarchyUpdateData,
+  SupervisorAssignment,
 } from '@/types'
 // removed isValidAppointmentStatus in favor of normalizeAppointmentStatus
 import { normalizeAppointmentStatus } from '@/lib/normalizers'
 import { appointmentsService, servicesService, locationsService, businessesService, statsService } from '@/lib/services'
+import { hierarchyService } from '@/lib/hierarchyService'
 import { toast } from 'sonner'
 
 interface UseSupabaseDataOptions {
@@ -296,6 +300,87 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
     }
   }, [user, handleError, fetchAppointments])
 
+  // =====================================================
+  // EMPLOYEE HIERARCHY METHODS (Phase 2)
+  // =====================================================
+
+  /**
+   * Fetch business hierarchy - Wrapper de RPC get_business_hierarchy
+   */
+  const fetchBusinessHierarchy = useCallback(async (businessId: string): Promise<EmployeeHierarchy[]> => {
+    if (!user) return []
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data, error: rpcError } = await supabase.rpc('get_business_hierarchy', {
+        p_business_id: businessId,
+      })
+
+      if (rpcError) throw rpcError
+
+      return (data || []) as EmployeeHierarchy[]
+    } catch (error) {
+      handleError(error, 'fetch business hierarchy')
+      return []
+    } finally {
+      setLoading(false)
+    }
+  }, [user, handleError])
+
+  /**
+   * Update employee hierarchy level - Usa hierarchyService
+   */
+  const updateHierarchyLevel = useCallback(async (data: HierarchyUpdateData) => {
+    if (!user) return null
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const result = await hierarchyService.updateEmployeeHierarchy(data)
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Error al actualizar jerarquía')
+      }
+
+      toast.success('Jerarquía actualizada correctamente')
+      return result
+    } catch (error) {
+      handleError(error, 'update hierarchy level')
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }, [user, handleError])
+
+  /**
+   * Assign supervisor to employee - Usa hierarchyService
+   */
+  const assignReportsTo = useCallback(async (assignment: SupervisorAssignment) => {
+    if (!user) return null
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const result = await hierarchyService.assignSupervisor(assignment)
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Error al asignar supervisor')
+      }
+
+      toast.success('Supervisor asignado correctamente')
+      return result
+    } catch (error) {
+      handleError(error, 'assign supervisor')
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }, [user, handleError])
+
   // Auto-fetch data when user changes
   useEffect(() => {
     if (autoFetch && user) {
@@ -329,6 +414,11 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
     createAppointment,
     updateAppointment,
     deleteAppointment,
+    
+    // Hierarchy methods (Phase 2)
+    fetchBusinessHierarchy,
+    updateHierarchyLevel,
+    assignReportsTo,
     
     // Utils
     refetch: () => {

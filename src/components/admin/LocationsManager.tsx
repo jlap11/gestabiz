@@ -41,6 +41,7 @@ interface Location {
   country?: string
   postal_code?: string
   phone?: string
+  email?: string
   description?: string
   business_hours?: BusinessHours
   images?: string[]
@@ -62,6 +63,7 @@ const initialFormData: Omit<Location, 'id' | 'created_at' | 'updated_at' | 'busi
   country: 'México',
   postal_code: '',
   phone: '',
+  email: '',
   description: '',
   business_hours: undefined,
   images: [],
@@ -111,6 +113,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         country: location.country || 'México',
         postal_code: location.postal_code || '',
         phone: location.phone || '',
+        email: location.email || '',
         description: location.description || '',
         business_hours: location.business_hours || undefined,
         images: location.images || [],
@@ -162,6 +165,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         country: formData.country?.trim() || null,
         postal_code: formData.postal_code?.trim() || null,
         phone: formData.phone?.trim() || null,
+        email: formData.email?.trim() || null,
         description: formData.description?.trim() || null,
         business_hours: formData.business_hours || null,
         images: formData.images || [],
@@ -382,6 +386,12 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">{location.phone}</span>
+                  </div>
+                )}
+                {location.email && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{location.email}</span>
                   </div>
                 )}
                 {location.business_hours && (

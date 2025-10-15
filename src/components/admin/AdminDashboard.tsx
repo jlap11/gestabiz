@@ -4,13 +4,14 @@ import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
+import { EmployeeManagementHierarchy } from './EmployeeManagementHierarchy'
 import { AccountingPage } from './AccountingPage'
 import { ReportsPage } from './ReportsPage'
 import { BusinessSettings } from './BusinessSettings'
 import { PermissionsManager } from './PermissionsManager'
 import { BillingDashboard } from '@/components/billing'
 import UserProfile from '@/components/settings/UserProfile'
-import type { Business, UserRole, User } from '@/types/types'
+import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
 
 interface AdminDashboardProps {
   business: Business
@@ -39,6 +40,7 @@ export function AdminDashboard({
 }: Readonly<AdminDashboardProps>) {
   const [activePage, setActivePage] = useState('overview')
   const [currentUser, setCurrentUser] = useState(user)
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -116,15 +118,19 @@ export function AdminDashboard({
         return <ServicesManager businessId={business.id} />
       case 'employees':
         return (
-          <div className="p-12 text-center">
-            <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              Gestión de Empleados
-            </h3>
-            <p className="text-muted-foreground">
-              Esta funcionalidad estará disponible próximamente
-            </p>
-          </div>
+          <>
+            <EmployeeManagementHierarchy 
+              businessId={business.id}
+              onEmployeeSelect={(employee: EmployeeHierarchy) => {
+                setSelectedEmployee(employee)
+                // Future: Abrir modal de detalle del empleado
+              }}
+            />
+            {selectedEmployee && (
+              // Future: Modal de detalle del empleado
+              <></>
+            )}
+          </>
         )
       case 'accounting':
         return <AccountingPage businessId={business.id} onUpdate={onUpdate} />

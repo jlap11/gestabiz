@@ -1555,3 +1555,112 @@ export interface PresenceEvent {
   status: 'online' | 'offline' | 'away'
   last_seen_at: string
 }
+
+// =====================================================
+// EMPLOYEE HIERARCHY SYSTEM (Phase 2 - 14/10/2025)
+// =====================================================
+
+/**
+ * Jerarquía completa de empleado (devuelta por get_business_hierarchy RPC)
+ * Incluye datos personales, jerarquía, métricas y relaciones
+ */
+export interface EmployeeHierarchy {
+  employee_id: string
+  full_name: string
+  email: string
+  role: string
+  employee_type: string
+  hierarchy_level: number
+  job_title: string | null
+  reports_to: string | null
+  supervisor_name: string | null
+  location_id: string | null
+  location_name: string | null
+  direct_reports_count: number
+  all_reports_count: number
+  occupancy_rate: number | null
+  average_rating: number | null
+  gross_revenue: number | null
+  total_appointments: number
+  completed_appointments: number
+  cancelled_appointments: number
+  total_reviews: number
+  services_offered: Array<{
+    service_id: string
+    service_name: string
+    expertise_level: string
+    commission_percentage: number
+  }> | null
+  is_active: boolean
+  hired_at: string | null
+  phone: string | null
+  avatar_url: string | null
+}
+
+/**
+ * Filtros para jerarquía de empleados
+ * Usado en useBusinessHierarchy para filtrado cliente-side
+ */
+export interface HierarchyFilters {
+  searchQuery?: string
+  hierarchyLevel?: number | null
+  employeeType?: string | null
+  departmentId?: string | null
+}
+
+/**
+ * Configuración de cálculo de ocupación
+ * Almacenada en businesses.settings.occupancy_config
+ */
+export interface OccupancyConfig {
+  method: 'hours_based' | 'appointments_based'
+  daily_hours: number
+  exclude_days: string[] // ['sunday', 'saturday']
+  include_breaks: boolean
+  break_duration_minutes: number
+}
+
+/**
+ * Métricas individuales de empleado
+ * Devueltas por useEmployeeMetrics hook
+ */
+export interface EmployeeMetrics {
+  occupancy: number | null
+  rating: number | null
+  revenue: number | null
+}
+
+/**
+ * Nodo de jerarquía para visualización en árbol (tree view)
+ * Usado en componentes UI de jerarquía
+ */
+export interface HierarchyNode {
+  id: string
+  user_id: string
+  full_name: string
+  email: string
+  job_title: string | null
+  hierarchy_level: number
+  employee_type: string
+  reports_to: string | null
+  direct_reports_count: number
+  avatar_url: string | null
+  metrics?: EmployeeMetrics
+  children: HierarchyNode[]
+  is_expanded?: boolean
+}
+
+// Re-export tipos de hierarchyService para uso global
+export type {
+  HierarchyUpdateData,
+  BulkHierarchyUpdate,
+  HierarchyValidationResult,
+  SupervisorAssignment,
+  DirectReportNode,
+  ReportingChainNode,
+} from '@/lib/hierarchyService'
+
+// Re-export tipos de useEmployeeMetrics para uso global
+export type {
+  UseEmployeeMetricsOptions,
+} from '@/hooks/useEmployeeMetrics'
