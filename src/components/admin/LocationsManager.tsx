@@ -297,33 +297,34 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
   return (
     <div className="p-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Sedes</h2>
-          <p className="text-muted-foreground text-sm">Gestiona las ubicaciones de tu negocio</p>
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">Sedes</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm">Gestiona las ubicaciones de tu negocio</p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90"
+          className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Agregar Sede
+          <span className="hidden sm:inline">Agregar Sede</span>
+          <span className="sm:hidden">Nueva Sede</span>
         </Button>
       </div>
 
-      {/* Locations Grid */}
+      {/* Locations Grid - Responsive */}
       {locations.length === 0 ? (
         <Card className="bg-card border-border">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <MapPin className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">No hay sedes aún</h3>
-            <p className="text-muted-foreground text-center mb-4">
+          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+            <MapPin className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">No hay sedes aún</h3>
+            <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
               Agrega tu primera sede para empezar a recibir citas
             </p>
             <Button
               onClick={() => handleOpenDialog()}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Primera Sede
@@ -331,32 +332,32 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {locations.map((location) => (
             <Card key={location.id} className="bg-card border-border hover:border-border/80 transition-colors">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-foreground text-lg">{location.name}</CardTitle>
+              <CardHeader className="p-3 sm:p-6">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <CardTitle className="text-foreground text-base sm:text-lg truncate">{location.name}</CardTitle>
                       {location.is_primary && (
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="default" className="text-[10px] sm:text-xs">
                           Principal
                         </Badge>
                       )}
                     </div>
                     {!location.is_active && (
-                      <Badge variant="secondary" className="mt-2 text-xs">
+                      <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
                         Inactiva
                       </Badge>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenDialog(location)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -364,18 +365,18 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(location.id)}
-                      className="text-muted-foreground hover:text-red-400"
+                      className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
                 {location.address && (
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground">
+                  <div className="flex items-start gap-2 text-xs sm:text-sm">
+                    <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground line-clamp-2">
                       {location.address}
                       {location.city && `, ${location.city}`}
                       {location.state && `, ${location.state}`}
@@ -383,26 +384,26 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                   </div>
                 )}
                 {location.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{location.phone}</span>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground truncate">{location.phone}</span>
                   </div>
                 )}
                 {location.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{location.email}</span>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground truncate">{location.email}</span>
                   </div>
                 )}
                 {location.business_hours && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">Horarios configurados</span>
                   </div>
                 )}
                 {location.images && location.images.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">{location.images.length} imagen(es)</span>
                   </div>
                 )}
@@ -412,9 +413,9 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
+      {/* Create/Edit Dialog - Mobile Responsive */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-  <DialogContent className="bg-card border-border text-foreground max-w-5xl w-[99vw] max-h-[90vh] overflow-y-auto">
+  <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               {editingLocation ? 'Editar Sede' : 'Crear Nueva Sede'}
@@ -426,77 +427,83 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Name */}
             <div>
-              <Label htmlFor="name">Nombre de la Sede *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">Nombre de la Sede *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="Ej: Sede Centro"
                 required
+                className="min-h-[44px]"
               />
             </div>
 
             {/* Address */}
             <div>
-              <Label htmlFor="address">Dirección</Label>
+              <Label htmlFor="address" className="text-sm sm:text-base">Dirección</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Calle y número"
+                className="min-h-[44px]"
               />
             </div>
 
-            {/* City, State, Postal Code */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* City, State, Postal Code - Responsive Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="city">Ciudad</Label>
+                <Label htmlFor="city" className="text-sm sm:text-base">Ciudad</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                   placeholder="Ciudad"
+                  className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="state">Estado/Provincia</Label>
+                <Label htmlFor="state" className="text-sm sm:text-base">Estado/Provincia</Label>
                 <Input
                   id="state"
                   value={formData.state}
                   onChange={(e) => handleChange('state', e.target.value)}
                   placeholder="Estado"
+                  className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="postal_code">Código Postal</Label>
+                <Label htmlFor="postal_code" className="text-sm sm:text-base">Código Postal</Label>
                 <Input
                   id="postal_code"
                   value={formData.postal_code}
                   onChange={(e) => handleChange('postal_code', e.target.value)}
                   placeholder="00000"
+                  className="min-h-[44px]"
                 />
               </div>
             </div>
 
             {/* Country */}
             <div>
-              <Label htmlFor="country">País</Label>
+              <Label htmlFor="country" className="text-sm sm:text-base">País</Label>
               <Input
                 id="country"
                 value="Colombia"
                 readOnly
                 placeholder="País"
                 autoComplete="country"
+                className="min-h-[44px]"
               />
             </div>
 
-            {/* Phone & Email */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Phone & Email - Responsive Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="phone">Teléfono</Label>
+                <Label htmlFor="phone" className="text-sm sm:text-base">Teléfono</Label>
                 <PhoneInput
                   value={formData.phone || ''}
                   onChange={val => handleChange('phone', val)}
@@ -507,14 +514,16 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                     handleChange('phone', `${prefix} ${number}`)
                   }}
                   placeholder="Número de teléfono"
+                  className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
+                  className="min-h-[44px]"
                   onChange={(e) => handleChange('email', e.target.value)}
                   placeholder="sede@negocio.com"
                 />
@@ -523,19 +532,20 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
             {/* Description */}
             <div>
-              <Label htmlFor="description">Descripción</Label>
+              <Label htmlFor="description" className="text-sm sm:text-base">Descripción</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 placeholder="Información adicional sobre esta sede"
                 rows={3}
+                className="min-h-[88px]"
               />
             </div>
 
             {/* Business Hours */}
             <div>
-              <Label>Horarios de Atención</Label>
+              <Label className="text-sm sm:text-base">Horarios de Atención</Label>
               <BusinessHoursPicker
                 value={formData.business_hours}
                 onChange={(hours) => handleChange('business_hours', hours)}
@@ -544,11 +554,11 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
             {/* Images */}
             <div>
-              <Label>Imágenes de la Sede</Label>
-              <div className="space-y-4">
+              <Label className="text-sm sm:text-base">Imágenes de la Sede</Label>
+              <div className="space-y-3 sm:space-y-4">
                 {/* Current Images */}
                 {formData.images && formData.images.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {formData.images.map((url, index) => (
                       <div key={index} className="relative group">
                         <img
@@ -597,16 +607,17 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               </div>
             </div>
 
-            {/* Active Status & Primary Location */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card">
+            {/* Active Status & Primary Location - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 p-3 sm:p-4 rounded-lg border border-border bg-card min-h-[68px]">
                 <Checkbox
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => handleChange('is_active', checked === true)}
+                  className="min-w-[44px] min-h-[44px]"
                 />
                 <div className="flex flex-col">
-                  <Label htmlFor="is_active" className="cursor-pointer text-sm font-medium text-foreground">
+                  <Label htmlFor="is_active" className="cursor-pointer text-xs sm:text-sm font-medium text-foreground">
                     Sede activa
                   </Label>
                   <span className="text-xs text-muted-foreground">
@@ -615,35 +626,37 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card">
+              <div className="flex items-center gap-3 p-3 sm:p-4 rounded-lg border border-border bg-card min-h-[68px]">
                 <Checkbox
                   id="is_primary"
                   checked={formData.is_primary || false}
                   onCheckedChange={(checked) => handleChange('is_primary', checked === true)}
+                  className="min-w-[44px] min-h-[44px]"
                 />
                 <div className="flex flex-col">
-                  <Label htmlFor="is_primary" className="cursor-pointer text-sm font-medium text-foreground">
+                  <Label htmlFor="is_primary" className="cursor-pointer text-xs sm:text-sm font-medium text-foreground">
                     Sede principal
                   </Label>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
                     Solo puede haber una sede principal por negocio
                   </span>
                 </div>
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={handleCloseDialog}
+                className="min-h-[44px] w-full sm:w-auto"
                 disabled={isSaving}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
                 disabled={isSaving}
               >
                 {isSaving ? 'Guardando...' : editingLocation ? 'Actualizar' : 'Crear'}

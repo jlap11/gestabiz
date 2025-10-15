@@ -471,17 +471,16 @@ export function SearchResults({
 
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-y-auto">
-      <div className="min-h-screen py-8 px-4">
+      <div className="min-h-screen py-4 sm:py-8 px-3 sm:px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
+          {/* Header - Mobile Responsive */}
+          <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-1 sm:mb-2 truncate">
                 Resultados de búsqueda
               </h1>
-              <p className="text-muted-foreground">
-                {sortedResults.length} resultado{sortedResults.length !== 1 ? 's' : ''} para "
-                <span className="font-semibold text-foreground">{searchTerm}</span>" en{' '}
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                <span className="font-semibold">{sortedResults.length}</span> resultado{sortedResults.length !== 1 ? 's' : ''} para "<span className="font-semibold text-foreground truncate inline-block max-w-[150px] sm:max-w-none align-bottom">{searchTerm}</span>" en{' '}
                 {getTypeLabel(searchType)}s
               </p>
             </div>
@@ -489,17 +488,17 @@ export function SearchResults({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="h-10 w-10"
+              className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 min-w-[44px] min-h-[44px]"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5 sm:h-6 sm:w-6" />
             </Button>
           </div>
 
-          {/* Toolbar */}
-          <div className="flex items-center gap-4 mb-6">
+          {/* Toolbar - Mobile Optimized */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-[280px]">
-                <ArrowUpDown className="h-4 w-4 mr-2" />
+              <SelectTrigger className="w-full sm:w-[280px] min-h-[44px]">
+                <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
@@ -514,40 +513,42 @@ export function SearchResults({
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+              className="gap-2 min-h-[44px] w-full sm:w-auto"
             >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filtros
-              {showFilters && <Badge variant="secondary" className="ml-2">Activos</Badge>}
+              <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Filtros</span>
+              <span className="sm:hidden">Filtrar</span>
+              {showFilters && <Badge variant="secondary" className="ml-2 text-[10px]">Activos</Badge>}
             </Button>
 
             {!userLocation && (
-              <div className="flex-1 text-sm text-muted-foreground flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>Habilita la ubicación para ver distancias</span>
+              <div className="flex-1 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 p-2 sm:p-0">
+                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Habilita la ubicación para ver distancias</span>
+                <span className="sm:hidden">Activa ubicación</span>
               </div>
             )}
           </div>
 
-          {/* Results Grid */}
+          {/* Results Grid - Mobile Responsive */}
           {sortedResults.length === 0 ? (
             <Card>
-              <CardContent className="py-16 text-center">
-                <div className="mb-4">
+              <CardContent className="py-12 sm:py-16 px-4 text-center">
+                <div className="mb-3 sm:mb-4">
                   {React.createElement(getTypeIcon(searchType), { 
-                    className: "h-16 w-16 mx-auto text-muted-foreground opacity-50" 
+                    className: "h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-50" 
                   })}
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
                   No se encontraron resultados
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Intenta buscar con otros términos o cambia el tipo de búsqueda
                 </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {sortedResults.map((result) => {
                 const TypeIcon = getTypeIcon(result.type)
                 return (
@@ -556,10 +557,10 @@ export function SearchResults({
                     className="hover:shadow-lg transition-all cursor-pointer group"
                     onClick={() => onResultClick(result)}
                   >
-                    <CardContent className="p-5">
-                      {/* Image or Icon */}
+                    <CardContent className="p-3 sm:p-5">
+                      {/* Image or Icon - Mobile Optimized */}
                       {result.imageUrl ? (
-                        <div className="w-full h-40 rounded-lg overflow-hidden mb-4 bg-muted">
+                        <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden mb-3 sm:mb-4 bg-muted">
                           <img 
                             src={result.imageUrl} 
                             alt={result.name}
@@ -567,34 +568,34 @@ export function SearchResults({
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-40 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-4">
-                          <TypeIcon className="h-16 w-16 text-primary/40" />
+                        <div className="w-full h-32 sm:h-40 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-3 sm:mb-4">
+                          <TypeIcon className="h-12 w-12 sm:h-16 sm:w-16 text-primary/40" />
                         </div>
                       )}
 
-                      {/* Content */}
-                      <div className="space-y-3">
+                      {/* Content - Mobile Compact */}
+                      <div className="space-y-2 sm:space-y-3">
                         {/* Type Badge */}
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs">
                           {getTypeLabel(result.type)}
                         </Badge>
 
                         {/* Name */}
-                        <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        <h3 className="font-bold text-base sm:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
                           {result.name}
                         </h3>
 
                         {/* Description */}
                         {result.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                             {result.description}
                           </p>
                         )}
 
                         {/* Business (for services/users) */}
                         {result.business && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Building2 className="h-4 w-4" />
+                          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                            <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                             <span className="truncate">{result.business.name}</span>
                           </div>
                         )}
@@ -603,13 +604,13 @@ export function SearchResults({
                         {result.rating !== undefined && (
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-semibold text-foreground">
+                              <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                              <span className="font-semibold text-foreground text-sm sm:text-base">
                                 {result.rating.toFixed(1)}
                               </span>
                             </div>
                             {result.reviewCount !== undefined && result.reviewCount > 0 && (
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-xs sm:text-sm text-muted-foreground">
                                 ({result.reviewCount} reseña{result.reviewCount !== 1 ? 's' : ''})
                               </span>
                             )}
@@ -618,15 +619,15 @@ export function SearchResults({
 
                         {/* Distance */}
                         {result.distance !== undefined && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4" />
+                          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                             <span>{result.distance.toFixed(1)} km</span>
                           </div>
                         )}
 
                         {/* Location */}
                         {result.location?.city && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
                             📍 {result.location.city}
                           </div>
                         )}
@@ -634,7 +635,7 @@ export function SearchResults({
                         {/* Price (for services) */}
                         {result.price !== undefined && (
                           <div className="pt-2 border-t border-border">
-                            <span className="text-lg font-bold text-primary">
+                            <span className="text-base sm:text-lg font-bold text-primary">
                               ${result.price.toLocaleString('es-MX')} {result.currency || 'MXN'}
                             </span>
                           </div>
@@ -642,9 +643,9 @@ export function SearchResults({
 
                         {/* Category */}
                         {result.category && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Tag className="h-3 w-3" />
-                            <span>{result.category}</span>
+                          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                            <Tag className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{result.category}</span>
                           </div>
                         )}
                       </div>

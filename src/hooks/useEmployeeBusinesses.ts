@@ -46,6 +46,9 @@ export function useEmployeeBusinesses(
         setLoading(true);
         setError(null);
 
+        console.log('🔍 useEmployeeBusinesses - employeeId:', employeeId);
+        console.log('🔍 useEmployeeBusinesses - includeIndependent:', includeIndependent);
+
         // 1. Obtener negocios donde el usuario es empleado (via business_employees)
         const { data: employeeBusinesses, error: employeeError } = await supabase
           .from('business_employees')
@@ -64,9 +67,11 @@ export function useEmployeeBusinesses(
             )
           `)
           .eq('employee_id', employeeId)
-          .eq('status', 'active')
+          .eq('status', 'approved')
           .eq('is_active', true);
 
+        console.log('🔍 useEmployeeBusinesses - employeeBusinesses from business_employees:', employeeBusinesses);
+        if (employeeError) console.error('❌ useEmployeeBusinesses - employeeError:', employeeError);
         if (employeeError) throw employeeError;
 
         // Mapear los negocios como empleado
@@ -89,6 +94,8 @@ export function useEmployeeBusinesses(
             .eq('owner_id', employeeId)
             .eq('is_active', true);
 
+          console.log('🔍 useEmployeeBusinesses - ownedBusinesses from businesses:', ownedBusinesses);
+          if (ownerError) console.error('❌ useEmployeeBusinesses - ownerError:', ownerError);
           if (ownerError) throw ownerError;
 
           // Combinar y eliminar duplicados
@@ -101,6 +108,7 @@ export function useEmployeeBusinesses(
           allBusinesses = [...businessesAsEmployee, ...uniqueOwnedBusinesses];
         }
 
+        console.log('🔍 useEmployeeBusinesses - FINAL allBusinesses:', allBusinesses);
         setBusinesses(allBusinesses);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error al cargar negocios';

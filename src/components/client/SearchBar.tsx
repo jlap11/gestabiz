@@ -245,21 +245,21 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   }
 
   return (
-    <div ref={searchBarRef} className={cn('relative w-full max-w-3xl', className)}>
-      {/* Unified Search Bar */}
+    <div ref={searchBarRef} className={cn('relative w-full max-w-full sm:max-w-3xl', className)}>
+      {/* Unified Search Bar - Mobile Responsive */}
       <div className="relative flex items-center bg-background border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow">
-        {/* Search Type Selector - Integrated */}
+        {/* Search Type Selector - Mobile Optimized */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 px-4 py-3 hover:bg-accent rounded-l-lg transition-colors border-r border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
-              <Icon className="h-5 w-5 text-muted-foreground" />
+            <button className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 hover:bg-accent rounded-l-lg transition-colors border-r border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px]">
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
               <span className="hidden sm:inline text-sm font-medium text-foreground whitespace-nowrap">
                 {config.label}
               </span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
+          <DropdownMenuContent align="start" className="w-44 sm:w-48">
             {Object.entries(searchTypeConfig).map(([type, conf]) => {
               const TypeIcon = conf.icon
               const isActive = type === searchType
@@ -280,9 +280,9 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Search Input - Integrated */}
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        {/* Search Input - Mobile Responsive */}
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           <input
             type="text"
             placeholder={config.placeholder}
@@ -290,17 +290,17 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
-            className="w-full py-3 pl-12 pr-12 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-base"
+            className="w-full py-2 sm:py-3 pl-8 sm:pl-12 pr-10 sm:pr-12 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-sm sm:text-base min-h-[44px]"
           />
           {isSearching && (
-            <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
+            <Loader2 className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground animate-spin" />
           )}
         </div>
       </div>
 
-      {/* Results Dropdown */}
+      {/* Results Dropdown - Mobile Full Width */}
       {showResults && (
-        <div className="absolute top-full mt-3 w-full bg-card border border-border rounded-lg shadow-xl z-50 max-h-[32rem] overflow-y-auto">
+        <div className="absolute top-full mt-2 sm:mt-3 left-0 right-0 w-full bg-card border border-border rounded-lg shadow-xl z-50 max-h-[70vh] sm:max-h-[32rem] overflow-y-auto">
           {results.length > 0 ? (
             <>
               {results.map((result) => {
@@ -309,22 +309,22 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                   <button
                     key={result.id}
                     onClick={() => handleResultClick(result)}
-                    className="w-full flex items-start gap-4 px-5 py-4 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0 group"
+                    className="w-full flex items-start gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0 group min-h-[68px]"
                   >
-                    <div className="flex-shrink-0 mt-0.5 p-2 rounded-lg bg-muted group-hover:bg-background transition-colors">
-                      <ResultIcon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <div className="flex-shrink-0 mt-0.5 p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background transition-colors">
+                      <ResultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground truncate text-base group-hover:text-primary transition-colors">
+                      <p className="font-semibold text-foreground truncate text-sm sm:text-base group-hover:text-primary transition-colors">
                         {result.name}
                       </p>
                       {result.subtitle && (
-                        <p className="text-sm text-muted-foreground truncate mt-0.5">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
                           {result.subtitle}
                         </p>
                       )}
                       {result.location && (
-                        <p className="text-xs text-muted-foreground truncate mt-1 flex items-center gap-1">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate mt-1 flex items-center gap-1">
                           <span>📍</span>
                           <span>{result.location}</span>
                         </p>
@@ -334,19 +334,19 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                 )
               })}
               
-              {/* View More Button */}
+              {/* View More Button - Mobile Optimized */}
               <button
                 onClick={handleViewMore}
-                className="w-full px-5 py-4 text-sm font-semibold text-primary hover:bg-accent transition-colors text-center border-t-2 border-border hover:border-primary"
+                className="w-full px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-primary hover:bg-accent transition-colors text-center border-t-2 border-border hover:border-primary min-h-[48px]"
               >
                 Ver todos los resultados →
               </button>
             </>
           ) : searchTerm.length >= 2 && !isSearching ? (
-            <div className="px-5 py-8 text-center text-muted-foreground">
-              <Search className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p className="text-sm font-medium">No se encontraron resultados</p>
-              <p className="text-xs mt-1">Intenta con otros términos de búsqueda</p>
+            <div className="px-3 sm:px-5 py-6 sm:py-8 text-center text-muted-foreground">
+              <Search className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 sm:mb-3 opacity-40" />
+              <p className="text-xs sm:text-sm font-medium">No se encontraron resultados</p>
+              <p className="text-[10px] sm:text-xs mt-1">Intenta con otros términos de búsqueda</p>
             </div>
           ) : null}
         </div>

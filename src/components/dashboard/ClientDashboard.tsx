@@ -350,15 +350,16 @@ export default function ClientDashboard({
         {/* Past Appointments Section */}
         {pastAppointments.length > 0 && (
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-foreground">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-2xl font-bold text-foreground">
                 Past Appointments
               </h2>
             </div>
 
             <Card className="bg-card border-border">
               <CardContent className="p-0">
-                <div className="overflow-x-auto">
+                {/* Desktop Table - Hidden on Mobile */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full">
                     <thead className="border-b border-border">
                       <tr>
@@ -430,6 +431,64 @@ export default function ClientDashboard({
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile Cards - Shown on Mobile Only */}
+                <div className="md:hidden p-3 space-y-3">
+                  {pastAppointments.map((appointment) => (
+                    <Card key={appointment.id} className="p-4 bg-muted/30">
+                      <div className="space-y-3">
+                        {/* Service Title */}
+                        <div className="font-semibold text-foreground text-base">
+                          {appointment.title || 'Appointment'}
+                        </div>
+
+                        {/* Date & Time */}
+                        <div className="flex items-center gap-2 text-sm text-foreground/80">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(appointment.start_time)}</span>
+                          <Clock className="h-4 w-4 ml-2" />
+                          <span>{formatTime(appointment.start_time)}</span>
+                        </div>
+
+                        {/* Provider */}
+                        <div className="text-sm text-foreground/70">
+                          <span className="font-medium">Provider:</span> {appointment.employee_name || 'Provider'}
+                        </div>
+
+                        {/* Location */}
+                        <div className="flex items-center gap-2 text-sm text-foreground/70">
+                          <MapPin className="h-4 w-4" />
+                          <span>{appointment.location || 'Location'}</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-border">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="flex-1 min-h-[44px] text-[#8B5CF6] hover:text-[#a78bfa] border-[#8B5CF6]"
+                          >
+                            Rebook
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDeleteAppointment(appointment.id)}
+                            disabled={deletingId === appointment.id}
+                            className="min-w-[44px] min-h-[44px] border-destructive/50 hover:bg-destructive/10"
+                            title="Eliminar cita"
+                          >
+                            {deletingId === appointment.id ? (
+                              <span className="animate-spin text-sm">⏳</span>
+                            ) : (
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               </CardContent>
             </Card>

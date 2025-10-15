@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Building2, MapPin, Phone, Mail, Info, Loader2, CheckCircle, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,9 +18,6 @@ import {
   DocumentTypeSelect,
   PhonePrefixSelect 
 } from '@/components/catalog'
-import { getColombiaId } from '@/hooks/useCatalogs'
-import { testAuthDebug } from '@/test-auth-debug'
-import { testLocationInsert } from '@/test-location-debug'
 
 interface AdminOnboardingProps {
   user: User
@@ -48,8 +45,10 @@ export function AdminOnboarding({
   const [subcategoryDescriptions, setSubcategoryDescriptions] = useState<Record<string, string>>({}) // Descriptions per subcategory
   const [phonePrefix, setPhonePrefix] = useState('+57') // Colombia default
   
+  // Colombia ID constante
+  const COLOMBIA_ID = '01b4e9d1-a84e-41c9-8768-253209225a21'
+  
   // Catalog IDs from database
-  const [countryId, setCountryId] = useState<string>('') // Colombia by default
   const [regionId, setRegionId] = useState<string>('')
   const [cityId, setCityId] = useState<string>('')
   const [documentTypeId, setDocumentTypeId] = useState<string>('')
@@ -72,23 +71,12 @@ export function AdminOnboarding({
     address: '',
     city_id: '', // UUID from cities table
     region_id: '', // UUID from regions table
-    country_id: '', // UUID from countries table
+    country_id: COLOMBIA_ID, // UUID de Colombia por defecto
     postal_code: '',
   })
 
   // Fetch business categories from database
   const { mainCategories, categories, isLoading: categoriesLoading } = useBusinessCategories()
-  
-  // Load Colombia ID on mount
-  useEffect(() => {
-    const loadColombiaId = async () => {
-      const colombiaId = await getColombiaId();
-      if (colombiaId) {
-        handleChange('country_id', colombiaId);
-      }
-    };
-    loadColombiaId();
-  }, []);
   
   // Filter MAIN categories by search term (frontend filter)
   const filteredMainCategories = mainCategories.filter(cat => 
@@ -239,7 +227,35 @@ export function AdminOnboarding({
 
       toast.success(`¡Negocio "${formData.name}" creado exitosamente!`)
 
-      // Step 2: Insert selected subcategories (máximo 3) with descriptions
+      // Step 2: Auto-insert owner as employee in business_employees
+      if (business) {
+        try {
+          console.log('[AdminOnboarding] Auto-inserting owner as employee...')
+          const { error: employeeError } = await supabase
+            .from('business_employees')
+            .insert({
+              business_id: business.id,
+              employee_id: user.id,
+              role: 'manager', // Los propietarios son managers
+              status: 'approved', // Ya están aprobados
+              is_active: true,
+              hire_date: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
+              employee_type: 'location_manager',
+            })
+
+          if (employeeError) {
+            console.error('[AdminOnboarding] Error inserting owner as employee:', employeeError)
+            // Don't fail the whole operation, just log the error
+            toast.warning('Negocio creado, pero no se pudo vincular como empleado')
+          } else {
+            console.log('[AdminOnboarding] Owner successfully added as employee')
+          }
+        } catch (err) {
+          console.error('[AdminOnboarding] Exception inserting owner as employee:', err)
+        }
+      }
+
+      // Step 3: Insert selected subcategories (máximo 3) with descriptions
       if (selectedSubcategories.length > 0 && business) {
         try {
           const subcategoryInserts = selectedSubcategories.map(subcatId => ({
@@ -261,7 +277,7 @@ export function AdminOnboarding({
         }
       }
 
-      // Step 3: Upload logo if exists (NOW user is owner, RLS will allow it)
+      // Step 4: Upload logo if exists (NOW user is owner, RLS will allow it)
       if (logoFile && business) {
         try {
           // Upload to business-logos/{business.id}/logo.ext
@@ -352,38 +368,7 @@ export function AdminOnboarding({
               Registra tu negocio y empieza a gestionar citas en minutos
             </p>
             
-            {/* DEBUG BUTTONS - TEMPORAL */}
-            <div className="flex gap-2 justify-center">
-              <Button
-                onClick={async () => {
-                  const result = await testAuthDebug();
-                  if (result.success) {
-                    toast.success('✅ Test exitoso - Businesses RLS OK');
-                  } else {
-                    toast.error(`❌ Test falló: ${JSON.stringify(result.error).substring(0, 100)}`);
-                  }
-                }}
-                variant="outline"
-                size="sm"
-              >
-                🔍 Test Business
-              </Button>
-              
-              <Button
-                onClick={async () => {
-                  const result = await testLocationInsert();
-                  if (result.success) {
-                    toast.success('✅ Test exitoso - Locations RLS OK');
-                  } else {
-                    toast.error(`❌ Test falló: ${JSON.stringify(result.error).substring(0, 100)}`);
-                  }
-                }}
-                variant="outline"
-                size="sm"
-              >
-                � Test Location
-              </Button>
-            </div>
+            
           </div>
 
         {/* Important Rules Alert */}

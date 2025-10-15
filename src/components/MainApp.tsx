@@ -2,6 +2,7 @@ import React from 'react'
 import { useAuthSimple } from '@/hooks/useAuthSimple'
 import { useUserRoles } from '@/hooks/useUserRoles'
 import { useAdminBusinesses } from '@/hooks/useAdminBusinesses'
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
 import { EmployeeOnboarding } from '@/components/employee/EmployeeOnboarding'
 import { AdminOnboarding } from '@/components/admin/AdminOnboarding'
 import { AdminDashboard } from '@/components/admin/AdminDashboard'
@@ -24,6 +25,20 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   const { businesses, isLoading: isLoadingBusinesses, refetch: refetchBusinesses } = useAdminBusinesses(
     activeRole === 'admin' ? user?.id : undefined
   )
+
+  // Fetch employee businesses (for all users to check if they have employments)
+  const { businesses: employeeBusinesses, loading: isLoadingEmployeeBusinesses } = useEmployeeBusinesses(
+    user?.id,
+    true // Include businesses where user is owner
+  )
+
+  // DEBUG: Log employee businesses
+  React.useEffect(() => {
+    console.log('🔍 DEBUG MainApp - employeeBusinesses:', employeeBusinesses)
+    console.log('🔍 DEBUG MainApp - isLoadingEmployeeBusinesses:', isLoadingEmployeeBusinesses)
+    console.log('🔍 DEBUG MainApp - activeRole:', activeRole)
+    console.log('🔍 DEBUG MainApp - needsEmployeeOnboarding:', activeRole === 'employee' && employeeBusinesses.length === 0 && !isLoadingEmployeeBusinesses)
+  }, [employeeBusinesses, isLoadingEmployeeBusinesses, activeRole])
   
   // Auto-select business if there's only one or use activeBusiness
   React.useEffect(() => {
@@ -65,8 +80,10 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
     setSelectedBusinessId(undefined)
   }
 
-  // Check if user needs onboarding (role selected but no business assigned)
-  const needsEmployeeOnboarding = activeRole === 'employee' && !activeBusiness
+  // Check if employee needs onboarding: NO businesses linked AND not loading
+  const needsEmployeeOnboarding = activeRole === 'employee' && 
+                                   employeeBusinesses.length === 0 && 
+                                   !isLoadingEmployeeBusinesses
   
   // Get selected business for AdminDashboard
   const selectedBusiness = businesses.find((b) => b.id === selectedBusinessId)

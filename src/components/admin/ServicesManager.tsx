@@ -426,34 +426,35 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
   }
 
   return (
-    <div className="p-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Servicios</h2>
-          <p className="text-muted-foreground text-sm">Gestiona los servicios que ofreces</p>
+    <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">Servicios</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm">Gestiona los servicios que ofreces</p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90"
+          className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Agregar Servicio
+          <span className="hidden sm:inline">Agregar Servicio</span>
+          <span className="sm:hidden">Nuevo Servicio</span>
         </Button>
       </div>
 
-      {/* Services Grid */}
+      {/* Services Grid - Responsive */}
       {services.length === 0 ? (
         <Card className="bg-card border-border">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Briefcase className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">No hay servicios aún</h3>
-            <p className="text-muted-foreground text-center mb-4">
+          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+            <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">No hay servicios aún</h3>
+            <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
               Agrega tu primer servicio para que los clientes puedan reservar citas
             </p>
             <Button
               onClick={() => handleOpenDialog()}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Primer Servicio
@@ -461,32 +462,32 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {services.map((service) => (
             <Card key={service.id} className="bg-card border-border hover:border-border/80 transition-colors">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
+              <CardHeader className="p-3 sm:p-6">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
                     {service.image_url && (
                       <img
                         src={service.image_url}
                         alt={service.name}
-                        className="w-full h-32 object-cover rounded-lg mb-3"
+                        className="w-full h-28 sm:h-32 object-cover rounded-lg mb-2 sm:mb-3"
                       />
                     )}
-                    <CardTitle className="text-foreground text-lg">{service.name}</CardTitle>
+                    <CardTitle className="text-foreground text-base sm:text-lg truncate">{service.name}</CardTitle>
                     {!service.is_active && (
-                      <Badge variant="secondary" className="mt-2 text-xs">
+                      <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
                         Inactivo
                       </Badge>
                     )}
                   </div>
-                  <div className="flex gap-2 ml-2">
+                  <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenDialog(service)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -494,25 +495,25 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(service.id)}
-                      className="text-muted-foreground hover:text-red-400"
+                      className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
                 {service.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{service.description}</p>
                 )}
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="h-4 w-4 text-green-400" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400 flex-shrink-0" />
                   <span className="text-foreground font-semibold">
                     $ {service.price.toLocaleString('es-CO')}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-blue-400" />
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" />
                   <span className="text-muted-foreground">{service.duration_minutes} minutos</span>
                 </div>
               </CardContent>
@@ -521,9 +522,9 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
+      {/* Create/Edit Dialog - Mobile Responsive */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="bg-card border-border text-foreground max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               {editingService ? 'Editar Servicio' : 'Crear Nuevo Servicio'}
@@ -538,32 +539,34 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <Label htmlFor="name">Nombre del Servicio *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">Nombre del Servicio *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="Ej: Corte de Cabello"
                 required
+                className="min-h-[44px]"
               />
             </div>
 
             {/* Description */}
             <div>
-              <Label htmlFor="description">Descripción</Label>
+              <Label htmlFor="description" className="text-sm sm:text-base">Descripción</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 placeholder="Describe el servicio"
                 rows={3}
+                className="min-h-[88px]"
               />
             </div>
 
-            {/* Duration & Price */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Duration & Price - Responsive Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="duration_minutes">Duración (minutos) *</Label>
+                <Label htmlFor="duration_minutes" className="text-sm sm:text-base">Duración (minutos) *</Label>
                 <Input
                   id="duration_minutes"
                   type="number"
@@ -571,12 +574,13 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                   value={formData.duration_minutes}
                   onChange={(e) => handleChange('duration_minutes', parseInt(e.target.value) || 0)}
                   required
+                  className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="price">Precio *</Label>
+                <Label htmlFor="price" className="text-sm sm:text-base">Precio *</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
                     $
                   </span>
                   <Input
@@ -586,11 +590,11 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                     onChange={(e) => handlePriceChange(e.target.value)}
                     onBlur={handlePriceBlur}
                     placeholder="0"
-                    className="pl-8"
+                    className="pl-8 min-h-[44px]"
                     required
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                   {formData.price > 0 && `$ ${formatPrice(formData.price)}`}
                 </p>
               </div>
@@ -724,18 +728,19 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               </Label>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={handleCloseDialog}
                 disabled={isSaving}
+                className="min-h-[44px] w-full sm:w-auto"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
                 disabled={isSaving}
               >
                 {isSaving ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear'}

@@ -298,24 +298,25 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
       <DialogContent 
         className={cn(
           "bg-card border-border text-foreground p-0 overflow-hidden",
-          "w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[75vw]",
+          "w-[98vw] sm:w-[95vw] md:w-[85vw] lg:w-[75vw]",
           "!max-w-[1200px]",
+          "h-[95vh] sm:h-auto", // Full height mobile
           "[&>button]:hidden" // Ocultar el botón de cerrar por defecto del DialogContent
         )}
       >
-        {/* Header */}
+        {/* Header - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
-          <div className="px-6 pt-6 pb-4 border-b border-border">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-foreground">
+          <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
+            <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
                 New Appointment
               </h2>
               <button
                 onClick={handleClose}
-                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
                 disabled={isSubmitting}
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
             </div>
 
@@ -328,10 +329,13 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           </div>
         )}
 
-        {/* Content Area */}
+        {/* Content Area - Mobile Full Height */}
         <div className={cn(
           "overflow-y-auto",
-          currentStep === getStepNumber('success') ? "max-h-[80vh]" : "max-h-[calc(80vh-180px)]"
+          currentStep === getStepNumber('success') 
+            ? "max-h-[85vh] sm:max-h-[80vh]" 
+            : "max-h-[calc(95vh-200px)] sm:max-h-[calc(80vh-180px)]",
+          "px-3 sm:px-0" // Padding horizontal mobile
         )}>
           {/* Paso 0: Selección de Negocio */}
           {!businessId && currentStep === getStepNumber('business') && (
@@ -443,14 +447,14 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
           )}
         </div>
 
-        {/* Footer with navigation buttons */}
+        {/* Footer with navigation buttons - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
-          <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={handleBack}
               disabled={currentStep === (businessId ? 1 : 0) || isSubmitting}
-              className="bg-transparent border-border text-foreground hover:bg-muted"
+              className="bg-transparent border-border text-foreground hover:bg-muted min-h-[44px] order-2 sm:order-1"
             >
               ← Back
             </Button>
@@ -459,7 +463,7 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
               <Button
                 onClick={handleNext}
                 disabled={!canProceed() || isSubmitting}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
               >
                 Next Step →
               </Button>
@@ -472,15 +476,20 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
                   }
                 }}
                 disabled={isSubmitting}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
               >
                 {isSubmitting ? (
                   <>
                     <span className="animate-spin mr-2">⏳</span>
-                    {' '}Guardando...
+                    {' '}
+                    <span className="hidden sm:inline">Guardando...</span>
+                    <span className="sm:hidden">Guardar...</span>
                   </>
                 ) : (
-                  <>✓ Confirmar y Reservar</>
+                  <>
+                    <span className="hidden sm:inline">✓ Confirmar y Reservar</span>
+                    <span className="sm:hidden">✓ Confirmar</span>
+                  </>
                 )}
               </Button>
             )}

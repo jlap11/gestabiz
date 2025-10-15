@@ -137,87 +137,89 @@ export function EmployeeManagementHierarchy({
           </div>
 
           {/* VIEW MODE TOGGLE */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className="gap-2"
+              className="gap-2 min-h-[44px]"
             >
               <List className="h-4 w-4" />
-              {t('employees.management.listView')}
+              <span className="hidden sm:inline">{t('employees.management.listView')}</span>
+              <span className="sm:hidden">Lista</span>
             </Button>
             <Button
               variant={viewMode === 'map' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('map')}
-              className="gap-2"
+              className="gap-2 min-h-[44px]"
             >
               <Network className="h-4 w-4" />
-              {t('employees.management.mapView')}
+              <span className="hidden sm:inline">{t('employees.management.mapView')}</span>
+              <span className="sm:hidden">Mapa</span>
             </Button>
           </div>
         </div>
 
-        {/* STATS CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-4">
+        {/* STATS CARDS - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {t('employees.management.totalEmployees')}
                 </p>
-                <p className="text-2xl font-bold mt-1">{stats.total}</p>
+                <p className="text-xl sm:text-2xl font-bold mt-1">{stats.total}</p>
               </div>
-              <Users className="h-8 w-8 text-primary opacity-20" />
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary opacity-20" />
             </div>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 {t('employees.management.byLevel')}
               </p>
-              <div className="grid grid-cols-5 gap-1 text-xs">
+              <div className="grid grid-cols-5 gap-0.5 sm:gap-1 text-xs">
                 <div className="text-center">
-                  <div className="font-bold text-lg">{stats.byLevel[0]}</div>
-                  <div className="text-muted-foreground">Own</div>
+                  <div className="font-bold text-base sm:text-lg">{stats.byLevel[0]}</div>
+                  <div className="text-muted-foreground text-[10px] sm:text-xs">Own</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-lg">{stats.byLevel[1]}</div>
-                  <div className="text-muted-foreground">Adm</div>
+                  <div className="font-bold text-base sm:text-lg">{stats.byLevel[1]}</div>
+                  <div className="text-muted-foreground text-[10px] sm:text-xs">Adm</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-lg">{stats.byLevel[2]}</div>
-                  <div className="text-muted-foreground">Mgr</div>
+                  <div className="font-bold text-base sm:text-lg">{stats.byLevel[2]}</div>
+                  <div className="text-muted-foreground text-[10px] sm:text-xs">Mgr</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-lg">{stats.byLevel[3]}</div>
-                  <div className="text-muted-foreground">Lead</div>
+                  <div className="font-bold text-base sm:text-lg">{stats.byLevel[3]}</div>
+                  <div className="text-muted-foreground text-[10px] sm:text-xs">Lead</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-lg">{stats.byLevel[4]}</div>
-                  <div className="text-muted-foreground">Staff</div>
+                  <div className="font-bold text-base sm:text-lg">{stats.byLevel[4]}</div>
+                  <div className="text-muted-foreground text-[10px] sm:text-xs">Staff</div>
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('employees.management.avgOccupancy')}
               </p>
-              <p className="text-2xl font-bold mt-1">{stats.avgOccupancy.toFixed(1)}%</p>
+              <p className="text-xl sm:text-2xl font-bold mt-1">{stats.avgOccupancy.toFixed(1)}%</p>
             </div>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-3 sm:p-4">
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {t('employees.management.avgRating')}
               </p>
-              <p className="text-2xl font-bold mt-1">{stats.avgRating.toFixed(1)} ⭐</p>
+              <p className="text-xl sm:text-2xl font-bold mt-1">{stats.avgRating.toFixed(1)} ⭐</p>
             </div>
           </Card>
         </div>

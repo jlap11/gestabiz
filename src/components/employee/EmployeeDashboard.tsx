@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, Clock } from 'lucide-react'
+import { Calendar, Clock, Briefcase } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import UserProfile from '@/components/settings/UserProfile'
 import UnifiedSettings from '@/components/settings/UnifiedSettings'
+import { MyEmployments } from '@/components/employee/MyEmploymentsEnhanced'
 import type { UserRole, User } from '@/types/types'
 
 interface EmployeeDashboardProps {
@@ -22,8 +23,9 @@ export function EmployeeDashboard({
   user,
   businessId
 }: Readonly<EmployeeDashboardProps>) {
-  const [activePage, setActivePage] = useState('appointments')
+  const [activePage, setActivePage] = useState('employments')
   const [currentUser, setCurrentUser] = useState(user)
+  const [showJoinBusinessModal, setShowJoinBusinessModal] = useState(false)
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -50,6 +52,11 @@ export function EmployeeDashboard({
 
   const sidebarItems = [
     {
+      id: 'employments',
+      label: 'Mis Empleos',
+      icon: <Briefcase className="h-5 w-5" />
+    },
+    {
       id: 'appointments',
       label: 'Mis Citas',
       icon: <Calendar className="h-5 w-5" />
@@ -61,8 +68,17 @@ export function EmployeeDashboard({
     }
   ]
 
+  const handleJoinBusiness = () => {
+    setShowJoinBusinessModal(true)
+    // TODO: Implementar modal de unirse a negocio
+    // Por ahora, mostrar alert
+    alert('Funcionalidad "Unirse a Negocio" - En desarrollo\n\nPróximamente podrás:\n- Buscar negocios\n- Enviar solicitud\n- Ver estado de solicitudes')
+  }
+
   const renderContent = () => {
     switch (activePage) {
+      case 'employments':
+        return <MyEmployments employeeId={currentUser.id} onJoinBusiness={handleJoinBusiness} />
       case 'appointments':
         return (
           <div className="p-6">

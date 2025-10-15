@@ -170,6 +170,7 @@ export function AdminDashboard({
       business={business}
       businesses={businesses}
       onSelectBusiness={onSelectBusiness}
+      onCreateNew={onCreateNew}
       currentRole={currentRole}
       availableRoles={availableRoles}
       onRoleChange={onRoleChange}

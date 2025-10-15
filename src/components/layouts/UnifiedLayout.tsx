@@ -6,7 +6,8 @@ import {
   ChevronDown,
   Building2,
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  Plus
 } from 'lucide-react'
 import logoBookio from '@/assets/images/logo_bookio.png'
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +37,7 @@ interface UnifiedLayoutProps {
   business?: Business
   businesses?: Business[]
   onSelectBusiness?: (businessId: string) => void
+  onCreateNew?: () => void
   currentRole: UserRole
   availableRoles: UserRole[]
   onRoleChange: (role: UserRole) => void
@@ -71,6 +73,7 @@ export function UnifiedLayout({
   business,
   businesses = [],
   onSelectBusiness,
+  onCreateNew,
   currentRole,
   availableRoles,
   onRoleChange,
@@ -167,45 +170,45 @@ export function UnifiedLayout({
 
       {/* Right Side: Header + Content */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Header - Altura similar al logo */}
-        <header className="bg-card border-b border-border sticky top-0 z-20 flex-shrink-0 min-h-[89px]">
-        <div className="px-6 py-4 flex items-center justify-between gap-4 h-full">
-          <div className="flex items-center gap-3">
-            {/* Mobile menu toggle */}
+        {/* Header - Responsive height */}
+        <header className="bg-card border-b border-border sticky top-0 z-20 flex-shrink-0">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4 h-full min-h-[64px] sm:min-h-[89px]">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            {/* Mobile menu toggle - Touch optimized */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle menu"
             >
               {sidebarOpen ? (
-                <X className="h-5 w-5 text-foreground" />
+                <X className="h-6 w-6 text-foreground" />
               ) : (
-                <Menu className="h-5 w-5 text-foreground" />
+                <Menu className="h-6 w-6 text-foreground" />
               )}
             </button>
 
-            {/* Logo/Business Info - Clickeable Dropdown */}
+            {/* Logo/Business Info - Responsive */}
             {business ? (
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-3 hover:bg-muted/50 rounded-lg p-2 transition-colors group focus:outline-none">
+                <DropdownMenuTrigger className="flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 flex-1 overflow-hidden">
                   {business.logo_url ? (
                     <img
                       src={business.logo_url}
                       alt={business.name}
-                      className="w-10 h-10 rounded-xl object-contain bg-muted p-2 border-2 border-primary/20 flex-shrink-0"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-contain bg-muted p-1.5 sm:p-2 border-2 border-primary/20 flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/20 flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
+                      <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
                   )}
 
-                  <div className="text-left flex items-center gap-3">
-                    <h1 className="text-xl font-bold text-foreground whitespace-nowrap">
+                  <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
                       {business.name}
                     </h1>
                     {business.category && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                         {business.category.name}
                       </Badge>
                     )}
@@ -213,71 +216,85 @@ export function UnifiedLayout({
                   </div>
                 </DropdownMenuTrigger>
                 
-                {businesses.length > 1 && onSelectBusiness && (
-                  <DropdownMenuContent align="start" className="w-64 bg-card border-border">
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase">
-                        Mis Negocios
-                      </p>
-                    </div>
-                    {businesses.map((biz) => (
-                      <DropdownMenuItem
-                        key={biz.id}
-                        onClick={() => onSelectBusiness(biz.id)}
-                        className={cn(
-                          "cursor-pointer flex items-center gap-3 py-3",
-                          biz.id === business.id && "bg-primary/20 text-foreground font-semibold"
-                        )}
-                      >
-                        {biz.logo_url ? (
-                          <img
-                            src={biz.logo_url}
-                            alt={biz.name}
-                            className="w-8 h-8 rounded-lg object-contain bg-muted p-1"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                            <Building2 className="h-4 w-4 text-primary" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{biz.name}</p>
-                          {biz.category && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {biz.category.name}
-                            </p>
-                          )}
+                <DropdownMenuContent align="start" className="w-64 bg-card border-border">
+                  <div className="px-3 py-2 border-b border-border">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">
+                      Mis Negocios
+                    </p>
+                  </div>
+                  {businesses.map((biz) => (
+                    <DropdownMenuItem
+                      key={biz.id}
+                      onClick={() => onSelectBusiness?.(biz.id)}
+                      className={cn(
+                        "cursor-pointer flex items-center gap-3 py-3",
+                        biz.id === business.id && "bg-primary/20 text-foreground font-semibold"
+                      )}
+                    >
+                      {biz.logo_url ? (
+                        <img
+                          src={biz.logo_url}
+                          alt={biz.name}
+                          className="w-8 h-8 rounded-lg object-contain bg-muted p-1"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                          <Building2 className="h-4 w-4 text-primary" />
                         </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{biz.name}</p>
+                        {biz.category && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {biz.category.name}
+                          </p>
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                  
+                  {onCreateNew && (
+                    <>
+                      <div className="my-1 h-px bg-border" />
+                      <DropdownMenuItem
+                        onClick={onCreateNew}
+                        className="cursor-pointer flex items-center gap-3 py-3 text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                          <Plus className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-medium">Crear Nuevo Negocio</span>
                       </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                )}
+                    </>
+                  )}
+                </DropdownMenuContent>
               </DropdownMenu>
             ) : currentRole === 'client' ? (
               <SearchBar
                 onResultSelect={(result) => onSearchResultSelect?.(result)}
                 onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                className="flex-1"
+                className="flex-1 max-w-full sm:max-w-md"
               />
             ) : (
-              <div>
-                <h1 className="text-xl font-bold text-foreground">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base sm:text-xl font-bold text-foreground truncate">
                   AppointSync Pro
                 </h1>
               </div>
             )}
           </div>
 
-          {/* Right Side Controls */}
-          <div className="flex items-center gap-3">
+          {/* Right Side Controls - Responsive */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Notification Bell - Show for authenticated users */}
             {user?.id && <NotificationBell userId={user.id} />}
 
-            {/* Role Selector - Show if multiple unique roles exist */}
+            {/* Role Selector - Responsive */}
             {uniqueRoles.length > 0 && (
               <DropdownMenu>
-                <DropdownMenuTrigger className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-colors focus:outline-none">
-                  <span className="text-sm font-medium text-foreground hidden sm:inline">
+                <DropdownMenuTrigger className="group flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg hover:bg-muted transition-colors focus:outline-none min-h-[44px]">
+                  <UserIcon className="h-4 w-4 sm:hidden text-foreground" />
+                  <span className="text-xs sm:text-sm font-medium text-foreground hidden sm:inline whitespace-nowrap">
                     {roleLabels[currentRole]}
                   </span>
                   {uniqueRoles.length > 1 && (
@@ -303,20 +320,20 @@ export function UnifiedLayout({
               </DropdownMenu>
             )}
 
-            {/* User Menu */}
+            {/* User Menu - Touch optimized */}
             {user && (
               <DropdownMenu>
-                <DropdownMenuTrigger className="focus:outline-none">
+                <DropdownMenuTrigger className="focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center">
                   {user.avatar ? (
                     <img
                       key={user.avatar}
                       src={user.avatar}
                       alt={user.name}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-primary/20"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/20">
-                      <span className="text-sm font-bold text-primary">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/20">
+                      <span className="text-xs sm:text-sm font-bold text-primary">
                         {user.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -348,8 +365,8 @@ export function UnifiedLayout({
         </div>
       </header>
 
-        {/* Main Content - Scrollable */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Main Content - Scrollable with mobile padding */}
+        <main className="flex-1 overflow-y-auto px-3 sm:px-0">
           {children}
         </main>
       </div>

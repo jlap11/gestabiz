@@ -135,7 +135,7 @@ export function OverviewTab({ business }: OverviewTabProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-6">
         {[...Array(8)].map((_, i) => (
           <Card key={i} className="bg-card border-border">
             <CardHeader>
@@ -218,40 +218,40 @@ export function OverviewTab({ business }: OverviewTabProps) {
   ]
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Main Stats Grid - Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((stat) => (
           <Card key={stat.title} className="bg-card border-border hover:border-primary/20 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              <div className={`${stat.bgColor} p-1.5 sm:p-2 rounded-lg`}>
+                <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.color}`} />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+            <CardContent className="p-3 sm:p-4 pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Revenue Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Revenue Cards - Responsive */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-400" />
-              Ingresos del Mes
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
+              <span>Ingresos del Mes</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-2xl sm:text-3xl font-bold text-foreground">
               ${stats.monthlyRevenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
               Basado en citas completadas este mes
             </p>
           </CardContent>

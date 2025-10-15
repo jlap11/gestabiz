@@ -172,8 +172,8 @@ export function TransactionList({
       </div>
 
       {/* Filters & Search */}
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <Card className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -181,13 +181,13 @@ export function TransactionList({
               placeholder={t('transactions.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 min-h-[44px] text-sm sm:text-base"
             />
           </div>
 
           {/* Type Filter */}
           <Select value={selectedType} onValueChange={handleTypeFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-48 min-h-[44px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder={t('transactions.filterByType')} />
             </SelectTrigger>
@@ -199,16 +199,22 @@ export function TransactionList({
           </Select>
 
           {/* Export Button */}
-          <Button variant="outline" onClick={handleExport}>
+          <Button 
+            variant="outline" 
+            onClick={handleExport}
+            className="min-h-[44px]"
+          >
             <Download className="h-4 w-4 mr-2" />
-            {t('common.export')}
+            <span className="hidden sm:inline">{t('common.export')}</span>
+            <span className="sm:hidden">Export</span>
           </Button>
         </div>
       </Card>
 
-      {/* Transactions Table */}
+      {/* Transactions - Desktop Table & Mobile Cards */}
       <Card>
-        <div className="overflow-x-auto">
+        {/* Desktop Table - Hidden on Mobile */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="border-b bg-muted/50">
               <tr>
@@ -328,6 +334,102 @@ export function TransactionList({
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Cards - Shown on Mobile Only */}
+        <div className="md:hidden p-3 space-y-3">
+          {loading && (
+            <div className="p-8 text-center text-muted-foreground text-sm">
+              {t('common.loading')}...
+            </div>
+          )}
+
+          {!loading && filteredTransactions.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground text-sm">
+              {searchTerm || selectedType !== 'all'
+                ? t('transactions.noResultsFound')
+                : t('transactions.noTransactions')}
+            </div>
+          )}
+
+          {!loading && filteredTransactions.map((transaction) => (
+            <Card key={transaction.id} className="p-4 border-l-4" style={{ borderLeftColor: transaction.type === 'income' ? '#10b981' : '#ef4444' }}>
+              <div className="space-y-3">
+                {/* Header: Date + Type Badge */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {formatDate(new Date(transaction.transaction_date), 'short')}
+                  </div>
+                  <Badge
+                    variant={transaction.type === 'income' ? 'default' : 'destructive'}
+                    className={cn(
+                      'text-[10px] font-medium',
+                      transaction.type === 'income' && 'bg-green-100 text-green-700',
+                      transaction.type === 'expense' && 'bg-red-100 text-red-700'
+                    )}
+                  >
+                    {transaction.type === 'income' ? (
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                    )}
+                    {t(`transactions.${transaction.type}`)}
+                  </Badge>
+                </div>
+
+                {/* Amount - Large */}
+                <div className="text-2xl font-bold" style={{ color: transaction.type === 'income' ? '#10b981' : '#ef4444' }}>
+                  {transaction.type === 'income' ? '+' : '-'}
+                  {formatCurrency(transaction.amount, transaction.currency)}
+                </div>
+
+                {/* Category */}
+                <div className="text-sm">
+                  <span className="text-muted-foreground">{t('transactions.category')}:</span>
+                  <span className="ml-2 font-medium">{t(`transactions.categories.${transaction.category}`)}</span>
+                </div>
+
+                {/* Description */}
+                {transaction.description && (
+                  <div className="text-xs text-muted-foreground">
+                    {transaction.description}
+                  </div>
+                )}
+
+                {/* Status */}
+                <div className="flex items-center justify-between pt-2 border-t">
+                  {transaction.is_verified ? (
+                    <Badge variant="secondary" className="gap-1 text-[10px]">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {t('transactions.verified')}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="gap-1 text-[10px]">
+                      <Circle className="h-3 w-3" />
+                      {t('transactions.pending')}
+                    </Badge>
+                  )}
+                  
+                  {canVerify && !transaction.is_verified && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (user) {
+                          await verifyTransaction(transaction.id, user.id);
+                        }
+                      }}
+                      className="min-h-[44px] text-xs"
+                    >
+                      {t('transactions.verify')}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       </Card>
     </div>
