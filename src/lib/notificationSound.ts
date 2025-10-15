@@ -33,9 +33,10 @@ export function playNotificationSound(type: 'message' | 'alert' | 'success' = 'm
     
     switch (type) {
       case 'message':
-        // Tono suave y agradable para mensajes (Do - Mi)
-        oscillator.frequency.setValueAtTime(523.25, context.currentTime) // Do5
-        oscillator.frequency.setValueAtTime(659.25, context.currentTime + 0.1) // Mi5
+        // ✨ Tono tipo "ding" para mensajes de chat (Mi - Sol - Do alto)
+        oscillator.frequency.setValueAtTime(659.25, context.currentTime) // Mi5
+        oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.06) // Sol5
+        oscillator.frequency.setValueAtTime(1046.50, context.currentTime + 0.12) // Do6 (nota alta)
         break
       case 'alert':
         // Tono más urgente (Sol - Do alto)

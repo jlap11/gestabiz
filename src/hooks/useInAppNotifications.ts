@@ -326,6 +326,8 @@ export function useInAppNotifications(
           setUnreadCount(prev => prev + 1)
           
           // Reproducir sonido y vibración
+          // ✨ Mensajes de chat y notificaciones normales usan tono 'message'
+          // Notificaciones de alta prioridad usan tono 'alert'
           const soundType = notification.priority === 2 ? 'alert' : 'message'
           playNotificationFeedback(soundType)
           
