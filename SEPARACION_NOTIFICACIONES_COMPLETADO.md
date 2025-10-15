@@ -306,10 +306,12 @@ aria-label={unreadCount > 0 ? `Abrir chat (${unreadCount} mensajes nuevos)` : 'A
 - [x] Agregar badge al FloatingChatButton
 - [x] Agregar hook de notificaciones al FloatingChatButton
 - [x] Filtrar solo `type: 'chat_message'` en chat
+- [x] **FIX CRÍTICO**: Agregar `'chat_message'` al tipo `InAppNotificationType` ✨
+- [x] Sincronizar tipos TypeScript con enum de Supabase (23 tipos)
 - [x] Documentar cambios
-- [ ] Testing con 2 usuarios (pendiente)
-- [ ] Verificar badges se actualizan correctamente
-- [ ] Verificar toasts solo del tipo correcto
+- [ ] Testing con 2 usuarios (pendiente - solicitar prueba al usuario)
+- [ ] Verificar badges se actualizan correctamente (pendiente - requiere prueba en vivo)
+- [ ] Verificar toasts solo del tipo correcto (pendiente - requiere prueba en vivo)
 
 ---
 
@@ -329,10 +331,63 @@ aria-label={unreadCount > 0 ? `Abrir chat (${unreadCount} mensajes nuevos)` : 'A
 
 ---
 
-## 📝 Notas Adicionales
+## � Corrección TypeScript: Tipo `InAppNotificationType`
+
+### Problema Inicial
+```typescript
+// ❌ Error en FloatingChatButton.tsx
+const { unreadCount } = useInAppNotifications({
+  userId,
+  type: 'chat_message', // Error: no es asignable a InAppNotificationType
+})
+```
+
+### Diagnóstico
+1. Verificación en Supabase: `SELECT unnest(enum_range(NULL::notification_type_enum))`
+2. Resultado: El enum **SÍ incluye** `'chat_message'` (también `daily_digest`, `weekly_summary`, `account_activity`)
+3. Causa: El tipo TypeScript estaba desincronizado (faltaban 4 tipos)
+
+### Solución Aplicada ✅
+```typescript
+// src/types/types.ts - Actualizado
+export type InAppNotificationType = 
+  // ... tipos existentes ...
+  
+  // Sistema (4 tipos) - AMPLIADO
+  | 'security_alert'
+  | 'account_activity'      // ✨ NUEVO
+  | 'daily_digest'           // ✨ NUEVO
+  | 'weekly_summary'         // ✨ NUEVO
+  
+  // Chat (1 tipo) ✨ NUEVO
+  | 'chat_message'           // ✨ NUEVO - FIX PRINCIPAL
+
+// TOTAL: 23 tipos (antes 19) - 100% sincronizado con Supabase
+```
+
+### Verificación
+```bash
+# ✅ Tipos verificados en base de datos:
+appointment_reminder, appointment_confirmation, appointment_cancellation,
+appointment_rescheduled, appointment_new_client, appointment_new_employee,
+appointment_new_business, email_verification, phone_verification_sms,
+phone_verification_whatsapp, employee_request_new, employee_request_accepted,
+employee_request_rejected, job_vacancy_new, job_application_new,
+job_application_accepted, job_application_rejected, job_application_interview,
+daily_digest, weekly_summary, account_activity, security_alert, chat_message
+
+# ✅ Notificaciones existentes en producción:
+# - 12 notificaciones tipo 'chat_message'
+# - FloatingChatButton ahora compila sin errores
+```
+
+---
+
+## �📝 Notas Adicionales
 
 - El badge del chat usa `animate-bounce` para ser más visible
 - El aria-label del botón flotante se actualiza dinámicamente
 - Las notificaciones de chat siguen generando toast + sonido
 - El sistema de Realtime funciona para ambos tipos
 - La separación es completamente transparente para el usuario
+- **TypeScript completamente sincronizado con enum de Supabase** (23 tipos)

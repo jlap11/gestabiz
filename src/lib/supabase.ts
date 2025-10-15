@@ -1,12 +1,39 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-key'
+// ✨ FIX: Validación más robusta de variables de entorno
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim() || 'https://demo.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || 'demo-key'
+
 // Permite activar demo mode también vía process.env (útil en tests)
 type GlobalWithProcess = typeof globalThis & { process?: { env?: Record<string, string | undefined> } }
 const gwp = globalThis as GlobalWithProcess
 const demoFlag = typeof gwp !== 'undefined' && gwp.process?.env?.VITE_DEMO_MODE === 'true'
-const isDemoMode = demoFlag || import.meta.env.VITE_DEMO_MODE === 'true' || supabaseUrl.includes('demo.supabase.co')
+
+// ✨ FIX: Detectar si las variables están vacías o son placeholders
+const hasValidCredentials = 
+  supabaseUrl && 
+  supabaseUrl !== '' && 
+  supabaseUrl !== 'undefined' &&
+  !supabaseUrl.includes('demo.supabase.co') &&
+  supabaseAnonKey && 
+  supabaseAnonKey !== '' && 
+  supabaseAnonKey !== 'undefined' &&
+  supabaseAnonKey !== 'demo-key'
+
+const isDemoMode = demoFlag || 
+                   import.meta.env.VITE_DEMO_MODE === 'true' || 
+                   !hasValidCredentials
+
+// ✨ DEBUG: Log configuración en desarrollo/producción
+if (typeof window !== 'undefined') {
+  console.log('[Supabase Init] Configuration:', {
+    url: supabaseUrl?.substring(0, 30) + '...',
+    hasKey: !!supabaseAnonKey && supabaseAnonKey !== 'demo-key',
+    isDemoMode,
+    hasValidCredentials,
+    env: import.meta.env.MODE
+  })
+}
 
 // For development purposes, we'll create a mock client if real credentials aren't available
 export const supabase = isDemoMode 
