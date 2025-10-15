@@ -1217,10 +1217,16 @@ export type InAppNotificationType =
   | 'phone_verification_sms'          // Verificar teléfono por SMS
   | 'phone_verification_whatsapp'     // Verificar teléfono por WhatsApp
   
-  // Sistema (1 tipo)
-  | 'system_alert'                    // Alertas generales del sistema
+  // Sistema (4 tipos)
+  | 'security_alert'                  // Alertas de seguridad
+  | 'account_activity'                // Actividad de cuenta
+  | 'daily_digest'                    // Resumen diario
+  | 'weekly_summary'                  // Resumen semanal
+  
+  // Chat (1 tipo) ✨ NUEVO
+  | 'chat_message'                    // Nuevo mensaje de chat
 
-// TOTAL: 19 tipos alineados con notification_type_enum de producción
+// TOTAL: 23 tipos alineados con notification_type_enum de producción
 // Nota: reminder_24h, reminder_1h, reminder_15m se manejan como appointment_reminder con metadata
 
 // Prioridad de notificación
@@ -1242,7 +1248,8 @@ export interface InAppNotification {
   // Tipo y contenido
   type: InAppNotificationType
   title: string
-  body: string
+  message: string // Nombre de columna en base de datos
+  body?: string // Alias para compatibilidad
   
   // Datos adicionales
   data: {

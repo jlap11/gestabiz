@@ -148,6 +148,20 @@ export function ClientDashboard({
     showPermissionPrompt: true
   })
 
+  // Leer conversation_id de la URL al cargar
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const conversationParam = urlParams.get('conversation')
+    
+    if (conversationParam) {
+      console.log('[ClientDashboard] Opening chat from URL param:', conversationParam)
+      setChatConversationId(conversationParam)
+      
+      // Limpiar URL sin recargar página
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
   // Handle search result selection (from quick search)
   const handleSearchResultSelect = useCallback((result: SearchResult) => {
     // Open detailed view for this result

@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { MessageSquare, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { SimpleChatLayout } from '@/components/chat/SimpleChatLayout'
+import { useInAppNotifications } from '@/hooks/useInAppNotifications'
 import { cn } from '@/lib/utils'
 
 interface FloatingChatButtonProps {
@@ -19,11 +21,17 @@ export function FloatingChatButton({
 }: FloatingChatButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   
+  // Obtener contador de notificaciones de chat
+  const { unreadCount } = useInAppNotifications({
+    userId,
+    autoFetch: true,
+    type: 'chat_message', // Solo notificaciones de chat
+    limit: 1
+  })
+  
   // Abrir chat cuando se proporciona conversación inicial
   React.useEffect(() => {
-    console.log('[FloatingChatButton] initialConversationId changed:', initialConversationId)
     if (initialConversationId) {
-      console.log('[FloatingChatButton] Opening chat for conversation:', initialConversationId)
       setIsOpen(true)
     }
   }, [initialConversationId])
@@ -49,13 +57,18 @@ export function FloatingChatButton({
             "hover:scale-110 active:scale-95",
             "group"
           )}
-          aria-label="Abrir chat"
+          aria-label={unreadCount > 0 ? `Abrir chat (${unreadCount} mensajes nuevos)` : 'Abrir chat'}
         >
           <MessageSquare className="h-6 w-6 group-hover:scale-110 transition-transform" />
-          {/* Badge de notificaciones (opcional - implementar después) */}
-          {/* <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            3
-          </span> */}
+          {/* Badge de notificaciones de chat */}
+          {unreadCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center text-xs animate-bounce"
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </Badge>
+          )}
         </button>
       )}
 

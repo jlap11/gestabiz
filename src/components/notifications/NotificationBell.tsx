@@ -22,14 +22,17 @@ interface NotificationBellProps {
 /**
  * Campana de notificaciones con badge de contador
  * Abre un popover con el centro de notificaciones
+ * EXCLUYE notificaciones de chat (esas van en FloatingChatButton)
  */
 export function NotificationBell({ userId, className }: NotificationBellProps) {
   const [open, setOpen] = useState(false)
   
+  // Hook personalizado que excluye notificaciones de chat
   const { unreadCount } = useInAppNotifications({
     userId,
     autoFetch: true,
-    limit: 1 // Solo necesitamos el contador
+    limit: 1, // Solo necesitamos el contador
+    excludeChatMessages: true // Nueva opción para excluir mensajes de chat
   })
   
   // Track analytics cuando se abre/cierra

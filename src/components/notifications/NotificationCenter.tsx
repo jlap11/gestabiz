@@ -43,6 +43,7 @@ const NotificationIcon = ({ type }: { type: string }) => {
     case 'employee_request_rejected':
     case 'employee_request_pending':
       return <Users className="h-4 w-4" />
+    case 'chat_message':
     case 'chat_message_received':
       return <MessageCircle className="h-4 w-4" />
     case 'system_announcement':
@@ -211,8 +212,11 @@ export function NotificationCenter({ userId, onClose }: NotificationCenterProps)
   } = useInAppNotifications({
     userId,
     autoFetch: true,
-    limit: 50
+    limit: 50,
+    excludeChatMessages: true // Excluir mensajes de chat del centro de notificaciones
   })
+
+  console.log('[NotificationCenter] Rendering with', allNotifications.length, 'notifications (no chat), unread:', unreadCount)
 
   // Filtrar por tab
   const filteredNotifications = allNotifications.filter(n => {

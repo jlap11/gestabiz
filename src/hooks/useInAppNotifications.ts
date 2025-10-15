@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { trackNotificationEvent, NotificationEvents } from '@/lib/analytics'
+import { playNotificationFeedback } from '@/lib/notificationSound'
 import type { 
   InAppNotification, 
   NotificationStatus,
@@ -15,6 +16,7 @@ interface UseInAppNotificationsOptions {
   status?: NotificationStatus
   type?: InAppNotificationType
   businessId?: string
+  excludeChatMessages?: boolean // Excluir notificaciones de chat (para campana)
 }
 
 interface UseInAppNotificationsReturn {
@@ -52,7 +54,8 @@ export function useInAppNotifications(
     limit = 50,
     status,
     type,
-    businessId 
+    businessId,
+    excludeChatMessages = false 
   } = options
 
   const [notifications, setNotifications] = useState<InAppNotification[]>([])
@@ -71,6 +74,7 @@ export function useInAppNotifications(
   const fetchNotifications = useCallback(async () => {
     if (!userId) return
 
+    console.log('[useInAppNotifications] 🔍 Fetching notifications for user:', userId)
     setLoading(true)
     setError(null)
 
@@ -97,21 +101,43 @@ export function useInAppNotifications(
         query = query.eq('business_id', businessId)
       }
 
+      // Excluir mensajes de chat si se especifica (para campana de notificaciones)
+      if (excludeChatMessages) {
+        query = query.neq('type', 'chat_message')
+      }
+
       const { data, error: fetchError } = await query
 
       if (fetchError) throw fetchError
 
+      console.log('[useInAppNotifications] ✅ Fetched', data?.length || 0, 'notifications')
       setNotifications(data || [])
 
       // Contar no leídas
-      const { data: countData, error: countError } = await supabase
-        .rpc('get_unread_count', { p_user_id: userId })
+      if (excludeChatMessages) {
+        // Usar función RPC que excluye chat_message
+        const { data: countData, error: countError } = await supabase
+          .rpc('get_unread_count_no_chat', { p_user_id: userId })
 
-      if (countError) {
-        // Error fetching unread count
-        setUnreadCount(0)
+        if (countError) {
+          console.warn('[useInAppNotifications] ⚠️ Error fetching unread count (no chat):', countError)
+          setUnreadCount(0)
+        } else {
+          console.log('[useInAppNotifications] 📊 Unread count (no chat):', countData)
+          setUnreadCount(countData || 0)
+        }
       } else {
-        setUnreadCount(countData || 0)
+        // Función estándar que incluye todo
+        const { data: countData, error: countError } = await supabase
+          .rpc('get_unread_count', { p_user_id: userId })
+
+        if (countError) {
+          console.warn('[useInAppNotifications] ⚠️ Error fetching unread count:', countError)
+          setUnreadCount(0)
+        } else {
+          console.log('[useInAppNotifications] 📊 Unread count:', countData)
+          setUnreadCount(countData || 0)
+        }
       }
 
     } catch (err) {
@@ -120,7 +146,7 @@ export function useInAppNotifications(
     } finally {
       setLoading(false)
     }
-  }, [userId, limit, status, type, businessId])
+  }, [userId, limit, status, type, businessId, excludeChatMessages])
 
   // Marcar como leída
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -233,19 +259,16 @@ export function useInAppNotifications(
     }
   }, [userId, notifications])
 
-  // Eliminar notificación (soft delete)
+  // Eliminar notificación (hard delete - ya que no existe is_deleted)
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      const { error: updateError } = await supabase
+      const { error: deleteError } = await supabase
         .from('in_app_notifications')
-        .update({ 
-          is_deleted: true,
-          updated_at: new Date().toISOString()
-        })
+        .delete()
         .eq('id', notificationId)
         .eq('user_id', userId)
 
-      if (updateError) throw updateError
+      if (deleteError) throw deleteError
 
       // Remover del estado local
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
@@ -302,9 +325,13 @@ export function useInAppNotifications(
         if (notification.status === 'unread') {
           setUnreadCount(prev => prev + 1)
           
+          // Reproducir sonido y vibración
+          const soundType = notification.priority === 2 ? 'alert' : 'message'
+          playNotificationFeedback(soundType)
+          
           // Toast con acción
           toast.info(notification.title, {
-            description: notification.body,
+            description: notification.message,
             action: notification.action_url ? {
               label: 'Ver',
               onClick: () => {
@@ -333,20 +360,27 @@ export function useInAppNotifications(
 
     // Handler de eventos realtime - FIXED: removed from dependency array
     const handleRealtimeEvent = (payload: Record<string, unknown>) => {
+      console.log('[useInAppNotifications] 📡 Realtime event:', payload.eventType)
+      
       if (payload.eventType === 'INSERT') {
         const newNotification = payload.new as InAppNotification
+        console.log('[useInAppNotifications] ➕ New notification:', newNotification.title)
         upsertNotification(newNotification)
       } else if (payload.eventType === 'UPDATE') {
         const updatedNotification = payload.new as InAppNotification
+        console.log('[useInAppNotifications] 🔄 Updated notification:', updatedNotification.title)
         upsertNotification(updatedNotification)
       } else if (payload.eventType === 'DELETE') {
         const deletedNotification = payload.old as InAppNotification
+        console.log('[useInAppNotifications] ❌ Deleted notification')
         removeNotification(deletedNotification)
       }
     }
 
     // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
     const channelName = `in_app_notifications_${userId}`
+    
+    console.log('[useInAppNotifications] 📡 Subscribing to channel:', channelName)
     
     // Suscribirse al canal
     const channel = supabase
@@ -361,7 +395,9 @@ export function useInAppNotifications(
         },
         handleRealtimeEvent
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[useInAppNotifications] 📡 Channel status:', status)
+      })
 
     // Cleanup
     return () => {
