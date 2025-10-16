@@ -138,6 +138,10 @@ export function useChat(userId: string | null) {
   // Ref for typing timeout (realtime refs removed - now using polling)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Ref for debounced mark as read (prevent excessive RPC calls)
+  const markAsReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingMarkAsReadRef = useRef<{ conversationId: string; messageId: string } | null>(null);
+  
   // ============================================================================
   // FETCH FUNCTIONS
   // ============================================================================
@@ -454,7 +458,7 @@ export function useChat(userId: string | null) {
   }, [userId]);
   
   /**
-   * Mark messages as read
+   * Mark messages as read (with debounce to prevent excessive calls)
    */
   const markMessagesAsRead = useCallback(async (conversationId: string, lastMessageId?: string) => {
     if (!userId) return;
@@ -509,6 +513,29 @@ export function useChat(userId: string | null) {
       console.error('Error marking messages as read:', err);
     }
   }, [userId]);
+  
+  /**
+   * Debounced mark as read - previene llamadas excesivas cuando llegan múltiples mensajes
+   */
+  const debouncedMarkAsRead = useCallback((conversationId: string, messageId: string) => {
+    // Guardar pending request
+    pendingMarkAsReadRef.current = { conversationId, messageId };
+    
+    // Cancelar timeout anterior
+    if (markAsReadTimeoutRef.current) {
+      clearTimeout(markAsReadTimeoutRef.current);
+    }
+    
+    // Programar ejecución después de 500ms de inactividad
+    markAsReadTimeoutRef.current = setTimeout(() => {
+      const pending = pendingMarkAsReadRef.current;
+      if (pending) {
+        console.log('[useChat] ⏱️ Executing debounced mark as read');
+        markMessagesAsRead(pending.conversationId, pending.messageId);
+        pendingMarkAsReadRef.current = null;
+      }
+    }, 500);
+  }, [markMessagesAsRead]);
   
   /**
    * Update typing indicator
@@ -812,10 +839,10 @@ export function useChat(userId: string | null) {
               };
             });
             
-            // Mark as read SOLO si el mensaje es de otro usuario
+            // Mark as read SOLO si el mensaje es de otro usuario (con debounce)
             if (newMessage.sender_id !== userId) {
-              console.log('[useChat] 👀 Marking message as read');
-              markMessagesAsRead(activeConversationId, newMessage.id);
+              console.log('[useChat] 👀 Scheduling debounced mark as read');
+              debouncedMarkAsRead(activeConversationId, newMessage.id);
             }
             
             // 🔥 OPTIMIZACIÓN: NO hacer fetchConversations completo
@@ -882,6 +909,11 @@ export function useChat(userId: string | null) {
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(typingChannel);
+      
+      // Limpiar debounce timeout
+      if (markAsReadTimeoutRef.current) {
+        clearTimeout(markAsReadTimeoutRef.current);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, activeConversationId]); // ✅ Callbacks are stable (useCallback) - intentionally excluded

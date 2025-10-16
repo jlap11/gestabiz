@@ -92,10 +92,10 @@ export function SimpleChatLayout({
     }
   }, [showChat, activeConversation]);
 
-  // Marcar como leído INMEDIATAMENTE al abrir conversación
+  // Marcar como leído SOLO al cambiar de conversación (no en cada mensaje nuevo)
   useEffect(() => {
     if (activeConversation && activeMessages.length > 0) {
-      // Marcar como leído inmediatamente (0ms delay)
+      // Marcar como leído solo cuando se abre/cambia la conversación
       const lastMessage = activeMessages[activeMessages.length - 1];
       if (lastMessage) {
         console.log('[SimpleChatLayout] 👀 Marking conversation as read:', {
@@ -106,7 +106,10 @@ export function SimpleChatLayout({
         markMessagesAsRead(activeConversation.id, lastMessage.id);
       }
     }
-  }, [activeConversation, activeMessages, markMessagesAsRead]);
+    // ✅ FIX CRÍTICO: Solo depender de activeConversation.id, NO de activeMessages
+    // Esto previene loops infinitos cuando llegan mensajes nuevos
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConversation?.id, markMessagesAsRead]);
 
   const handleSendMessage = async (content: string) => {
     if (!activeConversation) return;
