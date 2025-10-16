@@ -706,6 +706,7 @@ export function useChat(userId: string | null) {
   
   /**
    * Subscribe to conversations changes - FIXED: removed Date.now() from channel name
+   * OPTIMIZED: Only update local state, don't refetch everything
    */
   useEffect(() => {
     if (!userId) return;
@@ -719,14 +720,29 @@ export function useChat(userId: string | null) {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE', // Solo escuchar UPDATE (no INSERT/DELETE para evitar loops)
           schema: 'public',
           table: 'chat_participants',
           filter: `user_id=eq.${userId}`,
         },
-        () => {
-          // Realtime change detected - refetch conversations
-          fetchConversations(); // Safe: fetchConversations is stable (useCallback)
+        (payload) => {
+          console.log('[useChat] 📡 Participant updated:', payload);
+          
+          // 🔥 FIX: NO hacer fetchConversations - causa 1000+ queries
+          // Solo actualizar el estado local con los nuevos datos
+          const updated = payload.new as ChatParticipant;
+          
+          setConversations(prev => prev.map(conv => {
+            if (conv.id === updated.conversation_id) {
+              return {
+                ...conv,
+                unread_count: updated.unread_count,
+                is_pinned: updated.is_pinned,
+                is_muted: updated.is_muted
+              };
+            }
+            return conv;
+          }));
         }
       )
       .subscribe();
@@ -734,8 +750,7 @@ export function useChat(userId: string | null) {
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]); // ✅ fetchConversations is stable (useCallback) - intentionally excluded
+  }, [userId]);
   
   /**
    * Subscribe to messages for active conversation - FIXED: removed Date.now() from channel names
@@ -803,9 +818,23 @@ export function useChat(userId: string | null) {
               markMessagesAsRead(activeConversationId, newMessage.id);
             }
             
-            // Actualizar lista de conversaciones para reflejar último mensaje
-            console.log('[useChat] 🔄 Refreshing conversations list');
-            fetchConversations();
+            // 🔥 OPTIMIZACIÓN: NO hacer fetchConversations completo
+            // Solo actualizar last_message_at y preview en el estado local
+            setConversations(prev => prev.map(conv => {
+              if (conv.id === activeConversationId) {
+                return {
+                  ...conv,
+                  last_message_at: newMessage.sent_at,
+                  last_message_preview: newMessage.content.substring(0, 100)
+                };
+              }
+              return conv;
+            }).sort((a, b) => {
+              // Re-ordenar por fecha (más reciente primero)
+              const dateA = new Date(a.last_message_at).getTime();
+              const dateB = new Date(b.last_message_at).getTime();
+              return dateB - dateA;
+            }));
           }
         }
       )
