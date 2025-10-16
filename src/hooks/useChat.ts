@@ -461,7 +461,16 @@ export function useChat(userId: string | null) {
    * Mark messages as read (with debounce to prevent excessive calls)
    */
   const markMessagesAsRead = useCallback(async (conversationId: string, lastMessageId?: string) => {
-    if (!userId) return;
+    if (!userId) {
+      console.warn('[useChat] ⚠️ markMessagesAsRead called without userId');
+      return;
+    }
+    
+    console.log('[useChat] 🔔 Calling mark_messages_as_read RPC:', {
+      conversationId,
+      userId,
+      lastMessageId
+    });
     
     try {
       const { data: count, error: rpcError } = await supabase
@@ -471,7 +480,12 @@ export function useChat(userId: string | null) {
           p_message_id: lastMessageId || null,
         });
       
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        console.error('[useChat] ❌ RPC mark_messages_as_read error:', rpcError);
+        throw rpcError;
+      }
+      
+      console.log('[useChat] ✅ RPC mark_messages_as_read success, count:', count);
       
       // Update local unread count
       setConversations(prev =>
@@ -510,7 +524,13 @@ export function useChat(userId: string | null) {
       
       return count;
     } catch (err: any) {
-      console.error('Error marking messages as read:', err);
+      console.error('[useChat] ❌ Error marking messages as read:', err);
+      console.error('[useChat] ❌ Error details:', {
+        message: err?.message,
+        code: err?.code,
+        details: err?.details,
+        hint: err?.hint
+      });
     }
   }, [userId]);
   
