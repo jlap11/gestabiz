@@ -49,6 +49,12 @@ export function FloatingChatButton({
       refetch()
     }, 500)
   }, [refetch])
+  
+  // ✨ Refrescar badge cuando se marcan mensajes como leídos (en tiempo real)
+  const handleMessagesRead = React.useCallback(() => {
+    console.log('[FloatingChatButton] 🔄 Refetching badge after messages marked as read');
+    refetch();
+  }, [refetch]);
 
   return (
     <>
@@ -128,6 +134,7 @@ export function FloatingChatButton({
                 userId={userId} 
                 businessId={businessId}
                 initialConversationId={initialConversationId}
+                onMessagesRead={handleMessagesRead}
               />
             </div>
           </div>

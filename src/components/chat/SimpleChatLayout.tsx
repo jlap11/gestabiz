@@ -13,6 +13,7 @@ interface SimpleChatLayoutProps {
   userId: string;
   businessId?: string;
   initialConversationId?: string | null;
+  onMessagesRead?: () => void; // ✨ Callback para notificar cuando se marcan mensajes como leídos
 }
 
 /**
@@ -24,7 +25,8 @@ interface SimpleChatLayoutProps {
 export function SimpleChatLayout({ 
   userId, 
   businessId,
-  initialConversationId 
+  initialConversationId,
+  onMessagesRead // ✨ Callback para refrescar badge
 }: SimpleChatLayoutProps) {
   const {
     conversations,
@@ -114,6 +116,12 @@ export function SimpleChatLayout({
         unreadCount: unreadMessages.length
       });
       markMessagesAsRead(activeConversation.id, lastMessage.id);
+      
+      // ✨ Notificar al padre para que actualice el badge
+      // Esperar 600ms para dar tiempo a Supabase de procesar
+      setTimeout(() => {
+        onMessagesRead?.();
+      }, 600);
     } else {
       console.log('[SimpleChatLayout] ℹ️ No unread messages to mark');
     }

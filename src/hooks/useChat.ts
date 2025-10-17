@@ -249,7 +249,26 @@ export function useChat(userId: string | null) {
       const { data, error: messagesError } = await supabase
         .from('chat_messages')
         .select(`
-          *,
+          id,
+          created_at,
+          updated_at,
+          edited_at,
+          conversation_id,
+          sender_id,
+          type,
+          body,
+          metadata,
+          reply_to,
+          is_pinned,
+          pinned_by,
+          pinned_at,
+          is_deleted,
+          deleted_by,
+          deleted_at,
+          delivery_status,
+          read_by,
+          delivered_at,
+          sent_at,
           sender:profiles(id, full_name, email, avatar_url)
         `)
         .eq('conversation_id', conversationId)
