@@ -250,25 +250,20 @@ export function useChat(userId: string | null) {
         .from('chat_messages')
         .select(`
           id,
-          created_at,
-          updated_at,
-          edited_at,
           conversation_id,
           sender_id,
+          content,
           type,
-          body,
-          metadata,
-          reply_to,
-          is_pinned,
-          pinned_by,
-          pinned_at,
-          is_deleted,
-          deleted_by,
-          deleted_at,
-          delivery_status,
-          read_by,
-          delivered_at,
+          attachments,
           sent_at,
+          delivered_at,
+          read_by,
+          reply_to_id,
+          edited_at,
+          deleted_at,
+          metadata,
+          created_at,
+          updated_at,
           sender:profiles(id, full_name, email, avatar_url)
         `)
         .eq('conversation_id', conversationId)
@@ -279,8 +274,15 @@ export function useChat(userId: string | null) {
       if (messagesError) throw messagesError;
       
       if (data) {
+        // Mapear content → body para compatibilidad con componentes UI
+        const mappedMessages = data.map((msg: any) => ({
+          ...msg,
+          body: msg.content, // ✅ Mapear content → body
+          reply_to: msg.reply_to_id, // ✅ Mapear reply_to_id → reply_to
+        }));
+        
         // Reverse to show oldest first
-        const sortedMessages = data.reverse();
+        const sortedMessages = mappedMessages.reverse();
         
         setMessages(prev => ({
           ...prev,
@@ -848,7 +850,21 @@ export function useChat(userId: string | null) {
           const { data: newMessage } = await supabase
             .from('chat_messages')
             .select(`
-              *,
+              id,
+              conversation_id,
+              sender_id,
+              content,
+              type,
+              attachments,
+              sent_at,
+              delivered_at,
+              read_by,
+              reply_to_id,
+              edited_at,
+              deleted_at,
+              metadata,
+              created_at,
+              updated_at,
               sender:profiles(id, full_name, email, avatar_url)
             `)
             .eq('id', payload.new.id)
@@ -857,11 +873,18 @@ export function useChat(userId: string | null) {
           console.log('[useChat] 📨 Full message data:', newMessage);
           
           if (newMessage) {
+            // ✅ Mapear content → body para compatibilidad UI
+            const mappedMessage = {
+              ...newMessage,
+              body: newMessage.content,
+              reply_to: newMessage.reply_to_id,
+            };
+            
             // Agregar mensaje SIEMPRE (tanto propios como de otros)
             // Evitar duplicados: verificar si el mensaje ya existe
             setMessages(prev => {
               const existingMessages = prev[activeConversationId] || [];
-              const messageExists = existingMessages.some(m => m.id === newMessage.id);
+              const messageExists = existingMessages.some(m => m.id === mappedMessage.id);
               
               if (messageExists) {
                 console.log('[useChat] ⚠️ Message already exists, skipping duplicate');
@@ -873,15 +896,15 @@ export function useChat(userId: string | null) {
                 ...prev,
                 [activeConversationId]: [
                   ...existingMessages,
-                  newMessage,
+                  mappedMessage,
                 ],
               };
             });
             
             // Mark as read SOLO si el mensaje es de otro usuario (con debounce)
-            if (newMessage.sender_id !== userId) {
+            if (mappedMessage.sender_id !== userId) {
               console.log('[useChat] 👀 Scheduling debounced mark as read');
-              debouncedMarkAsRead(activeConversationId, newMessage.id);
+              debouncedMarkAsRead(activeConversationId, mappedMessage.id);
             }
             
             // 🔥 OPTIMIZACIÓN: NO hacer fetchConversations completo
@@ -890,8 +913,8 @@ export function useChat(userId: string | null) {
               if (conv.id === activeConversationId) {
                 return {
                   ...conv,
-                  last_message_at: newMessage.sent_at,
-                  last_message_preview: newMessage.content.substring(0, 100)
+                  last_message_at: mappedMessage.sent_at,
+                  last_message_preview: mappedMessage.content.substring(0, 100)
                 };
               }
               return conv;
