@@ -468,10 +468,10 @@ export function useAuth() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
-  const { error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/`
         }
       })
 
@@ -483,7 +483,7 @@ export function useAuth() {
 
       // OAuth redirect will handle the rest
       return { success: true }
-  } catch {
+    } catch {
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
