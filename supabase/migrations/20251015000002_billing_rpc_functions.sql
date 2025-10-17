@@ -19,6 +19,9 @@ DECLARE
     v_plan business_plans%ROWTYPE;
     v_usage usage_metrics%ROWTYPE;
     v_payments JSON;
+    v_payment_methods JSON;
+    v_subscription JSON;
+    v_usage_metrics JSON;
 BEGIN
     -- Verificar que el usuario tiene acceso al negocio
     IF NOT (auth.is_business_owner(p_business_id) OR auth.is_business_admin(p_business_id)) THEN
@@ -29,9 +32,66 @@ BEGIN
     SELECT * INTO v_plan
     FROM business_plans
     WHERE business_id = p_business_id
-    AND status IN ('active', 'trialing', 'past_due')
+    AND status IN ('active', 'trialing', 'past_due', 'paused')
     ORDER BY created_at DESC
     LIMIT 1;
+
+    -- Si no hay plan, retornar null
+    IF NOT FOUND THEN
+        RETURN json_build_object(
+            'subscription', NULL,
+            'paymentMethods', '[]'::json,
+            'recentPayments', '[]'::json,
+            'upcomingInvoice', NULL,
+            'usageMetrics', NULL
+        );
+    END IF;
+
+    -- Construir objeto subscription compatible con el frontend
+    v_subscription := json_build_object(
+        'id', v_plan.id,
+        'businessId', v_plan.business_id,
+        'planType', v_plan.plan_type,
+        'billingCycle', COALESCE(v_plan.billing_cycle, 'monthly'),
+        'status', v_plan.status,
+        'currentPeriodStart', v_plan.start_date,
+        'currentPeriodEnd', v_plan.end_date,
+        'trialEndsAt', v_plan.trial_ends_at,
+        'canceledAt', v_plan.canceled_at,
+        'cancellationReason', v_plan.cancellation_reason,
+        'pausedAt', v_plan.paused_at,
+        'amount', v_plan.price,
+        'currency', COALESCE(v_plan.currency, 'COP')
+    );
+
+    -- Obtener métodos de pago
+    SELECT COALESCE(json_agg(json_build_object(
+        'id', pm.id,
+        'type', pm.type,
+        'brand', pm.brand,
+        'last4', pm.last4,
+        'expMonth', pm.exp_month,
+        'expYear', pm.exp_year,
+        'isActive', pm.is_default
+    )), '[]'::json) INTO v_payment_methods
+    FROM payment_methods pm
+    WHERE pm.business_id = p_business_id
+    AND pm.is_active = true;
+
+    -- Obtener últimos 10 pagos
+    SELECT COALESCE(json_agg(json_build_object(
+        'id', sp.id,
+        'amount', sp.amount,
+        'currency', sp.currency,
+        'status', sp.status,
+        'paidAt', sp.paid_at,
+        'failureReason', sp.failure_reason,
+        'invoiceUrl', sp.metadata->>'invoice_pdf'
+    )), '[]'::json) INTO v_payments
+    FROM subscription_payments sp
+    WHERE sp.business_id = p_business_id
+    ORDER BY sp.created_at DESC
+    LIMIT 10;
 
     -- Obtener métricas de uso más recientes
     SELECT * INTO v_usage
@@ -40,30 +100,39 @@ BEGIN
     ORDER BY metric_date DESC
     LIMIT 1;
 
-    -- Obtener últimos 10 pagos
-    SELECT json_agg(row_to_json(p)) INTO v_payments
-    FROM (
-        SELECT 
-            id,
-            amount,
-            currency,
-            status,
-            paid_at,
-            created_at,
-            failure_reason
-        FROM subscription_payments
-        WHERE business_id = p_business_id
-        ORDER BY created_at DESC
-        LIMIT 10
-    ) p;
+    -- Construir objeto usageMetrics
+    IF FOUND THEN
+        v_usage_metrics := json_build_object(
+            'locations', json_build_object(
+                'current', v_usage.locations_count,
+                'limit', (v_plan.limits->>'max_locations')::INTEGER
+            ),
+            'employees', json_build_object(
+                'current', v_usage.employees_count,
+                'limit', (v_plan.limits->>'max_employees')::INTEGER
+            ),
+            'appointments', json_build_object(
+                'current', v_usage.appointments_count,
+                'limit', (v_plan.limits->>'max_appointments_monthly')::INTEGER
+            ),
+            'clients', json_build_object(
+                'current', v_usage.clients_count,
+                'limit', (v_plan.limits->>'max_clients')::INTEGER
+            ),
+            'services', json_build_object(
+                'current', v_usage.services_count,
+                'limit', (v_plan.limits->>'max_services')::INTEGER
+            )
+        );
+    END IF;
 
-    -- Construir resultado
+    -- Construir resultado con estructura esperada por el frontend
     v_result := json_build_object(
-        'plan', row_to_json(v_plan),
-        'currentUsage', row_to_json(v_usage),
-        'recentPayments', COALESCE(v_payments, '[]'::json),
-        'isOverLimit', COALESCE(v_usage.is_over_limit, false),
-        'limitWarnings', COALESCE(v_usage.limit_exceeded_resources, ARRAY[]::TEXT[])
+        'subscription', v_subscription,
+        'paymentMethods', v_payment_methods,
+        'recentPayments', v_payments,
+        'upcomingInvoice', NULL, -- Se calculará en el webhook de Stripe
+        'usageMetrics', v_usage_metrics
     );
 
     RETURN v_result;

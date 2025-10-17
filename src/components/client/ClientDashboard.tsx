@@ -6,15 +6,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
-import UserProfile from '@/components/settings/UserProfile'
-import UnifiedSettings from '@/components/settings/UnifiedSettings'
+import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { ClientCalendarView } from '@/components/client/ClientCalendarView'
 import { ClientHistory } from '@/components/client/ClientHistory'
 import { SearchResults } from '@/components/client/SearchResults'
 import BusinessProfile from '@/components/business/BusinessProfile'
 import ProfessionalProfile from '@/components/user/UserProfile'
+import { MandatoryReviewModal } from '@/components/jobs'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useChat } from '@/hooks/useChat'
+import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
+import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { UserRole, User } from '@/types/types'
 import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
@@ -141,6 +143,28 @@ export function ClientDashboard({
   
   // Chat hook
   const { createOrGetConversation } = useChat(user.id)
+
+  // Función para manejar cambios de página con contexto
+  const handlePageChange = (page: string, context?: Record<string, unknown>) => {
+    setActivePage(page)
+    // Aquí puedes usar el context si necesitas pasarlo a componentes hijos
+    if (context) {
+      // eslint-disable-next-line no-console
+      console.log('Client navigation context:', context)
+    }
+  }
+
+  // Hook para procesar navegaciones pendientes después de cambio de rol
+  usePendingNavigation(handlePageChange)
+
+  // Mandatory reviews hook
+  const { 
+    shouldShowModal: shouldShowReviewModal, 
+    pendingReviewsCount,
+    checkPendingReviews,
+    remindLater,
+    dismissModal: dismissReviewModal
+  } = useMandatoryReviews(user.id)
 
   // Geolocation for proximity-based search
   const geolocation = useGeolocation({
@@ -570,14 +594,16 @@ export function ClientDashboard({
           </div>
         )
       case 'profile':
+      case 'settings':
         return (
           <div className="p-6">
-            <UserProfile 
-              user={currentUser} 
-              onUserUpdate={(updatedUser) => {
-                setCurrentUser(updatedUser)
-              }}
-            />
+            {currentUser && (
+              <CompleteUnifiedSettings
+                user={currentUser}
+                onUserUpdate={setCurrentUser}
+                currentRole="client"
+              />
+            )}
           </div>
         )
       case 'history':
@@ -585,18 +611,6 @@ export function ClientDashboard({
           <div className="p-6">
             <h2 className="text-2xl font-bold text-foreground mb-6">Historial de Citas</h2>
             {currentUser && <ClientHistory userId={currentUser.id} />}
-          </div>
-        )
-      case 'settings':
-        return (
-          <div className="p-6">
-            {currentUser && (
-              <UnifiedSettings
-                user={currentUser}
-                onUserUpdate={setCurrentUser}
-                currentRole={currentRole}
-              />
-            )}
           </div>
         )
       default:
@@ -944,6 +958,21 @@ export function ClientDashboard({
           }
         />
       )}
+
+      {/* Mandatory Review Modal */}
+      <MandatoryReviewModal
+        isOpen={shouldShowReviewModal}
+        onClose={() => {
+          remindLater();
+          toast.info(`Te recordaremos en 5 minutos. Tienes ${pendingReviewsCount} reseña${pendingReviewsCount > 1 ? 's' : ''} pendiente${pendingReviewsCount > 1 ? 's' : ''}.`);
+        }}
+        onReviewSubmitted={() => {
+          checkPendingReviews();
+          fetchClientAppointments();
+          toast.success('¡Gracias por tu reseña!');
+        }}
+        userId={user.id}
+      />
     </>
   )
 }

@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 
 type BillingCycle = 'monthly' | 'yearly'
-type PlanType = 'inicio' | 'profesional' | 'empresarial' | 'corporativo'
+type PlanType = 'gratuito' | 'inicio' | 'profesional' | 'empresarial' | 'corporativo'
 
 interface PlanFeature {
   name: string
@@ -37,13 +37,36 @@ interface Plan {
 
 const plans: Plan[] = [
   {
+    id: 'gratuito' as PlanType,
+    name: 'Gratuito',
+    icon: <Sparkles className="h-6 w-6" />,
+    description: 'Ideal para probar la plataforma',
+    priceMonthly: 0,
+    priceYearly: 0,
+    cta: 'Plan Actual',
+    features: [
+      { name: '1 sede', included: true },
+      { name: '1 empleado', included: true, limit: '1' },
+      { name: '1 servicio', included: true, limit: '1' },
+      { name: 'Hasta 3 citas al mes', included: true, limit: '3' },
+      { name: 'Calendario básico', included: true },
+      { name: 'Notificaciones email', included: true },
+      { name: 'Notificaciones SMS', included: false },
+      { name: 'WhatsApp', included: false },
+      { name: 'Analytics', included: false },
+      { name: 'API access', included: false },
+      { name: 'Soporte', included: false },
+    ],
+  },
+  {
     id: 'inicio',
     name: 'Inicio',
-    icon: <Sparkles className="h-6 w-6" />,
+    icon: <Building2 className="h-6 w-6" />,
     description: 'Perfecto para empezar tu negocio',
     priceMonthly: 80000,
     priceYearly: 800000,
-    cta: 'Comenzar Gratis',
+    popular: true,
+    cta: 'Actualizar Ahora',
     features: [
       { name: '1 sede', included: true },
       { name: 'Hasta 3 empleados', included: true, limit: '3' },
@@ -51,22 +74,21 @@ const plans: Plan[] = [
       { name: 'Citas ilimitadas', included: true },
       { name: 'Calendario básico', included: true },
       { name: 'Notificaciones email', included: true },
-      { name: 'Notificaciones SMS', included: false },
-      { name: 'WhatsApp', included: false },
-      { name: 'Analytics avanzado', included: false },
+      { name: 'Notificaciones SMS', included: true },
+      { name: 'WhatsApp', included: true },
+      { name: 'Analytics básico', included: true },
       { name: 'API access', included: false },
-      { name: 'Soporte prioritario', included: false },
+      { name: 'Soporte por email', included: true },
     ],
   },
   {
     id: 'profesional',
     name: 'Profesional',
-    icon: <Building2 className="h-6 w-6" />,
+    icon: <Rocket className="h-6 w-6" />,
     description: 'Para negocios en crecimiento',
     priceMonthly: 200000,
     priceYearly: 2000000,
-    popular: true,
-    cta: 'Empezar Ahora',
+    cta: 'Próximamente',
     features: [
       { name: 'Hasta 3 sedes', included: true, limit: '3' },
       { name: 'Hasta 10 empleados', included: true, limit: '10' },
@@ -84,11 +106,11 @@ const plans: Plan[] = [
   {
     id: 'empresarial',
     name: 'Empresarial',
-    icon: <Rocket className="h-6 w-6" />,
+    icon: <Crown className="h-6 w-6" />,
     description: 'Para empresas establecidas',
     priceMonthly: 500000,
     priceYearly: 5000000,
-    cta: 'Escalar Negocio',
+    cta: 'Próximamente',
     features: [
       { name: 'Hasta 10 sedes', included: true, limit: '10' },
       { name: 'Hasta 50 empleados', included: true, limit: '50' },
@@ -110,7 +132,7 @@ const plans: Plan[] = [
     description: 'Solución personalizada a medida',
     priceMonthly: 0, // Custom pricing
     priceYearly: 0,
-    cta: 'Contactar Ventas',
+    cta: 'Próximamente',
     features: [
       { name: 'Sedes ilimitadas', included: true },
       { name: 'Empleados ilimitados', included: true },
@@ -127,11 +149,16 @@ const plans: Plan[] = [
   },
 ]
 
-export function PricingPage() {
+interface PricingPageProps {
+  businessId?: string
+  onClose?: () => void
+}
+
+export function PricingPage({ businessId: businessIdProp, onClose }: PricingPageProps = {}) {
   const { user } = useAuth()
   
-  // Get businessId from current business context
-  const businessId = user?.id // Temporary - should come from business context
+  // Get businessId from prop first, then fallback to user
+  const businessId = businessIdProp || user?.id
   const { createCheckout, applyDiscount, isLoading } = useSubscription(businessId || '')
   
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly')
@@ -187,9 +214,14 @@ export function PricingPage() {
       return
     }
 
-    if (plan.id === 'corporativo') {
-      // Redirect to contact form or open modal
-      window.location.href = 'mailto:ventas@appointsync.pro?subject=Plan Corporativo'
+    // Solo permitir plan Inicio por ahora
+    if (plan.id === 'gratuito') {
+      toast.info('Ya estás en el plan gratuito')
+      return
+    }
+
+    if (plan.id !== 'inicio') {
+      toast.info('Este plan estará disponible próximamente')
       return
     }
 
@@ -198,7 +230,7 @@ export function PricingPage() {
     try {
       await createCheckout(plan.id, billingCycle, appliedDiscount?.code)
       
-      // createCheckout redirects to Stripe Checkout automatically
+      // createCheckout redirects to Stripe/PayU Checkout automatically
     } catch {
       toast.error('Error al crear la sesión de pago')
       setProcessingPlan(null)
@@ -287,6 +319,8 @@ export function PricingPage() {
           {plans.map((plan) => {
             const price = getPrice(plan)
             const isProcessing = processingPlan === plan.id
+            const isDisabled = plan.id !== 'inicio' && plan.id !== 'gratuito'
+            const isPlanGratuito = plan.id === 'gratuito'
 
             return (
               <Card
@@ -295,11 +329,17 @@ export function PricingPage() {
                   plan.popular
                     ? 'border-primary shadow-lg scale-105'
                     : 'border-border'
-                }`}
+                } ${isDisabled ? 'opacity-60' : ''}`}
               >
                 {plan.popular && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
                     Más Popular
+                  </Badge>
+                )}
+                
+                {isDisabled && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted-foreground">
+                    Próximamente
                   </Badge>
                 )}
 
@@ -334,8 +374,8 @@ export function PricingPage() {
                       </>
                     ) : (
                       <div>
-                        <span className="text-4xl font-bold text-foreground">Contactar</span>
-                        <p className="text-sm text-muted-foreground mt-1">Precio personalizado</p>
+                        <span className="text-4xl font-bold text-foreground">Gratis</span>
+                        <p className="text-sm text-muted-foreground mt-1">Para siempre</p>
                       </div>
                     )}
                   </div>
@@ -362,7 +402,7 @@ export function PricingPage() {
                     className="w-full"
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => handleSelectPlan(plan)}
-                    disabled={isProcessing || (isLoading && processingPlan !== null)}
+                    disabled={isPlanGratuito || isDisabled || isProcessing || (isLoading && processingPlan !== null)}
                   >
                     {isProcessing ? 'Procesando...' : plan.cta}
                   </Button>

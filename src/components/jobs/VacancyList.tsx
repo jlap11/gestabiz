@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,7 +6,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { 
   Briefcase, 
   MapPin, 
@@ -16,13 +23,20 @@ import {
   Eye,
   Plus,
   Filter,
-  Search
+  Search,
+  MoreVertical,
+  Edit,
+  XCircle
 } from 'lucide-react'
 
 interface VacancyListProps {
   businessId: string
-  onCreateNew: () => void
-  onSelectVacancy: (vacancyId: string) => void
+  onCreateNew?: () => void
+  onSelectVacancy?: (vacancyId: string) => void
+  onEdit?: (vacancyId: string) => void
+  onViewApplications?: (vacancyId: string) => void
+  statusFilter?: 'open' | 'closed' | 'all'
+  highlightedVacancyId?: string // ID de vacante para resaltar temporalmente
 }
 
 interface JobVacancy {
@@ -77,15 +91,67 @@ const STATUS_LABELS = {
   filled: 'Ocupada'
 }
 
-export function VacancyList({ businessId, onCreateNew, onSelectVacancy }: Readonly<VacancyListProps>) {
+export function VacancyList({ 
+  businessId, 
+  onCreateNew, 
+  onSelectVacancy, 
+  onEdit,
+  onViewApplications,
+  statusFilter: propStatusFilter = 'all',
+  highlightedVacancyId
+}: Readonly<VacancyListProps>) {
   const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [filteredVacancies, setFilteredVacancies] = useState<JobVacancy[]>([])
   const [loading, setLoading] = useState(true)
+  const [highlightId, setHighlightId] = useState<string | null>(highlightedVacancyId || null)
+  const highlightRef = useRef<HTMLDivElement>(null)
 
   // Filtros
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>(propStatusFilter)
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
+
+  // Handler para cerrar una vacante
+  const handleCloseVacancy = async (vacancyId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    try {
+      const { error } = await supabase
+        .from('job_vacancies')
+        .update({ status: 'closed' })
+        .eq('id', vacancyId)
+
+      if (error) throw error
+
+      toast.success('Vacante cerrada exitosamente')
+      loadVacancies() // Recargar lista
+    } catch {
+      toast.error('Error al cerrar la vacante')
+    }
+  }
+
+  // Efecto para scroll automático cuando se resalta una vacante
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        })
+      }, 100) // Pequeño delay para asegurar que el elemento esté renderizado
+    }
+  }, [highlightId])
+
+  // Efecto para remover highlight después de 3 segundos
+  useEffect(() => {
+    if (highlightId) {
+      const timer = setTimeout(() => {
+        setHighlightId(null)
+      }, 3000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [highlightId])
 
   const loadVacancies = useCallback(async () => {
     try {
@@ -166,7 +232,7 @@ export function VacancyList({ businessId, onCreateNew, onSelectVacancy }: Readon
   }
 
   const getDaysAgo = (date: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+    const days = Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
     if (days === 0) return 'Hoy'
     if (days === 1) return 'Ayer'
     return `Hace ${days} días`
@@ -185,20 +251,6 @@ export function VacancyList({ businessId, onCreateNew, onSelectVacancy }: Readon
 
   return (
     <div className="space-y-6">
-      {/* Header con botón crear */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Vacantes Laborales</h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            {filteredVacancies.length} {filteredVacancies.length === 1 ? 'vacante' : 'vacantes'}
-          </p>
-        </div>
-        <Button onClick={onCreateNew} className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Vacante
-        </Button>
-      </div>
-
       {/* Filtros */}
       <Card className="bg-card border-border">
         <CardHeader>
@@ -286,8 +338,11 @@ export function VacancyList({ businessId, onCreateNew, onSelectVacancy }: Readon
           {filteredVacancies.map((vacancy) => (
             <Card 
               key={vacancy.id}
-              className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => onSelectVacancy(vacancy.id)}
+              ref={vacancy.id === highlightId ? highlightRef : null}
+              className={cn(
+                "bg-card border-border hover:border-primary/50 transition-all",
+                vacancy.id === highlightId && "ring-2 ring-primary shadow-lg animate-pulse"
+              )}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -305,6 +360,49 @@ export function VacancyList({ businessId, onCreateNew, onSelectVacancy }: Readon
                       {vacancy.description}
                     </CardDescription>
                   </div>
+                  
+                  {/* Menú de acciones */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (onViewApplications) onViewApplications(vacancy.id)
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver Aplicaciones
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (onEdit) onEdit(vacancy.id)
+                        }}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      {vacancy.status === 'open' && (
+                        <DropdownMenuItem
+                          onClick={(e) => handleCloseVacancy(vacancy.id, e)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Cerrar Vacante
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardHeader>
               <CardContent>

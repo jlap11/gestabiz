@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, Clock, Briefcase } from 'lucide-react'
+import { Calendar, Clock, Briefcase, Search } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
-import UserProfile from '@/components/settings/UserProfile'
-import UnifiedSettings from '@/components/settings/UnifiedSettings'
+import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { MyEmployments } from '@/components/employee/MyEmploymentsEnhanced'
+import { AvailableVacanciesMarketplace } from '@/components/jobs/AvailableVacanciesMarketplace'
+import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { UserRole, User } from '@/types/types'
 
 interface EmployeeDashboardProps {
@@ -26,6 +27,19 @@ export function EmployeeDashboard({
   const [activePage, setActivePage] = useState('employments')
   const [currentUser, setCurrentUser] = useState(user)
   const [showJoinBusinessModal, setShowJoinBusinessModal] = useState(false)
+
+  // Función para manejar cambios de página con contexto
+  const handlePageChange = (page: string, context?: Record<string, unknown>) => {
+    setActivePage(page)
+    // Aquí puedes usar el context si necesitas pasarlo a componentes hijos
+    if (context) {
+      // eslint-disable-next-line no-console
+      console.log('Employee navigation context:', context)
+    }
+  }
+
+  // Hook para procesar navegaciones pendientes después de cambio de rol
+  usePendingNavigation(handlePageChange)
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -57,6 +71,11 @@ export function EmployeeDashboard({
       icon: <Briefcase className="h-5 w-5" />
     },
     {
+      id: 'vacancies',
+      label: 'Buscar Vacantes',
+      icon: <Search className="h-5 w-5" />
+    },
+    {
       id: 'appointments',
       label: 'Mis Citas',
       icon: <Calendar className="h-5 w-5" />
@@ -79,6 +98,12 @@ export function EmployeeDashboard({
     switch (activePage) {
       case 'employments':
         return <MyEmployments employeeId={currentUser.id} onJoinBusiness={handleJoinBusiness} />
+      case 'vacancies':
+        return (
+          <div className="p-6">
+            <AvailableVacanciesMarketplace userId={currentUser.id} />
+          </div>
+        )
       case 'appointments':
         return (
           <div className="p-6">
@@ -94,24 +119,14 @@ export function EmployeeDashboard({
           </div>
         )
       case 'profile':
-        return (
-          <div className="p-6">
-            <UserProfile 
-              user={currentUser} 
-              onUserUpdate={(updatedUser) => {
-                setCurrentUser(updatedUser)
-              }}
-            />
-          </div>
-        )
       case 'settings':
         return (
           <div className="p-6">
             {currentUser && (
-              <UnifiedSettings
+              <CompleteUnifiedSettings
                 user={currentUser}
                 onUserUpdate={setCurrentUser}
-                currentRole={currentRole}
+                currentRole="employee"
                 businessId={businessId}
               />
             )}

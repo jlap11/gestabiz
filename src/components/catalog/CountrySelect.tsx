@@ -40,7 +40,7 @@ export function CountrySelect({
 
   // Auto-seleccionar Colombia al cargar
   const colombiaCountry = useMemo(() => {
-    return countries.find(c => c.iso_code === 'COL');
+    return countries.find(c => c.code === 'CO');
   }, [countries]);
 
   // Si defaultToColombia está activo y no hay valor, usar Colombia
@@ -56,7 +56,7 @@ export function CountrySelect({
     return countries.filter(
       country =>
         country.name.toLowerCase().includes(search) ||
-        country.iso_code.toLowerCase().includes(search)
+        country.code.toLowerCase().includes(search)
     );
   }, [countries, searchTerm]);
 
@@ -100,7 +100,7 @@ export function CountrySelect({
             ) : (
               filteredCountries.map(country => (
                 <SelectItem key={country.id} value={country.id}>
-                  {country.name} ({country.iso_code})
+                  {country.name} ({country.code})
                 </SelectItem>
               ))
             )}

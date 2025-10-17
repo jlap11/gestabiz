@@ -315,6 +315,39 @@ async function prepareNotificationContent(request: NotificationRequest) {
   return { subject, message }
 }
 
+// Helper para cargar template HTML personalizado
+async function loadHTMLTemplate(templateName: string, data: any): Promise<string | null> {
+  try {
+    // En producción, cargar desde Supabase Storage o archivo local
+    const templatePath = `../templates/${templateName}.html`
+    
+    // Por ahora retornamos null para usar template básico
+    // TODO: Implementar carga de template desde storage
+    return null
+  } catch (error) {
+    console.error(`Error loading template ${templateName}:`, error)
+    return null
+  }
+}
+
+// Helper para renderizar template HTML con datos
+function renderHTMLTemplate(template: string, data: any): string {
+  let rendered = template
+  
+  // Reemplazar variables {{variable}}
+  for (const [key, value] of Object.entries(data)) {
+    const placeholder = new RegExp(`{{${key}}}`, 'g')
+    rendered = rendered.replace(placeholder, String(value || ''))
+  }
+  
+  // Manejar condicionales {{#if variable}}...{{/if}}
+  rendered = rendered.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, variable, content) => {
+    return data[variable] ? content : ''
+  })
+  
+  return rendered
+}
+
 function getRecipientContact(request: NotificationRequest, channel: string): string {
   switch (channel) {
     case 'email': return request.recipient_email || ''
@@ -335,6 +368,51 @@ async function sendEmail(request: NotificationRequest, content: any) {
   }
 
   try {
+    let htmlBody = ''
+    
+    // Usar template HTML personalizado para job_application_new
+    if (request.type === 'job_application_new' || request.type === 'job_application_accepted' || request.type === 'job_application_interview') {
+      // Intentar cargar template HTML personalizado
+      const templateName = request.type === 'job_application_new' ? 'job-application' : request.type
+      const customTemplate = await loadHTMLTemplate(templateName, request.data)
+      
+      if (customTemplate) {
+        htmlBody = renderHTMLTemplate(customTemplate, request.data)
+      } else {
+        // Fallback al template básico
+        htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #8b5cf6; margin: 0;">AppointSync</h1>
+            </div>
+            <h2 style="color: #333; margin-top: 0;">${content.subject}</h2>
+            <div style="color: #555; line-height: 1.6; white-space: pre-line;">
+              ${content.message}
+            </div>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">
+              <p>Este es un mensaje automático de AppointSync. Por favor no respondas a este email.</p>
+            </div>
+          </div>
+        </div>`
+      }
+    } else {
+      // Template básico para otros tipos
+      htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8b5cf6; margin: 0;">AppointSync</h1>
+          </div>
+          <h2 style="color: #333; margin-top: 0;">${content.subject}</h2>
+          <div style="color: #555; line-height: 1.6; white-space: pre-line;">
+            ${content.message}
+          </div>
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">
+            <p>Este es un mensaje automático de AppointSync. Por favor no respondas a este email.</p>
+          </div>
+        </div>
+      </div>`
+    }
+    
     // Preparar parámetros para Amazon SES
     const params = {
       Destination: {
@@ -344,20 +422,7 @@ async function sendEmail(request: NotificationRequest, content: any) {
         Body: {
           Html: {
             Charset: 'UTF-8',
-            Data: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-              <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <div style="text-align: center; margin-bottom: 30px;">
-                  <h1 style="color: #8b5cf6; margin: 0;">AppointSync</h1>
-                </div>
-                <h2 style="color: #333; margin-top: 0;">${content.subject}</h2>
-                <div style="color: #555; line-height: 1.6; white-space: pre-line;">
-                  ${content.message}
-                </div>
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">
-                  <p>Este es un mensaje automático de AppointSync. Por favor no respondas a este email.</p>
-                </div>
-              </div>
-            </div>`
+            Data: htmlBody
           },
           Text: {
             Charset: 'UTF-8',

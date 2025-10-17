@@ -8,14 +8,14 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
   // Calculate effective theme
   const effectiveTheme = useMemo(() => {
     if (theme !== 'system') return theme
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    return globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }, [theme])
   const isDark = effectiveTheme === 'dark'
 
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement
-    root.setAttribute('data-theme', effectiveTheme)
+    root.dataset.theme = effectiveTheme
     
     // Also add class for compatibility
     if (effectiveTheme === 'dark') {
@@ -23,21 +23,34 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
     } else {
       root.classList.remove('dark')
     }
+
+    // Also apply to body for portals (like sonner)
+    if (effectiveTheme === 'dark') {
+      document.body.classList.add('dark')
+      document.body.dataset.theme = 'dark'
+    } else {
+      document.body.classList.remove('dark')
+      delete document.body.dataset.theme
+    }
   }, [effectiveTheme])
 
   // Listen for system theme changes
   useEffect(() => {
     if (theme !== 'system') return
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)')
     const handleChange = () => {
       const systemTheme = mediaQuery.matches ? 'dark' : 'light'
-      document.documentElement.setAttribute('data-theme', systemTheme)
+      document.documentElement.dataset.theme = systemTheme
       
       if (systemTheme === 'dark') {
         document.documentElement.classList.add('dark')
+        document.body.classList.add('dark')
+        document.body.dataset.theme = 'dark'
       } else {
         document.documentElement.classList.remove('dark')
+        document.body.classList.remove('dark')
+        delete document.body.dataset.theme
       }
     }
 

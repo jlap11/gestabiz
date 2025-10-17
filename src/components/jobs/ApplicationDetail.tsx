@@ -21,7 +21,9 @@ import {
   CheckCircle2,
   XCircle,
   Save,
-  MessageSquare
+  MessageSquare,
+  Download,
+  FileText
 } from 'lucide-react'
 
 interface ApplicationDetailProps {
@@ -38,6 +40,7 @@ interface JobApplicationDetail {
   business_id: string
   status: string
   cover_letter: string
+  cv_url: string | null
   available_from: string | null
   availability_notes: string | null
   reviewed_at: string | null
@@ -124,6 +127,44 @@ export function ApplicationDetail({
   const [newAdminNotes, setNewAdminNotes] = useState('')
   const [newDecisionNotes, setNewDecisionNotes] = useState('')
   const [newInterviewDate, setNewInterviewDate] = useState('')
+
+  // Function to download CV
+  const [downloadingCV, setDownloadingCV] = useState(false)
+
+  const handleDownloadCV = async () => {
+    if (!application?.cv_url) return
+
+    try {
+      setDownloadingCV(true)
+      
+      const { data, error } = await supabase.storage
+        .from('cvs')
+        .download(application.cv_url)
+
+      if (error) throw error
+
+      // Create blob URL and trigger download
+      const url = URL.createObjectURL(data)
+      const a = document.createElement('a')
+      a.href = url
+      
+      // Extract filename from path (format: user_id/vacancy_id_timestamp.ext)
+      const fileName = application.cv_url.split('/').pop() || 'cv.pdf'
+      a.download = `cv_${application.profiles?.full_name?.replace(/\s+/g, '_')}_${fileName}`
+      
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast.success('CV descargado exitosamente')
+    } catch (err) {
+      const error = err as Error
+      toast.error('Error al descargar CV: ' + error.message)
+    } finally {
+      setDownloadingCV(false)
+    }
+  }
 
   const loadApplication = useCallback(async () => {
     try {
@@ -417,6 +458,54 @@ export function ApplicationDetail({
               </p>
             </CardContent>
           </Card>
+
+          {/* Hoja de Vida */}
+          {application.cv_url && (
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  Hoja de Vida
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {application.cv_url.split('/').pop()?.split('_').slice(-1)[0] || 'curriculum.pdf'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {application.cv_url.endsWith('.pdf') ? 'PDF' : 'DOCX'} • 
+                        Cargado {getDaysAgo(application.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleDownloadCV}
+                    disabled={downloadingCV}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {downloadingCV ? (
+                      <>
+                        <Clock className="h-4 w-4 mr-2 animate-spin" />
+                        Descargando...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Descargar
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Disponibilidad */}
           {(application.available_from || application.availability_notes) && (

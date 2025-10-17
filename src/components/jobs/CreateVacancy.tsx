@@ -39,6 +39,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
     salary_min: '',
     salary_max: '',
     currency: 'COP',
+    commission_based: false,
     location_id: '',
     remote_allowed: false,
     status: 'open'
@@ -82,9 +83,10 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
           benefits: data.benefits || '',
           position_type: data.position_type,
           experience_required: data.experience_required || 'entry_level',
-          salary_min: data.salary_min?.toString() || '',
-          salary_max: data.salary_max?.toString() || '',
+          salary_min: data.salary_min ? formatNumber(data.salary_min.toString()) : '',
+          salary_max: data.salary_max ? formatNumber(data.salary_max.toString()) : '',
           currency: data.currency,
+          commission_based: data.commission_based || false,
           location_id: data.location_id || '',
           remote_allowed: data.remote_allowed,
           status: data.status
@@ -103,6 +105,28 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
       loadVacancy()
     }
   }, [vacancyId, loadLocations, loadVacancy])
+
+  // Función para formatear número con separador de miles
+  const formatNumber = (value: string): string => {
+    // Remover todo excepto dígitos
+    const numbers = value.replace(/\D/g, '')
+    if (!numbers) return ''
+    
+    // Formatear con puntos como separador de miles
+    return Number(numbers).toLocaleString('es-CO')
+  }
+
+  // Función para obtener el valor numérico sin formato
+  const parseFormattedNumber = (value: string): number => {
+    const numbers = value.replace(/\D/g, '')
+    return numbers ? Number(numbers) : 0
+  }
+
+  // Handler para inputs de salario
+  const handleSalaryChange = (field: 'salary_min' | 'salary_max', value: string) => {
+    const formatted = formatNumber(value)
+    setFormData({ ...formData, [field]: formatted })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,12 +150,13 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
         description: formData.description.trim(),
         requirements: formData.requirements.trim() || null,
         responsibilities: formData.responsibilities.trim() || null,
-        benefits: formData.benefits.trim() || null,
+        // benefits: Omitido - la DB espera ARRAY pero el form usa TEXT
         position_type: formData.position_type,
         experience_required: formData.experience_required,
-        salary_min: formData.salary_min ? parseFloat(formData.salary_min) : null,
-        salary_max: formData.salary_max ? parseFloat(formData.salary_max) : null,
+        salary_min: formData.salary_min ? parseFormattedNumber(formData.salary_min) : null,
+        salary_max: formData.salary_max ? parseFormattedNumber(formData.salary_max) : null,
         currency: formData.currency,
+        commission_based: formData.commission_based,
         location_id: formData.location_id || null,
         remote_allowed: formData.remote_allowed,
         status: formData.status,
@@ -145,7 +170,10 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
           .update(vacancyData)
           .eq('id', vacancyId)
 
-        if (error) throw error
+        if (error) {
+          console.error('Error actualizando vacante:', error)
+          throw error
+        }
         toast.success('Vacante actualizada exitosamente')
       } else {
         // Crear
@@ -153,14 +181,19 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
           .from('job_vacancies')
           .insert([vacancyData])
 
-        if (error) throw error
+        if (error) {
+          console.error('Error creando vacante:', error)
+          throw error
+        }
         toast.success('Vacante creada exitosamente')
       }
 
       onSuccess()
       onClose()
-    } catch {
-      toast.error(vacancyId ? 'Error al actualizar la vacante' : 'Error al crear la vacante')
+    } catch (error: any) {
+      console.error('Error completo:', error)
+      const errorMessage = error?.message || 'Error desconocido'
+      toast.error(vacancyId ? `Error al actualizar: ${errorMessage}` : `Error al crear: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
@@ -330,24 +363,30 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label className="text-foreground">Salario Mínimo</Label>
-                <Input
-                  type="number"
-                  value={formData.salary_min}
-                  onChange={(e) => setFormData({ ...formData, salary_min: e.target.value })}
-                  placeholder="0"
-                  className="bg-background border-border text-foreground"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    type="text"
+                    value={formData.salary_min}
+                    onChange={(e) => handleSalaryChange('salary_min', e.target.value)}
+                    placeholder="0"
+                    className="bg-background border-border text-foreground pl-8"
+                  />
+                </div>
               </div>
 
               <div>
                 <Label className="text-foreground">Salario Máximo</Label>
-                <Input
-                  type="number"
-                  value={formData.salary_max}
-                  onChange={(e) => setFormData({ ...formData, salary_max: e.target.value })}
-                  placeholder="0"
-                  className="bg-background border-border text-foreground"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    type="text"
+                    value={formData.salary_max}
+                    onChange={(e) => handleSalaryChange('salary_max', e.target.value)}
+                    placeholder="0"
+                    className="bg-background border-border text-foreground pl-8"
+                  />
+                </div>
               </div>
 
               <div>
@@ -369,17 +408,29 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               </div>
             </div>
 
+            {/* Checkbox de comisiones */}
+            <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+              <div>
+                <Label className="text-foreground">Aplican Comisiones</Label>
+                <p className="text-sm text-muted-foreground">El empleado recibirá comisiones además del salario base</p>
+              </div>
+              <Switch
+                checked={formData.commission_based}
+                onCheckedChange={(checked) => setFormData({ ...formData, commission_based: checked })}
+              />
+            </div>
+
             <div>
               <Label className="text-foreground">Ubicación</Label>
               <Select 
-                value={formData.location_id} 
-                onValueChange={(value) => setFormData({ ...formData, location_id: value })}
+                value={formData.location_id || 'no-location'} 
+                onValueChange={(value) => setFormData({ ...formData, location_id: value === 'no-location' ? '' : value })}
               >
                 <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue placeholder="Selecciona una ubicación" />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  <SelectItem value="">Sin ubicación específica</SelectItem>
+                  <SelectItem value="no-location">Sin ubicación específica</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name} - {location.city}

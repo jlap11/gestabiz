@@ -12,8 +12,8 @@ import { supabase } from '@/lib/supabase';
 export interface Country {
   id: string;
   name: string;
-  iso_code: string;
-  phone_prefix?: string;
+  code: string;
+  phone_prefix: string;
 }
 
 export interface Region {
@@ -83,7 +83,7 @@ export function useCountries() {
         setLoading(true);
         const { data, error: fetchError } = await supabase
           .from('countries')
-          .select('id, name, iso_code, phone_prefix')
+          .select('id, name, code, phone_prefix')
           .order('name');
 
         if (fetchError) throw fetchError;
@@ -340,7 +340,7 @@ export async function getColombiaId(): Promise<string | null> {
     const { data, error } = await supabase
       .from('countries')
       .select('id')
-      .eq('iso_code', 'COL')
+      .eq('code', 'CO')
       .single();
 
     if (error) throw error;

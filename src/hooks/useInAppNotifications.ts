@@ -129,6 +129,23 @@ export function useInAppNotifications(
           console.log('[useInAppNotifications] 📊 Unread count (no chat):', countData)
           setUnreadCount(countData || 0)
         }
+      } else if (type) {
+        // Si se especifica un tipo, contar solo notificaciones de ese tipo
+        const { count, error: countError } = await supabase
+          .from('in_app_notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('type', type)
+          .eq('status', 'unread')
+          .neq('status', 'archived')
+
+        if (countError) {
+          console.warn('[useInAppNotifications] ⚠️ Error fetching unread count by type:', countError)
+          setUnreadCount(0)
+        } else {
+          console.log(`[useInAppNotifications] 📊 Unread count (type: ${type}):`, count)
+          setUnreadCount(count || 0)
+        }
       } else {
         // Función estándar que incluye todo
         const { data: countData, error: countError } = await supabase
@@ -154,17 +171,28 @@ export function useInAppNotifications(
   // Marcar como leída
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('in_app_notifications')
         .update({ 
           status: 'read', 
-          read_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          read_at: new Date().toISOString()
         })
         .eq('id', notificationId)
-        .eq('user_id', userId)
+        .select()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error('[markAsRead] Error details:', {
+          message: updateError.message,
+          details: updateError.details,
+          hint: updateError.hint,
+          code: updateError.code
+        })
+        throw updateError
+      }
+
+      if (!data || data.length === 0) {
+        console.warn('[markAsRead] No rows updated for notification:', notificationId)
+      }
 
       // Actualizar estado local
       setNotifications(prev => 
@@ -176,6 +204,9 @@ export function useInAppNotifications(
       )
 
       setUnreadCount(prev => Math.max(0, prev - 1))
+      
+      // Disparar evento global para sincronizar otros componentes (ej: NotificationBell)
+      globalThis.dispatchEvent(new CustomEvent('notification-marked-read'))
       
       // Track analytics
       const notification = notificationsRef.current.find(n => n.id === notificationId)
@@ -189,7 +220,7 @@ export function useInAppNotifications(
       const message = err instanceof Error ? err.message : 'Error al marcar como leída'
       toast.error(message)
     }
-  }, [userId])
+  }, []) // Removido userId de dependencias
 
   // Marcar todas como leídas
   const markAllAsRead = useCallback(async () => {
@@ -209,6 +240,9 @@ export function useInAppNotifications(
       )
 
       setUnreadCount(0)
+      
+      // Disparar evento global para sincronizar otros componentes
+      globalThis.dispatchEvent(new CustomEvent('notification-marked-read'))
       
       if (data && data > 0) {
         toast.success(`${data} notificación(es) marcada(s) como leída(s)`)
@@ -235,7 +269,7 @@ export function useInAppNotifications(
           updated_at: new Date().toISOString()
         })
         .eq('id', notificationId)
-        .eq('user_id', userId)
+        // Removido .eq('user_id', userId) - solo ID es suficiente
 
       if (updateError) throw updateError
 
@@ -260,7 +294,7 @@ export function useInAppNotifications(
       const message = err instanceof Error ? err.message : 'Error al archivar'
       toast.error(message)
     }
-  }, [userId, notifications])
+  }, [notifications]) // Removido userId de dependencias
 
   // Eliminar notificación (hard delete - ya que no existe is_deleted)
   const deleteNotification = useCallback(async (notificationId: string) => {
@@ -269,7 +303,7 @@ export function useInAppNotifications(
         .from('in_app_notifications')
         .delete()
         .eq('id', notificationId)
-        .eq('user_id', userId)
+        // Removido .eq('user_id', userId) - solo ID es suficiente
 
       if (deleteError) throw deleteError
 
@@ -288,7 +322,7 @@ export function useInAppNotifications(
       const message = err instanceof Error ? err.message : 'Error al eliminar'
       toast.error(message)
     }
-  }, [userId, notifications])
+  }, [notifications]) // Removido userId de dependencias
 
   // Refetch
   const refetch = useCallback(async () => {

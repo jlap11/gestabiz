@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
@@ -7,10 +7,11 @@ import { ServicesManager } from './ServicesManager'
 import { EmployeeManagementHierarchy } from './EmployeeManagementHierarchy'
 import { AccountingPage } from './AccountingPage'
 import { ReportsPage } from './ReportsPage'
-import { BusinessSettings } from './BusinessSettings'
 import { PermissionsManager } from './PermissionsManager'
 import { BillingDashboard } from '@/components/billing'
-import UserProfile from '@/components/settings/UserProfile'
+import { RecruitmentDashboard } from '@/components/jobs/RecruitmentDashboard'
+import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
+import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
 
 interface AdminDashboardProps {
@@ -41,6 +42,20 @@ export function AdminDashboard({
   const [activePage, setActivePage] = useState('overview')
   const [currentUser, setCurrentUser] = useState(user)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
+  const [pageContext, setPageContext] = useState<Record<string, unknown>>({})
+
+  // Función para manejar cambios de página con contexto
+  const handlePageChange = (page: string, context?: Record<string, unknown>) => {
+    setActivePage(page)
+    if (context) {
+      setPageContext(context)
+    } else {
+      setPageContext({})
+    }
+  }
+
+  // Hook para procesar navegaciones pendientes después de cambio de rol
+  usePendingNavigation(handlePageChange)
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -85,6 +100,11 @@ export function AdminDashboard({
       id: 'employees',
       label: 'Empleados',
       icon: <Users className="h-5 w-5" />
+    },
+    {
+      id: 'recruitment',
+      label: 'Reclutamiento',
+      icon: <BriefcaseBusiness className="h-5 w-5" />
     },
     {
       id: 'accounting',
@@ -132,6 +152,13 @@ export function AdminDashboard({
             )}
           </>
         )
+      case 'recruitment':
+        return (
+          <RecruitmentDashboard 
+            businessId={business.id} 
+            highlightedVacancyId={pageContext.vacancyId as string | undefined}
+          />
+        )
       case 'accounting':
         return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
       case 'reports':
@@ -147,16 +174,18 @@ export function AdminDashboard({
           />
         )
       case 'settings':
-        return <BusinessSettings business={business} onUpdate={onUpdate} />
       case 'profile':
         return (
           <div className="p-6">
-            <UserProfile 
+            <CompleteUnifiedSettings 
               user={currentUser} 
               onUserUpdate={(updatedUser) => {
                 setCurrentUser(updatedUser)
                 onUpdate?.()
               }}
+              currentRole="admin"
+              businessId={business.id}
+              business={business}
             />
           </div>
         )
@@ -177,7 +206,7 @@ export function AdminDashboard({
       onLogout={onLogout}
       sidebarItems={sidebarItems}
       activePage={activePage}
-      onPageChange={setActivePage}
+      onPageChange={handlePageChange}
       user={currentUser ? {
         id: currentUser.id,
         name: currentUser.name,

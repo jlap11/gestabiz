@@ -11,21 +11,37 @@ import {
   Calendar,
   Users,
   AlertCircle,
-  MessageCircle
+  MessageCircle,
+  MoreHorizontal
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
 import { NotificationItemErrorBoundary } from './NotificationErrorBoundary'
+import { getNotificationNavigation } from '@/lib/notificationNavigation'
+import { 
+  handleNotificationWithRoleSwitch,
+  type UserRole,
+  type NavigationCallback,
+  type RoleSwitchCallback 
+} from '@/lib/notificationRoleMapping'
 import { cn } from '@/lib/utils'
 import type { InAppNotification } from '@/types/types'
 
 interface NotificationCenterProps {
   userId: string
   onClose?: () => void
+  onNavigateToPage?: (page: string, context?: Record<string, unknown>) => void
+  /** Rol actual del usuario */
+  currentRole?: UserRole
+  /** Callback para cambiar de rol */
+  onRoleSwitch?: RoleSwitchCallback
+  /** Roles disponibles del usuario */
+  availableRoles?: UserRole[]
 }
 
 const NotificationIcon = ({ type }: { type: string }) => {
@@ -72,11 +88,11 @@ function NotificationItem({
   onDelete,
   onNavigate 
 }: { 
-  notification: InAppNotification
-  onRead: (id: string) => void
-  onArchive: (id: string) => void
-  onDelete: (id: string) => void
-  onNavigate: (url: string) => void
+  readonly notification: InAppNotification
+  readonly onRead: (id: string) => void
+  readonly onArchive: (id: string) => void
+  readonly onDelete: (id: string) => void
+  readonly onNavigate: (notification: InAppNotification) => void
 }) {
   const isUnread = notification.status === 'unread'
 
@@ -84,28 +100,21 @@ function NotificationItem({
     if (isUnread) {
       onRead(notification.id)
     }
-    if (notification.action_url) {
-      onNavigate(notification.action_url)
-    }
+    // Navegar usando la notificación y la utilidad
+    onNavigate(notification)
   }
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      className={cn(
-        'group relative p-3 sm:p-4 hover:bg-muted/50 active:bg-muted/70 transition-colors cursor-pointer min-h-[60px]',
-        isUnread && 'bg-muted/30'
-      )}
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          handleClick()
-        }
-      }}
-      aria-label={`${notification.title}. ${isUnread ? 'No leída' : 'Leída'}. ${formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: es })}`}
-    >
+    <div className="relative group">
+      <button
+        type="button"
+        className={cn(
+          'relative w-full rounded-lg border border-transparent p-3 text-left transition-colors sm:p-4 hover:bg-muted/50 active:bg-muted/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
+          isUnread && 'bg-muted/30'
+        )}
+        onClick={handleClick}
+        aria-label={`${notification.title}. ${isUnread ? 'No leída' : 'Leída'}. ${formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: es })}`}
+      >
       <div className="flex items-start gap-2 sm:gap-3">
         {/* Icono */}
         <div className={cn(
@@ -124,7 +133,59 @@ function NotificationItem({
             )}>
               {notification.title}
             </p>
-            <NotificationPriority priority={notification.priority} />
+            <div className="flex items-center gap-1">
+              <NotificationPriority priority={notification.priority} />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={(event) => event.stopPropagation()}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    aria-label="Más acciones de notificación"
+                  >
+                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-44 bg-popover text-popover-foreground border-border"
+                  onCloseAutoFocus={(event) => event.preventDefault()}
+                >
+                  {isUnread && (
+                    <DropdownMenuItem
+                      onSelect={(event) => {
+                        event.preventDefault()
+                        onRead(notification.id)
+                      }}
+                    >
+                      <Check className="mr-2 h-4 w-4" aria-hidden="true" />
+                      Marcar como leída
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault()
+                      onArchive(notification.id)
+                    }}
+                  >
+                    <Archive className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Archivar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault()
+                      onDelete(notification.id)
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           
           <p className="text-sm text-muted-foreground line-clamp-2">
@@ -147,50 +208,7 @@ function NotificationItem({
         </div>
       </div>
 
-      {/* Acciones (visible en hover desktop, semi-transparente en móvil) */}
-      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-        {isUnread && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 sm:h-7 sm:w-7 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-            onClick={(e) => {
-              e.stopPropagation()
-              onRead(notification.id)
-            }}
-            title="Marcar como leída"
-            aria-label="Marcar notificación como leída"
-          >
-            <Check className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 sm:h-7 sm:w-7 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden sm:flex"
-          onClick={(e) => {
-            e.stopPropagation()
-            onArchive(notification.id)
-          }}
-          title="Archivar"
-          aria-label="Archivar notificación"
-        >
-          <Archive className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 sm:h-7 sm:w-7 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-destructive hover:text-destructive hidden sm:flex"
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete(notification.id)
-          }}
-          title="Eliminar"
-          aria-label="Eliminar notificación"
-        >
-          <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
-        </Button>
-      </div>
+      </button>
     </div>
   )
 }
@@ -198,7 +216,14 @@ function NotificationItem({
 /**
  * Centro de notificaciones con tabs y lista de notificaciones
  */
-export function NotificationCenter({ userId, onClose }: NotificationCenterProps) {
+export function NotificationCenter({ 
+  userId, 
+  onClose, 
+  onNavigateToPage,
+  currentRole = 'client',
+  onRoleSwitch,
+  availableRoles = ['client', 'employee', 'admin']
+}: Readonly<NotificationCenterProps>) {
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'system'>('unread')
 
   const { 
@@ -217,8 +242,6 @@ export function NotificationCenter({ userId, onClose }: NotificationCenterProps)
     suppressToasts: true
   })
 
-  console.log('[NotificationCenter] Rendering with', allNotifications.length, 'notifications (no chat), unread:', unreadCount)
-
   // Filtrar por tab
   const filteredNotifications = allNotifications.filter(n => {
     if (activeTab === 'unread') {
@@ -230,11 +253,80 @@ export function NotificationCenter({ userId, onClose }: NotificationCenterProps)
     return true // 'all'
   })
 
-  const handleNavigate = (url: string) => {
+  const handleNavigate = async (notification: InAppNotification) => {
     // Cerrar el popover
     onClose?.()
-    // Navegar
-    window.location.href = url
+    
+    // Si tenemos callback de cambio de rol, usar el sistema avanzado
+    if (onRoleSwitch && currentRole) {
+      const navigationCallback: NavigationCallback = (page, context) => {
+        if (onNavigateToPage) {
+          onNavigateToPage(page, context)
+        }
+      }
+
+      await handleNotificationWithRoleSwitch(
+        notification,
+        currentRole,
+        onRoleSwitch,
+        navigationCallback,
+        {
+          availableRoles,
+          onError: (error) => {
+            // eslint-disable-next-line no-console
+            console.error('Error navigating with role switch:', error)
+            // Fallback a navegación tradicional
+            fallbackNavigate(notification)
+          }
+        }
+      )
+    } else {
+      // Fallback: navegación tradicional sin cambio de rol
+      fallbackNavigate(notification)
+    }
+  }
+
+  const fallbackNavigate = (notification: InAppNotification) => {
+    // Obtener configuración de navegación basada en tipo
+    const navConfig = getNotificationNavigation(notification)
+    
+    // Ejecutar navegación según destino
+    if (navConfig.destination === 'internal' && navConfig.path) {
+      // Si hay un callback de navegación del padre, usarlo
+      if (onNavigateToPage) {
+        // Mapear paths a páginas del dashboard
+        // /mis-empleos/vacante/{id} → recruitment con context
+        if (navConfig.path.startsWith('/mis-empleos')) {
+          onNavigateToPage('recruitment', { 
+            vacancyId: navConfig.modalProps?.vacancyId 
+          })
+        } else if (navConfig.path.startsWith('/citas')) {
+          onNavigateToPage('appointments', {
+            appointmentId: navConfig.modalProps?.appointmentId
+          })
+        } else if (navConfig.path.startsWith('/chat')) {
+          onNavigateToPage('chat', {
+            conversationId: navConfig.modalProps?.conversationId
+          })
+        } else if (navConfig.path.startsWith('/admin/empleados')) {
+          onNavigateToPage('employees', {
+            requestId: navConfig.modalProps?.requestId
+          })
+        } else if (navConfig.path.includes('/resenas')) {
+          onNavigateToPage('reviews', {
+            businessId: navConfig.modalProps?.businessId
+          })
+        } else {
+          // Fallback: usar location.href
+          globalThis.location.href = navConfig.path
+        }
+      } else {
+        // Fallback: usar location.href si no hay callback
+        globalThis.location.href = navConfig.path
+      }
+    } else if (navConfig.destination === 'external' && navConfig.path) {
+      globalThis.open(navConfig.path, '_blank')
+    }
   }
 
   return (

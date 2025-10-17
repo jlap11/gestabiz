@@ -44,7 +44,7 @@ interface UnifiedLayoutProps {
   onLogout?: () => void
   sidebarItems: SidebarItem[]
   activePage: string
-  onPageChange: (page: string) => void
+  onPageChange: (page: string, context?: Record<string, unknown>) => void
   user?: {
     id: string
     name: string
@@ -291,7 +291,15 @@ export function UnifiedLayout({
           {/* Right Side Controls - Responsive */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Notification Bell - Show for authenticated users */}
-            {user?.id && <NotificationBell userId={user.id} />}
+            {user?.id && (
+              <NotificationBell 
+                userId={user.id} 
+                onNavigateToPage={onPageChange}
+                currentRole={currentRole}
+                onRoleSwitch={onRoleChange}
+                availableRoles={availableRoles}
+              />
+            )}
 
             {/* Role Selector - Responsive */}
             {uniqueRoles.length > 0 && (

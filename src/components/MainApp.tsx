@@ -81,9 +81,8 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   }
 
   // Check if employee needs onboarding: NO businesses linked AND not loading
-  const needsEmployeeOnboarding = activeRole === 'employee' && 
-                                   employeeBusinesses.length === 0 && 
-                                   !isLoadingEmployeeBusinesses
+  // NOTE: Changed logic - show dashboard always, handle onboarding inside MyEmployments
+  const needsEmployeeOnboarding = false // Disabled - employees always see dashboard
   
   // Get selected business for AdminDashboard
   const selectedBusiness = businesses.find((b) => b.id === selectedBusinessId)

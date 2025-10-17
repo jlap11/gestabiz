@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { paymentGateway } from '../lib/payments/StripeGateway'
+import { getPaymentGateway } from '../lib/payments/PaymentGatewayFactory'
 import type {
   SubscriptionDashboard,
   CheckoutSessionParams,
@@ -21,6 +21,9 @@ export function useSubscription(businessId: string | null) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { showToast } = useAppState()
+  
+  // Obtener gateway configurado (Stripe o PayU)
+  const paymentGateway = getPaymentGateway()
 
   // Cargar dashboard de facturación
   const loadDashboard = useCallback(async () => {

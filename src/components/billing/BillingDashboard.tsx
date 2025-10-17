@@ -21,21 +21,24 @@ import {
   XCircle,
   Clock,
   Download,
+  ArrowLeft,
 } from 'lucide-react'
 import { PlanUpgradeModal } from './PlanUpgradeModal'
 import { CancelSubscriptionModal } from './CancelSubscriptionModal'
 import { AddPaymentMethodModal } from './AddPaymentMethodModal'
+import { PricingPage } from '@/pages/PricingPage'
 import type { SubscriptionStatus } from '@/lib/payments/PaymentGateway'
 
 interface BillingDashboardProps {
   businessId: string
 }
 
-export function BillingDashboard({ businessId }: BillingDashboardProps) {
+export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>) {
   const { dashboard, isLoading, refresh } = useSubscription(businessId)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false)
+  const [showPricingPage, setShowPricingPage] = useState(false)
 
   if (isLoading) {
     return (
@@ -45,21 +48,69 @@ export function BillingDashboard({ businessId }: BillingDashboardProps) {
     )
   }
 
+  // Si usuario quiere ver planes, mostrar PricingPage inline
+  if (showPricingPage) {
+    return (
+      <div className="space-y-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => setShowPricingPage(false)}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver al Dashboard
+        </Button>
+        <PricingPage businessId={businessId} onClose={() => setShowPricingPage(false)} />
+      </div>
+    )
+  }
+
   if (!dashboard?.subscription) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Sin Suscripción Activa</CardTitle>
-          <CardDescription>
-            Suscríbete a un plan para acceder a todas las funcionalidades
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={() => window.location.href = '/pricing'}>
-            Ver Planes
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Plan Gratuito
+            </CardTitle>
+            <CardDescription>
+              Actualmente estás usando el plan gratuito con funcionalidades básicas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Características incluidas:</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Registro de negocios básico
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Hasta 3 citas por mes
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  1 empleado
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  1 servicio
+                </li>
+              </ul>
+            </div>
+            <div className="pt-4 border-t">
+              <p className="text-sm text-muted-foreground mb-4">
+                ¿Quieres desbloquear más funcionalidades? Actualiza al Plan Inicio
+              </p>
+              <Button onClick={() => setShowPricingPage(true)} className="w-full">
+                Ver Plan Inicio
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 

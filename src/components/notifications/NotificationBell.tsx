@@ -13,10 +13,18 @@ import { useInAppNotifications } from '@/hooks/useInAppNotifications'
 import { trackNotificationEvent, NotificationEvents } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 import { animations } from '@/lib/animations'
+import type { UserRole, RoleSwitchCallback } from '@/lib/notificationRoleMapping'
 
 interface NotificationBellProps {
   userId: string
   className?: string
+  onNavigateToPage?: (page: string, context?: Record<string, unknown>) => void
+  /** Rol actual del usuario */
+  currentRole?: UserRole
+  /** Callback para cambiar de rol */
+  onRoleSwitch?: RoleSwitchCallback
+  /** Roles disponibles del usuario */
+  availableRoles?: UserRole[]
 }
 
 /**
@@ -24,17 +32,44 @@ interface NotificationBellProps {
  * Abre un popover con el centro de notificaciones
  * EXCLUYE notificaciones de chat (esas van en FloatingChatButton)
  */
-export function NotificationBell({ userId, className }: NotificationBellProps) {
+export function NotificationBell({ 
+  userId, 
+  className, 
+  onNavigateToPage,
+  currentRole,
+  onRoleSwitch,
+  availableRoles
+}: Readonly<NotificationBellProps>) {
   const [open, setOpen] = useState(false)
   
   // Hook personalizado que excluye notificaciones de chat
-  const { unreadCount } = useInAppNotifications({
+  // Usamos limit alto y autoFetch true para sincronizar en tiempo real
+  const { unreadCount, refetch } = useInAppNotifications({
     userId,
     autoFetch: true,
-    limit: 1, // Solo necesitamos el contador
+    limit: 50, // Aumentado para capturar todas las notificaciones no leídas
     excludeChatMessages: true, // Nueva opción para excluir mensajes de chat
     suppressToasts: true
   })
+  
+  // Refrescar cuando se abre o cierra el popover para asegurar sincronización
+  useEffect(() => {
+    if (open) {
+      refetch()
+    }
+  }, [open, refetch])
+  
+  // Escuchar evento de notificación marcada como leída desde NotificationCenter
+  useEffect(() => {
+    const handleNotificationRead = () => {
+      refetch()
+    }
+    
+    globalThis.addEventListener('notification-marked-read', handleNotificationRead)
+    return () => {
+      globalThis.removeEventListener('notification-marked-read', handleNotificationRead)
+    }
+  }, [refetch])
   
   // Track analytics cuando se abre/cierra
   useEffect(() => {
@@ -78,7 +113,14 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
         sideOffset={8}
       >
         <NotificationErrorBoundary>
-          <NotificationCenter userId={userId} onClose={() => setOpen(false)} />
+          <NotificationCenter 
+            userId={userId} 
+            onClose={() => setOpen(false)}
+            onNavigateToPage={onNavigateToPage}
+            currentRole={currentRole}
+            onRoleSwitch={onRoleSwitch}
+            availableRoles={availableRoles}
+          />
         </NotificationErrorBoundary>
       </PopoverContent>
     </Popover>

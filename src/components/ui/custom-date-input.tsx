@@ -58,10 +58,15 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
         // Inject CSS styles into document head
         useEffect(() => {
             const styleId = 'react-datepicker-custom-styles'
-            if (!document.getElementById(styleId)) {
-                const style = document.createElement('style')
-                style.id = styleId
-                style.textContent = `
+            // Remover estilo antiguo si existe
+            const existingStyle = document.getElementById(styleId)
+            if (existingStyle) {
+                existingStyle.remove()
+            }
+            
+            const style = document.createElement('style')
+            style.id = styleId
+            style.textContent = `
           .react-datepicker-wrapper {
             width: 100%;
           }
@@ -69,22 +74,22 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
             z-index: 9999 !important;
           }
           .react-datepicker-popper[data-placement] {
-            background: #18181b !important;
-            background-color: #18181b !important;
+            background: hsl(var(--background)) !important;
+            background-color: hsl(var(--background)) !important;
             border-radius: 8px !important;
             padding: 0 !important;
           }
           .react-datepicker-popper .react-datepicker {
-            background: #18181b !important;
-            background-color: #18181b !important;
+            background: hsl(var(--background)) !important;
+            background-color: hsl(var(--background)) !important;
             border: 1px solid hsl(var(--border)) !important;
           }
           .react-datepicker,
           .react-datepicker__month,
           .react-datepicker__header {
-            background: #18181b !important;
-            background-color: #18181b !important;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -2px rgba(0,0,0,0.1);
+            background: hsl(var(--background)) !important;
+            background-color: hsl(var(--background)) !important;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
           }
           .react-datepicker {
             font-family: inherit;
@@ -243,7 +248,6 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
           }
         `
                 document.head.appendChild(style)
-            }
         }, [])
 
         return (

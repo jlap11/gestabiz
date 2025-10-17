@@ -40,7 +40,7 @@ export function PhonePrefixSelect({
 
   // Auto-seleccionar +57 (Colombia) al cargar
   const colombiaPrefix = useMemo(() => {
-    return countries.find(c => c.iso_code === 'COL')?.phone_prefix;
+    return countries.find(c => c.code === 'CO')?.phone_prefix;
   }, [countries]);
 
   // Si defaultToColombia está activo y no hay valor, usar +57
@@ -61,7 +61,7 @@ export function PhonePrefixSelect({
       country =>
         country.name.toLowerCase().includes(search) ||
         country.phone_prefix?.includes(search) ||
-        country.iso_code.toLowerCase().includes(search)
+        country.code.toLowerCase().includes(search)
     );
   }, [countriesWithPrefix, searchTerm]);
 
