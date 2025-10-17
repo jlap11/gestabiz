@@ -128,22 +128,13 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
           console.log('[NotificationContext] ✅ Notification displayed:', notification.title)
         }
       )
-      // 2. 🆕 NUEVO: Escuchar mensajes de chat directamente (para actualizar conversaciones)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `conversation_id=in.(SELECT conversation_id FROM chat_participants WHERE user_id=${userId})`
-        },
-        (payload) => {
-          console.log('[NotificationContext] 💬 New chat message (global):', payload.new)
-          // Este evento dispara automáticamente la creación de in_app_notification
-          // via trigger en Supabase, así que no necesitamos hacer nada aquí
-          // Solo lo loggeamos para debugging
-        }
-      )
+      // NOTE: Do NOT subscribe to `chat_messages` here using a subselect filter.
+      // Supabase realtime filters don't support SQL subqueries and attempting
+      // to do so can cause channel errors (CHANNEL_ERROR / CLOSED). The in-app
+      // notifications table already receives a trigger on message INSERT and
+      // is sufficient to surface notifications to the user. If you need to
+      // react to chat_messages globally, subscribe to `chat_participants` or
+      // create explicit filters with conversation ids.
       .subscribe((status) => {
         console.log('[NotificationContext] 📡 Global channel status:', status)
       })

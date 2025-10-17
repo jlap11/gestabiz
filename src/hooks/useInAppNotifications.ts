@@ -304,7 +304,6 @@ export function useInAppNotifications(
   // Suscripción realtime
   useEffect(() => {
     if (!userId) return
-
     // Helpers para actualizar estado
     const upsertNotification = (notification: InAppNotification) => {
       // 🔥 FIX: Aplicar filtros antes de procesar
@@ -400,29 +399,64 @@ export function useInAppNotifications(
 
     // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
     const channelName = `in_app_notifications_${userId}`
-    
-    console.log('[useInAppNotifications] 📡 Subscribing to channel:', channelName)
-    
-    // Suscribirse al canal
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'in_app_notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        handleRealtimeEvent
-      )
-      .subscribe((status) => {
-        console.log('[useInAppNotifications] 📡 Channel status:', status)
-      })
+
+    console.log('[useInAppNotifications] 📡 Subscribing to channel (with reconnection):', channelName)
+
+    const channelRef = { current: null as any }
+    let attempts = 0
+
+    const subscribe = () => {
+      if (channelRef.current) {
+        try {
+          // If there's an existing channel, remove it first
+          supabase.removeChannel(channelRef.current)
+        } catch (e) {
+          console.warn('[useInAppNotifications] ⚠️ Error removing existing channel before subscribe', e)
+        }
+      }
+
+      attempts += 1
+
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'in_app_notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          handleRealtimeEvent
+        )
+        .subscribe((status) => {
+          console.log('[useInAppNotifications] 📡 Channel status:', status)
+
+          // If channel reports error or closed, retry with backoff up to 3 times
+          if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+            console.warn('[useInAppNotifications] ⚠️ Channel status', status, 'attempts', attempts)
+            if (attempts < 4) {
+              const backoff = 500 * attempts // 500ms, 1000ms, 1500ms
+              setTimeout(() => subscribe(), backoff)
+            } else {
+              console.error('[useInAppNotifications] ❌ Channel failed after retries')
+            }
+          }
+        })
+
+      channelRef.current = channel
+    }
+
+    // Inicial subscribe
+    subscribe()
 
     // Cleanup
     return () => {
-      supabase.removeChannel(channel)
+      try {
+        if (channelRef.current) supabase.removeChannel(channelRef.current)
+      } catch (e) {
+        console.warn('[useInAppNotifications] ⚠️ Error during cleanup removeChannel', e)
+      }
     }
   }, [userId, limit, type, businessId, excludeChatMessages]) // ✅ Incluir filtros para recrear suscripción cuando cambien
 
