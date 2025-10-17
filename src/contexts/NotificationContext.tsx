@@ -93,13 +93,28 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
             conversationId: notification.data?.conversation_id
           })
           
+          // 🔍 DEBUG: Verificar cada condición
+          console.log('🔍 [DEBUG] Checking suppression conditions:', {
+            isChat: notification.type === 'chat_message',
+            isChatOpen: isChatOpen,
+            hasActiveConv: activeConversationId !== null,
+            activeConvId: activeConversationId,
+            messageConvId: notification.data?.conversation_id,
+            matches: notification.data?.conversation_id === activeConversationId,
+            WILL_SUPPRESS: (
+              notification.type === 'chat_message' && 
+              isChatOpen &&
+              notification.data?.conversation_id === activeConversationId
+            )
+          })
+          
           // ✅ REGLA 1: Si es chat message Y el chat de esa conversación está abierto → SUPRIMIR
           if (
             notification.type === 'chat_message' && 
             isChatOpen &&
             notification.data?.conversation_id === activeConversationId
           ) {
-            console.log('[NotificationContext] ⏭️ Suppressing toast (chat already open)')
+            console.log('❌ [SUPPRESSED] Toast will NOT show - chat is open for this conversation')
             playActiveChatMessageSound()
             return // No mostrar toast, solo sonido
           }
@@ -107,10 +122,15 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
           // ✅ REGLA 2: Si el chat está abierto (lista de conversaciones) pero no es la activa → MOSTRAR
           // ✅ REGLA 3: Si el chat está completamente cerrado → MOSTRAR
           
+          console.log('✅ [PASSED] Suppression check passed, checking if unread...')
+          
           // Solo mostrar si es unread
           if (notification.status !== 'unread') {
+            console.log('⏭️ [SKIP] Notification is not unread, skipping toast')
             return
           }
+          
+          console.log('🎯 [SHOWING] About to show toast...')
           
           // Reproducir sonido
           const soundType = notification.priority === 2 ? 'alert' : 'message'
