@@ -9,7 +9,7 @@ import {
   User as UserIcon,
   Plus
 } from 'lucide-react'
-import logoGestabiz from '@/assets/images/logo_Gestabiz.png'
+import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar, type SearchType } from '@/components/client/SearchBar'
 import {
