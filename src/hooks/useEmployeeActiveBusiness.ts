@@ -63,7 +63,6 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
           .from('business_employees')
           .select(`
             business_id,
-            work_schedule,
             businesses!inner (
               id,
               name,
@@ -96,57 +95,16 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
           return
         }
 
-        // 2. Determinar día y hora actual
-        const now = new Date()
-        const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'lowercase' }) // monday, tuesday, etc.
-        const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) // HH:mm
-
-        console.log('[useEmployeeActiveBusiness] Current day:', dayOfWeek, 'time:', currentTime)
-
-        // 3. Buscar negocio activo según horario
-        for (const empBusiness of employeeBusinesses) {
-          const schedule = empBusiness.work_schedule as Record<string, any> | null
-          const business = (empBusiness.businesses as any)
-
-          if (!schedule || !business) continue
-
-          // Verificar si hay horario para hoy
-          const todaySchedule = schedule[dayOfWeek]
-          
-          if (!todaySchedule) continue
-
-          const isActive = todaySchedule.is_active ?? true
-          const startTime = todaySchedule.start_time || '09:00'
-          const endTime = todaySchedule.end_time || '18:00'
-
-          console.log('[useEmployeeActiveBusiness] Checking business:', business.name, {
-            isActive,
-            startTime,
-            endTime,
-            currentTime,
-          })
-
-          // Si el día está activo y está dentro del rango de horas
-          if (isActive && currentTime >= startTime && currentTime <= endTime) {
-            setResult({
-              business_id: business.id,
-              business_name: business.name,
-              business_logo_url: business.logo_url || null,
-              is_within_schedule: true,
-              status: 'active',
-            })
-            return
-          }
-        }
-
-        // 4. Si no está dentro del horario pero tiene negocios, mostrar el primero como fallback
+        // 2. Si hay negocios, devolver el primero (sin validación de horario)
+        // TODO: Implementar tabla work_schedules para validación de horarios
         const firstBusiness = (employeeBusinesses[0].businesses as any)
+        
         setResult({
           business_id: firstBusiness?.id || null,
           business_name: firstBusiness?.name || null,
           business_logo_url: firstBusiness?.logo_url || null,
-          is_within_schedule: false,
-          status: employeeBusinesses[0].work_schedule ? 'off-schedule' : 'no-schedule',
+          is_within_schedule: true, // Asumimos siempre activo por ahora
+          status: 'active',
         })
       } catch (err) {
         console.error('[useEmployeeActiveBusiness] Unexpected error:', err)
