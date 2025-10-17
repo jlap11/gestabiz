@@ -92,24 +92,36 @@ export function SimpleChatLayout({
     }
   }, [showChat, activeConversation]);
 
-  // Marcar como leído SOLO al cambiar de conversación (no en cada mensaje nuevo)
+  // Marcar como leído cuando se abre conversación Y cuando llegan mensajes
   useEffect(() => {
-    if (activeConversation && activeMessages.length > 0) {
-      // Marcar como leído solo cuando se abre/cambia la conversación
-      const lastMessage = activeMessages[activeMessages.length - 1];
-      if (lastMessage) {
-        console.log('[SimpleChatLayout] 👀 Marking conversation as read:', {
-          conversationId: activeConversation.id,
-          lastMessageId: lastMessage.id,
-          totalMessages: activeMessages.length
-        });
-        markMessagesAsRead(activeConversation.id, lastMessage.id);
-      }
+    if (!activeConversation || activeMessages.length === 0) {
+      return;
     }
-    // ✅ FIX CRÍTICO: Solo depender de activeConversation.id, NO de activeMessages
-    // Esto previene loops infinitos cuando llegan mensajes nuevos
+
+    // Obtener último mensaje
+    const lastMessage = activeMessages[activeMessages.length - 1];
+    
+    // Solo marcar si hay mensajes sin leer del otro usuario
+    const unreadMessages = activeMessages.filter(
+      msg => msg.sender_id !== userId && (!msg.read_by || !msg.read_by.includes(userId))
+    );
+    
+    if (unreadMessages.length > 0) {
+      console.log('[SimpleChatLayout] 👀 Marking conversation as read:', {
+        conversationId: activeConversation.id,
+        lastMessageId: lastMessage.id,
+        totalMessages: activeMessages.length,
+        unreadCount: unreadMessages.length
+      });
+      markMessagesAsRead(activeConversation.id, lastMessage.id);
+    } else {
+      console.log('[SimpleChatLayout] ℹ️ No unread messages to mark');
+    }
+    // ✅ IMPORTANTE: Incluir activeMessages.length para detectar mensajes nuevos
+    // Esto SE ejecutará en cada mensaje nuevo, pero debouncedMarkAsRead en useChat
+    // prevendrá llamadas excesivas agrupándolas con 500ms delay
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeConversation?.id, markMessagesAsRead]);
+  }, [activeConversation?.id, activeMessages.length, userId]);
 
   const handleSendMessage = async (content: string) => {
     if (!activeConversation) return;
