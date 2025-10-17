@@ -110,13 +110,8 @@ function App() {
           <ThemeProvider>
             <LanguageProvider>
               <AppStateProvider>
-                {/* NotificationProvider necesita userId, lo obtenemos dentro */}
-                <NotificationProviderWrapper>
-                  <Suspense fallback={<AppLoader />}>
-                    <AppContent />
-                  </Suspense>
-                  <Toaster richColors closeButton />
-                </NotificationProviderWrapper>
+                {/* AppWithNotifications maneja el provider de notificaciones */}
+                <AppWithNotifications />
               </AppStateProvider>
             </LanguageProvider>
           </ThemeProvider>
@@ -126,12 +121,23 @@ function App() {
   )
 }
 
-// Wrapper para obtener userId del hook antes de pasar a NotificationProvider
-function NotificationProviderWrapper({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthSimple()
+// Componente intermedio para obtener userId ANTES de montar NotificationProvider
+function AppWithNotifications() {
+  const { user, loading } = useAuthSimple()
+  
+  console.log('[AppWithNotifications] User state:', { userId: user?.id, loading })
+  
+  // Esperar a que se resuelva la autenticación
+  if (loading) {
+    return <AppLoader />
+  }
+  
   return (
     <NotificationProvider userId={user?.id || null}>
-      {children}
+      <Suspense fallback={<AppLoader />}>
+        <AppContent />
+      </Suspense>
+      <Toaster richColors closeButton />
     </NotificationProvider>
   )
 }

@@ -44,6 +44,9 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [isChatOpen, setChatOpen] = useState(false)
   
+  // Debug: Log cuando el provider se monta
+  console.log('[NotificationProvider] Mounted with userId:', userId)
+  
   // Ref para acceder al estado actual en callbacks
   const stateRef = useRef({ activeConversationId, isChatOpen })
   useEffect(() => {
@@ -52,7 +55,12 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
 
   // Suscripción realtime GLOBAL (siempre activa)
   useEffect(() => {
-    if (!userId) return
+    console.log('[NotificationContext] useEffect triggered. UserId:', userId)
+    
+    if (!userId) {
+      console.log('[NotificationContext] ⚠️ No userId, skipping subscription')
+      return
+    }
 
     const channelName = `global_notifications_${userId}`
     
@@ -60,6 +68,7 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
     
     const channel = supabase
       .channel(channelName)
+      // 1. Escuchar notificaciones in-app
       .on(
         'postgres_changes',
         {
@@ -117,6 +126,22 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
           })
           
           console.log('[NotificationContext] ✅ Notification displayed:', notification.title)
+        }
+      )
+      // 2. 🆕 NUEVO: Escuchar mensajes de chat directamente (para actualizar conversaciones)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `conversation_id=in.(SELECT conversation_id FROM chat_participants WHERE user_id=${userId})`
+        },
+        (payload) => {
+          console.log('[NotificationContext] 💬 New chat message (global):', payload.new)
+          // Este evento dispara automáticamente la creación de in_app_notification
+          // via trigger en Supabase, así que no necesitamos hacer nada aquí
+          // Solo lo loggeamos para debugging
         }
       )
       .subscribe((status) => {
