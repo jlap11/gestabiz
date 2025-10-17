@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { AppStateProvider } from '@/contexts/AppStateContext'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -109,16 +110,29 @@ function App() {
           <ThemeProvider>
             <LanguageProvider>
               <AppStateProvider>
-                <Suspense fallback={<AppLoader />}>
-                  <AppContent />
-                </Suspense>
-                <Toaster richColors closeButton />
+                {/* NotificationProvider necesita userId, lo obtenemos dentro */}
+                <NotificationProviderWrapper>
+                  <Suspense fallback={<AppLoader />}>
+                    <AppContent />
+                  </Suspense>
+                  <Toaster richColors closeButton />
+                </NotificationProviderWrapper>
               </AppStateProvider>
             </LanguageProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </Suspense>
     </ErrorBoundary>
+  )
+}
+
+// Wrapper para obtener userId del hook antes de pasar a NotificationProvider
+function NotificationProviderWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthSimple()
+  return (
+    <NotificationProvider userId={user?.id || null}>
+      {children}
+    </NotificationProvider>
   )
 }
 

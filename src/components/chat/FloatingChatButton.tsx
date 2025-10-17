@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SimpleChatLayout } from '@/components/chat/SimpleChatLayout'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
+import { useNotificationContext } from '@/contexts/NotificationContext'
 import { cn } from '@/lib/utils'
 
 interface FloatingChatButtonProps {
@@ -20,6 +21,9 @@ export function FloatingChatButton({
   onOpenChange
 }: FloatingChatButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Contexto de notificaciones
+  const { setChatOpen } = useNotificationContext()
   
   // Obtener contador de notificaciones de chat con refetch
   const { unreadCount, refetch } = useInAppNotifications({
@@ -39,7 +43,8 @@ export function FloatingChatButton({
   // Notificar cambios en estado de apertura
   React.useEffect(() => {
     onOpenChange?.(isOpen)
-  }, [isOpen, onOpenChange])
+    setChatOpen(isOpen) // ✨ Notificar al contexto global
+  }, [isOpen, onOpenChange, setChatOpen])
   
   // 🔥 FIX: Refrescar contador al cerrar el chat
   const handleClose = React.useCallback(() => {

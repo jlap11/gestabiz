@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 import { ChatWindow } from './ChatWindow';
 import { ConversationList } from './ConversationList';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -39,6 +40,9 @@ export function SimpleChatLayout({
     setActiveConversationId,
     fetchConversations,
   } = useChat(userId);
+
+  // Contexto de notificaciones para suprimir notificaciones redundantes
+  const { setActiveConversation: setGlobalActiveConversation } = useNotificationContext();
 
   // Estado para controlar si mostramos lista o chat
   const [showChat, setShowChat] = useState(false);
@@ -93,6 +97,19 @@ export function SimpleChatLayout({
       }, 300);
     }
   }, [showChat, activeConversation]);
+
+  // Notificar al contexto global cuando cambia la conversación activa
+  useEffect(() => {
+    if (activeConversation) {
+      setGlobalActiveConversation(activeConversation.id);
+    } else {
+      setGlobalActiveConversation(null);
+    }
+    return () => {
+      // Cleanup: limpiar conversación activa al desmontar
+      setGlobalActiveConversation(null);
+    };
+  }, [activeConversation, setGlobalActiveConversation]);
 
   // Marcar como leído cuando se abre conversación Y cuando llegan mensajes
   useEffect(() => {
