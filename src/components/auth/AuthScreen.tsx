@@ -6,7 +6,7 @@ import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import { useAuth } from '@/hooks/useAuth'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
-import logoGestabiz from '@/assets/images/logo_Gestabiz.png'
+import logoGestabiz from '@/assets/images/logo_bookio.png'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void 
