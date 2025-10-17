@@ -880,7 +880,14 @@ export function useChat(userId: string | null) {
               reply_to: newMessage.reply_to_id,
             };
             
-            // Agregar mensaje SIEMPRE (tanto propios como de otros)
+            // 🔥 FIX: Solo agregar mensajes de OTROS usuarios
+            // Los mensajes propios ya se agregaron con optimistic update
+            if (mappedMessage.sender_id === userId) {
+              console.log('[useChat] ⏭️ Skipping own message (already added optimistically)');
+              return;
+            }
+            
+            // Agregar mensaje de otro usuario
             // Evitar duplicados: verificar si el mensaje ya existe
             setMessages(prev => {
               const existingMessages = prev[activeConversationId] || [];
@@ -891,7 +898,7 @@ export function useChat(userId: string | null) {
                 return prev;
               }
               
-              console.log('[useChat] ✅ Adding new message to state');
+              console.log('[useChat] ✅ Adding new message from other user to state');
               return {
                 ...prev,
                 [activeConversationId]: [
