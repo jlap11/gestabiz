@@ -11,7 +11,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import { playNotificationFeedback } from '@/lib/notificationSound'
+import { playNotificationFeedback, playActiveChatMessageSound } from '@/lib/notificationSound'
 import type { InAppNotification } from '@/types/types'
 
 interface NotificationContextValue {
@@ -25,14 +25,18 @@ interface NotificationContextValue {
   setChatOpen: (isOpen: boolean) => void
 }
 
-const NotificationContext = createContext<NotificationContextValue | null>(null)
+const noop = () => {}
+const defaultContextValue: NotificationContextValue = {
+  activeConversationId: null,
+  setActiveConversation: noop,
+  isChatOpen: false,
+  setChatOpen: noop
+}
+
+const NotificationContext = createContext<NotificationContextValue>(defaultContextValue)
 
 export function useNotificationContext() {
-  const context = useContext(NotificationContext)
-  if (!context) {
-    throw new Error('useNotificationContext debe usarse dentro de NotificationProvider')
-  }
-  return context
+  return useContext(NotificationContext)
 }
 
 interface NotificationProviderProps {
@@ -95,8 +99,9 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
             isChatOpen &&
             notification.data?.conversation_id === activeConversationId
           ) {
-            console.log('[NotificationContext] ⏭️ Suppressing notification (chat already open)')
-            return // No mostrar toast/sonido - el usuario ya está viendo el chat
+            console.log('[NotificationContext] ⏭️ Suppressing toast (chat already open)')
+            playActiveChatMessageSound()
+            return // No mostrar toast, solo sonido
           }
           
           // ✅ REGLA 2: Si el chat está abierto (lista de conversaciones) pero no es la activa → MOSTRAR

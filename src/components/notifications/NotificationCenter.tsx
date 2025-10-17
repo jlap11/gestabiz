@@ -213,7 +213,8 @@ export function NotificationCenter({ userId, onClose }: NotificationCenterProps)
     userId,
     autoFetch: true,
     limit: 50,
-    excludeChatMessages: true // Excluir mensajes de chat del centro de notificaciones
+    excludeChatMessages: true, // Excluir mensajes de chat del centro de notificaciones
+    suppressToasts: true
   })
 
   console.log('[NotificationCenter] Rendering with', allNotifications.length, 'notifications (no chat), unread:', unreadCount)

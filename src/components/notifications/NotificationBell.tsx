@@ -32,7 +32,8 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
     userId,
     autoFetch: true,
     limit: 1, // Solo necesitamos el contador
-    excludeChatMessages: true // Nueva opción para excluir mensajes de chat
+    excludeChatMessages: true, // Nueva opción para excluir mensajes de chat
+    suppressToasts: true
   })
   
   // Track analytics cuando se abre/cierra

@@ -30,7 +30,8 @@ export function FloatingChatButton({
     userId,
     autoFetch: true,
     type: 'chat_message', // ✅ FIX: Tipo correcto del enum (sin _received)
-    limit: 1
+    limit: 1,
+    suppressToasts: true
   })
   
   // Abrir chat cuando se proporciona conversación inicial

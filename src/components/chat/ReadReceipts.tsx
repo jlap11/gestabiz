@@ -55,8 +55,8 @@ export function ReadReceipts({
   return (
     <div className="flex items-center gap-0.5" title={getTooltipText(isRead, isDelivered, sentAt, deliveredAt)}>
       {isRead ? (
-        // Leído - Doble check AZUL BRILLANTE (como WhatsApp)
-        <CheckCheck className={cn(iconSize, 'text-blue-500 dark:text-blue-400')} strokeWidth={2.5} />
+        // Leído - Doble check usando color secundario del tema
+        <CheckCheck className={cn(iconSize, 'text-secondary')} strokeWidth={2.5} />
       ) : isDelivered ? (
         // Entregado - Doble check gris oscuro (bien visible)
         <CheckCheck className={cn(iconSize, 'text-gray-600 dark:text-gray-300')} strokeWidth={2.5} />

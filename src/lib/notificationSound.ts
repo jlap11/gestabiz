@@ -6,21 +6,37 @@
 // Audio Context para generar sonidos
 let audioContext: AudioContext | null = null
 
+type AudioContextConstructor = typeof AudioContext
+type AudioContextGlobal = typeof globalThis & {
+  webkitAudioContext?: AudioContextConstructor
+}
+
 /**
  * Inicializa el Audio Context (necesario para navegadores modernos)
  */
 function getAudioContext(): AudioContext {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+  if (audioContext) {
+    return audioContext
   }
-  return audioContext
+
+  const ctxGlobal = globalThis as AudioContextGlobal
+  const AudioContextClass: AudioContextConstructor | undefined = ctxGlobal.AudioContext ?? ctxGlobal.webkitAudioContext
+  if (!AudioContextClass) {
+    throw new Error('AudioContext not supported')
+  }
+
+  const createdContext = new AudioContextClass()
+  audioContext = createdContext
+  return createdContext
 }
 
 /**
  * Reproduce un tono de notificación
  * Genera un sonido sintético sin necesidad de archivos de audio
  */
-export function playNotificationSound(type: 'message' | 'alert' | 'success' = 'message'): void {
+type NotificationTone = 'message' | 'alert' | 'success' | 'chat-active'
+
+export function playNotificationSound(type: NotificationTone = 'message'): void {
   try {
     const context = getAudioContext()
     
@@ -36,18 +52,24 @@ export function playNotificationSound(type: 'message' | 'alert' | 'success' = 'm
         // ✨ Tono tipo "ding" para mensajes de chat (Mi - Sol - Do alto)
         oscillator.frequency.setValueAtTime(659.25, context.currentTime) // Mi5
         oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.06) // Sol5
-        oscillator.frequency.setValueAtTime(1046.50, context.currentTime + 0.12) // Do6 (nota alta)
+        oscillator.frequency.setValueAtTime(1046.5, context.currentTime + 0.12) // Do6 (nota alta)
         break
       case 'alert':
         // Tono más urgente (Sol - Do alto)
         oscillator.frequency.setValueAtTime(783.99, context.currentTime) // Sol5
-        oscillator.frequency.setValueAtTime(1046.50, context.currentTime + 0.1) // Do6
+        oscillator.frequency.setValueAtTime(1046.5, context.currentTime + 0.1) // Do6
         break
       case 'success':
         // Tono ascendente positivo (Do - Sol - Do alto)
         oscillator.frequency.setValueAtTime(523.25, context.currentTime) // Do5
         oscillator.frequency.setValueAtTime(783.99, context.currentTime + 0.08) // Sol5
-        oscillator.frequency.setValueAtTime(1046.50, context.currentTime + 0.16) // Do6
+        oscillator.frequency.setValueAtTime(1046.5, context.currentTime + 0.16) // Do6
+        break
+      case 'chat-active':
+        // Tono más suave para mensajes dentro del chat activo (Re - Fa - La)
+        oscillator.frequency.setValueAtTime(587.33, context.currentTime) // Re5
+        oscillator.frequency.setValueAtTime(698.46, context.currentTime + 0.05) // Fa5
+        oscillator.frequency.setValueAtTime(880, context.currentTime + 0.1) // La5
         break
     }
     
@@ -64,9 +86,8 @@ export function playNotificationSound(type: 'message' | 'alert' | 'success' = 'm
     oscillator.start(context.currentTime)
     oscillator.stop(context.currentTime + 0.2)
     
-  } catch (error) {
+  } catch {
     // Silenciar errores de audio (no queremos romper la app si no hay audio)
-    console.warn('No se pudo reproducir el sonido de notificación:', error)
   }
 }
 
@@ -105,7 +126,11 @@ export function vibrateNotification(): void {
 /**
  * Reproduce sonido y vibra (feedback completo)
  */
-export function playNotificationFeedback(type: 'message' | 'alert' | 'success' = 'message'): void {
+export function playNotificationFeedback(type: NotificationTone = 'message'): void {
   playNotificationSound(type)
   vibrateNotification()
+}
+
+export function playActiveChatMessageSound(): void {
+  playNotificationFeedback('chat-active')
 }

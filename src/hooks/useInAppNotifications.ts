@@ -17,6 +17,7 @@ interface UseInAppNotificationsOptions {
   type?: InAppNotificationType
   businessId?: string
   excludeChatMessages?: boolean // Excluir notificaciones de chat (para campana)
+  suppressToasts?: boolean // Evitar toast global cuando otra capa ya lo maneja
 }
 
 interface UseInAppNotificationsReturn {
@@ -55,7 +56,8 @@ export function useInAppNotifications(
     status,
     type,
     businessId,
-    excludeChatMessages = false 
+    excludeChatMessages = false,
+    suppressToasts = false 
   } = options
 
   const [notifications, setNotifications] = useState<InAppNotification[]>([])
@@ -65,6 +67,7 @@ export function useInAppNotifications(
 
   // Ref para mantener el estado actualizado en callbacks de realtime
   const notificationsRef = useRef<InAppNotification[]>([])
+  const instanceIdRef = useRef<string>(`inst_${Math.random().toString(36).slice(2, 10)}`)
   
   useEffect(() => {
     notificationsRef.current = notifications
@@ -342,26 +345,28 @@ export function useInAppNotifications(
         // Si es nueva y no leída, incrementar contador y mostrar toast
         if (notification.status === 'unread') {
           setUnreadCount(prev => prev + 1)
-          
-          // Reproducir sonido y vibración
-          // ✨ Mensajes de chat y notificaciones normales usan tono 'message'
-          // Notificaciones de alta prioridad usan tono 'alert'
-          const soundType = notification.priority === 2 ? 'alert' : 'message'
-          playNotificationFeedback(soundType)
-          
-          // Toast con acción
-          toast.info(notification.title, {
-            description: notification.message,
-            action: notification.action_url ? {
-              label: 'Ver',
-              onClick: () => {
-                // Navegar a la URL
-                if (notification.action_url) {
-                  window.location.href = notification.action_url
+
+          if (!suppressToasts) {
+            // Reproducir sonido y vibración
+            // ✨ Mensajes de chat y notificaciones normales usan tono 'message'
+            // Notificaciones de alta prioridad usan tono 'alert'
+            const soundType = notification.priority === 2 ? 'alert' : 'message'
+            playNotificationFeedback(soundType)
+
+            // Toast con acción
+            toast.info(notification.title, {
+              description: notification.message,
+              action: notification.action_url ? {
+                label: 'Ver',
+                onClick: () => {
+                  // Navegar a la URL
+                  if (notification.action_url) {
+                    window.location.href = notification.action_url
+                  }
                 }
-              }
-            } : undefined
-          })
+              } : undefined
+            })
+          }
         }
       }
     }
@@ -397,8 +402,15 @@ export function useInAppNotifications(
       }
     }
 
-    // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
-    const channelName = `in_app_notifications_${userId}`
+    // ✅ Fix: crear identificador estable por instancia para evitar colisiones entre consumidores
+    const variantParts = [
+      excludeChatMessages ? 'nochat' : 'all',
+      type || 'all',
+      businessId || 'none',
+      limit,
+      instanceIdRef.current
+    ]
+    const channelName = `in_app_notifications_${userId}:${variantParts.join(':')}`
 
     console.log('[useInAppNotifications] 📡 Subscribing to channel (with reconnection):', channelName)
 
@@ -458,7 +470,7 @@ export function useInAppNotifications(
         console.warn('[useInAppNotifications] ⚠️ Error during cleanup removeChannel', e)
       }
     }
-  }, [userId, limit, type, businessId, excludeChatMessages]) // ✅ Incluir filtros para recrear suscripción cuando cambien
+  }, [userId, limit, type, businessId, excludeChatMessages, suppressToasts]) // ✅ Incluir filtros para recrear suscripción cuando cambien
 
   return {
     notifications,
