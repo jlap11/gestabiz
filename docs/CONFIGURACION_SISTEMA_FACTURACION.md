@@ -138,7 +138,7 @@ Reemplaza `YOUR_PROJECT_REF` con tu referencia de proyecto de Supabase.
 1. Ve a: https://dashboard.stripe.com/test/webhooks
 2. Click "Add endpoint"
 3. URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`
-4. Descripción: `AppointSync Pro - Webhook de Suscripciones`
+4. Descripción: `Gestabiz - Webhook de Suscripciones`
 5. Selecciona estos eventos:
    - `customer.created`
    - `customer.updated`
@@ -312,5 +312,5 @@ Si encuentras problemas durante la configuración:
 ---
 
 **Fecha de creación**: 17 de octubre, 2025
-**Autor**: Sistema de IA - AppointSync Pro
+**Autor**: Sistema de IA - Gestabiz
 **Versión**: 1.0.0

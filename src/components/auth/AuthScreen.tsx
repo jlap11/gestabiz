@@ -6,7 +6,7 @@ import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import { useAuth } from '@/hooks/useAuth'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
-import logoBookio from '@/assets/images/logo_bookio.png'
+import logoGestabiz from '@/assets/images/logo_Gestabiz.png'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void 
@@ -140,8 +140,8 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img 
-              src={logoBookio} 
-              alt="Bookio Logo" 
+              src={logoGestabiz} 
+              alt="Gestabiz Logo" 
               className="w-20 h-20 rounded-2xl object-contain"
             />
           </div>

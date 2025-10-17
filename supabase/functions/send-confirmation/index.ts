@@ -146,7 +146,7 @@ async function sendConfirmationEmail({
     <body>
       <div class="container">
         <div class="header">
-          <h1>✅ Bookio</h1>
+          <h1>✅ Gestabiz</h1>
           <h2>Appointment ${isClientEmail ? 'Confirmed' : 'Created'}</h2>
         </div>
         <div class="content">
@@ -211,7 +211,7 @@ async function sendConfirmationEmail({
           `}
         </div>
         <div class="footer">
-          <p>This confirmation was sent from Bookio</p>
+          <p>This confirmation was sent from Gestabiz</p>
           ${!isClientEmail ? `<p><a href="${Deno.env.get('FRONTEND_URL') || 'https://your-app.vercel.app'}">Login to your dashboard</a></p>` : ''}
         </div>
       </div>
@@ -230,7 +230,7 @@ async function sendConfirmationEmail({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: Deno.env.get('FROM_EMAIL') || 'Bookio <noreply@Bookio.app>',
+          from: Deno.env.get('FROM_EMAIL') || 'Gestabiz <noreply@Gestabiz.app>',
           to: [to],
           subject,
           html: htmlContent,

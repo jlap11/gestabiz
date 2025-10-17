@@ -63,7 +63,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-                AppointSync Pro
+                Gestabiz
               </span>
             </div>
 
@@ -282,7 +282,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
               Todo lo que necesitas en una sola plataforma
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Deja de usar 5 herramientas diferentes. AppointSync Pro lo tiene TODO.
+              Deja de usar 5 herramientas diferentes. Gestabiz lo tiene TODO.
             </p>
           </div>
 
@@ -431,7 +431,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
 
                   <div className="border-t border-gray-200 pt-6">
                     <div className="flex items-center justify-between mb-4">
-                      <span className="font-semibold text-gray-900">Con AppointSync Pro</span>
+                      <span className="font-semibold text-gray-900">Con Gestabiz</span>
                       <Badge className="bg-cyan-100 text-cyan-700 border-cyan-300">Recuperas</Badge>
                     </div>
                     <div className="space-y-3">
@@ -488,7 +488,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
               Lo que dicen nuestros clientes
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Más de 800 negocios en Colombia confían en AppointSync Pro
+              Más de 800 negocios en Colombia confían en Gestabiz
             </p>
           </div>
 
@@ -559,7 +559,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
               </h2>
               <p className="text-xl text-white/90 max-w-2xl mx-auto">
                 Únete a más de 800 negocios que ya están ahorrando tiempo y aumentando ingresos 
-                con AppointSync Pro.
+                con Gestabiz.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Button 
@@ -608,7 +608,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
                 <div className="bg-purple-600 rounded-lg p-2">
                   <Calendar className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-bold text-xl text-gray-900">AppointSync Pro</span>
+                <span className="font-bold text-xl text-gray-900">Gestabiz</span>
               </div>
               <p className="text-sm text-gray-600">
                 La plataforma #1 de gestión empresarial para PyMES colombianas.
@@ -647,7 +647,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
           </div>
           
           <div className="border-t border-gray-200 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
-            <p>© 2025 AppointSync Pro. Todos los derechos reservados.</p>
+            <p>© 2025 Gestabiz. Todos los derechos reservados.</p>
             <p>Hecho con ❤️ en Colombia 🇨🇴</p>
           </div>
         </div>

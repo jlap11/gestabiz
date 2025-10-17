@@ -1,9 +1,9 @@
 # Plan Estratégico de Implementación - Sistema de Vacantes Laborales
-## AppointSync Pro - Octubre 2025
+## Gestabiz - Octubre 2025
 
 **Fecha**: 17 de Octubre de 2025  
 **Versión**: 1.0  
-**Autor**: Equipo Técnico AppointSync Pro
+**Autor**: Equipo Técnico Gestabiz
 
 ---
 
@@ -3446,7 +3446,7 @@ useEffect(() => {
   
   <div class="footer">
     <p>
-      Este email fue enviado por AppointSync Pro<br>
+      Este email fue enviado por Gestabiz<br>
       <a href="{{unsubscribe_url}}">Administrar preferencias de notificación</a>
     </p>
   </div>

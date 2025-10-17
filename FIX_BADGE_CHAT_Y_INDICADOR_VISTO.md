@@ -413,6 +413,6 @@ t('chat.receipts.sent', { time })
 
 ---
 
-**Autor**: AppointSync Pro Team  
+**Autor**: Gestabiz Team  
 **Revisores**: [Pendiente]  
 **Deploy**: [Pendiente]

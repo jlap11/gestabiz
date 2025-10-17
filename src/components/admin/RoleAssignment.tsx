@@ -1,5 +1,5 @@
 // =====================================================
-// COMPONENT: RoleAssignment - APPOINTSYNC PRO
+// COMPONENT: RoleAssignment - Gestabiz
 // Dialog para asignar/modificar roles de usuarios
 // =====================================================
 

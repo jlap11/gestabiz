@@ -296,6 +296,6 @@ La integración de PayU Latam está **completa y lista para configurar**. El sis
 
 ---
 
-**Autor**: Sistema de IA - AppointSync Pro  
+**Autor**: Sistema de IA - Gestabiz  
 **Versión**: 1.0.0  
 **Fecha**: 17 de octubre, 2025

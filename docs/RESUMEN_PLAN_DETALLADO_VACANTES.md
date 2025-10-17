@@ -134,7 +134,7 @@ Contenido:
 
 ### Estructura de Archivos
 ```
-appointsync-pro/
+Gestabiz/
 ├── supabase/
 │   └── migrations/
 │       ├── 20250115000001_update_reviews_decimal_rating.sql       ✅ 96 líneas

@@ -10,7 +10,7 @@ import { resolve } from 'path';
 
 let hasErrors = false;
 
-console.log('\n🚀 AppointSync Pro - Pre-Deploy Checklist\n');
+console.log('\n🚀 Gestabiz - Pre-Deploy Checklist\n');
 console.log('='.repeat(50));
 
 // ============================================

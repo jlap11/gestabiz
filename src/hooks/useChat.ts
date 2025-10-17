@@ -10,7 +10,7 @@
  * - CRUD completo con optimistic updates
  * - Integración con sistema de notificaciones in-app
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @version 2.0.0
  * @date 2025-10-13
  */

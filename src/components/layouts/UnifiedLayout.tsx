@@ -9,7 +9,7 @@ import {
   User as UserIcon,
   Plus
 } from 'lucide-react'
-import logoBookio from '@/assets/images/logo_bookio.png'
+import logoGestabiz from '@/assets/images/logo_Gestabiz.png'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar, type SearchType } from '@/components/client/SearchBar'
 import {
@@ -107,12 +107,12 @@ export function UnifiedLayout({
         <div className="px-4  border-b border-border flex-shrink-0">
           <div className="flex items-center gap-4">
             <img 
-              src={logoBookio} 
-              alt="Bookio Logo" 
+              src={logoGestabiz} 
+              alt="Gestabiz Logo" 
               className="w-28 h-22 rounded-2xl object-contain"
             />
             <span className="text-2xl font-bold text-foreground">
-              Bookio
+              Gestabiz
             </span>
           </div>
         </div>
@@ -282,7 +282,7 @@ export function UnifiedLayout({
             ) : (
               <div className="min-w-0 flex-1">
                 <h1 className="text-base sm:text-xl font-bold text-foreground truncate">
-                  AppointSync Pro
+                  Gestabiz
                 </h1>
               </div>
             )}

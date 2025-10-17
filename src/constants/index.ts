@@ -5,7 +5,7 @@
 
 // App Configuration
 export const APP_CONFIG = {
-  NAME: 'Bookio',
+  NAME: 'Gestabiz',
   VERSION: '1.0.0',
   DESCRIPTION: 'Sistema de Gestión de Citas',
   DEFAULT_LOCALE: 'es',

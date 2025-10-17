@@ -182,7 +182,7 @@ describe('AdminDashboard', () => {
       render(<AdminDashboard {...defaultProps} />)
 
       // Verifica que el logo esté presente
-      expect(screen.getByRole('img', { name: /bookio/i })).toBeInTheDocument()
+      expect(screen.getByRole('img', { name: /Gestabiz/i })).toBeInTheDocument()
 
       // Verifica que el business name esté en el header
       expect(screen.getByText(mockBusiness.name)).toBeInTheDocument()

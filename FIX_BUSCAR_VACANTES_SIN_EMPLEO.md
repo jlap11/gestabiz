@@ -255,7 +255,7 @@ interface AvailableVacanciesMarketplaceProps {
 ### Flujo Típico de Nuevo Empleado
 
 ```
-1. Registrarse en AppointSync Pro
+1. Registrarse en Gestabiz
    ↓
 2. Seleccionar rol "Empleado"
    ↓

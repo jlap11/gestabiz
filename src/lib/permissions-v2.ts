@@ -1,5 +1,5 @@
 // =====================================================
-// SISTEMA DE PERMISOS v2.0 - APPOINTSYNC PRO
+// SISTEMA DE PERMISOS v2.0 - Gestabiz
 // Fecha: 13 de Octubre de 2025
 // =====================================================
 // IMPORTANTE: Solo existe rol 'admin', se diferencia Admin Dueño por user_id === businesses.owner_id

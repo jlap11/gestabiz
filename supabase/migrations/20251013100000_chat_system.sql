@@ -5,7 +5,7 @@
 -- Descripción: Implementa chat 1:1 y grupos para plataforma web
 -- ============================================================================
 
--- Autor: Sistema AppointSync Pro
+-- Autor: Sistema Gestabiz
 -- Alcance: Solo web (no móvil por ahora)
 -- Dependencias: profiles, businesses
 

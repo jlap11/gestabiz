@@ -17,7 +17,7 @@
  * - npm install -D tsx
  * - Variables de entorno VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @version 1.0.0
  * @date 2025-10-13
  */
@@ -450,7 +450,7 @@ async function main() {
   console.log('║     🧪 PERFORMANCE TESTING - CHAT SYSTEM                 ║');
   console.log('║                                                           ║');
   console.log('║     Testing con 1000+ mensajes                           ║');
-  console.log('║     AppointSync Pro v1.0.0                               ║');
+  console.log('║     Gestabiz v1.0.0                               ║');
   console.log('║                                                           ║');
   console.log('╚═══════════════════════════════════════════════════════════╝');
 

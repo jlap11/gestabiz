@@ -1,4 +1,4 @@
--- Bookio - Complete Supabase Database Schema
+-- Gestabiz - Complete Supabase Database Schema
 -- Copy and paste this SQL into Supabase SQL Editor
 
 -- Enable Row Level Security

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Bookio Complete Setup Script
-# This script helps set up the complete Bookio ecosystem
+# Gestabiz Complete Setup Script
+# This script helps set up the complete Gestabiz ecosystem
 
-echo "🚀 Bookio Setup Script"
+echo "🚀 Gestabiz Setup Script"
 echo "=============================="
 
 # Color codes for output
@@ -96,7 +96,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=Bookio
+NEXT_PUBLIC_APP_NAME=Gestabiz
 
 # Email Service (Optional)
 SENDGRID_API_KEY=your-sendgrid-api-key
@@ -133,8 +133,8 @@ import 'dotenv/config'
 
 export default {
   expo: {
-    name: "Bookio",
-    slug: "Bookio",
+    name: "Gestabiz",
+    slug: "Gestabiz",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -147,14 +147,14 @@ export default {
     assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.yourcompany.Bookio"
+      bundleIdentifier: "com.yourcompany.Gestabiz"
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#1a1a1a"
       },
-      package: "com.yourcompany.Bookio"
+      package: "com.yourcompany.Gestabiz"
     },
     web: {
       favicon: "./assets/favicon.png"
@@ -233,10 +233,10 @@ package_extension() {
         
         # Create zip file for Chrome Web Store
         cd dist
-        zip -r Bookio-extension.zip extension/
+        zip -r Gestabiz-extension.zip extension/
         cd ..
         
-        print_status "Extension packaged as dist/Bookio-extension.zip"
+        print_status "Extension packaged as dist/Gestabiz-extension.zip"
     else
         print_error "Extension source not found"
     fi
@@ -260,7 +260,7 @@ deploy_production() {
     echo "   - Submit: eas submit"
     echo ""
     echo "4. Browser Extension:"
-    echo "   - Upload dist/Bookio-extension.zip to Chrome Web Store"
+    echo "   - Upload dist/Gestabiz-extension.zip to Chrome Web Store"
     echo ""
     print_warning "Make sure to update all environment variables with production values!"
 }

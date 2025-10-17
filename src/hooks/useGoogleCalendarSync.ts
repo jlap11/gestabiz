@@ -159,7 +159,7 @@ export function useGoogleCalendarSync(user: User | null) {
 
     for (const event of events) {
       // Skip events that originated from our app
-      if (event.extendedProperties?.private?.source === 'Bookio') {
+      if (event.extendedProperties?.private?.source === 'Gestabiz') {
         continue
       }
 

@@ -10,7 +10,7 @@
  * - Realtime subscriptions
  * - Optimistic updates
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @version 3.0.0
  * @date 2025-10-13
  */

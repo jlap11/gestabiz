@@ -8,7 +8,7 @@
 -- - La notificación incluye el nombre del sender y preview del mensaje
 -- - Tiene action_url que lleva directamente a la conversación
 --
--- @author AppointSync Pro Team
+-- @author Gestabiz Team
 -- @version 1.0.0
 -- @date 2025-10-13
 -- ============================================================================

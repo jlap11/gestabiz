@@ -127,7 +127,7 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
             extendedProperties: {
               private: {
                 appointmentId: appointment.id,
-                source: 'Bookio'
+                source: 'Gestabiz'
               }
             }
           }
@@ -173,7 +173,7 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
         
         for (const event of googleData.items || []) {
           // Skip events that originated from our app
-          if (event.extendedProperties?.private?.source === 'Bookio') {
+          if (event.extendedProperties?.private?.source === 'Gestabiz') {
             continue
           }
 

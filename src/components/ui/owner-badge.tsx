@@ -1,5 +1,5 @@
 // =====================================================
-// COMPONENTE: OwnerBadge - APPOINTSYNC PRO
+// COMPONENTE: OwnerBadge - Gestabiz
 // Badge visual para indicar Admin Dueño
 // =====================================================
 

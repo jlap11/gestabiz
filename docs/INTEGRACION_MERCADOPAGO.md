@@ -41,7 +41,7 @@ MercadoPago es la pasarela de pagos de Mercado Libre, líder en América Latina 
 1. **Crear cuenta MercadoPago** en https://www.mercadopago.com/
 2. **Ir a Desarrolladores** → https://www.mercadopago.com/developers/panel/app
 3. **Crear Aplicación:**
-   - Nombre: "AppointSync Pro"
+   - Nombre: "Gestabiz"
    - Selecciona "Pagos online" como producto
 4. **Copiar credenciales:**
    - **Public Key** (sandbox): `TEST-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`

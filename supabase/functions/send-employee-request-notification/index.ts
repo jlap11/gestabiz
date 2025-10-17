@@ -164,7 +164,7 @@ serve(async (req) => {
     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
     
     <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-      Este es un mensaje automático de <strong>AppointSync Pro</strong>.<br>
+      Este es un mensaje automático de <strong>Gestabiz</strong>.<br>
       Si no esperabas esta notificación, puedes ignorar este email.
     </p>
   </div>
@@ -180,7 +180,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'AppointSync Pro <notifications@appointsync.pro>',
+        from: 'Gestabiz <notifications@appointsync.pro>',
         to: owner.email,
         subject: emailSubject,
         html: emailContent,

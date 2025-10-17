@@ -1,5 +1,5 @@
 // =====================================================
-// HOOK: usePermissions v2.0 - APPOINTSYNC PRO
+// HOOK: usePermissions v2.0 - Gestabiz
 // Fecha: 13 de Octubre de 2025
 // =====================================================
 

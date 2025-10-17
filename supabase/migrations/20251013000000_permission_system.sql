@@ -1,5 +1,5 @@
 -- =====================================================
--- SISTEMA DE PERMISOS GRANULAR - APPOINTSYNC PRO
+-- SISTEMA DE PERMISOS GRANULAR - Gestabiz
 -- Fecha: 13 de Octubre de 2025
 -- Autor: AI Assistant
 -- =====================================================

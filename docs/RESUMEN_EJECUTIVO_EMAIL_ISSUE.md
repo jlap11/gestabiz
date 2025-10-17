@@ -2,7 +2,7 @@
 
 **Fecha**: 17 de octubre de 2025  
 **Usuario**: @jlap11  
-**Proyecto**: AppointSync Pro
+**Proyecto**: Gestabiz
 
 ---
 

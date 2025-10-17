@@ -7,7 +7,7 @@
  * - Focus management
  * - Screen reader announcements
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @version 1.0.0
  * @date 2025-10-13
  */

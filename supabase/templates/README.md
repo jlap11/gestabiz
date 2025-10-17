@@ -16,7 +16,7 @@ Esta guía explica cómo configurar el template HTML de confirmación de email e
 - ✅ **Dark mode friendly**: Colores optimizados para ambos temas
 
 ### Elementos Incluidos
-- Logo de Bookio
+- Logo de Gestabiz
 - Botón CTA principal (Confirmar mi Email)
 - Link alternativo (si el botón no funciona)
 - Advertencia de seguridad
@@ -41,7 +41,7 @@ Esta guía explica cómo configurar el template HTML de confirmación de email e
 
 En el campo **Subject**, escribe:
 ```
-Confirma tu cuenta en Bookio 🎉
+Confirma tu cuenta en Gestabiz 🎉
 ```
 
 ### Paso 4: Pegar HTML Template
@@ -116,7 +116,7 @@ Opción 1 - Emoji (actual):
 
 Opción 2 - Imagen:
 ```html
-<img src="https://tu-cdn.com/logo.png" alt="Bookio" style="width: 80px; height: 80px;">
+<img src="https://tu-cdn.com/logo.png" alt="Gestabiz" style="width: 80px; height: 80px;">
 ```
 
 ### Añadir Links Sociales Reales

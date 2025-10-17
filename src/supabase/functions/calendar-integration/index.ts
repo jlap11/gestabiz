@@ -119,7 +119,7 @@ function generateICS(appointments: any[]): string {
   let ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Bookio//Bookio//EN',
+    'PRODID:-//Gestabiz//Gestabiz//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH'
   ]
@@ -133,7 +133,7 @@ function generateICS(appointments: any[]): string {
 
     ics.push(
       'BEGIN:VEVENT',
-      `UID:${appointment.id}@Bookio.com`,
+      `UID:${appointment.id}@Gestabiz.com`,
       `DTSTAMP:${timestamp}`,
       `DTSTART:${startTimestamp}`,
       `DTEND:${endTimestamp}`,

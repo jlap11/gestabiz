@@ -7,7 +7,7 @@
  * - Mobile-first approach
  * - React Native compatible patterns
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @version 1.0.0
  * @date 2025-10-13
  */

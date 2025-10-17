@@ -350,6 +350,6 @@ npx supabase functions deploy payu-webhook
 
 ---
 
-**Autor**: Sistema de IA - AppointSync Pro  
+**Autor**: Sistema de IA - Gestabiz  
 **Versión**: 1.0.0  
 **Fecha**: 17 de octubre, 2025

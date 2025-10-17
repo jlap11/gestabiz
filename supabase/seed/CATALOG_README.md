@@ -2,7 +2,7 @@
 
 ## 📋 Resumen
 
-Este documento describe los datos de catálogo insertados en la base de datos de AppointSync Pro. Los catálogos fueron migrados desde Azure Functions preservando los GUIDs originales para mantener integridad referencial.
+Este documento describe los datos de catálogo insertados en la base de datos de Gestabiz. Los catálogos fueron migrados desde Azure Functions preservando los GUIDs originales para mantener integridad referencial.
 
 ## ✅ Estado Actual (14 de octubre de 2025)
 

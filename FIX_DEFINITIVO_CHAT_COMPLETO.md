@@ -473,6 +473,6 @@ DROP FUNCTION IF EXISTS get_unread_count_no_chat;
 
 ---
 
-**Autor**: AppointSync Pro Team  
+**Autor**: Gestabiz Team  
 **Revisores**: [Pendiente]  
 **Deploy**: [Pendiente - Configurar variables Vercel primero]

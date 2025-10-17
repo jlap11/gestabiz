@@ -1,4 +1,4 @@
-# 📅 AppointSync Pro
+# 📅 Gestabiz
 
 Sistema integral de gestión de citas y negocios con roles dinámicos, sistema de pagos, notificaciones multicanal y búsqueda avanzada.
 
@@ -97,8 +97,8 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 
 ### 1. Clonar Repositorio
 ```bash
-git clone https://github.com/TI-Turing/appointsync-pro.git
-cd appointsync-pro
+git clone https://github.com/TI-Turing/Gestabiz.git
+cd Gestabiz
 ```
 
 ### 2. Instalar Dependencias
@@ -117,7 +117,7 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key
 
 # App
 VITE_APP_URL=http://localhost:5173
-VITE_APP_NAME=Bookio
+VITE_APP_NAME=Gestabiz
 
 # Stripe (opcional, para sistema de pagos)
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_tu-key
@@ -235,7 +235,7 @@ npm run lint
 ## 🏗️ Estructura del Proyecto
 
 ```
-appointsync-pro/
+Gestabiz/
 ├── src/
 │   ├── components/      # Componentes React
 │   │   ├── admin/       # Dashboard admin
@@ -337,7 +337,7 @@ MIT License - Ver [LICENSE](./LICENSE) para más detalles.
 
 ## 📞 Soporte
 
-- **Issues**: [GitHub Issues](https://github.com/TI-Turing/appointsync-pro/issues)
+- **Issues**: [GitHub Issues](https://github.com/TI-Turing/Gestabiz/issues)
 - **Documentación**: Ver carpeta `/docs`
 - **Email**: jlap.11@hotmail.com
 

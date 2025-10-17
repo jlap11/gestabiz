@@ -1,4 +1,4 @@
--- Bookio Enhanced Database Schema
+-- Gestabiz Enhanced Database Schema
 -- Complete schema for multi-tenant appointment management system with roles
 
 -- Enable necessary extensions

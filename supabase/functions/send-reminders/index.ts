@@ -163,7 +163,7 @@ async function sendEmailNotification(params: {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Bookio</h1>
+            <h1>Gestabiz</h1>
             <p>Recordatorio de Cita</p>
           </div>
           
@@ -183,7 +183,7 @@ async function sendEmailNotification(params: {
           </div>
           
           <div class="footer">
-            <p>Este es un recordatorio automático de Bookio</p>
+            <p>Este es un recordatorio automático de Gestabiz</p>
             <p>Si necesitas cancelar o reprogramar tu cita, ponte en contacto con el negocio.</p>
           </div>
         </div>
@@ -202,7 +202,7 @@ async function sendEmailNotification(params: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Bookio <noreply@Bookio.com>',
+          from: 'Gestabiz <noreply@Gestabiz.com>',
           to: [params.to],
           subject: params.subject,
           html: htmlContent,

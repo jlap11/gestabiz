@@ -263,7 +263,7 @@ async function sendDeactivationEmail(apiKey: string, business: any, daysInactive
     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
     
     <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-      AppointSync Pro • Sistema automático de gestión
+      Gestabiz • Sistema automático de gestión
     </p>
   </div>
 </body>
@@ -277,7 +277,7 @@ async function sendDeactivationEmail(apiKey: string, business: any, daysInactive
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'AppointSync Pro <notifications@appointsync.pro>',
+      from: 'Gestabiz <notifications@appointsync.pro>',
       to: business.owner.email,
       subject: `⚠️ ${business.name} ha sido desactivado por inactividad`,
       html: emailContent,
@@ -342,7 +342,7 @@ async function sendDeletionWarningEmail(apiKey: string, business: any, daysSince
     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
     
     <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-      AppointSync Pro • Sistema automático de gestión
+      Gestabiz • Sistema automático de gestión
     </p>
   </div>
 </body>
@@ -356,7 +356,7 @@ async function sendDeletionWarningEmail(apiKey: string, business: any, daysSince
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'AppointSync Pro <notifications@appointsync.pro>',
+      from: 'Gestabiz <notifications@appointsync.pro>',
       to: business.owner.email,
       subject: `🚨 ${business.name} será eliminado en 7 días`,
       html: emailContent,
@@ -402,13 +402,13 @@ async function sendDeletionConfirmationEmail(apiKey: string, business: any) {
     </div>
     
     <p style="font-size: 14px; color: #666; text-align: center;">
-      Gracias por haber usado AppointSync Pro
+      Gracias por haber usado Gestabiz
     </p>
     
     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
     
     <p style="font-size: 14px; color: #666; text-align: center; margin: 0;">
-      AppointSync Pro • Sistema automático de gestión
+      Gestabiz • Sistema automático de gestión
     </p>
   </div>
 </body>
@@ -422,7 +422,7 @@ async function sendDeletionConfirmationEmail(apiKey: string, business: any) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'AppointSync Pro <notifications@appointsync.pro>',
+      from: 'Gestabiz <notifications@appointsync.pro>',
       to: business.owner.email,
       subject: `${business.name} ha sido eliminado`,
       html: emailContent,

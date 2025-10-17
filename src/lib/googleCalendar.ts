@@ -302,7 +302,7 @@ export class GoogleCalendarService {
       ] : [],
       extendedProperties: {
         private: {
-          source: 'Bookio',
+          source: 'Gestabiz',
           appointmentId: appointment.id
         }
       }

@@ -9,7 +9,7 @@
  * - Funciones RPC avanzadas (get_conversation_preview, search_messages, etc.)
  * - Realtime subscriptions
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @version 3.0.0
  * @date 2025-10-13
  */

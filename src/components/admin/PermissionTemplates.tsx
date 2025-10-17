@@ -1,5 +1,5 @@
 // =====================================================
-// COMPONENT: PermissionTemplates - APPOINTSYNC PRO
+// COMPONENT: PermissionTemplates - Gestabiz
 // Gestión de plantillas de permisos (sistema y custom)
 // =====================================================
 

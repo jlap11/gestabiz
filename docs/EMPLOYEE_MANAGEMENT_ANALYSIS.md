@@ -13,7 +13,7 @@
 
 ## 📋 Resumen Ejecutivo
 
-Este documento analiza el estado actual del sistema de empleados en AppointSync Pro y propone un plan de acción para implementar un sistema de gestión jerárquica completo con visualizaciones avanzadas, métricas de rendimiento y filtros especializados.
+Este documento analiza el estado actual del sistema de empleados en Gestabiz y propone un plan de acción para implementar un sistema de gestión jerárquica completo con visualizaciones avanzadas, métricas de rendimiento y filtros especializados.
 
 **Estado actual:** Fase 1 (Backend/Database) completada con 6 migraciones, 7 funciones SQL, 4 permisos nuevos y 9 índices optimizados.
 

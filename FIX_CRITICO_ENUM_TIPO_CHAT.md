@@ -419,7 +419,7 @@ console.error('[useChat] ❌ Error clearing...')
 
 ---
 
-**Autor**: AppointSync Pro Team  
+**Autor**: Gestabiz Team  
 **Severidad**: 🔥 CRÍTICO (Sistema de chat completamente roto)  
 **Impacto**: ∞ (de 0% funcionalidad → 100% funcionalidad)  
 **Status**: ✅ RESUELTO (commit fcff17a)

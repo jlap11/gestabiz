@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Bookio - Quick Access",
+  "name": "Gestabiz - Quick Access",
   "version": "1.0.0",
   "description": "Quick access to your upcoming appointments from any webpage",
   "permissions": [
@@ -17,7 +17,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Bookio",
+    "default_title": "Gestabiz",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

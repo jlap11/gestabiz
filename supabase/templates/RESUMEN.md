@@ -19,7 +19,7 @@ supabase/templates/
 - ✅ **Professional layout**: Header, CTA, footer con redes sociales
 
 ### Elementos Incluidos
-1. **Header con logo** de Bookio (emoji 📅)
+1. **Header con logo** de Gestabiz (emoji 📅)
 2. **Mensaje de bienvenida** personalizado con email del usuario
 3. **Botón CTA principal** ("Confirmar mi Email")
 4. **Link alternativo** (copia/pega si botón no funciona)
@@ -44,7 +44,7 @@ Sigue la guía completa en `README.md`, básicamente:
 
 1. **Supabase Dashboard** → Authentication → Email Templates
 2. Editar **"Confirm signup"**
-3. **Asunto**: `Confirma tu cuenta en Bookio 🎉`
+3. **Asunto**: `Confirma tu cuenta en Gestabiz 🎉`
 4. **Message (HTML)**: Pegar contenido de `email-confirmation.html`
 5. **Message (Plain text)**: Pegar contenido de `email-confirmation.txt`
 6. **Save**
@@ -101,7 +101,7 @@ Busca en `email-confirmation.html`:
 
 ```html
 <!-- Líneas ~175-178 -->
-<a href="https://bookio.com" class="footer-link">Sitio Web</a>
+<a href="https://Gestabiz.com" class="footer-link">Sitio Web</a>
 ```
 
 Reemplaza las URLs con las tuyas.
@@ -151,7 +151,7 @@ cd supabase/templates
 ## 💡 Pro Tips
 
 1. **Personaliza el asunto** para mejor open rate:
-   - ✅ "Confirma tu cuenta en Bookio 🎉"
+   - ✅ "Confirma tu cuenta en Gestabiz 🎉"
    - ❌ "Email confirmation"
 
 2. **Añade UTM parameters** para trackear:
@@ -192,5 +192,5 @@ El template está **100% funcional** y listo para usar. Solo necesitas:
 
 ---
 
-**Creado con ❤️ para Bookio**  
+**Creado con ❤️ para Gestabiz**  
 Última actualización: 14 de octubre de 2025

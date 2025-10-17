@@ -1,4 +1,4 @@
-# APPOINTSYNC PRO - Plan de Negocio y Estrategia Comercial
+# Gestabiz - Plan de Negocio y Estrategia Comercial
 ## Análisis del Mercado Colombiano - PyMES y Emprendimientos
 
 ---
@@ -607,7 +607,7 @@ Con una mezcla de:
 
 ## 💡 MENSAJE CLAVE DE MARKETING
 
-> **"AppointSync Pro: La plataforma TODO-EN-UNO para gestionar tu negocio. Agenda, cobra, factura y crece. Hecha para PyMES colombianas. Desde $29.900/mes."**
+> **"Gestabiz: La plataforma TODO-EN-UNO para gestionar tu negocio. Agenda, cobra, factura y crece. Hecha para PyMES colombianas. Desde $29.900/mes."**
 
 ### Propuesta de Valor Principal:
 **"Deja de usar 5 herramientas diferentes. Una sola plataforma para citas, clientes, empleados, contabilidad y más. Más barato que la competencia, más completo que cualquier otro."**

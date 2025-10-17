@@ -248,7 +248,7 @@ function formatEmailHtml(notification: any, appointment: any): string {
         <p>Si necesitas reprogramar o cancelar tu cita, por favor contáctanos lo antes posible.</p>
         
         <div class="footer">
-          <p>Este mensaje fue enviado por Bookio</p>
+          <p>Este mensaje fue enviado por Gestabiz</p>
           <p>Si tienes preguntas, responde a este correo o llámanos.</p>
         </div>
       </div>

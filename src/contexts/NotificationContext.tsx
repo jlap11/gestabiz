@@ -4,7 +4,7 @@
  * Este contexto mantiene una suscripción realtime SIEMPRE ACTIVA
  * para recibir notificaciones incluso cuando el chat/componentes están cerrados.
  * 
- * @author AppointSync Pro Team
+ * @author Gestabiz Team
  * @date 2025-10-17
  */
 

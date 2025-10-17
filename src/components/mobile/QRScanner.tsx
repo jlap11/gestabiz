@@ -90,7 +90,7 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
     } catch (error) {
       Alert.alert(
         'Error',
-        'El código QR escaneado no es válido para AppointSync Pro. Por favor escanea un código de invitación válido.',
+        'El código QR escaneado no es válido para Gestabiz. Por favor escanea un código de invitación válido.',
         [
           {
             text: 'OK',

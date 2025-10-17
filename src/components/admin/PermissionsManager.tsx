@@ -1,5 +1,5 @@
 // =====================================================
-// COMPONENT: PermissionsManager - APPOINTSYNC PRO
+// COMPONENT: PermissionsManager - Gestabiz
 // Vista principal del módulo de gestión de permisos
 // =====================================================
 

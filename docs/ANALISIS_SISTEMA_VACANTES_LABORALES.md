@@ -1,9 +1,9 @@
 # Análisis Exhaustivo del Sistema de Vacantes Laborales
-## AppointSync Pro - Sistema de Gestión de Citas y Empleos
+## Gestabiz - Sistema de Gestión de Citas y Empleos
 
 **Fecha**: 17 de Octubre de 2025  
 **Versión**: 1.0  
-**Autor**: Análisis Técnico AppointSync Pro
+**Autor**: Análisis Técnico Gestabiz
 
 ---
 
@@ -26,7 +26,7 @@
 
 ## 1. Resumen Ejecutivo
 
-AppointSync Pro es una aplicación monorepo multi-plataforma (Web/React + Vite, Móvil/Expo, Extensión de Navegador) con backend en Supabase Cloud. El sistema gestiona citas, negocios, empleados y clientes con un modelo de roles dinámicos.
+Gestabiz es una aplicación monorepo multi-plataforma (Web/React + Vite, Móvil/Expo, Extensión de Navegador) con backend en Supabase Cloud. El sistema gestiona citas, negocios, empleados y clientes con un modelo de roles dinámicos.
 
 **Estado Actual del Sistema de Vacantes**:
 - ✅ **Tablas en DB**: `job_vacancies` y `job_applications` ya existen

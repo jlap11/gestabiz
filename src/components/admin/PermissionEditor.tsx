@@ -1,5 +1,5 @@
 // =====================================================
-// COMPONENT: PermissionEditor - APPOINTSYNC PRO
+// COMPONENT: PermissionEditor - Gestabiz
 // Editor de permisos granulares por usuario
 // =====================================================
 

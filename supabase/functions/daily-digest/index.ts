@@ -242,7 +242,7 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
 
       <!-- Footer -->
       <div style="background-color: #E2E8F0; padding: 20px; text-align: center; color: #64748B; font-size: 12px;">
-        <p style="margin: 0;">Este es un resumen automático de Bookio</p>
+        <p style="margin: 0;">Este es un resumen automático de Gestabiz</p>
         <p style="margin: 5px 0 0 0;">
           <a href="#" style="color: #3B82F6; text-decoration: none;">Abrir aplicación</a> | 
           <a href="#" style="color: #3B82F6; text-decoration: none;">Configurar notificaciones</a>
@@ -268,7 +268,7 @@ async function sendDigestEmail(emailData: { to: string; subject: string; html: s
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Bookio <digest@Bookio.com>',
+        from: 'Gestabiz <digest@Gestabiz.com>',
         to: [emailData.to],
         subject: emailData.subject,
         html: emailData.html,

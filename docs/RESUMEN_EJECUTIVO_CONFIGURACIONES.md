@@ -315,7 +315,7 @@ const tabs = [
 
 ---
 
-**Proyecto**: AppointSync Pro  
+**Proyecto**: Gestabiz  
 **Módulo**: Sistema de Configuraciones Unificado  
 **Estado**: ✅ COMPLETADO  
 **Fecha**: 17 de octubre de 2025  
@@ -334,4 +334,4 @@ Para dudas o issues con este módulo:
 
 ---
 
-**¡Gracias por usar AppointSync Pro!** 🎉
+**¡Gracias por usar Gestabiz!** 🎉
