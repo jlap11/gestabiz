@@ -107,6 +107,7 @@ export function useAuthSimple() {
           }
           
           console.log('👤 Created user object with avatar:', user.avatar_url)
+          
           setState(prev => ({
             ...prev,
             user,
@@ -140,16 +141,87 @@ export function useAuthSimple() {
     // Listen for auth changes
     console.log('👂 Setting up auth state listener...')
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('🔔 Auth state changed:', event, session?.user?.email)
         
-        // Only handle sign out in listener, sign in is handled by getInitialSession
         if (!session) {
           console.log('👋 User signed out in listener')
           setState(prev => ({
             ...prev,
             user: null,
             session: null,
+            loading: false,
+            error: null
+          }))
+          return
+        }
+        
+        // Handle SIGNED_IN event - create user and update state immediately
+        if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in - updating state immediately')
+          
+          // Fetch profile data
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let profileData: any = null
+          try {
+            const { data, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (!profileError) {
+              profileData = data
+              console.log('📸 Profile data fetched:', profileData)
+            }
+          } catch (err) {
+            console.log('⚠️ Profile fetch exception (continuing anyway):', err)
+          }
+          
+          // Create user object
+          const user: User = {
+            id: session.user.id,
+            email: session.user.email!,
+            name: profileData?.name || session.user.email!.split('@')[0],
+            username: profileData?.username || session.user.email!.split('@')[0],
+            roles: [{
+              id: 'simple-client-role',
+              user_id: session.user.id,
+              role: 'client',
+              business_id: null,
+              is_active: true,
+              created_at: new Date().toISOString()
+            }],
+            activeRole: 'client',
+            role: 'client',
+            business_id: undefined,
+            location_id: undefined,
+            phone: profileData?.phone || '',
+            language: 'es',
+            notification_preferences: {
+              email: true,
+              push: true,
+              browser: true,
+              whatsapp: false,
+              reminder_24h: true,
+              reminder_1h: true,
+              reminder_15m: false,
+              daily_digest: false,
+              weekly_report: false
+            },
+            permissions: [],
+            timezone: 'America/Mexico_City',
+            avatar_url: profileData?.avatar_url ? `${profileData.avatar_url}?t=${Date.now()}` : undefined,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            is_active: true
+          }
+          
+          console.log('� User created from SIGNED_IN event:', user.email)
+          setState(prev => ({
+            ...prev,
+            user,
+            session,
             loading: false,
             error: null
           }))
@@ -160,8 +232,6 @@ export function useAuthSimple() {
             session,
             loading: false
           }))
-        } else {
-          console.log('ℹ️ Auth event', event, '- getInitialSession will handle user creation')
         }
       }
     )
