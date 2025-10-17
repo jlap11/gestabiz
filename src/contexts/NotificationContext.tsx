@@ -55,7 +55,7 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
 
   // Suscripción realtime GLOBAL (siempre activa)
   useEffect(() => {
-    console.log('[NotificationContext] useEffect triggered. UserId:', userId)
+    console.log('🔥🔥🔥 [NotificationContext] useEffect EJECUTÁNDOSE. UserId:', userId, 'Type:', typeof userId)
     
     if (!userId) {
       console.log('[NotificationContext] ⚠️ No userId, skipping subscription')
@@ -64,7 +64,7 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
 
     const channelName = `global_notifications_${userId}`
     
-    console.log('[NotificationContext] 📡 Global realtime subscription started for:', userId)
+    console.log('🔥🔥🔥 [NotificationContext] 📡 INICIANDO suscripción realtime para:', userId)
     
     const channel = supabase
       .channel(channelName)
