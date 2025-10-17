@@ -28,19 +28,22 @@ serve(async (req) => {
       .select(`
         id,
         business_id,
-        user_id,
+        employee_id,
         client_id,
-        title,
+        service_id,
+        location_id,
         start_time,
         end_time,
-        location,
         status,
         reminder_sent,
+        notes,
         business:businesses(id, name),
-        client:profiles!client_id(id, name, email, phone, whatsapp),
-        employee:profiles!user_id(id, name, email, phone)
+        service:services(id, name, duration, price),
+        location:locations(id, name, address),
+        client:profiles!client_id(id, full_name, email, phone, whatsapp),
+        employee:profiles!employee_id(id, full_name, email, phone)
       `)
-      .eq('status', 'scheduled')
+      .in('status', ['pending', 'confirmed'])
       .gte('start_time', now.toISOString())
       .lte('start_time', futureLimit.toISOString())
       .order('start_time', { ascending: true })
@@ -111,11 +114,12 @@ serve(async (req) => {
             recipient_email: appointment.client?.email,
             recipient_phone: appointment.client?.phone,
             recipient_whatsapp: appointment.client?.whatsapp,
-            recipient_name: appointment.client?.name,
+            recipient_name: appointment.client?.full_name,
             business_id: appointment.business_id,
             appointment_id: appointment.id,
             data: {
-              name: appointment.client?.name,
+              name: appointment.client?.full_name,
+              business_name: appointment.business?.name,
               date: new Date(appointment.start_time).toLocaleDateString('es-ES', {
                 weekday: 'long',
                 year: 'numeric',
@@ -126,8 +130,8 @@ serve(async (req) => {
                 hour: '2-digit',
                 minute: '2-digit'
               }),
-              location: appointment.location || 'Por confirmar',
-              service: appointment.title,
+              location: appointment.location?.address || appointment.location?.name || 'Por confirmar',
+              service: appointment.service?.name || 'Servicio',
               reminder_time: reminderType
             }
           }
@@ -150,7 +154,7 @@ serve(async (req) => {
 
         results.push({
           appointment_id: appointment.id,
-          client: appointment.client?.name,
+          client: appointment.client?.full_name,
           time_until: `${minutesUntilAppointment} minutos`,
           reminder_type: reminderType,
           status: 'sent'

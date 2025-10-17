@@ -31,6 +31,7 @@ export interface ChatConversation {
   business_id: string | null;
   last_message_at: string;
   last_message_preview: string | null;
+  last_message_sender_id?: string | null;
   created_at: string;
   updated_at: string;
   is_archived: boolean;
@@ -218,18 +219,44 @@ export function useChat(userId: string | null) {
           };
         })
       );
+      const conversationIds = conversationsWithUsers.map(conv => conv.id);
+
+      const lastSenderMap = new Map<string, string>();
+      if (conversationIds.length > 0) {
+        const { data: lastMessagesData, error: lastMessagesError } = await supabase
+          .from('chat_messages')
+          .select('conversation_id, sender_id')
+          .in('conversation_id', conversationIds)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false });
+
+        if (lastMessagesError) {
+          console.error('[useChat] Error fetching last message senders:', lastMessagesError);
+        } else if (lastMessagesData) {
+          (lastMessagesData as Array<{ conversation_id: string; sender_id: string }>).forEach((message) => {
+            if (!lastSenderMap.has(message.conversation_id)) {
+              lastSenderMap.set(message.conversation_id, message.sender_id);
+            }
+          });
+        }
+      }
+
+      const conversationsWithLastSender = conversationsWithUsers.map(conv => ({
+        ...conv,
+        last_message_sender_id: lastSenderMap.get(conv.id) ?? conv.last_message_sender_id ?? null,
+      }));
       
       // Sort by last_message_at (most recent first)
-      conversationsWithUsers.sort((a, b) => {
+      conversationsWithLastSender.sort((a, b) => {
         const dateA = new Date(a.last_message_at).getTime();
         const dateB = new Date(b.last_message_at).getTime();
         return dateB - dateA;
       });
       
-      console.log('[useChat] Final conversationsWithUsers:', conversationsWithUsers);
-      console.log('[useChat] Setting', conversationsWithUsers.length, 'conversations');
+      console.log('[useChat] Final conversationsWithUsers:', conversationsWithLastSender);
+      console.log('[useChat] Setting', conversationsWithLastSender.length, 'conversations');
       
-      setConversations(conversationsWithUsers as ChatConversation[]);
+      setConversations(conversationsWithLastSender as ChatConversation[]);
     } catch (err) {
       const error = err as Error;
       console.error('[useChat] Error in fetchConversations:', err);
@@ -453,6 +480,7 @@ export function useChat(userId: string | null) {
                 ...conv,
                 last_message_at: new Date().toISOString(),
                 last_message_preview: params.content.substring(0, 100),
+                last_message_sender_id: userId,
               }
             : conv
         )
@@ -921,7 +949,8 @@ export function useChat(userId: string | null) {
                 return {
                   ...conv,
                   last_message_at: mappedMessage.sent_at,
-                  last_message_preview: mappedMessage.content.substring(0, 100)
+                  last_message_preview: mappedMessage.content.substring(0, 100),
+                  last_message_sender_id: mappedMessage.sender_id,
                 };
               }
               return conv;

@@ -125,17 +125,22 @@ serve(async (req) => {
 
       console.log(`[send-unread-chat-emails] ✅ Usuario ${profile.full_name} es CLIENTE`)
 
-      // Verificar preferencias de notificación (si quiere emails de chat)
+      // Verificar preferencias de notificación (si quiere emails)
       const { data: preferences } = await supabase
         .from('user_notification_preferences')
-        .select('enabled')
+        .select('email_enabled, notification_preferences')
         .eq('user_id', userId)
-        .eq('notification_type', 'chat_message')
-        .eq('channel', 'email')
         .single()
 
-      // Si tiene preferencia explícita de NO recibir emails de chat, respetar
-      if (preferences && !preferences.enabled) {
+      // Si tiene email_enabled = false, omitir
+      if (preferences && !preferences.email_enabled) {
+        console.log(`[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} deshabilitó todos los emails`)
+        continue
+      }
+
+      // Si tiene preferencia específica para chat_message con email = false, respetar
+      const chatEmailPref = preferences?.notification_preferences?.chat_message?.email
+      if (chatEmailPref === false) {
         console.log(`[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} deshabilitó emails de chat`)
         continue
       }

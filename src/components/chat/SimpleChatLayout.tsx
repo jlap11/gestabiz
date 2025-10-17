@@ -203,27 +203,38 @@ export function SimpleChatLayout({
             </div>
           ) : (
             <div className="overflow-y-auto">
-              {conversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => handleSelectConversation(conv.id)}
-                  className="w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="font-semibold">
-                    {conv.other_user?.full_name || conv.title || 'Conversación'}
-                  </div>
-                  <div className="text-sm text-muted-foreground truncate">
-                    {conv.last_message_preview || 'Sin mensajes'}
-                  </div>
-                  {conv.unread_count ? (
-                    <div className="mt-1">
-                      <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary rounded-full">
-                        {conv.unread_count}
-                      </span>
+              {conversations.map((conv) => {
+                const metadata = conv.metadata as { last_sender_id?: unknown } | undefined;
+                const metadataSenderId = typeof metadata?.last_sender_id === 'string' ? metadata.last_sender_id : undefined;
+                const lastSenderId = conv.last_message_sender_id ?? metadataSenderId ?? null;
+                const preview = conv.last_message_preview || 'Sin mensajes';
+                const isOwnLastMessage = lastSenderId === userId;
+                const displayPreview = conv.last_message_preview
+                  ? `${isOwnLastMessage ? 'Tu: ' : ''}${conv.last_message_preview}`
+                  : preview;
+
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => handleSelectConversation(conv.id)}
+                    className="w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="font-semibold">
+                      {conv.other_user?.full_name || conv.title || 'Conversación'}
                     </div>
-                  ) : null}
-                </button>
-              ))}
+                    <div className="text-sm text-muted-foreground truncate">
+                      {displayPreview}
+                    </div>
+                    {conv.unread_count ? (
+                      <div className="mt-1">
+                        <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary rounded-full">
+                          {conv.unread_count}
+                        </span>
+                      </div>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
