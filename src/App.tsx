@@ -45,6 +45,8 @@ function AppContent() {
   const [showLanding, setShowLanding] = useState(!user && !session) // Solo mostrar landing si NO hay sesión
   const [forceShowLogin, setForceShowLogin] = useState(false)
 
+  console.log('[AppContent] User state:', { userId: user?.id, loading, hasSession: !!session })
+
   // Si estamos cargando la autenticación, mostrar loader
   if (loading) {
     return <AppLoader />
@@ -86,19 +88,22 @@ function AppContent() {
     return <AuthScreen />
   }
 
-  // Usuario autenticado, mostrar app principal
+  // Usuario autenticado, mostrar app principal con NotificationProvider
   return (
-    <MainApp 
-      onLogout={async () => {
-        setIsLoggingOut(true)
-        await signOut()
-        setTimeout(() => {
-          setIsLoggingOut(false)
-          setShowLanding(true)
-          setForceShowLogin(false)
-        }, 1500)
-      }}
-    />
+    <NotificationProvider userId={user.id}>
+      <MainApp 
+        onLogout={async () => {
+          setIsLoggingOut(true)
+          await signOut()
+          setTimeout(() => {
+            setIsLoggingOut(false)
+            setShowLanding(true)
+            setForceShowLogin(false)
+          }, 1500)
+        }}
+      />
+      <Toaster richColors closeButton />
+    </NotificationProvider>
   )
 }
 
@@ -110,35 +115,15 @@ function App() {
           <ThemeProvider>
             <LanguageProvider>
               <AppStateProvider>
-                {/* AppWithNotifications maneja el provider de notificaciones */}
-                <AppWithNotifications />
+                <Suspense fallback={<AppLoader />}>
+                  <AppContent />
+                </Suspense>
               </AppStateProvider>
             </LanguageProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </Suspense>
     </ErrorBoundary>
-  )
-}
-
-// Componente intermedio para obtener userId ANTES de montar NotificationProvider
-function AppWithNotifications() {
-  const { user, loading } = useAuthSimple()
-  
-  console.log('[AppWithNotifications] User state:', { userId: user?.id, loading })
-  
-  // Esperar a que se resuelva la autenticación
-  if (loading) {
-    return <AppLoader />
-  }
-  
-  return (
-    <NotificationProvider userId={user?.id || null}>
-      <Suspense fallback={<AppLoader />}>
-        <AppContent />
-      </Suspense>
-      <Toaster richColors closeButton />
-    </NotificationProvider>
   )
 }
 
