@@ -108,7 +108,7 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
             )
           })
           
-          // ✅ REGLA 1: Si es chat message Y el chat de esa conversación está abierto → SUPRIMIR
+          // ✅ REGLA 1: Si es chat message Y el chat de esa conversación está abierto → SUPRIMIR 
           if (
             notification.type === 'chat_message' && 
             isChatOpen &&
