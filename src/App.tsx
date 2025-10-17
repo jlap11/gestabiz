@@ -45,10 +45,12 @@ function AppContent() {
   const [showLanding, setShowLanding] = useState(!user && !session) // Solo mostrar landing si NO hay sesión
   const [forceShowLogin, setForceShowLogin] = useState(false)
 
-  console.log('[AppContent] User state:', { userId: user?.id, loading, hasSession: !!session })
+  // ⚠️ LOG CRÍTICO PARA VERIFICAR QUE CÓDIGO NUEVO ESTÁ CORRIENDO
+  console.log('🚀🚀🚀 [VERSIÓN NUEVA - 00:51] AppContent renderizando:', { userId: user?.id, loading, hasSession: !!session })
 
   // Si estamos cargando la autenticación, mostrar loader
   if (loading) {
+    console.log('⏳ AppContent - Mostrando loader (loading=true)')
     return <AppLoader />
   }
 
@@ -85,10 +87,12 @@ function AppContent() {
 
   // Si no hay usuario autenticado (o se forzó el login), mostrar AuthScreen
   if ((!user || !session) || forceShowLogin) {
+    console.log('🔐 AppContent - Mostrando AuthScreen (no user o no session)')
     return <AuthScreen />
   }
 
   // Usuario autenticado, mostrar app principal con NotificationProvider
+  console.log('✅ AppContent - Usuario autenticado, montando NotificationProvider con userId:', user.id)
   return (
     <NotificationProvider userId={user.id}>
       <MainApp 
