@@ -33,7 +33,7 @@ const plans = [
       { name: 'Gestión básica de clientes', included: true },
       { name: 'Catálogo de servicios', included: true },
       { name: 'Dashboard con estadísticas básicas', included: true },
-      { name: 'App móvil incluida', included: true },
+      { name: 'App móvil incluida (a partir del 16 de noviembre)', included: true },
       { name: 'Soporte por email', included: true },
       { name: 'Sistema contable avanzado', included: false },
       { name: 'Multi-ubicación', included: false },

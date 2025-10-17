@@ -41,12 +41,15 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
     avatar_url: user.avatar_url || ''
   })
 
-  // Extract prefix for selector from existing phone, default to MX +52
+  // Detectar si es autenticación OAuth (Google, etc)
+  const isOAuthUser = Boolean(user.avatar_url && (user.avatar_url.includes('googleusercontent.com') || user.avatar_url.includes('lh3.googleusercontent.com')))
+
+  // Extract prefix for selector from existing phone, default to CO +57
   const initialPrefix = (() => {
     const regex = /^\+(\d{1,3})/
     const match = regex.exec(user.phone || '')
     if (match) return `+${match[1]}`
-    return '+52'
+    return '+57' // Default to Colombia
   })()
   const [phonePrefix, setPhonePrefix] = useState<string>(initialPrefix)
 
@@ -317,8 +320,8 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 Teléfono
               </Label>
               <div className="flex gap-2">
-                <Select value={phonePrefix} onValueChange={handlePrefixChange}>
-                  <SelectTrigger className="w-32">
+                <Select value={phonePrefix} onValueChange={handlePrefixChange} disabled={isOAuthUser}>
+                  <SelectTrigger className={`w-32 ${isOAuthUser ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     {(() => {
                       const sel = COUNTRY_CODES.find(c => c.code === phonePrefix)
                       const flag = sel ? sel.label.split(' ')[0] : ''

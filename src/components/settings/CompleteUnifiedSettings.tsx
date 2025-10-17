@@ -123,6 +123,13 @@ export default function CompleteUnifiedSettings({
     tabs.push(roleTab)
   }
 
+  // Agregar pestaña Zona Peligrosa al final
+  tabs.push({ 
+    value: 'danger-zone', 
+    label: 'Zona Peligrosa', 
+    icon: <AlertCircle className="h-4 w-4" /> 
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -284,6 +291,11 @@ export default function CompleteUnifiedSettings({
           {currentRole === 'client' && (
             <ClientRolePreferences />
           )}
+        </TabsContent>
+
+        {/* ZONA PELIGROSA - Para todos los roles */}
+        <TabsContent value="danger-zone" className="space-y-6">
+          <DangerZone user={user} />
         </TabsContent>
       </Tabs>
     </div>

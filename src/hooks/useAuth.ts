@@ -215,6 +215,51 @@ export function useAuth() {
         is_active: true
       }
 
+      // If avatar URL from OAuth (like Google), try to download and save it to storage
+      if (supabaseUser.user_metadata?.avatar_url && supabaseUser.user_metadata.avatar_url.includes('http')) {
+        try {
+          // Download image from URL (async, non-blocking)
+          const downloadAndSaveAvatar = async (userId: string, avatarUrl: string) => {
+            try {
+              const response = await fetch(avatarUrl)
+              if (!response.ok) throw new Error('Failed to download avatar')
+              
+              const blob = await response.blob()
+              const fileName = `avatar-${Date.now()}.jpg`
+              const filePath = `${userId}/${fileName}`
+              
+              // Upload to Supabase Storage
+              const { error: uploadError } = await supabase.storage
+                .from('user-avatars')
+                .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true })
+              
+              if (!uploadError) {
+                // Get public URL
+                const { data } = supabase.storage
+                  .from('user-avatars')
+                  .getPublicUrl(filePath)
+                
+                if (data.publicUrl) {
+                  // Update profile with new URL
+                  await supabase
+                    .from('profiles')
+                    .update({ avatar_url: data.publicUrl })
+                    .eq('id', userId)
+                }
+              }
+            } catch (err) {
+              // Silently fail - avatar will remain as is from OAuth
+              console.log('Failed to save OAuth avatar:', err)
+            }
+          }
+          
+          // Run async without blocking
+          downloadAndSaveAvatar(supabaseUser.id, supabaseUser.user_metadata.avatar_url)
+        } catch {
+          // If anything fails, just use the original URL
+        }
+      }
+
       const { data: createdProfile, error: createError } = await supabase
         .from('profiles')
         .insert(newProfile)
