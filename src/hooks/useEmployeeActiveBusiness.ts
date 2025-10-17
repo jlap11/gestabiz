@@ -70,7 +70,7 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
             )
           `)
           .eq('employee_id', employeeId)
-          .eq('status', 'active')
+          .eq('status', 'approved')
 
         if (error) {
           console.error('[useEmployeeActiveBusiness] Error fetching businesses:', error)
