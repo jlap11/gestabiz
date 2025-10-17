@@ -71,7 +71,7 @@ export function useAuthSimple() {
           const user: User = {
             id: session.user.id,
             email: session.user.email!,
-            name: profileData?.name || session.user.email!.split('@')[0],
+            name: profileData?.full_name || session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
             username: profileData?.username || session.user.email!.split('@')[0],
             roles: [{
               id: 'simple-client-role',
@@ -100,7 +100,7 @@ export function useAuthSimple() {
             },
             permissions: [],
             timezone: 'America/Mexico_City',
-            avatar_url: profileData?.avatar_url ? `${profileData.avatar_url}?t=${Date.now()}` : undefined,
+            avatar_url: profileData?.avatar_url || session.user.user_metadata?.avatar_url ? `${profileData?.avatar_url || session.user.user_metadata?.avatar_url}?t=${Date.now()}` : undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             is_active: true
@@ -182,7 +182,7 @@ export function useAuthSimple() {
           const user: User = {
             id: session.user.id,
             email: session.user.email!,
-            name: profileData?.name || session.user.email!.split('@')[0],
+            name: profileData?.full_name || session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
             username: profileData?.username || session.user.email!.split('@')[0],
             roles: [{
               id: 'simple-client-role',
@@ -211,7 +211,7 @@ export function useAuthSimple() {
             },
             permissions: [],
             timezone: 'America/Mexico_City',
-            avatar_url: profileData?.avatar_url ? `${profileData.avatar_url}?t=${Date.now()}` : undefined,
+            avatar_url: profileData?.avatar_url || session.user.user_metadata?.avatar_url ? `${profileData?.avatar_url || session.user.user_metadata?.avatar_url}?t=${Date.now()}` : undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             is_active: true

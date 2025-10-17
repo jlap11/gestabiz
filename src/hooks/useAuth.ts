@@ -199,7 +199,7 @@ export function useAuth() {
       const newProfile: import('@/types/database').Database['public']['Tables']['profiles']['Insert'] = {
         id: supabaseUser.id,
         email: supabaseUser.email!,
-        full_name: supabaseUser.user_metadata?.full_name || '',
+        full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email!.split('@')[0],
         avatar_url: supabaseUser.user_metadata?.avatar_url || null,
         role: 'client' as const,
         phone: null,
