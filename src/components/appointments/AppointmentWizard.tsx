@@ -341,6 +341,18 @@ export function AppointmentWizard({
   };
 
   const handleNext = () => {
+    // Validación para el paso de Fecha y Hora (paso 4)
+    if (currentStep === getStepNumber('dateTime')) {
+      if (!wizardData.date) {
+        toast.error('Por favor selecciona una fecha para la cita');
+        return;
+      }
+      if (!wizardData.startTime) {
+        toast.error('Por favor selecciona una hora para la cita');
+        return;
+      }
+    }
+
     // Track step completed
     analytics.trackBookingStepCompleted({
       businessId: wizardData.businessId || businessId || '',
