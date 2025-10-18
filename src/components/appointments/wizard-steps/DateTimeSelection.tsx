@@ -34,33 +34,13 @@ export function DateTimeSelection({
     // Generar slots de 9AM a 5PM
     const slots: TimeSlot[] = [];
     const popularTimes = ['10:00 AM', '03:00 PM']; // Horarios populares de ejemplo
-    const now = new Date();
-    const isToday = selectedDate && 
-      selectedDate.getDate() === now.getDate() &&
-      selectedDate.getMonth() === now.getMonth() &&
-      selectedDate.getFullYear() === now.getFullYear();
 
     for (let hour = 9; hour <= 17; hour++) {
       const time12h = hour > 12 ? `${String(hour - 12).padStart(2, '0')}:00 PM` : `${String(hour).padStart(2, '0')}:00 AM`;
       
-      // Verificar disponibilidad considerando la regla de 90 minutos para hoy
-      let isAvailable = true; // Por defecto disponible
-      
-      if (isToday) {
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const slotHour = hour;
-        
-        // Calcular diferencia en minutos
-        const slotMinutes = slotHour * 60;
-        const nowMinutes = currentHour * 60 + currentMinute;
-        const minutesDifference = slotMinutes - nowMinutes;
-        
-        // Disponible solo si hay al menos 90 minutos de diferencia
-        if (minutesDifference < 90) {
-          isAvailable = false;
-        }
-      }
+      // TODO: Verificar disponibilidad consultando la BD de citas existentes
+      // Por ahora, todos los slots están disponibles
+      const isAvailable = true;
       
       slots.push({
         id: `slot-${hour}`,
@@ -71,7 +51,7 @@ export function DateTimeSelection({
     }
 
     setTimeSlots(slots);
-  }, [selectedDate]);
+  }, []);
 
   useEffect(() => {
     if (selectedDate) {
