@@ -99,7 +99,7 @@ export function useAuth() {
           .from('business_employees')
           .select('business_id, businesses:business_id(id, name)')
           .eq('employee_id', profile.id)
-          .eq('status', 'active')
+          .eq('status', 'approved')
           .limit(1)
 
         // Build roles array dynamically
@@ -344,15 +344,28 @@ export function useAuth() {
       })
 
       if (error) {
+        // Parse error message to provide better UX
+        let userMessage = error.message
+        
+        // Improve error messages
+        if (error.message.includes('already registered')) {
+          userMessage = 'Este correo electrónico ya está registrado. Intenta iniciar sesión.'
+        } else if (error.message.includes('Password')) {
+          userMessage = 'La contraseña no cumple con los requisitos de seguridad. Debe tener al menos 6 caracteres.'
+        } else if (error.message.includes('invalid')) {
+          userMessage = 'Los datos proporcionados no son válidos. Verifica tu información.'
+        }
+        
         logger.error('Sign up failed', error, {
           component: 'useAuth',
           operation: 'signUp',
           email: data.email,
           errorCode: error.code,
+          userMessage
         });
-        setState(prev => ({ ...prev, loading: false, error: error.message }))
-        toast.error(error.message)
-        return { success: false, error: error.message }
+        setState(prev => ({ ...prev, loading: false, error: userMessage }))
+        toast.error(userMessage)
+        return { success: false, error: userMessage }
       }
 
       // If user was created successfully
@@ -442,22 +455,42 @@ export function useAuth() {
       })
 
       if (error) {
+        // Parse error message to provide better UX
+        let userMessage = error.message
+        let logMessage = error.message
+        
+        // Improve error messages
+        if (error.message.includes('Invalid login credentials')) {
+          userMessage = 'Correo electrónico o contraseña incorrectos. Verifica tus datos e intenta de nuevo.'
+          logMessage = 'Invalid credentials provided'
+        } else if (error.message.includes('Email not confirmed')) {
+          userMessage = 'Por favor confirma tu correo electrónico antes de iniciar sesión.'
+          logMessage = 'Email not confirmed'
+        } else if (error.message.includes('User not found')) {
+          userMessage = 'No existe una cuenta con este correo electrónico.'
+          logMessage = 'User not found'
+        } else if (error.message.includes('too many requests')) {
+          userMessage = 'Demasiados intentos de inicio de sesión. Intenta más tarde.'
+          logMessage = 'Too many login attempts'
+        }
+        
         logger.error('Sign in failed', error, {
           component: 'useAuth',
           operation: 'signIn',
           email: data.email,
           errorCode: error.code,
+          userMessage
         });
         await logger.logLogin({
           email: data.email,
           status: 'failure',
           method: 'password',
           userAgent: navigator.userAgent,
-          metadata: { errorMessage: error.message }
+          metadata: { errorMessage: logMessage }
         });
-        setState(prev => ({ ...prev, loading: false, error: error.message }))
-        toast.error(error.message)
-        return { success: false, error: error.message }
+        setState(prev => ({ ...prev, loading: false, error: userMessage }))
+        toast.error(userMessage)
+        return { success: false, error: userMessage }
       }
 
       if (authData.user) {
@@ -513,7 +546,7 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/app`
         }
       })
 

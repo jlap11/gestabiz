@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useNavigate } from 'react-router-dom'
 import { 
   Calendar, 
   Clock, 
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react'
 import { PricingPlans } from './PricingPlans'
 import { useAnalytics } from '@/hooks/useAnalytics'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface LandingPageProps {
   onNavigateToAuth: () => void
@@ -30,11 +32,20 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const analytics = useAnalytics()
+  const navigate = useNavigate()
+  const { user, loading } = useAuth()
 
   // Track page view on mount
   useEffect(() => {
     analytics.trackPageView('/', 'Landing Page - Gestabiz')
   }, [analytics])
+
+  // Redirigir a /app si el usuario está autenticado
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/app', { replace: true })
+    }
+  }, [user, loading, navigate])
 
   useEffect(() => {
     // Forzar tema claro en la landing page
