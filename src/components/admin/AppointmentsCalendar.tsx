@@ -216,6 +216,7 @@ export const AppointmentsCalendar: React.FC = () => {
   const [locationHours, setLocationHours] = useState<LocationHours | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const timelineRef = React.useRef<HTMLDivElement>(null);
 
   // Update current time every minute to refresh the time indicator
   useEffect(() => {
@@ -244,15 +245,14 @@ export const AppointmentsCalendar: React.FC = () => {
         if (businessError) throw businessError;
 
         // Get first location hours
-        const { data: location, error: locationError } = await supabase
+        const { data: locations, error: locationError } = await supabase
           .from('locations')
           .select('opens_at, closes_at')
           .eq('business_id', business.id)
-          .limit(1)
-          .single();
+          .limit(1);
 
-        if (!locationError && location) {
-          setLocationHours(location);
+        if (!locationError && locations && locations.length > 0) {
+          setLocationHours(locations[0]);
         }
 
         // Get employees with profiles
@@ -261,7 +261,7 @@ export const AppointmentsCalendar: React.FC = () => {
           .select(`
             id,
             user_id,
-            profiles:user_id (
+            profiles!business_employees_user_id_fkey (
               full_name,
               avatar_url
             )
@@ -513,6 +513,24 @@ export const AppointmentsCalendar: React.FC = () => {
     return percentage;
   }, [selectedDate]);
 
+  // Scroll to current time on mount and when date changes
+  useEffect(() => {
+    if (isSameDay(selectedDate, new Date()) && timelineRef.current && currentTimePosition !== null) {
+      // Wait for render to complete
+      setTimeout(() => {
+        if (timelineRef.current) {
+          const containerHeight = timelineRef.current.clientHeight;
+          const scrollPosition = (currentTimePosition / 100) * timelineRef.current.scrollHeight - (containerHeight / 2);
+          
+          timelineRef.current.scrollTo({
+            top: Math.max(0, scrollPosition),
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+  }, [selectedDate, currentTimePosition]);
+
   // Get appointment status class
   const getAppointmentClass = (status: string): string => {
     if (status === 'confirmed') {
@@ -602,7 +620,7 @@ export const AppointmentsCalendar: React.FC = () => {
             </div>
 
             {/* Time slots */}
-            <div className="relative">
+            <div ref={timelineRef} className="relative max-h-[600px] overflow-y-auto">
               {/* Current time indicator */}
               {currentTimePosition !== null && (
                 <div
