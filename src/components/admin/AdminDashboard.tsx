@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
+import { usePreferredLocation } from '@/hooks/usePreferredLocation'
+import { useSupabaseData } from '@/hooks/useSupabaseData'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
@@ -10,6 +12,7 @@ import { ReportsPage } from './ReportsPage'
 import { PermissionsManager } from './PermissionsManager'
 import { BillingDashboard } from '@/components/billing'
 import { RecruitmentDashboard } from '@/components/jobs/RecruitmentDashboard'
+import { QuickSalesPage } from '@/pages/QuickSalesPage'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
@@ -43,6 +46,29 @@ export function AdminDashboard({
   const [currentUser, setCurrentUser] = useState(user)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
   const [pageContext, setPageContext] = useState<Record<string, unknown>>({})
+  
+  // Hooks para sede preferida y ubicaciones
+  const { preferredLocationId } = usePreferredLocation(business.id)
+  const { locations, fetchLocations } = useSupabaseData({ user, autoFetch: false })
+  
+  // Estado para nombre de la sede
+  const [preferredLocationName, setPreferredLocationName] = useState<string | null>(null)
+  
+  // Cargar ubicaciones y obtener nombre de la sede preferida
+  useEffect(() => {
+    if (business.id) {
+      fetchLocations(business.id)
+    }
+  }, [business.id, fetchLocations])
+  
+  useEffect(() => {
+    if (preferredLocationId && locations.length > 0) {
+      const location = locations.find(l => l.id === preferredLocationId)
+      setPreferredLocationName(location?.name || null)
+    } else {
+      setPreferredLocationName(null)
+    }
+  }, [preferredLocationId, locations])
 
   // Función para manejar cambios de página con contexto
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {
@@ -107,6 +133,11 @@ export function AdminDashboard({
       icon: <BriefcaseBusiness className="h-5 w-5" />
     },
     {
+      id: 'quick-sales',
+      label: 'Ventas Rápidas',
+      icon: <ShoppingCart className="h-5 w-5" />
+    },
+    {
       id: 'accounting',
       label: 'Contabilidad',
       icon: <Calculator className="h-5 w-5" />
@@ -159,6 +190,8 @@ export function AdminDashboard({
             highlightedVacancyId={pageContext.vacancyId as string | undefined}
           />
         )
+      case 'quick-sales':
+        return <QuickSalesPage businessId={business.id} />
       case 'accounting':
         return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
       case 'reports':
@@ -207,6 +240,7 @@ export function AdminDashboard({
       sidebarItems={sidebarItems}
       activePage={activePage}
       onPageChange={handlePageChange}
+      preferredLocationName={preferredLocationName}
       user={currentUser ? {
         id: currentUser.id,
         name: currentUser.name,

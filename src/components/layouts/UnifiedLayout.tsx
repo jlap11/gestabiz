@@ -54,6 +54,7 @@ interface UnifiedLayoutProps {
     email: string
     avatar?: string
   }
+  preferredLocationName?: string | null
   onSearchResultSelect?: (result: SearchResult) => void
   onSearchViewMore?: (searchTerm: string, searchType: SearchType) => void
   chatConversationId?: string | null
@@ -87,11 +88,12 @@ export function UnifiedLayout({
   activePage,
   onPageChange,
   user,
+  preferredLocationName,
   onSearchResultSelect,
   onSearchViewMore,
   chatConversationId,
   onChatClose
-}: UnifiedLayoutProps) {
+}: Readonly<UnifiedLayoutProps>) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [bugReportOpen, setBugReportOpen] = useState(false)
 
@@ -219,9 +221,16 @@ export function UnifiedLayout({
                   )}
 
                   <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                    <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
-                      {business.name}
-                    </h1>
+                    <div>
+                      <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
+                        {business.name}
+                      </h1>
+                      {preferredLocationName && (
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          📍 {preferredLocationName}
+                        </p>
+                      )}
+                    </div>
                     {business.category && (
                       <Badge variant="secondary" className="text-xs hidden md:inline-flex">
                         {business.category.name}

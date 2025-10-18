@@ -30,6 +30,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { BusinessHoursPicker, type BusinessHours } from '@/components/ui/BusinessHoursPicker'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import { toast } from 'sonner'
+import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 
 interface Location {
   id: string
@@ -79,6 +80,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
   const [formData, setFormData] = useState(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
   const [pendingImageFiles, setPendingImageFiles] = useState<File[]>([])
+  const { preferredLocationId } = usePreferredLocation(businessId)
 
   const fetchLocations = React.useCallback(async () => {
     setIsLoading(true)
@@ -343,6 +345,11 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                       {location.is_primary && (
                         <Badge variant="default" className="text-[10px] sm:text-xs">
                           Principal
+                        </Badge>
+                      )}
+                      {preferredLocationId === location.id && (
+                        <Badge variant="outline" className="text-[10px] sm:text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700">
+                          ⭐ Administrada
                         </Badge>
                       )}
                     </div>

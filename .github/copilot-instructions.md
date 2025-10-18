@@ -1,5 +1,23 @@
 # Guía rápida
 
+## Sistema de Sede Preferida Global ⭐ COMPLETADO 100% (2025-10-18)
+Sistema centralizado para configurar y usar una sede como predeterminada en todas las operaciones del negocio - **PRODUCTION READY**:
+- **Hook centralizado**: `usePreferredLocation` (50 líneas) - gestiona estado en localStorage por negocio
+- **Configuración**: Campo "Sede Administrada" en Preferencias del Negocio (CompleteUnifiedSettings.tsx)
+- **Visualización**: Badge "⭐ Administrada" en LocationsManager + nombre en header (UnifiedLayout.tsx)
+- **Filtros automáticos (7 pantallas)**:
+  - Empleados: Filtro pre-seleccionado en FiltersPanel
+  - Vacantes: Pre-selección en CreateVacancy (nuevas)
+  - Ventas Rápidas: Doble cache + pre-selección en QuickSaleForm
+  - Reportes: Selector con pre-selección en ReportsPage
+  - EmployeeManagementHierarchy: Filtro automático en employees
+- **Storage**: localStorage (NO BD) con key `preferred-location-${businessId}`
+- **Opción "Todas las sedes"**: value='all' para resetear filtro a null
+- **Actualización tipos**: HierarchyFilters incluye nuevo campo `location_id`
+- **Header visual**: Muestra "📍 [Nombre Sede]" bajo nombre del negocio
+- **Build exitoso**: 14.34s
+- Ver `SISTEMA_SEDE_PREFERIDA_COMPLETADO.md` y `VISUAL_MOCKUP_SEDE_PREFERIDA.md`
+
 ## Sistema de Google Analytics 4 ⭐ COMPLETADO 100% (2025-01-20)
 Integración completa de Google Analytics 4 para tracking de conversión y comportamiento - **PRODUCTION READY**:
 - **Infraestructura core (100%)**: Hook `useAnalytics` (370 líneas, 14 métodos), módulo `ga4.ts` (91 líneas, GDPR-compliant), componente `CookieConsent` (128 líneas)

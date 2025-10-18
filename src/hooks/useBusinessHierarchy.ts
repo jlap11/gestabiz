@@ -18,6 +18,7 @@ export interface HierarchyFilters {
   hierarchyLevel?: number | null;
   employeeType?: string | null;
   departmentId?: string | null;
+  location_id?: string | null; // Filtro por sede
 }
 
 export interface EmployeeHierarchy {
@@ -131,7 +132,12 @@ export function useBusinessHierarchy(businessId: string | null, initialFilters?:
       result = result.filter(emp => emp.employee_type === filters.employeeType);
     }
 
-    // Filtro por ubicación
+    // Filtro por sede/ubicación
+    if (filters.location_id) {
+      result = result.filter(emp => emp.location_id === filters.location_id);
+    }
+
+    // Filtro por ubicación (departmentId - legacy)
     if (filters.departmentId) {
       result = result.filter(emp => emp.location_id === filters.departmentId);
     }

@@ -5,9 +5,10 @@
  * Phase 3 - UI Components
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Users, List, Network, Filter } from 'lucide-react'
 import { useBusinessHierarchy } from '@/hooks/useBusinessHierarchy'
+import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -38,6 +39,9 @@ export function EmployeeManagementHierarchy({
   const { t } = useLanguage()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [showFilters, setShowFilters] = useState(false)
+  
+  // Hook de sede preferida
+  const { preferredLocationId } = usePreferredLocation(businessId)
 
   // Hook principal de jerarquía
   const {
@@ -48,6 +52,13 @@ export function EmployeeManagementHierarchy({
     updateFilters,
     clearFilters,
   } = useBusinessHierarchy(businessId)
+  
+  // Pre-seleccionar sede preferida al montar el componente
+  useEffect(() => {
+    if (preferredLocationId && !filters.location_id) {
+      updateFilters({ location_id: preferredLocationId })
+    }
+  }, [preferredLocationId, filters.location_id, updateFilters])
 
   // =====================================================
   // ESTADÍSTICAS HEADER
@@ -263,6 +274,7 @@ export function EmployeeManagementHierarchy({
       {showFilters && (
         <Card className="p-4">
           <FiltersPanel
+            businessId={businessId}
             filters={filters}
             onFiltersChange={updateFilters}
             onClear={handleClearFilters}

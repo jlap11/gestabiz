@@ -1,11 +1,11 @@
 /**
  * @file FiltersPanel.tsx
  * @description Panel de filtros avanzados para jerarquía de empleados
- * 6 filtros: Búsqueda, Nivel, Tipo, Departamento, Ocupación, Rating
+ * 7 filtros: Búsqueda, Sede, Nivel, Tipo, Departamento, Ocupación, Rating
  * Phase 3 - UI Components
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
+import { supabase } from '@/lib/supabase'
 import type { HierarchyFilters } from '@/types'
 
 // =====================================================
@@ -25,6 +26,7 @@ import type { HierarchyFilters } from '@/types'
 // =====================================================
 
 interface FiltersPanelProps {
+  businessId: string
   filters: HierarchyFilters
   onFiltersChange: (filters: Partial<HierarchyFilters>) => void
   onClear: () => void
@@ -39,10 +41,31 @@ interface RangeFilter {
 // COMPONENTE
 // =====================================================
 
-export function FiltersPanel({ filters, onFiltersChange, onClear }: FiltersPanelProps) {
+export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: FiltersPanelProps) {
   // Estados locales para rangos
   const [occupancyRange, setOccupancyRange] = useState<RangeFilter>({ min: 0, max: 100 })
   const [ratingRange, setRatingRange] = useState<RangeFilter>({ min: 0, max: 5 })
+  const [locations, setLocations] = useState<Array<{ id: string; name: string }>>([])
+
+  // Cargar sedes del negocio
+  useEffect(() => {
+    async function loadLocations() {
+      if (!businessId) return
+      
+      const { data, error } = await supabase
+        .from('locations')
+        .select('id, name')
+        .eq('business_id', businessId)
+        .eq('is_active', true)
+        .order('name')
+
+      if (!error && data) {
+        setLocations(data)
+      }
+    }
+    
+    loadLocations()
+  }, [businessId])
 
   // =====================================================
   // HANDLERS
@@ -65,6 +88,10 @@ export function FiltersPanel({ filters, onFiltersChange, onClear }: FiltersPanel
     onFiltersChange({ departmentId: value === 'all' ? undefined : value })
   }
 
+  const handleLocationChange = (value: string) => {
+    onFiltersChange({ location_id: value === 'all' ? undefined : value })
+  }
+
   const handleClearAll = () => {
     setOccupancyRange({ min: 0, max: 100 })
     setRatingRange({ min: 0, max: 5 })
@@ -75,7 +102,8 @@ export function FiltersPanel({ filters, onFiltersChange, onClear }: FiltersPanel
     filters.searchQuery ||
     filters.hierarchyLevel !== undefined ||
     filters.employeeType ||
-    filters.departmentId
+    filters.departmentId ||
+    filters.location_id
 
   // =====================================================
   // RENDER
@@ -120,6 +148,27 @@ export function FiltersPanel({ filters, onFiltersChange, onClear }: FiltersPanel
             </button>
           )}
         </div>
+      </div>
+
+      {/* FILTRO POR SEDE */}
+      <div className="space-y-2">
+        <Label htmlFor="location">Sede</Label>
+        <Select
+          value={filters.location_id || 'all'}
+          onValueChange={handleLocationChange}
+        >
+          <SelectTrigger id="location">
+            <SelectValue placeholder="Todas las sedes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las sedes</SelectItem>
+            {locations.map(location => (
+              <SelectItem key={location.id} value={location.id}>
+                {location.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* NIVEL JERÁRQUICO */}
@@ -246,6 +295,15 @@ export function FiltersPanel({ filters, onFiltersChange, onClear }: FiltersPanel
                 <span className="font-medium">Tipo:</span>
                 <span>{filters.employeeType}</span>
                 <button onClick={() => handleEmployeeTypeChange('all')}>
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            {filters.location_id && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
+                <span className="font-medium">Sede:</span>
+                <span>{locations.find(l => l.id === filters.location_id)?.name || filters.location_id}</span>
+                <button onClick={() => handleLocationChange('all')}>
                   <X className="h-3 w-3" />
                 </button>
               </div>

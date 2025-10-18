@@ -1628,6 +1628,7 @@ export interface HierarchyFilters {
   hierarchyLevel?: number | null
   employeeType?: string | null
   departmentId?: string | null
+  location_id?: string | null // Filtro por sede
 }
 
 /**

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { X, Save, Briefcase } from 'lucide-react'
+import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 
 interface CreateVacancyProps {
   businessId: string
@@ -27,6 +28,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(!!vacancyId)
   const [locations, setLocations] = useState<Location[]>([])
+  const { preferredLocationId } = usePreferredLocation(businessId)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -44,6 +46,13 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
     remote_allowed: false,
     status: 'open'
   })
+
+  // Pre-select preferred location when creating new vacancy
+  useEffect(() => {
+    if (!vacancyId && preferredLocationId && formData.location_id === '') {
+      setFormData(prev => ({ ...prev, location_id: preferredLocationId }))
+    }
+  }, [vacancyId, preferredLocationId, formData.location_id])
 
   const loadLocations = useCallback(async () => {
     try {
