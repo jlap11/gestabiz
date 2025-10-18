@@ -1,5 +1,25 @@
 # Guía rápida
 
+## Sistema de Edición de Citas con Validación de Horarios ⭐ COMPLETADO 100% (2025-01-20)
+Sistema completo para crear y editar citas con validación en tiempo real de disponibilidad - **PRODUCTION READY**:
+- **Componente principal**: `DateTimeSelection.tsx` (328 líneas) - Calendario con validación completa
+- **Validaciones implementadas (3)**:
+  - ✅ Horarios de apertura/cierre de la sede (`locations.opens_at`, `closes_at`)
+  - ✅ Hora de almuerzo del profesional (`business_employees.lunch_break_start`, `lunch_break_end`)
+  - ✅ Citas ocupadas por otros clientes (overlap detection con `appointments`)
+- **Modo edición inteligente**: Excluye cita actual de validación para permitir mismo horario
+- **Feedback visual**: Tooltips en slots deshabilitados ("Hora de almuerzo" / "Ocupado")
+- **CREATE vs UPDATE**: `createAppointment()` diferencia entre INSERT (nueva) y UPDATE (edición)
+- **Props nuevas**: `employeeId`, `locationId`, `businessId`, `appointmentToEdit` en DateTimeSelection
+- **Título dinámico**: "Nueva Cita" / "Editar Cita" según modo
+- **3 Queries Supabase**: Carga paralela de location schedule, employee schedule, existing appointments
+- **Algoritmo de overlap**: `slotStart < aptEnd && slotEnd > aptStart` detecta conflictos
+- **Casos edge cubiertos**: Reprogramar mismo horario, slots ocupados, lunch break, sede sin config
+- **Performance**: React.useCallback, consultas paralelas, filtrado client-side
+- **Build exitoso**: 21.68s sin errores
+- **Archivos modificados**: 3 (DateTimeSelection.tsx, AppointmentWizard.tsx, ClientDashboard.tsx)
+- Ver `SISTEMA_EDICION_CITAS_COMPLETADO.md` para documentación completa
+
 ## Sistema de Sede Preferida Global - COMPLETADO 100% (2025-10-18)
 Sistema centralizado para configurar y usar una sede como predeterminada en todas las operaciones del negocio - **PRODUCTION READY**:
 - **Hook centralizado**: `usePreferredLocation` (50 líneas) - gestiona estado en localStorage por negocio

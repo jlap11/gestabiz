@@ -503,37 +503,59 @@ export function AppointmentWizard({
         end_time: endDateTime.toISOString(),
         status: 'pending' as const,
         notes: wizardData.notes || null,
-        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
-      // Insertar en Supabase
-      const { error } = await supabase
-        .from('appointments')
-        .insert(appointmentData)
-        .select()
-        .single();
+      // Determinar si es UPDATE (editando cita existente) o INSERT (nueva cita)
+      if (appointmentToEdit) {
+        // MODO EDICIÓN: Actualizar cita existente
+        const { error } = await supabase
+          .from('appointments')
+          .update(appointmentData)
+          .eq('id', appointmentToEdit.id)
+          .select()
+          .single();
 
-      if (error) {
-        toast.error(`Error al crear la cita: ${error.message}`);
-        return false;
+        if (error) {
+          toast.error(`Error al modificar la cita: ${error.message}`);
+          return false;
+        }
+
+        toast.success('¡Cita modificada exitosamente!');
+      } else {
+        // MODO CREACIÓN: Insertar nueva cita
+        const appointmentDataWithCreatedAt = {
+          ...appointmentData,
+          created_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase
+          .from('appointments')
+          .insert(appointmentDataWithCreatedAt)
+          .select()
+          .single();
+
+        if (error) {
+          toast.error(`Error al crear la cita: ${error.message}`);
+          return false;
+        }
+
+        // Track booking completed (conversión exitosa) - Solo para nuevas citas
+        analytics.trackBookingCompleted({
+          businessId: finalBusinessId || '',
+          businessName: wizardData.business?.name || wizardData.employeeBusiness?.name,
+          serviceId: wizardData.serviceId || '',
+          serviceName: wizardData.service?.name,
+          employeeId: wizardData.employeeId || undefined,
+          employeeName: wizardData.employee?.full_name || undefined,
+          locationId: wizardData.locationId || undefined,
+          amount: wizardData.service?.price,
+          currency: 'COP',
+          duration: wizardData.service?.duration || 60,
+        });
+
+        toast.success('¡Cita creada exitosamente!');
       }
-
-      // Track booking completed (conversión exitosa)
-      analytics.trackBookingCompleted({
-        businessId: finalBusinessId || '',
-        businessName: wizardData.business?.name || wizardData.employeeBusiness?.name,
-        serviceId: wizardData.serviceId || '',
-        serviceName: wizardData.service?.name,
-        employeeId: wizardData.employeeId || undefined,
-        employeeName: wizardData.employee?.full_name || undefined,
-        locationId: wizardData.locationId || undefined,
-        amount: wizardData.service?.price,
-        currency: 'COP',
-        duration: wizardData.service?.duration || 60,
-      });
-
-      toast.success('¡Cita creada exitosamente!');
       
       // Llamar callback de éxito
       if (onSuccess) {
@@ -543,7 +565,7 @@ export function AppointmentWizard({
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado';
-      toast.error(`Error al crear la cita: ${message}`);
+      toast.error(`Error al ${appointmentToEdit ? 'modificar' : 'crear'} la cita: ${message}`);
       return false;
     } finally {
       setIsSubmitting(false);
@@ -712,6 +734,10 @@ export function AppointmentWizard({
               service={wizardData.service}
               selectedDate={wizardData.date}
               selectedTime={wizardData.startTime}
+              employeeId={wizardData.employeeId}
+              locationId={wizardData.locationId}
+              businessId={wizardData.businessId}
+              appointmentToEdit={appointmentToEdit}
               onSelectDate={(date) => {
                 updateWizardData({ date });
                 // eslint-disable-next-line no-console

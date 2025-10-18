@@ -56,8 +56,8 @@ export function useScheduleConflicts() {
           work_schedule,
           business:businesses!inner(name)
         `)
-        .eq('employee_id', session.session.user.id)
-        .eq('status', 'active');
+  .eq('employee_id', session.session.user.id)
+  .eq('status', 'approved');
 
       if (fetchError) throw fetchError;
 
@@ -205,8 +205,8 @@ export function useScheduleConflicts() {
           work_schedule,
           business:businesses!inner(name)
         `)
-        .eq('employee_id', userId)
-        .eq('status', 'active');
+  .eq('employee_id', userId)
+  .eq('status', 'approved');
 
       if (fetchError) throw fetchError;
 

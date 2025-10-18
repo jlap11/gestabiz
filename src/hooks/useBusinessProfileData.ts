@@ -199,9 +199,9 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
             phone,
             avatar_url
           )
-        `)
-        .eq('business_id', businessData.id)
-        .eq('status', 'active');
+  `)
+  .eq('business_id', businessData.id)
+  .eq('status', 'approved');
 
       // 6. Fetch employee ratings from materialized view
       const employeeIds = employeesData?.map(e => e.id) || [];
