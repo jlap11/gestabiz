@@ -32,6 +32,7 @@ interface AppointmentWizardProps {
   onSuccess?: () => void; // Callback después de crear la cita
   preselectedDate?: Date; // Fecha preseleccionada desde el calendario
   preselectedTime?: string; // Hora preseleccionada desde el calendario
+  appointmentToEdit?: Appointment | null; // Cita a editar (si existe, modo edición)
 }
 
 interface Business {
@@ -85,7 +86,8 @@ export function AppointmentWizard({
   userId, 
   onSuccess, 
   preselectedDate, 
-  preselectedTime 
+  preselectedTime,
+  appointmentToEdit
 }: Readonly<AppointmentWizardProps>) {
   // Determinar el paso inicial basado en preselecciones
   const getInitialStep = () => {
@@ -343,6 +345,15 @@ export function AppointmentWizard({
   const handleNext = () => {
     // Validación para el paso de Fecha y Hora (paso 4)
     if (currentStep === getStepNumber('dateTime')) {
+      // eslint-disable-next-line no-console
+      console.log('🔍 Validando paso dateTime:', {
+        date: wizardData.date,
+        startTime: wizardData.startTime,
+        endTime: wizardData.endTime,
+        dateBoolean: !!wizardData.date,
+        startTimeBoolean: !!wizardData.startTime,
+      });
+
       if (!wizardData.date) {
         toast.error('Por favor selecciona una fecha para la cita');
         return;
@@ -557,7 +568,15 @@ export function AppointmentWizard({
       return wizardData.employeeBusinessId !== null;
     }
     if (currentStep === getStepNumber('dateTime')) {
-      return wizardData.date !== null && wizardData.startTime !== null;
+      const canProc = wizardData.date !== null && wizardData.startTime !== null;
+      // eslint-disable-next-line no-console
+      console.log('🔘 canProceed dateTime:', {
+        canProceed: canProc,
+        date: wizardData.date,
+        startTime: wizardData.startTime,
+        step: currentStep,
+      });
+      return canProc;
     }
     if (currentStep === getStepNumber('confirmation')) {
       return true;
@@ -581,7 +600,7 @@ export function AppointmentWizard({
           <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
             <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
               <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
-                New Appointment
+                {appointmentToEdit ? 'Editar Cita' : 'Nueva Cita'}
               </h2>
               <button
                 onClick={handleClose}
@@ -693,10 +712,16 @@ export function AppointmentWizard({
               service={wizardData.service}
               selectedDate={wizardData.date}
               selectedTime={wizardData.startTime}
-              onSelectDate={(date) => updateWizardData({ date })}
-              onSelectTime={(startTime, endTime) => 
-                updateWizardData({ startTime, endTime })
-              }
+              onSelectDate={(date) => {
+                updateWizardData({ date });
+                // eslint-disable-next-line no-console
+                console.log('📅 Fecha seleccionada:', date);
+              }}
+              onSelectTime={(startTime, endTime) => {
+                updateWizardData({ startTime, endTime });
+                // eslint-disable-next-line no-console
+                console.log('⏰ Hora seleccionada:', startTime, 'Fin:', endTime);
+              }}
             />
           )}
 

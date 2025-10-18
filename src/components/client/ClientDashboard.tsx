@@ -133,6 +133,7 @@ export function ClientDashboard({
   const [activePage, setActivePage] = useState('appointments')
   const [showAppointmentWizard, setShowAppointmentWizard] = useState(false)
   const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<string | undefined>(undefined)
+  const [appointmentToEdit, setAppointmentToEdit] = useState<AppointmentWithRelations | null>(null)
   const [bookingPreselection, setBookingPreselection] = useState<{
     serviceId?: string
     locationId?: string
@@ -348,6 +349,9 @@ export function ClientDashboard({
     // Close modal
     setSelectedAppointment(null)
     
+    // Set appointment to edit
+    setAppointmentToEdit(appointment)
+    
     // Open wizard with preselected data
     setAppointmentWizardBusinessId(appointment.business_id)
     setBookingPreselection({
@@ -357,7 +361,7 @@ export function ClientDashboard({
     })
     setShowAppointmentWizard(true)
     
-    toast.info('Completa los nuevos datos para reprogramar tu cita')
+    toast.info('Modifica los datos de tu cita y confirma los cambios')
   }, [])
 
   // Listen for avatar updates and refresh user
@@ -526,6 +530,7 @@ export function ClientDashboard({
     setPreselectedTime(undefined)
     setAppointmentWizardBusinessId(undefined) // Limpiar businessId preseleccionado
     setBookingPreselection(undefined) // Limpiar preselecciones de servicio/ubicación/empleado
+    setAppointmentToEdit(null) // Limpiar cita en edición
   }
 
   const renderContent = () => {
@@ -746,6 +751,7 @@ export function ClientDashboard({
           userId={currentUser.id}
           preselectedDate={preselectedDate}
           preselectedTime={preselectedTime}
+          appointmentToEdit={appointmentToEdit} // Pasar cita a editar
           onSuccess={() => {
             handleCloseWizard()
             fetchClientAppointments() // Recargar citas después de crear una nueva
