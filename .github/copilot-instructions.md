@@ -1,10 +1,10 @@
 # Guía rápida
 
-## Sistema de Sede Preferida Global ⭐ COMPLETADO 100% (2025-10-18)
+## Sistema de Sede Preferida Global - COMPLETADO 100% (2025-10-18)
 Sistema centralizado para configurar y usar una sede como predeterminada en todas las operaciones del negocio - **PRODUCTION READY**:
 - **Hook centralizado**: `usePreferredLocation` (50 líneas) - gestiona estado en localStorage por negocio
 - **Configuración**: Campo "Sede Administrada" en Preferencias del Negocio (CompleteUnifiedSettings.tsx)
-- **Visualización**: Badge "⭐ Administrada" en LocationsManager + nombre en header (UnifiedLayout.tsx)
+- **Visualización**: Badge "Administrada" en LocationsManager + nombre en header (UnifiedLayout.tsx)
 - **Filtros automáticos (7 pantallas)**:
   - Empleados: Filtro pre-seleccionado en FiltersPanel
   - Vacantes: Pre-selección en CreateVacancy (nuevas)
@@ -14,11 +14,11 @@ Sistema centralizado para configurar y usar una sede como predeterminada en toda
 - **Storage**: localStorage (NO BD) con key `preferred-location-${businessId}`
 - **Opción "Todas las sedes"**: value='all' para resetear filtro a null
 - **Actualización tipos**: HierarchyFilters incluye nuevo campo `location_id`
-- **Header visual**: Muestra "📍 [Nombre Sede]" bajo nombre del negocio
+- **Header visual**: Muestra "[Nombre Sede]" bajo nombre del negocio
 - **Build exitoso**: 14.34s
 - Ver `SISTEMA_SEDE_PREFERIDA_COMPLETADO.md` y `VISUAL_MOCKUP_SEDE_PREFERIDA.md`
 
-## Sistema de Google Analytics 4 ⭐ COMPLETADO 100% (2025-01-20)
+## Sistema de Google Analytics 4 - COMPLETADO 100% (2025-01-20)
 Integración completa de Google Analytics 4 para tracking de conversión y comportamiento - **PRODUCTION READY**:
 - **Infraestructura core (100%)**: Hook `useAnalytics` (370 líneas, 14 métodos), módulo `ga4.ts` (91 líneas, GDPR-compliant), componente `CookieConsent` (128 líneas)
 - **Eventos críticos implementados (11/11)**:
@@ -269,6 +269,13 @@ La aplicación soporta temas claro y oscuro con persistencia:
 - Permisos/roles: `src/lib/permissions.ts` expone `ROLE_PERMISSIONS`, `hasPermission`, etc. Usa estas utilidades en componentes y servicios para gatear acciones.
 - Supabase "demo mode": `src/lib/supabase.ts` activa un cliente simulado si `VITE_DEMO_MODE=true` o si la URL contiene `demo.supabase.co`. Esto permite flujos UI sin backend real. Tenlo en cuenta en pruebas locales.
 - **Cliente Supabase singleton (2025-10-17)**: `src/lib/supabase.ts` exporta UN SOLO cliente. NUNCA crear clientes adicionales con `createClient()`. Los Payment Gateways (StripeGateway, PayUGateway, MercadoPagoGateway) reciben el cliente como constructor parameter en `PaymentGatewayFactory.getPaymentGateway()`.
+- **PROHIBIDO: Emojis en la UI** - NO usar emojis en textos, labels, badges, o contenido visible del usuario. Los emojis NO son profesionales y causan problemas de:
+  - Encoding en algunos navegadores y sistemas
+  - Accesibilidad para usuarios con lectores de pantalla
+  - Consistencia visual entre plataformas (mobile/web)
+  - Traducción y localización
+  - Performance en renders frecuentes
+  - Usar íconos (Lucide React, Phosphor) en lugar de emojis. Ej: `<MapPin className="h-5 w-5" />` en lugar de "📍"
 - Hooks de datos:
   - `useSupabaseData(...)` centraliza lecturas y aplica filtros por `user.role` (admin/employee/client) y por `businessId`.
   - `useSupabase.ts` ofrece hooks de auth, appointments, settings y dashboard y suscribe en tiempo real vía `subscriptionService`.

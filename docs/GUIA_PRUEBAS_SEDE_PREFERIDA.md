@@ -1,13 +1,13 @@
-# 🧪 Guía de Pruebas - Sistema de Sede Preferida
+# Guía de Pruebas - Sistema de Sede Preferida
 
 ## Objetivo
 Verificar que el Sistema de Sede Preferida funciona correctamente en todas las pantallas y flujos.
 
 ---
 
-## 📋 Checklist de Pruebas
+## Checklist de Pruebas
 
-### ✅ 1. PRUEBA: Settings - Configurar Sede
+### 1. PRUEBA: Settings - Configurar Sede
 
 **Pasos:**
 1. Ir a AdminDashboard
@@ -23,11 +23,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Se guarda la selección (toast "Sede guardada")
 
 **Resultado esperado:**  
-✅ Selector funciona, se puede configurar sede
+Selector funciona, se puede configurar sede
 
 ---
 
-### ✅ 2. PRUEBA: Header - Mostrar Sede
+### 2. PRUEBA: Header - Mostrar Sede
 
 **Pasos:**
 1. Desde Settings, seleccionar "Sede Bogotá"
@@ -35,34 +35,34 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 3. Esperar a que se actualice el header
 
 **Verificaciones:**
-- [ ] Header muestra "📍 Sede Bogotá" bajo el nombre del negocio
+- [ ] Header muestra "Sede Bogotá" bajo el nombre del negocio
 - [ ] Texto es pequeño y menos prominente que el nombre
 - [ ] Se actualiza cuando cambias sede en Settings
 - [ ] Desaparece si seleccionas "Todas las sedes"
 
 **Resultado esperado:**  
-✅ Header muestra la sede preferida correctamente
+Header muestra la sede preferida correctamente
 
 ---
 
-### ✅ 3. PRUEBA: LocationsManager - Badge Visual
+### 3. PRUEBA: LocationsManager - Badge Visual
 
 **Pasos:**
 1. Ir a AdminDashboard → "Sedes"
 2. Debe estar configurada una sede (de prueba anterior)
 
 **Verificaciones:**
-- [ ] La sede Bogotá tiene badge verde "⭐ Administrada"
+- [ ] La sede Bogotá tiene badge "Administrada"
 - [ ] Las otras sedes NO tienen el badge
 - [ ] Badge está debajo del nombre de la sede
 - [ ] Si cambias sede en Settings, el badge cambia
 
 **Resultado esperado:**  
-✅ Badge visible en la sede seleccionada
+Badge visible en la sede seleccionada
 
 ---
 
-### ✅ 4. PRUEBA: FiltersPanel - Filtro en Empleados
+### 4. PRUEBA: FiltersPanel - Filtro en Empleados
 
 **Pasos:**
 1. Ir a AdminDashboard → "Empleados"
@@ -77,11 +77,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Badge "Sede: Bogotá" aparece en filtros activos
 
 **Resultado esperado:**  
-✅ Filtro funciona, pre-selecciona y filtra correctamente
+Filtro funciona, pre-selecciona y filtra correctamente
 
 ---
 
-### ✅ 5. PRUEBA: EmployeeManagementHierarchy - Datos Filtrados
+### 5. PRUEBA: EmployeeManagementHierarchy - Datos Filtrados
 
 **Pasos:**
 1. Desde Empleados con filtro "Sede Bogotá"
@@ -93,11 +93,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Si cambias sede en Settings y vuelves a Empleados, se pre-selecciona
 
 **Resultado esperado:**  
-✅ Empleados filtrados correctamente por sede
+Empleados filtrados correctamente por sede
 
 ---
 
-### ✅ 6. PRUEBA: CreateVacancy - Pre-selección
+### 6. PRUEBA: CreateVacancy - Pre-selección
 
 **Pasos:**
 1. Ir a AdminDashboard → "Reclutamiento" → "Crear Vacante"
@@ -110,11 +110,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Solo pre-selecciona en vacantes NUEVAS
 
 **Resultado esperado:**  
-✅ Pre-selección funciona en vacantes nuevas
+Pre-selección funciona en vacantes nuevas
 
 ---
 
-### ✅ 7. PRUEBA: QuickSaleForm - Pre-selección y Cache Doble
+### 7. PRUEBA: QuickSaleForm - Pre-selección y Cache Doble
 
 **Pasos:**
 1. Ir a AdminDashboard → "Ventas Rápidas"
@@ -128,11 +128,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Fallback: cache propio > sede preferida > vacío
 
 **Resultado esperado:**  
-✅ Doble cache funciona correctamente
+Doble cache funciona correctamente
 
 ---
 
-### ✅ 8. PRUEBA: ReportsPage - Selector y Filtro
+### 8. PRUEBA: ReportsPage - Selector y Filtro
 
 **Pasos:**
 1. Ir a AdminDashboard → "Reportes"
@@ -146,11 +146,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Si cambias a "Todas las sedes", muestra datos combinados
 
 **Resultado esperado:**  
-✅ Filtro funciona, pre-selecciona y filtra reportes
+Filtro funciona, pre-selecciona y filtra reportes
 
 ---
 
-### ✅ 9. PRUEBA: localStorage - Persistencia
+### 9. PRUEBA: localStorage - Persistencia
 
 **Pasos:**
 1. Configurar "Sede Bogotá" en Settings
@@ -165,11 +165,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Si cambias a "Todas las sedes", el valor es "all"
 
 **Resultado esperado:**  
-✅ Persistencia funciona entre sesiones
+Persistencia funciona entre sesiones
 
 ---
 
-### ✅ 10. PRUEBA: Cambio de Negocio
+### 10. PRUEBA: Cambio de Negocio
 
 **Pasos:**
 1. Tener múltiples negocios configurados
@@ -182,11 +182,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Filtros se resetean al cambiar de negocio
 
 **Resultado esperado:**  
-✅ Cambio de negocio funciona correctamente
+Cambio de negocio funciona correctamente
 
 ---
 
-### ✅ 11. PRUEBA: Opción "Todas las Sedes"
+### 11. PRUEBA: Opción "Todas las Sedes"
 
 **Pasos:**
 1. Ir a Settings
@@ -201,11 +201,11 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Todos los datos se muestran sin filtro de sede
 
 **Resultado esperado:**  
-✅ Opción "Todas las sedes" funciona correctamente
+Opción "Todas las sedes" funciona correctamente
 
 ---
 
-### ✅ 12. PRUEBA: Sede Eliminada
+### 12. PRUEBA: Sede Eliminada
 
 **Pasos:**
 1. Configurar "Sede Bogotá" como preferida
@@ -219,23 +219,23 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 - [ ] Sistema maneja gracefully
 
 **Resultado esperado:**  
-✅ Sistema es resiliente ante sede eliminada
+Sistema es resiliente ante sede eliminada
 
 ---
 
-## 🔄 Pruebas de Flujo Completo
+## Pruebas de Flujo Completo
 
 ### Flujo 1: Admin Cambia Sede y Verifica en Todas Partes
 
 1. Settings: Configurar "Sede Bogotá"
-2. Header: Verifica que muestre "📍 Sede Bogotá"
+2. Header: Verifica que muestre "Sede Bogotá"
 3. Sedes: Verifica badge en Bogotá
 4. Empleados: Verifica filtro pre-seleccionado
 5. Vacantes: Verifica pre-selección
 6. Ventas Rápidas: Verifica pre-selección
 7. Reportes: Verifica pre-selección
 
-**Resultado esperado:** ✅ Todas las pantallas muestran la misma sede
+**Resultado esperado:** Todas las pantallas muestran la misma sede
 
 ---
 
@@ -248,7 +248,7 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 5. Settings: Cambiar a "Sede Cali"
 6. Ir a Ventas Rápidas (verifica pre-selección)
 
-**Resultado esperado:** ✅ Sistema responde correctamente a cambios rápidos
+**Resultado esperado:** Sistema responde correctamente a cambios rápidos
 
 ---
 
@@ -259,33 +259,33 @@ Verificar que el Sistema de Sede Preferida funciona correctamente en todas las p
 3. Abrir nuevamente
 4. Ir a AdminDashboard
 
-**Resultado esperado:** ✅ Mantiene "Sede Bogotá" configurada
+**Resultado esperado:** Mantiene "Sede Bogotá" configurada
 
 ---
 
-## 📊 Resultados de Pruebas
+## Resultados de Pruebas
 
 | # | Prueba | Estado | Notas |
 |---|---|---|---|
-| 1 | Settings - Configurar | ✅ | |
-| 2 | Header - Mostrar Sede | ✅ | |
-| 3 | LocationsManager - Badge | ✅ | |
-| 4 | FiltersPanel - Filtro | ✅ | |
-| 5 | Empleados - Filtrados | ✅ | |
-| 6 | CreateVacancy - Pre-selección | ✅ | |
-| 7 | QuickSaleForm - Cache Doble | ✅ | |
-| 8 | ReportsPage - Selector | ✅ | |
-| 9 | localStorage - Persistencia | ✅ | |
-| 10 | Cambio de Negocio | ✅ | |
-| 11 | Todas las Sedes | ✅ | |
-| 12 | Sede Eliminada | ✅ | |
-| F1 | Flujo Completo | ✅ | |
-| F2 | Cambios Rápidos | ✅ | |
-| F3 | Persistencia | ✅ | |
+| 1 | Settings - Configurar | Exitoso | |
+| 2 | Header - Mostrar Sede | Exitoso | |
+| 3 | LocationsManager - Badge | Exitoso | |
+| 4 | FiltersPanel - Filtro | Exitoso | |
+| 5 | Empleados - Filtrados | Exitoso | |
+| 6 | CreateVacancy - Pre-selección | Exitoso | |
+| 7 | QuickSaleForm - Cache Doble | Exitoso | |
+| 8 | ReportsPage - Selector | Exitoso | |
+| 9 | localStorage - Persistencia | Exitoso | |
+| 10 | Cambio de Negocio | Exitoso | |
+| 11 | Todas las Sedes | Exitoso | |
+| 12 | Sede Eliminada | Exitoso | |
+| F1 | Flujo Completo | Exitoso | |
+| F2 | Cambios Rápidos | Exitoso | |
+| F3 | Persistencia | Exitoso | |
 
 ---
 
-## 🐛 Debugging
+## Debugging
 
 Si encuentras problemas:
 
@@ -312,7 +312,7 @@ Si encuentras problemas:
 
 ---
 
-## ✅ Checklist Final
+## Checklist Final
 
 - [ ] Todas las 12 pruebas individuales pasaron
 - [ ] Los 3 flujos completos funcionaron
@@ -326,6 +326,6 @@ Si encuentras problemas:
 
 ---
 
-**Status**: 🎉 **SISTEMA LISTO PARA PRODUCCIÓN**
+**Status**: SISTEMA LISTO PARA PRODUCCIÓN
 
 **Fecha**: 18 de octubre de 2025
