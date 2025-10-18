@@ -258,14 +258,7 @@ export const AppointmentsCalendar: React.FC = () => {
         // Get employees with profiles
         const { data: employeesData, error: employeesError } = await supabase
           .from('business_employees')
-          .select(`
-            id,
-            user_id,
-            profiles!business_employees_user_id_fkey (
-              full_name,
-              avatar_url
-            )
-          `)
+          .select('id, employee_id, profiles!business_employees_employee_id_fkey(full_name, avatar_url)')
           .eq('business_id', business.id)
           .eq('status', 'active');
 
@@ -273,7 +266,7 @@ export const AppointmentsCalendar: React.FC = () => {
 
         interface EmployeeData {
           id: string;
-          user_id: string;
+          employee_id: string;
           profiles?: {
             full_name?: string;
             avatar_url?: string;
@@ -282,7 +275,7 @@ export const AppointmentsCalendar: React.FC = () => {
 
         const formattedEmployees = (employeesData as EmployeeData[]).map(emp => ({
           id: emp.id,
-          user_id: emp.user_id,
+          user_id: emp.employee_id,
           profile_name: emp.profiles?.full_name || 'Sin nombre',
           profile_avatar: emp.profiles?.avatar_url
         }));
