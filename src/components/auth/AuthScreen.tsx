@@ -11,7 +11,7 @@ import { APP_CONFIG } from '@/constants'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { toast } from 'sonner'
 import { useAnalytics } from '@/hooks/useAnalytics'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, AlertCircle } from 'lucide-react'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void
@@ -31,6 +31,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const [isSignUpMode, setIsSignUpMode] = useState(false)
   const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [inactiveEmail, setInactiveEmail] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -91,8 +92,10 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.email || !formData.password) {
+      setFormError('Por favor completa todos los campos')
       return
     }
+    setFormError(null)
     setIsSigningIn(true)
     try {
       const result = await Promise.race([
@@ -112,9 +115,12 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
         }
         
         handlePostLoginNavigation(result.user)
+      } else if (result.error) {
+        setFormError(result.error)
       }
-    } catch {
-      // Error/timeout
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido al iniciar sesión'
+      setFormError(errorMsg)
     } finally {
       setIsSigningIn(false)
     }
@@ -123,8 +129,10 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.email || !formData.password || !formData.name) {
+      setFormError('Por favor completa todos los campos')
       return
     }
+    setFormError(null)
     setIsSigningIn(true)
     try {
       const result = await Promise.race([
@@ -162,9 +170,12 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
         // Show message that they need to confirm email
         setIsSignUpMode(false)
         toast.info('Revisa tu email para confirmar tu cuenta antes de iniciar sesión')
+      } else if (result.error) {
+        setFormError(result.error)
       }
-    } catch {
-      // Error/timeout
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido al crear cuenta'
+      setFormError(errorMsg)
     } finally {
       setIsSigningIn(false)
     }
@@ -271,18 +282,42 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
         </div>
 
         {/* Login/SignUp Card */}
-        <div className="bg-card rounded-2xl p-8 shadow-2xl backdrop-blur-xl border border-border relative">
-          {/* Back Button */}
-          <button
-            type="button"
-            onClick={handleBackToLanding}
-            className="absolute top-4 left-4 p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            title="Volver a la página principal"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+        <div className="bg-card rounded-2xl shadow-2xl backdrop-blur-xl border border-border overflow-hidden">
+          {/* Card Header with Back Button */}
+          <div className="px-8 pt-6 pb-0 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={handleBackToLanding}
+              className="p-2 rounded-lg hover:bg-muted transition-all duration-200 text-muted-foreground hover:text-foreground hover:scale-110 active:scale-95"
+              title="Volver a la página principal"
+              aria-label="Volver a inicio"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          </div>
 
-          <form onSubmit={isSignUpMode ? handleSignUp : handleSignIn} className="space-y-6">
+          <div className="px-8 pb-8">
+            {/* Error Banner */}
+            {formError && (
+              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-destructive">
+                    {formError}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormError(null)}
+                  className="text-destructive/60 hover:text-destructive transition-colors text-lg font-semibold"
+                  aria-label="Cerrar error"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={isSignUpMode ? handleSignUp : handleSignIn} className="space-y-6">
             {/* Name Input (only for Sign Up) */}
             {isSignUpMode && (
               <div className="space-y-2">
@@ -399,27 +434,26 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               </svg>
               Continue with Google
             </Button>
-          </form>
+            </form>
 
-          {/* Sign up/Login toggle link */}
-          <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">
-              {isSignUpMode ? 'Already have an account? ' : "Don't have an account? "}
-            </span>
-            <button 
-              type="button"
-              onClick={() => {
-                setIsSignUpMode(!isSignUpMode)
-                setFormData({ email: '', password: '', name: '' })
-              }}
-              className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
-            >
-              {isSignUpMode ? 'Sign in' : 'Sign up'}
-            </button>
+            {/* Sign up/Login toggle link */}
+            <div className="mt-6 text-center text-sm">
+              <span className="text-muted-foreground">
+                {isSignUpMode ? 'Already have an account? ' : "Don't have an account? "}
+              </span>
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsSignUpMode(!isSignUpMode)
+                  setFormData({ email: '', password: '', name: '' })
+                }}
+                className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
+              >
+                {isSignUpMode ? 'Sign in' : 'Sign up'}
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Account Inactive Modal */}
+        </div>        {/* Account Inactive Modal */}
         <AccountInactiveModal
           isOpen={showInactiveModal}
           email={inactiveEmail}
