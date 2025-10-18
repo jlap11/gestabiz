@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle } from 'lucide-react'
+import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle, X } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -307,6 +307,58 @@ export function ClientDashboard({
       setIsStartingChat(false)
     }
   }, [user?.id, createOrGetConversation])
+
+  // Handle cancel appointment
+  const handleCancelAppointment = useCallback(async (appointmentId: string) => {
+    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ 
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString(),
+          cancelled_by: user?.id,
+          cancel_reason: 'Cancelada por el cliente'
+        })
+        .eq('id', appointmentId)
+
+      if (error) throw error
+
+      toast.success('Cita cancelada exitosamente')
+      setSelectedAppointment(null)
+      
+      // Refresh appointments list
+      const refreshedAppointments = appointments.map(apt => 
+        apt.id === appointmentId 
+          ? { ...apt, status: 'cancelled' as const }
+          : apt
+      )
+      setAppointments(refreshedAppointments)
+    } catch (error) {
+      console.error('Error al cancelar cita:', error)
+      toast.error('No se pudo cancelar la cita. Intenta de nuevo.')
+    }
+  }, [user?.id, appointments])
+
+  // Handle reschedule appointment
+  const handleRescheduleAppointment = useCallback((appointment: AppointmentWithRelations) => {
+    // Close modal
+    setSelectedAppointment(null)
+    
+    // Open wizard with preselected data
+    setAppointmentWizardBusinessId(appointment.business_id)
+    setBookingPreselection({
+      serviceId: appointment.service_id || undefined,
+      locationId: appointment.location_id || undefined,
+      employeeId: appointment.employee_id || undefined
+    })
+    setShowAppointmentWizard(true)
+    
+    toast.info('Completa los nuevos datos para reprogramar tu cita')
+  }, [])
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -775,13 +827,15 @@ export function ClientDashboard({
                   </h3>
                   <p className="text-base text-foreground">
                     {new Date(selectedAppointment.start_time).toLocaleTimeString('es', {
-                      hour: '2-digit',
-                      minute: '2-digit'
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
                     })}
                     {' - '}
                     {new Date(selectedAppointment.end_time).toLocaleTimeString('es', {
-                      hour: '2-digit',
-                      minute: '2-digit'
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
                     })}
                   </p>
                   {selectedAppointment.service?.duration && (
@@ -928,7 +982,7 @@ export function ClientDashboard({
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-between gap-3 pt-4">
+              <div className="flex flex-wrap gap-3 pt-4">
                 {/* Chat button - only show if there's a professional */}
                 {selectedAppointment.employee?.id && (
                   <Button
@@ -945,9 +999,34 @@ export function ClientDashboard({
                   </Button>
                 )}
                 
+                {/* Reschedule button - only if not completed, cancelled or no_show */}
+                {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleRescheduleAppointment(selectedAppointment)}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Reprogramar
+                  </Button>
+                )}
+                
+                {/* Cancel button - only if not completed, cancelled or no_show */}
+                {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleCancelAppointment(selectedAppointment.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancelar Cita
+                  </Button>
+                )}
+                
                 <Button 
                   variant="outline" 
                   onClick={() => setSelectedAppointment(null)}
+                  className="ml-auto"
                 >
                   Cerrar
                 </Button>
