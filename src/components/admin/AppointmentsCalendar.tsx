@@ -255,30 +255,39 @@ export const AppointmentsCalendar: React.FC = () => {
           setLocationHours(locations[0]);
         }
 
-        // Get employees with profiles
+        // Get employees
         const { data: employeesData, error: employeesError } = await supabase
           .from('business_employees')
-          .select('id, employee_id, profiles!business_employees_employee_id_fkey(full_name, avatar_url)')
+          .select('id, employee_id')
           .eq('business_id', business.id)
           .eq('status', 'active');
 
         if (employeesError) throw employeesError;
 
-        interface EmployeeData {
-          id: string;
-          employee_id: string;
-          profiles?: {
-            full_name?: string;
-            avatar_url?: string;
-          };
-        }
+        // Get employee profiles separately
+        const employeeIds = (employeesData || []).map(e => e.employee_id);
+        const { data: profilesData } = employeeIds.length > 0
+          ? await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url')
+              .in('id', employeeIds)
+          : { data: [] };
 
-        const formattedEmployees = (employeesData as EmployeeData[]).map(emp => ({
-          id: emp.id,
-          user_id: emp.employee_id,
-          profile_name: emp.profiles?.full_name || 'Sin nombre',
-          profile_avatar: emp.profiles?.avatar_url
-        }));
+        // Map profiles by ID for easy lookup
+        const profilesMap = (profilesData || []).reduce((acc, p) => {
+          acc[p.id] = p;
+          return acc;
+        }, {} as Record<string, { full_name: string; avatar_url: string | null }>);
+
+        const formattedEmployees = (employeesData || []).map(emp => {
+          const profile = profilesMap[emp.employee_id];
+          return {
+            id: emp.id,
+            user_id: emp.employee_id,
+            profile_name: profile?.full_name || 'Sin nombre',
+            profile_avatar: profile?.avatar_url || undefined
+          };
+        });
 
         setEmployees(formattedEmployees);
 
