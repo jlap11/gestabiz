@@ -91,9 +91,18 @@ export function AppointmentWizard({
     if (!businessId) return 0; // Sin negocio, empezar desde selección de negocio
     
     // Con negocio preseleccionado
-    if (preselectedEmployeeId) return 4; // Si hay empleado, ir directo a fecha/hora
-    if (preselectedServiceId) return 3; // Si hay servicio, ir a selección de empleado
-    if (preselectedLocationId) return 2; // Si hay ubicación, ir a selección de servicio
+    // Si hay empleado preseleccionado Y servicio preseleccionado, ir a fecha/hora
+    if (preselectedEmployeeId && preselectedServiceId) return 4;
+    
+    // Si hay empleado pero NO servicio, ir a selección de servicio
+    // (el empleado puede especializarse en ciertos servicios)
+    if (preselectedEmployeeId && !preselectedServiceId) return 2;
+    
+    // Si hay servicio pero NO empleado, ir a selección de empleado
+    if (preselectedServiceId && !preselectedEmployeeId) return 3;
+    
+    // Si hay ubicación, ir a selección de servicio
+    if (preselectedLocationId) return 2;
     
     return 1; // Por defecto, empezar en selección de ubicación
   };
@@ -196,6 +205,43 @@ export function AppointmentWizard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, businessId, preselectedLocationId, preselectedServiceId, preselectedEmployeeId]);
 
+  // Validar compatibilidad empleado-servicio
+  React.useEffect(() => {
+    if (!open || !preselectedEmployeeId || !preselectedServiceId) return;
+
+    const validateEmployeeService = async () => {
+      try {
+        // Verificar que el empleado ofrezca este servicio
+        const { data: compatibility } = await supabase
+          .from('employee_services')
+          .select('id')
+          .eq('employee_id', preselectedEmployeeId)
+          .eq('service_id', preselectedServiceId)
+          .eq('is_active', true)
+          .single();
+
+        if (!compatibility) {
+          // El empleado no ofrece este servicio - limpiar preselección
+          toast.error('Este profesional no ofrece el servicio seleccionado');
+          updateWizardData({
+            employeeId: null,
+            employee: null,
+          });
+        }
+      } catch {
+        // Si hay error, limpiar preselección por seguridad
+        toast.error('No se pudo verificar la compatibilidad del profesional');
+        updateWizardData({
+          employeeId: null,
+          employee: null,
+        });
+      }
+    };
+
+    validateEmployeeService();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, preselectedEmployeeId, preselectedServiceId]);
+
   // Determinar si necesitamos mostrar el paso de selección de negocio del empleado
   const needsEmployeeBusinessSelection = wizardData.employeeId && employeeBusinesses.length > 1;
 
@@ -220,6 +266,51 @@ export function AppointmentWizard({
       'success': needsEmployeeBusinessSelection ? startingStep + 6 : startingStep + 5,
     };
     return steps[logicalStep] ?? currentStep;
+  };
+
+  // Calcular los pasos completados dinámicamente
+  const getCompletedSteps = (): number[] => {
+    const completed: number[] = [];
+    const startingStep = businessId ? 1 : 0;
+
+    // Paso 0: Business (si aplica)
+    if (!businessId && wizardData.businessId) {
+      completed.push(0);
+    }
+
+    // Paso 1: Location
+    if (wizardData.locationId) {
+      completed.push(startingStep);
+    }
+
+    // Paso 2: Service
+    if (wizardData.serviceId) {
+      completed.push(startingStep + 1);
+    }
+
+    // Paso 3: Employee
+    if (wizardData.employeeId) {
+      completed.push(startingStep + 2);
+    }
+
+    // Paso 4: Employee Business (si aplica)
+    if (needsEmployeeBusinessSelection && wizardData.employeeBusinessId) {
+      completed.push(startingStep + 3);
+    }
+
+    // Paso 5: Date & Time
+    if (wizardData.date && wizardData.startTime) {
+      const dateTimeStep = needsEmployeeBusinessSelection ? startingStep + 4 : startingStep + 3;
+      completed.push(dateTimeStep);
+    }
+
+    // Paso 6: Confirmation (se completa al hacer submit)
+    if (currentStep > getStepNumber('confirmation')) {
+      const confirmStep = needsEmployeeBusinessSelection ? startingStep + 5 : startingStep + 4;
+      completed.push(confirmStep);
+    }
+
+    return completed;
   };
 
   const handleNext = () => {
@@ -423,6 +514,7 @@ export function AppointmentWizard({
               currentStep={currentStep} 
               totalSteps={getTotalSteps()}
               label={STEP_LABELS[currentStep as keyof typeof STEP_LABELS]}
+              completedSteps={getCompletedSteps()}
             />
           </div>
         )}

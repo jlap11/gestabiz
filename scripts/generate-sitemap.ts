@@ -11,6 +11,10 @@
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { config } from 'dotenv'
+
+// Cargar variables de entorno desde .env.local
+config({ path: path.resolve(process.cwd(), '.env.local') })
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || ''
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || ''

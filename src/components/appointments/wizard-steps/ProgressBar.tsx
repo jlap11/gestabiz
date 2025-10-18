@@ -1,20 +1,25 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProgressBarProps {
   currentStep: number;
   totalSteps: number;
   label: string;
+  completedSteps?: number[]; // Array de índices de pasos completados (ej: [1, 2, 3])
 }
 
-export function ProgressBar({ currentStep, totalSteps, label }: ProgressBarProps) {
+export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [] }: ProgressBarProps) {
   const percentage = (currentStep / totalSteps) * 100;
 
+  // Generar array de todos los pasos
+  const allSteps = Array.from({ length: totalSteps }, (_, i) => i + 1);
+
   return (
-    <div className="mb-4">
+    <div className="mb-6">
       {/* Header con step indicator y label */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-[#94a3b8]">
+        <span className="text-sm font-medium text-muted-foreground">
           Step {currentStep} of {totalSteps}
         </span>
         <span className="text-sm font-semibold text-primary">
@@ -22,22 +27,67 @@ export function ProgressBar({ currentStep, totalSteps, label }: ProgressBarProps
         </span>
       </div>
 
+      {/* Indicadores de pasos con check marks */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        {allSteps.map((step) => {
+          const isCompleted = completedSteps.includes(step);
+          const isCurrent = step === currentStep;
+          const isPending = step > currentStep;
+
+          return (
+            <div key={step} className="flex flex-col items-center">
+              {/* Círculo del paso */}
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300",
+                  isCompleted && "bg-green-500 text-white shadow-lg shadow-green-500/50",
+                  isCurrent && !isCompleted && "bg-primary text-white shadow-lg shadow-primary/50 ring-2 ring-primary/30",
+                  isPending && "bg-muted text-muted-foreground"
+                )}
+              >
+                {isCompleted ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  step
+                )}
+              </div>
+
+              {/* Línea conectora (excepto en el último paso) */}
+              {step < totalSteps && (
+                <div className="absolute w-full h-0.5 -z-10" style={{ left: `${(step / totalSteps) * 100}%`, top: '16px' }}>
+                  <div
+                    className={cn(
+                      "h-full transition-all duration-300",
+                      step < currentStep ? "bg-green-500" : "bg-muted"
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
       {/* Barra de progreso horizontal */}
       <div className="relative w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className={cn(
-            "absolute top-0 left-0 h-full bg-primary",
-            "transition-all duration-500 ease-out",
-            "shadow-lg shadow-primary/50"
+            "absolute top-0 left-0 h-full transition-all duration-500 ease-out",
+            completedSteps.length === totalSteps ? "bg-green-500 shadow-lg shadow-green-500/50" : "bg-primary shadow-lg shadow-primary/50"
           )}
           style={{ width: `${percentage}%` }}
         />
       </div>
 
-      {/* Porcentaje */}
-      <p className="text-xs text-muted-foreground mt-2 text-right">
-        {Math.round(percentage)}% Complete
-      </p>
+      {/* Porcentaje y estado */}
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-xs text-muted-foreground">
+          {completedSteps.length} of {totalSteps} steps completed
+        </p>
+        <p className="text-xs font-semibold text-primary">
+          {Math.round(percentage)}% Complete
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,23 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Landing Page -->
   <url>
     <loc>https://appointsync.pro/</loc>
-    <lastmod>2025-10-17</lastmod>
+    <lastmod>2025-10-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-  
-  <!-- Public Business Profiles -->
-  <!-- This file should be generated dynamically via script or Edge Function -->
-  <!-- For now, this is a static template. See scripts/generate-sitemap.ts -->
-  
-  <!-- Example business profile URLs:
   <url>
-    <loc>https://appointsync.pro/negocio/salon-belleza-medellin</loc>
-    <lastmod>2025-10-17</lastmod>
+    <loc>https://appointsync.pro/negocio/al-n-elleza-otal-14-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  -->
+  <url>
+    <loc>https://appointsync.pro/negocio/entro-dico-ida-2-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/arber-a-l-aballero-15-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/onsultorio-ur-dico-3-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/os-arcos-ogota</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/st-tica-lamour-7-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/eluquer-a-stilo-1-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/l-nica-isioterapia-6-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/arber-a-l-aballero-5-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/al-n-elleza-otal-8-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/imnasio-it-one-9-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/arber-a-l-aballero-10-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/imnasio-it-one-11-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/pa-en-elax-12-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/eluquer-a-stilo-4-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://appointsync.pro/negocio/aller-ec-nico-xpress-13-ucaramanga</loc>
+    <lastmod>2025-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
