@@ -88,8 +88,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const isCancelled = appointment.status === 'cancelled';
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg shadow-lg max-w-lg w-full">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-card border border-border rounded-lg shadow-lg max-w-lg w-full my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-foreground">Detalles de la Cita</h3>
           <button
@@ -116,7 +116,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">Horario:</span>
               <span className="text-sm text-muted-foreground">
-                {format(parseISO(appointment.start_time), 'HH:mm', { locale: es })} - {format(parseISO(appointment.end_time), 'HH:mm', { locale: es })}
+                {format(parseISO(appointment.start_time), 'hh:mm a', { locale: es })} - {format(parseISO(appointment.end_time), 'hh:mm a', { locale: es })}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -554,6 +554,9 @@ export const AppointmentsCalendar: React.FC = () => {
 
   // Get appointment status class
   const getAppointmentClass = (status: string): string => {
+    if (status === 'pending') {
+      return 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-700 dark:text-yellow-300';
+    }
     if (status === 'confirmed') {
       return 'bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300';
     }
@@ -697,7 +700,7 @@ export const AppointmentsCalendar: React.FC = () => {
                                     <div className="font-medium truncate">{apt.client_name}</div>
                                     <div className="truncate">{apt.service_name}</div>
                                     <div className="text-xs opacity-75">
-                                      {format(parseISO(apt.start_time), 'HH:mm')} - {format(parseISO(apt.end_time), 'HH:mm')}
+                                      {format(parseISO(apt.start_time), 'hh:mm a')} - {format(parseISO(apt.end_time), 'hh:mm a')}
                                     </div>
                                   </button>
                                 );
@@ -736,7 +739,7 @@ export const AppointmentsCalendar: React.FC = () => {
                         <div className="font-medium text-foreground">{apt.client_name}</div>
                         <div className="text-sm text-muted-foreground">{apt.service_name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {apt.employee_name} • {format(parseISO(apt.start_time), 'HH:mm')} - {format(parseISO(apt.end_time), 'HH:mm')}
+                          {apt.employee_name} • {format(parseISO(apt.start_time), 'hh:mm a')} - {format(parseISO(apt.end_time), 'hh:mm a')}
                         </div>
                       </div>
                       <button
@@ -770,7 +773,7 @@ export const AppointmentsCalendar: React.FC = () => {
                         <div className="font-medium text-foreground">{apt.client_name}</div>
                         <div className="text-sm text-muted-foreground">{apt.service_name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {apt.employee_name} • {format(parseISO(apt.start_time), 'HH:mm')} - {format(parseISO(apt.end_time), 'HH:mm')}
+                          {apt.employee_name} • {format(parseISO(apt.start_time), 'hh:mm a')} - {format(parseISO(apt.end_time), 'hh:mm a')}
                         </div>
                       </div>
                       <div className="flex gap-2">
