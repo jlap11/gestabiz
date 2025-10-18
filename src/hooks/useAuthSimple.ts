@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
 // Hook simplificado de autenticación para debuggear
 import { useState, useEffect } from 'react'
 import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { User } from '@/types'
+import type { Database } from '@/types/database'
 
 interface AuthState {
   user: User | null
@@ -17,6 +19,59 @@ const debugLog = (...args: unknown[]) => {
   if (isDev) console.log(...args)
 }
 
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+
+const defaultPreferences: User['notification_preferences'] = {
+  email: true,
+  push: true,
+  browser: true,
+  whatsapp: false,
+  reminder_24h: true,
+  reminder_1h: true,
+  reminder_15m: false,
+  daily_digest: false,
+  weekly_report: false
+}
+
+const buildUserFromSession = (sessionUser: SupabaseUser, profile?: ProfileRow | null): User => {
+  const baseEmail = sessionUser.email ?? ''
+  const baseName = sessionUser.user_metadata?.full_name || profile?.full_name || (baseEmail ? baseEmail.split('@')[0] : 'Usuario')
+  const username = sessionUser.user_metadata?.username || baseEmail.split('@')[0] || baseName
+  const isActive = profile?.is_active ?? true
+
+  return {
+    id: sessionUser.id,
+    email: baseEmail,
+    name: baseName,
+    username,
+    avatar_url: sessionUser.user_metadata?.avatar_url || profile?.avatar_url || undefined,
+    timezone: profile?.timezone || 'America/Mexico_City',
+    roles: [{
+      id: profile ? `simple-role-${profile.id}` : 'simple-role-default',
+      user_id: sessionUser.id,
+      role: 'client',
+      business_id: null,
+      is_active: isActive,
+      created_at: profile?.created_at || new Date().toISOString()
+    }],
+    activeRole: 'client',
+    activeBusiness: undefined,
+    role: 'client',
+    business_id: undefined,
+    location_id: undefined,
+    phone: profile?.phone || sessionUser.user_metadata?.phone || '',
+    language: (profile?.language as User['language']) || 'es',
+    notification_preferences: (profile?.notification_preferences as User['notification_preferences']) || defaultPreferences,
+    permissions: [],
+    created_at: profile?.created_at || new Date().toISOString(),
+    updated_at: profile?.updated_at || new Date().toISOString(),
+    is_active: isActive,
+    deactivated_at: profile?.deactivated_at || undefined,
+    last_login: profile?.last_login || undefined,
+    accountInactive: profile ? profile.is_active === false : undefined
+  }
+}
+
 export function useAuthSimple() {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -28,182 +83,90 @@ export function useAuthSimple() {
   debugLog('🔄 useAuthSimple state:', state)
 
   useEffect(() => {
-    console.log('🚀 useAuthSimple - Getting initial session...')
-    
-    async function getInitialSession() {
+    debugLog('🚀 useAuthSimple - Getting initial session...')
+    let mounted = true
+
+    const hydrateUserProfile = async (sessionObj: Session) => {
       try {
-        console.log('📡 Calling supabase.auth.getSession()...')
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        console.log('📊 Session result:', { session, error })
-        
-        if (error) {
-          console.log('❌ Session error:', error.message)
-          // COMMENTED OUT: This was too aggressive - clearing localStorage on ANY fetch error
-          // including rate limits, network timeouts, etc. was causing session loss on F5
-          // // Limpiar localStorage si hay error de sesión
-          // if (error.message.includes('Failed to fetch') || error.message.includes('refresh')) {
-          //   console.log('🧹 Limpiando localStorage debido a sesión corrupta...')
-          //   localStorage.clear()
-          // }
-          setState(prev => ({ ...prev, loading: false, error: null, session: null, user: null }))
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', sessionObj.user.id)
+          .single()
+
+        if (profileError) {
+          debugLog('⚠️ Profile fetch error:', profileError)
           return
         }
 
-        if (session?.user) {
-          console.log('✅ Session found, user:', session.user.email)
-          
-          // Fetch profile BLOCKING - wait for profile to check is_active status
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
-            
-            if (profileError) {
-              console.log('⚠️ Profile fetch error:', profileError)
-            }
-            
-            if (profileData) {
-              console.log('📸 Profile data from DB:', profileData)
-              
-              // Check if user is deactivated - but allow login to show modal
-              const isInactive = profileData.is_active === false
-              if (isInactive) {
-                console.log('🚫 User account is deactivated - showing reactivation modal')
-              }
-            }
-            
-            // Crear usuario con datos reales del perfil
-            const user: User = {
-              id: session.user.id,
-              email: session.user.email!,
-              name: session.user.user_metadata?.full_name || profileData?.full_name || session.user.email!.split('@')[0],
-              username: session.user.email!.split('@')[0],
-              roles: [{
-                id: 'simple-client-role',
-                user_id: session.user.id,
-                role: 'client',
-                business_id: null,
-                is_active: profileData?.is_active ?? true,
-                created_at: new Date().toISOString()
-              }],
-              activeRole: 'client',
-              role: 'client',
-              business_id: undefined,
-              location_id: undefined,
-              phone: profileData?.phone || '',
-              language: profileData?.language || 'es',
-              notification_preferences: profileData?.notification_preferences || {
-                email: true,
-                push: true,
-                browser: true,
-                whatsapp: false,
-                reminder_24h: true,
-                reminder_1h: true,
-                reminder_15m: false,
-                daily_digest: false,
-                weekly_report: false
-              },
-              permissions: [],
-              timezone: profileData?.timezone || 'America/Mexico_City',
-              avatar_url: session.user.user_metadata?.avatar_url || profileData?.avatar_url || undefined,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              is_active: profileData?.is_active ?? true,
-              accountInactive: profileData?.is_active === false  // Flag for modal
-            }
-            
-            console.log('👤 Created user object from real profile data, is_active:', user.is_active)
-            
-            setState(prev => ({
-              ...prev,
-              user,
-              session,
-              loading: false,
-              error: null
-            }))
-          } catch (error) {
-            console.log('💥 Error fetching profile:', error)
-            // Create user anyway, but we couldn't verify is_active
-            const user: User = {
-              id: session.user.id,
-              email: session.user.email!,
-              name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
-              username: session.user.email!.split('@')[0],
-              roles: [{
-                id: 'simple-client-role',
-                user_id: session.user.id,
-                role: 'client',
-                business_id: null,
-                is_active: true,
-                created_at: new Date().toISOString()
-              }],
-              activeRole: 'client',
-              role: 'client',
-              business_id: undefined,
-              location_id: undefined,
-              phone: '',
-              language: 'es',
-              notification_preferences: {
-                email: true,
-                push: true,
-                browser: true,
-                whatsapp: false,
-                reminder_24h: true,
-                reminder_1h: true,
-                reminder_15m: false,
-                daily_digest: false,
-                weekly_report: false
-              },
-              permissions: [],
-              timezone: 'America/Mexico_City',
-              avatar_url: session.user.user_metadata?.avatar_url || undefined,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              is_active: true
-            }
-            
-            setState(prev => ({
-              ...prev,
-              user,
-              session,
-              loading: false,
-              error: null
-            }))
-          }
-        } else {
-          console.log('❌ No session found')
-          setState(prev => ({ ...prev, loading: false }))
+        if (profileData && mounted) {
+          const hydratedUser = buildUserFromSession(sessionObj.user, profileData)
+          debugLog('✅ Hydrated user with profile data. accountInactive:', hydratedUser.accountInactive)
+          setState(prev => ({
+            ...prev,
+            user: hydratedUser,
+            session: sessionObj,
+            loading: false,
+            error: null
+          }))
         }
       } catch (error) {
-        console.log('💥 Error in getInitialSession:', error)
-        // COMMENTED OUT: This was destroying sessions on ANY error including rate limits
-        // // Limpiar localStorage en caso de error de conexión
-        // console.log('🧹 Limpiando localStorage debido a error de conexión...')
-        // localStorage.clear()
-        setState(prev => ({ 
-          ...prev, 
-          loading: false, 
-          error: error instanceof Error ? error.message : 'Unknown error',
-          // DON'T clear session/user - let them persist through temporary errors
-          // session: null,
-          // user: null
-        }))
+        debugLog('💥 Error hydrating user profile:', error)
       }
     }
 
-    getInitialSession()
+    async function getInitialSession() {
+      try {
+        debugLog('📡 Calling supabase.auth.getSession()...')
+        const { data: { session }, error } = await supabase.auth.getSession()
+        debugLog('📊 Session result:', { session, error })
 
-    // Listen for auth changes
-    console.log('👂 Setting up auth state listener...')
+        if (error) {
+          debugLog('❌ Session error:', error.message)
+          if (mounted) {
+            setState(prev => ({ ...prev, loading: false, error: null, session: null, user: null }))
+          }
+          return
+        }
+
+        if (session?.user && mounted) {
+          const fallbackUser = buildUserFromSession(session.user)
+          setState(prev => ({
+            ...prev,
+            user: fallbackUser,
+            session,
+            loading: false,
+            error: null
+          }))
+          void hydrateUserProfile(session)
+        } else if (mounted) {
+          setState(prev => ({ ...prev, loading: false }))
+        }
+      } catch (error) {
+        debugLog('💥 Error in getInitialSession:', error)
+        if (mounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }))
+        }
+      }
+    }
+
+    void getInitialSession()
+
+    debugLog('👂 Setting up auth state listener...')
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔔 Auth state changed:', event, session?.user?.email)
-        
+      (event, session) => {
+        debugLog('🔔 Auth state changed:', event, session?.user?.email)
+
+        if (!mounted) {
+          return
+        }
+
         if (!session) {
-          console.log('👋 User signed out in listener')
+          debugLog('👋 User signed out in listener')
           setState(prev => ({
             ...prev,
             user: null,
@@ -213,132 +176,20 @@ export function useAuthSimple() {
           }))
           return
         }
-        
-        // Handle SIGNED_IN event - create user and update state immediately
-        if (event === 'SIGNED_IN') {
-          console.log('✅ User signed in - checking profile status...')
-          
-          try {
-            // Fetch profile BLOCKING for SIGNED_IN event
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
-            
-            if (profileError) {
-              console.log('⚠️ Profile fetch error in SIGNED_IN:', profileError)
-            }
-            
-            if (profileData) {
-              console.log('📸 Profile data fetched in SIGNED_IN:', profileData)
-              
-              // Check if user is deactivated - but allow login to show modal
-              const isInactive = profileData.is_active === false
-              if (isInactive) {
-                console.log('🚫 User account is deactivated in SIGNED_IN - showing reactivation modal')
-              }
-            }
-            
-            // Create user object with profile data
-            const user: User = {
-              id: session.user.id,
-              email: session.user.email!,
-              name: session.user.user_metadata?.full_name || profileData?.full_name || session.user.email!.split('@')[0],
-              username: session.user.email!.split('@')[0],
-              roles: [{
-                id: 'simple-client-role',
-                user_id: session.user.id,
-                role: 'client',
-                business_id: null,
-                is_active: profileData?.is_active ?? true,
-                created_at: new Date().toISOString()
-              }],
-              activeRole: 'client',
-              role: 'client',
-              business_id: undefined,
-              location_id: undefined,
-              phone: profileData?.phone || '',
-              language: profileData?.language || 'es',
-              notification_preferences: profileData?.notification_preferences || {
-                email: true,
-                push: true,
-                browser: true,
-                whatsapp: false,
-                reminder_24h: true,
-                reminder_1h: true,
-                reminder_15m: false,
-                daily_digest: false,
-                weekly_report: false
-              },
-              permissions: [],
-              timezone: profileData?.timezone || 'America/Mexico_City',
-              avatar_url: session.user.user_metadata?.avatar_url || profileData?.avatar_url || undefined,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              is_active: profileData?.is_active ?? true,
-              accountInactive: profileData?.is_active === false  // Flag for modal
-            }
-            
-            console.log('✅ User created from SIGNED_IN event with is_active:', user.is_active)
-            setState(prev => ({
-              ...prev,
-              user,
-              session,
-              loading: false,
-              error: null
-            }))
-          } catch (error) {
-            console.log('💥 Error in SIGNED_IN handler:', error)
-            // Create user anyway as fallback
-            const user: User = {
-              id: session.user.id,
-              email: session.user.email!,
-              name: session.user.user_metadata?.full_name || session.user.email!.split('@')[0],
-              username: session.user.email!.split('@')[0],
-              roles: [{
-                id: 'simple-client-role',
-                user_id: session.user.id,
-                role: 'client',
-                business_id: null,
-                is_active: true,
-                created_at: new Date().toISOString()
-              }],
-              activeRole: 'client',
-              role: 'client',
-              business_id: undefined,
-              location_id: undefined,
-              phone: '',
-              language: 'es',
-              notification_preferences: {
-                email: true,
-                push: true,
-                browser: true,
-                whatsapp: false,
-                reminder_24h: true,
-                reminder_1h: true,
-                reminder_15m: false,
-                daily_digest: false,
-                weekly_report: false
-              },
-              permissions: [],
-              timezone: 'America/Mexico_City',
-              avatar_url: session.user.user_metadata?.avatar_url || undefined,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              is_active: true
-            }
-            
-            setState(prev => ({
-              ...prev,
-              user,
-              session,
-              loading: false,
-              error: null
-            }))
-          }
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log('🔄 Token refreshed, keeping current user state')
+
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          const fallbackUser = buildUserFromSession(session.user)
+          setState(prev => ({
+            ...prev,
+            user: fallbackUser,
+            session,
+            loading: false,
+            error: null
+          }))
+
+          // Hydrate with latest profile data after optimistic update
+          void hydrateUserProfile(session)
+        } else {
           setState(prev => ({
             ...prev,
             session,
@@ -349,13 +200,14 @@ export function useAuthSimple() {
     )
 
     return () => {
-      console.log('🧹 Cleaning up auth listener...')
+      mounted = false
+      debugLog('🧹 Cleaning up auth listener...')
       subscription.unsubscribe()
     }
   }, [])
 
   const signOut = async () => {
-    console.log('👋 Signing out...')
+    debugLog('👋 Signing out...')
     await supabase.auth.signOut()
   }
 
