@@ -5,7 +5,7 @@
  * Conecta con Edge Functions de Supabase
  */
 
-import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   IPaymentGateway,
   CheckoutSessionParams,
@@ -17,11 +17,8 @@ import type {
 } from './PaymentGateway'
 import { PaymentGatewayError } from './PaymentGateway'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
 export class StripeGateway implements IPaymentGateway {
-  private supabase = createClient(supabaseUrl, supabaseAnonKey)
+  constructor(private supabase: SupabaseClient) {}
 
   /**
    * Crear sesión de Stripe Checkout
@@ -263,7 +260,5 @@ export class StripeGateway implements IPaymentGateway {
   }
 }
 
-/**
- * Instancia singleton del gateway
- */
-export const paymentGateway = new StripeGateway()
+// Note: No crear instancia singleton aquí
+// El gateway debe crearse con el cliente Supabase en PaymentGatewayFactory

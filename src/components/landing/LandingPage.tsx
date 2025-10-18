@@ -20,6 +20,7 @@ import {
   X
 } from 'lucide-react'
 import { PricingPlans } from './PricingPlans'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 interface LandingPageProps {
   onNavigateToAuth: () => void
@@ -28,6 +29,12 @@ interface LandingPageProps {
 export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const analytics = useAnalytics()
+
+  // Track page view on mount
+  useEffect(() => {
+    analytics.trackPageView('/', 'Landing Page - Gestabiz')
+  }, [analytics])
 
   useEffect(() => {
     // Forzar tema claro en la landing page

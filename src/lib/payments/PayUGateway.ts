@@ -5,7 +5,7 @@
  * Documentación: https://developers.payulatam.com/
  */
 
-import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   IPaymentGateway,
   SubscriptionDashboard,
@@ -18,11 +18,8 @@ import type {
 } from './PaymentGateway'
 import { PaymentGatewayError } from './PaymentGateway'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
 export class PayUGateway implements IPaymentGateway {
-  private readonly supabase = createClient(supabaseUrl, supabaseAnonKey)
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async getSubscriptionDashboard(businessId: string): Promise<SubscriptionDashboard> {
     try {
@@ -197,4 +194,5 @@ export class PayUGateway implements IPaymentGateway {
   }
 }
 
-export const payuGateway = new PayUGateway()
+// Note: No crear instancia singleton aquí
+// El gateway debe crearse con el cliente Supabase en PaymentGatewayFactory

@@ -19,6 +19,7 @@ import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useWizardDataCache } from '@/hooks/useWizardDataCache';
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface AppointmentWizardProps {
   open: boolean;
@@ -131,6 +132,32 @@ export function AppointmentWizard({
 
   // Pre-cargar todos los datos del wizard cuando se selecciona un negocio
   const dataCache = useWizardDataCache(wizardData.businessId || businessId || null);
+
+  // Google Analytics tracking
+  const analytics = useAnalytics();
+  const [hasTrackedStart, setHasTrackedStart] = React.useState(false);
+
+  // Track booking started (solo una vez cuando se abre el wizard)
+  React.useEffect(() => {
+    if (open && !hasTrackedStart && (businessId || wizardData.businessId)) {
+      analytics.trackBookingStarted({
+        businessId: businessId || wizardData.businessId || '',
+        businessName: wizardData.business?.name,
+        serviceId: preselectedServiceId,
+        serviceName: wizardData.service?.name,
+        employeeId: preselectedEmployeeId,
+        employeeName: wizardData.employee?.full_name || undefined,
+        locationId: preselectedLocationId,
+        currency: 'COP',
+      });
+      setHasTrackedStart(true);
+    }
+
+    // Reset flag cuando se cierra
+    if (!open && hasTrackedStart) {
+      setHasTrackedStart(false);
+    }
+  }, [open, businessId, wizardData.businessId, hasTrackedStart, analytics, preselectedServiceId, preselectedLocationId, preselectedEmployeeId, wizardData.business?.name, wizardData.service?.name, wizardData.employee?.full_name]);
 
   // Efecto para cargar datos completos de items preseleccionados
   React.useEffect(() => {
@@ -314,6 +341,20 @@ export function AppointmentWizard({
   };
 
   const handleNext = () => {
+    // Track step completed
+    analytics.trackBookingStepCompleted({
+      businessId: wizardData.businessId || businessId || '',
+      businessName: wizardData.business?.name,
+      stepNumber: currentStep,
+      totalSteps: getTotalSteps(),
+      serviceId: wizardData.serviceId || undefined,
+      serviceName: wizardData.service?.name,
+      employeeId: wizardData.employeeId || undefined,
+      employeeName: wizardData.employee?.full_name || undefined,
+      locationId: wizardData.locationId || undefined,
+      currency: 'COP',
+    });
+
     // Si estamos en el paso de Employee y tiene múltiples negocios, validar primero
     if (currentStep === getStepNumber('employee') && needsEmployeeBusinessSelection) {
       // Validar que el empleado esté vinculado a al menos un negocio
@@ -358,6 +399,22 @@ export function AppointmentWizard({
 
   const handleClose = () => {
     if (!isSubmitting) {
+      // Track abandono si no está en el paso final
+      if (currentStep > 0 && currentStep < getTotalSteps() - 1) {
+        analytics.trackBookingAbandoned({
+          businessId: wizardData.businessId || businessId || '',
+          businessName: wizardData.business?.name,
+          stepNumber: currentStep,
+          totalSteps: getTotalSteps(),
+          serviceId: wizardData.serviceId || undefined,
+          serviceName: wizardData.service?.name,
+          employeeId: wizardData.employeeId || undefined,
+          employeeName: wizardData.employee?.full_name || undefined,
+          locationId: wizardData.locationId || undefined,
+          currency: 'COP',
+        });
+      }
+
       setCurrentStep(getInitialStep()); // Usar función para calcular paso inicial
       setWizardData({
         businessId: businessId || null,
@@ -438,6 +495,20 @@ export function AppointmentWizard({
         toast.error(`Error al crear la cita: ${error.message}`);
         return false;
       }
+
+      // Track booking completed (conversión exitosa)
+      analytics.trackBookingCompleted({
+        businessId: finalBusinessId || '',
+        businessName: wizardData.business?.name || wizardData.employeeBusiness?.name,
+        serviceId: wizardData.serviceId || '',
+        serviceName: wizardData.service?.name,
+        employeeId: wizardData.employeeId || undefined,
+        employeeName: wizardData.employee?.full_name || undefined,
+        locationId: wizardData.locationId || undefined,
+        amount: wizardData.service?.price,
+        currency: 'COP',
+        duration: wizardData.service?.duration || 60,
+      });
 
       toast.success('¡Cita creada exitosamente!');
       

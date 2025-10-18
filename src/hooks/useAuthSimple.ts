@@ -11,15 +11,21 @@ interface AuthState {
   error: string | null
 }
 
+// Helper para logs de debug (solo en dev)
+const isDev = import.meta.env.DEV
+const debugLog = (...args: unknown[]) => {
+  if (isDev) console.log(...args)
+}
+
 export function useAuthSimple() {
   const [state, setState] = useState<AuthState>({
     user: null,
     session: null,
     loading: true,
-    error: null
+    error: null,
   })
 
-  console.log('🔄 useAuthSimple state:', state)
+  debugLog('🔄 useAuthSimple state:', state)
 
   useEffect(() => {
     console.log('🚀 useAuthSimple - Getting initial session...')

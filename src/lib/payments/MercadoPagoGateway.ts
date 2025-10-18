@@ -22,7 +22,7 @@
  * @date 2025-10-17
  */
 
-import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   IPaymentGateway,
   SubscriptionDashboard,
@@ -35,11 +35,8 @@ import type {
 } from './PaymentGateway'
 import { PaymentGatewayError } from './PaymentGateway'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
 export class MercadoPagoGateway implements IPaymentGateway {
-  private readonly supabase = createClient(supabaseUrl, supabaseAnonKey)
+  constructor(private readonly supabase: SupabaseClient) {}
 
   async getSubscriptionDashboard(businessId: string): Promise<SubscriptionDashboard> {
     try {
@@ -217,5 +214,5 @@ export class MercadoPagoGateway implements IPaymentGateway {
   }
 }
 
-// Instancia singleton
-export const mercadoPagoGateway = new MercadoPagoGateway()
+// Note: No crear instancia singleton aquí
+// El gateway debe crearse con el cliente Supabase en PaymentGatewayFactory

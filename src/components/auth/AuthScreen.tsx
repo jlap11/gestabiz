@@ -9,15 +9,18 @@ import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { toast } from 'sonner'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 interface AuthScreenProps { 
-  onLogin?: (user: User) => void 
+  onLogin?: (user: User) => void
+  onLoginSuccess?: () => void
 }
 
-export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
+export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScreenProps>) {
   const { signIn, signUp, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const analytics = useAnalytics()
   
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [isGoogleAuth, setIsGoogleAuth] = useState(false)
@@ -53,8 +56,13 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
     // Call original onLogin callback if provided
     onLogin?.(user)
 
-    // Navigate to redirect URL or app dashboard
-    if (redirectUrl) {
+    // Use onLoginSuccess callback if provided, otherwise use navigate
+    if (onLoginSuccess) {
+      // Small delay to ensure session is fully established
+      setTimeout(() => {
+        onLoginSuccess()
+      }, 500)
+    } else if (redirectUrl) {
       // Build query params for preselection if available
       const params = new URLSearchParams()
       if (serviceId) params.set('serviceId', serviceId)
@@ -70,7 +78,9 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
       }, 500)
     } else {
       // Default navigation to app
-      navigate('/app', { replace: true })
+      setTimeout(() => {
+        navigate('/app', { replace: true })
+      }, 500)
     }
   }
 
@@ -87,6 +97,8 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
       ])
 
       if (result.success && result.user) {
+        // Track successful login
+        analytics.trackLogin('email')
         handlePostLoginNavigation(result.user)
       }
     } catch {
@@ -113,10 +125,15 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
       ])
 
       if (result.success && !result.needsEmailConfirmation) {
+        // Track successful signup
+        analytics.trackSignup('email')
+        
         // Registration successful and auto-logged in
         // Note: signUp updates auth state, so we navigate after a small delay
         setTimeout(() => {
-          if (redirectUrl) {
+          if (onLoginSuccess) {
+            onLoginSuccess()
+          } else if (redirectUrl) {
             const params = new URLSearchParams()
             if (serviceId) params.set('serviceId', serviceId)
             if (locationId) params.set('locationId', locationId)
@@ -144,7 +161,11 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
   const handleGoogleSignIn = async () => {
     setIsGoogleAuth(true)
     try {
-      await signInWithGoogle()
+      const result = await signInWithGoogle()
+      if (result?.success) {
+        // Track Google auth (could be login or signup)
+        analytics.trackLogin('google')
+      }
     } finally {
       setIsGoogleAuth(false)
     }

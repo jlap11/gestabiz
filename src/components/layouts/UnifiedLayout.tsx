@@ -7,7 +7,8 @@ import {
   Building2,
   LogOut,
   User as UserIcon,
-  Plus
+  Plus,
+  Bug
 } from 'lucide-react'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +23,8 @@ import { cn } from '@/lib/utils'
 import type { Business, UserRole } from '@/types/types'
 import { NotificationBell } from '@/components/notifications'
 import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
+import { BugReportModal } from '@/components/bug-report/BugReportModal'
+
 
 interface SearchResult {
   id: string
@@ -90,6 +93,7 @@ export function UnifiedLayout({
   onChatClose
 }: UnifiedLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [bugReportOpen, setBugReportOpen] = useState(false)
 
   // Deduplicate available roles
   const uniqueRoles = Array.from(new Set(availableRoles))
@@ -150,9 +154,16 @@ export function UnifiedLayout({
           ))}
         </nav>
 
-        {/* Logout Button - Fixed at Bottom */}
-        {onLogout && (
-          <div className="p-4 border-t border-border flex-shrink-0">
+        {/* Bottom Menu - Bug Report & Logout */}
+        <div className="p-4 border-t border-border flex-shrink-0 space-y-2">
+          <button
+            onClick={() => setBugReportOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Bug className="h-5 w-5" />
+            <span className="font-medium">Reportar problema</span>
+          </button>
+          {onLogout && (
             <button
               onClick={onLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -160,8 +171,8 @@ export function UnifiedLayout({
               <LogOut className="h-5 w-5" />
               <span className="font-medium">Cerrar Sesión</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
 
       {/* Overlay for mobile */}
@@ -396,6 +407,12 @@ export function UnifiedLayout({
           }}
         />
       )}
+
+      {/* Bug Report Modal */}
+      <BugReportModal 
+        open={bugReportOpen}
+        onOpenChange={setBugReportOpen}
+      />
     </div>
   )
 }

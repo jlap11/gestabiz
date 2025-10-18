@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 export interface JobVacancy {
   id: string
@@ -83,7 +84,12 @@ export function useJobVacancies(businessId?: string) {
 
       setVacancies(data || [])
     } catch (err: any) {
-      console.error('Error fetching vacancies:', err)
+      console.error('Error fetching vacancies:', err) // eslint-disable-line no-console
+      logger.error('Failed to fetch job vacancies', err, {
+        component: 'useJobVacancies',
+        operation: 'fetchVacancies',
+        businessId,
+      });
       setError(err.message)
       toast.error('Error al cargar vacantes')
     } finally {
@@ -152,7 +158,13 @@ export function useJobVacancies(businessId?: string) {
 
       return data
     } catch (err: any) {
-      console.error('Error creating vacancy:', err)
+      console.error('Error creating vacancy:', err) // eslint-disable-line no-console
+      logger.error('Failed to create job vacancy', err, {
+        component: 'useJobVacancies',
+        operation: 'createVacancy',
+        businessId: input.business_id,
+        title: input.title,
+      });
       toast.error(err.message || 'Error al crear vacante')
       return null
     }
@@ -183,7 +195,12 @@ export function useJobVacancies(businessId?: string) {
 
       return true
     } catch (err: any) {
-      console.error('Error updating vacancy:', err)
+      console.error('Error updating vacancy:', err) // eslint-disable-line no-console
+      logger.error('Failed to update job vacancy', err, {
+        component: 'useJobVacancies',
+        operation: 'updateVacancy',
+        vacancyId,
+      });
       toast.error(err.message || 'Error al actualizar vacante')
       return false
     }
@@ -214,7 +231,12 @@ export function useJobVacancies(businessId?: string) {
 
       return true
     } catch (err: any) {
-      console.error('Error deleting vacancy:', err)
+      console.error('Error deleting vacancy:', err) // eslint-disable-line no-console
+      logger.error('Failed to delete job vacancy', err, {
+        component: 'useJobVacancies',
+        operation: 'deleteVacancy',
+        vacancyId,
+      });
       toast.error(err.message || 'Error al eliminar vacante')
       return false
     }
@@ -237,7 +259,12 @@ export function useJobVacancies(businessId?: string) {
 
       return true
     } catch (err: any) {
-      console.error('Error closing vacancy:', err)
+      console.error('Error closing vacancy:', err) // eslint-disable-line no-console
+      logger.error('Failed to close job vacancy', err, {
+        component: 'useJobVacancies',
+        operation: 'closeVacancy',
+        vacancyId,
+      });
       toast.error(err.message || 'Error al cerrar vacante')
       return false
     }
@@ -247,7 +274,12 @@ export function useJobVacancies(businessId?: string) {
     try {
       await supabase.rpc('increment_vacancy_views', { vacancy_id: vacancyId })
     } catch (err: any) {
-      console.error('Error incrementing views:', err)
+      console.error('Error incrementing views:', err) // eslint-disable-line no-console
+      logger.warn('Failed to increment vacancy views', {
+        component: 'useJobVacancies',
+        operation: 'incrementViews',
+        vacancyId,
+      });
     }
   }
 

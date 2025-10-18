@@ -18,6 +18,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { trackChatEvent, ChatEvents } from '@/lib/analytics';
+import { logger } from '@/lib/logger';
 
 // ============================================================================
 // TYPES
@@ -260,6 +261,11 @@ export function useChat(userId: string | null) {
     } catch (err) {
       const error = err as Error;
       console.error('[useChat] Error in fetchConversations:', err);
+      logger.error('Failed to fetch chat conversations', error, {
+        component: 'useChat',
+        operation: 'fetchConversations',
+        userId,
+      });
       setError(error.message);
     } finally {
       setLoading(false);

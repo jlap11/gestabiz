@@ -10,11 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ReviewList } from '@/components/reviews/ReviewList';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useEffect } from 'react';
 
 export default function PublicBusinessProfile() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const analytics = useAnalytics();
   
   // Geolocation for distance calculation
   const geoState = useGeolocation({ requestOnMount: true });
@@ -28,8 +31,27 @@ export default function PublicBusinessProfile() {
     } : undefined
   });
 
+  // Track profile view when business data loads
+  useEffect(() => {
+    if (business?.slug) {
+      analytics.trackProfileView({
+        businessId: business.id,
+        businessName: business.name,
+        slug: business.slug,
+        category: business.category as string | undefined,
+      });
+    }
+  }, [business, analytics]);
+
   // Handle booking action
   const handleBookAppointment = (serviceId?: string, locationId?: string, employeeId?: string) => {
+    // Track reserve button click
+    analytics.trackReserveButtonClick({
+      businessId: business?.id || '',
+      serviceId,
+      source: 'profile',
+    });
+
     if (!user) {
       // Save intended action and redirect to login
       const redirect = `/negocio/${slug}`;
@@ -217,7 +239,14 @@ export default function PublicBusinessProfile() {
                 {business.phone && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4" />
-                    <a href={`tel:${business.phone}`} className="hover:text-primary">
+                    <a 
+                      href={`tel:${business.phone}`} 
+                      className="hover:text-primary"
+                      onClick={() => analytics.trackContactClick({
+                        businessId: business.id,
+                        contactType: 'phone',
+                      })}
+                    >
                       {business.phone}
                     </a>
                   </div>
@@ -225,7 +254,14 @@ export default function PublicBusinessProfile() {
                 {business.email && (
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    <a href={`mailto:${business.email}`} className="hover:text-primary">
+                    <a 
+                      href={`mailto:${business.email}`} 
+                      className="hover:text-primary"
+                      onClick={() => analytics.trackContactClick({
+                        businessId: business.id,
+                        contactType: 'email',
+                      })}
+                    >
                       {business.email}
                     </a>
                   </div>
@@ -235,7 +271,12 @@ export default function PublicBusinessProfile() {
                     <Globe className="w-4 h-4" />
                     <a 
                       href={business.website} 
-                      target="_blank" 
+                      target="_blank"
+                      onClick={() => analytics.trackContactClick({
+                        businessId: business.id,
+                        contactType: 'email', // Use 'email' as closest match for website
+                      })}
+ 
                       rel="noopener noreferrer"
                       className="hover:text-primary"
                     >

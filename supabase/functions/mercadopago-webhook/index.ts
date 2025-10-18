@@ -34,6 +34,10 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
+
+// Initialize Sentry
+initSentry('mercadopago-webhook')
 
 // Mapeo de estados de pago MercadoPago a estados de suscripción
 const STATUS_MAPPING = {
@@ -253,10 +257,19 @@ Deno.serve(async (req) => {
     )
   } catch (error) {
     console.error('Webhook Error:', error)
+    
+    // Capture error to Sentry
+    captureEdgeFunctionError(error as Error, {
+      functionName: 'mercadopago-webhook',
+      operation: 'handleWebhook'
+    })
+    
+    await flushSentry()
+    
     return new Response(
       JSON.stringify({
-        error: error.message,
-        details: error.stack,
+        error: (error as Error).message,
+        details: (error as Error).stack,
       }),
       {
         status: 500,

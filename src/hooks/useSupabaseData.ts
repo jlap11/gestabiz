@@ -17,6 +17,7 @@ import { normalizeAppointmentStatus } from '@/lib/normalizers'
 import { appointmentsService, servicesService, locationsService, businessesService, statsService } from '@/lib/services'
 import { hierarchyService } from '@/lib/hierarchyService'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 interface UseSupabaseDataOptions {
   user: User | null
@@ -40,7 +41,15 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
     const message = (error as { message?: string })?.message || `Error in ${operation}`
     setError(message)
     toast.error(message)
-  }, [])
+    
+    // Log to Sentry + Supabase
+    logger.error(`useSupabaseData: ${operation} failed`, error as Error, {
+      component: 'useSupabaseData',
+      operation,
+      userId: user?.id,
+      userRole: user?.activeRole,
+    });
+  }, [user])
 
   // Fetch appointments
   const fetchAppointments = useCallback(async (businessId?: string) => {

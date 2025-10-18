@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { trackChatEvent, ChatEvents } from '@/lib/analytics'
+import { logger } from '@/lib/logger'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type {
   Conversation,
@@ -155,7 +156,12 @@ export function useConversations(
           business_id: businessId,
         })
       } catch (err: any) {
-        console.error('Error fetching conversations:', err)
+        console.error('Error fetching conversations:', err) // eslint-disable-line no-console
+        logger.error('Failed to fetch conversations', err, {
+          component: 'useConversations',
+          operation: 'fetchConversations',
+          businessId,
+        });
         setError(err.message || 'Error al cargar conversaciones')
         toast.error('Error al cargar conversaciones')
       } finally {
@@ -207,6 +213,11 @@ export function useConversations(
         return conversationId
       } catch (err: any) {
         console.error('Error creating direct conversation:', err)
+        logger.error('Failed to create direct conversation', err, {
+          component: 'useConversations',
+          operation: 'createDirectConversation',
+          userId,
+        });
         toast.error('Error al crear conversación')
         return null
       }

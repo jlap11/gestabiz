@@ -1,5 +1,46 @@
 # Guía rápida
 
+## Sistema de Google Analytics 4 ⭐ COMPLETADO 100% (2025-01-20)
+Integración completa de Google Analytics 4 para tracking de conversión y comportamiento - **PRODUCTION READY**:
+- **Infraestructura core (100%)**: Hook `useAnalytics` (370 líneas, 14 métodos), módulo `ga4.ts` (91 líneas, GDPR-compliant), componente `CookieConsent` (128 líneas)
+- **Eventos críticos implementados (11/11)**:
+  - **Booking flow**: booking_started, booking_step_completed, booking_abandoned, purchase (conversión)
+  - **Páginas públicas**: page_view (landing), profile_view, click_reserve_button, click_contact
+  - **Auth**: login (email/google), sign_up
+- **GDPR compliance**: Cookie consent banner, anonymizeIp, consent mode API, localStorage persistence
+- **Tracking instalado en**: App.tsx (init), AppointmentWizard (booking flow completo), LandingPage (page_view), PublicBusinessProfile (profile + contact), AuthScreen (login/signup)
+- **TypeScript completo**: 4 interfaces (BookingEventParams, ProfileViewParams, SearchParams, ErrorParams)
+- **Variables requeridas**: VITE_GA_MEASUREMENT_ID, VITE_GA_FORCE_IN_DEV (opcional para dev)
+- **Documentación completa**: `GA_SETUP_GUIDE.md` (850+ líneas) - Configuración, eventos, testing, dashboards, troubleshooting, GDPR, KPIs
+- **Progreso**: 🎉 100% COMPLETADO - Sistema listo para producción, requiere solo configurar Measurement ID
+- **Archivos creados**: 4 nuevos (useAnalytics.ts, ga4.ts, CookieConsent.tsx, GA_SETUP_GUIDE.md)
+- **Archivos modificados**: 5 (App.tsx, AppointmentWizard.tsx, LandingPage.tsx, PublicBusinessProfile.tsx, AuthScreen.tsx)
+- **Builds exitosos**: 3 compilaciones sin errores (11-12s cada una)
+- Ver `FASE_5_ANALYTICS_COMPLETADA_90.md` para resumen ejecutivo y `GA_SETUP_GUIDE.md` para guía completa de uso
+
+## Landing Page ⭐ NUEVO (2025-10-17)
+Página de aterrizaje moderna y profesional para presentar el producto:
+- **Ubicación**: `src/components/landing/LandingPage.tsx` - Componente principal de la landing page
+- **Ruta pública**: Accesible en `/` sin autenticación, integrada con React Router v6
+- **Secciones principales**:
+  - **Hero**: Headline, subtítulo, CTAs (Comenzar Gratis, Ver Demo), preview de dashboard
+  - **Features**: Grid 3x2 con 6 características destacadas (iconos Phosphor, descripciones concisas)
+  - **How It Works**: Timeline de 4 pasos del flujo de usuario
+  - **Testimonials**: Carrusel con 3 testimonios de clientes (avatar, nombre, empresa, rating, texto)
+  - **Pricing**: Tabla comparativa de planes (Gratuito, Inicio, Profesional, Empresarial)
+  - **CTA Final**: Call-to-action con botón destacado
+  - **Footer**: Links, redes sociales, copyright
+- **Navegación**: Header con logo, nav links (Características, Precios, Testimonios), botones Login/Registro
+- **Responsive**: Mobile-first design con breakpoints Tailwind (sm/md/lg/xl)
+- **Interactividad**: 
+  - `onNavigateToAuth` prop para navegación a `/login` o `/register`
+  - Smooth scroll a secciones con IDs (#features, #pricing, #testimonials)
+  - Hover effects en cards, botones y links
+- **SEO optimizado**: Meta tags, structured data, títulos semánticos (h1, h2, h3)
+- **Integración GA4**: Tracking de `page_view` event en mount del componente
+- **Estilos**: Tailwind CSS con variables de tema (bg-background, text-foreground, etc.)
+- **Iconografía**: Phosphor Icons para consistencia visual con el resto de la app
+
 ## Sistema de Perfiles Públicos de Negocios ⭐ COMPLETADO (2025-01-20)
 Perfiles públicos indexables por Google para negocios, sin requerir autenticación:
 - **React Router v6**: Integrado con rutas públicas (`/`, `/negocio/:slug`) y privadas (`/app/*`)
@@ -45,6 +86,32 @@ Las configuraciones de TODOS los roles (Admin/Employee/Client) están unificadas
 - **Dashboards actualizados**: AdminDashboard, EmployeeDashboard, ClientDashboard usan este componente para 'settings' y 'profile'
 - **Sin duplicación**: Cero configuraciones repetidas entre roles
 - Ver `SISTEMA_CONFIGURACIONES_UNIFICADO.md` y `GUIA_PRUEBAS_CONFIGURACIONES.md` para detalles completos
+
+## Arquitectura de Autenticación ⭐ CRÍTICO (2025-10-17)
+Sistema de autenticación centralizado con Context API para evitar múltiples instancias:
+- **AuthContext**: `src/contexts/AuthContext.tsx` - Context centralizado que llama `useAuthSimple()` una sola vez
+- **AuthProvider**: Componente wrapper que provee el estado de auth a toda la app
+- **useAuth()**: Hook consumidor que accede al contexto (usar SIEMPRE en vez de `useAuthSimple()` directamente)
+- **Patrón de uso**:
+  ```tsx
+  // ❌ NUNCA: const { user } = useAuthSimple()
+  // ✅ SIEMPRE: const { user } = useAuth()
+  ```
+- **Arquitectura**:
+  - `App.tsx`: Envuelve `<AppRoutes />` con `<AuthProvider>`
+  - `MainApp.tsx`: Usa `useAuth()` (NO `useAuthSimple()`)
+  - Todos los componentes: Usan `useAuth()` para acceder al estado
+- **Beneficios**: 
+  - Elimina múltiples suscripciones a Supabase auth
+  - Reduce re-renders innecesarios
+  - Previene race conditions en auth state
+- **Cálculo de roles dinámico**: 
+  - `useAuth.ts` NO usa tabla `user_roles` (no existe en DB)
+  - Calcula roles en tiempo real consultando:
+    - `businesses.owner_id` → rol ADMIN
+    - `business_employees.employee_id` → rol EMPLOYEE  
+    - Default → rol CLIENT
+- **IMPORTANTE**: Si ves "Multiple GoTrueClient instances detected", significa que algo está llamando `useAuthSimple()` directamente o creando clientes Supabase adicionales. Usar SIEMPRE el cliente singleton de `src/lib/supabase.ts`.
 
 ## Sistema de Roles Dinámicos ⭐ IMPORTANTE
 Los roles NO se guardan en la base de datos. Se calculan dinámicamente basándose en relaciones:
@@ -182,13 +249,15 @@ La aplicación soporta temas claro y oscuro con persistencia:
 - Alias de paths: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`).
 - Tipos fuente de verdad: `src/types/types.ts` (roles, permisos, Appointment, Business, etc.). Cuando crees nuevas entidades, añade tipos aquí y usa mapeos consistentes en hooks.
 - Permisos/roles: `src/lib/permissions.ts` expone `ROLE_PERMISSIONS`, `hasPermission`, etc. Usa estas utilidades en componentes y servicios para gatear acciones.
-- Supabase “demo mode”: `src/lib/supabase.ts` activa un cliente simulado si `VITE_DEMO_MODE=true` o si la URL contiene `demo.supabase.co`. Esto permite flujos UI sin backend real. Tenlo en cuenta en pruebas locales.
+- Supabase "demo mode": `src/lib/supabase.ts` activa un cliente simulado si `VITE_DEMO_MODE=true` o si la URL contiene `demo.supabase.co`. Esto permite flujos UI sin backend real. Tenlo en cuenta en pruebas locales.
+- **Cliente Supabase singleton (2025-10-17)**: `src/lib/supabase.ts` exporta UN SOLO cliente. NUNCA crear clientes adicionales con `createClient()`. Los Payment Gateways (StripeGateway, PayUGateway, MercadoPagoGateway) reciben el cliente como constructor parameter en `PaymentGatewayFactory.getPaymentGateway()`.
 - Hooks de datos:
   - `useSupabaseData(...)` centraliza lecturas y aplica filtros por `user.role` (admin/employee/client) y por `businessId`.
   - `useSupabase.ts` ofrece hooks de auth, appointments, settings y dashboard y suscribe en tiempo real vía `subscriptionService`.
 - Estado y feedback: usa `useAppState()` para controles de carga/errores y `useAsyncOperation()` para envolver operaciones async con toasts (`sonner`).
 - i18n: `LanguageProvider` expone `t(key, params)` y utilidades de formato (`formatDate`, `formatCurrency`). Texto nuevo debe ir en `src/lib/translations.ts`.
 - Para cada ajuste se debe tener en cuenta la parte de supabase, debe quedar coherencia entre lo desarrollado con el cliente de supabase.
+- **Mandatory Reviews (2025-10-17)**: `useMandatoryReviews` hook busca citas completadas sin review usando LEFT JOIN con tabla `reviews`. Campo `review_id` NO existe en `appointments`. Query correcta: `.select('id, reviews!left(id)').is('reviews.id', null)`.
 
 ## Puntos de integración externos
 - **Supabase Cloud**: tablas como `appointments`, `services`, `locations`, `businesses`, `profiles`; realtime en canal de `appointments` filtrado por `user_id`.

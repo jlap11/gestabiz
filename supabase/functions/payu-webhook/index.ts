@@ -4,6 +4,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { createHash } from 'node:crypto'
+import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
+
+// Initialize Sentry
+initSentry('payu-webhook')
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -171,6 +175,15 @@ serve(async (req) => {
     return new Response('OK', { status: 200 })
   } catch (error) {
     console.error('PayU Webhook Error:', error)
+    
+    // Capture error to Sentry
+    captureEdgeFunctionError(error as Error, {
+      functionName: 'payu-webhook',
+      operation: 'handleWebhook'
+    })
+    
+    await flushSentry()
+    
     return new Response('Internal server error', { status: 500 })
   }
 })

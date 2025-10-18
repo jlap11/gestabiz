@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useAuthSimple } from '@/hooks/useAuthSimple'
+import { useAuth } from '@/contexts/AuthContext'
 import { useUserRoles } from '@/hooks/useUserRoles'
 import { useAdminBusinesses } from '@/hooks/useAdminBusinesses'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
@@ -15,7 +15,7 @@ interface MainAppProps {
 }
 
 function MainApp({ onLogout }: Readonly<MainAppProps>) {
-  const { user, signOut } = useAuthSimple()
+  const { user, signOut } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedBusinessId, setSelectedBusinessId] = React.useState<string | undefined>()
   const [isCreatingNewBusiness, setIsCreatingNewBusiness] = React.useState(false)

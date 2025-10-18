@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { EmployeeRequest, EmployeeRequestStatus, User } from '@/types/types'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 interface UseEmployeeRequestsOptions {
   businessId?: string // Para admin: filtrar por su negocio
@@ -76,7 +77,13 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
 
       setRequests((data as unknown as EmployeeRequest[]) || [])
     } catch (err) {
-      console.error('Error fetching employee requests:', err)
+      console.error('Error fetching employee requests:', err) // eslint-disable-line no-console
+      logger.error('Failed to fetch employee requests', err as Error, {
+        component: 'useEmployeeRequests',
+        operation: 'fetchRequests',
+        businessId,
+        userId,
+      });
       setError(err instanceof Error ? err.message : 'Error desconocido')
       toast.error('Error al cargar solicitudes')
     } finally {
@@ -190,7 +197,12 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         await fetchRequests()
         return true
       } catch (err) {
-        console.error('Error creating employee request:', err)
+        console.error('Error creating employee request:', err) // eslint-disable-line no-console
+        logger.error('Failed to create employee request', err as Error, {
+          component: 'useEmployeeRequests',
+          operation: 'createRequest',
+          businessId,
+        });
         setError(err instanceof Error ? err.message : 'Error desconocido')
         toast.error('Error al enviar solicitud')
         return false
@@ -226,7 +238,12 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         await fetchRequests()
         return true
       } catch (err) {
-        console.error('Error approving request:', err)
+        console.error('Error approving request:', err) // eslint-disable-line no-console
+        logger.error('Failed to approve employee request', err as Error, {
+          component: 'useEmployeeRequests',
+          operation: 'approveRequest',
+          requestId,
+        });
         setError(err instanceof Error ? err.message : 'Error desconocido')
         toast.error('Error al aprobar solicitud')
         return false
@@ -262,7 +279,12 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         await fetchRequests()
         return true
       } catch (err) {
-        console.error('Error rejecting request:', err)
+        console.error('Error rejecting request:', err) // eslint-disable-line no-console
+        logger.error('Failed to reject employee request', err as Error, {
+          component: 'useEmployeeRequests',
+          operation: 'rejectRequest',
+          requestId,
+        });
         setError(err instanceof Error ? err.message : 'Error desconocido')
         toast.error('Error al rechazar solicitud')
         return false

@@ -6,6 +6,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.11.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
+
+// Initialize Sentry
+initSentry('stripe-webhook')
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -106,6 +110,15 @@ serve(async (req) => {
     })
   } catch (err) {
     console.error('[Stripe Webhook] Error:', err)
+    
+    // Capture error to Sentry
+    captureEdgeFunctionError(err as Error, {
+      functionName: 'stripe-webhook',
+      operation: 'handleWebhook'
+    })
+    
+    await flushSentry()
+    
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }

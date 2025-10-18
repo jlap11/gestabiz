@@ -15,6 +15,7 @@ import type {
   BillingCycle,
 } from '../lib/payments/PaymentGateway'
 import { useAppState } from '../contexts/AppStateContext'
+import { logger } from '../lib/logger'
 
 export function useSubscription(businessId: string | null) {
   const [dashboard, setDashboard] = useState<SubscriptionDashboard | null>(null)
@@ -40,6 +41,11 @@ export function useSubscription(businessId: string | null) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error loading subscription'
       setError(message)
+      logger.error('Failed to load subscription dashboard', err as Error, {
+        component: 'useSubscription',
+        operation: 'loadDashboard',
+        businessId,
+      });
       showToast(message, 'error')
     } finally {
       setIsLoading(false)
@@ -72,6 +78,13 @@ export function useSubscription(businessId: string | null) {
       window.location.href = result.sessionUrl
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error creating checkout'
+      logger.error('Payment gateway checkout creation failed', err as Error, {
+        component: 'useSubscription',
+        operation: 'createCheckout',
+        businessId,
+        planType,
+        billingCycle,
+      });
       showToast(message, 'error')
       throw err
     }
@@ -100,6 +113,13 @@ export function useSubscription(businessId: string | null) {
       await loadDashboard()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error updating plan'
+      logger.error('Subscription plan update failed', err as Error, {
+        component: 'useSubscription',
+        operation: 'updatePlan',
+        businessId,
+        newPlanType,
+        newBillingCycle,
+      });
       showToast(message, 'error')
       throw err
     }

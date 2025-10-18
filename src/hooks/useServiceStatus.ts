@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 
 export type ServiceStatus = 'operational' | 'degraded' | 'down' | 'checking'
 
@@ -99,6 +100,10 @@ export function useServiceStatus() {
       databaseStatus = 'down'
       storageStatus = 'down'
       error = err instanceof Error ? err.message : 'Error desconocido'
+      logger.fatal('Service health check failed completely', err as Error, {
+        component: 'useServiceStatus',
+        operation: 'checkHealth',
+      });
     }
 
     // Detectar si Supabase se recuperó después de estar caído

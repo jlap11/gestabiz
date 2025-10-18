@@ -1,9 +1,8 @@
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { APP_CONFIG } from '@/constants'
-import { useAuthSimple } from '@/hooks/useAuthSimple'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HelmetProvider } from 'react-helmet-async'
 
@@ -12,6 +11,12 @@ import { ThemeProvider } from '@/contexts/ThemeContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { AppStateProvider } from '@/contexts/AppStateContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+
+// Google Analytics 4
+import { initializeGA4 } from '@/lib/ga4'
+import { hasAnalyticsConsent } from '@/hooks/useAnalytics'
+import { CookieConsent } from '@/components/CookieConsent'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -45,7 +50,7 @@ function AppLoader() {
 
 // Protected Route wrapper para rutas autenticadas
 function ProtectedRoute({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { user, loading } = useAuthSimple()
+  const { user, loading } = useAuth()
   const location = useLocation()
 
   if (loading) {
@@ -62,7 +67,7 @@ function ProtectedRoute({ children }: Readonly<{ children: React.ReactNode }>) {
 
 // Wrapper para MainApp con NotificationProvider
 function AuthenticatedApp() {
-  const { user, signOut } = useAuthSimple()
+  const { user, signOut } = useAuth()
   const navigate = useNavigate()
   
   if (!user) {
@@ -83,12 +88,14 @@ function AuthenticatedApp() {
 }
 
 function AppRoutes() {
+  const navigate = useNavigate();
+  
   return (
     <Routes>
       {/* Rutas públicas */}
-      <Route path="/" element={<LandingPage onNavigateToAuth={() => {}} />} />
-      <Route path="/login" element={<AuthScreen />} />
-      <Route path="/register" element={<AuthScreen />} />
+      <Route path="/" element={<LandingPage onNavigateToAuth={() => navigate('/login')} />} />
+      <Route path="/login" element={<AuthScreen onLoginSuccess={() => navigate('/app', { replace: true })} />} />
+      <Route path="/register" element={<AuthScreen onLoginSuccess={() => navigate('/app', { replace: true })} />} />
       
       {/* Perfil público de negocio - accesible sin autenticación */}
       <Route path="/negocio/:slug" element={<PublicBusinessProfile />} />
@@ -110,6 +117,13 @@ function AppRoutes() {
 }
 
 function App() {
+  // Inicializar Google Analytics 4 si hay consentimiento
+  useEffect(() => {
+    if (hasAnalyticsConsent()) {
+      initializeGA4()
+    }
+  }, [])
+
   return (
     <ErrorBoundary>
       <HelmetProvider>
@@ -119,7 +133,10 @@ function App() {
               <ThemeProvider>
                 <LanguageProvider>
                   <AppStateProvider>
-                    <AppRoutes />
+                    <AuthProvider>
+                      <AppRoutes />
+                      <CookieConsent />
+                    </AuthProvider>
                   </AppStateProvider>
                 </LanguageProvider>
               </ThemeProvider>

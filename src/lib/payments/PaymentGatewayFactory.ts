@@ -19,9 +19,10 @@
  */
 
 import type { IPaymentGateway } from './PaymentGateway'
-import { paymentGateway as stripeGateway } from './StripeGateway'
-import { payuGateway } from './PayUGateway'
-import { mercadoPagoGateway } from './MercadoPagoGateway'
+import { StripeGateway } from './StripeGateway'
+import { PayUGateway } from './PayUGateway'
+import { MercadoPagoGateway } from './MercadoPagoGateway'
+import { supabase } from '@/lib/supabase'
 
 export type PaymentGatewayType = 'stripe' | 'payu' | 'mercadopago'
 
@@ -47,18 +48,19 @@ export function getConfiguredGatewayType(): PaymentGatewayType {
 
 /**
  * Factory function que retorna la instancia del gateway configurado
+ * Usa el cliente Supabase singleton para evitar múltiples instancias
  */
 export function getPaymentGateway(): IPaymentGateway {
   const gatewayType = getConfiguredGatewayType()
   
   switch (gatewayType) {
     case 'payu':
-      return payuGateway
+      return new PayUGateway(supabase)
     case 'mercadopago':
-      return mercadoPagoGateway
+      return new MercadoPagoGateway(supabase)
     case 'stripe':
     default:
-      return stripeGateway
+      return new StripeGateway(supabase)
   }
 }
 

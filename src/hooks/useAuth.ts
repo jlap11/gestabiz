@@ -3,6 +3,7 @@ import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { User } from '@/types'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 interface AuthState {
   user: User | null
@@ -83,90 +84,75 @@ export function useAuth() {
         return null
       }
 
-      // If profile exists, fetch user roles and return complete user object
+      // If profile exists, calculate dynamic roles and return complete user object
       if (profile) {
-        // Fetch user roles from user_roles table
-        const { data: userRoles, error: rolesError } = await supabase
-          .from('user_roles')
-          .select(`
-            id,
-            role,
-            business_id,
-            is_active,
-            businesses:business_id (
-              id,
-              name
-            )
-          `)
-          .eq('user_id', profile.id)
-          .order('is_active', { ascending: false })
+        // Calculate dynamic roles:
+        // 1. Check if user owns any business (ADMIN role)
+        const { data: ownedBusinesses } = await supabase
+          .from('businesses')
+          .select('id, name')
+          .eq('owner_id', profile.id)
+          .limit(1)
 
-        if (rolesError) {
-          // If error fetching roles, use legacy single role from profile
-          return {
-            id: profile.id,
-            email: profile.email,
-            name: profile.full_name || '',
-            avatar_url: profile.avatar_url,
-            roles: [{ 
-              id: 'legacy-role', 
-              user_id: profile.id,
-              role: profile.role, 
-              business_id: null,
-              is_active: true,
-              created_at: profile.created_at
-            }],
-            activeRole: profile.active_role || profile.role,
-            role: profile.active_role || profile.role, // Legacy support
-            phone: profile.phone,
-            created_at: profile.created_at,
-            updated_at: profile.updated_at,
-            is_active: profile.is_active,
-            language: profile.settings?.language || 'es',
-            notification_preferences: {
-              email: true,
-              push: true,
-              browser: true,
-              whatsapp: false,
-              reminder_24h: true,
-              reminder_1h: true,
-              reminder_15m: false,
-              daily_digest: false,
-              weekly_report: false
-            },
-            permissions: [],
-            timezone: 'America/Mexico_City'
-          }
-        }
+        // 2. Check if user is employee in any business (EMPLOYEE role)
+        const { data: employeeRelations } = await supabase
+          .from('business_employees')
+          .select('business_id, businesses:business_id(id, name)')
+          .eq('employee_id', profile.id)
+          .eq('status', 'active')
+          .limit(1)
 
-        // Map roles with business information
-        const mappedRoles = (userRoles || []).map(r => {
-          let businessName: string | undefined
-          if (r.businesses) {
-            businessName = Array.isArray(r.businesses) ? r.businesses[0]?.name : (r.businesses as { name?: string }).name
-          }
-          
-          return {
-            id: r.id,
-            user_id: profile.id,
-            role: r.role,
-            business_id: r.business_id,
-            business_name: businessName,
-            is_active: r.is_active,
-            created_at: new Date().toISOString() // Use current time as fallback
-          }
+        // Build roles array dynamically
+        const calculatedRoles: import('@/types').UserRoleAssignment[] = []
+        
+        // Everyone has CLIENT role
+        calculatedRoles.push({
+          id: 'client-role',
+          user_id: profile.id,
+          role: 'client' as import('@/types').UserRole,
+          business_id: null,
+          is_active: true,
+          created_at: profile.created_at
         })
 
-        // Determine active role
-        const activeRole = profile.active_role || mappedRoles.find(r => r.is_active)?.role || mappedRoles[0]?.role || 'client'
-        const activeRoleAssignment = mappedRoles.find(r => r.role === activeRole)
+        // Add ADMIN role if owns businesses
+        if (ownedBusinesses && ownedBusinesses.length > 0) {
+          calculatedRoles.push({
+            id: 'admin-role',
+            user_id: profile.id,
+            role: 'admin' as import('@/types').UserRole,
+            business_id: ownedBusinesses[0].id,
+            business_name: ownedBusinesses[0].name,
+            is_active: true,
+            created_at: profile.created_at
+          })
+        }
+
+        // Add EMPLOYEE role if is employee
+        if (employeeRelations && employeeRelations.length > 0) {
+          const bizData = employeeRelations[0].businesses
+          const biz = Array.isArray(bizData) ? bizData[0] : bizData
+          calculatedRoles.push({
+            id: 'employee-role',
+            user_id: profile.id,
+            role: 'employee' as import('@/types').UserRole,
+            business_id: employeeRelations[0].business_id,
+            business_name: biz?.name,
+            is_active: true,
+            created_at: profile.created_at
+          })
+        }
+
+        // Determine active role (use profile's active_role or default to first available)
+        const activeRole = profile.active_role || calculatedRoles[0]?.role || 'client'
+        const activeRoleAssignment = calculatedRoles.find(r => r.role === activeRole)
 
         return {
           id: profile.id,
           email: profile.email,
           name: profile.full_name || '',
           avatar_url: profile.avatar_url,
-          roles: mappedRoles,
+          roles: calculatedRoles,
           activeRole,
           activeBusiness: activeRoleAssignment?.business_id ? {
             id: activeRoleAssignment.business_id,
@@ -226,15 +212,8 @@ export function useAuth() {
         return null
       }
 
-      // Create initial client role for new user
-      await supabase
-        .from('user_roles')
-        .insert({
-          user_id: createdProfile.id,
-          role: 'client',
-          business_id: null,
-          is_active: true
-        })
+      // Note: Roles are calculated dynamically, no need to create user_roles entries
+      // Everyone starts with CLIENT role by default (calculated dynamically)
 
       return {
         id: createdProfile.id,
@@ -365,6 +344,12 @@ export function useAuth() {
       })
 
       if (error) {
+        logger.error('Sign up failed', error, {
+          component: 'useAuth',
+          operation: 'signUp',
+          email: data.email,
+          errorCode: error.code,
+        });
         setState(prev => ({ ...prev, loading: false, error: error.message }))
         toast.error(error.message)
         return { success: false, error: error.message }
@@ -389,6 +374,12 @@ export function useAuth() {
           if (profileError) {
             // Profile might already exist (duplicate signup attempt)
             if (profileError.code !== '23505') { // 23505 = unique violation
+              logger.error('Profile creation failed during signup', profileError, {
+                component: 'useAuth',
+                operation: 'signUp.createProfile',
+                userId: authData.user.id,
+                email: data.email,
+              });
               toast.error('Error al crear perfil de usuario')
               setState(prev => ({ ...prev, loading: false }))
               return { success: false, error: profileError.message }
@@ -405,6 +396,16 @@ export function useAuth() {
             error: null
           }))
           
+          // Log successful signup
+          await logger.logLogin({
+            email: data.email,
+            status: 'success',
+            method: 'password',
+            userId: authData.user.id,
+            userAgent: navigator.userAgent,
+            metadata: { action: 'signup', needsEmailConfirmation: false }
+          });
+          
           toast.success(`¡Bienvenido, ${data.full_name || data.email}!`)
           return { success: true, needsEmailConfirmation: false }
         } else {
@@ -417,7 +418,12 @@ export function useAuth() {
 
       setState(prev => ({ ...prev, loading: false }))
       return { success: false, error: 'No se pudo crear el usuario' }
-  } catch {
+  } catch (error) {
+      logger.error('Unexpected error during signup', error as Error, {
+        component: 'useAuth',
+        operation: 'signUp',
+        email: data.email,
+      });
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
@@ -436,6 +442,19 @@ export function useAuth() {
       })
 
       if (error) {
+        logger.error('Sign in failed', error, {
+          component: 'useAuth',
+          operation: 'signIn',
+          email: data.email,
+          errorCode: error.code,
+        });
+        await logger.logLogin({
+          email: data.email,
+          status: 'failure',
+          method: 'password',
+          userAgent: navigator.userAgent,
+          metadata: { errorMessage: error.message }
+        });
         setState(prev => ({ ...prev, loading: false, error: error.message }))
         toast.error(error.message)
         return { success: false, error: error.message }
@@ -450,12 +469,35 @@ export function useAuth() {
           loading: false,
           error: null
         }))
+        
+        // Log successful login
+        await logger.logLogin({
+          email: data.email,
+          status: 'success',
+          method: 'password',
+          userId: authData.user.id,
+          userAgent: navigator.userAgent,
+          metadata: { action: 'signin' }
+        });
+        
         toast.success(`¡Bienvenido, ${user?.name || data.email}!`)
         return { success: true, user }
       }
 
       return { success: false, error: 'No se pudo autenticar' }
-  } catch {
+  } catch (error) {
+      logger.error('Unexpected error during signin', error as Error, {
+        component: 'useAuth',
+        operation: 'signIn',
+        email: data.email,
+      });
+      await logger.logLogin({
+        email: data.email,
+        status: 'failure',
+        method: 'password',
+        userAgent: navigator.userAgent,
+        metadata: { errorMessage: 'Unknown error' }
+      });
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
@@ -476,6 +518,11 @@ export function useAuth() {
       })
 
       if (error) {
+        logger.error('Google OAuth sign in failed', error, {
+          component: 'useAuth',
+          operation: 'signInWithGoogle',
+          errorCode: error.code,
+        });
         setState(prev => ({ ...prev, loading: false, error: error.message }))
         toast.error(error.message)
         return { success: false, error: error.message }
@@ -483,7 +530,11 @@ export function useAuth() {
 
       // OAuth redirect will handle the rest
       return { success: true }
-    } catch {
+    } catch (error) {
+      logger.error('Unexpected error during Google OAuth', error as Error, {
+        component: 'useAuth',
+        operation: 'signInWithGoogle',
+      });
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
@@ -494,14 +545,34 @@ export function useAuth() {
   // Sign out
   const signOut = useCallback(async () => {
     try {
+      const currentEmail = state.user?.email;
+      const currentUserId = state.user?.id;
+      
       setState(prev => ({ ...prev, loading: true }))
 
       const { error } = await supabase.auth.signOut()
 
       if (error) {
+        logger.error('Sign out failed', error, {
+          component: 'useAuth',
+          operation: 'signOut',
+          userId: currentUserId,
+        });
         setState(prev => ({ ...prev, loading: false, error: error.message }))
         toast.error(error.message)
         return { success: false, error: error.message }
+      }
+
+      // Log successful logout
+      if (currentEmail && currentUserId) {
+        await logger.logLogin({
+          email: currentEmail,
+          status: 'success',
+          method: 'password',
+          userId: currentUserId,
+          userAgent: navigator.userAgent,
+          metadata: { action: 'signout' }
+        });
       }
 
       setState(prev => ({
@@ -514,13 +585,18 @@ export function useAuth() {
 
       toast.success('Sesión cerrada correctamente')
       return { success: true }
-  } catch {
+  } catch (error) {
+      logger.error('Unexpected error during sign out', error as Error, {
+        component: 'useAuth',
+        operation: 'signOut',
+        userId: state.user?.id,
+      });
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
     }
-  }, [])
+  }, [state.user])
 
   // Reset password
   const resetPassword = useCallback(async (email: string) => {

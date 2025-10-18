@@ -34,14 +34,17 @@ export function useMandatoryReviews(userId?: string) {
       }
 
       // Count appointments without reviews
-      const { count, error } = await supabase
+      // Buscamos citas completadas que no tienen una review asociada
+      const { data: appointmentsWithoutReviews, error } = await supabase
         .from('appointments')
-        .select('*', { count: 'exact', head: true })
+        .select('id, reviews!left(id)')
         .eq('client_id', userId)
         .eq('status', 'completed')
-        .is('review_id', null);
+        .is('reviews.id', null);
 
       if (error) throw error;
+      
+      const count = appointmentsWithoutReviews?.length || 0;
 
       const pendingCount = count || 0;
       setPendingReviewsCount(pendingCount);

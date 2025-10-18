@@ -13,6 +13,7 @@ import {
 } from '@/types/accounting.types';
 import { Transaction, TransactionCategory } from '@/types/types';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 import { es } from 'date-fns/locale';
 import { getCategoryColor } from './useChartData';
 import * as XLSX from 'xlsx';
@@ -140,6 +141,11 @@ export function useFinancialReports(): UseFinancialReportsReturn {
         };
       } catch (err) {
         const error = err as Error;
+        logger.error('Failed to generate P&L report', error, {
+          component: 'useFinancialReports',
+          operation: 'generateProfitAndLossReport',
+          businessId: filters.businessId,
+        });
         setError(error);
         throw error;
       } finally {
@@ -202,6 +208,11 @@ export function useFinancialReports(): UseFinancialReportsReturn {
         };
       } catch (err) {
         const error = err as Error;
+        logger.error('Failed to generate payroll report', error, {
+          component: 'useFinancialReports',
+          operation: 'generatePayrollReport',
+          business_id: filters.business_id,
+        });
         setError(error);
         throw error;
       } finally {
