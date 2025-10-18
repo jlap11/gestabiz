@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { UserCircle2, Briefcase, Star, Loader2, Users, Ban } from 'lucide-react';
+import { UserCircle2, Briefcase, Star, Loader2, Users, Ban, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -22,6 +23,7 @@ interface EmployeeSelectionProps {
   serviceId: string;
   selectedEmployeeId: string | null;
   onSelectEmployee: (employee: Employee) => void;
+  isPreselected?: boolean; // Nueva prop para indicar si fue preseleccionado
 }
 
 export function EmployeeSelection({ 
@@ -30,6 +32,7 @@ export function EmployeeSelection({
   serviceId,
   selectedEmployeeId, 
   onSelectEmployee,
+  isPreselected = false
 }: Readonly<EmployeeSelectionProps>) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,6 +186,8 @@ export function EmployeeSelection({
         {employees.map((employee) => {
           // REGLA: Un empleado no puede agendarse cita a sí mismo
           const isSelf = user?.id === employee.id;
+          const isSelected = selectedEmployeeId === employee.id;
+          const wasPreselected = isPreselected && isSelected;
           
           return (
             <button
@@ -200,17 +205,28 @@ export function EmployeeSelection({
                 isSelf 
                   ? "opacity-50 cursor-not-allowed bg-muted/30 border-border/30"
                   : "hover:scale-[1.02] hover:shadow-xl",
-                !isSelf && selectedEmployeeId === employee.id
+                !isSelf && isSelected
                   ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
-                  : !isSelf && "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
+                  : !isSelf && "bg-muted/50 border-border hover:bg-muted hover:border-border/50",
+                wasPreselected && "ring-2 ring-green-500/50"
               )}
             >
-            {/* Selected indicator */}
-            {selectedEmployeeId === employee.id && (
-              <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground text-xs font-bold">✓</span>
-              </div>
-            )}
+              {/* Badge de preselección */}
+              {wasPreselected && (
+                <div className="absolute top-3 left-3 z-10">
+                  <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                    <Check className="w-3 h-3 mr-1" />
+                    Preseleccionado
+                  </Badge>
+                </div>
+              )}
+
+              {/* Selected indicator */}
+              {isSelected && (
+                <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground text-xs font-bold">✓</span>
+                </div>
+              )}
 
             {/* Employee Avatar */}
             <div className="flex flex-col items-center mb-4">

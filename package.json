@@ -16,7 +16,8 @@
     "clean:install": "npm run clean && npm install",
     "analyze": "npm run build && npx vite-bundle-analyzer dist",
     "start": "npm run dev",
-    "pre-deploy": "node scripts/pre-deploy-check.mjs"
+    "pre-deploy": "node scripts/pre-deploy-check.mjs",
+    "generate-sitemap": "tsx scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

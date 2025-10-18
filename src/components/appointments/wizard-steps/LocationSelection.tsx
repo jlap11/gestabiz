@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Building2, Phone, Mail, Loader2 } from 'lucide-react';
+import { MapPin, Building2, Phone, Mail, Loader2, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -10,13 +11,15 @@ interface LocationSelectionProps {
   selectedLocationId: string | null;
   onSelectLocation: (location: Location) => void;
   preloadedLocations?: Location[]; // Datos pre-cargados para evitar consultas lentas
+  isPreselected?: boolean; // Nueva prop para indicar si fue preseleccionado
 }
 
 export function LocationSelection({ 
   businessId, 
   selectedLocationId, 
   onSelectLocation,
-  preloadedLocations 
+  preloadedLocations,
+  isPreselected = false
 }: Readonly<LocationSelectionProps>) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(!preloadedLocations);
@@ -96,24 +99,39 @@ export function LocationSelection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {locations.map((location) => (
-          <button
-            key={location.id}
-            onClick={() => onSelectLocation(location)}
-            className={cn(
-              "relative group rounded-xl p-5 text-left transition-all duration-200 border-2",
-              "hover:scale-[1.02] hover:shadow-xl",
-              selectedLocationId === location.id
-                ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
-                : "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
-            )}
-          >
-            {/* Selected indicator */}
-            {selectedLocationId === location.id && (
-              <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground text-xs font-bold">✓</span>
-              </div>
-            )}
+        {locations.map((location) => {
+          const isSelected = selectedLocationId === location.id;
+          const wasPreselected = isPreselected && isSelected;
+
+          return (
+            <button
+              key={location.id}
+              onClick={() => onSelectLocation(location)}
+              className={cn(
+                "relative group rounded-xl p-5 text-left transition-all duration-200 border-2",
+                "hover:scale-[1.02] hover:shadow-xl",
+                isSelected
+                  ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
+                  : "bg-muted/50 border-border hover:bg-muted hover:border-border/50",
+                wasPreselected && "ring-2 ring-green-500/50"
+              )}
+            >
+              {/* Badge de preselección */}
+              {wasPreselected && (
+                <div className="absolute top-3 left-3 z-10">
+                  <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                    <Check className="w-3 h-3 mr-1" />
+                    Preseleccionado
+                  </Badge>
+                </div>
+              )}
+
+              {/* Selected indicator */}
+              {isSelected && (
+                <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground text-xs font-bold">✓</span>
+                </div>
+              )}
 
             {/* Location Icon */}
             <div className={cn(
@@ -167,7 +185,8 @@ export function LocationSelection({
               "bg-gradient-to-br from-purple-500/10 to-transparent"
             )} />
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

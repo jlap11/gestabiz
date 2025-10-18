@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Service } from '@/types/types';
@@ -10,6 +11,7 @@ interface ServiceSelectionProps {
   readonly selectedServiceId: string | null;
   readonly onSelectService: (service: Service) => void;
   readonly preloadedServices?: Service[]; // Datos pre-cargados
+  readonly isPreselected?: boolean; // Nueva prop para indicar si fue preseleccionado desde perfil público
 }
 
 export function ServiceSelection({
@@ -17,6 +19,7 @@ export function ServiceSelection({
   selectedServiceId,
   onSelectService,
   preloadedServices,
+  isPreselected = false,
 }: ServiceSelectionProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(!preloadedServices);
@@ -96,6 +99,7 @@ export function ServiceSelection({
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {services.map((service) => {
           const isSelected = selectedServiceId === service.id;
+          const wasPreselected = isPreselected && isSelected;
 
           return (
             <Card
@@ -107,9 +111,20 @@ export function ServiceSelection({
                 "hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20",
                 isSelected
                   ? "border-primary bg-primary/10"
-                  : "border-border"
+                  : "border-border",
+                wasPreselected && "ring-2 ring-green-500/50"
               )}
             >
+              {/* Badge de preselección */}
+              {wasPreselected && (
+                <div className="absolute top-2 left-2 z-10">
+                  <Badge className="bg-green-500 text-white text-xs shadow-lg">
+                    <Check className="w-3 h-3 mr-1" />
+                    Preseleccionado
+                  </Badge>
+                </div>
+              )}
+
               {/* Imagen fotográfica real del servicio */}
               <div className="aspect-square w-full relative">
                 <img

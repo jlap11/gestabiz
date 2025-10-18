@@ -460,6 +460,7 @@ export function AppointmentWizard({
                 });
               }}
               preloadedLocations={dataCache.locations}
+              isPreselected={!!preselectedLocationId}
             />
           )}
 
@@ -475,6 +476,7 @@ export function AppointmentWizard({
                 });
               }}
               preloadedServices={dataCache.services}
+              isPreselected={!!preselectedServiceId}
             />
           )}
 
@@ -491,6 +493,7 @@ export function AppointmentWizard({
                   employee 
                 });
               }}
+              isPreselected={!!preselectedEmployeeId}
             />
           )}
 

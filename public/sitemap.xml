@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Landing Page -->
+  <url>
+    <loc>https://appointsync.pro/</loc>
+    <lastmod>2025-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Public Business Profiles -->
+  <!-- This file should be generated dynamically via script or Edge Function -->
+  <!-- For now, this is a static template. See scripts/generate-sitemap.ts -->
+  
+  <!-- Example business profile URLs:
+  <url>
+    <loc>https://appointsync.pro/negocio/salon-belleza-medellin</loc>
+    <lastmod>2025-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  -->
+</urlset>
