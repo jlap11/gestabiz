@@ -68,19 +68,10 @@ export function useAuthSimple() {
             if (profileData) {
               console.log('📸 Profile data from DB:', profileData)
               
-              // Check if user is deactivated
-              if (profileData.is_active === false) {
-                console.log('🚫 User account is deactivated')
-                // Clear session and redirect to login
-                await supabase.auth.signOut()
-                setState(prev => ({ 
-                  ...prev, 
-                  loading: false, 
-                  error: 'Tu cuenta ha sido desactivada. Por favor contacta al administrador.',
-                  session: null, 
-                  user: null 
-                }))
-                return
+              // Check if user is deactivated - but allow login to show modal
+              const isInactive = profileData.is_active === false
+              if (isInactive) {
+                console.log('🚫 User account is deactivated - showing reactivation modal')
               }
             }
             
@@ -120,7 +111,8 @@ export function useAuthSimple() {
               avatar_url: session.user.user_metadata?.avatar_url || profileData?.avatar_url || undefined,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              is_active: profileData?.is_active ?? true
+              is_active: profileData?.is_active ?? true,
+              accountInactive: profileData?.is_active === false  // Flag for modal
             }
             
             console.log('👤 Created user object from real profile data, is_active:', user.is_active)
@@ -241,19 +233,10 @@ export function useAuthSimple() {
             if (profileData) {
               console.log('📸 Profile data fetched in SIGNED_IN:', profileData)
               
-              // Check if user is deactivated
-              if (profileData.is_active === false) {
-                console.log('🚫 User account is deactivated in SIGNED_IN')
-                // Clear session and don't allow login
-                await supabase.auth.signOut()
-                setState(prev => ({ 
-                  ...prev, 
-                  user: null,
-                  session: null,
-                  loading: false,
-                  error: 'Tu cuenta ha sido desactivada. Por favor contacta al administrador.'
-                }))
-                return
+              // Check if user is deactivated - but allow login to show modal
+              const isInactive = profileData.is_active === false
+              if (isInactive) {
+                console.log('🚫 User account is deactivated in SIGNED_IN - showing reactivation modal')
               }
             }
             
@@ -293,7 +276,8 @@ export function useAuthSimple() {
               avatar_url: session.user.user_metadata?.avatar_url || profileData?.avatar_url || undefined,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              is_active: profileData?.is_active ?? true
+              is_active: profileData?.is_active ?? true,
+              accountInactive: profileData?.is_active === false  // Flag for modal
             }
             
             console.log('✅ User created from SIGNED_IN event with is_active:', user.is_active)

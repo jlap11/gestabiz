@@ -245,6 +245,7 @@ export interface User {
   is_active?: boolean
   deactivated_at?: string  // Timestamp when account was deactivated
   last_login?: string
+  accountInactive?: boolean  // Flag indicating account needs reactivation
 }
 
 // Legacy interface for backward compatibility

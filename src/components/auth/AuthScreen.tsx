@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import { useAuth } from '@/hooks/useAuth'
+import { AccountInactiveModal } from './AccountInactiveModal'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { toast } from 'sonner'
 import { useAnalytics } from '@/hooks/useAnalytics'
+import { ArrowLeft } from 'lucide-react'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void
@@ -27,6 +29,8 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const [rememberMe, setRememberMe] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
   const [isSignUpMode, setIsSignUpMode] = useState(false)
+  const [showInactiveModal, setShowInactiveModal] = useState(false)
+  const [inactiveEmail, setInactiveEmail] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -99,6 +103,14 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
       if (result.success && result.user) {
         // Track successful login
         analytics.trackLogin('email')
+        
+        // Check if account is inactive
+        if (result.user.accountInactive) {
+          setInactiveEmail(result.user.email)
+          setShowInactiveModal(true)
+          return
+        }
+        
         handlePostLoginNavigation(result.user)
       }
     } catch {
@@ -171,6 +183,24 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
     }
   }
 
+  const handleBackToLanding = () => {
+    navigate('/', { replace: true })
+  }
+
+  const handleInactiveReactivate = () => {
+    // Modal ya reactivó la cuenta
+    setShowInactiveModal(false)
+    // Esperar un momento y hacer refresh para que useAuthSimple detecte is_active=true
+    setTimeout(() => {
+      globalThis.location.reload()
+    }, 1000)
+  }
+
+  const handleInactiveReject = () => {
+    setShowInactiveModal(false)
+    navigate('/', { replace: true })
+  }
+
   if (showResetForm) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -241,7 +271,17 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
         </div>
 
         {/* Login/SignUp Card */}
-        <div className="bg-card rounded-2xl p-8 shadow-2xl backdrop-blur-xl border border-border">
+        <div className="bg-card rounded-2xl p-8 shadow-2xl backdrop-blur-xl border border-border relative">
+          {/* Back Button */}
+          <button
+            type="button"
+            onClick={handleBackToLanding}
+            className="absolute top-4 left-4 p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            title="Volver a la página principal"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
           <form onSubmit={isSignUpMode ? handleSignUp : handleSignIn} className="space-y-6">
             {/* Name Input (only for Sign Up) */}
             {isSignUpMode && (
@@ -378,6 +418,15 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             </button>
           </div>
         </div>
+
+        {/* Account Inactive Modal */}
+        <AccountInactiveModal
+          isOpen={showInactiveModal}
+          email={inactiveEmail}
+          onClose={() => setShowInactiveModal(false)}
+          onReactivate={handleInactiveReactivate}
+          onReject={handleInactiveReject}
+        />
       </div>
     </div>
   )
