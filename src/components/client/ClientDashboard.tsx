@@ -114,6 +114,12 @@ interface ClientDashboardProps {
   onRoleChange: (role: UserRole) => void
   onLogout?: () => void
   user: User // Requerido para UnifiedSettings
+  initialBookingContext?: {
+    businessId?: string
+    serviceId?: string
+    locationId?: string
+    employeeId?: string
+  } | null
 }
 
 export function ClientDashboard({ 
@@ -121,11 +127,17 @@ export function ClientDashboard({
   availableRoles,
   onRoleChange,
   onLogout,
-  user
+  user,
+  initialBookingContext
 }: Readonly<ClientDashboardProps>) {
   const [activePage, setActivePage] = useState('appointments')
   const [showAppointmentWizard, setShowAppointmentWizard] = useState(false)
   const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<string | undefined>(undefined)
+  const [bookingPreselection, setBookingPreselection] = useState<{
+    serviceId?: string
+    locationId?: string
+    employeeId?: string
+  } | undefined>(undefined)
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [currentUser, setCurrentUser] = useState(user)
@@ -172,17 +184,39 @@ export function ClientDashboard({
     showPermissionPrompt: true
   })
 
+  // Handle initial booking context from public profile redirect
+  useEffect(() => {
+    if (initialBookingContext) {
+      if (initialBookingContext.businessId) {
+        setAppointmentWizardBusinessId(initialBookingContext.businessId)
+      }
+      
+      if (initialBookingContext.serviceId || initialBookingContext.locationId || initialBookingContext.employeeId) {
+        setBookingPreselection({
+          serviceId: initialBookingContext.serviceId,
+          locationId: initialBookingContext.locationId,
+          employeeId: initialBookingContext.employeeId
+        })
+      }
+      
+      // Open appointment wizard
+      setShowAppointmentWizard(true)
+      setActivePage('appointments')
+    }
+  }, [initialBookingContext])
+
   // Leer conversation_id de la URL al cargar
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new URLSearchParams(globalThis.location.search)
     const conversationParam = urlParams.get('conversation')
     
     if (conversationParam) {
+      // eslint-disable-next-line no-console
       console.log('[ClientDashboard] Opening chat from URL param:', conversationParam)
       setChatConversationId(conversationParam)
       
       // Limpiar URL sin recargar página
-      window.history.replaceState({}, '', window.location.pathname)
+      globalThis.history.replaceState({}, '', globalThis.location.pathname)
     }
   }, [])
 

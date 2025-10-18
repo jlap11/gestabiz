@@ -1,5 +1,22 @@
 # Guía rápida
 
+## Sistema de Perfiles Públicos de Negocios ⭐ NUEVO (2025-01-20)
+Perfiles públicos indexables por Google para negocios, sin requerir autenticación:
+- **React Router v6**: Integrado con rutas públicas (`/`, `/negocio/:slug`) y privadas (`/app/*`)
+- **URL amigable**: Slugs únicos generados automáticamente (ej: `/negocio/salon-belleza-medellin`)
+- **SEO completo**: Meta tags dinámicos (title, description, keywords), Open Graph, Twitter Card, JSON-LD structured data
+- **Hook reutilizable**: `useBusinessProfileData` (352 líneas) - carga completa de negocio, servicios, ubicaciones, empleados, reviews
+- **Componente público**: `PublicBusinessProfile` (449 líneas) - layout con 4 tabs (Servicios, Ubicaciones, Equipo, Reseñas)
+- **Flow de reserva COMPLETO ✅**: Usuario no autenticado → Clic "Reservar" → Login con redirect + context preservation → Vuelve a app → Wizard abierto automáticamente
+- **Auth redirect (Fase 2) ✅**: AuthScreen lee URL params, toast informativo, navegación post-login con context, MainApp extrae bookingContext, ClientDashboard abre wizard automáticamente
+- **Preservación de contexto**: businessId, serviceId, locationId, employeeId preservados en URL y pasados al wizard (businessId activo, otros preparados)
+- **Geolocalización**: Distancia calculada a ubicaciones si usuario permite ubicación
+- **Base de datos**: Campos `slug`, `meta_title`, `meta_description`, `meta_keywords`, `og_image_url`, `is_public` añadidos a `businesses`
+- **Fase 1 completada**: 100% - Fundamentos (React Router, database, hooks, SEO) - ver `FASE_1_PERFILES_PUBLICOS_COMPLETADA.md`
+- **Fase 2 completada**: 100% - Auth Flow (redirect, context, wizard auto-open) - ver `FASE_2_AUTH_FLOW_COMPLETADA.md`
+- **Progreso total**: 60% (Fase 1 + Fase 2 operativas)
+- **Pendiente**: Preselección completa en wizard (Fase 3), sitemap.xml (Fase 4), analytics (Fase 5)
+
 ## Sistema de Navegación de Notificaciones con Cambio Automático de Rol ⭐ NUEVO (2025-10-17)
 Las notificaciones ahora cambian automáticamente el rol del usuario antes de navegar:
 - **Mapeo automático**: 30+ tipos de notificación mapeados a su rol requerido (admin/employee/client)

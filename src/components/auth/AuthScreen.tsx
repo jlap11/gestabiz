@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -7,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
+import { toast } from 'sonner'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void 
@@ -14,6 +16,8 @@ interface AuthScreenProps {
 
 export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
   const { signIn, signUp, signInWithGoogle } = useAuth()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [isGoogleAuth, setIsGoogleAuth] = useState(false)
@@ -26,8 +30,48 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
     name: ''
   })
 
+  // Extract redirect params from URL
+  const redirectUrl = searchParams.get('redirect')
+  const serviceId = searchParams.get('serviceId')
+  const locationId = searchParams.get('locationId')
+  const employeeId = searchParams.get('employeeId')
+
+  // Show toast if user was redirected from booking attempt
+  useEffect(() => {
+    if (redirectUrl) {
+      toast.info('Inicia sesión para continuar con tu reserva', {
+        duration: 5000
+      })
+    }
+  }, [redirectUrl])
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handlePostLoginNavigation = (user: User) => {
+    // Call original onLogin callback if provided
+    onLogin?.(user)
+
+    // Navigate to redirect URL or app dashboard
+    if (redirectUrl) {
+      // Build query params for preselection if available
+      const params = new URLSearchParams()
+      if (serviceId) params.set('serviceId', serviceId)
+      if (locationId) params.set('locationId', locationId)
+      if (employeeId) params.set('employeeId', employeeId)
+      
+      const queryString = params.toString()
+      const targetUrl = queryString ? `${redirectUrl}?${queryString}` : redirectUrl
+      
+      // Small delay to ensure session is fully established
+      setTimeout(() => {
+        navigate(targetUrl, { replace: true })
+      }, 500)
+    } else {
+      // Default navigation to app
+      navigate('/app', { replace: true })
+    }
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -43,7 +87,7 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
       ])
 
       if (result.success && result.user) {
-        onLogin?.(result.user)
+        handlePostLoginNavigation(result.user)
       }
     } catch {
       // Error/timeout
@@ -69,12 +113,26 @@ export default function AuthScreen({ onLogin }: Readonly<AuthScreenProps>) {
       ])
 
       if (result.success && !result.needsEmailConfirmation) {
-        // Registration successful and auto-logged in, switch to login mode
-        setIsSignUpMode(false)
-        setFormData({ email: '', password: '', name: '' })
+        // Registration successful and auto-logged in
+        // Note: signUp updates auth state, so we navigate after a small delay
+        setTimeout(() => {
+          if (redirectUrl) {
+            const params = new URLSearchParams()
+            if (serviceId) params.set('serviceId', serviceId)
+            if (locationId) params.set('locationId', locationId)
+            if (employeeId) params.set('employeeId', employeeId)
+            
+            const queryString = params.toString()
+            const targetUrl = queryString ? `${redirectUrl}?${queryString}` : redirectUrl
+            navigate(targetUrl, { replace: true })
+          } else {
+            navigate('/app', { replace: true })
+          }
+        }, 800)
       } else if (result.success && result.needsEmailConfirmation) {
         // Show message that they need to confirm email
         setIsSignUpMode(false)
+        toast.info('Revisa tu email para confirmar tu cuenta antes de iniciar sesión')
       }
     } catch {
       // Error/timeout

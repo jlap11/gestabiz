@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { User } from '@/types'
 import { useKV } from '@/lib/useKV'
 import { useTheme } from '@/contexts'
@@ -1401,5 +1403,288 @@ function ClientRolePreferences() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// ============================================
+// COMPONENTE: Zona Peligrosa (Eliminar Cuenta)
+// ============================================
+interface DangerZoneProps {
+  user: User
+}
+
+function DangerZone({ user }: DangerZoneProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1)
+  const [confirmEmail, setConfirmEmail] = useState('')
+  const [confirmText, setConfirmText] = useState('')
+  const [understandConsequences, setUnderstandConsequences] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleOpenDeleteDialog = () => {
+    setDeleteStep(1)
+    setConfirmEmail('')
+    setConfirmText('')
+    setUnderstandConsequences(false)
+    setShowDeleteDialog(true)
+  }
+
+  const handleCloseDialog = () => {
+    if (!isDeleting) {
+      setShowDeleteDialog(false)
+      setDeleteStep(1)
+    }
+  }
+
+  const handleProceedToStep2 = () => {
+    if (confirmEmail.toLowerCase() === user.email.toLowerCase() && understandConsequences) {
+      setDeleteStep(2)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== 'DESACTIVAR CUENTA') {
+      toast.error('Debes escribir "DESACTIVAR CUENTA" para confirmar')
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      // Llamar a la función RPC para desactivar la cuenta
+      // Esta función automáticamente:
+      // - Marca is_active = FALSE en profiles
+      // - Registra deactivated_at con timestamp
+      // - Cancela todas las citas futuras pendientes
+      const { error } = await supabase.rpc('deactivate_user_account', {
+        user_id_param: user.id
+      })
+
+      if (error) throw error
+
+      // Cerrar sesión
+      await supabase.auth.signOut()
+
+      toast.success('Cuenta desactivada exitosamente', {
+        description: 'Tu cuenta ha sido desactivada. Contáctanos si deseas reactivarla.'
+      })
+      
+      // Limpiar localStorage
+      localStorage.clear()
+      
+      // Redirigir al login después de 2 segundos
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 2000)
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      toast.error('Error al desactivar la cuenta', {
+        description: errorMessage
+      })
+      setIsDeleting(false)
+    }
+  }
+
+  return (
+    <>
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            Zona Peligrosa
+          </CardTitle>
+          <CardDescription>
+            Acciones que afectarán el estado de tu cuenta
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Advertencia:</strong> Desactivar tu cuenta cerrará tu sesión y cancelará tus citas futuras.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-semibold mb-2">Desactivar mi cuenta</h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                Tu cuenta será desactivada temporalmente. Podrás reactivarla contactando a soporte. Tus datos no se eliminarán.
+              </p>
+              
+              <div className="bg-muted/30 rounded-lg p-4 mb-4">
+                <p className="text-sm font-medium mb-2">Qué sucederá al desactivar:</p>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>Tu cuenta será marcada como inactiva</li>
+                  <li>Se cerrará tu sesión automáticamente</li>
+                  <li>Todas tus citas futuras pendientes serán canceladas</li>
+                  <li>No podrás iniciar sesión hasta reactivar tu cuenta</li>
+                  <li>Tus datos se conservarán para posible reactivación</li>
+                </ul>
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                    ✓ Tus datos NO se eliminarán
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Contacta a soporte si deseas reactivar tu cuenta más adelante
+                  </p>
+                </div>
+              </div>
+
+              <Button 
+                variant="destructive" 
+                onClick={handleOpenDeleteDialog}
+                className="w-full"
+              >
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Desactivar mi cuenta
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialog de confirmación multi-paso */}
+      <Dialog open={showDeleteDialog} onOpenChange={handleCloseDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              {deleteStep === 1 ? 'Confirmar desactivación de cuenta' : 'Confirmación final'}
+            </DialogTitle>
+            <DialogDescription>
+              {deleteStep === 1 
+                ? 'Tu cuenta será desactivada temporalmente. Podrás reactivarla contactando a soporte.'
+                : 'Último paso antes de desactivar tu cuenta.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteStep === 1 && (
+            <div className="space-y-4 py-4">
+              <Alert className="border-yellow-500 bg-yellow-500/10">
+                <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <AlertDescription className="text-sm text-yellow-800 dark:text-white-200">
+                  Tu cuenta será desactivada, no eliminada. Tus datos se conservarán para reactivación futura.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-email">
+                  Para confirmar, escribe tu email: <strong>{user.email}</strong>
+                </Label>
+                <Input
+                  id="confirm-email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={confirmEmail}
+                  onChange={(e) => setConfirmEmail(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="understand"
+                  checked={understandConsequences}
+                  onCheckedChange={(checked) => setUnderstandConsequences(checked as boolean)}
+                />
+                <label
+                  htmlFor="understand"
+                  className="text-sm leading-tight cursor-pointer"
+                >
+                  Entiendo que mi cuenta será desactivada y mis citas futuras serán canceladas
+                </label>
+              </div>
+            </div>
+          )}
+
+          {deleteStep === 2 && (
+            <div className="space-y-4 py-4">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm font-semibold">
+                  ⚠️ CONFIRMACIÓN FINAL: Tu cuenta será desactivada y tus citas canceladas.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-text">
+                  Escribe exactamente: <code className="bg-muted px-2 py-1 rounded">DESACTIVAR CUENTA</code>
+                </Label>
+                <Input
+                  id="confirm-text"
+                  type="text"
+                  placeholder="DESACTIVAR CUENTA"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  className="w-full font-mono"
+                />
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Al confirmar, tu cuenta será desactivada:
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>⚠️ Cuenta: {user.email}</li>
+                  <li>⚠️ Perfil: {user.name}</li>
+                  <li>⚠️ Roles: {user.roles?.length || 0} activos</li>
+                  <li>⚠️ Citas futuras: Canceladas automáticamente</li>
+                </ul>
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-xs font-medium text-green-600 dark:text-green-400">
+                    ✓ Tus datos se conservarán para reactivación
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseDialog}
+              disabled={isDeleting}
+              className="w-full sm:w-auto"
+            >
+              Cancelar
+            </Button>
+            {deleteStep === 1 ? (
+              <Button
+                variant="destructive"
+                onClick={handleProceedToStep2}
+                disabled={
+                  confirmEmail.toLowerCase() !== user.email.toLowerCase() ||
+                  !understandConsequences
+                }
+                className="w-full sm:w-auto"
+              >
+                Continuar
+              </Button>
+            ) : (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={confirmText !== 'DESACTIVAR CUENTA' || isDeleting}
+                className="w-full sm:w-auto"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Desactivando...
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Desactivar cuenta ahora
+                  </>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

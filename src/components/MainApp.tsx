@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuthSimple } from '@/hooks/useAuthSimple'
 import { useUserRoles } from '@/hooks/useUserRoles'
 import { useAdminBusinesses } from '@/hooks/useAdminBusinesses'
@@ -15,8 +16,15 @@ interface MainAppProps {
 
 function MainApp({ onLogout }: Readonly<MainAppProps>) {
   const { user, signOut } = useAuthSimple()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [selectedBusinessId, setSelectedBusinessId] = React.useState<string | undefined>()
   const [isCreatingNewBusiness, setIsCreatingNewBusiness] = React.useState(false)
+  const [bookingContext, setBookingContext] = React.useState<{
+    businessId?: string
+    serviceId?: string
+    locationId?: string
+    employeeId?: string
+  } | null>(null)
   
   // Manage user roles and active role switching
   const { roles, activeRole, activeBusiness, switchRole } = useUserRoles(user)
@@ -40,6 +48,26 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
     console.log('🔍 DEBUG MainApp - needsEmployeeOnboarding:', activeRole === 'employee' && employeeBusinesses.length === 0 && !isLoadingEmployeeBusinesses)
   }, [employeeBusinesses, isLoadingEmployeeBusinesses, activeRole])
   
+  // Extract booking context from URL params (from public profile redirect)
+  React.useEffect(() => {
+    const businessId = searchParams.get('businessId')
+    const serviceId = searchParams.get('serviceId')
+    const locationId = searchParams.get('locationId')
+    const employeeId = searchParams.get('employeeId')
+
+    if (businessId || serviceId || locationId || employeeId) {
+      setBookingContext({
+        businessId: businessId || undefined,
+        serviceId: serviceId || undefined,
+        locationId: locationId || undefined,
+        employeeId: employeeId || undefined
+      })
+
+      // Clear params from URL after extracting
+      setSearchParams({})
+    }
+  }, [searchParams, setSearchParams])
+
   // Auto-select business if there's only one or use activeBusiness
   React.useEffect(() => {
     if (activeRole === 'admin' && businesses.length > 0 && !isCreatingNewBusiness) {
@@ -162,6 +190,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
         onRoleChange={switchRole}
         onLogout={handleLogout}
         user={user}
+        initialBookingContext={bookingContext}
       />
     )
   }

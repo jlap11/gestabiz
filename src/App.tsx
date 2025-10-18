@@ -1,9 +1,11 @@
-import React, { Suspense, lazy, useState } from 'react'
+import React, { Suspense, lazy } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { APP_CONFIG } from '@/constants'
 import { useAuthSimple } from '@/hooks/useAuthSimple'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { HelmetProvider } from 'react-helmet-async'
 
 // Import contexts directly instead of lazy loading them
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -23,8 +25,10 @@ const queryClient = new QueryClient({
 })
 
 // Lazy load main application components
+const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
 const AuthScreen = lazy(() => import('@/components/auth/AuthScreen'))
 const MainApp = lazy(() => import('@/components/MainApp'))
+const PublicBusinessProfile = lazy(() => import('@/pages/PublicBusinessProfile'))
 
 // Loading component
 function AppLoader() {
@@ -39,94 +43,90 @@ function AppLoader() {
   )
 }
 
-function AppContent() {
-  const { user, loading, session, signOut } = useAuthSimple()
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [showLanding, setShowLanding] = useState(!user && !session) // Solo mostrar landing si NO hay sesión
-  const [forceShowLogin, setForceShowLogin] = useState(false)
+// Protected Route wrapper para rutas autenticadas
+function ProtectedRoute({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { user, loading } = useAuthSimple()
+  const location = useLocation()
 
-  // ⚠️ LOG CRÍTICO PARA VERIFICAR QUE CÓDIGO NUEVO ESTÁ CORRIENDO
-  console.log('🚀🚀🚀 [VERSIÓN NUEVA - 00:51] AppContent renderizando:', { userId: user?.id, loading, hasSession: !!session })
-
-  // Si estamos cargando la autenticación, mostrar loader
   if (loading) {
-    console.log('⏳ AppContent - Mostrando loader (loading=true)')
     return <AppLoader />
   }
 
-  // Si está cerrando sesión, mostrar animación
-  if (isLoggingOut) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background animate-fadeOut">
-        <div className="flex flex-col items-center gap-4">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-bounce">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          <h2 className="text-2xl font-bold text-primary">¡Sesión cerrada exitosamente!</h2>
-          <p className="text-muted-foreground">Redirigiendo a la página principal...</p>
-        </div>
-      </div>
-    )
+  if (!user) {
+    // Redirigir a login guardando la URL de origen
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
   }
 
-  // Mostrar landing page si no hay sesión activa
-  if (showLanding && !user && !session) {
-    const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
-    return (
-      <Suspense fallback={<AppLoader />}>
-        <LandingPage 
-          onNavigateToAuth={() => {
-            setShowLanding(false)
-          }} 
-        />
-      </Suspense>
-    )
+  return <>{children}</>
+}
+
+// Wrapper para MainApp con NotificationProvider
+function AuthenticatedApp() {
+  const { user, signOut } = useAuthSimple()
+  const navigate = useNavigate()
+  
+  if (!user) {
+    return <Navigate to="/login" replace />
   }
 
-  // Si no hay usuario autenticado (o se forzó el login), mostrar AuthScreen
-  if ((!user || !session) || forceShowLogin) {
-    console.log('🔐 AppContent - Mostrando AuthScreen (no user o no session)')
-    return <AuthScreen />
+  const handleLogout = async () => {
+    await signOut()
+    navigate('/', { replace: true })
   }
 
-  // Usuario autenticado, mostrar app principal con NotificationProvider
-  console.log('✅ AppContent - Usuario autenticado, montando NotificationProvider con userId:', user.id)
   return (
     <NotificationProvider userId={user.id}>
-      <MainApp 
-        onLogout={async () => {
-          setIsLoggingOut(true)
-          await signOut()
-          setTimeout(() => {
-            setIsLoggingOut(false)
-            setShowLanding(true)
-            setForceShowLogin(false)
-          }, 1500)
-        }}
-      />
+      <MainApp onLogout={handleLogout} />
       <Toaster richColors closeButton />
     </NotificationProvider>
+  )
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Rutas públicas */}
+      <Route path="/" element={<LandingPage onNavigateToAuth={() => {}} />} />
+      <Route path="/login" element={<AuthScreen />} />
+      <Route path="/register" element={<AuthScreen />} />
+      
+      {/* Perfil público de negocio - accesible sin autenticación */}
+      <Route path="/negocio/:slug" element={<PublicBusinessProfile />} />
+      
+      {/* Rutas protegidas - requieren autenticación */}
+      <Route
+        path="/app/*"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedApp />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Redirigir rutas no encontradas */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
 function App() {
   return (
     <ErrorBoundary>
-      <Suspense fallback={<AppLoader />}>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <LanguageProvider>
-              <AppStateProvider>
-                <Suspense fallback={<AppLoader />}>
-                  <AppContent />
-                </Suspense>
-              </AppStateProvider>
-            </LanguageProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </Suspense>
+      <HelmetProvider>
+        <BrowserRouter>
+          <Suspense fallback={<AppLoader />}>
+            <QueryClientProvider client={queryClient}>
+              <ThemeProvider>
+                <LanguageProvider>
+                  <AppStateProvider>
+                    <AppRoutes />
+                  </AppStateProvider>
+                </LanguageProvider>
+              </ThemeProvider>
+            </QueryClientProvider>
+          </Suspense>
+        </BrowserRouter>
+      </HelmetProvider>
     </ErrorBoundary>
   )
 }

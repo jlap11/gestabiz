@@ -243,6 +243,7 @@ export interface User {
   created_at: string
   updated_at?: string
   is_active?: boolean
+  deactivated_at?: string  // Timestamp when account was deactivated
   last_login?: string
 }
 
@@ -349,6 +350,20 @@ export interface Business {
   created_at: string
   updated_at: string
   is_active?: boolean
+  
+  // Public profile fields for SEO and discoverability
+  slug?: string                    // URL-friendly unique identifier (e.g., 'salon-belleza-medellin')
+  meta_title?: string              // Custom SEO title (max 60 chars)
+  meta_description?: string        // Custom SEO description (max 160 chars)
+  meta_keywords?: string[]         // SEO keywords array
+  og_image_url?: string            // Open Graph image URL for social sharing
+  is_public?: boolean              // If false, business won't appear in public profiles
+  
+  // Computed fields for public profiles (from joins)
+  average_rating?: number          // From business_ratings_stats view
+  review_count?: number            // From business_ratings_stats view
+  location_count?: number          // Count of active locations
+  service_count?: number           // Count of active services
 }
 
 // Business locations (branches/offices)
