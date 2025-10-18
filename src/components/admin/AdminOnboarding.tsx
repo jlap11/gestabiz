@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, MapPin, Phone, Mail, Info, Loader2, CheckCircle, Upload, X } from 'lucide-react'
+import { Building2, MapPin, Phone, Mail, Info, Loader2, CheckCircle, Upload, X, LayoutDashboard, Briefcase, Users, BriefcaseBusiness, Calculator, FileText, CreditCard, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,14 +10,8 @@ import { useBusinessCategories } from '@/hooks/useBusinessCategories'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
-import type { User, LegalEntityType, UserRole } from '@/types/types'
-import { 
-  CountrySelect, 
-  RegionSelect, 
-  CitySelect, 
-  DocumentTypeSelect,
-  PhonePrefixSelect 
-} from '@/components/catalog'
+import type { User, LegalEntityType, UserRole, Business } from '@/types/types'
+import { PhonePrefixSelect } from '@/components/catalog'
 
 interface AdminOnboardingProps {
   user: User
@@ -26,6 +20,8 @@ interface AdminOnboardingProps {
   availableRoles: UserRole[]
   onRoleChange: (role: UserRole) => void
   onLogout?: () => void
+  businesses?: Business[]
+  onSelectBusiness?: (businessId: string) => void
 }
 
 export function AdminOnboarding({ 
@@ -34,7 +30,9 @@ export function AdminOnboarding({
   currentRole,
   availableRoles,
   onRoleChange,
-  onLogout
+  onLogout,
+  businesses = [],
+  onSelectBusiness
 }: Readonly<AdminOnboardingProps>) {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -44,14 +42,6 @@ export function AdminOnboarding({
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]) // Max 3
   const [subcategoryDescriptions, setSubcategoryDescriptions] = useState<Record<string, string>>({}) // Descriptions per subcategory
   const [phonePrefix, setPhonePrefix] = useState('+57') // Colombia default
-  
-  // Colombia ID constante
-  const COLOMBIA_ID = '01b4e9d1-a84e-41c9-8768-253209225a21'
-  
-  // Catalog IDs from database
-  const [regionId, setRegionId] = useState<string>('')
-  const [cityId, setCityId] = useState<string>('')
-  const [documentTypeId, setDocumentTypeId] = useState<string>('')
   
   // Form data
   const [formData, setFormData] = useState({
@@ -71,9 +61,9 @@ export function AdminOnboarding({
     phone: '',
     email: '',
     address: '',
-    city_id: '', // UUID from cities table
-    region_id: '', // UUID from regions table
-    country_id: COLOMBIA_ID, // UUID de Colombia por defecto
+    city: '', // Text field for city name
+    state: '', // Text field for state/department
+    country: 'Colombia', // Default to Colombia
     postal_code: '',
   })
 
@@ -343,16 +333,103 @@ export function AdminOnboarding({
   const isStep1Valid = formData.name.trim().length > 0 && formData.category_id.length > 0
   const isStep2Valid = true // Contact info is optional
 
+  // Use existing business if available, otherwise create placeholder
+  const currentBusiness = businesses && businesses.length > 0 
+    ? businesses[0] 
+    : {
+        id: 'new-business',
+        name: 'Crear tu Negocio',
+        description: 'Nuevo negocio en creación',
+        owner_id: user?.id || '',
+        category: {
+          id: 'placeholder',
+          name: 'Sin categoría',
+          slug: '',
+          is_active: true,
+          sort_order: 0
+        },
+        phone: null,
+        email: null,
+        address: null,
+        city: null,
+        state: null,
+        country: null,
+        postal_code: null,
+        latitude: undefined,
+        longitude: undefined,
+        logo_url: null,
+        website: null,
+        business_hours: {},
+        timezone: undefined,
+        settings: {},
+        category_id: undefined,
+        legal_entity_type: undefined,
+        tax_id: null,
+        legal_name: null,
+        registration_number: null,
+        slug: null,
+        meta_title: null,
+        meta_description: null,
+        meta_keywords: undefined,
+        og_image_url: null,
+        is_public: undefined,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any
+
   const sidebarItems = [
     {
-      id: 'create-business',
-      label: 'Crear Negocio',
-      icon: <Building2 className="h-5 w-5" />
+      id: 'overview',
+      label: 'Resumen',
+      icon: <LayoutDashboard className="h-5 w-5" />
+    },
+    {
+      id: 'locations',
+      label: 'Sedes',
+      icon: <MapPin className="h-5 w-5" />
+    },
+    {
+      id: 'services',
+      label: 'Servicios',
+      icon: <Briefcase className="h-5 w-5" />
+    },
+    {
+      id: 'employees',
+      label: 'Empleados',
+      icon: <Users className="h-5 w-5" />
+    },
+    {
+      id: 'recruitment',
+      label: 'Reclutamiento',
+      icon: <BriefcaseBusiness className="h-5 w-5" />
+    },
+    {
+      id: 'accounting',
+      label: 'Contabilidad',
+      icon: <Calculator className="h-5 w-5" />
+    },
+    {
+      id: 'reports',
+      label: 'Reportes',
+      icon: <FileText className="h-5 w-5" />
+    },
+    {
+      id: 'billing',
+      label: 'Facturación',
+      icon: <CreditCard className="h-5 w-5" />
+    },
+    {
+      id: 'permissions',
+      label: 'Permisos',
+      icon: <Shield className="h-5 w-5" />
     }
   ]
 
   return (
     <UnifiedLayout
+      business={currentBusiness}
+      businesses={businesses}
       currentRole={currentRole}
       availableRoles={availableRoles}
       onRoleChange={onRoleChange}
@@ -360,7 +437,12 @@ export function AdminOnboarding({
       sidebarItems={sidebarItems}
       activePage="create-business"
       onPageChange={() => {}}
-      user={user}
+      user={user ? {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar_url,
+      } : undefined}
     >
       <div className="p-6">
         <div className="max-w-3xl mx-auto space-y-6">
@@ -684,22 +766,25 @@ export function AdminOnboarding({
                   </div>
                 </div>
 
-                {/* Document Type */}
+                {/* Document Type - Simple Text (removed complex selector) */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
+                  <label htmlFor="doc-type" className="text-sm font-medium text-foreground">
                     Tipo de documento
                   </label>
-                  <DocumentTypeSelect
-                    countryId={formData.country_id}
-                    value={documentTypeId}
-                    onChange={(value) => {
-                      setDocumentTypeId(value);
-                      handleChange('document_type_id', value);
-                    }}
-                    forCompany={formData.legal_entity_type === 'company'}
-                    required
-                    className="bg-background border-border"
-                  />
+                  <select
+                    id="doc-type"
+                    value={formData.legal_entity_type === 'company' ? 'nit' : 'cedula'}
+                    disabled
+                    className="bg-background border border-border rounded px-3 py-2 text-sm text-foreground"
+                  >
+                    <option value="nit">NIT</option>
+                    <option value="cedula">Cédula</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.legal_entity_type === 'company'
+                      ? 'Tipo de documento automático según tipo de entidad'
+                      : 'Tipo de documento automático según tipo de entidad'}
+                  </p>
                 </div>
 
                 {/* Tax ID / Document Number */}
@@ -917,52 +1002,39 @@ export function AdminOnboarding({
                 />
               </div>
 
-              {/* Country (Disabled) */}
+              {/* Country */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">País</label>
-                <CountrySelect
-                  value={formData.country_id}
-                  onChange={(value) => {
-                    handleChange('country_id', value);
-                    // Reset region and city when country changes
-                    setRegionId('');
-                    setCityId('');
-                    handleChange('region_id', '');
-                    handleChange('city_id', '');
-                  }}
+                <label htmlFor="country" className="text-sm font-medium">País</label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => handleChange('country', e.target.value)}
+                  placeholder="Colombia"
                   disabled
-                  defaultToColombia
                   className="bg-background border-border"
                 />
               </div>
 
-              {/* Region/Department */}
+              {/* State/Department */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Departamento</label>
-                <RegionSelect
-                  countryId={formData.country_id}
-                  value={regionId}
-                  onChange={(value) => {
-                    setRegionId(value);
-                    handleChange('region_id', value);
-                    // Reset city when region changes
-                    setCityId('');
-                    handleChange('city_id', '');
-                  }}
+                <label htmlFor="state" className="text-sm font-medium">Departamento</label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => handleChange('state', e.target.value)}
+                  placeholder="Ej: Cundinamarca"
                   className="bg-background border-border"
                 />
               </div>
 
               {/* City */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Ciudad</label>
-                <CitySelect
-                  regionId={regionId}
-                  value={cityId}
-                  onChange={(value) => {
-                    setCityId(value);
-                    handleChange('city_id', value);
-                  }}
+                <label htmlFor="city" className="text-sm font-medium">Ciudad</label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="Ej: Bogotá"
                   className="bg-background border-border"
                 />
               </div>
@@ -1057,20 +1129,20 @@ export function AdminOnboarding({
           </Card>
         )}
 
-        {/* Info Footer */}
-        <Card className="border-dashed">
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p className="font-medium text-foreground">¿Qué sigue?</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Recibirás un código de invitación único para compartir con empleados</li>
-                <li>Podrás configurar sedes, servicios y horarios</li>
-                <li>Invita a empleados escaneando tu código QR</li>
-                <li>Empieza a recibir y gestionar citas</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Info Footer */}
+          <Card className="border-dashed">
+            <CardContent className="pt-6">
+              <div className="text-sm text-muted-foreground space-y-2">
+                <p className="font-medium text-foreground">¿Qué sigue?</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Recibirás un código de invitación único para compartir con empleados</li>
+                  <li>Podrás configurar sedes, servicios y horarios</li>
+                  <li>Invita a empleados escaneando tu código QR</li>
+                  <li>Empieza a recibir y gestionar citas</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </UnifiedLayout>

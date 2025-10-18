@@ -147,6 +147,8 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
           availableRoles={roles.map(r => r.role)}
           onRoleChange={switchRole}
           onLogout={handleLogout}
+          businesses={businesses}
+          onSelectBusiness={setSelectedBusinessId}
         />
       )
     }
