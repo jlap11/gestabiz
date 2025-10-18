@@ -260,7 +260,8 @@ export const AppointmentsCalendar: React.FC = () => {
           .from('business_employees')
           .select('id, employee_id')
           .eq('business_id', business.id)
-          .eq('status', 'active');
+          .eq('status', 'approved')
+          .eq('is_active', true);
 
         if (employeesError) throw employeesError;
 
