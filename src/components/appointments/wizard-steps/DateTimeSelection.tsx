@@ -44,7 +44,7 @@ export function DateTimeSelection({
       const time12h = hour > 12 ? `${String(hour - 12).padStart(2, '0')}:00 PM` : `${String(hour).padStart(2, '0')}:00 AM`;
       
       // Verificar disponibilidad considerando la regla de 90 minutos para hoy
-      let isAvailable = Math.random() > 0.3; // 70% de disponibilidad simulada base
+      let isAvailable = true; // Por defecto disponible
       
       if (isToday) {
         const currentHour = now.getHours();
