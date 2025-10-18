@@ -24,6 +24,9 @@ interface AppointmentWizardProps {
   open: boolean;
   onClose: () => void;
   businessId?: string; // Ahora es opcional
+  preselectedServiceId?: string; // ID del servicio preseleccionado desde perfil público
+  preselectedLocationId?: string; // ID de la ubicación preseleccionada desde perfil público
+  preselectedEmployeeId?: string; // ID del empleado preseleccionado desde perfil público
   userId?: string; // ID del usuario autenticado
   onSuccess?: () => void; // Callback después de crear la cita
   preselectedDate?: Date; // Fecha preseleccionada desde el calendario
@@ -71,18 +74,40 @@ const STEP_LABELS = {
   6: 'Complete'
 };
 
-export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess, preselectedDate, preselectedTime }: Readonly<AppointmentWizardProps>) {
-  // Si se proporciona businessId, empezar en paso 1 (Location), sino en paso 0 (Business)
-  const [currentStep, setCurrentStep] = useState(businessId ? 1 : 0);
+export function AppointmentWizard({ 
+  open, 
+  onClose, 
+  businessId, 
+  preselectedServiceId,
+  preselectedLocationId,
+  preselectedEmployeeId,
+  userId, 
+  onSuccess, 
+  preselectedDate, 
+  preselectedTime 
+}: Readonly<AppointmentWizardProps>) {
+  // Determinar el paso inicial basado en preselecciones
+  const getInitialStep = () => {
+    if (!businessId) return 0; // Sin negocio, empezar desde selección de negocio
+    
+    // Con negocio preseleccionado
+    if (preselectedEmployeeId) return 4; // Si hay empleado, ir directo a fecha/hora
+    if (preselectedServiceId) return 3; // Si hay servicio, ir a selección de empleado
+    if (preselectedLocationId) return 2; // Si hay ubicación, ir a selección de servicio
+    
+    return 1; // Por defecto, empezar en selección de ubicación
+  };
+
+  const [currentStep, setCurrentStep] = useState(getInitialStep());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [wizardData, setWizardData] = useState<WizardData>({
     businessId: businessId || null,
     business: null,
-    locationId: null,
+    locationId: preselectedLocationId || null,
     location: null,
-    serviceId: null,
+    serviceId: preselectedServiceId || null,
     service: null,
-    employeeId: null,
+    employeeId: preselectedEmployeeId || null,
     employee: null,
     employeeBusinessId: null,
     employeeBusiness: null,
@@ -97,6 +122,79 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
 
   // Pre-cargar todos los datos del wizard cuando se selecciona un negocio
   const dataCache = useWizardDataCache(wizardData.businessId || businessId || null);
+
+  // Efecto para cargar datos completos de items preseleccionados
+  React.useEffect(() => {
+    if (!open) return; // Solo cargar cuando el wizard esté abierto
+
+    const loadPreselectedData = async () => {
+      try {
+        const updates: Partial<WizardData> = {};
+
+        // Cargar negocio si está preseleccionado pero no tenemos los datos completos
+        if (businessId && !wizardData.business) {
+          const { data: businessData } = await supabase
+            .from('businesses')
+            .select('id, name, description')
+            .eq('id', businessId)
+            .single();
+          
+          if (businessData) {
+            updates.business = businessData as Business;
+          }
+        }
+
+        // Cargar ubicación si está preseleccionada
+        if (preselectedLocationId && !wizardData.location) {
+          const { data: locationData } = await supabase
+            .from('locations')
+            .select('*')
+            .eq('id', preselectedLocationId)
+            .single();
+          
+          if (locationData) {
+            updates.location = locationData as Location;
+          }
+        }
+
+        // Cargar servicio si está preseleccionado
+        if (preselectedServiceId && !wizardData.service) {
+          const { data: serviceData } = await supabase
+            .from('services')
+            .select('*')
+            .eq('id', preselectedServiceId)
+            .single();
+          
+          if (serviceData) {
+            updates.service = serviceData as Service;
+          }
+        }
+
+        // Cargar empleado si está preseleccionado
+        if (preselectedEmployeeId && !wizardData.employee) {
+          const { data: employeeData } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, role, avatar_url')
+            .eq('id', preselectedEmployeeId)
+            .single();
+          
+          if (employeeData) {
+            updates.employee = employeeData as Employee;
+          }
+        }
+
+        // Aplicar todas las actualizaciones de una vez
+        if (Object.keys(updates).length > 0) {
+          updateWizardData(updates);
+        }
+      } catch {
+        // Silent fail - el usuario puede seleccionar manualmente si falla la precarga
+      }
+    };
+
+    loadPreselectedData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, businessId, preselectedLocationId, preselectedServiceId, preselectedEmployeeId]);
 
   // Determinar si necesitamos mostrar el paso de selección de negocio del empleado
   const needsEmployeeBusinessSelection = wizardData.employeeId && employeeBusinesses.length > 1;
@@ -169,15 +267,15 @@ export function AppointmentWizard({ open, onClose, businessId, userId, onSuccess
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setCurrentStep(businessId ? 1 : 0);
+      setCurrentStep(getInitialStep()); // Usar función para calcular paso inicial
       setWizardData({
         businessId: businessId || null,
         business: null,
-        locationId: null,
+        locationId: preselectedLocationId || null,
         location: null,
-        serviceId: null,
+        serviceId: preselectedServiceId || null,
         service: null,
-        employeeId: null,
+        employeeId: preselectedEmployeeId || null,
         employee: null,
         employeeBusinessId: null,
         employeeBusiness: null,

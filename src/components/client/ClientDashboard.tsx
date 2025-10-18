@@ -473,6 +473,7 @@ export function ClientDashboard({
     setPreselectedDate(undefined)
     setPreselectedTime(undefined)
     setAppointmentWizardBusinessId(undefined) // Limpiar businessId preseleccionado
+    setBookingPreselection(undefined) // Limpiar preselecciones de servicio/ubicación/empleado
   }
 
   const renderContent = () => {
@@ -687,6 +688,9 @@ export function ClientDashboard({
           open={showAppointmentWizard}
           onClose={handleCloseWizard}
           businessId={appointmentWizardBusinessId} // Pasar businessId preseleccionado
+          preselectedServiceId={bookingPreselection?.serviceId}
+          preselectedLocationId={bookingPreselection?.locationId}
+          preselectedEmployeeId={bookingPreselection?.employeeId}
           userId={currentUser.id}
           preselectedDate={preselectedDate}
           preselectedTime={preselectedTime}
