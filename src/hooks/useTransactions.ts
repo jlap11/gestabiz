@@ -28,7 +28,6 @@ export function useTransactions(filters?: TransactionFilters) {
         .select(`
           *,
           location:locations(id, name),
-          appointment:appointments(id, start_time, client_name),
           employee:profiles!transactions_employee_id_fkey(id, full_name, email)
         `);
 

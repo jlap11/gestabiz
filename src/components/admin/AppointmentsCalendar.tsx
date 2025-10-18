@@ -11,6 +11,9 @@ interface Employee {
   user_id: string;
   profile_name: string;
   profile_avatar?: string;
+  lunch_break_start?: string | null;
+  lunch_break_end?: string | null;
+  has_lunch_break?: boolean;
 }
 
 interface Appointment {
@@ -255,10 +258,10 @@ export const AppointmentsCalendar: React.FC = () => {
           setLocationHours(locations[0]);
         }
 
-        // Get employees
+        // Get employees with lunch break info
         const { data: employeesData, error: employeesError } = await supabase
           .from('business_employees')
-          .select('id, employee_id')
+          .select('id, employee_id, lunch_break_start, lunch_break_end, has_lunch_break')
           .eq('business_id', business.id)
           .eq('status', 'approved')
           .eq('is_active', true);
@@ -286,7 +289,10 @@ export const AppointmentsCalendar: React.FC = () => {
             id: emp.id,
             user_id: emp.employee_id,
             profile_name: profile?.full_name || 'Sin nombre',
-            profile_avatar: profile?.avatar_url || undefined
+            profile_avatar: profile?.avatar_url || undefined,
+            lunch_break_start: emp.lunch_break_start,
+            lunch_break_end: emp.lunch_break_end,
+            has_lunch_break: emp.has_lunch_break
           };
         });
 
@@ -534,6 +540,18 @@ export const AppointmentsCalendar: React.FC = () => {
     }
   }, [selectedDate, currentTimePosition]);
 
+  // Check if hour is within employee's lunch break
+  const isLunchBreak = (hour: number, employee: Employee): boolean => {
+    if (!employee.has_lunch_break || !employee.lunch_break_start || !employee.lunch_break_end) {
+      return false;
+    }
+    
+    const lunchStart = Number.parseInt(employee.lunch_break_start.split(':')[0]);
+    const lunchEnd = Number.parseInt(employee.lunch_break_end.split(':')[0]);
+    
+    return hour >= lunchStart && hour < lunchEnd;
+  };
+
   // Get appointment status class
   const getAppointmentClass = (status: string): string => {
     if (status === 'confirmed') {
@@ -597,24 +615,26 @@ export const AppointmentsCalendar: React.FC = () => {
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full">
             {/* Header with employee names */}
-            <div className="flex border-b border-border bg-muted/50">
-              <div className="w-20 flex-shrink-0 p-2 font-medium text-sm text-muted-foreground">
+            <div className="flex border-b-2 border-border bg-muted/50 sticky top-0 z-20">
+              <div className="w-20 flex-shrink-0 p-3 font-semibold text-sm text-muted-foreground border-r-2 border-border bg-background">
                 Hora
               </div>
-              {employees.map(employee => (
+              {employees.map((employee, index) => (
                 <div
                   key={employee.id}
-                  className="flex-1 min-w-[200px] p-2 text-center border-l border-border"
+                  className={`flex-1 min-w-[200px] p-3 text-center border-r-2 border-border last:border-r-0 ${
+                    index % 2 === 0 ? 'bg-blue-50/30 dark:bg-blue-950/10' : 'bg-purple-50/30 dark:bg-purple-950/10'
+                  }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     {employee.profile_avatar && (
                       <img
                         src={employee.profile_avatar}
                         alt={employee.profile_name}
-                        className="h-6 w-6 rounded-full"
+                        className="h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
                       />
                     )}
-                    <span className="font-medium text-sm text-foreground">
+                    <span className="font-semibold text-sm text-foreground">
                       {employee.profile_name}
                     </span>
                   </div>
@@ -627,50 +647,63 @@ export const AppointmentsCalendar: React.FC = () => {
               {/* Current time indicator */}
               {currentTimePosition !== null && (
                 <div
-                  className="absolute left-0 right-0 h-0.5 bg-blue-500 z-10"
+                  className="absolute left-0 right-0 h-0.5 bg-blue-500 z-10 pointer-events-none"
                   style={{ top: `${currentTimePosition}%` }}
                 >
-                  <div className="absolute -left-2 -top-2 w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <div className="absolute -left-2 -top-2 w-4 h-4 bg-blue-500 rounded-full shadow-lg"></div>
                 </div>
               )}
 
               {hours.map(hour => {
                 const isWorkHour = isBusinessHour(hour);
-                const workHourClass = isWorkHour ? '' : 'bg-muted/30';
+                const workHourClass = isWorkHour ? '' : 'bg-muted/40';
                 
                 return (
                   <div
                     key={hour}
-                    className={`flex border-b border-border min-h-[80px] ${workHourClass}`}
+                    className={`flex border-b border-border min-h-[80px] ${workHourClass} hover:bg-muted/20 transition-colors`}
                   >
-                    <div className="w-20 flex-shrink-0 p-2 text-sm text-muted-foreground font-medium">
+                    <div className="w-20 flex-shrink-0 p-2 text-sm text-muted-foreground font-medium border-r-2 border-border bg-background">
                       {hour.toString().padStart(2, '0')}:00
                     </div>
-                    {employees.map(employee => {
+                    {employees.map((employee, index) => {
                       const slotAppointments = getAppointmentsForSlot(employee.id, hour);
+                      const isLunch = isLunchBreak(hour, employee);
                       
                       return (
                         <div
                           key={employee.id}
-                          className="flex-1 min-w-[200px] p-2 border-l border-border"
+                          className={`flex-1 min-w-[200px] p-2 border-r-2 border-border last:border-r-0 transition-colors ${
+                            isLunch
+                              ? 'bg-gray-100 dark:bg-gray-900 opacity-60 cursor-not-allowed'
+                              : `hover:bg-accent/30 ${index % 2 === 0 ? 'bg-blue-50/20 dark:bg-blue-950/5' : 'bg-purple-50/20 dark:bg-purple-950/5'}`
+                          }`}
                         >
-                          {slotAppointments.map(apt => {
-                            const appointmentClass = getAppointmentClass(apt.status);
-                            
-                            return (
-                              <button
-                                key={apt.id}
-                                onClick={() => setSelectedAppointment(apt)}
-                                className={`w-full p-2 rounded-md text-left text-xs hover:opacity-80 transition-opacity ${appointmentClass}`}
-                              >
-                                <div className="font-medium truncate">{apt.client_name}</div>
-                                <div className="truncate">{apt.service_name}</div>
-                                <div className="text-xs opacity-75">
-                                  {format(parseISO(apt.start_time), 'HH:mm')} - {format(parseISO(apt.end_time), 'HH:mm')}
-                                </div>
-                              </button>
-                            );
-                          })}
+                          {isLunch ? (
+                            <div className="flex items-center justify-center h-full text-xs text-muted-foreground italic">
+                              Almuerzo
+                            </div>
+                          ) : (
+                            <>
+                              {slotAppointments.map(apt => {
+                                const appointmentClass = getAppointmentClass(apt.status);
+                                
+                                return (
+                                  <button
+                                    key={apt.id}
+                                    onClick={() => setSelectedAppointment(apt)}
+                                    className={`w-full p-2 rounded-md text-left text-xs hover:opacity-80 transition-opacity shadow-sm ${appointmentClass}`}
+                                  >
+                                    <div className="font-medium truncate">{apt.client_name}</div>
+                                    <div className="truncate">{apt.service_name}</div>
+                                    <div className="text-xs opacity-75">
+                                      {format(parseISO(apt.start_time), 'HH:mm')} - {format(parseISO(apt.end_time), 'HH:mm')}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </>
+                          )}
                         </div>
                       );
                     })}

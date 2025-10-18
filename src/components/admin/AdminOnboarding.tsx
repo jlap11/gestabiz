@@ -22,6 +22,7 @@ interface AdminOnboardingProps {
   onLogout?: () => void
   businesses?: Business[]
   onSelectBusiness?: (businessId: string) => void
+  onNavigateToAdmin?: () => void // Navigate back to admin dashboard when clicking non-onboarding pages
 }
 
 export function AdminOnboarding({ 
@@ -32,10 +33,12 @@ export function AdminOnboarding({
   onRoleChange,
   onLogout,
   businesses = [],
-  onSelectBusiness
+  onSelectBusiness,
+  onNavigateToAdmin
 }: Readonly<AdminOnboardingProps>) {
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [activePage, setActivePage] = useState('overview') // Track active page for sidebar
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState('') // For filtering categories
@@ -426,6 +429,20 @@ export function AdminOnboarding({
     }
   ]
 
+  // Handler for page changes - navigate to admin if clicking non-onboarding pages
+  const handlePageChange = (pageId: string) => {
+    // Only allow 'overview' and 'create-business' pages in onboarding
+    // For any other page, navigate back to full admin dashboard
+    if (pageId !== 'overview' && pageId !== 'create-business') {
+      // Navigate to admin dashboard instead
+      if (onNavigateToAdmin) {
+        onNavigateToAdmin()
+      }
+      return
+    }
+    setActivePage(pageId)
+  }
+
   return (
     <UnifiedLayout
       business={currentBusiness}
@@ -435,8 +452,8 @@ export function AdminOnboarding({
       onRoleChange={onRoleChange}
       onLogout={onLogout}
       sidebarItems={sidebarItems}
-      activePage="create-business"
-      onPageChange={() => {}}
+      activePage={activePage}
+      onPageChange={handlePageChange}
       user={user ? {
         id: user.id,
         name: user.name,
@@ -445,6 +462,7 @@ export function AdminOnboarding({
       } : undefined}
     >
       <div className="p-6">
+        {/* Show create business form on 'create-business' page, overview on 'overview' */}
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">

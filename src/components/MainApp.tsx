@@ -149,6 +149,13 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
           onLogout={handleLogout}
           businesses={businesses}
           onSelectBusiness={setSelectedBusinessId}
+          onNavigateToAdmin={() => {
+            // When user clicks non-onboarding pages, show AdminDashboard instead
+            // The logic will fallthrough to show AdminDashboard if a business is selected
+            if (businesses.length > 0 && !selectedBusinessId) {
+              setSelectedBusinessId(businesses[0].id)
+            }
+          }}
         />
       )
     }

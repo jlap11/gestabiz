@@ -12,142 +12,11 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useAuth } from '@/hooks/useAuth'
+import { PRICING_PLANS } from '@/lib/pricingPlans'
+import type { Plan } from '@/lib/pricingPlans'
 import { toast } from 'sonner'
 
 type BillingCycle = 'monthly' | 'yearly'
-type PlanType = 'gratuito' | 'inicio' | 'profesional' | 'empresarial' | 'corporativo'
-
-interface PlanFeature {
-  name: string
-  included: boolean
-  limit?: string
-}
-
-interface Plan {
-  id: PlanType
-  name: string
-  icon: React.ReactNode
-  description: string
-  priceMonthly: number
-  priceYearly: number
-  features: PlanFeature[]
-  popular?: boolean
-  cta: string
-}
-
-const plans: Plan[] = [
-  {
-    id: 'gratuito' as PlanType,
-    name: 'Gratuito',
-    icon: <Sparkles className="h-6 w-6" />,
-    description: 'Ideal para probar la plataforma',
-    priceMonthly: 0,
-    priceYearly: 0,
-    cta: 'Plan Actual',
-    features: [
-      { name: '1 sede', included: true },
-      { name: '1 empleado', included: true, limit: '1' },
-      { name: '1 servicio', included: true, limit: '1' },
-      { name: 'Hasta 3 citas al mes', included: true, limit: '3' },
-      { name: 'Calendario básico', included: true },
-      { name: 'Notificaciones email', included: true },
-      { name: 'Notificaciones SMS', included: false },
-      { name: 'WhatsApp', included: false },
-      { name: 'Analytics', included: false },
-      { name: 'API access', included: false },
-      { name: 'Soporte', included: false },
-    ],
-  },
-  {
-    id: 'inicio',
-    name: 'Inicio',
-    icon: <Building2 className="h-6 w-6" />,
-    description: 'Perfecto para empezar tu negocio',
-    priceMonthly: 80000,
-    priceYearly: 800000,
-    popular: true,
-    cta: 'Actualizar Ahora',
-    features: [
-      { name: '1 sede', included: true },
-      { name: 'Hasta 3 empleados', included: true, limit: '3' },
-      { name: 'Hasta 5 servicios', included: true, limit: '5' },
-      { name: 'Citas ilimitadas', included: true },
-      { name: 'Calendario básico', included: true },
-      { name: 'Notificaciones email', included: true },
-      { name: 'Notificaciones SMS', included: true },
-      { name: 'WhatsApp', included: true },
-      { name: 'Analytics básico', included: true },
-      { name: 'API access', included: false },
-      { name: 'Soporte por email', included: true },
-    ],
-  },
-  {
-    id: 'profesional',
-    name: 'Profesional',
-    icon: <Rocket className="h-6 w-6" />,
-    description: 'Para negocios en crecimiento',
-    priceMonthly: 200000,
-    priceYearly: 2000000,
-    cta: 'Próximamente',
-    features: [
-      { name: 'Hasta 3 sedes', included: true, limit: '3' },
-      { name: 'Hasta 10 empleados', included: true, limit: '10' },
-      { name: 'Hasta 20 servicios', included: true, limit: '20' },
-      { name: 'Citas ilimitadas', included: true },
-      { name: 'Calendario avanzado', included: true },
-      { name: 'Notificaciones email', included: true },
-      { name: 'Notificaciones SMS', included: true },
-      { name: 'WhatsApp', included: true },
-      { name: 'Analytics avanzado', included: true },
-      { name: 'API access', included: false },
-      { name: 'Soporte prioritario', included: true },
-    ],
-  },
-  {
-    id: 'empresarial',
-    name: 'Empresarial',
-    icon: <Crown className="h-6 w-6" />,
-    description: 'Para empresas establecidas',
-    priceMonthly: 500000,
-    priceYearly: 5000000,
-    cta: 'Próximamente',
-    features: [
-      { name: 'Hasta 10 sedes', included: true, limit: '10' },
-      { name: 'Hasta 50 empleados', included: true, limit: '50' },
-      { name: 'Hasta 100 servicios', included: true, limit: '100' },
-      { name: 'Citas ilimitadas', included: true },
-      { name: 'Calendario empresarial', included: true },
-      { name: 'Notificaciones email', included: true },
-      { name: 'Notificaciones SMS', included: true },
-      { name: 'WhatsApp', included: true },
-      { name: 'Analytics avanzado', included: true },
-      { name: 'API access', included: true },
-      { name: 'Soporte prioritario 24/7', included: true },
-    ],
-  },
-  {
-    id: 'corporativo',
-    name: 'Corporativo',
-    icon: <Crown className="h-6 w-6" />,
-    description: 'Solución personalizada a medida',
-    priceMonthly: 0, // Custom pricing
-    priceYearly: 0,
-    cta: 'Próximamente',
-    features: [
-      { name: 'Sedes ilimitadas', included: true },
-      { name: 'Empleados ilimitados', included: true },
-      { name: 'Servicios ilimitados', included: true },
-      { name: 'Citas ilimitadas', included: true },
-      { name: 'Calendario empresarial', included: true },
-      { name: 'Notificaciones email', included: true },
-      { name: 'Notificaciones SMS ilimitadas', included: true },
-      { name: 'WhatsApp Business API', included: true },
-      { name: 'Analytics personalizado', included: true },
-      { name: 'API access dedicado', included: true },
-      { name: 'Gerente de cuenta dedicado', included: true },
-    ],
-  },
-]
 
 interface PricingPageProps {
   businessId?: string
@@ -167,7 +36,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
     code: string
     discount: number
   } | null>(null)
-  const [processingPlan, setProcessingPlan] = useState<PlanType | null>(null)
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null)
 
   // Format currency manually (COP)
   const formatCurrency = (amount: number) => {
@@ -238,9 +107,9 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
   }
 
   const getPrice = (plan: Plan) => {
-    if (plan.priceMonthly === 0) return null // Custom pricing
+    if (plan.price === 0) return null // Custom pricing
     
-    const basePrice = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly / 12
+    const basePrice = billingCycle === 'monthly' ? plan.price : (plan.priceAnnual || 0) / 12
     const discount = appliedDiscount?.discount || 0
     const finalPrice = basePrice - discount
 
@@ -316,7 +185,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
 
         {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {plans.map((plan) => {
+          {PRICING_PLANS.map((plan) => {
             const price = getPrice(plan)
             const isProcessing = processingPlan === plan.id
             const isDisabled = plan.id !== 'inicio' && plan.id !== 'gratuito'
