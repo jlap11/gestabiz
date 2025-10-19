@@ -12,11 +12,13 @@ import { ClientHistory } from '@/components/client/ClientHistory'
 import { SearchResults } from '@/components/client/SearchResults'
 import BusinessProfile from '@/components/business/BusinessProfile'
 import ProfessionalProfile from '@/components/user/UserProfile'
+import { BusinessSuggestions } from '@/components/client/BusinessSuggestions'
 import { MandatoryReviewModal } from '@/components/jobs'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useChat } from '@/hooks/useChat'
 import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
+import { usePreferredCity } from '@/hooks/usePreferredCity'
 import type { UserRole, User } from '@/types/types'
 import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
@@ -184,6 +186,12 @@ export function ClientDashboard({
     requestOnMount: true,
     showPermissionPrompt: true
   })
+
+  // Hook para preferencias de ciudad (para sugerencias)
+  const {
+    preferredCityName,
+    preferredRegionName
+  } = usePreferredCity()
 
   // Handle initial booking context from public profile redirect
   useEffect(() => {
@@ -552,6 +560,7 @@ export function ClientDashboard({
       case 'appointments':
         return (
           <div className="p-6">
+            {/* Header - Mantener en toda la parte superior */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
               <div className="flex items-center gap-2">
@@ -592,111 +601,129 @@ export function ClientDashboard({
               </div>
             </div>
 
-            {/* Calendar View */}
-            {viewMode === 'calendar' ? (
-              <ClientCalendarView
-                appointments={appointments}
-                onAppointmentClick={setSelectedAppointment}
-                onCreateAppointment={handleCreateAppointmentFromCalendar}
-              />
-            ) : (
-              /* List View */
-              <>
-                {upcomingAppointments.length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="pt-6 text-center">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No tienes citas programadas</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Usa el botón "Nueva Cita" para agendar tu primera cita
-                      </p>
-                    </CardContent>
-                  </Card>
+            {/* Layout de 2 columnas: Citas (izquierda) + Sugerencias (derecha) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Columna izquierda: Citas (2/3 del ancho) */}
+              <div className="lg:col-span-2">
+                {/* Calendar View */}
+                {viewMode === 'calendar' ? (
+                  <ClientCalendarView
+                    appointments={appointments}
+                    onAppointmentClick={setSelectedAppointment}
+                    onCreateAppointment={handleCreateAppointmentFromCalendar}
+                  />
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {upcomingAppointments.map((appointment) => (
-                      <Card 
-                        key={appointment.id} 
-                        className="cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => setSelectedAppointment(appointment)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="space-y-3">
-                            {/* Business Name and Location */}
-                            {(appointment.business?.name || appointment.location?.name) && (
-                              <div className="border-b border-border pb-2">
-                                <p className="text-base font-semibold text-foreground">
-                                  {appointment.business?.name}
-                                  {appointment.business?.name && appointment.location?.name && ' - '}
-                                  <span className="text-sm font-normal text-muted-foreground">
-                                    {appointment.location?.name}
-                                  </span>
-                                </p>
-                              </div>
-                            )}
-                            
-                            {/* Service Name and Badge */}
-                            <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-semibold text-foreground line-clamp-2 flex-1">
-                                {appointment.service?.name || appointment.title}
-                              </h3>
-                              <Badge 
-                                variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
-                                className="flex-shrink-0"
-                              >
-                                {getStatusLabel(appointment.status)}
-                              </Badge>
-                            </div>
-
-                            {/* Date and Time */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Clock className="h-4 w-4 flex-shrink-0" />
-                              <span className="line-clamp-1">
-                                {new Date(appointment.start_time).toLocaleDateString('es', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })}
-                                {' • '}
-                                {new Date(appointment.start_time).toLocaleTimeString('es', {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </span>
-                            </div>
-
-                            {/* Location/Sede */}
-                            {appointment.location?.name && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <MapPin className="h-4 w-4 flex-shrink-0" />
-                                <span className="line-clamp-1">{appointment.location.name}</span>
-                              </div>
-                            )}
-
-                            {/* Employee Name */}
-                            {appointment.employee?.full_name && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <UserIcon className="h-4 w-4 flex-shrink-0" />
-                                <span className="line-clamp-1">{appointment.employee.full_name}</span>
-                              </div>
-                            )}
-
-                            {/* Price */}
-                            {(appointment.service?.price || appointment.price) && (
-                              <div className="pt-2 border-t border-border">
-                                <span className="text-lg font-bold text-foreground">
-                                  ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                  /* List View */
+                  <>
+                    {upcomingAppointments.length === 0 ? (
+                      <Card className="border-dashed">
+                        <CardContent className="pt-6 text-center">
+                          <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                          <p className="text-muted-foreground">No tienes citas programadas</p>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Usa el botón "Nueva Cita" para agendar tu primera cita
+                          </p>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-4">
+                        {upcomingAppointments.map((appointment) => (
+                          <Card 
+                            key={appointment.id} 
+                            className="cursor-pointer hover:shadow-lg transition-shadow"
+                            onClick={() => setSelectedAppointment(appointment)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="space-y-3">
+                                {/* Business Name and Location */}
+                                {(appointment.business?.name || appointment.location?.name) && (
+                                  <div className="border-b border-border pb-2">
+                                    <p className="text-base font-semibold text-foreground">
+                                      {appointment.business?.name}
+                                      {appointment.business?.name && appointment.location?.name && ' - '}
+                                      <span className="text-sm font-normal text-muted-foreground">
+                                        {appointment.location?.name}
+                                      </span>
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {/* Service Name and Badge */}
+                                <div className="flex items-start justify-between gap-2">
+                                  <h3 className="font-semibold text-foreground line-clamp-2 flex-1">
+                                    {appointment.service?.name || appointment.title}
+                                  </h3>
+                                  <Badge 
+                                    variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
+                                    className="flex-shrink-0"
+                                  >
+                                    {getStatusLabel(appointment.status)}
+                                  </Badge>
+                                </div>
+
+                                {/* Date and Time */}
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Clock className="h-4 w-4 flex-shrink-0" />
+                                  <span className="line-clamp-1">
+                                    {new Date(appointment.start_time).toLocaleDateString('es', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}
+                                    {' • '}
+                                    {new Date(appointment.start_time).toLocaleTimeString('es', {
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </span>
+                                </div>
+
+                                {/* Location/Sede */}
+                                {appointment.location?.name && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                                    <span className="line-clamp-1">{appointment.location.name}</span>
+                                  </div>
+                                )}
+
+                                {/* Employee Name */}
+                                {appointment.employee?.full_name && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <UserIcon className="h-4 w-4 flex-shrink-0" />
+                                    <span className="line-clamp-1">{appointment.employee.full_name}</span>
+                                  </div>
+                                )}
+
+                                {/* Price */}
+                                {(appointment.service?.price || appointment.price) && (
+                                  <div className="pt-2 border-t border-border">
+                                    <span className="text-lg font-bold text-foreground">
+                                      ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
-            )}
+              </div>
+
+              {/* Columna derecha: Sugerencias de negocios (1/3 del ancho) */}
+              <div className="lg:col-span-1">
+                <BusinessSuggestions
+                  userId={currentUser.id}
+                  preferredCityName={preferredCityName}
+                  preferredRegionName={preferredRegionName}
+                  onBusinessSelect={(businessId) => {
+                    setSelectedBusinessId(businessId)
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )
       case 'profile':

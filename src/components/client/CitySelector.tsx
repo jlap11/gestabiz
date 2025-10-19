@@ -101,8 +101,10 @@ export function CitySelector({
     }
   };
 
-  const isBogota = selectedRegion === BOGOTA_REGION_ID;
-  const showCitySelector = !isBogota && selectedRegion && hookCities && hookCities.length > 0;
+  // Ocultar selector de ciudades si la región seleccionada es Bogotá D.C.
+  // (verifica tanto el id como el nombre por resiliencia ante valores temporales)
+  const isBogota = selectedRegion === BOGOTA_REGION_ID || preferredRegionName === 'Bogotá D.C.';
+  const showCitySelector = !isBogota && !!selectedRegion && !!hookCities && hookCities.length > 0;
 
   return (
     <div className="inline-flex items-center gap-2 px-3 py-2 text-sm">
