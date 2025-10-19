@@ -359,6 +359,20 @@ export function ClientDashboard({
       locationId: appointment.location_id || undefined,
       employeeId: appointment.employee_id || undefined
     })
+
+    if (appointment.start_time) {
+      const startDate = new Date(appointment.start_time)
+      setPreselectedDate(startDate)
+      const formattedTime = startDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      })
+      setPreselectedTime(formattedTime)
+    } else {
+      setPreselectedDate(undefined)
+      setPreselectedTime(undefined)
+    }
     setShowAppointmentWizard(true)
     
     toast.info('Modifica los datos de tu cita y confirma los cambios')

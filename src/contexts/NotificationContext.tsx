@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * NotificationContext - Sistema global de notificaciones
  * 
@@ -44,12 +45,18 @@ interface NotificationProviderProps {
   userId: string | null
 }
 
-export function NotificationProvider({ children, userId }: NotificationProviderProps) {
+export const NotificationProvider = React.memo<NotificationProviderProps>(function NotificationProvider({ children, userId }) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [isChatOpen, setChatOpen] = useState(false)
   
-  // Debug: Log cuando el provider se monta
-  console.log('[NotificationProvider] Mounted with userId:', userId)
+  // Debug: Log cuando el provider se monta (solo en dev)
+  const mountedRef = useRef(false)
+  useEffect(() => {
+    if (!mountedRef.current && import.meta.env.DEV) {
+      console.log('[NotificationProvider] Mounted with userId:', userId)
+      mountedRef.current = true
+    }
+  }, [userId]) // Incluir userId para actualizar en cambio de usuario
   
   // Ref para acceder al estado actual en callbacks
   const stateRef = useRef({ activeConversationId, isChatOpen })
@@ -59,16 +66,20 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
 
   // Suscripción realtime GLOBAL (siempre activa)
   useEffect(() => {
-    console.log('🔥🔥🔥 [NotificationContext] useEffect EJECUTÁNDOSE. UserId:', userId, 'Type:', typeof userId)
+    if (import.meta.env.DEV) {
+      console.log('🔥🔥🔥 [NotificationContext] useEffect EJECUTÁNDOSE. UserId:', userId, 'Type:', typeof userId)
+    }
     
     if (!userId) {
-      console.log('[NotificationContext] ⚠️ No userId, skipping subscription')
+      if (import.meta.env.DEV) console.log('[NotificationContext] ⚠️ No userId, skipping subscription')
       return
     }
 
     const channelName = `global_notifications_${userId}`
     
-    console.log('🔥🔥🔥 [NotificationContext] 📡 INICIANDO suscripción realtime para:', userId)
+    if (import.meta.env.DEV) {
+      console.log('🔥🔥🔥 [NotificationContext] 📡 INICIANDO suscripción realtime para:', userId)
+    }
     
     const channel = supabase
       .channel(channelName)
@@ -172,7 +183,9 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
   }, [userId])
 
   const setActiveConversation = useCallback((conversationId: string | null) => {
-    console.log('[NotificationContext] 💬 Active conversation changed:', conversationId)
+    if (import.meta.env.DEV) {
+      console.log('[NotificationContext] 💬 Active conversation changed:', conversationId)
+    }
     setActiveConversationId(conversationId)
   }, [])
 
@@ -188,4 +201,4 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
       {children}
     </NotificationContext.Provider>
   )
-}
+});

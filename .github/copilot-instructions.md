@@ -1,5 +1,13 @@
 # Guía rápida
 
+## 🚫 REGLA: No Generar Documentos .md Sin Solicitud Explícita
+- **Norma**: NO crear archivos .md de documentación automáticamente
+- **Excepción**: SOLO generar .md si el usuario dice "crea un documento" o "documenta esto"
+- **Expectativa**: Proporcionar información en forma de texto en la conversación, comentarios en código, o respuestas directas
+- **Aplicación**: Se aplica a todas las tareas, mejoras, fixes y nuevas features
+- **Beneficio**: Reduce clutter en el repo, evita carpetas llenas de guías sin usar, mantiene el repo limpio
+- **Alternativa**: Si el usuario necesita documentación, la solicita explícitamente y ENTONCES se crea
+
 ## Sistema de Edición de Citas con Validación de Horarios ⭐ COMPLETADO 100% (2025-01-20)
 Sistema completo para crear y editar citas con validación en tiempo real de disponibilidad - **PRODUCTION READY**:
 - **Componente principal**: `DateTimeSelection.tsx` (328 líneas) - Calendario con validación completa

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { 
   Settings, 
   Menu,
@@ -13,6 +13,8 @@ import {
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { Badge } from '@/components/ui/badge'
 import { SearchBar, type SearchType } from '@/components/client/SearchBar'
+import { CitySelector } from '@/components/client/CitySelector'
+import { usePreferredCity } from '@/hooks/usePreferredCity'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +57,8 @@ interface UnifiedLayoutProps {
     avatar?: string
   }
   preferredLocationName?: string | null
+  onLocationSelect?: (locationId: string | null) => void
+  availableLocations?: Array<{ id: string; name: string }>
   onSearchResultSelect?: (result: SearchResult) => void
   onSearchViewMore?: (searchTerm: string, searchType: SearchType) => void
   chatConversationId?: string | null
@@ -89,6 +93,8 @@ export function UnifiedLayout({
   onPageChange,
   user,
   preferredLocationName,
+  onLocationSelect,
+  availableLocations = [],
   onSearchResultSelect,
   onSearchViewMore,
   chatConversationId,
@@ -96,6 +102,31 @@ export function UnifiedLayout({
 }: Readonly<UnifiedLayoutProps>) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [bugReportOpen, setBugReportOpen] = useState(false)
+  const [locationMenuOpen, setLocationMenuOpen] = useState(false)
+  const locationMenuRef = useRef<HTMLDivElement>(null)
+  
+  // Hook para preferencias de ciudad (solo para cliente)
+  const {
+    preferredRegionId,
+    preferredRegionName,
+    preferredCityId,
+    preferredCityName,
+    setPreferredCity
+  } = usePreferredCity()
+
+  // Close location menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (locationMenuRef.current && !locationMenuRef.current.contains(event.target as Node)) {
+        setLocationMenuOpen(false)
+      }
+    }
+
+    if (locationMenuOpen) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [locationMenuOpen])
 
   // Deduplicate available roles
   const uniqueRoles = Array.from(new Set(availableRoles))
@@ -190,7 +221,7 @@ export function UnifiedLayout({
         {/* Header - Responsive height */}
         <header className="bg-card border-b border-border sticky top-0 z-20 flex-shrink-0">
         <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4 h-full min-h-[64px] sm:min-h-[89px]">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile menu toggle - Touch optimized */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -207,7 +238,7 @@ export function UnifiedLayout({
             {/* Logo/Business Info - Responsive */}
             {business ? (
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 flex-1 overflow-hidden">
+                <DropdownMenuTrigger className="inline-flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 overflow-hidden">
                   {business.logo_url ? (
                     <img
                       src={business.logo_url}
@@ -220,15 +251,55 @@ export function UnifiedLayout({
                     </div>
                   )}
 
-                  <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                    <div>
+                  <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="min-w-0">
                       <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
                         {business.name}
                       </h1>
-                      {preferredLocationName && (
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          📍 {preferredLocationName}
-                        </p>
+                      {availableLocations.length > 0 && (
+                        <div className="relative inline-block mt-1" ref={locationMenuRef}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setLocationMenuOpen(!locationMenuOpen)
+                            }}
+                            className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 whitespace-nowrap"
+                          >
+                            <span>📍</span>
+                            <span className="truncate">{preferredLocationName || 'Seleccionar sede'}</span>
+                            <ChevronDown className="h-3 w-3 flex-shrink-0 ml-2" />
+                          </button>
+                          {locationMenuOpen && (
+                            <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[180px]">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onLocationSelect?.(null)
+                                  setLocationMenuOpen(false)
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors first:rounded-t-md"
+                              >
+                                Todas las sedes
+                              </button>
+                              {availableLocations.map((location) => (
+                                <button
+                                  key={location.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onLocationSelect?.(location.id)
+                                    setLocationMenuOpen(false)
+                                  }}
+                                  className={cn(
+                                    "w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors",
+                                    preferredLocationName === location.name && "bg-primary/20 text-foreground font-semibold"
+                                  )}
+                                >
+                                  {location.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                     {business.category && (
@@ -294,11 +365,20 @@ export function UnifiedLayout({
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : currentRole === 'client' ? (
-              <SearchBar
-                onResultSelect={(result) => onSearchResultSelect?.(result)}
-                onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                className="flex-1 max-w-full sm:max-w-md"
-              />
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-full sm:max-w-2xl">
+                <CitySelector
+                  preferredRegionId={preferredRegionId}
+                  preferredRegionName={preferredRegionName}
+                  preferredCityId={preferredCityId}
+                  preferredCityName={preferredCityName}
+                  onCitySelect={setPreferredCity}
+                />
+                <SearchBar
+                  onResultSelect={(result) => onSearchResultSelect?.(result)}
+                  onViewMore={(term, type) => onSearchViewMore?.(term, type)}
+                  className="flex-1 max-w-full sm:max-w-md"
+                />
+              </div>
             ) : (
               <div className="min-w-0 flex-1">
                 <h1 className="text-base sm:text-xl font-bold text-foreground truncate">

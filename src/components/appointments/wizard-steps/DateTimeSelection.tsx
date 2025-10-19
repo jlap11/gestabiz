@@ -92,24 +92,76 @@ export function DateTimeSelection({
 
         // 3. Obtener citas existentes del empleado para la fecha seleccionada
         if (selectedDate) {
-          const startOfDay = format(selectedDate, 'yyyy-MM-dd 00:00:00');
-          const endOfDay = format(selectedDate, 'yyyy-MM-dd 23:59:59');
+          // Usar Date objects para los límites del día
+          const dayStart = new Date(selectedDate);
+          dayStart.setHours(0, 0, 0, 0);
+          
+          const dayEnd = new Date(selectedDate);
+          dayEnd.setHours(23, 59, 59, 999);
 
-          const { data: appointments } = await supabase
-            .from('appointments')
-            .select('id, start_time, end_time')
+          console.log('🔍 [DateTimeSelection] Buscando citas:', {
+            selectedDate: format(selectedDate, 'yyyy-MM-dd'),
+            dayStart: dayStart.toISOString(),
+            dayEnd: dayEnd.toISOString(),
+            employeeId,
+            businessId
+          });
+
+          // Primero obtener el business_employee_id correcto
+          const { data: employeeRecord, error: employeeError } = await supabase
+            .from('business_employees')
+            .select('id')
             .eq('employee_id', employeeId)
-            .gte('start_time', startOfDay)
-            .lte('start_time', endOfDay)
-            .in('status', ['pending', 'confirmed'])
-            .order('start_time');
+            .eq('business_id', businessId)
+            .single();
 
-          // Excluir la cita que se está editando
-          const filteredAppointments = appointmentToEdit
-            ? (appointments || []).filter(apt => apt.id !== appointmentToEdit.id)
-            : (appointments || []);
+          if (employeeError) {
+            console.error('❌ Error al buscar business_employee:', employeeError);
+            return;
+          }
 
-          setExistingAppointments(filteredAppointments);
+          if (employeeRecord) {
+            console.log('✅ business_employee encontrado:', employeeRecord.id);
+
+            const { data: appointments, error: appointmentsError } = await supabase
+              .from('appointments')
+              .select('id, start_time, end_time')
+              .eq('employee_id', employeeRecord.id)
+              .gte('start_time', dayStart.toISOString())
+              .lte('start_time', dayEnd.toISOString())
+              .in('status', ['pending', 'confirmed'])
+              .order('start_time');
+
+            if (appointmentsError) {
+              console.error('❌ Error al buscar citas:', appointmentsError);
+              return;
+            }
+
+            console.log(`📅 Citas encontradas: ${appointments?.length || 0}`);
+            if (appointments && appointments.length > 0) {
+              console.log('  Detalles:', appointments.map(apt => ({
+                id: apt.id,
+                start: format(new Date(apt.start_time), 'HH:mm'),
+                end: format(new Date(apt.end_time), 'HH:mm')
+              })));
+            }
+
+            // Excluir la cita que se está editando
+            const filteredAppointments = appointmentToEdit
+              ? (appointments || []).filter(apt => {
+                  const isExcluded = apt.id === appointmentToEdit.id;
+                  if (isExcluded) {
+                    console.log('⏭️ Excluyendo cita actual en edición:', apt.id);
+                  }
+                  return !isExcluded;
+                })
+              : (appointments || []);
+
+            console.log(`✅ Citas a validar: ${filteredAppointments.length}`);
+            setExistingAppointments(filteredAppointments);
+          } else {
+            console.warn('⚠️ No se encontró business_employee record');
+          }
         }
       } catch (error) {
         console.error('Error al cargar horarios:', error);
@@ -125,20 +177,28 @@ export function DateTimeSelection({
   const generateTimeSlots = React.useCallback(() => {
     if (!selectedDate) return;
 
+    console.log('🎰 [generateTimeSlots] Generando slots para:', format(selectedDate, 'yyyy-MM-dd'));
+
     const slots: TimeSlot[] = [];
     const popularTimes = new Set(['10:00 AM', '03:00 PM']);
 
     // Determinar horario válido (usar location o default 9-17)
     const openHour = locationSchedule?.opens_at 
-      ? parseInt(locationSchedule.opens_at.split(':')[0]) 
+      ? Number.parseInt(locationSchedule.opens_at.split(':')[0]) 
       : 9;
     const closeHour = locationSchedule?.closes_at 
-      ? parseInt(locationSchedule.closes_at.split(':')[0]) 
+      ? Number.parseInt(locationSchedule.closes_at.split(':')[0]) 
       : 17;
+
+    console.log('  Horario sede:', `${openHour}:00 - ${closeHour}:00`);
+    console.log('  Duración servicio:', service?.duration || 60, 'minutos');
+    console.log('  Citas a evitar:', existingAppointments.length);
 
     for (let hour = openHour; hour <= closeHour; hour++) {
       const time12h = hour > 12 
         ? `${String(hour - 12).padStart(2, '0')}:00 PM` 
+        : hour === 12
+        ? '12:00 PM'
         : `${String(hour).padStart(2, '0')}:00 AM`;
       
       let isAvailable = true;
@@ -146,8 +206,8 @@ export function DateTimeSelection({
 
       // Validar horario de almuerzo
       if (employeeSchedule?.has_lunch_break) {
-        const lunchStart = parseInt(employeeSchedule.lunch_break_start?.split(':')[0] || '12');
-        const lunchEnd = parseInt(employeeSchedule.lunch_break_end?.split(':')[0] || '13');
+        const lunchStart = Number.parseInt(employeeSchedule.lunch_break_start?.split(':')[0] || '12');
+        const lunchEnd = Number.parseInt(employeeSchedule.lunch_break_end?.split(':')[0] || '13');
         
         if (hour >= lunchStart && hour < lunchEnd) {
           isAvailable = false;
@@ -165,7 +225,13 @@ export function DateTimeSelection({
           const aptEnd = new Date(apt.end_time);
 
           // Verificar solapamiento: (SlotStart < AptEnd) AND (SlotEnd > AptStart)
-          if (slotStartTime < aptEnd && slotEndTime > aptStart) {
+          const overlaps = slotStartTime < aptEnd && slotEndTime > aptStart;
+          
+          if (overlaps) {
+            console.log(`  ⚠️ Slot ${time12h} OCUPADO por cita ${apt.id}:`, {
+              slotRange: `${format(slotStartTime, 'HH:mm')} - ${format(slotEndTime, 'HH:mm')}`,
+              aptRange: `${format(aptStart, 'HH:mm')} - ${format(aptEnd, 'HH:mm')}`
+            });
             isAvailable = false;
             unavailableReason = 'Ocupado';
             break;
@@ -181,6 +247,9 @@ export function DateTimeSelection({
         unavailableReason
       });
     }
+
+    const availableCount = slots.filter(s => s.available).length;
+    console.log(`✅ Slots generados: ${slots.length} total, ${availableCount} disponibles`);
 
     setTimeSlots(slots);
   }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments]);

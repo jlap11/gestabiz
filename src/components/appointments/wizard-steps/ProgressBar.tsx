@@ -40,8 +40,8 @@ export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [
               <div
                 className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300",
-                  isCompleted && "bg-green-500 text-white shadow-lg shadow-green-500/50",
-                  isCurrent && !isCompleted && "bg-primary text-white shadow-lg shadow-primary/50 ring-2 ring-primary/30",
+                  isCompleted && "bg-primary text-primary-foreground shadow-lg shadow-primary/50",
+                  isCurrent && !isCompleted && "bg-primary text-primary-foreground shadow-lg shadow-primary/50 ring-2 ring-primary/30",
                   isPending && "bg-muted text-muted-foreground"
                 )}
               >
@@ -58,7 +58,7 @@ export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [
                   <div
                     className={cn(
                       "h-full transition-all duration-300",
-                      step < currentStep ? "bg-green-500" : "bg-muted"
+                      step < currentStep ? "bg-primary" : "bg-muted"
                     )}
                   />
                 </div>
@@ -71,10 +71,7 @@ export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [
       {/* Barra de progreso horizontal */}
       <div className="relative w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
-          className={cn(
-            "absolute top-0 left-0 h-full transition-all duration-500 ease-out",
-            completedSteps.length === totalSteps ? "bg-green-500 shadow-lg shadow-green-500/50" : "bg-primary shadow-lg shadow-primary/50"
-          )}
+          className="absolute top-0 left-0 h-full transition-all duration-500 ease-out bg-primary shadow-lg shadow-primary/50"
           style={{ width: `${percentage}%` }}
         />
       </div>

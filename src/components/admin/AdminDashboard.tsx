@@ -49,7 +49,7 @@ export function AdminDashboard({
   const [pageContext, setPageContext] = useState<Record<string, unknown>>({})
   
   // Hooks para sede preferida y ubicaciones
-  const { preferredLocationId } = usePreferredLocation(business.id)
+  const { preferredLocationId, setPreferredLocation } = usePreferredLocation(business.id)
   const { locations, fetchLocations } = useSupabaseData({ user, autoFetch: false })
   
   // Estado para nombre de la sede
@@ -249,6 +249,8 @@ export function AdminDashboard({
       activePage={activePage}
       onPageChange={handlePageChange}
       preferredLocationName={preferredLocationName}
+      onLocationSelect={setPreferredLocation}
+      availableLocations={locations.map(l => ({ id: l.id, name: l.name }))}
       user={currentUser ? {
         id: currentUser.id,
         name: currentUser.name,
