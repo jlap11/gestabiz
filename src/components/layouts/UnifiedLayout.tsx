@@ -365,7 +365,7 @@ export function UnifiedLayout({
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : currentRole === 'client' ? (
-              <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-full sm:max-w-2xl">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <CitySelector
                   preferredRegionId={preferredRegionId}
                   preferredRegionName={preferredRegionName}
@@ -373,10 +373,11 @@ export function UnifiedLayout({
                   preferredCityName={preferredCityName}
                   onCitySelect={setPreferredCity}
                 />
+                {/* Mobile: show compact search inside left area */}
                 <SearchBar
                   onResultSelect={(result) => onSearchResultSelect?.(result)}
                   onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                  className="flex-1 max-w-full sm:max-w-md"
+                  className="flex-1 max-w-full sm:hidden"
                 />
               </div>
             ) : (
@@ -386,6 +387,18 @@ export function UnifiedLayout({
                 </h1>
               </div>
             )}
+          {/* Center area: search for desktop (hidden on small screens) */}
+          <div className="hidden sm:flex flex-1 justify-center px-2">
+            {currentRole === 'client' && (
+              <div className="w-full max-w-2xl">
+                <SearchBar
+                  onResultSelect={(result) => onSearchResultSelect?.(result)}
+                  onViewMore={(term, type) => onSearchViewMore?.(term, type)}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
           </div>
 
           {/* Right Side Controls - Responsive */}
