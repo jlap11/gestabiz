@@ -111,14 +111,18 @@ export function EmployeeBusinessSelection({
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-foreground mb-2">
-          Selecciona el Negocio
-        </h3>
-        <p className="text-muted-foreground text-sm">
-          <strong>{employeeName}</strong> trabaja en {businesses.length} negocios.
-          <br />
-          Elige bajo qué negocio deseas realizar tu reserva.
-        </p>
+        <div className="flex items-start gap-3 mb-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg">
+          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-200">
+              Lo sentimos, esta vez debes seleccionar el negocio
+            </h3>
+            <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">
+              <strong>{employeeName}</strong> trabaja en {businesses.length} ubicaciones diferentes.
+              Selecciona el negocio donde deseas agendar tu cita.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

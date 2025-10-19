@@ -1,21 +1,26 @@
 /**
- * ChatWithAdminModal Component
+ * ChatWithAdminModal Component (v3.0.0)
  * 
- * Modal para seleccionar un administrador del negocio e iniciar una conversación de chat.
- * Muestra la lista de administradores con sus sedes y distancias (si están disponibles).
+ * Modal para ver empleados disponibles e iniciar chat.
+ * 
+ * FLUJO PRINCIPAL:
+ * 1. Si el usuario es el OWNER: Muestra un botón directo "Chatear"
+ * 2. Si el usuario es CLIENT: Muestra lista de empleados disponibles (con allow_client_messages=true)
+ *    - Cada empleado muestra: [Avatar] [Nombre] - [Sede] + botón "Chatear"
+ *    - IMPORTANTE: Se muestra empleados, NO sedes
  * 
  * @author Gestabiz Team
- * @version 1.0.0
+ * @version 3.0.0
  * @date 2025-10-19
  */
 
 import { useState } from 'react';
-import { X, MapPin, MessageCircle, Loader2 } from 'lucide-react';
+import { X, MessageCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useBusinessAdmins, BusinessAdmin } from '@/hooks/useBusinessAdmins';
+import { useBusinessAdmins } from '@/hooks/useBusinessAdmins';
+import { useBusinessEmployeesForChat } from '@/hooks/useBusinessEmployeesForChat';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -28,7 +33,8 @@ interface ChatWithAdminModalProps {
     longitude: number;
   } | null;
   readonly onClose: () => void;
-  readonly onChatStarted: () => void;
+  readonly onChatStarted: (conversationId: string) => void;
+  readonly onCloseParent?: () => void;
 }
 
 export default function ChatWithAdminModal({
@@ -37,28 +43,42 @@ export default function ChatWithAdminModal({
   userLocation,
   onClose,
   onChatStarted,
+  onCloseParent,
 }: ChatWithAdminModalProps) {
   const { user } = useAuth();
-  const { admins, loading, error } = useBusinessAdmins({ businessId, userLocation });
+  const { admins, loading: adminLoading, error: adminError } = useBusinessAdmins({ businessId, userLocation });
+  const { employees, loading: employeesLoading, error: employeesError } = useBusinessEmployeesForChat({ businessId });
   const { createOrGetConversation } = useChat(user?.id || null);
   const [creatingChat, setCreatingChat] = useState(false);
-  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
-  const handleStartChat = async (admin: BusinessAdmin) => {
+  const admin = admins[0];
+  const isUserTheOwner = admin && user?.id === admin.user_id;
+
+  const loading = adminLoading || employeesLoading;
+  const error = adminError || employeesError;
+
+  const handleStartChat = async (employeeId: string, employeeName: string) => {
     try {
       setCreatingChat(true);
-      setSelectedAdminId(admin.user_id);
+      setSelectedEmployeeId(employeeId);
 
       const conversationId = await createOrGetConversation({
-        other_user_id: admin.user_id,
+        other_user_id: employeeId,
         business_id: businessId,
-        initial_message: `Hola, me interesa conocer más sobre ${businessName}`,
+        initial_message: `Hola ${employeeName}, me interesa conocer más sobre ${businessName}`,
       });
 
       if (conversationId) {
-        toast.success(`Chat iniciado con ${admin.full_name}`);
-        onChatStarted();
+        toast.success(`Chat iniciado con ${employeeName}`);
+        // Cerrar el modal de chat
         onClose();
+        // Cerrar el modal padre (BusinessProfile) si se proporcionó
+        if (onCloseParent) {
+          onCloseParent();
+        }
+        // Llamar al callback de chat iniciado con la conversationId
+        onChatStarted(conversationId);
       }
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -66,16 +86,8 @@ export default function ChatWithAdminModal({
       toast.error('No se pudo iniciar el chat. Intenta nuevamente.');
     } finally {
       setCreatingChat(false);
-      setSelectedAdminId(null);
+      setSelectedEmployeeId(null);
     }
-  };
-
-  const formatDistance = (distanceKm?: number) => {
-    if (distanceKm === undefined) return null;
-    if (distanceKm < 1) {
-      return `${Math.round(distanceKm * 1000)} m`;
-    }
-    return `${distanceKm.toFixed(1)} km`;
   };
 
   return (
@@ -86,7 +98,9 @@ export default function ChatWithAdminModal({
           <div>
             <h2 className="text-xl font-bold">Iniciar Chat</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Selecciona un administrador de {businessName}
+              {isUserTheOwner
+                ? `Administrador de ${businessName}`
+                : `Empleados disponibles de ${businessName}`}
             </p>
           </div>
           <Button
@@ -121,7 +135,7 @@ export default function ChatWithAdminModal({
             </div>
           )}
 
-          {!loading && !error && admins.length === 0 && (
+          {!loading && !error && !admin && (
             <div className="text-center py-12">
               <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -130,19 +144,13 @@ export default function ChatWithAdminModal({
             </div>
           )}
 
-          {!loading && !error && admins.length > 0 && (
-            <div className="space-y-3">
-              {admins.map((admin, index) => {
-                const isClosest = index === 0 && admin.distance_km !== undefined;
-                const isLoading = creatingChat && selectedAdminId === admin.user_id;
-
-                return (
-                  <Card
-                    key={`${admin.user_id}-${admin.location_id}`}
-                    className="p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Avatar */}
+          {!loading && !error && admin && (
+            <div className="space-y-4">
+              {/* OWNER FLOW */}
+              {isUserTheOwner ? (
+                <div className="space-y-4">
+                  <Card className="p-4 bg-muted/50 border-2 border-border">
+                    <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={admin.avatar_url || undefined} />
                         <AvatarFallback>
@@ -154,74 +162,153 @@ export default function ChatWithAdminModal({
                             .slice(0, 2)}
                         </AvatarFallback>
                       </Avatar>
-
-                      {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-base truncate">
-                            {admin.full_name}
-                          </h3>
-                          {isClosest && (
-                            <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                              Más cerca
-                            </Badge>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                          <MapPin className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">
-                            {admin.location_name}
-                            {admin.distance_km !== undefined && (
-                              <span className="ml-2 font-medium text-primary">
-                                ({formatDistance(admin.distance_km)})
-                              </span>
-                            )}
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-muted-foreground line-clamp-1">
-                          {admin.location_address}, {admin.location_city}, {admin.location_state}
+                        <h3 className="font-semibold text-base truncate">
+                          {admin.full_name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {admin.email}
                         </p>
                       </div>
-
-                      {/* Action Button */}
-                      <Button
-                        onClick={() => handleStartChat(admin)}
-                        disabled={creatingChat}
-                        size="sm"
-                        className="flex-shrink-0"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Iniciando...
-                          </>
-                        ) : (
-                          <>
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Chatear
-                          </>
-                        )}
-                      </Button>
                     </div>
                   </Card>
-                );
-              })}
+
+                  <div className="text-center py-8 space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Como administrador de <span className="font-medium text-foreground">{businessName}</span>, puedes iniciar una conversación directamente.
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setCreatingChat(true);
+                          const conversationId = await createOrGetConversation({
+                            other_user_id: admin.user_id,
+                            business_id: businessId,
+                            initial_message: `Iniciando conversación como administrador de ${businessName}`,
+                          });
+
+                          if (conversationId) {
+                            toast.success('Conversación iniciada');
+                            // Cerrar el modal de chat
+                            onClose();
+                            // Cerrar el modal padre (BusinessProfile) si se proporcionó
+                            if (onCloseParent) {
+                              onCloseParent();
+                            }
+                            // Llamar al callback de chat iniciado con la conversationId
+                            onChatStarted(conversationId);
+                          }
+                        } catch (err) {
+                          // eslint-disable-next-line no-console
+                          console.error('Error starting chat:', err);
+                          toast.error('No se pudo iniciar el chat.');
+                        } finally {
+                          setCreatingChat(false);
+                        }
+                      }}
+                      disabled={creatingChat}
+                      size="lg"
+                      className="w-full"
+                    >
+                      {creatingChat ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Iniciando...
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="h-4 w-4 mr-2" />
+                          Chatear
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                // CLIENT FLOW - Mostrar lista de empleados disponibles
+                <div className="space-y-3">
+                  {employees && employees.length > 0 ? (
+                    <>
+                      <p className="text-sm font-medium text-foreground">
+                        Empleados disponibles ({employees.length})
+                      </p>
+
+                      {employees.map((employee) => {
+                        const isLoading = creatingChat && selectedEmployeeId === employee.employee_id;
+
+                        return (
+                          <Card
+                            key={employee.employee_id}
+                            className="p-4 hover:shadow-md transition-shadow border-2"
+                          >
+                            <div className="flex items-center gap-4">
+                              {/* Employee Avatar */}
+                              <Avatar className="h-12 w-12 flex-shrink-0">
+                                <AvatarImage src={employee.avatar_url || undefined} />
+                                <AvatarFallback>
+                                  {employee.full_name
+                                    .split(' ')
+                                    .map(n => n[0])
+                                    .join('')
+                                    .toUpperCase()
+                                    .slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+
+                              {/* Employee Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="font-semibold text-base">
+                                    {employee.full_name}
+                                  </h4>
+                                  {employee.location_name && (
+                                    <span className="text-sm text-muted-foreground">
+                                      - {employee.location_name}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {employee.email}
+                                </p>
+                              </div>
+
+                              {/* Action Button */}
+                              <Button
+                                onClick={() => handleStartChat(employee.employee_id, employee.full_name)}
+                                disabled={creatingChat}
+                                size="sm"
+                                className="flex-shrink-0"
+                              >
+                                {isLoading ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Iniciando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <MessageCircle className="h-4 w-4 mr-2" />
+                                    Chatear
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <div className="text-center py-12">
+                      <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        No hay empleados disponibles para chatear en este momento.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* Footer Info */}
-        {!loading && !error && admins.length > 0 && (
-          <div className="border-t border-border p-4 bg-muted/50">
-            <p className="text-xs text-muted-foreground text-center">
-              {userLocation
-                ? 'Las distancias son aproximadas basadas en tu ubicación actual.'
-                : 'Habilita la ubicación para ver distancias aproximadas.'}
-            </p>
-          </div>
-        )}
       </Card>
     </div>
   );

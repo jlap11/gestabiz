@@ -801,6 +801,23 @@ export function useChat(userId: string | null) {
       throw err;
     }
   }, [userId]);
+
+  // ============================================================================
+  // AUTO-LOAD MESSAGES WHEN CONVERSATION CHANGES
+  // ============================================================================
+
+  /**
+   * Cargar mensajes automáticamente cuando activeConversationId cambia
+   * ✅ FIX: Cuando se abre un chat desde externa (e.g., desde BusinessProfile),
+   * se debe cargar automáticamente los mensajes iniciales
+   */
+  useEffect(() => {
+    if (activeConversationId && userId) {
+      console.log('[useChat] 📥 Auto-loading messages for conversation:', activeConversationId);
+      fetchMessages(activeConversationId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeConversationId, userId]);
   
   // ============================================================================
   // REALTIME SUBSCRIPTIONS

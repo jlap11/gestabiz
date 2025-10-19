@@ -19,11 +19,16 @@ interface EmployeeRevenueChartProps {
 }
 
 const COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
+  '#10b981', // Verde - Ingresos
+  '#3b82f6', // Azul
+  '#06b6d4', // Cyan
+  '#8b5cf6', // Púrpura
+  '#14b8a6', // Turquesa
+  '#6366f1', // Índigo
+  '#f59e0b', // Ámbar
+  '#f97316', // Naranja
+  '#ec4899', // Rosa
+  '#ef4444', // Rojo
 ];
 
 export const EmployeeRevenueChart: React.FC<EmployeeRevenueChartProps> = ({

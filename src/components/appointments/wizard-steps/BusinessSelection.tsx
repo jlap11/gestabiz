@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Check, Building2 } from 'lucide-react';
+import { SearchBar } from '@/components/client/SearchBar';
 import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
+import { usePreferredCity } from '@/hooks/usePreferredCity';
 
 interface Business {
   id: string;
@@ -16,50 +18,89 @@ interface Business {
 
 interface BusinessSelectionProps {
   readonly selectedBusinessId: string | null;
+  readonly preferredCityName?: string | null;
+  readonly preferredRegionName?: string | null;
   readonly onSelectBusiness: (business: Business) => void;
 }
 
 export function BusinessSelection({
   selectedBusinessId,
+  preferredCityName: propCityName,
+  preferredRegionName: propRegionName,
   onSelectBusiness,
 }: BusinessSelectionProps) {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const hookCityData = usePreferredCity();
+  
+  // Usar props si vienen del parent (AppointmentWizard), si no usar hook
+  const preferredCityName = propCityName ?? hookCityData.preferredCityName;
+  const preferredRegion = propRegionName ?? hookCityData.preferredRegionName;
 
-  useEffect(() => {
-    loadBusinesses();
-  }, []);
-
-  const loadBusinesses = async () => {
+  const loadBusinesses = useCallback(async () => {
     setLoading(true);
     try {
-      // Solo mostrar negocios que tengan al menos una sede activa
-      const { data, error } = await supabase
+      let query = supabase.from('locations').select('city, state, business_id');
+      
+      // Función para normalizar texto (remover acentos y convertir a minúsculas)
+      const normalize = (str: string) => {
+        return str.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').toLowerCase();
+      };
+      
+      // Filtrar por ciudad preferida si está disponible
+      if (preferredCityName) {
+        const normalizedCity = normalize(preferredCityName);
+        // Caso especial para Bogotá
+        if (normalizedCity.includes('bogota')) {
+          query = query.ilike('city', '%Bogot%');
+        } else {
+          query = query.ilike('city', `%${preferredCityName}%`);
+        }
+      }
+      
+      // Si hay región, filtrar también por ella
+      if (preferredRegion && !preferredCityName) {
+        query = query.ilike('state', `%${preferredRegion}%`);
+      }
+
+      const { data: locations, error: locError } = await query;
+
+      if (locError) throw locError;
+
+      // Obtener IDs únicos de negocios
+      interface LocationData {
+        business_id: string;
+      }
+      const uniqueBusinessIds = Array.from(
+        new Set((locations || []).map((l: LocationData) => l.business_id).filter(Boolean))
+      );
+
+      if (uniqueBusinessIds.length === 0) {
+        setBusinesses([]);
+        return;
+      }
+
+      // Obtener detalles de los negocios
+      const { data: businessesData, error: bizError } = await supabase
         .from('businesses')
-        .select(`
-          id, 
-          name, 
-          description, 
-          logo_url, 
-          address, 
-          city, 
-          phone,
-          locations!inner (
-            id
-          )
-        `)
+        .select('id, name, description, logo_url, address, city, phone')
+        .in('id', uniqueBusinessIds)
         .eq('is_active', true)
-        .eq('locations.is_active', true)
         .order('name');
 
-      if (error) throw error;
-      setBusinesses((data as Business[]) || []);
+      if (bizError) throw bizError;
+      setBusinesses((businessesData as Business[]) || []);
     } catch {
       setBusinesses([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [preferredCityName, preferredRegion]);
+
+  useEffect(() => {
+    loadBusinesses();
+  }, [loadBusinesses]);
 
   // Imagen placeholder para negocios
   const getBusinessImage = (business: Business): string => {
@@ -109,17 +150,69 @@ export function BusinessSelection({
     );
   }
 
-  return (
-    <div className="p-6">
-      <h3 className="text-xl font-semibold text-foreground mb-2">
-        Select a Business
-      </h3>
-      <p className="text-muted-foreground mb-6">
-        Choose the business where you want to book your appointment
-      </p>
+  // Filtrar negocios según el término de búsqueda
+  const filteredBusinesses = businesses.filter((business) =>
+    business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    business.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    business.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    business.address?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {businesses.map((business) => {
+  return (
+    <div className="p-6 space-y-6">
+      {/* Título */}
+      <div>
+        <h3 className="text-xl font-semibold text-foreground mb-2">
+          Select a Business
+        </h3>
+        <p className="text-muted-foreground mb-4">
+          Choose the business where you want to book your appointment
+        </p>
+
+        {/* SearchBar shared component (same dropdown/options as header) - full-bleed */}
+        <div className="-mx-3 sm:mx-0 w-full">
+            <SearchBar
+              className="w-full"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onResultSelect={(result: any) => {
+              // Only handle business selections here
+              if (result.type === 'businesses') {
+                // result.id is business id
+                // find business in currently loaded businesses or fetch if missing
+                const found = businesses.find(b => b.id === result.id);
+                if (found) {
+                  onSelectBusiness(found);
+                } else {
+                  // Fetch business details and then select
+                  (async () => {
+                    try {
+                      const { data } = await supabase
+                        .from('businesses')
+                        .select('id, name, description, logo_url, address, city, phone')
+                        .eq('id', result.id)
+                        .single();
+                      if (data) {
+                        onSelectBusiness(data as Business);
+                      }
+                    } catch {
+                      // ignore
+                    }
+                  })();
+                }
+              }
+            }}
+            onViewMore={(term: string, _type: unknown) => {
+              // When user requests view more, populate the local searchTerm
+              setSearchTerm(term);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Resultados */}
+      {filteredBusinesses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredBusinesses.map((business) => {
           const isSelected = selectedBusinessId === business.id;
 
           return (
@@ -185,7 +278,16 @@ export function BusinessSelection({
             </Card>
           );
         })}
-      </div>
+        </div>
+      ) : (
+        <div className="p-8 text-center border border-border rounded-lg bg-muted/30">
+          <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
+          <p className="text-muted-foreground">
+            No businesses match your search. Try different keywords.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

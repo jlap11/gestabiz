@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,12 +14,13 @@ import {
   SuccessStep,
   ProgressBar,
 } from './wizard-steps';
-import type { Service, Location } from '@/types/types';
+import type { Service, Location, Appointment } from '@/types/types';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useWizardDataCache } from '@/hooks/useWizardDataCache';
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { usePreferredCity } from '@/hooks/usePreferredCity';
 
 interface AppointmentWizardProps {
   open: boolean;
@@ -71,9 +72,10 @@ const STEP_LABELS = {
   1: 'Location Selection',
   2: 'Service Selection',
   3: 'Employee Selection',
-  4: 'Date & Time',
-  5: 'Confirmation',
-  6: 'Complete'
+  4: 'Employee Business',
+  5: 'Date & Time',
+  6: 'Confirmation',
+  7: 'Complete'
 };
 
 export function AppointmentWizard({ 
@@ -91,23 +93,24 @@ export function AppointmentWizard({
 }: Readonly<AppointmentWizardProps>) {
   // Determinar el paso inicial basado en preselecciones
   const getInitialStep = () => {
-    if (!businessId) return 0; // Sin negocio, empezar desde selección de negocio
+    // Sin businessId: empezar en selección de negocio (paso 0)
+    if (!businessId) return 0;
     
-    // Con negocio preseleccionado
-    // Si hay empleado preseleccionado Y servicio preseleccionado, ir a fecha/hora
-    if (preselectedEmployeeId && preselectedServiceId) return 4;
+    // Con businessId preseleccionado:
+    // Si hay empleado preseleccionado Y servicio preseleccionado, ir a fecha/hora (paso 5 con businessId)
+    if (preselectedEmployeeId && preselectedServiceId) return 5;
     
-    // Si hay empleado pero NO servicio, ir a selección de servicio
-    // (el empleado puede especializarse en ciertos servicios)
+    // Si hay empleado pero NO servicio, ir a selección de servicio (paso 2 con businessId)
     if (preselectedEmployeeId && !preselectedServiceId) return 2;
     
-    // Si hay servicio pero NO empleado, ir a selección de empleado
+    // Si hay servicio pero NO empleado, ir a selección de empleado (paso 3 con businessId)
     if (preselectedServiceId && !preselectedEmployeeId) return 3;
     
-    // Si hay ubicación, ir a selección de servicio
+    // Si hay ubicación, ir a selección de servicio (paso 2 con businessId)
     if (preselectedLocationId) return 2;
     
-    return 1; // Por defecto, empezar en selección de ubicación
+    // Por defecto con businessId, empezar en selección de ubicación (paso 1 con businessId)
+    return 1;
   };
 
   const [currentStep, setCurrentStep] = useState(getInitialStep());
@@ -131,6 +134,9 @@ export function AppointmentWizard({
 
   // Hook para obtener los negocios del empleado seleccionado
   const { businesses: employeeBusinesses, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(wizardData.employeeId, true);
+
+  // Hook para obtener la ciudad preferida del usuario
+  const { preferredCityName, preferredRegionName } = usePreferredCity();
 
   // Pre-cargar todos los datos del wizard cuando se selecciona un negocio
   const dataCache = useWizardDataCache(wizardData.businessId || businessId || null);
@@ -179,6 +185,10 @@ export function AppointmentWizard({
           
           if (businessData) {
             updates.business = businessData as Business;
+            // También actualizar wizardData.businessId si aún no está
+            if (!wizardData.businessId) {
+              updates.businessId = businessId;
+            }
           }
         }
 
@@ -192,19 +202,9 @@ export function AppointmentWizard({
           
           if (locationData) {
             updates.location = locationData as Location;
-          }
-        }
-
-        // Cargar servicio si está preseleccionado
-        if (preselectedServiceId && !wizardData.service) {
-          const { data: serviceData } = await supabase
-            .from('services')
-            .select('*')
-            .eq('id', preselectedServiceId)
-            .single();
-          
-          if (serviceData) {
-            updates.service = serviceData as Service;
+            if (!wizardData.locationId) {
+              updates.locationId = preselectedLocationId;
+            }
           }
         }
 
@@ -218,6 +218,65 @@ export function AppointmentWizard({
           
           if (employeeData) {
             updates.employee = employeeData as Employee;
+            if (!wizardData.employeeId) {
+              updates.employeeId = preselectedEmployeeId;
+            }
+
+            // Si hay empleado pero NO hay negocio o ubicación, cargar su negocio y ubicación
+            if (!businessId && !wizardData.businessId) {
+              // Consultar el primer negocio vinculado al empleado
+              const { data: employeeBusinessData } = await supabase
+                .from('business_employees')
+                .select('business_id, location_id')
+                .eq('employee_id', preselectedEmployeeId)
+                .eq('is_active', true)
+                .limit(1)
+                .single();
+              
+              if (employeeBusinessData) {
+                // Cargar negocio
+                const { data: bizData } = await supabase
+                  .from('businesses')
+                  .select('id, name, description')
+                  .eq('id', employeeBusinessData.business_id)
+                  .single();
+                
+                if (bizData) {
+                  updates.businessId = bizData.id;
+                  updates.business = bizData as Business;
+                }
+
+                // Cargar ubicación si está disponible
+                if (employeeBusinessData.location_id && !preselectedLocationId) {
+                  const { data: locData } = await supabase
+                    .from('locations')
+                    .select('*')
+                    .eq('id', employeeBusinessData.location_id)
+                    .single();
+                  
+                  if (locData) {
+                    updates.locationId = locData.id;
+                    updates.location = locData as Location;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Cargar servicio si está preseleccionado
+        if (preselectedServiceId && !wizardData.service) {
+          const { data: serviceData } = await supabase
+            .from('services')
+            .select('*')
+            .eq('id', preselectedServiceId)
+            .single();
+          
+          if (serviceData) {
+            updates.service = serviceData as Service;
+            if (!wizardData.serviceId) {
+              updates.serviceId = preselectedServiceId;
+            }
           }
         }
 
@@ -268,7 +327,6 @@ export function AppointmentWizard({
     };
 
     validateEmployeeService();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, preselectedEmployeeId, preselectedServiceId]);
 
   // Determinar si necesitamos mostrar el paso de selección de negocio del empleado
@@ -276,67 +334,68 @@ export function AppointmentWizard({
 
   // Calcular el número total de pasos dinámicamente
   const getTotalSteps = () => {
-    let total = businessId ? 6 : 7; // Base: con/sin selección de negocio inicial
+    // Con businessId: 7 pasos (sin paso 0 de negocio)
+    // Sin businessId: 8 pasos (con paso 0 de negocio)
+    let total = businessId ? 7 : 8;
     if (needsEmployeeBusinessSelection) total += 1; // Paso adicional si el empleado tiene múltiples negocios
     return total;
   };
 
-  // Mapeo de pasos lógicos a números de paso reales
+  // Mapeo simplificado de pasos lógicos a números
+  // Todos los pasos se numeran igual independientemente de preselecciones:
+  // business=0, location=1, service=2, employee=3, employeeBusiness=4, dateTime=5, confirmation=6, success=7
+  // Si businessId está preseleccionado, simplemente NO se mostrará el paso 0
   const getStepNumber = (logicalStep: string): number => {
-    const startingStep = businessId ? 1 : 0;
-    const steps: Record<string, number> = {
+    const stepMap: Record<string, number> = {
       'business': 0,
-      'location': startingStep,
-      'service': startingStep + 1,
-      'employee': startingStep + 2,
-      'employeeBusiness': startingStep + 3,
-      'dateTime': needsEmployeeBusinessSelection ? startingStep + 4 : startingStep + 3,
-      'confirmation': needsEmployeeBusinessSelection ? startingStep + 5 : startingStep + 4,
-      'success': needsEmployeeBusinessSelection ? startingStep + 6 : startingStep + 5,
+      'location': 1,
+      'service': 2,
+      'employee': 3,
+      'employeeBusiness': 4,
+      'dateTime': 5,
+      'confirmation': 6,
+      'success': 7,
     };
-    return steps[logicalStep] ?? currentStep;
+    return stepMap[logicalStep] ?? currentStep;
   };
 
   // Calcular los pasos completados dinámicamente
   const getCompletedSteps = (): number[] => {
     const completed: number[] = [];
-    const startingStep = businessId ? 1 : 0;
 
-    // Paso 0: Business (si aplica)
-    if (!businessId && wizardData.businessId) {
-      completed.push(0);
+    // Paso 0: Business (completado si businessId está presente)
+    if (wizardData.businessId) {
+      completed.push(getStepNumber('business'));
     }
 
-    // Paso 1: Location
+    // Paso 1: Location (completado si locationId está presente)
     if (wizardData.locationId) {
-      completed.push(startingStep);
+      completed.push(getStepNumber('location'));
     }
 
-    // Paso 2: Service
+    // Paso 2: Service (completado si serviceId está presente)
     if (wizardData.serviceId) {
-      completed.push(startingStep + 1);
+      completed.push(getStepNumber('service'));
     }
 
-    // Paso 3: Employee
+    // Paso 3: Employee (completado si employeeId está presente)
     if (wizardData.employeeId) {
-      completed.push(startingStep + 2);
+      completed.push(getStepNumber('employee'));
     }
 
-    // Paso 4: Employee Business (si aplica)
+    // Paso 4: Employee Business (completado si aplica y está seleccionado)
     if (needsEmployeeBusinessSelection && wizardData.employeeBusinessId) {
-      completed.push(startingStep + 3);
+      completed.push(getStepNumber('employeeBusiness'));
     }
 
-    // Paso 5: Date & Time
+    // Paso 5: DateTime (completado si date y startTime están presentes)
     if (wizardData.date && wizardData.startTime) {
-      const dateTimeStep = needsEmployeeBusinessSelection ? startingStep + 4 : startingStep + 3;
-      completed.push(dateTimeStep);
+      completed.push(getStepNumber('dateTime'));
     }
 
-    // Paso 6: Confirmation (se completa al hacer submit)
+    // Paso 6: Confirmation (completado si hemos avanzado más allá)
     if (currentStep > getStepNumber('confirmation')) {
-      const confirmStep = needsEmployeeBusinessSelection ? startingStep + 5 : startingStep + 4;
-      completed.push(confirmStep);
+      completed.push(getStepNumber('confirmation'));
     }
 
     return completed;
@@ -481,7 +540,7 @@ export function AppointmentWizard({
       // Combinar fecha y hora
       const [hours, minutes] = wizardData.startTime.split(':');
       const startDateTime = new Date(wizardData.date);
-      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      startDateTime.setHours(Number.parseInt(hours, 10), Number.parseInt(minutes, 10), 0, 0);
 
       // Calcular hora de fin (usar duración del servicio o 60 min por defecto)
       const duration = wizardData.service?.duration || 60;
@@ -617,6 +676,10 @@ export function AppointmentWizard({
           "[&>button]:hidden" // Ocultar el botón de cerrar por defecto del DialogContent
         )}
       >
+        {/* DialogTitle para accesibilidad (screen readers) */}
+        <DialogTitle className="sr-only">
+          {appointmentToEdit ? 'Editar Cita' : 'Nueva Cita'}
+        </DialogTitle>
         {/* Header - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
           <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
@@ -655,11 +718,28 @@ export function AppointmentWizard({
           {!businessId && currentStep === getStepNumber('business') && (
             <BusinessSelection
               selectedBusinessId={wizardData.businessId}
+              preferredCityName={preferredCityName}
+              preferredRegionName={preferredRegionName}
               onSelectBusiness={(business) => {
+                // Al seleccionar un negocio, limpiar campos dependientes.
+                // NO avanzamos automáticamente: el usuario debe presionar "Next Step".
                 updateWizardData({ 
-                  businessId: business.id, 
-                  business 
+                  businessId: business.id,
+                  business,
+                  locationId: null,
+                  location: null,
+                  serviceId: null,
+                  service: null,
+                  employeeId: null,
+                  employee: null,
+                  employeeBusinessId: null,
+                  employeeBusiness: null,
+                  date: null,
+                  startTime: null,
+                  endTime: null,
+                  notes: '',
                 });
+                // Nota: No llamar a setCurrentStep aquí para evitar avance automático.
               }}
             />
           )}

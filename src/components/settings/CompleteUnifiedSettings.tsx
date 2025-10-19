@@ -288,7 +288,7 @@ export default function CompleteUnifiedSettings({
             <AdminRolePreferences business={business} />
           )}
           {currentRole === 'employee' && (
-            <EmployeeRolePreferences userId={user.id} />
+            <EmployeeRolePreferences userId={user.id} businessId={businessId} />
           )}
           {currentRole === 'client' && (
             <ClientRolePreferences />
@@ -634,9 +634,10 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 // ============================================
 interface EmployeeRolePreferencesProps {
   userId: string
+  businessId?: string
 }
 
-function EmployeeRolePreferences({ userId }: EmployeeRolePreferencesProps) {
+function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferencesProps) {
   const {
     profile,
     loading,
@@ -659,6 +660,10 @@ function EmployeeRolePreferences({ userId }: EmployeeRolePreferencesProps) {
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
+
+  // NEW: Message preferences state
+  const [allowClientMessages, setAllowClientMessages] = useState(true)
+  const [loadingMessagePref, setLoadingMessagePref] = useState(false)
 
   // New item inputs
   const [newSpecialization, setNewSpecialization] = useState('')
@@ -690,6 +695,63 @@ function EmployeeRolePreferences({ userId }: EmployeeRolePreferencesProps) {
       setGithubUrl(profile.github_url || '')
     }
   }, [profile])
+
+  // NEW: Load message preferences
+  useEffect(() => {
+    const loadMessagePreference = async () => {
+      if (!businessId) return
+
+      try {
+        const { data, error } = await supabase
+          .from('business_employees')
+          .select('allow_client_messages')
+          .eq('employee_id', userId)
+          .eq('business_id', businessId)
+          .single()
+
+        if (error) throw error
+        setAllowClientMessages(data?.allow_client_messages ?? true)
+      } catch {
+        // Error loading, default to true
+        setAllowClientMessages(true)
+      }
+    }
+
+    loadMessagePreference()
+  }, [userId, businessId])
+
+  // NEW: Handle message preference toggle
+  const handleMessagePreferenceToggle = async (newValue: boolean) => {
+    if (!businessId) {
+      toast.error('No se pudo identificar el negocio')
+      return
+    }
+
+    setLoadingMessagePref(true)
+    try {
+      const { error } = await supabase
+        .from('business_employees')
+        .update({ allow_client_messages: newValue })
+        .eq('employee_id', userId)
+        .eq('business_id', businessId)
+
+      if (error) throw error
+
+      setAllowClientMessages(newValue)
+      toast.success(
+        newValue 
+          ? 'Ahora los clientes pueden enviarte mensajes' 
+          : 'Los clientes no podrán enviarte mensajes'
+      )
+    } catch (error) {
+      const err = error as Error
+      toast.error(err.message || 'Error al actualizar preferencia de mensajes')
+      // Revert the switch on error
+      setAllowClientMessages(!newValue)
+    } finally {
+      setLoadingMessagePref(false)
+    }
+  }
 
   const handleSaveProfile = async () => {
     try {
@@ -930,6 +992,34 @@ function EmployeeRolePreferences({ userId }: EmployeeRolePreferencesProps) {
                 </div>
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* NEW: Preferencias de Mensajes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Mensajes de Clientes
+          </CardTitle>
+          <CardDescription>
+            Controla si los clientes pueden enviarte mensajes directamente
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+            <div className="space-y-0.5">
+              <Label className="text-base font-medium">Permitir mensajes de clientes</Label>
+              <p className="text-sm text-muted-foreground">
+                Los clientes podrán contactarte a través del chat interno
+              </p>
+            </div>
+            <Switch 
+              checked={allowClientMessages} 
+              onCheckedChange={handleMessagePreferenceToggle}
+              disabled={loadingMessagePref}
+            />
           </div>
         </CardContent>
       </Card>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, MapPin, Phone, Mail, Globe, Clock, Star, Calendar, ChevronRight, MessageCircle } from 'lucide-react';
+import { X, MapPin, Phone, Mail, Globe, Clock, Star, Calendar, ChevronRight, MessageCircle, Heart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { useReviews } from '@/hooks/useReviews';
+import { useFavorites } from '@/hooks/useFavorites';
 import { toast } from 'sonner';
 import ChatWithAdminModal from './ChatWithAdminModal';
 
@@ -17,6 +18,7 @@ interface BusinessProfileProps {
   readonly businessId: string;
   readonly onClose: () => void;
   readonly onBookAppointment?: (serviceId?: string, locationId?: string, employeeId?: string) => void;
+  readonly onChatStarted?: (conversationId: string) => void;
   readonly userLocation?: {
     latitude: number;
     longitude: number;
@@ -84,6 +86,7 @@ export default function BusinessProfile({
   businessId, 
   onClose, 
   onBookAppointment,
+  onChatStarted,
   userLocation 
 }: BusinessProfileProps) {
   const { user } = useAuth();
@@ -96,6 +99,12 @@ export default function BusinessProfile({
   const [showChatModal, setShowChatModal] = useState(false);
 
   const { createReview, refetch: refetchReviews } = useReviews({ business_id: businessId });
+  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+
+  const handleToggleFavorite = async () => {
+    if (!business) return;
+    await toggleFavorite(businessId, business.name);
+  };
 
   const formatCurrency = (amount: number, currency: string = 'MXN') => {
     return new Intl.NumberFormat('es-MX', {
@@ -156,32 +165,14 @@ export default function BusinessProfile({
       // Fetch services
       const { data: servicesData } = await supabase
         .from('services')
-        .select('id, name, description, duration, price, category, location_id, employee_id')
+        .select('id, name, description, duration, price, category')
         .eq('business_id', businessId)
         .eq('is_active', true)
         .order('name');
 
       // Fetch employee profiles
-      interface EmployeeProfile {
-        id: string;
-        full_name: string | null;
-        avatar_url: string | null;
-      }
-      
-      let employeeProfiles: Record<string, EmployeeProfile> = {};
-      if ((servicesData?.length ?? 0) > 0) {
-        const employeeIds = [...new Set(servicesData!.map(s => s.employee_id).filter(Boolean))];
-        if (employeeIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, full_name, avatar_url')
-            .in('id', employeeIds);
-          
-          if (profiles) {
-            employeeProfiles = Object.fromEntries(profiles.map(p => [p.id, p as EmployeeProfile]));
-          }
-        }
-      }
+      // Note: Employee association will be handled in the booking wizard
+      // where users can select specific employees offering the service
 
       // Fetch reviews
       const { data: reviewsData } = await supabase
@@ -201,14 +192,9 @@ export default function BusinessProfile({
         subcategories: subcategoriesData,
         locations: locationsData || [],
         services: (servicesData ?? []).map(s => {
-          const profile = s.employee_id && employeeProfiles[s.employee_id];
           return {
             ...s,
-            employee: profile ? {
-              id: profile.id,
-              name: profile.full_name || 'Empleado',
-              avatar_url: profile.avatar_url || undefined
-            } : undefined
+            employee: undefined
           };
         }),
         reviews: reviewsData || [],
@@ -381,13 +367,32 @@ export default function BusinessProfile({
             <div className="w-full h-32 sm:h-40 lg:h-48 bg-gradient-to-r from-primary/20 to-secondary/20" />
           )}
           
-          {/* Botón cerrar - Touch Optimized */}
-          <button
-            onClick={onClose}
-            className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-          >
-            <X className="h-4 w-4 sm:h-5 sm:w-5" />
-          </button>
+          {/* Botones en header - Touch Optimized */}
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
+            {/* Botón favorito */}
+            {user && (
+              <button
+                onClick={handleToggleFavorite}
+                className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              >
+                <Heart 
+                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                    isFavorite(businessId) 
+                      ? 'fill-primary text-primary' 
+                      : 'text-foreground'
+                  }`} 
+                />
+              </button>
+            )}
+            
+            {/* Botón cerrar */}
+            <button
+              onClick={onClose}
+              className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            >
+              <X className="h-4 w-4 sm:h-5 sm:w-5" />
+            </button>
+          </div>
 
           {/* Logo y info básica - Mobile Compact */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-6">
@@ -519,7 +524,7 @@ export default function BusinessProfile({
                             {formatCurrency(service.price, 'MXN')}
                           </p>
                           <Button
-                            onClick={() => onBookAppointment?.(service.id, service.location_id, service.employee_id)}
+                            onClick={() => onBookAppointment?.(service.id)}
                             size="sm"
                           >
                             <Calendar className="h-4 w-4 mr-2" />
@@ -716,9 +721,12 @@ export default function BusinessProfile({
           businessName={business.name}
           userLocation={userLocation}
           onClose={() => setShowChatModal(false)}
-          onChatStarted={() => {
-            // Aquí se podría navegar al chat o mostrar un mensaje
-            toast.success('Conversación iniciada');
+          onCloseParent={onClose}
+          onChatStarted={(conversationId) => {
+            // Pasar conversationId al componente padre
+            if (onChatStarted) {
+              onChatStarted(conversationId);
+            }
           }}
         />
       )}

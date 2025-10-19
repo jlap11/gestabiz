@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { CheckCircle, XCircle, Eye, Mail, Phone, Calendar, DollarSign } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, Mail, Phone, Calendar, DollarSign, MessageSquare } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -12,6 +12,7 @@ interface ApplicationCardProps {
   onAccept: (id: string) => void
   onReject: (id: string) => void
   onViewProfile: (application: JobApplication) => void
+  onChat?: (userId: string, applicantName: string) => void
 }
 
 const statusConfig = {
@@ -22,7 +23,7 @@ const statusConfig = {
   withdrawn: { label: 'Retirada', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' }
 }
 
-export function ApplicationCard({ application, onAccept, onReject, onViewProfile }: Readonly<ApplicationCardProps>) {
+export function ApplicationCard({ application, onAccept, onReject, onViewProfile, onChat }: Readonly<ApplicationCardProps>) {
   const statusStyle = statusConfig[application.status]
   
   // Validar que created_at sea una fecha válida
@@ -142,11 +143,21 @@ export function ApplicationCard({ application, onAccept, onReject, onViewProfile
             variant="outline"
             size="sm"
             onClick={() => onViewProfile(application)}
-            className="flex-1"
           >
             <Eye className="h-4 w-4 mr-2" />
             Ver Perfil
           </Button>
+
+          {onChat && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onChat(application.user_id, application.applicant?.full_name || 'Aplicante')}
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Chatear
+            </Button>
+          )}
 
           {application.status === 'pending' && (
             <>
@@ -154,7 +165,6 @@ export function ApplicationCard({ application, onAccept, onReject, onViewProfile
                 variant="secondary"
                 size="sm"
                 onClick={() => onReject(application.id)}
-                className="flex-1"
               >
                 <XCircle className="h-4 w-4 mr-2" />
                 Rechazar
@@ -162,7 +172,6 @@ export function ApplicationCard({ application, onAccept, onReject, onViewProfile
               <Button
                 size="sm"
                 onClick={() => onAccept(application.id)}
-                className="flex-1"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Aceptar

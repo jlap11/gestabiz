@@ -10,9 +10,10 @@ import { CreateVacancy } from './CreateVacancy'
 interface RecruitmentDashboardProps {
   businessId: string
   highlightedVacancyId?: string // ID de vacante para resaltar (desde notificación)
+  onChatStarted?: (conversationId: string) => void // Callback para pasar al componente padre
 }
 
-export function RecruitmentDashboard({ businessId, highlightedVacancyId }: Readonly<RecruitmentDashboardProps>) {
+export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatStarted }: Readonly<RecruitmentDashboardProps>) {
   const [activeTab, setActiveTab] = useState('vacancies')
   const [showCreateVacancy, setShowCreateVacancy] = useState(false)
   const [selectedVacancyId, setSelectedVacancyId] = useState<string | null>(null)
@@ -70,6 +71,7 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId }: Reado
         <ApplicationsManagement 
           businessId={businessId} 
           vacancyId={selectedVacancyId}
+          onChatStarted={onChatStarted}
         />
       </div>
     )

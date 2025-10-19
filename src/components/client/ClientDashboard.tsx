@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle, X } from 'lucide-react'
+import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle, X, Heart } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,6 +13,7 @@ import { SearchResults } from '@/components/client/SearchResults'
 import BusinessProfile from '@/components/business/BusinessProfile'
 import ProfessionalProfile from '@/components/user/UserProfile'
 import { BusinessSuggestions } from '@/components/client/BusinessSuggestions'
+import FavoritesList from '@/components/client/FavoritesList'
 import { MandatoryReviewModal } from '@/components/jobs'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useChat } from '@/hooks/useChat'
@@ -507,6 +508,11 @@ export function ClientDashboard({
       icon: <Calendar className="h-5 w-5" />
     },
     {
+      id: 'favorites',
+      label: 'Favoritos',
+      icon: <Heart className="h-5 w-5" />
+    },
+    {
       id: 'history',
       label: 'Historial',
       icon: <History className="h-5 w-5" />
@@ -733,6 +739,8 @@ export function ClientDashboard({
             )}
           </div>
         )
+      case 'favorites':
+        return <FavoritesList />
       case 'history':
         return (
           <div className="p-6">
@@ -1083,6 +1091,12 @@ export function ClientDashboard({
           businessId={selectedBusinessId}
           onClose={() => setSelectedBusinessId(null)}
           onBookAppointment={handleBookAppointment}
+          onChatStarted={(conversationId) => {
+            // Cambiar a la página de chat y establecer la conversación activa
+            setActivePage('chat');
+            setChatConversationId(conversationId);
+            setSelectedBusinessId(null); // Cerrar el modal de perfil
+          }}
           userLocation={
             geolocation.hasLocation
               ? {

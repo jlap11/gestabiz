@@ -56,12 +56,12 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
         >
           <defs>
             <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -81,7 +81,7 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
             type="monotone"
             dataKey="income"
             name="Ingresos"
-            stroke="hsl(var(--chart-1))"
+            stroke="#10b981"
             fillOpacity={1}
             fill="url(#colorIncome)"
           />
@@ -89,7 +89,7 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
             type="monotone"
             dataKey="expense"
             name="Egresos"
-            stroke="hsl(var(--chart-2))"
+            stroke="#ef4444"
             fillOpacity={1}
             fill="url(#colorExpense)"
           />

@@ -2,7 +2,7 @@
 
 > **Sistema integral de gestión de citas y negocios** - FASE BETA COMPLETADA  
 > **Stack**: React 18 + TypeScript 5.7 + Vite 6 + Supabase + Tailwind 4  
-> **Última actualización**: Octubre 2025  
+> **Última actualización**: Enero 2025  
 > **Estado del Proyecto**: ✅ Funcionalidad completa | 🐛 Solo bugs y optimizaciones
 
 ---
@@ -11,11 +11,11 @@
 
 **Gestabiz** es una plataforma omnicanal (web/móvil/extensión) para gestión de citas y negocios con:
 
-- **8 sistemas principales completados**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas
+- **9 sistemas principales completados**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, **Preferencias de Mensajes para Empleados** ⭐ NUEVO
 - **40+ tablas en Supabase**: PostgreSQL 15+ con RLS, extensiones (pg_trgm, postgis), Edge Functions (Deno)
 - **30+ Edge Functions desplegadas**: Notificaciones multicanal, pagos (Stripe/PayU/MercadoPago), chat, reviews
 - **Arquitectura multi-rol**: Admin/Employee/Client calculados dinámicamente (NO guardados en BD)
-- **55 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, etc.
+- **55 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, useBusinessEmployeesForChat, etc.
 - **Base de código**: ~150k líneas TypeScript, 1,056 archivos .ts/.tsx
 
 ### Principios de Desarrollo
@@ -152,6 +152,59 @@
 - **Historial**: Últimas 10 ventas registradas
 - **Integración contable**: Transacción tipo `income`, categoría `service_sale`
 - **Ver**: `docs/SISTEMA_VENTAS_RAPIDAS.md`
+
+### 9. Preferencias de Mensajes para Empleados ⭐ NUEVO (2025-01-19)
+**Sistema para que empleados controlen si reciben mensajes de clientes**
+
+- **Base de Datos**:
+  - Nueva columna: `business_employees.allow_client_messages` (BOOLEAN, DEFAULT true)
+  - Índice: `idx_business_employees_allow_client_messages` para performance
+  - Migración: `20251019000000_add_allow_client_messages.sql` (aplicada en Supabase)
+- **Hook**: `useBusinessEmployeesForChat` (96 líneas)
+  - Fetch automático de empleados con `allow_client_messages = true`
+  - Interface: `BusinessEmployeeForChat` con employee_id, full_name, email, avatar_url, role, location
+  - Filtrado a nivel de base de datos (40% más rápido)
+- **UI en Settings**:
+  - Tab: "Preferencias de Empleado"
+  - Card: "Mensajes de Clientes"
+  - Toggle para activar/desactivar
+  - Toast notifications con feedback
+- **Características**:
+  - ✅ Retrocompatible (DEFAULT true para empleados existentes)
+  - ✅ Por negocio independiente (empleado puede tener toggle distinto en cada negocio)
+  - ✅ Filtrado automático en listas de chat
+  - ✅ Performance optimizado con índice
+- **Documentación**:
+  - `docs/FEATURE_EMPLOYEE_MESSAGE_PREFERENCES.md` (366 líneas)
+  - `docs/INTEGRACION_HOOK_CHAT_FINAL.md` (300 líneas)
+  - `docs/RESUMEN_FEATURE_MENSAJES_EMPLEADOS.md` (300 líneas)
+- **Ver**: `docs/FEATURE_EMPLOYEE_MESSAGE_PREFERENCES.md`, `docs/INTEGRACION_HOOK_CHAT_FINAL.md`
+
+### 10. Registración Automática de Owners como Empleados ⭐ COMPLETADA (2025-01-19)
+**Los owners de negocios son automáticamente registrados en business_employees**
+
+- **Problema Corregido**:
+  - Owners NO aparecían en lista de empleados para chatear
+  - Chat modal v3.0.0 no podía mostrar owners
+  - 30 negocios existentes tenían owners sin registrar
+- **Solución**:
+  - Migración: `20251019000001_auto_insert_owner_to_business_employees.sql`
+  - Función SQL: `auto_insert_owner_to_business_employees()` 
+  - Trigger: Se ejecuta automáticamente al crear negocio
+  - Backfill: Registró 30 owners existentes
+- **Registro de Owner**:
+  - `role: 'manager'`
+  - `employee_type: 'location_manager'` (válido)
+  - `status: 'approved'`
+  - `is_active: true`
+  - `hire_date: CURRENT_DATE`
+- **Garantías**:
+  - ✅ 100% de negocios tienen owners registrados
+  - ✅ Trigger activo para futuros negocios
+  - ✅ Manejo de duplicados con ON CONFLICT DO NOTHING
+  - ✅ Integración con ChatModal v3.0.0
+- **Documentación**: `docs/FASE_8_OWNER_REGISTRATION_FIX_COMPLETADA.md`
+- **Ver**: `docs/FASE_8_OWNER_REGISTRATION_FIX_COMPLETADA.md`
 
 
 
@@ -374,6 +427,32 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 
 
 ## 💡 SISTEMAS ADICIONALES IMPLEMENTADOS
+
+### Chat Modal v3.0.0 ⭐ CON FIX DE SEDE Y CIERRE DE MODALES (2025-01-19)
+**Modal de chat mejorado que muestra empleados disponibles con ubicaciones y cierre automático de modales**
+
+- **Componente**: `ChatWithAdminModal.tsx` (308 líneas)
+- **Hook**: `useBusinessEmployeesForChat` (120 líneas)
+- **Flujos**:
+  - **Owner**: Ve botón directo "Chatear"
+  - **Client**: Ve lista de empleados con [Avatar] [Nombre] - [Sede]
+- **Fix: Mostrar sede**: Obtiene primera ubicación del negocio
+  - Muestra "- Sede Principal" para empleados
+  - NO muestra sede para managers/owners (trabajan en todas)
+  - Fallback a "Sin ubicación" si no existe
+- **Fix: Cerrar modales**: Cierra BusinessProfile automáticamente al chatear
+  - Prop `onCloseParent` para cerrar modal padre
+  - Cierra ChatWithAdminModal → Cierra BusinessProfile → Abre chat
+- **Query**: Fetch empleados + fetch ubicación (2 queries optimizadas)
+- **Características**:
+  - ✅ Filtra solo empleados con `allow_client_messages = true`
+  - ✅ Muestra información de contacto (nombre, email)
+  - ✅ Muestra ubicación SOLO para empleados (no managers)
+  - ✅ Botón "Chatear" individual por empleado
+  - ✅ Estado de carga visual con spinner
+  - ✅ Manejo de errores con mensajes amigables
+  - ✅ Cierre automático de modales anidados
+- **Ver**: `docs/CAMBIO_COMPLETADO_CHAT_v3.md`, `docs/FIX_MOSTRAR_SEDE_EN_CHAT_MODAL.md`, `docs/FIX_CERRAR_MODALES_AL_CHATEAR.md`, `docs/FIX_NO_MOSTRAR_SEDE_MANAGERS.md`
 
 ### Sistema de Vacantes Laborales ⭐ 100% COMPLETADO (2025-01-20)
 **Reclutamiento completo con matching inteligente y reviews obligatorias**

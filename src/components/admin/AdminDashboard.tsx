@@ -47,6 +47,7 @@ export function AdminDashboard({
   const [currentUser, setCurrentUser] = useState(user)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
   const [pageContext, setPageContext] = useState<Record<string, unknown>>({})
+  const [chatConversationId, setChatConversationId] = useState<string | null>(null)
   
   // Hooks para sede preferida y ubicaciones
   const { preferredLocationId, setPreferredLocation } = usePreferredLocation(business.id)
@@ -196,6 +197,7 @@ export function AdminDashboard({
           <RecruitmentDashboard 
             businessId={business.id} 
             highlightedVacancyId={pageContext.vacancyId as string | undefined}
+            onChatStarted={setChatConversationId}
           />
         )
       case 'quick-sales':
@@ -251,6 +253,8 @@ export function AdminDashboard({
       preferredLocationName={preferredLocationName}
       onLocationSelect={setPreferredLocation}
       availableLocations={locations.map(l => ({ id: l.id, name: l.name }))}
+      chatConversationId={chatConversationId}
+      onChatClose={() => setChatConversationId(null)}
       user={currentUser ? {
         id: currentUser.id,
         name: currentUser.name,

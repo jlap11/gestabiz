@@ -74,13 +74,13 @@ export const IncomeVsExpenseChart: React.FC<IncomeVsExpenseChartProps> = ({
         <Bar
           dataKey="income"
           name="Ingresos"
-          fill="hsl(var(--chart-1))"
+          fill="#10b981"
           radius={[8, 8, 0, 0]}
         />
         <Bar
           dataKey="expense"
           name="Egresos"
-          fill="hsl(var(--chart-2))"
+          fill="#ef4444"
           radius={[8, 8, 0, 0]}
         />
       </BarChart>

@@ -72,8 +72,10 @@ export function ChatLayout({
     if (initialConversationId) {
       console.log('[ChatLayout] Setting active conversation to:', initialConversationId)
       setActiveConversationId(initialConversationId);
+      // ✅ También setear en el hook para cargar los mensajes
+      hookSetActiveConversation(initialConversationId);
     }
-  }, [initialConversationId]);
+  }, [initialConversationId, hookSetActiveConversation]);
 
   // Fetch conversaciones inicial y suscribir a cambios
   useEffect(() => {
@@ -91,6 +93,9 @@ export function ChatLayout({
   // Suscribir a mensajes cuando cambia conversación activa
   useEffect(() => {
     if (activeConversationId) {
+      // ✅ Primero cargar mensajes existentes
+      fetchMessages(activeConversationId);
+      // ✅ Luego suscribirse a nuevos mensajes
       subscribeToMessages();
     }
 

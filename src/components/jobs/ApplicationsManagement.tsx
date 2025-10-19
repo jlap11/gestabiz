@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,9 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useJobApplications, JobApplication } from '@/hooks/useJobApplications'
 import { useJobVacancies } from '@/hooks/useJobVacancies'
+import { useChat } from '@/hooks/useChat'
+import { useAuth } from '@/contexts/AuthContext'
 import { ApplicationCard } from './ApplicationCard'
 import { ApplicantProfileModal } from './ApplicantProfileModal'
-import { Search, Filter, TrendingUp } from 'lucide-react'
+import { Search, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -25,9 +27,10 @@ import { Textarea } from '@/components/ui/textarea'
 interface ApplicationsManagementProps {
   businessId: string
   vacancyId?: string // Opcional: si se proporciona, filtra solo esta vacante
+  onChatStarted?: (conversationId: string) => void // Callback para notificar que se inició un chat
 }
 
-export function ApplicationsManagement({ businessId, vacancyId }: Readonly<ApplicationsManagementProps>) {
+export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }: Readonly<ApplicationsManagementProps>) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [vacancyFilter, setVacancyFilter] = useState<string>(vacancyId || 'all')
@@ -36,6 +39,10 @@ export function ApplicationsManagement({ businessId, vacancyId }: Readonly<Appli
   const [showRejectDialog, setShowRejectDialog] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [applicationToReject, setApplicationToReject] = useState<string | null>(null)
+
+  // Get current user for chat
+  const { user } = useAuth()
+  const { createOrGetConversation } = useChat(user?.id || '')
 
   // Si se proporciona vacancyId, mantener el filtro fijo
   useEffect(() => {
@@ -102,6 +109,31 @@ export function ApplicationsManagement({ businessId, vacancyId }: Readonly<Appli
     setSelectedApplication(application)
     setShowProfileModal(true)
   }
+
+  // Handle starting chat with applicant
+  const handleChat = useCallback(async (applicantUserId: string, applicantName: string) => {
+    if (!user?.id || !applicantUserId) {
+      toast.error('No se puede iniciar el chat en este momento')
+      return
+    }
+
+    try {
+      const conversationId = await createOrGetConversation({
+        other_user_id: applicantUserId,
+        business_id: businessId,
+        initial_message: `¡Hola ${applicantName}! Me gustaría hablar contigo sobre tu aplicación.`
+      })
+
+      if (conversationId) {
+        // Notificar al componente padre que se inició un chat
+        // Esto abrirá el chat automáticamente en el FloatingChatButton
+        onChatStarted?.(conversationId)
+        toast.success(`Chat abierto con ${applicantName}`)
+      }
+    } catch {
+      toast.error('Error al iniciar el chat')
+    }
+  }, [user?.id, businessId, createOrGetConversation, onChatStarted])
 
   // Stats
   const stats = [
@@ -226,6 +258,7 @@ export function ApplicationsManagement({ businessId, vacancyId }: Readonly<Appli
                 onAccept={handleAccept}
                 onReject={handleRejectClick}
                 onViewProfile={handleViewProfile}
+                onChat={handleChat}
               />
             ))
           )}
@@ -247,6 +280,7 @@ export function ApplicationsManagement({ businessId, vacancyId }: Readonly<Appli
                 onAccept={handleAccept}
                 onReject={handleRejectClick}
                 onViewProfile={handleViewProfile}
+                onChat={handleChat}
               />
             ))
           )}
@@ -268,6 +302,7 @@ export function ApplicationsManagement({ businessId, vacancyId }: Readonly<Appli
                 onAccept={handleAccept}
                 onReject={handleRejectClick}
                 onViewProfile={handleViewProfile}
+                onChat={handleChat}
               />
             ))
           )}
@@ -289,6 +324,7 @@ export function ApplicationsManagement({ businessId, vacancyId }: Readonly<Appli
                 onAccept={handleAccept}
                 onReject={handleRejectClick}
                 onViewProfile={handleViewProfile}
+                onChat={handleChat}
               />
             ))
           )}

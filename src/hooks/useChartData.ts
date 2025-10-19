@@ -123,6 +123,7 @@ export function useChartData(
         amount,
         percentage: (amount / total) * 100,
         count: transactions.filter(t => t.category === category).length,
+        color: getCategoryColor(category),
       }))
       .sort((a, b) => b.amount - a.amount);
   }, []);
