@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { APP_CONFIG } from '@/constants'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HelmetProvider } from 'react-helmet-async'
 
 // Import contexts directly instead of lazy loading them
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -126,24 +125,22 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <HelmetProvider>
-        <BrowserRouter>
-          <Suspense fallback={<AppLoader />}>
-            <QueryClientProvider client={queryClient}>
-              <ThemeProvider>
-                <LanguageProvider>
-                  <AppStateProvider>
-                    <AuthProvider>
-                      <AppRoutes />
-                      <CookieConsent />
-                    </AuthProvider>
-                  </AppStateProvider>
-                </LanguageProvider>
-              </ThemeProvider>
-            </QueryClientProvider>
-          </Suspense>
-        </BrowserRouter>
-      </HelmetProvider>
+      <BrowserRouter>
+        <Suspense fallback={<AppLoader />}>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <LanguageProvider>
+                <AppStateProvider>
+                  <AuthProvider>
+                    <AppRoutes />
+                    <CookieConsent />
+                  </AuthProvider>
+                </AppStateProvider>
+              </LanguageProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </Suspense>
+      </BrowserRouter>
     </ErrorBoundary>
   )
 }

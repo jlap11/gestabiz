@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, Calendar, MapPin, Phone, Mail, Globe, Star, Clock, ChevronRight } from 'lucide-react';
 import { useBusinessProfileData } from '@/hooks/useBusinessProfileData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAuth } from '@/hooks/useAuth';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -103,59 +103,53 @@ export default function PublicBusinessProfile() {
   const ogImage = business.og_image_url || business.banner_url || business.logo_url;
   const canonicalUrl = `${globalThis.location.origin}/negocio/${business.slug}`;
 
+  // Use the custom meta tag hook
+  usePageMeta({
+    title: pageTitle,
+    description: pageDescription,
+    keywords: business.meta_keywords?.join(', '),
+    ogImage: ogImage || undefined,
+    ogTitle: pageTitle,
+    ogDescription: pageDescription,
+    canonical: canonicalUrl,
+  });
+
+  // Handle JSON-LD structured data
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": business.name,
+      "description": business.description,
+      "image": ogImage,
+      "url": canonicalUrl,
+      "telephone": business.phone,
+      "email": business.email,
+      "address": business.locations[0] ? {
+        "@type": "PostalAddress",
+        "streetAddress": business.locations[0].address,
+        "addressLocality": business.locations[0].city,
+        "addressRegion": business.locations[0].state,
+        "postalCode": business.locations[0].postal_code,
+        "addressCountry": business.locations[0].country
+      } : undefined,
+      "aggregateRating": business.reviewCount > 0 ? {
+        "@type": "AggregateRating",
+        "ratingValue": business.rating.toFixed(1),
+        "reviewCount": business.reviewCount
+      } : undefined
+    });
+    document.head.appendChild(script);
+    
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [business, ogImage, canonicalUrl]);
+
   return (
     <>
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        {business.meta_keywords && business.meta_keywords.length > 0 && (
-          <meta name="keywords" content={business.meta_keywords.join(', ')} />
-        )}
-        
-        {/* Open Graph */}
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:type" content="business.business" />
-        <meta property="og:url" content={canonicalUrl} />
-        {ogImage && <meta property="og:image" content={ogImage} />}
-        
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-        {ogImage && <meta name="twitter:image" content={ogImage} />}
-        
-        {/* Canonical URL */}
-        <link rel="canonical" href={canonicalUrl} />
-        
-        {/* JSON-LD Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            "name": business.name,
-            "description": business.description,
-            "image": ogImage,
-            "url": canonicalUrl,
-            "telephone": business.phone,
-            "email": business.email,
-            "address": business.locations[0] ? {
-              "@type": "PostalAddress",
-              "streetAddress": business.locations[0].address,
-              "addressLocality": business.locations[0].city,
-              "addressRegion": business.locations[0].state,
-              "postalCode": business.locations[0].postal_code,
-              "addressCountry": business.locations[0].country
-            } : undefined,
-            "aggregateRating": business.reviewCount > 0 ? {
-              "@type": "AggregateRating",
-              "ratingValue": business.rating.toFixed(1),
-              "reviewCount": business.reviewCount
-            } : undefined
-          })}
-        </script>
-      </Helmet>
-
       <div className="min-h-screen bg-background">
         {/* Header con navegación */}
         <header className="sticky top-0 z-10 bg-card border-b border-border">
