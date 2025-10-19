@@ -284,16 +284,8 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
         {/* Login/SignUp Card */}
         <div className="bg-card rounded-2xl shadow-2xl backdrop-blur-xl border border-border overflow-hidden">
           {/* Card Header with Back Button */}
-          <div className="px-8 pt-6 pb-0 flex items-center justify-end">
-            <button
-              type="button"
-              onClick={handleBackToLanding}
-              className="p-2 rounded-lg hover:bg-muted transition-all duration-200 text-muted-foreground hover:text-foreground hover:scale-110 active:scale-95"
-              title="Volver a la página principal"
-              aria-label="Volver a inicio"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
+          <div className="px-2 pt-2 pb-6 flex items-center justify-start">
+            
           </div>
 
           <div className="px-8 pb-8">

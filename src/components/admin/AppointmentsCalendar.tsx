@@ -484,7 +484,7 @@ export const AppointmentsCalendar: React.FC = () => {
       }
 
       const { data, error } = await supabase
-        .from('appointments')
+        .from('appointments_with_relations')
         .select(`
           id,
           start_time,
@@ -493,13 +493,8 @@ export const AppointmentsCalendar: React.FC = () => {
           notes,
           employee_id,
           location_id,
-          services:service_id (
-            name,
-            price
-          ),
-          profiles:client_id (
-            full_name
-          )
+          service,
+          client
         `)
         .eq('business_id', businessId)
         .gte('start_time', start.toISOString())
@@ -507,7 +502,7 @@ export const AppointmentsCalendar: React.FC = () => {
         .order('start_time');
 
       if (error) {
-        console.error('❌ Error al buscar citas:', error);
+        console.error('❌ Error al buscar citas (materialized view):', error);
         return;
       }
 
@@ -544,9 +539,9 @@ export const AppointmentsCalendar: React.FC = () => {
         start_time: apt.start_time as string,
         end_time: apt.end_time as string,
         status: apt.status as string,
-        service_name: (apt.services as Record<string, unknown>)?.name as string || 'Servicio sin nombre',
-        service_price: (apt.services as Record<string, unknown>)?.price as number || 0,
-        client_name: (apt.profiles as Record<string, unknown>)?.full_name as string || 'Cliente sin nombre',
+        service_name: (apt.service as Record<string, unknown>)?.name as string || 'Servicio sin nombre',
+        service_price: (apt.service as Record<string, unknown>)?.price as number || 0,
+        client_name: (apt.client as Record<string, unknown>)?.full_name as string || 'Cliente sin nombre',
         employee_id: (apt.employee_id as string) || '',
         employee_name: employeeNames[(apt.employee_id as string)] || 'Sin asignar',
         location_id: (apt.location_id as string) || '',
@@ -591,14 +586,19 @@ export const AppointmentsCalendar: React.FC = () => {
       setIsLoading(true);
       try {
         // Get business owned by user
-        const { data: business, error: businessError } = await supabase
+        const { data: businesses, error: businessError } = await supabase
           .from('businesses')
           .select('id')
-          .eq('owner_id', user.id)
-          .single();
+          .eq('owner_id', user.id);
 
         if (businessError) throw businessError;
         
+        if (!businesses || businesses.length === 0) {
+          throw new Error('No se encontraron negocios para este usuario');
+        }
+
+        // Use the first business (most common case is one business per admin)
+        const business = businesses[0];
         setCurrentBusinessId(business.id);
 
         // Get all locations for filter with their hours
@@ -751,7 +751,7 @@ export const AppointmentsCalendar: React.FC = () => {
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
-          business_id: (await supabase.from('appointments').select('business_id').eq('id', appointmentId).single()).data?.business_id,
+          business_id: currentBusinessId,
           type: 'income',
           amount: totalAmount,
           description: `Cita completada - ${appointment.service_name}`,
@@ -766,16 +766,8 @@ export const AppointmentsCalendar: React.FC = () => {
       toast.success('Cita completada y venta registrada');
       
       // Refresh appointments
-      if (user) {
-        const { data: business } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-          .single();
-
-        if (business) {
-          await fetchAppointments(business.id, selectedDate);
-        }
+      if (currentBusinessId) {
+        await fetchAppointments(currentBusinessId, selectedDate);
       }
     } catch (error) {
       console.error('Error al completar la cita en el calendario admin', error);
@@ -795,16 +787,8 @@ export const AppointmentsCalendar: React.FC = () => {
       toast.success('Cita cancelada');
       
       // Refresh appointments
-      if (user) {
-        const { data: business } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-          .single();
-
-        if (business) {
-          await fetchAppointments(business.id, selectedDate);
-        }
+      if (currentBusinessId) {
+        await fetchAppointments(currentBusinessId, selectedDate);
       }
     } catch {
       toast.error('Error al cancelar la cita');
@@ -826,16 +810,8 @@ export const AppointmentsCalendar: React.FC = () => {
       toast.warning('Cita marcada como sin asistencia');
       
       // Refresh appointments
-      if (user) {
-        const { data: business } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id)
-          .single();
-
-        if (business) {
-          await fetchAppointments(business.id, selectedDate);
-        }
+      if (currentBusinessId) {
+        await fetchAppointments(currentBusinessId, selectedDate);
       }
     } catch {
       toast.error('Error al marcar sin asistencia');

@@ -33,25 +33,40 @@ export function useMandatoryReviews(userId?: string) {
         return;
       }
 
-      // Count appointments without reviews
-      // Buscamos citas completadas que no tienen una review asociada
-      const { data: appointmentsWithoutReviews, error } = await supabase
+      // Count completed appointments without reviews
+      // Get all completed appointments for the user
+      const { data: completedAppointments, error: appointmentsError } = await supabase
         .from('appointments')
-        .select('id, reviews!left(id)')
+        .select('id')
         .eq('client_id', userId)
-        .eq('status', 'completed')
-        .is('reviews.id', null);
+        .eq('status', 'completed');
 
-      if (error) throw error;
-      
-      const count = appointmentsWithoutReviews?.length || 0;
+      if (appointmentsError) throw appointmentsError;
 
-      const pendingCount = count || 0;
+      if (!completedAppointments || completedAppointments.length === 0) {
+        setPendingReviewsCount(0);
+        setShouldShowModal(false);
+        return;
+      }
+
+      // Get appointments that have reviews
+      const appointmentIds = completedAppointments.map(a => a.id);
+      const { data: reviewedAppointments, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('appointment_id')
+        .in('appointment_id', appointmentIds);
+
+      if (reviewsError) throw reviewsError;
+
+      const reviewedIds = new Set(reviewedAppointments?.map(r => r.appointment_id) || []);
+      const pendingCount = appointmentIds.filter(id => !reviewedIds.has(id)).length;
+
       setPendingReviewsCount(pendingCount);
 
       // Show modal if there are pending reviews
       setShouldShowModal(pendingCount > 0);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error checking pending reviews:', error);
     } finally {
       setLoading(false);
@@ -87,6 +102,7 @@ export function useMandatoryReviews(userId?: string) {
       localStorage.setItem(REMIND_LATER_KEY, JSON.stringify(filtered));
       setShouldShowModal(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error setting remind later:', error);
     }
   }, [userId]);
@@ -107,6 +123,7 @@ export function useMandatoryReviews(userId?: string) {
         localStorage.removeItem(REMIND_LATER_KEY);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error clearing remind later:', error);
     }
   }, [userId]);
@@ -150,6 +167,7 @@ function getRemindLaterStatus(userId: string): boolean {
 
     return true;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error getting remind later status:', error);
     return false;
   }
@@ -175,6 +193,7 @@ export function cleanupExpiredRemindLater() {
       localStorage.removeItem(REMIND_LATER_KEY);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error cleaning up remind later:', error);
   }
 }

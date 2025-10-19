@@ -48,7 +48,6 @@ import type { Business } from '@/types/types'
 import { PhoneInput } from '@/components/ui/PhoneInput'
 import { BusinessNotificationSettings } from '../admin/settings/BusinessNotificationSettings'
 import { NotificationTracking } from '../admin/settings/NotificationTracking'
-import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 
 interface CompleteUnifiedSettingsProps {
   user: User
@@ -328,26 +327,6 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
   const [phonePrefix, setPhonePrefix] = useState('+57')
   const [isSaving, setIsSaving] = useState(false)
   const [activeSubTab, setActiveSubTab] = useState<'info' | 'notifications' | 'tracking'>('info')
-  const [locations, setLocations] = useState<Array<{ id: string; name: string }>>([])
-  const { preferredLocationId, setPreferredLocation } = usePreferredLocation(business.id)
-
-  // Fetch locations for the business
-  useEffect(() => {
-    const fetchLocations = async () => {
-      const { data, error } = await supabase
-        .from('locations')
-        .select('id, name')
-        .eq('business_id', business.id)
-        .eq('is_active', true)
-        .order('name')
-
-      if (!error && data) {
-        setLocations(data)
-      }
-    }
-
-    fetchLocations()
-  }, [business.id])
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -621,48 +600,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                 <Switch defaultChecked />
               </div>
 
-              <Separator className="my-4" />
 
-              {/* Sede Administrada/Preferida */}
-              <div className="space-y-2">
-                <Label htmlFor="preferred-location" className="text-base font-medium">
-                  Sede Administrada
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Selecciona la sede principal con la que trabajas. Esta sede se pre-seleccionará automáticamente en ventas, vacantes, reportes y empleados.
-                </p>
-                <Select
-                  value={preferredLocationId || 'all'}
-                  onValueChange={(value) => setPreferredLocation(value === 'all' ? null : value)}
-                >
-                  <SelectTrigger id="preferred-location">
-                    <SelectValue placeholder="Selecciona una sede" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        Todas las sedes
-                      </div>
-                    </SelectItem>
-                    {locations.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {preferredLocationId && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                    ✓ Sede guardada: {locations.find(l => l.id === preferredLocationId)?.name}
-                  </p>
-                )}
-                {!preferredLocationId && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    📋 Mostrando todas las sedes en filtros
-                  </p>
-                )}
-              </div>
             </CardContent>
           </Card>
 

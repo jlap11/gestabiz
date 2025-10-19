@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, MapPin, Phone, Mail, Globe, Clock, Star, Calendar, ChevronRight } from 'lucide-react';
+import { X, MapPin, Phone, Mail, Globe, Clock, Star, Calendar, ChevronRight, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,12 +11,13 @@ import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { useReviews } from '@/hooks/useReviews';
 import { toast } from 'sonner';
+import ChatWithAdminModal from './ChatWithAdminModal';
 
 interface BusinessProfileProps {
-  businessId: string;
-  onClose: () => void;
-  onBookAppointment?: (serviceId?: string, locationId?: string, employeeId?: string) => void;
-  userLocation?: {
+  readonly businessId: string;
+  readonly onClose: () => void;
+  readonly onBookAppointment?: (serviceId?: string, locationId?: string, employeeId?: string) => void;
+  readonly userLocation?: {
     latitude: number;
     longitude: number;
   };
@@ -92,6 +93,7 @@ export default function BusinessProfile({
   const [canReview, setCanReview] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [eligibleAppointmentId, setEligibleAppointmentId] = useState<string | null>(null);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const { createReview, refetch: refetchReviews } = useReviews({ business_id: businessId });
 
@@ -106,26 +108,16 @@ export default function BusinessProfile({
     try {
       setLoading(true);
 
-      // Fetch business basic info (sin join, como en SearchResults)
+      // Fetch business basic info
       const { data: businessData, error: businessError } = await supabase
         .from('businesses')
-        .select(`
-          id,
-          name,
-          description,
-          phone,
-          email,
-          website,
-          logo_url,
-          banner_url,
-          category_id
-        `)
+        .select('id, name, description, phone, email, website, logo_url, banner_url, category_id')
         .eq('id', businessId)
         .single();
 
       if (businessError) throw businessError;
 
-      // Fetch category separadamente
+      // Fetch category
       let categoryData: { name: string; icon_name?: string } | null = null;
       if (businessData?.category_id) {
         const { data: catData } = await supabase
@@ -136,22 +128,21 @@ export default function BusinessProfile({
         categoryData = catData;
       }
 
-      // Fetch subcategories IDs
+      // Fetch subcategories
       const { data: subcategoriesRelData } = await supabase
         .from('business_subcategories')
         .select('subcategory_id')
         .eq('business_id', businessId)
         .limit(3);
 
-      // Fetch subcategories data separadamente
       let subcategoriesData: Array<{ name: string }> = [];
-      if (subcategoriesRelData && subcategoriesRelData.length > 0) {
-        const subcategoryIds = subcategoriesRelData.map(rel => rel.subcategory_id);
+      if ((subcategoriesRelData?.length ?? 0) > 0) {
+        const subcategoryIds = subcategoriesRelData!.map(rel => rel.subcategory_id);
         const { data: subcatsData } = await supabase
           .from('business_categories')
           .select('name')
           .in('id', subcategoryIds);
-        subcategoriesData = subcatsData || [];
+        subcategoriesData = subcatsData ?? [];
       }
 
       // Fetch locations
@@ -162,29 +153,37 @@ export default function BusinessProfile({
         .eq('is_active', true)
         .order('name');
 
-      // Fetch services with employee info
+      // Fetch services
       const { data: servicesData } = await supabase
         .from('services')
-        .select(`
-          id,
-          name,
-          description,
-          duration,
-          price,
-          category,
-          location_id,
-          employee_id,
-          profiles:employee_id (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('id, name, description, duration, price, category, location_id, employee_id')
         .eq('business_id', businessId)
         .eq('is_active', true)
         .order('name');
 
-      // Fetch reviews with aggregation
+      // Fetch employee profiles
+      interface EmployeeProfile {
+        id: string;
+        full_name: string | null;
+        avatar_url: string | null;
+      }
+      
+      let employeeProfiles: Record<string, EmployeeProfile> = {};
+      if ((servicesData?.length ?? 0) > 0) {
+        const employeeIds = [...new Set(servicesData!.map(s => s.employee_id).filter(Boolean))];
+        if (employeeIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', employeeIds);
+          
+          if (profiles) {
+            employeeProfiles = Object.fromEntries(profiles.map(p => [p.id, p as EmployeeProfile]));
+          }
+        }
+      }
+
+      // Fetch reviews
       const { data: reviewsData } = await supabase
         .from('reviews')
         .select('*')
@@ -192,24 +191,23 @@ export default function BusinessProfile({
         .order('created_at', { ascending: false })
         .limit(10);
 
-      // Calculate rating and review count
-      const rating = reviewsData && reviewsData.length > 0
-        ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length
+      const rating = ((reviewsData?.length ?? 0) > 0)
+        ? reviewsData!.reduce((acc, r) => acc + r.rating, 0) / reviewsData!.length
         : 0;
 
       setBusiness({
         ...businessData,
         category: categoryData ? { name: categoryData.name, icon: categoryData.icon_name } : undefined,
-        subcategories: subcategoriesData || [],
+        subcategories: subcategoriesData,
         locations: locationsData || [],
-        services: (servicesData || []).map(s => {
-          const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
+        services: (servicesData ?? []).map(s => {
+          const profile = s.employee_id && employeeProfiles[s.employee_id];
           return {
             ...s,
             employee: profile ? {
               id: profile.id,
-              name: profile.full_name,
-              avatar_url: profile.avatar_url
+              name: profile.full_name || 'Empleado',
+              avatar_url: profile.avatar_url || undefined
             } : undefined
           };
         }),
@@ -218,8 +216,8 @@ export default function BusinessProfile({
         reviewCount: reviewsData?.length || 0
       });
     } catch (error) {
-      // Error handling
       if (error instanceof Error) {
+        // eslint-disable-next-line no-console
         console.error('Error fetching business data:', error.message);
       }
     } finally {
@@ -270,6 +268,7 @@ export default function BusinessProfile({
     } catch (error) {
       // Error handling
       if (error instanceof Error) {
+        // eslint-disable-next-line no-console
         console.error('Error checking review eligibility:', error.message);
       }
     }
@@ -300,6 +299,7 @@ export default function BusinessProfile({
       fetchBusinessData();
     } catch (error) {
       // Error is already handled by useReviews hook
+      // eslint-disable-next-line no-console
       console.error('Error submitting review:', error);
     }
   };
@@ -681,18 +681,47 @@ export default function BusinessProfile({
           </Tabs>
         </div>
 
-        {/* Footer sticky con botón principal */}
-        <div className="border-t border-border p-4 bg-background">
+        {/* Footer sticky con botones principales */}
+        <div className="border-t border-border p-4 bg-background space-y-3">
           <Button 
             onClick={() => onBookAppointment?.()}
             className="w-full"
             size="lg"
           >
             <Calendar className="h-5 w-5 mr-2" />
-            Agendar Cita en {business.name}
+            Agendar Cita
           </Button>
+          
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground text-center">
+              ¿Tienes dudas sobre este negocio?
+            </p>
+            <Button 
+              onClick={() => setShowChatModal(true)}
+              className="w-full"
+              size="lg"
+              variant="outline"
+            >
+              <MessageCircle className="h-5 w-5 mr-2" />
+              Iniciar Chat
+            </Button>
+          </div>
         </div>
       </Card>
+
+      {/* Chat Modal */}
+      {showChatModal && business && (
+        <ChatWithAdminModal
+          businessId={businessId}
+          businessName={business.name}
+          userLocation={userLocation}
+          onClose={() => setShowChatModal(false)}
+          onChatStarted={() => {
+            // Aquí se podría navegar al chat o mostrar un mensaje
+            toast.success('Conversación iniciada');
+          }}
+        />
+      )}
     </div>
   );
 }

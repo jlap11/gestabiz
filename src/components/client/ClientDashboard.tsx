@@ -423,25 +423,19 @@ export function ClientDashboard({
     console.log('🔍 Fetching appointments for client:', currentUser.id)
     
     try {
-      // Query con JOINs especificando las foreign keys correctas
+      // Query usando la vista materializada appointments_with_relations
       const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          business:business_id(id, name, description),
-          location:location_id(id, name, address, city, state, postal_code, google_maps_url),
-          employee:employee_id(id, full_name, email, phone, avatar_url),
-          service:service_id(id, name, description, duration_minutes, price, currency)
-        `)
+        .from('appointments_with_relations')
+        .select('*')
         .eq('client_id', currentUser.id)
         .order('start_time', { ascending: true })
       
       // eslint-disable-next-line no-console
-      console.log('📊 Query result:', { appointmentsCount: data?.length || 0, error })
+      console.log('📊 Query result (materialized view):', { appointmentsCount: data?.length || 0, error })
       
       if (error) {
         // eslint-disable-next-line no-console
-        console.log('⚠️ Error with JOINs:', error)
+        console.log('⚠️ Error with materialized view:', error)
         // Fallback a query simple
         const { data: simpleData, error: simpleError } = await supabase
           .from('appointments')

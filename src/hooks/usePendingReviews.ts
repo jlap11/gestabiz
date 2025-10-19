@@ -38,25 +38,24 @@ export function usePendingReviews() {
         return;
       }
 
-      // Get completed appointments without reviews
+      // Get completed appointments without reviews using materialized view
       const { data, error: fetchError } = await supabase
-        .from('appointments')
+        .from('appointments_with_relations')
         .select(`
           id,
-          appointment_date,
           start_time,
           business_id,
           employee_id,
           service_id,
           updated_at,
-          business:businesses!inner(name),
-          employee:profiles(full_name),
-          service:services(name)
+          business,
+          employee,
+          service
         `)
         .eq('client_id', session.session.user.id)
         .eq('status', 'completed')
         .is('review_id', null)
-        .order('appointment_date', { ascending: false })
+        .order('start_time', { ascending: false })
         .limit(20);
 
       if (fetchError) throw fetchError;
@@ -70,9 +69,9 @@ export function usePendingReviews() {
 
       const filtered = (data || [])
         .filter(apt => !validRemindLater.some(entry => entry.appointmentId === apt.id))
-        .map(apt => ({
+        .map((apt: any) => ({
           appointment_id: apt.id,
-          appointment_date: apt.appointment_date,
+          appointment_date: apt.start_time?.split(' ')[0],
           appointment_start_time: apt.start_time,
           business_id: apt.business_id,
           business_name: apt.business?.name || 'Negocio',

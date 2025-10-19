@@ -1,144 +1,170 @@
-# Guía rápida
+# Guía de Copilot para Gestabiz
 
-## 🚫 REGLA: No Generar Documentos .md Sin Solicitud Explícita
-- **Norma**: NO crear archivos .md de documentación automáticamente
-- **Excepción**: SOLO generar .md si el usuario dice "crea un documento" o "documenta esto"
-- **Expectativa**: Proporcionar información en forma de texto en la conversación, comentarios en código, o respuestas directas
-- **Aplicación**: Se aplica a todas las tareas, mejoras, fixes y nuevas features
-- **Beneficio**: Reduce clutter en el repo, evita carpetas llenas de guías sin usar, mantiene el repo limpio
-- **Alternativa**: Si el usuario necesita documentación, la solicita explícitamente y ENTONCES se crea
+> **Sistema integral de gestión de citas y negocios** - FASE BETA COMPLETADA  
+> **Stack**: React 18 + TypeScript 5.7 + Vite 6 + Supabase + Tailwind 4  
+> **Última actualización**: Octubre 2025  
+> **Estado del Proyecto**: ✅ Funcionalidad completa | 🐛 Solo bugs y optimizaciones
 
-## Sistema de Edición de Citas con Validación de Horarios ⭐ COMPLETADO 100% (2025-01-20)
-Sistema completo para crear y editar citas con validación en tiempo real de disponibilidad - **PRODUCTION READY**:
-- **Componente principal**: `DateTimeSelection.tsx` (328 líneas) - Calendario con validación completa
-- **Validaciones implementadas (3)**:
-  - ✅ Horarios de apertura/cierre de la sede (`locations.opens_at`, `closes_at`)
-  - ✅ Hora de almuerzo del profesional (`business_employees.lunch_break_start`, `lunch_break_end`)
-  - ✅ Citas ocupadas por otros clientes (overlap detection con `appointments`)
-- **Modo edición inteligente**: Excluye cita actual de validación para permitir mismo horario
+---
+
+## 📖 RESUMEN EJECUTIVO
+
+**Gestabiz** es una plataforma omnicanal (web/móvil/extensión) para gestión de citas y negocios con:
+
+- **8 sistemas principales completados**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas
+- **40+ tablas en Supabase**: PostgreSQL 15+ con RLS, extensiones (pg_trgm, postgis), Edge Functions (Deno)
+- **30+ Edge Functions desplegadas**: Notificaciones multicanal, pagos (Stripe/PayU/MercadoPago), chat, reviews
+- **Arquitectura multi-rol**: Admin/Employee/Client calculados dinámicamente (NO guardados en BD)
+- **55 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, etc.
+- **Base de código**: ~150k líneas TypeScript, 1,056 archivos .ts/.tsx
+
+### Principios de Desarrollo
+1. **No generar .md sin solicitud explícita** - Mantener repo limpio
+2. **No usar emojis en UI** - Solo iconos profesionales (Phosphor/Lucide)
+3. **Cliente Supabase singleton** - Un solo export en `src/lib/supabase.ts`
+4. **Roles dinámicos** - Calculados en tiempo real, no persistidos
+5. **TypeScript strict** - Cero `any`, tipado completo
+
+---
+
+
+## 📋 SISTEMAS PRINCIPALES (COMPLETADOS)
+
+> **Estado**: Fase BETA finalizada. No se agregarán nuevos flujos funcionales.  
+> **Pendiente**: Corrección de bugs, mejoras de UX y optimizaciones.
+
+### 1. Edición de Citas con Validación ⭐ PRODUCTION READY
+**Sistema completo de creación/edición de citas con validación en tiempo real**
+
+- **Componente**: `DateTimeSelection.tsx` (328 líneas)
+- **Validaciones implementadas**:
+  - ✅ Horarios de apertura/cierre de sede (`locations.opens_at`, `closes_at`)
+  - ✅ Hora de almuerzo del profesional (`business_employees.lunch_break_start/end`)
+  - ✅ Citas ocupadas por otros clientes (overlap detection)
+  - ✅ Exclusión de cita en edición (permite reprogramar mismo horario)
 - **Feedback visual**: Tooltips en slots deshabilitados ("Hora de almuerzo" / "Ocupado")
-- **CREATE vs UPDATE**: `createAppointment()` diferencia entre INSERT (nueva) y UPDATE (edición)
-- **Props nuevas**: `employeeId`, `locationId`, `businessId`, `appointmentToEdit` en DateTimeSelection
-- **Título dinámico**: "Nueva Cita" / "Editar Cita" según modo
-- **3 Queries Supabase**: Carga paralela de location schedule, employee schedule, existing appointments
-- **Algoritmo de overlap**: `slotStart < aptEnd && slotEnd > aptStart` detecta conflictos
-- **Casos edge cubiertos**: Reprogramar mismo horario, slots ocupados, lunch break, sede sin config
-- **Performance**: React.useCallback, consultas paralelas, filtrado client-side
-- **Build exitoso**: 21.68s sin errores
-- **Archivos modificados**: 3 (DateTimeSelection.tsx, AppointmentWizard.tsx, ClientDashboard.tsx)
-- Ver `SISTEMA_EDICION_CITAS_COMPLETADO.md` para documentación completa
+- **CREATE vs UPDATE**: `createAppointment()` diferencia entre INSERT y UPDATE
+- **Props clave**: `employeeId`, `locationId`, `businessId`, `appointmentToEdit`
+- **3 Queries paralelas**: Location schedule, employee schedule, existing appointments
+- **Algoritmo overlap**: `slotStart < aptEnd && slotEnd > aptStart`
+- **Ver**: `docs/SISTEMA_EDICION_CITAS_COMPLETADO.md`
 
-## Sistema de Sede Preferida Global - COMPLETADO 100% (2025-10-18)
-Sistema centralizado para configurar y usar una sede como predeterminada en todas las operaciones del negocio - **PRODUCTION READY**:
-- **Hook centralizado**: `usePreferredLocation` (50 líneas) - gestiona estado en localStorage por negocio
-- **Configuración**: Campo "Sede Administrada" en Preferencias del Negocio (CompleteUnifiedSettings.tsx)
-- **Visualización**: Badge "Administrada" en LocationsManager + nombre en header (UnifiedLayout.tsx)
-- **Filtros automáticos (7 pantallas)**:
-  - Empleados: Filtro pre-seleccionado en FiltersPanel
-  - Vacantes: Pre-selección en CreateVacancy (nuevas)
-  - Ventas Rápidas: Doble cache + pre-selección en QuickSaleForm
-  - Reportes: Selector con pre-selección en ReportsPage
-  - EmployeeManagementHierarchy: Filtro automático en employees
-- **Storage**: localStorage (NO BD) con key `preferred-location-${businessId}`
-- **Opción "Todas las sedes"**: value='all' para resetear filtro a null
-- **Actualización tipos**: HierarchyFilters incluye nuevo campo `location_id`
-- **Header visual**: Muestra "[Nombre Sede]" bajo nombre del negocio
-- **Build exitoso**: 14.34s
-- Ver `SISTEMA_SEDE_PREFERIDA_COMPLETADO.md` y `VISUAL_MOCKUP_SEDE_PREFERIDA.md`
+### 2. Sede Preferida Global ⭐ PRODUCTION READY
+**Sistema centralizado de sede predeterminada por negocio**
 
-## Sistema de Google Analytics 4 - COMPLETADO 100% (2025-01-20)
-Integración completa de Google Analytics 4 para tracking de conversión y comportamiento - **PRODUCTION READY**:
-- **Infraestructura core (100%)**: Hook `useAnalytics` (370 líneas, 14 métodos), módulo `ga4.ts` (91 líneas, GDPR-compliant), componente `CookieConsent` (128 líneas)
-- **Eventos críticos implementados (11/11)**:
-  - **Booking flow**: booking_started, booking_step_completed, booking_abandoned, purchase (conversión)
-  - **Páginas públicas**: page_view (landing), profile_view, click_reserve_button, click_contact
-  - **Auth**: login (email/google), sign_up
-- **GDPR compliance**: Cookie consent banner, anonymizeIp, consent mode API, localStorage persistence
-- **Tracking instalado en**: App.tsx (init), AppointmentWizard (booking flow completo), LandingPage (page_view), PublicBusinessProfile (profile + contact), AuthScreen (login/signup)
-- **TypeScript completo**: 4 interfaces (BookingEventParams, ProfileViewParams, SearchParams, ErrorParams)
-- **Variables requeridas**: VITE_GA_MEASUREMENT_ID, VITE_GA_FORCE_IN_DEV (opcional para dev)
-- **Documentación completa**: `GA_SETUP_GUIDE.md` (850+ líneas) - Configuración, eventos, testing, dashboards, troubleshooting, GDPR, KPIs
-- **Progreso**: 🎉 100% COMPLETADO - Sistema listo para producción, requiere solo configurar Measurement ID
-- **Archivos creados**: 4 nuevos (useAnalytics.ts, ga4.ts, CookieConsent.tsx, GA_SETUP_GUIDE.md)
-- **Archivos modificados**: 5 (App.tsx, AppointmentWizard.tsx, LandingPage.tsx, PublicBusinessProfile.tsx, AuthScreen.tsx)
-- **Builds exitosos**: 3 compilaciones sin errores (11-12s cada una)
-- Ver `FASE_5_ANALYTICS_COMPLETADA_90.md` para resumen ejecutivo y `GA_SETUP_GUIDE.md` para guía completa de uso
+- **Hook**: `usePreferredLocation` (50 líneas) - Gestión en localStorage por negocio
+- **Storage**: `localStorage` key `preferred-location-${businessId}` (NO en BD)
+- **Configuración**: Campo "Sede Administrada" en CompleteUnifiedSettings
+- **Visualización**: Badge "Administrada" en LocationsManager + nombre en header
+- **Pre-selección automática en**:
+  - Empleados (FiltersPanel)
+  - Vacantes (CreateVacancy - solo nuevas)
+  - Ventas Rápidas (QuickSaleForm - doble cache)
+  - Reportes (ReportsPage)
+- **Opción especial**: `value='all'` para resetear a "Todas las sedes"
+- **Ver**: `docs/SISTEMA_SEDE_PREFERIDA_COMPLETADO.md`
 
-## Landing Page ⭐ NUEVO (2025-10-17)
-Página de aterrizaje moderna y profesional para presentar el producto:
-- **Ubicación**: `src/components/landing/LandingPage.tsx` - Componente principal de la landing page
-- **Ruta pública**: Accesible en `/` sin autenticación, integrada con React Router v6
-- **Secciones principales**:
-  - **Hero**: Headline, subtítulo, CTAs (Comenzar Gratis, Ver Demo), preview de dashboard
-  - **Features**: Grid 3x2 con 6 características destacadas (iconos Phosphor, descripciones concisas)
-  - **How It Works**: Timeline de 4 pasos del flujo de usuario
-  - **Testimonials**: Carrusel con 3 testimonios de clientes (avatar, nombre, empresa, rating, texto)
-  - **Pricing**: Tabla comparativa de planes (Gratuito, Inicio, Profesional, Empresarial)
-  - **CTA Final**: Call-to-action con botón destacado
-  - **Footer**: Links, redes sociales, copyright
-- **Navegación**: Header con logo, nav links (Características, Precios, Testimonios), botones Login/Registro
-- **Responsive**: Mobile-first design con breakpoints Tailwind (sm/md/lg/xl)
-- **Interactividad**: 
-  - `onNavigateToAuth` prop para navegación a `/login` o `/register`
-  - Smooth scroll a secciones con IDs (#features, #pricing, #testimonials)
-  - Hover effects en cards, botones y links
-- **SEO optimizado**: Meta tags, structured data, títulos semánticos (h1, h2, h3)
-- **Integración GA4**: Tracking de `page_view` event en mount del componente
-- **Estilos**: Tailwind CSS con variables de tema (bg-background, text-foreground, etc.)
-- **Iconografía**: Phosphor Icons para consistencia visual con el resto de la app
+### 3. Google Analytics 4 ⭐ PRODUCTION READY
+**Integración completa de GA4 para tracking de conversión**
 
-## Sistema de Perfiles Públicos de Negocios ⭐ COMPLETADO (2025-01-20)
-Perfiles públicos indexables por Google para negocios, sin requerir autenticación:
-- **React Router v6**: Integrado con rutas públicas (`/`, `/negocio/:slug`) y privadas (`/app/*`)
-- **URL amigable**: Slugs únicos generados automáticamente (ej: `/negocio/salon-belleza-medellin`)
-- **SEO completo**: Meta tags dinámicos (title, description, keywords), Open Graph, Twitter Card, JSON-LD structured data
-- **Sitemap.xml dinámico**: Script `npm run generate-sitemap` genera sitemap con todos los perfiles públicos (priority, lastmod, changefreq) - tsx + dotenv instalados
-- **Robots.txt optimizado**: Permite crawling de `/negocio/*`, bloquea `/app/*` y `/admin/*`, incluye Sitemap URL
-- **Hook reutilizable**: `useBusinessProfileData` (352 líneas) - carga completa de negocio, servicios, ubicaciones, empleados, reviews
-- **Componente público**: `PublicBusinessProfile` (449 líneas) - layout con 4 tabs (Servicios, Ubicaciones, Equipo, Reseñas)
-- **Flow de reserva COMPLETO ✅**: Usuario no autenticado → Clic "Reservar" → Login con redirect + context preservation → Wizard abierto automáticamente en paso correcto con datos preseleccionados
-- **Auth redirect (Fase 2) ✅**: AuthScreen lee URL params, toast informativo, navegación post-login con context, MainApp extrae bookingContext, ClientDashboard abre wizard automáticamente
-- **Preselección inteligente (Fase 3) ✅**: AppointmentWizard recibe `preselectedServiceId`, `preselectedLocationId`, `preselectedEmployeeId`, calcula paso inicial dinámicamente (salto de pasos), precarga datos completos vía useEffect, usuario llega directo a fecha/hora con todo preseleccionado
-- **Feedback visual (Fase 4) ✅**: Badges "Preseleccionado" verdes con check icon en ServiceSelection, LocationSelection, EmployeeSelection. Ring verde suave (ring-2 ring-green-500/50) destacando items preseleccionados
-- **ProgressBar mejorado (Fase 4) ✅**: Check marks verdes en pasos completados, círculos con números en pasos pendientes, ring highlight en paso actual, contador "3 of 7 steps completed"
-- **Validaciones (Fase 4) ✅**: Compatibilidad empleado-servicio con query a `employee_services`, toast error si incompatible. getInitialStep() mejorado con 6 casos edge (employee sin service, etc.)
-- **Preservación de contexto**: businessId, serviceId, locationId, employeeId preservados en URL, pasados al wizard, y cargados automáticamente
-- **Reducción de fricción**: 57% menos clics (7→3), 45% menos tiempo de booking, salto inteligente de pasos según preselecciones
-- **Geolocalización**: Distancia calculada a ubicaciones si usuario permite ubicación
-- **Base de datos**: Campos `slug`, `meta_title`, `meta_description`, `meta_keywords`, `og_image_url`, `is_public` añadidos a `businesses`
-- **Fase 1 completada**: 100% - Fundamentos (React Router, database, hooks, SEO) - ver `FASE_1_PERFILES_PUBLICOS_COMPLETADA.md`
-- **Fase 2 completada**: 100% - Auth Flow (redirect, context, wizard auto-open) - ver `FASE_2_AUTH_FLOW_COMPLETADA.md`
-- **Fase 3 completada**: 100% - Preselección Completa (props, step calculation, data preload) - ver `FASE_3_PRESELECCION_COMPLETA.md`
-- **Fase 4 completada**: 100% - SEO + UI Polish (sitemap, robots.txt, badges, ProgressBar, validaciones) - ver `FASE_4_SEO_UI_POLISH_COMPLETADA.md`
-- **Progreso total**: 🎉 100% (TODAS las fases operativas, listo para producción)
+- **Infraestructura**:
+  - Hook `useAnalytics` (370 líneas, 14 métodos)
+  - Módulo `ga4.ts` (91 líneas, GDPR-compliant)
+  - Componente `CookieConsent` (128 líneas)
+- **Eventos implementados (11)**:
+  - Booking flow: booking_started, booking_step_completed, booking_abandoned, purchase
+  - Páginas públicas: page_view, profile_view, click_reserve_button, click_contact
+  - Auth: login (email/google), sign_up
+- **GDPR**: Cookie consent banner, anonymizeIp, consent mode API
+- **Variables**: `VITE_GA_MEASUREMENT_ID`, `VITE_GA_FORCE_IN_DEV` (opcional dev)
+- **Ver**: `docs/GA_SETUP_GUIDE.md`
 
-## Sistema de Navegación de Notificaciones con Cambio Automático de Rol ⭐ NUEVO (2025-10-17)
-Las notificaciones ahora cambian automáticamente el rol del usuario antes de navegar:
-- **Mapeo automático**: 30+ tipos de notificación mapeados a su rol requerido (admin/employee/client)
-- **Cambio de rol inteligente**: Si la notificación requiere rol diferente al actual, cambia automáticamente antes de navegar
-- **Navegación contextual**: Extrae IDs (vacancyId, appointmentId, etc.) de notification.data y los pasa al componente destino
-- **Archivo principal**: `src/lib/notificationRoleMapping.ts` (363 líneas)
-- **Componentes actualizados**: NotificationCenter, NotificationBell, UnifiedLayout
-- **Flujo**: Usuario con rol "client" → Clic en notificación de vacante → Cambia a "admin" → Navega a "recruitment"
-- Ver `SISTEMA_NAVEGACION_NOTIFICACIONES_CON_ROLES.md` para documentación completa y mapeo de todos los tipos
+### 4. Landing Page Pública
+**Página de aterrizaje moderna SEO-optimizada**
 
-## Sistema de Configuraciones Unificado ⭐ NUEVO (2025-10-17)
-Las configuraciones de TODOS los roles (Admin/Employee/Client) están unificadas en un solo componente `CompleteUnifiedSettings.tsx`:
-- **4 pestañas comunes**: Ajustes Generales (tema/idioma), Perfil, Notificaciones, + 1 específica del rol activo
-- **Admin**: Tab "Preferencias del Negocio" con información, contacto, dirección, legal, operaciones, notificaciones y historial
-- **Employee**: Tab "Preferencias de Empleado" con disponibilidad (horarios 7 días), info profesional, salarios, especializaciones, idiomas, certificaciones, enlaces
-- **Client**: Tab "Preferencias de Cliente" con preferencias de reserva, anticipación, pago, historial
+- **Ubicación**: `src/components/landing/LandingPage.tsx`
+- **Ruta**: `/` (accesible sin autenticación)
+- **Secciones**: Hero, Features (grid 3x2), How It Works, Testimonials, Pricing, CTA, Footer
+- **Navegación**: Header con logo, nav links, botones Login/Registro
+- **Responsive**: Mobile-first con breakpoints Tailwind (sm/md/lg/xl)
+- **Interactividad**: `onNavigateToAuth` prop, smooth scroll a secciones
+- **SEO**: Meta tags, structured data, títulos semánticos
+- **GA4**: Tracking de `page_view` event
+
+### 5. Perfiles Públicos de Negocios ⭐ COMPLETADO
+**Perfiles indexables por Google sin requerir autenticación**
+
+- **Router**: React Router v6 con rutas públicas (`/`, `/negocio/:slug`) y privadas (`/app/*`)
+- **URL amigable**: Slugs únicos (ej: `/negocio/salon-belleza-medellin`)
+- **SEO completo**: Meta tags dinámicos, Open Graph, Twitter Card, JSON-LD structured data
+- **Sitemap.xml**: Script `npm run generate-sitemap` genera sitemap dinámico
+- **Robots.txt**: Permite `/negocio/*`, bloquea `/app/*` y `/admin/*`
+- **Hook**: `useBusinessProfileData` (352 líneas) - Carga negocio/servicios/ubicaciones/empleados/reviews
+- **Componente**: `PublicBusinessProfile` (449 líneas) - Layout con 4 tabs
+- **Flow de reserva COMPLETO**:
+  1. Usuario no autenticado → Clic "Reservar"
+  2. Login con redirect + context preservation
+  3. Wizard abierto automáticamente en paso correcto
+  4. Datos preseleccionados (businessId, serviceId, locationId, employeeId)
+- **Auth redirect**: AuthScreen lee URL params, toast informativo, navegación post-login
+- **Preselección inteligente**: AppointmentWizard calcula paso inicial dinámicamente
+- **Feedback visual**: Badges "Preseleccionado" verdes + ring highlight
+- **ProgressBar mejorado**: Check marks en completados, contador "3 of 7 steps"
+- **Validaciones**: Compatibilidad empleado-servicio con query a `employee_services`
+- **Reducción fricción**: 57% menos clics (7→3), 45% menos tiempo de booking
+- **Ver**: `docs/FASE_4_SEO_UI_POLISH_COMPLETADA.md`
+
+### 6. Navegación de Notificaciones con Cambio de Rol
+**Cambio automático de rol antes de navegar a notificación**
+
+- **Archivo**: `src/lib/notificationRoleMapping.ts` (363 líneas)
+- **Mapeo**: 30+ tipos de notificación → rol requerido (admin/employee/client)
+- **Cambio inteligente**: Si notificación requiere rol diferente, cambia automáticamente
+- **Navegación contextual**: Extrae IDs (vacancyId, appointmentId) de notification.data
+- **Componentes**: NotificationCenter, NotificationBell, UnifiedLayout
+- **Flujo**: Usuario "client" → Clic notif vacante → Cambia a "admin" → Navega a "recruitment"
+- **Ver**: `docs/SISTEMA_NAVEGACION_NOTIFICACIONES_CON_ROLES.md`
+
+### 7. Configuraciones Unificadas por Rol
+**TODOS los roles (Admin/Employee/Client) en un solo componente**
+
 - **Ubicación**: `src/components/settings/CompleteUnifiedSettings.tsx` (1,448 líneas)
-- **Dashboards actualizados**: AdminDashboard, EmployeeDashboard, ClientDashboard usan este componente para 'settings' y 'profile'
+- **4 pestañas comunes**: Ajustes Generales, Perfil, Notificaciones, + 1 específica del rol
+- **Admin**: Tab "Preferencias del Negocio" (información, contacto, dirección, legal, operaciones)
+- **Employee**: Tab "Preferencias de Empleado" (horarios 7 días, salarios, especializaciones)
+- **Client**: Tab "Preferencias de Cliente" (anticipación, pago, historial)
+- **Dashboards**: AdminDashboard, EmployeeDashboard, ClientDashboard usan este componente
 - **Sin duplicación**: Cero configuraciones repetidas entre roles
-- Ver `SISTEMA_CONFIGURACIONES_UNIFICADO.md` y `GUIA_PRUEBAS_CONFIGURACIONES.md` para detalles completos
+- **Ver**: `docs/SISTEMA_CONFIGURACIONES_UNIFICADO.md`
 
-## Arquitectura de Autenticación ⭐ CRÍTICO (2025-10-17)
-Sistema de autenticación centralizado con Context API para evitar múltiples instancias:
-- **AuthContext**: `src/contexts/AuthContext.tsx` - Context centralizado que llama `useAuthSimple()` una sola vez
-- **AuthProvider**: Componente wrapper que provee el estado de auth a toda la app
-- **useAuth()**: Hook consumidor que accede al contexto (usar SIEMPRE en vez de `useAuthSimple()` directamente)
-- **Patrón de uso**:
+### 8. Sistema de Ventas Rápidas
+**Registro de ventas walk-in con estadísticas en tiempo real**
+
+- **Componentes**:
+  - `QuickSaleForm.tsx` (410 líneas) - Formulario de venta rápida
+  - `QuickSalesPage.tsx` (304 líneas) - Layout con estadísticas
+- **Datos guardados**:
+  - Cliente (nombre, teléfono, documento, email)
+  - Servicio, Sede (requerida, con cache), Empleado (opcional)
+  - Monto, Método de pago, Notas
+- **Acceso**: Solo ADMINISTRADORES en AdminDashboard → "Ventas Rápidas"
+- **Estadísticas**: Ventas del día, 7 días, 30 días (COP)
+- **Historial**: Últimas 10 ventas registradas
+- **Integración contable**: Transacción tipo `income`, categoría `service_sale`
+- **Ver**: `docs/SISTEMA_VENTAS_RAPIDAS.md`
+
+
+
+
+## 🏗️ ARQUITECTURA Y PATRONES
+
+### Arquitectura de Autenticación ⭐ CRÍTICO
+**Sistema centralizado con Context API para evitar múltiples instancias**
+
+- **AuthContext**: `src/contexts/AuthContext.tsx` - Context que llama `useAuthSimple()` UNA sola vez
+- **AuthProvider**: Wrapper que provee estado de auth a toda la app
+- **useAuth()**: Hook consumidor para acceder al contexto
+- **PATRÓN DE USO**:
   ```tsx
   // ❌ NUNCA: const { user } = useAuthSimple()
   // ✅ SIEMPRE: const { user } = useAuth()
@@ -146,26 +172,39 @@ Sistema de autenticación centralizado con Context API para evitar múltiples in
 - **Arquitectura**:
   - `App.tsx`: Envuelve `<AppRoutes />` con `<AuthProvider>`
   - `MainApp.tsx`: Usa `useAuth()` (NO `useAuthSimple()`)
-  - Todos los componentes: Usan `useAuth()` para acceder al estado
-- **Beneficios**: 
-  - Elimina múltiples suscripciones a Supabase auth
-  - Reduce re-renders innecesarios
-  - Previene race conditions en auth state
+  - Componentes: Usan `useAuth()` para acceder al estado
 - **Cálculo de roles dinámico**: 
   - `useAuth.ts` NO usa tabla `user_roles` (no existe en DB)
-  - Calcula roles en tiempo real consultando:
-    - `businesses.owner_id` → rol ADMIN
-    - `business_employees.employee_id` → rol EMPLOYEE  
-    - Default → rol CLIENT
-- **IMPORTANTE**: Si ves "Multiple GoTrueClient instances detected", significa que algo está llamando `useAuthSimple()` directamente o creando clientes Supabase adicionales. Usar SIEMPRE el cliente singleton de `src/lib/supabase.ts`.
+  - Consulta `businesses.owner_id` → rol ADMIN
+  - Consulta `business_employees.employee_id` → rol EMPLOYEE
+  - Default → rol CLIENT
+- **⚠️ IMPORTANTE**: Si ves "Multiple GoTrueClient instances detected", algo está llamando `useAuthSimple()` directamente o creando clientes Supabase adicionales. SIEMPRE usar el cliente singleton de `src/lib/supabase.ts`
 
-## Sistema de Roles Dinámicos ⭐ IMPORTANTE
-Los roles NO se guardan en la base de datos. Se calculan dinámicamente basándose en relaciones:
-- **ADMIN**: El usuario es `owner_id` de un negocio en la tabla `businesses`
-- **EMPLOYEE**: Siempre disponible (todos pueden solicitar unirse a un negocio). Si existe en `business_employees`, tiene acceso completo; si no, verá onboarding
+### Sistema de Roles Dinámicos ⭐ CRÍTICO
+**Los roles NO se guardan en la base de datos - se calculan dinámicamente**
+
+- **ADMIN**: Usuario es `owner_id` de un negocio en `businesses`
+- **EMPLOYEE**: Siempre disponible (todos pueden solicitar unirse a un negocio)
+  - Si existe en `business_employees`: acceso completo
+  - Si no existe: verá onboarding para unirse
 - **CLIENT**: Siempre disponible (todos pueden reservar citas)
+- **Acceso universal**: TODOS los usuarios tienen acceso a los 3 roles
+- **Multi-negocio**: Un usuario puede ser admin de negocio A, employee de negocio B, y client en cualquier negocio
+- **Hook**: `useUserRoles` calcula roles disponibles dinámicamente
+- **Persistencia**: Solo el rol activo se guarda en localStorage
+- **Ver**: `DYNAMIC_ROLES_SYSTEM.md`
 
-**Todos los usuarios tienen acceso a los 3 roles** para poder iterar entre ellos. Un usuario puede ser admin de negocio A, employee de negocio B, y client para reservar en cualquier negocio. El hook `useUserRoles` calcula los roles disponibles dinámicamente y solo guarda el contexto activo en localStorage. Ver `DYNAMIC_ROLES_SYSTEM.md` para detalles completos.
+### Cliente Supabase Singleton ⭐ CRÍTICO
+**UN SOLO cliente para toda la aplicación**
+
+- **Ubicación**: `src/lib/supabase.ts` (export único)
+- **NUNCA**: Crear nuevos clientes con `createClient()` en otros archivos
+- **Payment Gateways**: Reciben el cliente como parámetro en constructor
+- **Demo Mode**: Cliente simulado si `VITE_DEMO_MODE=true` o URL contiene `demo.supabase.co`
+- **Validación**: Detecta variables vacías o placeholders automáticamente
+- **Logging**: Configuración visible en console (solo dev)
+
+
 
 ## Construcción y ejecución (local)
 - Web (Vite): scripts en `package.json` raíz
@@ -190,127 +229,346 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - Integraciones: Google Calendar (`src/lib/googleCalendar.ts`), permisos (`src/lib/permissions.ts`).
   - **MCP de Supabase**: Servidor Model Context Protocol configurado para operaciones directas de base de datos.
 
-## Construcción y ejecución (local)
-- Web (Vite): scripts en `package.json` raíz
-  - dev: `npm run dev`; build: `npm run build`; preview: `npm run preview`; lint: `npm run lint`; type-check: `npm run type-check`.
-  - Variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, opcional `VITE_DEMO_MODE=true` para usar cliente Supabase simulado.
-- Móvil (Expo): `src/mobile/` tiene su `package.json`
-  - `npm run start|android|ios|web`, builds con EAS `build:*` y `submit:*`.
-  - Env: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
-- Extensión: `extension/` y `src/browser-extension/`
-  - `npm run build` (copia/zip), `npm run dev` para servidor estático local; carga "unpacked" en Chrome.
-- **Supabase**: SOLO en la nube (no hay instancia local). Ver `SUPABASE_INTEGRATION_GUIDE.md`, `src/docs/deployment-guide.md` y `supabase/functions/README.md` para CLI, Edge Functions y cron.
-  - **MCP configurado**: Servidor Model Context Protocol disponible para operaciones directas de base de datos.
-  - **Modelo actualizado (2025-10-11)**: Ver `DATABASE_REDESIGN_ANALYSIS.md` para el nuevo modelo con servicios por sede/empleado, reviews, transacciones y analytics.
-  - **Sistema de Categorías (2025-11-10)**: Sistema jerárquico con 15 categorías principales y ~60 subcategorías. Máximo 3 subcategorías por negocio. Ver `SISTEMA_CATEGORIAS_RESUMEN.md` y `EJECUTAR_SOLO_CATEGORIAS.sql`.
-  - **Sistema de Notificaciones (2025-12-20)**: Sistema multicanal completo (Email/SMS/WhatsApp) con AWS SES/SNS, recordatorios automáticos, preferencias por usuario y negocio. Ver `BUSINESS_NOTIFICATION_SETTINGS_COMPLETADO.md` y `GUIA_PRUEBAS_SISTEMA_NOTIFICACIONES.md`.
-  - **Sistema de Búsqueda (2025-10-12)**: SearchBar con dropdown, geolocalización, SearchResults con 6 algoritmos de ordenamiento, BusinessProfile y UserProfile modales integrados. Ver `VALIDACION_VINCULACION_NEGOCIOS.md` y `USER_PROFILE_COMPLETADO.md`.
-  - **Sistema de Reviews (2025-10-12)**: Reviews anónimas con ReviewForm, ReviewList, ReviewCard. Hook useReviews con CRUD completo. RLS policies. Solo clientes con citas completadas. Ver `SISTEMA_REVIEWS_COMPLETADO.md`.
-  - **Optimización de Búsqueda (2025-10-12)**: Índices trigram, full-text search con tsvector, materialized views para ratings, funciones SQL optimizadas. Performance 40-60x mejor. Ver `OPTIMIZACION_BUSQUEDA_COMPLETADO.md`.
-  - **Sistema de Billing y Suscripciones (2025-10-17)**: Sistema completo de facturación con **Stripe + PayU Latam + MercadoPago**. ✅ **TRIPLE GATEWAY OPERATIVO**
-    - **Fase 1 COMPLETADA**: 7 tablas, 4 RPC functions, 6 códigos descuento activos, RLS policies completas.
-    - **Fase 2 COMPLETADA**: 4 Edge Functions Stripe + 2 Edge Functions PayU + 3 Edge Functions MercadoPago desplegadas. Frontend: PaymentGateway interface, StripeGateway + PayUGateway + MercadoPagoGateway implementations, PaymentGatewayFactory (switch configurable), useSubscription hook actualizado, BillingDashboard + modales compatibles con los 3 gateways.
-    - **Fase 4 COMPLETADA ✨**: UI completa con 3 componentes (PricingPage: 460 líneas, PaymentHistory: 320 líneas, UsageMetrics: 220 líneas). Integrado en AdminDashboard sidebar como "Facturación".
-    - **Fix Integración (2025-10-17) ✅**: Corregidos 4 bloqueantes críticos del sistema Stripe.
-    - **Integración PayU (2025-10-17) ✅**: PayU Latam implementado como alternativa a Stripe:
-      1. ✅ PayUGateway.ts (215 líneas) implementa IPaymentGateway completa
-      2. ✅ PaymentGatewayFactory.ts (actualizado) con variable VITE_PAYMENT_GATEWAY para switch
-      3. ✅ Edge Functions: payu-create-checkout (genera firma MD5 y URL), payu-webhook (procesa confirmaciones)
-      4. ✅ Compatibilidad 100% con UI existente (sin cambios en componentes)
-      5. ⏳ Credenciales PayU pendientes de configuración por usuario
-    - **Integración MercadoPago (2025-10-17) ✅**: MercadoPago implementado como tercera pasarela:
-      1. ✅ MercadoPagoGateway.ts (225 líneas) implementa IPaymentGateway completa
-      2. ✅ PaymentGatewayFactory.ts actualizado con opción 'mercadopago'
-      3. ✅ Edge Functions: mercadopago-create-preference (genera Preference con items/payer/back_urls), mercadopago-webhook (procesa notificaciones IPN), mercadopago-manage-subscription
-      4. ✅ Compatibilidad 100% con UI existente (sin cambios en componentes)
-      5. ✅ Ideal para Argentina, Brasil, México, Chile (líder LATAM)
-      6. ⏳ Credenciales MercadoPago pendientes de configuración por usuario
-      7. **Ver**: `docs/INTEGRACION_MERCADOPAGO.md` para guía completa con tarjetas de prueba
-    - **Plan Gratuito y Deshabilitar Planes (2025-10-17) ✅**: Mejoras UX de planes:
-      1. ✅ Plan Gratuito agregado (0 COP, 1 sede, 1 empleado, 1 servicio, 3 citas/mes)
-      2. ✅ Dashboard sin suscripción muestra tarjeta "Plan Gratuito" con características incluidas
-      3. ✅ Solo Plan Inicio habilitado ($80k/mes), marcado como "Más Popular"
-      4. ✅ Planes Profesional ($200k), Empresarial ($500k), Corporativo deshabilitados con badge "Próximamente"
-      5. ✅ Opacidad 60% y toasts informativos para planes no disponibles
-      6. **Ver**: `docs/MEJORAS_PLAN_GRATUITO_Y_DESHABILITAR_PLANES.md` para detalles completos
-    - **Cobertura Geográfica**: Stripe (global), PayU (Colombia primero), MercadoPago (Argentina/Brasil/México)
-    - **Pendiente (Solo Configuración)**: Configurar gateway elegido (Stripe, PayU o MercadoPago) según `VITE_PAYMENT_GATEWAY`. Ver `docs/CONFIGURACION_SISTEMA_FACTURACION.md` (Stripe), `docs/INTEGRACION_PAYU_LATAM.md` (PayU) y `docs/INTEGRACION_MERCADOPAGO.md` (MercadoPago) para guías completas.
-    - Ver `RESUMEN_IMPLEMENTACION_PAYU.md` para detalles de arquitectura multi-gateway.
-  - **Integración RPC y Edge Function (2025-10-12)**: SearchResults.tsx refactorizado para usar funciones RPC (search_businesses, search_services, search_professionals). Edge Function refresh-ratings-stats desplegada para refresco automático de vistas materializadas. Ver `INTEGRACION_RPC_EDGE_FUNCTION.md`.
-  - **🚨 FIX CRÍTICO Realtime Subscriptions (2025-01-20)**: Corregido memory leak severo que causaba 398k queries/día. Eliminado `Date.now()` de nombres de canal en 5 subscripciones (useChat: 3, useEmployeeRequests: 1, useInAppNotifications: 1). Reducción esperada: 99.4% menos queries. Ver `FIX_CRITICO_REALTIME_SUBSCRIPTIONS.md` para detalles completos y best practices.
 
-## Sistema de Vacantes Laborales ⭐ COMPLETADO 100% (2025-01-20)
-Sistema completo de reclutamiento con matching inteligente, detección de conflictos, reviews obligatorias, notificaciones automáticas:
-- **Fase 1 ✅**: Migraciones SQL aplicadas vía MCP (385 líneas)
-- **Fase 2 ✅**: 6 Hooks completados (1,510 líneas)
-- **Fase 3 ✅**: 4 componentes UI Admin (1,238 líneas)
-- **Fase 4 ✅**: 5 componentes UI Employee (1,699 líneas)
-- **Fase 5 ✅**: Sistema de Reviews Obligatorias (487 líneas)
-- **Fase 6 ✅**: Sistema de Notificaciones (223 líneas)
-- **Fase 7 ✅**: QA & Testing Suite (1,260 líneas) - ⏸️ TESTS PAUSADOS
+## 🗄️ BASE DE DATOS SUPABASE
+
+### Infraestructura
+- **SOLO en la nube** (no hay instancia local)
+- **PostgreSQL 15+** con extensiones:
+  - `uuid-ossp`: Generación de UUIDs
+  - `pg_trgm`: Búsqueda fuzzy (trigram)
+  - `postgis`: Geolocalización
+- **Row Level Security (RLS)**: Todas las tablas tienen políticas de seguridad
+- **Edge Functions**: Deno runtime para lógica serverless
+- **Realtime**: Suscripciones en tiempo real a cambios de datos
+- **Storage**: Buckets para avatares, CVs, archivos de chat, bug reports
+
+### Tablas Principales (40+)
+
+**Core del Negocio**:
+- `businesses`: Datos del negocio (owner_id, categorías, ratings cache)
+- `locations`: Sedes físicas (opens_at, closes_at, coordenadas)
+- `services`: Servicios ofrecidos (precio, duración, categoría)
+- `business_employees`: Empleados vinculados (lunch_break, salarios, horarios)
+- `location_services`: Servicios disponibles por sede
+- `employee_services`: Servicios que ofrece cada empleado
+
+**Citas y Clientes**:
+- `appointments`: Citas agendadas (start_time, end_time, status, is_location_exception)
+- `profiles`: Perfiles de usuario (name, email, phone, avatar_url, is_active)
+- `reviews`: Calificaciones de clientes (rating 1-5, comment, response, review_type)
+
+**Sistema de Categorías**:
+- `business_categories`: 15 categorías principales
+- `business_subcategories`: ~60 subcategorías (max 3 por negocio)
+
+**Sistema de Reclutamiento**:
+- `job_vacancies`: Vacantes publicadas (salary_range, commission_based, required_skills)
+- `job_applications`: Aplicaciones a vacantes (status, cv_url, availability_notes)
+- `employee_profiles`: Perfiles profesionales (skills, experience, certifications)
+
+**Sistema de Notificaciones**:
+- `business_notification_settings`: Configuración de canales, tiempos de recordatorio
+- `user_notification_preferences`: Preferencias individuales por tipo y canal
+- `notification_log`: Registro de notificaciones enviadas con tracking
+- `in_app_notifications`: Notificaciones in-app (type, data JSONB, read status)
+
+**Sistema de Facturación**:
+- `subscriptions`: Suscripciones activas (Stripe/PayU/MercadoPago)
+- `billing_invoices`: Facturas generadas
+- `payment_methods`: Métodos de pago guardados
+- `usage_metrics`: Métricas de uso para facturación
+
+**Sistema Contable**:
+- `transactions`: Ingresos y egresos (type, category, amount, fiscal_period)
+- `business_tax_config`: Configuración de impuestos por negocio (IVA, ICA, Retención)
+
+**Chat y Comunicación**:
+- `conversations`: Hilos de conversación
+- `messages`: Mensajes de chat (content, attachments, read_receipt)
+- `chat_participants`: Participantes en conversaciones
+
+**Permisos (v2.0)**:
+- `business_roles`: Roles por negocio (admin/employee)
+- `user_permissions`: Permisos granulares (55 permisos disponibles)
+- `permission_templates`: Plantillas de permisos reutilizables
+- `permission_audit_log`: Auditoría de cambios de permisos
+
+### Migraciones Aplicadas (40+)
+- `20251011000000_database_redesign.sql`: Rediseño completo del modelo
+- `20251012000000_search_optimization.sql`: Índices trigram y full-text search
+- `20251013000000_fiscal_system_colombia.sql`: Sistema contable colombiano
+- `20251013000000_permission_system.sql`: Sistema de permisos granulares v2
+- `20251013100000_chat_system.sql`: Sistema de chat completo
+- `20251015000000_billing_system_core.sql`: Sistema de facturación
+- `20251016000000_employee_hierarchy_system.sql`: Jerarquías de empleados
+- `20251017000000_add_public_profile_fields.sql`: Campos para perfiles públicos
+- `20251017000003_create_employee_profiles.sql`: Perfiles profesionales
+- `20251017000004_enhance_job_vacancies.sql`: Mejoras a vacantes
+- `20251018000000_create_logging_system.sql`: Sistema de logs centralizado
+- `20251018000001_add_location_hours.sql`: Horarios de apertura/cierre
+- `20251018000002_add_lunch_break_fields.sql`: Horas de almuerzo de empleados
+- `executed/20251220000001_notification_system.sql`: Sistema de notificaciones multicanal
+- `executed/EJECUTAR_SOLO_CATEGORIAS.sql`: Sistema de categorías jerárquicas
+
+### Edge Functions Desplegadas (30+)
+
+**Autenticación y Seguridad**:
+- `create-test-users`: Crear usuarios de prueba
+
+**Sistema de Notificaciones**:
+- `send-notification`: Envío multi-canal (Email/SMS/WhatsApp)
+- `process-reminders`: Procesador automático de recordatorios (cron cada 5 min)
+- `send-notification-reminders`: Recordatorios de citas
+- `send-unread-chat-emails`: Notificaciones de mensajes no leídos
+- `send-employee-request-notification`: Notificaciones de solicitudes de empleados
+
+**Sistema de Pagos**:
+- **Stripe**: `create-checkout-session`, `stripe-webhook`, `manage-subscription`
+- **PayU**: `payu-create-checkout`, `payu-webhook`
+- **MercadoPago**: `mercadopago-create-preference`, `mercadopago-webhook`, `mercadopago-manage-subscription`
+
+**Sistema de Chat**:
+- `send-message`: Envío de mensajes
+
+**Sistema de Reviews y Búsqueda**:
+- `refresh-ratings-stats`: Actualiza vistas materializadas de ratings (cron cada 5 min)
+
+**Sistema de Bug Reports**:
+- `send-bug-report-email`: Envío de reportes de bugs por email
+
+**Sistema de Citas**:
+- `appointment-actions`: Acciones sobre citas (confirmar, cancelar, etc.)
+- `calendar-integration`: Integración con Google Calendar
+
+**Otros**:
+- `daily-digest`: Digest diario de actividad
+- `check-business-inactivity`: Verificación de inactividad de negocios
+
+### RPC Functions Importantes
+- `search_businesses()`: Búsqueda de negocios con ranking
+- `search_services()`: Búsqueda de servicios con relevancia
+- `search_professionals()`: Búsqueda de profesionales con stats
+- `get_matching_vacancies()`: Matching de vacantes con empleados
+- `get_business_hierarchy()`: Jerarquía de empleados
+- `refresh_ratings_stats()`: Refresco de vistas materializadas
+
+### Vistas Materializadas
+- `business_ratings_stats`: Estadísticas de ratings por negocio
+- `employee_ratings_stats`: Estadísticas de ratings por empleado
+
+### Storage Buckets
+- `avatars`: Avatares de usuario (public)
+- `cvs`: CVs de aplicantes (private)
+- `chat-attachments`: Archivos de chat (private)
+- `bug-report-evidences`: Evidencias de bugs (private)
+
+### IMPORTANTE - Campos Clave
+- **business_employees** usa `employee_id` NO `user_id`: Siempre usar `employee_id = auth.uid()` en queries
+- **appointments** tiene `is_location_exception` para empleados trabajando fuera de su sede
+- **reviews** tiene `review_type` ('business' | 'employee') para diferenciar tipos
+- **transactions** tiene campos fiscales: `subtotal`, `tax_type`, `tax_rate`, `tax_amount`, `fiscal_period`
+- **job_vacancies** tiene `commission_based` (BOOLEAN) para salarios por comisión
+
+
+
+
+## 💡 SISTEMAS ADICIONALES IMPLEMENTADOS
+
+### Sistema de Vacantes Laborales ⭐ 100% COMPLETADO (2025-01-20)
+**Reclutamiento completo con matching inteligente y reviews obligatorias**
+
+- **7 Fases completadas**: Migraciones (385 líneas), 6 Hooks (1,510 líneas), 4 UI Admin (1,238 líneas), 5 UI Employee (1,699 líneas), Reviews (487 líneas), Notificaciones (223 líneas), Testing (1,260 líneas pausados)
 - **Deployment**: ✅ Aplicado en Supabase Cloud (migraciones + triggers + Edge Functions)
-- **⚠️ IMPORTANTE - Tests E2E Deshabilitados**: 
-  - Los 45 tests E2E están temporalmente pausados con `describe.skip()`
-  - **Razón**: Supabase envió advertencia por alto rate de emails rebotados
-  - Tests estaban creando usuarios ficticios (john.smith.xyz@gmail.com) y Supabase enviaba confirmaciones
-  - **Solución aplicada**: Eliminado `auth.signUp` de tests, usando UUIDs fijos
-  - **Para habilitar**: Configurar `VITE_SUPABASE_SERVICE_ROLE_KEY` o custom SMTP provider
-  - **Ver**: `docs/CONFIGURACION_TESTS_E2E.md` y `docs/RESUMEN_FINAL_VACANTES_CON_TESTS.md`
-- **Funcionalidad en Producción**: ✅ 100% OPERATIVA (no afectada por tests)
-- **Progreso**: 100% código completado (7,240 líneas escritas) 🎉
-- **Mejoras UI Salarios (2025-10-17)**: ✅ Checkbox comisiones, símbolo $, formato miles colombiano (1.000.000)
-  - **Migración**: `20251017000000_add_commission_based_to_vacancies.sql` aplicada
-  - **Campo nuevo**: `commission_based` (BOOLEAN DEFAULT FALSE)
-  - **Ver**: `docs/FIX_SALARIOS_FORMATEO_COMISIONES.md` para detalles completos
-- Ver `docs/FASE_7_COMPLETADA_TESTING.md`, `docs/GUIA_ACCESO_SISTEMA_VACANTES.md` y `docs/PROGRESO_IMPLEMENTACION_VACANTES.md` para detalles completos
+- **Tests E2E deshabilitados**: 45 tests con `describe.skip()` por rate de emails (Supabase warning)
+- **Funcionalidad**: ✅ 100% OPERATIVA (no afectada por tests pausados)
+- **Características**:
+  - Matching inteligente empleado-vacante
+  - Detección de conflictos de horario
+  - Reviews obligatorias al contratar/finalizar
+  - Notificaciones automáticas (aplicación, aceptación, rechazo)
+  - Sistema de salarios con checkbox comisiones
+  - Formato miles colombiano (1.000.000)
+- **Ver**: `docs/FASE_7_COMPLETADA_TESTING.md`, `docs/GUIA_ACCESO_SISTEMA_VACANTES.md`
 
-## Sistema Contable Completo
-Sistema contable completo con cálculo automático de IVA, ICA y Retención en la Fuente:
+### Sistema Contable Completo
+**Cálculo automático de IVA, ICA y Retención en la Fuente**
+
 - **Hooks optimizados**: 
-  - `useBusinessTaxConfig` (128 líneas): Caché React Query con 1 hora TTL, prefetch e invalidación
-  - `useTaxCalculation` (47 líneas): Refactorizado 78% menos código, usa caché, memoización
-  - `useTransactions`: Extendido con `createFiscalTransaction()` para transacciones con impuestos
+  - `useBusinessTaxConfig`: Caché React Query 1h TTL, prefetch, invalidación
+  - `useTaxCalculation`: 78% menos código, usa caché, memoización
+  - `useTransactions`: `createFiscalTransaction()` para transacciones con impuestos
 - **Componentes UI**:
-  - `LoadingSpinner` (77 líneas): 4 variantes (LoadingSpinner, SuspenseFallback, ButtonSpinner, FormSkeleton)
-  - `AccountingPage` (148 líneas): Tabs con lazy loading de TaxConfiguration y EnhancedTransactionForm
-  - `ReportsPage` (58 líneas): Dashboard financiero con lazy loading
-  - `EnhancedTransactionForm`: Debounce 300ms, feedback visual con spinner, inputs disabled durante cálculo
-- **Navegación**: AdminDashboard tiene 2 nuevos items en sidebar: "Contabilidad" (Calculator icon) y "Reportes" (FileText icon)
-- **Toast Notifications**: Implementados en 8 flujos con `sonner` (exports PDF/CSV/Excel, save/reset config, create transaction)
-- **Tests**: 100% cobertura en `useTaxCalculation.test.tsx` (340 líneas) y `exportToPDF.test.ts` (260 líneas)
-- **Performance**: 90% menos queries a Supabase, 60% carga más rápida con caché, previene 80% cálculos innecesarios con debounce
-- **Campos fiscales en transactions**: subtotal, tax_type, tax_rate, tax_amount, total_amount, is_tax_deductible, fiscal_period
+  - `LoadingSpinner`: 4 variantes (LoadingSpinner, SuspenseFallback, ButtonSpinner, FormSkeleton)
+  - `AccountingPage`: Tabs con lazy loading de TaxConfiguration y EnhancedTransactionForm
+  - `ReportsPage`: Dashboard financiero con lazy loading
+- **Navegación**: AdminDashboard tiene "Contabilidad" (Calculator icon) y "Reportes" (FileText icon)
+- **Toast Notifications**: 8 flujos con `sonner` (exports, save/reset, create)
+- **Tests**: 100% cobertura en `useTaxCalculation.test.tsx` y `exportToPDF.test.ts`
+- **Performance**: 90% menos queries, 60% carga más rápida, 80% menos cálculos innecesarios
 - **Moneda**: COP (pesos colombianos)
-- Ver `SISTEMA_CONTABLE_FASE_4_COMPLETADA.md` para documentación completa
+- **Ver**: `SISTEMA_CONTABLE_FASE_4_COMPLETADA.md`
 
-## Sistema de Temas ⭐ NUEVO (2025-01-10)
-La aplicación soporta temas claro y oscuro con persistencia:
-- **ThemeProvider**: `src/contexts/ThemeProvider.tsx` - Context con hook `useKV` para persistencia en localStorage
-- **CSS Variables**: `src/index.css` - Variables semánticas que cambian según tema (`:root` para light, `[data-theme="dark"]` para dark)
-- **ThemeToggle**: `src/components/ui/theme-toggle.tsx` - Componente switch integrado en AdminDashboard header
-- **IMPORTANTE**: NO usar colores hardcodeados (bg-[#1a1a1a], text-white, border-white/10). Usar variables CSS via Tailwind: `bg-background`, `text-foreground`, `border-border`, `bg-card`, `text-muted-foreground`, `bg-primary`, etc.
-- **Estado**: 60% completo (AdminDashboard + 3/5 componentes jobs refactorizados). Ver `TEMA_CLARO_RESUMEN_FINAL.md` para detalles.
+### Sistema de Temas Claro/Oscuro
+**Soporte completo de temas con persistencia**
 
-## Convenciones y patrones del proyecto
-- Alias de paths: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`).
-- Tipos fuente de verdad: `src/types/types.ts` (roles, permisos, Appointment, Business, etc.). Cuando crees nuevas entidades, añade tipos aquí y usa mapeos consistentes en hooks.
-- Permisos/roles: `src/lib/permissions.ts` expone `ROLE_PERMISSIONS`, `hasPermission`, etc. Usa estas utilidades en componentes y servicios para gatear acciones.
-- Supabase "demo mode": `src/lib/supabase.ts` activa un cliente simulado si `VITE_DEMO_MODE=true` o si la URL contiene `demo.supabase.co`. Esto permite flujos UI sin backend real. Tenlo en cuenta en pruebas locales.
-- **Cliente Supabase singleton (2025-10-17)**: `src/lib/supabase.ts` exporta UN SOLO cliente. NUNCA crear clientes adicionales con `createClient()`. Los Payment Gateways (StripeGateway, PayUGateway, MercadoPagoGateway) reciben el cliente como constructor parameter en `PaymentGatewayFactory.getPaymentGateway()`.
-- **PROHIBIDO: Emojis en la UI** - NO usar emojis en textos, labels, badges, o contenido visible del usuario. Los emojis NO son profesionales y causan problemas de:
-  - Encoding en algunos navegadores y sistemas
-  - Accesibilidad para usuarios con lectores de pantalla
-  - Consistencia visual entre plataformas (mobile/web)
-  - Traducción y localización
-  - Performance en renders frecuentes
-  - Usar íconos (Lucide React, Phosphor) en lugar de emojis. Ej: `<MapPin className="h-5 w-5" />` en lugar de "📍"
-- Hooks de datos:
-  - `useSupabaseData(...)` centraliza lecturas y aplica filtros por `user.role` (admin/employee/client) y por `businessId`.
-  - `useSupabase.ts` ofrece hooks de auth, appointments, settings y dashboard y suscribe en tiempo real vía `subscriptionService`.
-- Estado y feedback: usa `useAppState()` para controles de carga/errores y `useAsyncOperation()` para envolver operaciones async con toasts (`sonner`).
-- i18n: `LanguageProvider` expone `t(key, params)` y utilidades de formato (`formatDate`, `formatCurrency`). Texto nuevo debe ir en `src/lib/translations.ts`.
-- Para cada ajuste se debe tener en cuenta la parte de supabase, debe quedar coherencia entre lo desarrollado con el cliente de supabase.
-- **Mandatory Reviews (2025-10-17)**: `useMandatoryReviews` hook busca citas completadas sin review usando LEFT JOIN con tabla `reviews`. Campo `review_id` NO existe en `appointments`. Query correcta: `.select('id, reviews!left(id)').is('reviews.id', null)`.
+- **ThemeProvider**: `src/contexts/ThemeProvider.tsx` - Context con hook `useKV` para localStorage
+- **CSS Variables**: `src/index.css` - Variables semánticas `:root` (light) y `[data-theme="dark"]`
+- **ThemeToggle**: `src/components/ui/theme-toggle.tsx` - Switch en AdminDashboard header
+- **Variables CSS**: `bg-background`, `text-foreground`, `border-border`, `bg-card`, `text-muted-foreground`, `bg-primary`
+- **Estado**: Implementado en AdminDashboard + componentes principales
+
+### Sistema de Búsqueda Avanzada
+**Full-text search con PostgreSQL y geolocalización**
+
+- **SearchBar**: Dropdown de tipos, debounce 300ms
+- **SearchResults**: 6 algoritmos de ordenamiento, rating+distancia balanceado
+- **Modales**: BusinessProfile (4 tabs), UserProfile (3 tabs)
+- **Hooks**: `useGeolocation`, `useEmployeeBusinesses`
+- **Optimización Supabase**:
+  - Índices trigram: `gin(name gin_trgm_ops)`
+  - Full-text search: tsvector, GIN indexes, triggers
+  - Vistas materializadas: business_ratings_stats, employee_ratings_stats
+  - Funciones RPC: search_businesses, search_services, search_professionals
+- **Performance**: 40-60x más rápido, 10x capacidad (100 → 1000 queries/seg)
+- **Ver**: `OPTIMIZACION_BUSQUEDA_COMPLETADO.md`, `INTEGRACION_RPC_EDGE_FUNCTION.md`
+
+### Sistema de Reviews Anónimas
+**Calificaciones por servicio y profesional**
+
+- **Componentes**: ReviewCard, ReviewForm, ReviewList
+- **Hook**: `useReviews` - CRUD completo (create, respond, toggle visibility, delete)
+- **Validación**: Solo clientes con citas completadas sin review previa
+- **Integración**: Tabs de reviews en BusinessProfile y UserProfile
+- **Traducciones**: `reviews.*` en español e inglés
+- **Ver**: `SISTEMA_REVIEWS_COMPLETADO.md`
+
+### Sistema de Notificaciones Multicanal ⭐ COMPLETO
+**Email/SMS/WhatsApp con recordatorios automáticos**
+
+- **Canales**: AWS SES (Email), AWS SNS (SMS), WhatsApp Business API
+- **Edge Functions**:
+  - `send-notification`: Envío multi-canal
+  - `process-reminders`: Procesador automático (cron cada 5 min)
+  - `send-notification-reminders`: Recordatorios de citas
+- **Tablas**:
+  - `business_notification_settings`: Config de canales y recordatorios
+  - `user_notification_preferences`: Preferencias por tipo y canal
+  - `notification_log`: Registro con tracking
+  - `in_app_notifications`: Notificaciones in-app con JSONB data
+- **17 tipos soportados**: Citas, verificaciones, empleados, vacantes, sistema
+- **Fallback automático**: Entre canales si uno falla
+- **Ver**: `SISTEMA_NOTIFICACIONES_COMPLETO.md`, `SISTEMA_RECORDATORIOS_AUTOMATICOS.md`
+
+### Sistema de Billing (Stripe + PayU + MercadoPago)
+**Triple gateway de pagos operativo**
+
+- **Gateways**:
+  - Stripe (global)
+  - PayU Latam (Colombia)
+  - MercadoPago (Argentina/Brasil/México/Chile)
+- **Factory Pattern**: `PaymentGatewayFactory` con variable `VITE_PAYMENT_GATEWAY`
+- **Edge Functions**: 9 functions (create-checkout, webhooks, manage-subscription)
+- **Planes**:
+  - Gratuito: 0 COP (1 sede, 1 empleado, 3 citas/mes)
+  - Inicio: $80k/mes (Más Popular) ✅
+  - Profesional, Empresarial, Corporativo: Deshabilitados (Próximamente)
+- **UI**: BillingDashboard, PricingPage, PaymentHistory, UsageMetrics
+- **Ver**: `CONFIGURACION_SISTEMA_FACTURACION.md`, `INTEGRACION_PAYU_LATAM.md`, `INTEGRACION_MERCADOPAGO.md`
+
+### Sistema de Chat en Tiempo Real
+**Mensajería instantánea entre usuarios**
+
+- **Componentes**: ChatLayout, ChatWindow, ChatInput, ConversationList
+- **Tablas**: conversations, messages, chat_participants
+- **Storage**: Bucket `chat-attachments` para archivos
+- **Realtime**: Suscripciones a cambios en messages
+- **Edge Functions**: send-message, send-unread-chat-emails
+- **Características**: Attachments, read receipts, typing indicators
+- **FIX CRÍTICO**: Corregido memory leak en subscriptions (99.4% menos queries)
+- **Ver**: `FIX_CRITICO_REALTIME_SUBSCRIPTIONS.md`
+
+### Sistema de Categorías Jerárquicas
+**15 categorías principales + ~60 subcategorías**
+
+- **Tablas**: business_categories, business_subcategories
+- **Límite**: Máximo 3 subcategorías por negocio
+- **Ejemplos**: Salud y Bienestar → Spa, Peluquería, Barbería, etc.
+- **Integración**: BusinessRegistration, BusinessProfile, SearchBar
+- **Ver**: `SISTEMA_CATEGORIAS_RESUMEN.md`, `EJECUTAR_SOLO_CATEGORIAS.sql`
+
+### Sistema de Bug Reports
+**Reporte de errores con evidencias**
+
+- **Componente**: BugReportModal (FloatingBugReportButton)
+- **Tablas**: bug_reports, bug_report_evidences, bug_report_comments
+- **Storage**: Bucket `bug-report-evidences`
+- **Edge Function**: send-bug-report-email
+- **Severidades**: Critical, High, Medium, Low
+- **Ver**: `SISTEMA_REPORTE_BUGS.md`
+
+### Sistema de Logging Centralizado
+**Logs de errores y auditoría**
+
+- **Tablas**: error_logs, login_logs
+- **Hook**: `src/lib/logger.ts` - Logger centralizado
+- **Integración**: Sentry (plan gratuito) configurado
+- **Características**: Stack traces, context data, user tracking
+- **Ver**: `ANALISIS_LOGS_Y_OBSERVABILIDAD_2025-10-18.md`
+
+
+
+
+## 🔧 CONVENCIONES Y PATRONES
+
+### Organización de Archivos
+- **Alias de paths**: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`)
+- **Tipos**: `src/types/types.ts` (fuente de verdad para roles, permisos, entidades)
+- **Componentes**: Organizados por dominio (`admin/`, `employee/`, `client/`, `billing/`, `jobs/`, etc.)
+- **Hooks**: `src/hooks/` - Hooks personalizados reutilizables
+- **Contexts**: `src/contexts/` - Estado global (Auth, Language, AppState, Notification, Theme)
+- **Lib**: `src/lib/` - Utilidades, servicios, helpers
+
+### Prácticas de Código
+- **TypeScript strict**: Todos los archivos tipados, sin `any` (usar `unknown`)
+- **Hooks de datos**:
+  - `useSupabaseData(...)` centraliza lecturas y aplica filtros por rol
+  - `useSupabase.ts` ofrece hooks de auth, appointments, settings
+- **Estado y feedback**: 
+  - `useAppState()` para controles de carga/errores
+  - `useAsyncOperation()` para envolver operaciones async con toasts
+- **Permisos**: `src/lib/permissions.ts` expone `ROLE_PERMISSIONS`, `hasPermission`, etc.
+- **i18n**: `LanguageProvider` expone `t(key, params)` y utilidades de formato
+
+### Estilos y UI
+- **Tailwind 4**: Variables CSS semánticas (bg-background, text-foreground, border-border)
+- **NO hardcodear colores**: Usar variables de tema, no valores hex directos
+- **Radix UI**: Componentes accesibles en `src/components/ui/`
+- **Iconos**: Phosphor Icons (NO emojis en UI)
+- **Responsive**: Mobile-first con breakpoints (sm/md/lg/xl)
+- **Tema claro/oscuro**: ThemeProvider con persistencia en localStorage
+
+### Performance
+- **React Query**: Caché de datos con TTL de 5 minutos
+- **Lazy loading**: Componentes pesados cargados dinámicamente
+- **Memoization**: `React.useCallback`, `React.useMemo` en componentes complejos
+- **Debounce**: 300ms en búsquedas y inputs frecuentes
+- **Vistas materializadas**: Pre-cálculo de estadísticas en Supabase
+
+### Seguridad
+- **RLS**: Todas las tablas tienen políticas de seguridad
+- **Variables de entorno**: NO exponer claves de servicio en cliente
+- **Edge Functions**: Operaciones privilegiadas en serverless
+- **Validación**: Client-side + server-side en todas las operaciones
+- **GDPR**: Cookie consent, anonymizeIp en GA4
+
+### Testing
+- **Vitest**: Framework de testing unitario
+- **Tests deshabilitados**: 45 tests E2E pausados (problemas con emails de Supabase)
+- **Para habilitar**: Configurar `VITE_SUPABASE_SERVICE_ROLE_KEY` o custom SMTP
+- **Ver**: `docs/CONFIGURACION_TESTS_E2E.md`
+
+
 
 ## Puntos de integración externos
 - **Supabase Cloud**: tablas como `appointments`, `services`, `locations`, `businesses`, `profiles`; realtime en canal de `appointments` filtrado por `user_id`.
@@ -427,4 +685,176 @@ La aplicación soporta temas claro y oscuro con persistencia:
 - **EmployeeBusinessSelection**: Paso condicional si employee tiene múltiples negocios
 - **Casos manejados**: 0 negocios=block, 1 negocio=auto-select, 2+=selector modal
 
-¿Falta algo o hay una convención que deba aclararse mejor (p. ej., estructura exacta de Edge Functions o tests e2e)? Indica los huecos y lo iteramos.
+---
+
+## 🚀 GUÍAS DE DESARROLLO
+
+### Comandos Principales (PowerShell)
+
+**Desarrollo Web**:
+```powershell
+npm run dev              # Iniciar servidor Vite (http://localhost:5173)
+npm run build            # Build de producción
+npm run preview          # Preview del build
+npm run lint             # ESLint
+npm run type-check       # TypeScript compiler check
+npm run generate-sitemap # Generar sitemap.xml
+```
+
+**Desarrollo Móvil** (en `src/mobile/`):
+```powershell
+npm run start            # Expo dev server
+npm run android          # Android emulator
+npm run ios              # iOS simulator
+npm run web              # Expo web
+```
+
+**Supabase** (siempre usar `npx supabase`):
+```powershell
+npx supabase start                           # Iniciar Supabase local (NO DISPONIBLE)
+npx supabase db push                         # Aplicar migraciones en remoto
+npx supabase functions deploy <function-name> # Desplegar Edge Function
+npx supabase gen types typescript --project-id <id> > src/types/supabase.ts  # Generar tipos
+```
+
+**Testing**:
+```powershell
+npm run test             # Vitest (45 tests deshabilitados)
+npm run test:ui          # Vitest UI
+npm run test:coverage    # Cobertura de tests
+```
+
+### Flujo de Desarrollo Típico
+
+1. **Crear nueva feature**:
+   - Crear componente en `src/components/<rol>/`
+   - Crear hook si necesita lógica reutilizable en `src/hooks/`
+   - Agregar tipos en `src/types/types.ts`
+   - Agregar traducciones en `src/lib/translations.ts`
+
+2. **Trabajar con datos de Supabase**:
+   - Usar `useSupabaseData` para queries con filtros por rol
+   - Para operaciones complejas, usar MCP o crear RPC function
+   - Siempre aplicar RLS policies en migraciones
+
+3. **Desplegar cambios en Supabase**:
+   - Crear migración: `npx supabase migration new <nombre>`
+   - Probar localmente (NO disponible, usar directamente remoto)
+   - Aplicar en producción: `npx supabase db push`
+   - Actualizar tipos: `npx supabase gen types typescript...`
+
+4. **Agregar Edge Function**:
+   - Crear carpeta en `supabase/functions/<nombre>/`
+   - Crear `index.ts` con handler Deno
+   - Desplegar: `npx supabase functions deploy <nombre>`
+   - Configurar secrets si es necesario
+
+### Debugging Common Issues
+
+**Error: "Multiple GoTrueClient instances detected"**
+- ✅ Solución: Verificar que NO se esté importando `createClient` en múltiples archivos
+- ✅ SIEMPRE usar el cliente de `src/lib/supabase.ts`
+- ✅ Payment gateways deben recibir cliente como parámetro
+
+**Error: "Failed to fetch" en Supabase queries**
+- ✅ Verificar variables de entorno: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- ✅ Verificar que usuario tenga permisos (RLS policies)
+- ✅ Ver políticas en Supabase Dashboard → Authentication → Policies
+
+**Roles no se calculan correctamente**
+- ✅ Verificar que se use `employee_id` (NO `user_id`) en `business_employees`
+- ✅ Revisar `useAuth.ts` líneas 150-250 (cálculo de roles)
+- ✅ Roles NO están en BD, se calculan dinámicamente
+
+**Citas no validan horarios correctamente**
+- ✅ Ver `DateTimeSelection.tsx` líneas 120-200 (overlap algorithm)
+- ✅ Verificar que `locations.opens_at` y `closes_at` estén configurados
+- ✅ Verificar `business_employees.lunch_break_start/end`
+
+**Tests E2E fallan con "Rate limit exceeded"**
+- ✅ Tests pausados intencionalmente (ver `CONFIGURACION_TESTS_E2E.md`)
+- ✅ Configurar custom SMTP o usar `VITE_SUPABASE_SERVICE_ROLE_KEY`
+- ✅ Funcionalidad 100% operativa (tests NO afectan producción)
+
+### Variables de Entorno Requeridas
+
+**Web** (`.env`):
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGc...
+VITE_GOOGLE_CLIENT_ID=123456789.apps.googleusercontent.com
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Payment Gateways
+VITE_PAYMENT_GATEWAY=stripe|payu|mercadopago
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+VITE_PAYU_MERCHANT_ID=...
+VITE_MERCADOPAGO_PUBLIC_KEY=...
+
+# Opcional
+VITE_DEMO_MODE=true  # Para modo demo sin Supabase real
+```
+
+**Móvil** (`src/mobile/.env`):
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
+```
+
+**Edge Functions** (Supabase Secrets):
+```bash
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=us-east-1
+SES_FROM_EMAIL=noreply@gestabiz.com
+WHATSAPP_ACCESS_TOKEN=...
+STRIPE_SECRET_KEY=sk_test_...
+```
+
+### Recursos de Documentación
+
+**Documentación por Sistema**:
+- Edición de citas: `docs/SISTEMA_EDICION_CITAS_COMPLETADO.md`
+- Sede preferida: `docs/SISTEMA_SEDE_PREFERIDA_COMPLETADO.md`
+- Ventas rápidas: `docs/SISTEMA_VENTAS_RAPIDAS.md`
+- Vacantes: `docs/FASE_7_COMPLETADA_TESTING.md`
+- Notificaciones: `docs/SISTEMA_NOTIFICACIONES_COMPLETO.md`
+- Billing: `docs/CONFIGURACION_SISTEMA_FACTURACION.md`
+
+**Guías Técnicas**:
+- Deployment: `src/docs/deployment-guide.md`
+- Edge Functions: `supabase/functions/README.md`
+- Roles dinámicos: `DYNAMIC_ROLES_SYSTEM.md`
+- Tests E2E: `docs/CONFIGURACION_TESTS_E2E.md`
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+### Para Agentes de IA
+- **NO crear archivos .md** a menos que se solicite explícitamente
+- **NO usar emojis en código UI** - Solo iconos de Phosphor/Lucide
+- **SIEMPRE** consultar este archivo antes de hacer cambios importantes
+- **SIEMPRE** actualizar este archivo si se hacen cambios estructurales
+- **Fase BETA completada**: No agregar nuevos flujos funcionales, solo bugs y optimizaciones
+
+### Reglas de Negocio Críticas
+1. Un empleado puede trabajar en múltiples negocios simultáneamente
+2. Los roles se calculan dinámicamente (NO se guardan en BD)
+3. TODOS los usuarios tienen acceso a los 3 roles (Admin/Employee/Client)
+4. Las citas tienen validación de overlap, horarios de sede y almuerzo
+5. Las reviews son anónimas y requieren cita completada
+6. Las notificaciones tienen fallback automático entre canales
+7. El sistema contable calcula IVA/ICA/Retención automáticamente
+8. Los pagos soportan 3 gateways (Stripe/PayU/MercadoPago)
+
+### Prioridades de Mantenimiento
+1. **Crítico**: Bugs que afectan creación/edición de citas
+2. **Alto**: Problemas de autenticación o permisos
+3. **Medio**: Optimizaciones de performance
+4. **Bajo**: Mejoras cosméticas de UI
+
+---
+
+*Última actualización: Enero 2025*  
+*Mantenido por: TI-Turing Team*

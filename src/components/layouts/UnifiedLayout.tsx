@@ -237,79 +237,35 @@ export function UnifiedLayout({
 
             {/* Logo/Business Info - Responsive */}
             {business ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="inline-flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 overflow-hidden">
-                  {business.logo_url ? (
-                    <img
-                      src={business.logo_url}
-                      alt={business.name}
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-contain bg-muted p-1.5 sm:p-2 border-2 border-primary/20 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/20 flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
-                      <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
-                  )}
-
-                  <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="min-w-0">
-                      <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
-                        {business.name}
-                      </h1>
-                      {availableLocations.length > 0 && (
-                        <div className="relative inline-block mt-1" ref={locationMenuRef}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setLocationMenuOpen(!locationMenuOpen)
-                            }}
-                            className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 whitespace-nowrap"
-                          >
-                            <span>📍</span>
-                            <span className="truncate">{preferredLocationName || 'Seleccionar sede'}</span>
-                            <ChevronDown className="h-3 w-3 flex-shrink-0 ml-2" />
-                          </button>
-                          {locationMenuOpen && (
-                            <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[180px]">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onLocationSelect?.(null)
-                                  setLocationMenuOpen(false)
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors first:rounded-t-md"
-                              >
-                                Todas las sedes
-                              </button>
-                              {availableLocations.map((location) => (
-                                <button
-                                  key={location.id}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    onLocationSelect?.(location.id)
-                                    setLocationMenuOpen(false)
-                                  }}
-                                  className={cn(
-                                    "w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors",
-                                    preferredLocationName === location.name && "bg-primary/20 text-foreground font-semibold"
-                                  )}
-                                >
-                                  {location.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {business.category && (
-                      <Badge variant="secondary" className="text-xs hidden md:inline-flex">
-                        {business.category.name}
-                      </Badge>
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="inline-flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 overflow-hidden">
+                    {business.logo_url ? (
+                      <img
+                        src={business.logo_url}
+                        alt={business.name}
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-contain bg-muted p-1.5 sm:p-2 border-2 border-primary/20 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/20 flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
+                        <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                      </div>
                     )}
-                    <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
-                  </div>
-                </DropdownMenuTrigger>
+
+                    <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="min-w-0">
+                        <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
+                          {business.name}
+                        </h1>
+                      </div>
+                      {business.category && (
+                        <Badge variant="secondary" className="text-xs hidden md:inline-flex">
+                          {business.category.name}
+                        </Badge>
+                      )}
+                      <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
+                    </div>
+                  </DropdownMenuTrigger>
                 
                 <DropdownMenuContent align="start" className="w-64 bg-card border-border">
                   <div className="px-3 py-2 border-b border-border">
@@ -364,6 +320,57 @@ export function UnifiedLayout({
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Location Selector - Outside DropdownMenu */}
+              {availableLocations.length > 0 && (
+                <div className="relative" ref={locationMenuRef}>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setLocationMenuOpen(!locationMenuOpen)
+                    }}
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 px-2 py-1 hover:bg-muted rounded-md whitespace-nowrap"
+                  >
+                    <span>📍</span>
+                    <span className="truncate">{preferredLocationName || 'Seleccionar sede'}</span>
+                    <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                  </button>
+                  {locationMenuOpen && (
+                    <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[180px]">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onLocationSelect?.(null)
+                          setLocationMenuOpen(false)
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors first:rounded-t-md"
+                      >
+                        Todas las sedes
+                      </button>
+                      {availableLocations.map((location) => (
+                        <button
+                          key={location.id}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onLocationSelect?.(location.id)
+                            setLocationMenuOpen(false)
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors",
+                            preferredLocationName === location.name && "bg-primary/20 text-foreground font-semibold"
+                          )}
+                        >
+                          {location.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             ) : currentRole === 'client' ? (
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <CitySelector

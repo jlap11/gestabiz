@@ -26,7 +26,8 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 interface AddPaymentMethodModalProps {
   businessId: string
@@ -165,6 +166,11 @@ export function AddPaymentMethodModal({
   useEffect(() => {
     const createSetupIntent = async () => {
       try {
+        // Validar que Stripe esté configurado
+        if (!stripePromise) {
+          throw new Error('Stripe no está configurado. Este modal solo se puede usar con Stripe.')
+        }
+
         const supabase = createClient(supabaseUrl, supabaseAnonKey)
         const { data: { session } } = await supabase.auth.getSession()
         

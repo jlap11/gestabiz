@@ -23,19 +23,24 @@ interface BusinessSuggestionsProps {
   onBusinessSelect?: (businessId: string) => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function BusinessSuggestions({
   userId,
   preferredCityName,
   preferredRegionName,
   onBusinessSelect
-}: BusinessSuggestionsProps) {
+}: Readonly<BusinessSuggestionsProps>) {
   const [favoriteBusiness, setFavoriteBusiness] = useState<SimpleBusiness | null>(null);
-  const [suggestedBusinesses, setSuggestedBusinesses] = useState<SimpleBusiness[]>([]);
+  const [allSuggestedBusinesses, setAllSuggestedBusinesses] = useState<SimpleBusiness[]>([]);
+  const [displayedBusinesses, setDisplayedBusinesses] = useState<SimpleBusiness[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const loadFavoriteBusiness = async (userId: string) => {
+    // Usar vista materializada appointments_with_relations
     const { data: completed } = await supabase
-      .from('appointments')
+      .from('appointments_with_relations')
       .select('id, business_id')
       .eq('client_id', userId)
       .eq('status', 'completed');
@@ -92,13 +97,33 @@ export function BusinessSuggestions({
 
     let filtered = query;
     
-    // Handle special case: Bogotá D.C. → search by city "Bogota"
-    if (!cityName && regionName === 'Bogotá D.C.') {
-      filtered = filtered.ilike('city', '%Bogota%');
+    // Normalize city/region name by removing accents and special chars
+    const normalize = (str: string) => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[,.]/g, '')
+        .trim()
+        .toLowerCase();
+    };
+    
+    // Handle special cases and normalize search
+    if (!cityName && regionName) {
+      // If only region is provided (e.g., "BOGOTÃ, D.C." or "Bogotá D.C.")
+      const normalizedRegion = normalize(regionName);
+      if (normalizedRegion.includes('bogota')) {
+        filtered = filtered.ilike('city', '%Bogot%'); // Search by city instead
+      } else {
+        filtered = filtered.ilike('state', `%${regionName.split(',')[0].trim()}%`);
+      }
     } else if (cityName) {
-      filtered = filtered.ilike('city', `%${cityName}%`);
-    } else if (regionName) {
-      filtered = filtered.ilike('state', `%${regionName}%`);
+      // If city is provided, search by normalized city name
+      const normalizedCity = normalize(cityName);
+      if (normalizedCity.includes('bogota')) {
+        filtered = filtered.ilike('city', '%Bogot%');
+      } else {
+        filtered = filtered.ilike('city', `%${cityName}%`);
+      }
     }
 
     const { data: locations } = await filtered;
@@ -114,14 +139,20 @@ export function BusinessSuggestions({
 
     if (uniqueIds.length === 0) return [];
 
+    // Fetch ALL businesses, not just first 10
     const { data: businesses } = await supabase
       .from('businesses')
       .select('id, name, logo_url, average_rating')
-      .in('id', uniqueIds.slice(0, 4));
+      .in('id', uniqueIds);
 
     if (!businesses) return [];
 
-    return businesses.map((b) => ({
+    // Deduplicate by business ID (in case a business has multiple locations)
+    const uniqueBusinesses = Array.from(
+      new Map(businesses.map(b => [b.id, b])).values()
+    );
+
+    return uniqueBusinesses.map((b) => ({
       id: b.id,
       name: b.name,
       logo_url: b.logo_url,
@@ -141,7 +172,14 @@ export function BusinessSuggestions({
           preferredRegionName,
           favorite?.id || null
         );
-        setSuggestedBusinesses(suggested);
+        
+        // Filter out duplicate (favorite business if it appears in suggestions)
+        const filtered = suggested.filter(s => s.id !== favorite?.id);
+        
+        setAllSuggestedBusinesses(filtered);
+        setCurrentPage(0);
+        // Show first 10
+        setDisplayedBusinesses(filtered.slice(0, ITEMS_PER_PAGE));
       } finally {
         setLoading(false);
       }
@@ -149,6 +187,20 @@ export function BusinessSuggestions({
 
     loadData();
   }, [userId, preferredCityName, preferredRegionName]);
+
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    const startIndex = nextPage * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    
+    setCurrentPage(nextPage);
+    setDisplayedBusinesses([
+      ...displayedBusinesses,
+      ...allSuggestedBusinesses.slice(startIndex, endIndex)
+    ]);
+  };
+
+  const hasMoreBusinesses = (currentPage + 1) * ITEMS_PER_PAGE < allSuggestedBusinesses.length;
 
   const renderBusinessCard = (business: SimpleBusiness, isFavorite: boolean = false) => (
     <Card 
@@ -220,7 +272,7 @@ export function BusinessSuggestions({
               onBusinessSelect?.(business.id);
             }}
           >
-            Reservar de nuevo
+            {isFavorite ? 'Reservar de nuevo' : 'Agendar cita'}
           </Button>
         </div>
       </CardContent>
@@ -247,7 +299,7 @@ export function BusinessSuggestions({
     );
   }
 
-  if (!favoriteBusiness && suggestedBusinesses.length === 0) {
+  if (!favoriteBusiness && displayedBusinesses.length === 0) {
     return null; // No mostrar nada si no hay sugerencias
   }
 
@@ -272,14 +324,25 @@ export function BusinessSuggestions({
           )}
 
           {/* Negocios en la ciudad */}
-          {suggestedBusinesses.length > 0 && (
+          {displayedBusinesses.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 En {preferredCityName || preferredRegionName}
               </h3>
               <div className="space-y-3">
-                {suggestedBusinesses.map((business) => renderBusinessCard(business, false))}
+                {displayedBusinesses.map((business) => renderBusinessCard(business, false))}
               </div>
+              
+              {/* "Ver más..." button */}
+              {hasMoreBusinesses && (
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={handleLoadMore}
+                >
+                  Ver más...
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
