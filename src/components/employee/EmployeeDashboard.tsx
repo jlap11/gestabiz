@@ -10,7 +10,15 @@ import { VacationDaysWidget } from '@/components/absences/VacationDaysWidget'
 import { AbsenceRequestModal } from '@/components/absences/AbsenceRequestModal'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences'
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
 import { Button } from '@/components/ui/button'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { UserRole, User } from '@/types/types'
 
 interface EmployeeDashboardProps {
@@ -33,9 +41,22 @@ export function EmployeeDashboard({
   const [activePage, setActivePage] = useState('employments')
   const [currentUser, setCurrentUser] = useState(user)
   const [showAbsenceModal, setShowAbsenceModal] = useState(false)
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
+  
+  // Obtener todos los negocios donde el empleado trabaja
+  const { businesses: employeeBusinesses, loading: loadingBusinesses } = useEmployeeBusinesses(user?.id)
   
   // Hook de ausencias para el widget y el modal
-  const { vacationBalance, refresh: refreshAbsences } = useEmployeeAbsences(businessId || '')
+  // Usa el negocio seleccionado, o el primero si hay múltiples, o el que viene por props
+  const effectiveBusinessId = selectedBusinessId || businessId || employeeBusinesses[0]?.id
+  const { vacationBalance, refresh: refreshAbsences } = useEmployeeAbsences(effectiveBusinessId || '')
+
+  // Sincronizar selectedBusinessId cuando cambia businessId (desde MainApp)
+  useEffect(() => {
+    if (businessId && !selectedBusinessId) {
+      setSelectedBusinessId(businessId)
+    }
+  }, [businessId, selectedBusinessId])
 
   // Función para manejar cambios de página con contexto
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {
@@ -110,38 +131,8 @@ export function EmployeeDashboard({
       case 'employments':
         return (
           <div className="space-y-6">
-            {/* Widget de vacaciones y botón de ausencia */}
-            {businessId && (
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <VacationDaysWidget balance={vacationBalance} />
-                </div>
-                <div className="flex-shrink-0">
-                  <Button
-                    onClick={() => setShowAbsenceModal(true)}
-                    className="w-full sm:w-auto"
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Solicitar Ausencia
-                  </Button>
-                </div>
-              </div>
-            )}
-            
             {/* Lista de empleos */}
             <MyEmployments employeeId={currentUser.id} onJoinBusiness={handleJoinBusiness} />
-            
-            {/* Modal de solicitud de ausencia */}
-            {businessId && (
-              <AbsenceRequestModal
-                businessId={businessId}
-                isOpen={showAbsenceModal}
-                onClose={() => {
-                  setShowAbsenceModal(false)
-                  refreshAbsences()
-                }}
-              />
-            )}
           </div>
         )
       case 'join-business':
@@ -158,9 +149,49 @@ export function EmployeeDashboard({
           </div>
         )
       case 'absences':
-        return businessId ? (
-          <div className="p-6">
-            <EmployeeAbsencesTab businessId={businessId} />
+        return effectiveBusinessId ? (
+          <div className="p-6 space-y-6">
+            {/* Selector de negocio si hay múltiples */}
+            {employeeBusinesses.length > 1 && (
+              <div className="flex items-end gap-4">
+                <div className="flex-1 max-w-xs">
+                  <label htmlFor="business-select" className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Seleccionar Negocio
+                  </label>
+                  <Select value={selectedBusinessId || ''} onValueChange={setSelectedBusinessId}>
+                    <SelectTrigger id="business-select" className="w-full">
+                      <SelectValue placeholder="Elige un negocio..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employeeBusinesses.map((business) => (
+                        <SelectItem key={business.id} value={business.id}>
+                          {business.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+            
+            {/* Widget de vacaciones y botón de solicitud */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <VacationDaysWidget balance={vacationBalance} />
+              </div>
+              <div className="flex-shrink-0">
+                <Button
+                  onClick={() => setShowAbsenceModal(true)}
+                  className="w-full sm:w-auto"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Solicitar Ausencia
+                </Button>
+              </div>
+            </div>
+            
+            {/* Lista de ausencias */}
+            <EmployeeAbsencesTab businessId={effectiveBusinessId} />
           </div>
         ) : (
           <div className="p-6">
@@ -218,6 +249,18 @@ export function EmployeeDashboard({
       } : undefined}
     >
       {renderContent()}
+      
+      {/* Modal de solicitud de ausencia */}
+      {effectiveBusinessId && (
+        <AbsenceRequestModal
+          businessId={effectiveBusinessId}
+          isOpen={showAbsenceModal}
+          onClose={() => {
+            setShowAbsenceModal(false)
+            refreshAbsences()
+          }}
+        />
+      )}
     </UnifiedLayout>
   )
 }

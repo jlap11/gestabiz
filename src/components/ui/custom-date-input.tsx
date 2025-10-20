@@ -33,10 +33,12 @@ interface CustomDateInputProps extends Omit<ComponentProps<"input">, "type" | "v
     onChange?: (value: string) => void
     min?: string
     max?: string
+    disabledDates?: string[] // Fechas en formato YYYY-MM-DD que deben estar deshabilitadas
+    holidayTooltip?: (date: Date) => string | null // Función para mostrar tooltip de festivo
 }
 
 const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
-    ({ className, label, error, value, onChange, min, max, ...props }, ref) => {
+    ({ className, label, error, value, onChange, min, max, disabledDates = [], holidayTooltip, ...props }, ref) => {
         const [selectedDate, setSelectedDate] = useState<Date | null>(
             value ? parse(value, 'yyyy-MM-dd', new Date()) : null
         )
@@ -57,6 +59,13 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
 
         const minDate = min ? parse(min, 'yyyy-MM-dd', new Date()) : undefined
         const maxDate = max ? parse(max, 'yyyy-MM-dd', new Date()) : undefined
+        
+        // Función para filtrar fechas deshabilitadas (festivos + fin de semana)
+        const filterDate = (date: Date): boolean => {
+          const dateStr = format(date, 'yyyy-MM-dd');
+          // Si está en la lista de fechas deshabilitadas, retornar false (inhabilitar)
+          return !disabledDates.includes(dateStr);
+        };
         
         // Memoize the popper container function to prevent re-creation on every render
         const popperContainerFn = useMemo(() => createPopperContainer(popperRef), [popperRef])
@@ -216,6 +225,23 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
             opacity: 0.3;
           }
           
+          /* Estilo para días festivos (holidays) */
+          .react-datepicker__day--holiday {
+            background-color: hsl(var(--destructive)) !important;
+            color: hsl(var(--destructive-foreground)) !important;
+            opacity: 0.5;
+            text-decoration: line-through;
+            cursor: not-allowed;
+            font-weight: 500;
+          }
+          
+          .react-datepicker__day--holiday:hover {
+            background-color: hsl(var(--destructive)) !important;
+            color: hsl(var(--destructive-foreground)) !important;
+            opacity: 0.6;
+            text-decoration: line-through;
+          }
+          
           .react-datepicker__navigation {
             background: none;
             border: none;
@@ -281,6 +307,7 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
             locale={es}
             minDate={minDate}
             maxDate={maxDate}
+            filterDate={filterDate}
             placeholderText="dd/mm/yyyy"
             autoComplete="off"
             className={cn(

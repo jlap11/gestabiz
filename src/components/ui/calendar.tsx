@@ -8,6 +8,9 @@ interface CalendarDay {
   isCurrentMonth: boolean
   isToday: boolean
   isSelected: boolean
+  isInRange?: boolean // Día está dentro del rango de fechas
+  isRangeStart?: boolean // Es la fecha de inicio del rango
+  isRangeEnd?: boolean // Es la fecha de fin del rango
 }
 
 export interface CalendarProps {
@@ -15,6 +18,8 @@ export interface CalendarProps {
   onSelect?: (date: Date | undefined) => void
   disabled?: (date: Date) => boolean
   className?: string
+  dateRangeStart?: Date // Fecha de inicio del rango (para sombrear)
+  dateRangeEnd?: Date // Fecha de fin del rango (para sombrear)
 }
 
 const MONTHS = [
@@ -24,7 +29,7 @@ const MONTHS = [
 
 const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
-export const Calendar = ({ selected, onSelect, disabled, className }: CalendarProps) => {
+export const Calendar = ({ selected, onSelect, disabled, className, dateRangeStart, dateRangeEnd }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(selected || new Date())
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right'>('right')
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false)
@@ -40,6 +45,24 @@ export const Calendar = ({ selected, onSelect, disabled, className }: CalendarPr
     const firstDayWeekday = firstDayOfMonth.getDay()
     const daysInMonth = lastDayOfMonth.getDate()
     
+    // Función auxiliar para verificar si una fecha está en el rango
+    const isDateInRange = (date: Date): boolean => {
+      if (!dateRangeStart || !dateRangeEnd) return false
+      const dateTime = date.getTime()
+      const startTime = dateRangeStart.getTime()
+      const endTime = dateRangeEnd.getTime()
+      return dateTime >= startTime && dateTime <= endTime
+    }
+    
+    // Función para verificar si es inicio o fin del rango
+    const isDateRangeStart = (date: Date): boolean => {
+      return dateRangeStart ? date.toDateString() === dateRangeStart.toDateString() : false
+    }
+    
+    const isDateRangeEnd = (date: Date): boolean => {
+      return dateRangeEnd ? date.toDateString() === dateRangeEnd.toDateString() : false
+    }
+    
     const days: CalendarDay[] = []
     
     // Días del mes anterior
@@ -49,7 +72,10 @@ export const Calendar = ({ selected, onSelect, disabled, className }: CalendarPr
         date,
         isCurrentMonth: false,
         isToday: false,
-        isSelected: false
+        isSelected: false,
+        isInRange: isDateInRange(date),
+        isRangeStart: isDateRangeStart(date),
+        isRangeEnd: isDateRangeEnd(date)
       })
     }
     
@@ -63,7 +89,10 @@ export const Calendar = ({ selected, onSelect, disabled, className }: CalendarPr
         date,
         isCurrentMonth: true,
         isToday,
-        isSelected
+        isSelected,
+        isInRange: isDateInRange(date),
+        isRangeStart: isDateRangeStart(date),
+        isRangeEnd: isDateRangeEnd(date)
       })
     }
     
@@ -75,12 +104,15 @@ export const Calendar = ({ selected, onSelect, disabled, className }: CalendarPr
         date,
         isCurrentMonth: false,
         isToday: false,
-        isSelected: false
+        isSelected: false,
+        isInRange: isDateInRange(date),
+        isRangeStart: isDateRangeStart(date),
+        isRangeEnd: isDateRangeEnd(date)
       })
     }
     
     return days
-  }, [currentYear, currentMonth, selected, today])
+  }, [currentYear, currentMonth, selected, today, dateRangeStart, dateRangeEnd])
 
   const handleDateClick = (date: Date, isCurrentMonth: boolean) => {
     if (!isCurrentMonth) return
@@ -247,11 +279,15 @@ export const Calendar = ({ selected, onSelect, disabled, className }: CalendarPr
                       ? 'hover:bg-secondary/80 cursor-pointer' 
                       : 'text-muted-foreground/30 cursor-default'
                     }
-                    ${day.isSelected 
-                      ? 'bg-accent text-accent-foreground shadow-lg' 
+                    ${day.isInRange && !day.isSelected && !day.isRangeStart && !day.isRangeEnd
+                      ? 'bg-accent/20 text-foreground'
+                      : ''
+                    }
+                    ${(day.isRangeStart || day.isRangeEnd || day.isSelected)
+                      ? 'bg-accent text-accent-foreground shadow-lg'
                       : 'text-foreground'
                     }
-                    ${day.isToday && !day.isSelected 
+                    ${day.isToday && !day.isSelected && !day.isRangeStart && !day.isRangeEnd
                       ? 'ring-2 ring-accent/50' 
                       : ''
                     }

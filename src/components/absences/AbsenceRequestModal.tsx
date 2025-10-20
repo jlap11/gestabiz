@@ -10,6 +10,7 @@
  * - Muestra balance de vacaciones disponibles
  * - Calcula días solicitados automáticamente
  * - Preview de citas afectadas
+ * - Valida festivos públicos del país
  */
 
 import React, { useState, useEffect } from 'react';
@@ -21,7 +22,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences';
+import { usePublicHolidays } from '@/hooks/usePublicHolidays';
+import { useBusinessCountry } from '@/hooks/useBusinessCountry';
 import { supabase } from '@/lib/supabase';
 
 interface AbsenceRequestModalProps {
@@ -41,7 +45,9 @@ const absenceTypeLabels: Record<AbsenceType, string> = {
 };
 
 export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<AbsenceRequestModalProps>) {
-  const { requestAbsence, vacationBalance, loading } = useEmployeeAbsences(businessId);
+  const { requestAbsence, vacationBalance, loading, validateWorkDays } = useEmployeeAbsences(businessId);
+  const { data: businessData } = useBusinessCountry(businessId);
+  const { holidays } = usePublicHolidays(businessData?.country_id);
 
   const [absenceType, setAbsenceType] = useState<AbsenceType>('vacation');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -50,6 +56,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
   const [employeeNotes, setEmployeeNotes] = useState('');
   const [affectedAppointmentsCount, setAffectedAppointmentsCount] = useState(0);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
+  const [invalidWorkDays, setInvalidWorkDays] = useState<string[]>([]);
+  const [holidaysInRange, setHolidaysInRange] = useState<string[]>([]);
 
   // Calcular días solicitados
   const daysRequested = startDate && endDate
@@ -61,13 +69,14 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
     ? vacationBalance && daysRequested <= vacationBalance.daysRemaining
     : true;
 
-  // Cargar citas afectadas cuando cambien las fechas
+  // Cargar citas afectadas, validar días de trabajo y detectar festivos cuando cambien las fechas
   useEffect(() => {
     if (!startDate || !endDate || !businessId) return;
 
-    const loadAffectedAppointments = async () => {
+    const loadAffectedAppointmentsAndValidate = async () => {
       setLoadingAppointments(true);
       try {
+        // Verificar citas afectadas
         const { count, error } = await supabase
           .from('appointments')
           .select('id', { count: 'exact', head: true })
@@ -79,6 +88,21 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
         if (!error) {
           setAffectedAppointmentsCount(count || 0);
         }
+
+        // Validar días de trabajo
+        const validation = await validateWorkDays(
+          format(startDate, 'yyyy-MM-dd'),
+          format(endDate, 'yyyy-MM-dd')
+        );
+        setInvalidWorkDays(validation.invalidDays);
+
+        // Detectar festivos en el rango
+        const holidaysInDateRange = holidays.filter(
+          (holiday) =>
+            holiday.holiday_date >= format(startDate, 'yyyy-MM-dd') &&
+            holiday.holiday_date <= format(endDate, 'yyyy-MM-dd')
+        );
+        setHolidaysInRange(holidaysInDateRange.map((h) => h.holiday_date));
       } catch (error) {
         // eslint-disable-next-line no-console
         console.warn('Error loading appointments:', error);
@@ -87,13 +111,27 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
       }
     };
 
-    loadAffectedAppointments();
-  }, [startDate, endDate, businessId]);
+    loadAffectedAppointmentsAndValidate();
+  }, [startDate, endDate, businessId, validateWorkDays, holidays]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!startDate || !endDate || !reason.trim()) {
+      return;
+    }
+
+    // Validar que no haya días no laborales
+    if (invalidWorkDays.length > 0) {
+      toast.error('No puedes solicitar ausencia en días que no trabajas. Por favor, ajusta tus fechas.');
+      return;
+    }
+
+    // Validar que no haya festivos en el rango
+    if (holidaysInRange.length > 0) {
+      toast.error(
+        `No puedes solicitar ausencia en ${holidaysInRange.length} día(s) festivo(s). Por favor, ajusta tus fechas.`
+      );
       return;
     }
 
@@ -113,6 +151,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
       setReason('');
       setEmployeeNotes('');
       setAffectedAppointmentsCount(0);
+      setInvalidWorkDays([]);
+      setHolidaysInRange([]);
       onClose();
     }
   };
@@ -138,17 +178,17 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <div>
                   <p className="font-medium text-blue-900 dark:text-blue-100">Balance de Vacaciones {vacationBalance.year}</p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    {vacationBalance.daysRemaining} días disponibles de {vacationBalance.totalDaysAvailable}
+                    {Math.max(0, vacationBalance.daysRemaining)} días disponibles de {Math.max(0, vacationBalance.totalDaysAvailable)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{vacationBalance.daysRemaining}</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{Math.max(0, vacationBalance.daysRemaining)}</p>
                   <p className="text-xs text-blue-600 dark:text-blue-400">días libres</p>
                 </div>
               </div>
               {vacationBalance.daysPending > 0 && (
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                  {vacationBalance.daysPending} días pendientes de aprobación
+                  {Math.max(0, vacationBalance.daysPending)} días pendientes de aprobación
                 </p>
               )}
             </div>
@@ -180,6 +220,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                   selected={startDate}
                   onSelect={setStartDate}
                   disabled={(date) => date < new Date()}
+                  dateRangeStart={startDate}
+                  dateRangeEnd={endDate}
                   className="w-full"
                 />
               </div>
@@ -199,6 +241,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                   selected={endDate}
                   onSelect={setEndDate}
                   disabled={(date) => !startDate || date < startDate}
+                  dateRangeStart={startDate}
+                  dateRangeEnd={endDate}
                   className="w-full"
                 />
               </div>
@@ -222,10 +266,56 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <div className="flex items-center gap-2 mt-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="h-4 w-4" />
                   <p className="text-sm">
-                    No tiene suficientes días disponibles ({vacationBalance?.daysRemaining} días restantes)
+                    No tiene suficientes días disponibles ({Math.max(0, vacationBalance?.daysRemaining ?? 0)} días restantes)
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Validación de días no laborales */}
+          {invalidWorkDays.length > 0 && (
+            <div className="p-3 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-red-900 dark:text-red-100">
+                    {invalidWorkDays.length} día{invalidWorkDays.length === 1 ? '' : 's'} no laboral{invalidWorkDays.length === 1 ? '' : 'es'}
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                    Los siguientes días no están en tu horario de trabajo: {invalidWorkDays.map(d => format(new Date(d), 'dd/MM')).join(', ')}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Por favor, selecciona solamente días en los que trabajas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Validación de festivos públicos */}
+          {holidaysInRange.length > 0 && (
+            <div className="p-3 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-orange-900 dark:text-orange-100">
+                    {holidaysInRange.length} festivo{holidaysInRange.length === 1 ? '' : 's'} en el rango
+                  </p>
+                  <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                    Los siguientes días son festivos públicos y no se pueden solicitar como ausencia:{' '}
+                    {holidaysInRange
+                      .map((date) => {
+                        const holiday = holidays.find((h) => h.holiday_date === date);
+                        return `${format(new Date(date), 'dd/MM')} (${holiday?.name || 'Festivo'})`;
+                      })
+                      .join(', ')}
+                  </p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                    Ajusta tus fechas excluyendo estos días.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -286,7 +376,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 !endDate ||
                 !reason.trim() ||
                 !hasEnoughVacationDays ||
-                loadingAppointments
+                loadingAppointments ||
+                invalidWorkDays.length > 0
               }
             >
               {loading ? 'Enviando...' : 'Enviar Solicitud'}

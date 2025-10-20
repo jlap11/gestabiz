@@ -20,7 +20,7 @@ interface MatchingVacancy {
 describe('Matching Score Calculation Algorithm', () => {
   let testBusinessId: string
   let testUserId: string
-  let testVacancies: { high: string; medium: string; low: string } = {
+  const testVacancies: { high: string; medium: string; low: string } = {
     high: '',
     medium: '',
     low: '',

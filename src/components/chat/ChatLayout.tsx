@@ -102,7 +102,7 @@ export function ChatLayout({
     return () => {
       unsubscribeFromMessages();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [activeConversationId]); // ✅ Callbacks excluidos para evitar re-subscripciones
 
   // Marcar conversación como leída cuando se abre
@@ -131,7 +131,7 @@ export function ChatLayout({
   const handleSendMessage = async (
     content: string,
     replyToId?: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     _attachments?: unknown
   ) => {
     if (!activeConversation) return;
@@ -146,7 +146,7 @@ export function ChatLayout({
   /**
    * Typing indicator (TODO: implementar en FASE futura)
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const handleTypingChange = (_isTyping: boolean) => {
     // TODO: Implementar typing indicator con broadcast
     // Por ahora no-op
@@ -191,7 +191,7 @@ export function ChatLayout({
   /**
    * Wrapper de togglePin (TODO: implementar en tabla)
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const handleTogglePin = async (_convId: string, _isPinned: boolean) => {
     // TODO: Agregar campo is_pinned a conversation_members
     console.log('Pin/unpin not implemented yet');

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
-/* eslint-disable max-nested-callbacks */
+ 
 /**
  * useChat Hook - Sistema de Chat en Tiempo Real
  * 

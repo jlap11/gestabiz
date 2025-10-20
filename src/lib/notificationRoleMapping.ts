@@ -67,6 +67,12 @@ const NOTIFICATION_ROLE_MAP: Record<string, RoleNavigationConfig> = {
     page: 'settings',
     context: {}
   },
+  'absence_request': {
+    requiredRole: 'admin',
+    path: '/admin',
+    page: 'absences',
+    context: {}
+  },
 
   // ========================================
   // EMPLOYEE ROLE - Notificaciones de empleado

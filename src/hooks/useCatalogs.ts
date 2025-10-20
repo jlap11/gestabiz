@@ -252,7 +252,7 @@ export function useDocumentTypes(countryId?: string, forCompany?: boolean) {
 
       try {
         setLoading(true);
-        let query = supabase
+        const query = supabase
           .from('document_types')
           .select('id, name, abbreviation, country_id')
           .eq('country_id', countryId)

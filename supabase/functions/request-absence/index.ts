@@ -123,14 +123,15 @@ serve(async (req) => {
         throw new Error('Debe completar al menos 1 año de trabajo para solicitar vacaciones');
       }
 
-      // Obtener balance actual
+      // Obtener balance actual - CAMBIO CLAVE: usar maybeSingle() en vez de single()
+      // Si no existe el registro, balance será null y usaremos valores por defecto
       const { data: balance } = await supabaseClient
         .from('vacation_balance')
         .select('total_days_available, days_used, days_pending')
         .eq('business_id', businessId)
         .eq('employee_id', user.id)
         .eq('year', currentYear)
-        .single();
+        .maybeSingle();
 
       const totalAvailable = balance?.total_days_available || business.vacation_days_per_year;
       const daysUsed = balance?.days_used || 0;

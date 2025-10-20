@@ -183,6 +183,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
           onRoleChange={switchRole}
           onLogout={handleLogout}
           user={user}
+          businessId={employeeBusinesses[0]?.id}
         />
       )
     }

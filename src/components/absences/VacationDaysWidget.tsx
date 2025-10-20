@@ -55,8 +55,8 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
     );
   }
 
-  const percentageUsed = (balance.daysUsed / balance.totalDaysAvailable) * 100;
-  const percentageRemaining = (balance.daysRemaining / balance.totalDaysAvailable) * 100;
+  const percentageUsed = (Math.max(0, balance.daysUsed) / Math.max(1, balance.totalDaysAvailable)) * 100;
+  const percentageRemaining = (Math.max(0, balance.daysRemaining) / Math.max(1, balance.totalDaysAvailable)) * 100;
 
   return (
     <Card>
@@ -73,7 +73,7 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
         {/* Días disponibles (principal) */}
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
           <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Días Disponibles</p>
-          <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{balance.daysRemaining}</p>
+          <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{Math.max(0, balance.daysRemaining)}</p>
         </div>
 
         {/* Barra de progreso */}
@@ -85,18 +85,18 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
           <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden flex">
             <div
               className="bg-green-500 transition-all"
-              style={{ width: `${percentageUsed}%` }}
-              title={`${balance.daysUsed} días utilizados`}
+              style={{ width: `${Math.max(0, percentageUsed)}%` }}
+              title={`${Math.max(0, balance.daysUsed)} días utilizados`}
             />
             <div
               className="bg-yellow-500 transition-all"
-              style={{ width: `${(balance.daysPending / balance.totalDaysAvailable) * 100}%` }}
-              title={`${balance.daysPending} días pendientes`}
+              style={{ width: `${(Math.max(0, balance.daysPending) / Math.max(1, balance.totalDaysAvailable)) * 100}%` }}
+              title={`${Math.max(0, balance.daysPending)} días pendientes`}
             />
             <div
               className="bg-blue-500 transition-all"
-              style={{ width: `${percentageRemaining}%` }}
-              title={`${balance.daysRemaining} días disponibles`}
+              style={{ width: `${Math.max(0, percentageRemaining)}%` }}
+              title={`${Math.max(0, balance.daysRemaining)} días disponibles`}
             />
           </div>
         </div>
@@ -108,7 +108,7 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
               <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
               <p className="text-xs text-green-700 dark:text-green-300">Usados</p>
             </div>
-            <p className="text-lg font-bold text-green-900 dark:text-green-100">{balance.daysUsed}</p>
+            <p className="text-lg font-bold text-green-900 dark:text-green-100">{Math.max(0, balance.daysUsed)}</p>
           </div>
 
           <div className="p-2 bg-yellow-50 dark:bg-yellow-950 rounded">
@@ -116,7 +116,7 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
               <Clock className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
               <p className="text-xs text-yellow-700 dark:text-yellow-300">Pendientes</p>
             </div>
-            <p className="text-lg font-bold text-yellow-900 dark:text-yellow-100">{balance.daysPending}</p>
+            <p className="text-lg font-bold text-yellow-900 dark:text-yellow-100">{Math.max(0, balance.daysPending)}</p>
           </div>
 
           <div className="p-2 bg-blue-50 dark:bg-blue-950 rounded">
@@ -124,7 +124,7 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
               <Calendar className="h-3 w-3 text-blue-600 dark:text-blue-400" />
               <p className="text-xs text-blue-700 dark:text-blue-300">Libres</p>
             </div>
-            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{balance.daysRemaining}</p>
+            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{Math.max(0, balance.daysRemaining)}</p>
           </div>
         </div>
       </CardContent>

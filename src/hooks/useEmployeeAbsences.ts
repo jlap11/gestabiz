@@ -16,6 +16,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -117,10 +118,10 @@ export function useEmployeeAbsences(businessId: string) {
       if (data) {
         setVacationBalance({
           year: data.year,
-          totalDaysAvailable: data.total_days_available,
-          daysUsed: data.days_used,
-          daysPending: data.days_pending,
-          daysRemaining: data.total_days_available - data.days_used - data.days_pending,
+          totalDaysAvailable: Math.max(0, data.total_days_available),
+          daysUsed: Math.max(0, data.days_used),
+          daysPending: Math.max(0, data.days_pending),
+          daysRemaining: Math.max(0, data.total_days_available - data.days_used - data.days_pending),
         });
       } else {
         // No hay balance aún, obtener configuración del negocio
@@ -133,10 +134,10 @@ export function useEmployeeAbsences(businessId: string) {
         if (businessData) {
           setVacationBalance({
             year: currentYear,
-            totalDaysAvailable: businessData.vacation_days_per_year || 15,
+            totalDaysAvailable: Math.max(0, businessData.vacation_days_per_year || 15),
             daysUsed: 0,
             daysPending: 0,
-            daysRemaining: businessData.vacation_days_per_year || 15,
+            daysRemaining: Math.max(0, businessData.vacation_days_per_year || 15),
           });
         }
       }
@@ -216,12 +217,58 @@ export function useEmployeeAbsences(businessId: string) {
     fetchVacationBalance();
   }, [fetchAbsences, fetchVacationBalance, refreshKey]);
 
+  // Validar que los días solicitados sean días de trabajo
+  const validateWorkDays = useCallback(async (startDate: string, endDate: string): Promise<{ isValid: boolean; invalidDays: string[] }> => {
+    if (!user || !businessId) return { isValid: true, invalidDays: [] };
+
+    try {
+      // Obtener horario de trabajo del empleado
+      const { data: employeeData } = await supabase
+        .from('business_employees')
+        .select('work_schedule')
+        .eq('employee_id', user.id)
+        .eq('business_id', businessId)
+        .single();
+
+      if (!employeeData?.work_schedule) return { isValid: true, invalidDays: [] };
+
+      const schedule = employeeData.work_schedule as Record<string, { is_active: boolean }>;
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const invalidDays: string[] = [];
+
+      // Iterar sobre cada día en el rango
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const current = new Date(start);
+
+      while (current <= end) {
+        const dayName = dayNames[current.getDay()];
+        const daySchedule = schedule[dayName];
+
+        // Si el empleado no trabaja ese día
+        if (daySchedule && !daySchedule.is_active) {
+          invalidDays.push(format(current, 'yyyy-MM-dd'));
+        }
+
+        current.setDate(current.getDate() + 1);
+      }
+
+      return {
+        isValid: invalidDays.length === 0,
+        invalidDays,
+      };
+    } catch {
+      return { isValid: true, invalidDays: [] };
+    }
+  }, [user, businessId]);
+
   return {
     absences,
     vacationBalance,
     loading,
     requestAbsence,
     cancelAbsence,
+    validateWorkDays,
     refresh: () => setRefreshKey((prev) => prev + 1),
   };
 }

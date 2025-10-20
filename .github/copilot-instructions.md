@@ -239,6 +239,9 @@
 - **Componentes UI**:
   - `VacationDaysWidget` (142 líneas): Balance de vacaciones
   - `AbsenceRequestModal` (310 líneas): Formulario de solicitud con formato dd/mm/yyyy
+    - ✨ **NEW (2025-10-20)**: Range highlighting en calendarios
+    - Ambos calendarios muestran: Oct 21 (■), Oct 22-23 (░ 20%), Oct 24 (■)
+    - Sincronización reactiva en tiempo real
   - `AbsenceApprovalCard` (224 líneas): Card de aprobación
   - `AbsencesTab` (98 líneas): Tab completo para admins
 
@@ -264,6 +267,9 @@
   - `docs/FIX_NOTIFICACIONES_AUSENCIAS.md` (Problema + solución)
   - `docs/POLITICA_APROBACION_OBLIGATORIA_AUSENCIAS.md` (Política final)
   - `docs/PRUEBA_NOTIFICACIONES_AUSENCIAS.md` (Guía de pruebas)
+  - `docs/FEATURE_RANGE_HIGHLIGHTING_COMPLETADA.md` ✨ NEW (2025-10-20): Range highlighting technical
+  - `docs/VISUAL_RANGE_HIGHLIGHTING_DEMO.md` ✨ NEW (2025-10-20): Range highlighting visual demo
+  - `docs/RESUMEN_EJECUTIVO_AUSENCIAS_COMPLETO.md` ✨ NEW (2025-10-20): Resumen ejecutivo final
 - **Ver**: `docs/POLITICA_APROBACION_OBLIGATORIA_AUSENCIAS.md`
 
 

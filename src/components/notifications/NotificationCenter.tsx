@@ -56,6 +56,8 @@ const NotificationIcon = ({ type }: { type: string }) => {
     case 'reminder_1h':
     case 'reminder_15m':
       return <Calendar className="h-4 w-4" />
+    case 'absence_request':
+      return <Calendar className="h-4 w-4" />
     case 'employee_request_approved':
     case 'employee_request_rejected':
     case 'employee_request_pending':

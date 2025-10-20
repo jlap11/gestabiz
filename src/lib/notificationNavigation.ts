@@ -99,6 +99,21 @@ function handleReviewsNavigation(
 }
 
 /**
+ * Maneja notificaciones de solicitudes de ausencia
+ */
+function handleAbsenceRequestNavigation(
+  data: InAppNotification['data']
+): NotificationNavigationConfig {
+  const absenceId = getDataId(data, 'absenceId')
+  return {
+    destination: 'internal',
+    path: '/admin',
+    modalType: 'absence_approval',
+    modalProps: absenceId ? { absenceId } : {}
+  }
+}
+
+/**
  * Obtiene la configuración de navegación basada en tipo de notificación
  */
 export function getNotificationNavigation(
@@ -133,6 +148,11 @@ export function getNotificationNavigation(
   // Notificaciones de reseñas
   if (type === 'daily_digest' || type === 'weekly_summary') {
     return handleReviewsNavigation(data)
+  }
+
+  // Notificaciones de solicitudes de ausencia
+  if (type === 'absence_request') {
+    return handleAbsenceRequestNavigation(data)
   }
 
   // Notificaciones de sistema (si tienen action_url)
@@ -219,6 +239,9 @@ export function getNotificationTypeLabel(type: string): string {
     'employee_request_approved': 'Solicitud aprobada',
     'employee_request_rejected': 'Solicitud rechazada',
     
+    // Ausencias
+    'absence_request': 'Nueva solicitud de ausencia',
+    
     // Reseñas
     'review_received': 'Nueva reseña',
     'review_response_received': 'Respuesta a reseña',
@@ -238,6 +261,7 @@ export function getNotificationTypeLabel(type: string): string {
 export function getNotificationTypeIcon(type: string) {
   if (type?.startsWith('job_application')) return 'briefcase'
   if (type?.startsWith('appointment') || type?.startsWith('reminder')) return 'calendar'
+  if (type?.startsWith('absence')) return 'calendar'
   if (type?.startsWith('chat')) return 'message-circle'
   if (type?.startsWith('employee')) return 'users'
   if (type?.startsWith('review')) return 'star'

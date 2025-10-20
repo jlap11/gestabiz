@@ -156,7 +156,7 @@ export function useConversations(
           business_id: businessId,
         })
       } catch (err: any) {
-        console.error('Error fetching conversations:', err) // eslint-disable-line no-console
+        console.error('Error fetching conversations:', err)  
         logger.error('Failed to fetch conversations', err, {
           component: 'useConversations',
           operation: 'fetchConversations',

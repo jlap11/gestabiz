@@ -549,7 +549,7 @@ export function AppointmentWizard({
         throw new Error(`Formato de hora inválido: ${wizardData.startTime}`);
       }
       
-      let [, hourStr, minuteStr, meridiem] = timeMatch;
+      const [, hourStr, minuteStr, meridiem] = timeMatch;
       let hourNum = Number.parseInt(hourStr, 10);
       const minuteNum = Number.parseInt(minuteStr, 10);
       

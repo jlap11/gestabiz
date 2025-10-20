@@ -1221,6 +1221,9 @@ export type InAppNotificationType =
   | 'employee_request_accepted'       // Al usuario cuando aceptan
   | 'employee_request_rejected'       // Al usuario cuando rechazan
   
+  // Ausencias y Vacaciones (1 tipo)
+  | 'absence_request'                 // Al admin cuando empleado solicita ausencia
+  
   // Vacantes laborales (5 tipos)
   | 'job_vacancy_new'                 // Nueva vacante publicada
   | 'job_application_new'             // Al admin: nueva aplicación
