@@ -130,10 +130,6 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
             // Refresh roles after request created
             window.location.reload()
           }}
-          currentRole={activeRole}
-          availableRoles={roles.map(r => r.role)}
-          onRoleChange={switchRole}
-          onLogout={handleLogout}
         />
       )
     }

@@ -38,9 +38,9 @@ export function BusinessSuggestions({
   const [currentPage, setCurrentPage] = useState(0);
 
   const loadFavoriteBusiness = async (userId: string) => {
-    // Usar vista materializada appointments_with_relations
+    // Get completed appointments
     const { data: completed } = await supabase
-      .from('appointments_with_relations')
+      .from('appointments')
       .select('id, business_id')
       .eq('client_id', userId)
       .eq('status', 'completed');

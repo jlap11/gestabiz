@@ -484,7 +484,7 @@ export const AppointmentsCalendar: React.FC = () => {
       }
 
       const { data, error } = await supabase
-        .from('appointments_with_relations')
+        .from('appointments')
         .select(`
           id,
           start_time,
@@ -493,8 +493,16 @@ export const AppointmentsCalendar: React.FC = () => {
           notes,
           employee_id,
           location_id,
-          service,
-          client
+          services!inner (
+            id,
+            name,
+            price
+          ),
+          profiles!inner (
+            id,
+            full_name,
+            avatar_url
+          )
         `)
         .eq('business_id', businessId)
         .gte('start_time', start.toISOString())
@@ -502,7 +510,7 @@ export const AppointmentsCalendar: React.FC = () => {
         .order('start_time');
 
       if (error) {
-        console.error('❌ Error al buscar citas (materialized view):', error);
+        console.error('❌ Error al buscar citas:', error);
         return;
       }
 

@@ -3,7 +3,7 @@ import { Calendar, Clock, Briefcase, Search } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { MyEmployments } from '@/components/employee/MyEmploymentsEnhanced'
-import JoinBusiness from '@/components/employee/JoinBusiness'
+import { EmployeeOnboarding } from '@/components/employee/EmployeeOnboarding'
 import { AvailableVacanciesMarketplace } from '@/components/jobs/AvailableVacanciesMarketplace'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { UserRole, User } from '@/types/types'
@@ -97,12 +97,10 @@ export function EmployeeDashboard({
         return <MyEmployments employeeId={currentUser.id} onJoinBusiness={handleJoinBusiness} />
       case 'join-business':
         return (
-          <div className="p-6">
-            <JoinBusiness 
-              user={currentUser} 
-              onRequestSent={() => setActivePage('employments')}
-            />
-          </div>
+          <EmployeeOnboarding
+            user={currentUser}
+            onRequestCreated={() => setActivePage('employments')}
+          />
         )
       case 'vacancies':
         return (

@@ -424,72 +424,76 @@ export function ClientDashboard({
     console.log('🔍 Fetching appointments for client:', currentUser.id)
     
     try {
-      // Query usando la vista materializada appointments_with_relations
+      // Query appointments con JOINs para traer toda la información necesaria
       const { data, error } = await supabase
-        .from('appointments_with_relations')
-        .select('*')
+        .from('appointments')
+        .select(`
+          id,
+          created_at,
+          updated_at,
+          business_id,
+          location_id,
+          service_id,
+          client_id,
+          employee_id,
+          start_time,
+          end_time,
+          status,
+          notes,
+          price,
+          currency,
+          businesses!inner (
+            id,
+            name,
+            description
+          ),
+          locations!inner (
+            id,
+            name,
+            address,
+            city,
+            state,
+            postal_code,
+            country,
+            latitude,
+            longitude
+          ),
+          profiles!inner (
+            id,
+            full_name,
+            email,
+            phone,
+            avatar_url
+          ),
+          services!inner (
+            id,
+            name,
+            description,
+            duration,
+            price,
+            currency
+          )
+        `)
         .eq('client_id', currentUser.id)
         .order('start_time', { ascending: true })
       
       // eslint-disable-next-line no-console
-      console.log('📊 Query result (materialized view):', { appointmentsCount: data?.length || 0, error })
+      console.log('📊 Query result:', { appointmentsCount: data?.length || 0, error })
       
-      if (error) {
-        // eslint-disable-next-line no-console
-        console.log('⚠️ Error with materialized view:', error)
-        // Fallback a query simple
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('appointments')
-          .select('*')
-          .eq('client_id', currentUser.id)
-          .order('start_time', { ascending: true })
-        
-        if (simpleError) throw simpleError
-        // eslint-disable-next-line no-console
-        console.log('✅ Using basic data (no relations):', simpleData?.length || 0)
-        // Enriquecer datos manualmente
-        const enriched = await Promise.all(
-          simpleData.map(async (apt) => {
-            const result = { ...apt }
-            
-            // Obtener business
-            if (apt.business_id) {
-              const { data: biz } = await supabase.from('businesses').select('id, name, description').eq('id', apt.business_id).single()
-              result.business = biz
-            }
-            
-            // Obtener location (sin google_maps_url por ahora, se agregará después)
-            if (apt.location_id) {
-              const { data: loc } = await supabase.from('locations').select('id, name, address, city, state, postal_code, country, latitude, longitude').eq('id', apt.location_id).single()
-              result.location = loc
-            }
-            
-            // Obtener employee
-            if (apt.employee_id) {
-              const { data: emp } = await supabase.from('profiles').select('id, full_name, email, phone, avatar_url').eq('id', apt.employee_id).single()
-              result.employee = emp
-            }
-            
-            // Obtener service (duration_minutes, no duration)
-            if (apt.service_id) {
-              const { data: srv } = await supabase.from('services').select('id, name, description, duration_minutes, price, currency').eq('id', apt.service_id).single()
-              if (srv) {
-                // Mapear duration_minutes a duration para compatibilidad
-                result.service = { ...srv, duration: srv.duration_minutes }
-              }
-            }
-            
-            return result
-          })
-        )
-        // eslint-disable-next-line no-console
-        console.log('✅ Data enriquecida:', enriched)
-        setAppointments(enriched)
-      } else {
-        // eslint-disable-next-line no-console
-        console.log('✅ Full data with relations:', data?.length || 0, data)
-        setAppointments(data || [])
-      }
+      if (error) throw error
+      
+      // Mapear datos para compatibilidad (los JOINs retornan arrays, tomar el primero)
+      const mappedData = (data || []).map((apt: any) => ({
+        ...apt,
+        business: apt.businesses?.[0],
+        location: apt.locations?.[0],
+        employee: apt.profiles?.[0],
+        service: apt.services?.[0] ? { ...apt.services[0], duration: apt.services[0].duration } : undefined
+      }));
+      
+      // eslint-disable-next-line no-console
+      console.log('✅ Data enriquecida:', mappedData)
+      setAppointments(mappedData)
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('❌ Error final:', err)
@@ -635,40 +639,60 @@ export function ClientDashboard({
                           >
                             <CardContent className="p-4">
                               <div className="space-y-3">
-                                {/* Business Name and Location */}
-                                {(appointment.business?.name || appointment.location?.name) && (
-                                  <div className="border-b border-border pb-2">
-                                    <p className="text-base font-semibold text-foreground">
+                                {/* Top Row: Business/Sede + Status Badge */}
+                                <div className="flex items-start justify-between gap-2 pb-2 border-b border-border">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-foreground">
                                       {appointment.business?.name}
-                                      {appointment.business?.name && appointment.location?.name && ' - '}
-                                      <span className="text-sm font-normal text-muted-foreground">
+                                      {appointment.business?.name && appointment.location?.name && ' • '}
+                                      <span className="font-normal text-muted-foreground">
                                         {appointment.location?.name}
                                       </span>
                                     </p>
                                   </div>
-                                )}
-                                
-                                {/* Service Name and Badge */}
-                                <div className="flex items-start justify-between gap-2">
-                                  <h3 className="font-semibold text-foreground line-clamp-2 flex-1">
-                                    {appointment.service?.name || appointment.title}
-                                  </h3>
                                   <Badge 
                                     variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
-                                    className="flex-shrink-0"
+                                    className="flex-shrink-0 whitespace-nowrap"
                                   >
                                     {getStatusLabel(appointment.status)}
                                   </Badge>
                                 </div>
 
+                                {/* Service Name */}
+                                <h3 className="font-semibold text-foreground text-base line-clamp-2">
+                                  {appointment.service?.name || appointment.title}
+                                </h3>
+
+                                {/* Professional Info: Avatar + Name */}
+                                {appointment.employee?.full_name && (
+                                  <div className="flex items-center gap-3 bg-card/50 p-2 rounded-lg border border-border/50">
+                                    {appointment.employee?.avatar_url ? (
+                                      <img 
+                                        src={appointment.employee.avatar_url} 
+                                        alt={appointment.employee.full_name}
+                                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                      />
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                        <UserIcon className="h-4 w-4 text-primary" />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium text-foreground line-clamp-1">
+                                        {appointment.employee.full_name}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">Profesional</p>
+                                    </div>
+                                  </div>
+                                )}
+
                                 {/* Date and Time */}
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
                                   <Clock className="h-4 w-4 flex-shrink-0" />
                                   <span className="line-clamp-1">
                                     {new Date(appointment.start_time).toLocaleDateString('es', {
                                       day: 'numeric',
-                                      month: 'short',
-                                      year: 'numeric'
+                                      month: 'short'
                                     })}
                                     {' • '}
                                     {new Date(appointment.start_time).toLocaleTimeString('es', {
@@ -678,26 +702,10 @@ export function ClientDashboard({
                                   </span>
                                 </div>
 
-                                {/* Location/Sede */}
-                                {appointment.location?.name && (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                                    <span className="line-clamp-1">{appointment.location.name}</span>
-                                  </div>
-                                )}
-
-                                {/* Employee Name */}
-                                {appointment.employee?.full_name && (
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <UserIcon className="h-4 w-4 flex-shrink-0" />
-                                    <span className="line-clamp-1">{appointment.employee.full_name}</span>
-                                  </div>
-                                )}
-
                                 {/* Price */}
                                 {(appointment.service?.price || appointment.price) && (
                                   <div className="pt-2 border-t border-border">
-                                    <span className="text-lg font-bold text-foreground">
+                                    <span className="text-lg font-bold text-primary">
                                       ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
                                     </span>
                                   </div>

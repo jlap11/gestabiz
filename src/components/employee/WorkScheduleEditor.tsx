@@ -31,6 +31,12 @@ interface DaySchedule {
   end_time: string // HH:mm format
 }
 
+interface LunchBreakConfig {
+  has_lunch_break: boolean
+  lunch_break_start: string // HH:mm format
+  lunch_break_end: string // HH:mm format
+}
+
 type WeekSchedule = {
   monday: DaySchedule
   tuesday: DaySchedule
@@ -74,6 +80,12 @@ export function WorkScheduleEditor({
     sunday: { is_active: false, start_time: '09:00', end_time: '14:00' },
   })
 
+  const [lunchBreak, setLunchBreak] = useState<LunchBreakConfig>({
+    has_lunch_break: false,
+    lunch_break_start: '12:00',
+    lunch_break_end: '13:00',
+  })
+
   // Cargar horario existente
   useEffect(() => {
     async function fetchSchedule() {
@@ -82,7 +94,7 @@ export function WorkScheduleEditor({
 
         const { data, error } = await supabase
           .from('business_employees')
-          .select('work_schedule')
+          .select('work_schedule, has_lunch_break, lunch_break_start, lunch_break_end')
           .eq('business_id', businessId)
           .eq('employee_id', employeeId)
           .single()
@@ -92,8 +104,16 @@ export function WorkScheduleEditor({
         if (data?.work_schedule) {
           setSchedule(data.work_schedule as WeekSchedule)
         }
+
+        if (data) {
+          setLunchBreak({
+            has_lunch_break: data.has_lunch_break || false,
+            lunch_break_start: data.lunch_break_start || '12:00',
+            lunch_break_end: data.lunch_break_end || '13:00',
+          })
+        }
       } catch (err) {
-        console.error('[WorkScheduleEditor] Error fetching schedule:', err)
+        // Handle error silently for now
       } finally {
         setLoading(false)
       }
@@ -150,6 +170,13 @@ export function WorkScheduleEditor({
       }
     }
 
+    // Validar lunch break
+    if (lunchBreak.has_lunch_break) {
+      if (lunchBreak.lunch_break_start >= lunchBreak.lunch_break_end) {
+        return 'Almuerzo: La hora de inicio debe ser anterior a la hora de fin'
+      }
+    }
+
     return null
   }
 
@@ -167,7 +194,12 @@ export function WorkScheduleEditor({
 
       const { error } = await supabase
         .from('business_employees')
-        .update({ work_schedule: schedule })
+        .update({
+          work_schedule: schedule,
+          has_lunch_break: lunchBreak.has_lunch_break,
+          lunch_break_start: lunchBreak.lunch_break_start,
+          lunch_break_end: lunchBreak.lunch_break_end,
+        })
         .eq('business_id', businessId)
         .eq('employee_id', employeeId)
 
@@ -176,7 +208,6 @@ export function WorkScheduleEditor({
       toast.success('Horario actualizado correctamente')
       onScheduleChanged?.()
     } catch (err) {
-      console.error('[WorkScheduleEditor] Error saving schedule:', err)
       toast.error('Error al guardar el horario')
     } finally {
       setSaving(false)
@@ -270,6 +301,69 @@ export function WorkScheduleEditor({
               </div>
             )
           })}
+        </div>
+
+        {/* Lunch Break Section */}
+        <div className="pt-4 border-t space-y-4">
+          <div className="flex items-center gap-3 justify-between p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <div className="flex-1">
+              <Label className="font-medium text-amber-900 dark:text-amber-100 cursor-pointer">
+                Configurar Hora de Almuerzo
+              </Label>
+              <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                La misma para todos los días en que trabajes
+              </p>
+            </div>
+            <Switch
+              checked={lunchBreak.has_lunch_break}
+              onCheckedChange={(checked) =>
+                setLunchBreak((prev) => ({
+                  ...prev,
+                  has_lunch_break: checked,
+                }))
+              }
+            />
+          </div>
+
+          {lunchBreak.has_lunch_break && (
+            <div className="flex gap-4 p-4 rounded-lg bg-muted/50">
+              {/* Inicio Almuerzo */}
+              <div className="flex-1">
+                <Label className="text-sm text-muted-foreground mb-2 block">
+                  Inicio Almuerzo
+                </Label>
+                <Input
+                  type="time"
+                  value={lunchBreak.lunch_break_start}
+                  onChange={(e) =>
+                    setLunchBreak((prev) => ({
+                      ...prev,
+                      lunch_break_start: e.target.value,
+                    }))
+                  }
+                  className="h-9"
+                />
+              </div>
+
+              {/* Fin Almuerzo */}
+              <div className="flex-1">
+                <Label className="text-sm text-muted-foreground mb-2 block">
+                  Fin Almuerzo
+                </Label>
+                <Input
+                  type="time"
+                  value={lunchBreak.lunch_break_end}
+                  onChange={(e) =>
+                    setLunchBreak((prev) => ({
+                      ...prev,
+                      lunch_break_end: e.target.value,
+                    }))
+                  }
+                  className="h-9"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Botón Guardar */}

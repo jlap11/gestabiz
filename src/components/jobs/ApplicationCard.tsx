@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { CheckCircle, XCircle, Eye, Mail, Phone, Calendar, DollarSign, MessageSquare } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, Mail, Phone, Calendar, DollarSign, MessageSquare, UserCheck, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -13,17 +13,28 @@ interface ApplicationCardProps {
   onReject: (id: string) => void
   onViewProfile: (application: JobApplication) => void
   onChat?: (userId: string, applicantName: string) => void
+  onStartSelectionProcess?: (id: string) => void // ⭐ NUEVO
+  onSelectAsEmployee?: (id: string) => void // ⭐ NUEVO
 }
 
 const statusConfig = {
   pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
   reviewing: { label: 'En Revisión', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+  in_selection_process: { label: 'En Proceso de Selección', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' }, // ⭐ NUEVO
   accepted: { label: 'Aceptada', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
   rejected: { label: 'Rechazada', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
   withdrawn: { label: 'Retirada', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' }
 }
 
-export function ApplicationCard({ application, onAccept, onReject, onViewProfile, onChat }: Readonly<ApplicationCardProps>) {
+export function ApplicationCard({ 
+  application, 
+  onAccept, 
+  onReject, 
+  onViewProfile, 
+  onChat,
+  onStartSelectionProcess,
+  onSelectAsEmployee
+}: Readonly<ApplicationCardProps>) {
   const statusStyle = statusConfig[application.status]
   
   // Validar que created_at sea una fecha válida
@@ -138,7 +149,7 @@ export function ApplicationCard({ application, onAccept, onReject, onViewProfile
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-2 pt-4 border-t">
+        <div className="flex items-center gap-2 pt-4 border-t flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -159,8 +170,20 @@ export function ApplicationCard({ application, onAccept, onReject, onViewProfile
             </Button>
           )}
 
-          {application.status === 'pending' && (
+          {/* ⭐ NUEVO: Botones para estados pending y reviewing */}
+          {(application.status === 'pending' || application.status === 'reviewing') && (
             <>
+              {onStartSelectionProcess && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => onStartSelectionProcess(application.id)}
+                  className="bg-purple-500 hover:bg-purple-600"
+                >
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Iniciar Proceso
+                </Button>
+              )}
               <Button
                 variant="secondary"
                 size="sm"
@@ -169,13 +192,40 @@ export function ApplicationCard({ application, onAccept, onReject, onViewProfile
                 <XCircle className="h-4 w-4 mr-2" />
                 Rechazar
               </Button>
+            </>
+          )}
+
+          {/* ⭐ NUEVO: Botones para estado in_selection_process */}
+          {application.status === 'in_selection_process' && (
+            <>
+              {onSelectAsEmployee && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => onSelectAsEmployee(application.id)}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Seleccionar Empleado
+                </Button>
+              )}
               <Button
+                variant="secondary"
                 size="sm"
-                onClick={() => onAccept(application.id)}
+                onClick={() => onReject(application.id)}
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Aceptar
+                <XCircle className="h-4 w-4 mr-2" />
+                Rechazar
               </Button>
+              
+              {/* Badge informativo */}
+              {application.selection_started_at && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                  <Clock className="h-3 w-3" />
+                  <span>
+                    Proceso desde {formatDistanceToNow(new Date(application.selection_started_at), { addSuffix: true, locale: es })}
+                  </span>
+                </div>
+              )}
             </>
           )}
         </div>

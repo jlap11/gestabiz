@@ -38,9 +38,9 @@ export function usePendingReviews() {
         return;
       }
 
-      // Get completed appointments without reviews using materialized view
+      // Get completed appointments without reviews
       const { data, error: fetchError } = await supabase
-        .from('appointments_with_relations')
+        .from('appointments')
         .select(`
           id,
           start_time,
@@ -48,9 +48,18 @@ export function usePendingReviews() {
           employee_id,
           service_id,
           updated_at,
-          business,
-          employee,
-          service
+          businesses!inner (
+            id,
+            name
+          ),
+          business_employees!inner (
+            id,
+            full_name
+          ),
+          services!inner (
+            id,
+            name
+          )
         `)
         .eq('client_id', session.session.user.id)
         .eq('status', 'completed')
@@ -69,15 +78,15 @@ export function usePendingReviews() {
 
       const filtered = (data || [])
         .filter(apt => !validRemindLater.some(entry => entry.appointmentId === apt.id))
-        .map((apt: any) => ({
+        .map((apt) => ({
           appointment_id: apt.id,
           appointment_date: apt.start_time?.split(' ')[0],
           appointment_start_time: apt.start_time,
           business_id: apt.business_id,
-          business_name: apt.business?.name || 'Negocio',
-          service_name: apt.service?.name,
+          business_name: apt.businesses?.[0]?.name || 'Negocio',
+          service_name: apt.services?.[0]?.name,
           employee_id: apt.employee_id || undefined,
-          employee_name: apt.employee?.full_name,
+          employee_name: apt.business_employees?.[0]?.full_name,
           completed_at: apt.updated_at
         }));
 

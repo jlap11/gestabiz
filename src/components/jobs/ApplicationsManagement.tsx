@@ -11,6 +11,7 @@ import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { ApplicationCard } from './ApplicationCard'
 import { ApplicantProfileModal } from './ApplicantProfileModal'
+import { SelectEmployeeModal } from './SelectEmployeeModal' // ⭐ NUEVO
 import { Search, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -39,6 +40,11 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   const [showRejectDialog, setShowRejectDialog] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [applicationToReject, setApplicationToReject] = useState<string | null>(null)
+  
+  // ⭐ NUEVO: Estado para modal de selección de empleado
+  const [showSelectEmployeeModal, setShowSelectEmployeeModal] = useState(false)
+  const [applicationToSelect, setApplicationToSelect] = useState<JobApplication | null>(null)
+  const [isSelectingEmployee, setIsSelectingEmployee] = useState(false)
 
   // Get current user for chat
   const { user } = useAuth()
@@ -57,7 +63,9 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
     loading,
     fetchApplications,
     acceptApplication,
-    rejectApplication
+    rejectApplication,
+    startSelectionProcess, // ⭐ NUEVO
+    selectAsEmployee // ⭐ NUEVO
   } = useJobApplications({ businessId })
 
   useEffect(() => {
@@ -76,6 +84,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   // Group by status
   const pendingApplications = filteredApplications.filter(app => app.status === 'pending')
   const reviewingApplications = filteredApplications.filter(app => app.status === 'reviewing')
+  const inSelectionApplications = filteredApplications.filter(app => app.status === 'in_selection_process') // ⭐ NUEVO
   const acceptedApplications = filteredApplications.filter(app => app.status === 'accepted')
   const rejectedApplications = filteredApplications.filter(app => app.status === 'rejected')
 
@@ -102,6 +111,35 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
       setApplicationToReject(null)
       setRejectionReason('')
       toast.success('Aplicación rechazada')
+    }
+  }
+
+  // ⭐ NUEVO: Iniciar proceso de selección
+  const handleStartSelectionProcess = async (id: string) => {
+    const success = await startSelectionProcess(id)
+    if (success) {
+      await fetchApplications()
+    }
+  }
+
+  // ⭐ NUEVO: Abrir modal de confirmación para seleccionar empleado
+  const handleSelectAsEmployeeClick = (application: JobApplication) => {
+    setApplicationToSelect(application)
+    setShowSelectEmployeeModal(true)
+  }
+
+  // ⭐ NUEVO: Confirmar selección de empleado
+  const handleSelectAsEmployeeConfirm = async () => {
+    if (!applicationToSelect) return
+
+    setIsSelectingEmployee(true)
+    const success = await selectAsEmployee(applicationToSelect.id)
+    setIsSelectingEmployee(false)
+
+    if (success) {
+      await fetchApplications()
+      setShowSelectEmployeeModal(false)
+      setApplicationToSelect(null)
     }
   }
 
@@ -139,6 +177,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   const stats = [
     { label: 'Total', value: applications.length, color: 'text-blue-600' },
     { label: 'Pendientes', value: pendingApplications.length, color: 'text-yellow-600' },
+    { label: 'En Proceso', value: inSelectionApplications.length, color: 'text-purple-600' }, // ⭐ NUEVO
     { label: 'Aceptadas', value: acceptedApplications.length, color: 'text-green-600' },
     { label: 'Rechazadas', value: rejectedApplications.length, color: 'text-red-600' }
   ]
@@ -234,6 +273,14 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
             )}
           </TabsTrigger>
           <TabsTrigger value="reviewing">En Revisión ({reviewingApplications.length})</TabsTrigger>
+          <TabsTrigger value="in_selection">
+            En Proceso de Selección ({inSelectionApplications.length})
+            {inSelectionApplications.length > 0 && (
+              <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-purple-500">
+                {inSelectionApplications.length}
+              </Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="accepted">Aceptadas ({acceptedApplications.length})</TabsTrigger>
           <TabsTrigger value="rejected">Rechazadas ({rejectedApplications.length})</TabsTrigger>
         </TabsList>
@@ -259,6 +306,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
                 onReject={handleRejectClick}
                 onViewProfile={handleViewProfile}
                 onChat={handleChat}
+                onStartSelectionProcess={handleStartSelectionProcess}
               />
             ))
           )}
@@ -281,6 +329,33 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
                 onReject={handleRejectClick}
                 onViewProfile={handleViewProfile}
                 onChat={handleChat}
+                onStartSelectionProcess={handleStartSelectionProcess}
+              />
+            ))
+          )}
+        </TabsContent>
+
+        {/* ⭐ NUEVO: In Selection Process Tab */}
+        <TabsContent value="in_selection" className="space-y-4">
+          {inSelectionApplications.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">No hay candidatos en proceso de selección</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Inicia el proceso de selección desde la pestaña de pendientes o en revisión
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            inSelectionApplications.map((application) => (
+              <ApplicationCard
+                key={application.id}
+                application={application}
+                onAccept={handleAccept}
+                onReject={handleRejectClick}
+                onViewProfile={handleViewProfile}
+                onChat={handleChat}
+                onSelectAsEmployee={() => handleSelectAsEmployeeClick(application)}
               />
             ))
           )}
@@ -330,6 +405,27 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
           )}
         </TabsContent>
       </Tabs>
+
+      {/* ⭐ NUEVO: Modal de confirmación de selección de empleado */}
+      {applicationToSelect && (
+        <SelectEmployeeModal
+          isOpen={showSelectEmployeeModal}
+          onClose={() => {
+            setShowSelectEmployeeModal(false)
+            setApplicationToSelect(null)
+          }}
+          onConfirm={handleSelectAsEmployeeConfirm}
+          candidateName={applicationToSelect.applicant?.full_name || 'Candidato'}
+          vacancyTitle={applicationToSelect.vacancy?.title || 'Vacante'}
+          otherCandidatesCount={
+            inSelectionApplications.filter(app => 
+              app.vacancy_id === applicationToSelect.vacancy_id && 
+              app.id !== applicationToSelect.id
+            ).length
+          }
+          isLoading={isSelectingEmployee}
+        />
+      )}
 
       {/* Reject Dialog */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

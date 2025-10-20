@@ -6,7 +6,7 @@ export interface JobApplication {
   id: string;
   vacancy_id: string;
   user_id: string;
-  status: 'pending' | 'reviewing' | 'accepted' | 'rejected' | 'withdrawn';
+  status: 'pending' | 'reviewing' | 'in_selection_process' | 'accepted' | 'rejected' | 'withdrawn';
   cover_letter?: string;
   cv_url?: string; // URL del CV en Supabase Storage (bucket: cvs/)
   expected_salary?: number;
@@ -16,6 +16,8 @@ export interface JobApplication {
   created_at: string;
   updated_at: string;
   reviewed_at?: string;
+  selection_started_at?: string; // ⭐ NUEVO: cuando se inició el proceso de selección
+  selection_started_by?: string; // ⭐ NUEVO: admin que inició el proceso
   
   // Joined data
   vacancy?: {
@@ -384,7 +386,280 @@ export function useJobApplications(filters?: ApplicationFilters) {
 
   useEffect(() => {
     fetchApplications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters?.vacancyId, filters?.userId, filters?.status, filters?.businessId]);
+
+  /**
+   * Inicia el proceso de selección con un candidato
+   * ⭐ NUEVO: Marca la aplicación como "in_selection_process"
+   */
+  const startSelectionProcess = async (applicationId: string): Promise<boolean> => {
+    try {
+      // Obtener usuario actual desde Supabase Auth (sin usar getSession)
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        throw new Error('No autorizado');
+      }
+
+      // Actualizar estado a in_selection_process
+      const { error: updateError } = await supabase
+        .from('job_applications')
+        .update({
+          status: 'in_selection_process',
+          selection_started_at: new Date().toISOString(),
+          selection_started_by: user.id
+        })
+        .eq('id', applicationId);
+
+      if (updateError) throw updateError;
+
+      // Obtener datos para notificación
+      const { data: application, error: appError } = await supabase
+        .from('job_applications')
+        .select(`
+          *,
+          vacancy:job_vacancies(
+            id, title, business_id
+          )
+        `)
+        .eq('id', applicationId)
+        .single();
+
+      if (appError) throw appError;
+
+      // Fetch applicant separately
+      const { data: applicant } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('id', application.user_id)
+        .single();
+
+      // Fetch business separately
+      const { data: business } = await supabase
+        .from('businesses')
+        .select('id, name')
+        .eq('id', application.vacancy.business_id)
+        .single();
+
+      // Llamar Edge Function para enviar notificaciones
+      const { error: notifError } = await supabase.functions.invoke('send-selection-notifications', {
+        body: {
+          type: 'started',
+          application_id: applicationId,
+          vacancy_id: application.vacancy.id,
+          vacancy_title: application.vacancy.title,
+          business_id: application.vacancy.business_id,
+          business_name: business?.name || 'Negocio',
+          user_id: application.user_id,
+          user_email: applicant?.email || '',
+          user_name: applicant?.full_name || 'Aplicante'
+        }
+      });
+
+      if (notifError) {
+        // eslint-disable-next-line no-console
+        console.error('Error enviando notificación:', notifError);
+        // No fallar la operación si falla la notificación
+      }
+
+      toast.success('Proceso de selección iniciado', {
+        description: 'El candidato ha sido notificado. Acuerda una entrevista con él.'
+      });
+
+      await fetchApplications();
+      return true;
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
+      toast.error('Error al iniciar proceso', {
+        description: error.message
+      });
+      return false;
+    }
+  };
+
+  /**
+   * Selecciona un candidato como empleado final
+   * ⭐ NUEVO: Acepta al candidato, agrega a business_employees, cierra vacante y rechaza a los demás
+   */
+  const selectAsEmployee = async (applicationId: string): Promise<boolean> => {
+    try {
+      // Obtener usuario actual desde Supabase Auth
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        throw new Error('No autorizado');
+      }
+
+      // 1. Obtener datos de la aplicación y vacante
+      const { data: application, error: appError } = await supabase
+        .from('job_applications')
+        .select(`
+          *,
+          vacancy:job_vacancies(
+            id, title, number_of_positions, business_id, status
+          )
+        `)
+        .eq('id', applicationId)
+        .single();
+
+      if (appError) throw appError;
+
+      const vacancy = application.vacancy;
+
+      // Fetch business separately
+      const { data: business, error: businessError } = await supabase
+        .from('businesses')
+        .select('id, name')
+        .eq('id', vacancy.business_id)
+        .single();
+
+      if (businessError) throw businessError;
+
+      // Fetch applicant separately
+      const { data: applicant, error: applicantError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('id', application.user_id)
+        .single();
+
+      if (applicantError) throw applicantError;
+
+      // 2. Obtener otros candidatos en proceso de selección
+      const { data: otherCandidates, error: othersError } = await supabase
+        .from('job_applications')
+        .select(`id, user_id`)
+        .eq('vacancy_id', vacancy.id)
+        .eq('status', 'in_selection_process')
+        .neq('id', applicationId);
+
+      if (othersError) throw othersError;
+
+      // Fetch profiles for other candidates separately
+      let otherCandidateProfiles: Array<{ id: string; email?: string; full_name?: string }> = [];
+      if (otherCandidates && otherCandidates.length > 0) {
+        const userIds = otherCandidates.map(c => c.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', userIds);
+        otherCandidateProfiles = profiles || [];
+      }
+
+      // 3. Marcar aplicación como aceptada
+      const { error: acceptError } = await supabase
+        .from('job_applications')
+        .update({
+          status: 'accepted',
+          decision_at: new Date().toISOString()
+        })
+        .eq('id', applicationId);
+
+      if (acceptError) throw acceptError;
+
+      // 4. Agregar a business_employees
+      const { error: employeeError } = await supabase
+        .from('business_employees')
+        .insert({
+          business_id: vacancy.business_id,
+          employee_id: application.user_id,
+          status: 'approved',
+          is_active: true,
+          role: 'employee',
+          employee_type: 'service_provider',
+          hire_date: new Date().toISOString()
+        });
+
+      if (employeeError) throw employeeError;
+
+      // 5. Contar cuántos candidatos han sido aceptados (incluyendo este)
+      const { count, error: countError } = await supabase
+        .from('job_applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('vacancy_id', vacancy.id)
+        .eq('status', 'accepted');
+
+      if (countError) throw countError;
+
+      const acceptedCount = (count || 0);
+      const positionsToFill = vacancy.number_of_positions || 1;
+
+      // 6. Si se llenaron todas las posiciones, cerrar vacante y rechazar a los demás
+      if (acceptedCount >= positionsToFill) {
+        // Cerrar vacante
+        const { error: vacancyError } = await supabase
+          .from('job_vacancies')
+          .update({
+            status: 'filled',
+            filled_at: new Date().toISOString()
+          })
+          .eq('id', vacancy.id);
+
+        if (vacancyError) throw vacancyError;
+
+        // Rechazar automáticamente a otros candidatos en proceso
+        if (otherCandidates && otherCandidates.length > 0) {
+          const { error: rejectError } = await supabase
+            .from('job_applications')
+            .update({
+              status: 'rejected',
+              decision_at: new Date().toISOString(),
+              decision_notes: 'Vacante cubierta - Posiciones completas'
+            })
+            .in('id', otherCandidates.map(c => c.id));
+
+          if (rejectError) throw rejectError;
+        }
+      }
+
+      // 7. Enviar notificaciones
+      const { error: notifError } = await supabase.functions.invoke('send-selection-notifications', {
+        body: {
+          type: 'selected',
+          application_id: applicationId,
+          vacancy_id: vacancy.id,
+          vacancy_title: vacancy.title,
+          business_id: vacancy.business_id,
+          business_name: business?.name || 'Negocio',
+          selected_user_id: application.user_id,
+          selected_user_email: applicant?.email || '',
+          selected_user_name: applicant?.full_name || 'Aplicante',
+          rejected_candidates: (otherCandidates || []).map(c => {
+            const profileData = otherCandidateProfiles.find(p => p.id === c.user_id);
+            return {
+              user_id: c.user_id,
+              user_email: profileData?.email || '',
+              user_name: profileData?.full_name || ''
+            };
+          }),
+          vacancy_filled: acceptedCount >= positionsToFill
+        }
+      });
+
+      if (notifError) {
+        // eslint-disable-next-line no-console
+        console.error('Error enviando notificaciones:', notifError);
+        // No fallar la operación si falla la notificación
+      }
+
+      toast.success('¡Empleado seleccionado!', {
+        description: acceptedCount >= positionsToFill 
+          ? 'La vacante ha sido cerrada y los candidatos han sido notificados'
+          : 'El candidato ha sido agregado como empleado'
+      });
+
+      await fetchApplications();
+      return true;
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
+      toast.error('Error al seleccionar empleado', {
+        description: error.message
+      });
+      return false;
+    }
+  };
 
   return {
     applications,
@@ -395,6 +670,8 @@ export function useJobApplications(filters?: ApplicationFilters) {
     updateApplicationStatus,
     rejectApplication,
     acceptApplication,
-    withdrawApplication
+    withdrawApplication,
+    startSelectionProcess, // ⭐ NUEVO
+    selectAsEmployee // ⭐ NUEVO
   };
 }

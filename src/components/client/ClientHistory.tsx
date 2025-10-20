@@ -131,10 +131,31 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
   const fetchAppointments = async () => {
     try {
       setLoading(true)
-      // Usar la vista materializada que ya tiene todos los JOINs resueltos
+      // Fetch appointments with related data
       const { data, error } = await supabase
-        .from('appointments_with_relations')
-        .select('*')
+        .from('appointments')
+        .select(`
+          id,
+          start_time,
+          end_time,
+          status,
+          notes,
+          business_id,
+          service_id,
+          employee_id,
+          location_id,
+          created_at,
+          updated_at,
+          businesses!inner (
+            id,
+            name
+          ),
+          services!inner (
+            id,
+            name,
+            price
+          )
+        `)
         .eq('client_id', userId)
         .order('start_time', { ascending: false })
 

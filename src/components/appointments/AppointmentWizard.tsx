@@ -538,13 +538,55 @@ export function AppointmentWizard({
 
     try {
       // Combinar fecha y hora
-      const [hours, minutes] = wizardData.startTime.split(':');
-      const startDateTime = new Date(wizardData.date);
-      startDateTime.setHours(Number.parseInt(hours, 10), Number.parseInt(minutes, 10), 0, 0);
-
+      // Nota: wizardData.startTime viene en formato "HH:MM AM/PM" (ej: "3:00 PM" o "10:30 AM")
+      const timeRegex = /^(\d{1,2}):(\d{2})\s(AM|PM)$/i;
+      const timeMatch = wizardData.startTime.match(timeRegex);
+      
+      if (!timeMatch) {
+        throw new Error(`Formato de hora inválido: ${wizardData.startTime}`);
+      }
+      
+      let [, hourStr, minuteStr, meridiem] = timeMatch;
+      let hourNum = Number.parseInt(hourStr, 10);
+      const minuteNum = Number.parseInt(minuteStr, 10);
+      
+      // Convertir formato 12h a 24h
+      if (meridiem.toUpperCase() === 'PM' && hourNum !== 12) {
+        hourNum += 12;
+      } else if (meridiem.toUpperCase() === 'AM' && hourNum === 12) {
+        hourNum = 0;
+      }
+      
+      // DEBUG: Log para verificar valores
+      console.log('🔍 DEBUG - Creación de cita:', {
+        selectedTime: wizardData.startTime,
+        hourStr, minuteStr, meridiem,
+        hourNum24h: hourNum,
+        minuteNum
+      });
+      
+      // Obtener la fecha seleccionada en componentes locales
+      const year = wizardData.date.getFullYear();
+      const month = wizardData.date.getMonth();
+      const day = wizardData.date.getDate();
+      
+      // Crear timestamp ajustando por zona horaria Colombia (UTC-5)
+      // Si el usuario selecciona 3 PM en Colombia, queremos almacenar 3 PM UTC en la BD
+      // Pero JavaScript UTC es UTC+0, así que calculamos: 3 PM + 5 horas = 8 PM UTC
+      const colombiaTimezoneOffset = 5; // UTC-5, así que sumamos 5
+      const utcTime = new Date(Date.UTC(year, month, day, hourNum + colombiaTimezoneOffset, minuteNum, 0));
+      
+      console.log('📌 DEBUG - Hora calculada:', {
+        hourNum,
+        colombiaTimezoneOffset,
+        hourParaUTC: hourNum + colombiaTimezoneOffset,
+        resultISO: utcTime.toISOString(),
+        selectedDate: wizardData.date.toISOString()
+      });
+      
       // Calcular hora de fin (usar duración del servicio o 60 min por defecto)
       const duration = wizardData.service?.duration || 60;
-      const endDateTime = new Date(startDateTime);
+      const endDateTime = new Date(utcTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + duration);
 
       // Crear objeto de cita
@@ -558,7 +600,7 @@ export function AppointmentWizard({
         service_id: wizardData.serviceId,
         location_id: wizardData.locationId,
         employee_id: wizardData.employeeId,
-        start_time: startDateTime.toISOString(),
+        start_time: utcTime.toISOString(),
         end_time: endDateTime.toISOString(),
         status: 'pending' as const,
         notes: wizardData.notes || null,
