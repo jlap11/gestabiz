@@ -94,7 +94,7 @@ export default function CompleteUnifiedSettings({
       onUserUpdate(updatedUser)
       toast.success(t('settings.preferences_saved'))
     } catch (error) {
-      toast.error('Error al actualizar idioma')
+      toast.error(t('common.messages.updateError'))
       throw error
     }
   }
@@ -312,6 +312,7 @@ interface AdminRolePreferencesProps {
 }
 
 function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState({
     name: business.name,
     description: business.description || '',
@@ -361,9 +362,9 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
       if (error) throw error
 
-      toast.success('Configuración actualizada exitosamente')
+      toast.success(t('common.messages.updateSuccess'))
     } catch {
-      toast.error('Error al actualizar la configuración')
+      toast.error(t('common.messages.updateError'))
     } finally {
       setIsSaving(false)
     }
@@ -415,7 +416,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="Nombre de tu negocio"
+                  placeholder={t('common.placeholders.businessName')}
                   required
                 />
               </div>
@@ -426,7 +427,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder="Describe tu negocio"
+                  placeholder={t('common.placeholders.businessDescription')}
                   rows={4}
                 />
               </div>
@@ -449,7 +450,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   onChange={(value) => handleChange('phone', value)}
                   prefix={phonePrefix}
                   onPrefixChange={setPhonePrefix}
-                  placeholder="Número de teléfono"
+                  placeholder={t('common.placeholders.phoneNumber')}
                 />
               </div>
 
@@ -460,7 +461,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="contacto@negocio.com"
+                  placeholder={t('common.placeholders.email')}
                 />
               </div>
 
@@ -471,7 +472,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   type="url"
                   value={formData.website}
                   onChange={(e) => handleChange('website', e.target.value)}
-                  placeholder="https://www.tunegocio.com"
+                  placeholder={t('common.placeholders.website')}
                 />
               </div>
             </CardContent>
@@ -492,7 +493,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder="Calle y número"
+                  placeholder={t('common.placeholders.address')}
                 />
               </div>
 
@@ -503,7 +504,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                     id="city"
                     value={formData.city}
                     onChange={(e) => handleChange('city', e.target.value)}
-                    placeholder="Ciudad"
+                    placeholder={t('common.placeholders.city')}
                   />
                 </div>
 
@@ -513,7 +514,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                     id="state"
                     value={formData.state}
                     onChange={(e) => handleChange('state', e.target.value)}
-                    placeholder="Estado"
+                    placeholder={t('common.placeholders.state')}
                   />
                 </div>
               </div>
@@ -535,7 +536,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   id="legal_name"
                   value={formData.legal_name}
                   onChange={(e) => handleChange('legal_name', e.target.value)}
-                  placeholder="Razón social o nombre legal"
+                  placeholder={t('common.placeholders.legalName')}
                 />
               </div>
 
@@ -545,7 +546,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   id="tax_id"
                   value={formData.tax_id}
                   onChange={(e) => handleChange('tax_id', e.target.value)}
-                  placeholder="Número de identificación fiscal"
+                  placeholder={t('common.placeholders.taxId')}
                 />
               </div>
             </CardContent>
@@ -612,7 +613,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
               className="bg-primary hover:bg-primary/90"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+              {isSaving ? t('common.actions.saving') : t('common.actions.save')}
             </Button>
           </div>
         </form>
@@ -638,6 +639,7 @@ interface EmployeeRolePreferencesProps {
 }
 
 function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferencesProps) {
+  const { t } = useLanguage()
   const {
     profile,
     loading,
@@ -1043,7 +1045,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
               id="professional-summary"
               value={professionalSummary}
               onChange={(e) => setProfessionalSummary(e.target.value)}
-              placeholder="Describe tu experiencia, habilidades y lo que te hace único como profesional..."
+              placeholder={t('common.placeholders.bio')}
               className="min-h-[120px] resize-y"
             />
             {professionalSummary.length > 0 && (
@@ -1155,7 +1157,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex gap-2">
             <Input
-              placeholder="Ej: Desarrollo Web, Marketing Digital..."
+              placeholder={t('common.placeholders.skills')}
               value={newSpecialization}
               onChange={(e) => setNewSpecialization(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddSpecialization()}
@@ -1193,7 +1195,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex gap-2">
             <Input
-              placeholder="Ej: Español, Inglés..."
+              placeholder={t('common.placeholders.languages')}
               value={newLanguage}
               onChange={(e) => setNewLanguage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddLanguage()}
@@ -1233,34 +1235,34 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
               <CardContent className="pt-6 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Input
-                    placeholder="Nombre de la certificación *"
+                    placeholder={t('common.placeholders.certificationName')}
                     value={certName}
                     onChange={(e) => setCertName(e.target.value)}
                   />
                   <Input
-                    placeholder="Emisor *"
+                    placeholder={t('common.placeholders.certificationIssuer')}
                     value={certIssuer}
                     onChange={(e) => setCertIssuer(e.target.value)}
                   />
                   <Input
                     type="date"
-                    placeholder="Fecha de emisión *"
+                    placeholder={t('common.placeholders.certificationIssueDate')}
                     value={certIssueDate}
                     onChange={(e) => setCertIssueDate(e.target.value)}
                   />
                   <Input
                     type="date"
-                    placeholder="Fecha de vencimiento"
+                    placeholder={t('common.placeholders.certificationExpiryDate')}
                     value={certExpiryDate}
                     onChange={(e) => setCertExpiryDate(e.target.value)}
                   />
                   <Input
-                    placeholder="ID de credencial"
+                    placeholder={t('common.placeholders.certificationId')}
                     value={certCredentialId}
                     onChange={(e) => setCertCredentialId(e.target.value)}
                   />
                   <Input
-                    placeholder="URL de credencial"
+                    placeholder={t('common.placeholders.certificationUrl')}
                     value={certCredentialUrl}
                     onChange={(e) => setCertCredentialUrl(e.target.value)}
                   />
@@ -1329,7 +1331,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Input
               id="portfolio-url"
               type="url"
-              placeholder="https://tu-portfolio.com"
+              placeholder={t('common.placeholders.portfolio')}
               value={portfolioUrl}
               onChange={(e) => setPortfolioUrl(e.target.value)}
             />
@@ -1339,7 +1341,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Input
               id="linkedin-url"
               type="url"
-              placeholder="https://linkedin.com/in/tu-perfil"
+              placeholder={t('common.placeholders.linkedin')}
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}
             />
@@ -1349,7 +1351,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Input
               id="github-url"
               type="url"
-              placeholder="https://github.com/tu-usuario"
+              placeholder={t('common.placeholders.github')}
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
@@ -1707,7 +1709,7 @@ function DangerZone({ user }: DangerZoneProps) {
                 <Input
                   id="confirm-text"
                   type="text"
-                  placeholder="DESACTIVAR CUENTA"
+                  placeholder={t('common.placeholders.deactivateAccount')}
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   className="w-full font-mono"

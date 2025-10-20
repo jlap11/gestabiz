@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -88,6 +89,7 @@ interface Employee {
 }
 
 export function ClientHistory({ userId }: ClientHistoryProps) {
+  const { t } = useLanguage()
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -868,7 +870,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
             {/* Price Range */}
             <Select value={priceRangeFilter} onValueChange={setPriceRangeFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Rango de precio" />
+                <SelectValue placeholder={t('common.placeholders.priceRange')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los precios</SelectItem>

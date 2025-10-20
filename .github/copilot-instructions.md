@@ -11,7 +11,7 @@
 
 **Gestabiz** es una plataforma omnicanal (web/móvil/extensión) para gestión de citas y negocios con:
 
-- **9 sistemas principales completados**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, **Preferencias de Mensajes para Empleados** ⭐ NUEVO
+- **10 sistemas principales completados**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, Preferencias de Mensajes para Empleados, **Sistema de Ausencias y Vacaciones** ⭐ NUEVO
 - **40+ tablas en Supabase**: PostgreSQL 15+ con RLS, extensiones (pg_trgm, postgis), Edge Functions (Deno)
 - **30+ Edge Functions desplegadas**: Notificaciones multicanal, pagos (Stripe/PayU/MercadoPago), chat, reviews
 - **Arquitectura multi-rol**: Admin/Employee/Client calculados dinámicamente (NO guardados en BD)
@@ -205,6 +205,66 @@
   - ✅ Integración con ChatModal v3.0.0
 - **Documentación**: `docs/FASE_8_OWNER_REGISTRATION_FIX_COMPLETADA.md`
 - **Ver**: `docs/FASE_8_OWNER_REGISTRATION_FIX_COMPLETADA.md`
+
+### 11. Sistema de Ausencias y Vacaciones ⭐ COMPLETADO (2025-01-20) + POLÍTICA OBLIGATORIA (2025-10-20)
+**Sistema completo de gestión de ausencias y vacaciones con balance automático y APROBACIÓN OBLIGATORIA**
+
+#### 🔐 POLÍTICA CRÍTICA (2025-10-20)
+- **APROBACIÓN SIEMPRE OBLIGATORIA**: `require_absence_approval = true` (en TODOS los negocios, siempre)
+- **Implementación**: 
+  - Nuevos negocios: Default `true` en migración `20251020000002_add_absences_and_vacation_system.sql`
+  - Negocios existentes: Forzado a `true` por migración `20251020110000_enforce_mandatory_absence_approval.sql`
+- **Razón**: Ningún empleado puede tomar ausencias/vacaciones sin autorización previa
+- **No es parametrizable**: Es una regla de negocio no negociable
+- **Notificaciones**: Todos los admins/managers reciben notificación in-app + email
+
+- **Base de Datos**:
+  - 3 tablas nuevas: `employee_absences`, `absence_approval_requests`, `vacation_balance`
+  - Campos agregados a `businesses`: vacation_days_per_year (15), allow_same_day_absence, **require_absence_approval (DEFAULT true)**, max_advance_vacation_request_days (90)
+  - Campos agregados a `business_employees`: hire_date, vacation_days_accrued
+  - 5 funciones SQL: calculate_absence_days(), is_employee_available_on_date(), etc.
+  - 1 trigger: Actualiza vacation_balance automáticamente
+  - 9 políticas RLS para seguridad
+  - Migraciones: `20251020000002_add_absences_and_vacation_system.sql` + `20251020110000_enforce_mandatory_absence_approval.sql` (aplicadas)
+
+- **Edge Functions Desplegadas**:
+  - `request-absence`: Empleados solicitan ausencias (v2: 350+ líneas, notifica a TODOS los admins + email)
+  - `approve-reject-absence`: Admins aprueban/rechazan (237 líneas)
+  - `cancel-appointments-on-emergency-absence`: Cancelación automática (226 líneas)
+
+- **Hooks Personalizados**:
+  - `useEmployeeAbsences` (256 líneas): Perspectiva del empleado
+  - `useAbsenceApprovals` (263 líneas): Perspectiva del administrador
+
+- **Componentes UI**:
+  - `VacationDaysWidget` (142 líneas): Balance de vacaciones
+  - `AbsenceRequestModal` (310 líneas): Formulario de solicitud con formato dd/mm/yyyy
+  - `AbsenceApprovalCard` (224 líneas): Card de aprobación
+  - `AbsencesTab` (98 líneas): Tab completo para admins
+
+- **Integración Completa**:
+  - ✅ EmployeeDashboard: Widget + botón "Solicitar Ausencia" + modal funcional
+  - ✅ AdminDashboard: Tab "Ausencias" con aprobaciones pendientes/historial
+  - ✅ DateTimeSelection: Validación automática de ausencias aprobadas
+  - ✅ Notificaciones In-App: A TODOS los admins/managers
+  - ✅ Notificaciones por Email: A TODOS los admins/managers
+
+- **Flujos Funcionales**:
+  1. Empleado solicita ausencia → REQUIERE APROBACIÓN (forzado)
+  2. Admin recibe notificación in-app + email (todos los admins)
+  3. Admin aprueba → Balance actualizado → Empleado notificado
+  4. Cliente reserva cita → Sistema valida ausencias → Slots bloqueados si ausente
+  5. Ausencia emergencia → Citas canceladas automáticamente → Clientes notificados
+
+- **Tipos de Ausencia**: vacation, emergency, sick_leave, personal, other
+- **Balance Automático**: Días disponibles, usados, pendientes, restantes
+- **Documentación**: 
+  - `docs/INTEGRACION_COMPLETA_AUSENCIAS.md` (1,200 líneas)
+  - `docs/RESUMEN_INTEGRACION_AUSENCIAS.md` (200 líneas)
+  - `docs/FIX_NOTIFICACIONES_AUSENCIAS.md` (Problema + solución)
+  - `docs/POLITICA_APROBACION_OBLIGATORIA_AUSENCIAS.md` (Política final)
+  - `docs/PRUEBA_NOTIFICACIONES_AUSENCIAS.md` (Guía de pruebas)
+- **Ver**: `docs/POLITICA_APROBACION_OBLIGATORIA_AUSENCIAS.md`
 
 
 
@@ -703,6 +763,12 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - `const { t } = useLanguage(); t('dashboard.title')` y formatos `formatCurrency(amount, 'MXN', 'es')`.
 
 ## Gotchas conocidas
+- **CRÍTICO - Sincronización business_roles ↔ business_employees** (20 Oct 2025):
+  - **Problema**: La RPC `get_business_hierarchy` busca en `business_roles`, pero empleados se registran en `business_employees`
+  - **Síntoma**: Empleados no aparecen en gestión de empleados aunque estén en la BD
+  - **Solución**: Trigger automático `sync_business_roles_from_business_employees()` mantiene ambas tablas sincronizadas (migración `20251020180000_*`)
+  - **Garantía**: Cualquier INSERT/UPDATE en `business_employees` automáticamente sincroniza `business_roles`
+  - **Ver**: `docs/FIX_INCONSISTENCIA_BUSINESS_ROLES_2025-10-20.md`
 - `useSupabase.ts` importa `authService/appointmentService/...` desde `@/lib/supabase`, pero la implementación de referencia de estos servicios está en `src/mobile/src/lib/supabase.ts`. Si trabajas en web, duplica o mueve esos servicios a `src/lib/` para mantener consistencia y evitar errores de import.
 - Zonas horarias: el código usa valores como `America/Mexico_City` y `America/New_York` en distintas utilidades; al persistir o mostrar fechas, pasa explícitamente la TZ correcta.
 - No expongas claves de servicio (service_role) en cliente; usa Edge Functions para operaciones privilegiadas.

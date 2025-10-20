@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MapPin, Check, AlertCircle, ArrowRightLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { LocationTransferModal } from './LocationTransferModal';
+import { TransferStatusBadge } from './TransferStatusBadge';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -20,15 +22,15 @@ interface Location {
   email?: string;
   is_primary: boolean;
   images?: string[];
-  business_hours?: any;
+  business_hours?: Record<string, { open: string; close: string; closed: boolean }>;
   is_assigned?: boolean;
 }
 
 interface LocationSelectorProps {
-  businessId: string;
-  employeeId: string;
-  currentLocationId?: string | null;
-  onLocationChanged?: () => void;
+  readonly businessId: string;
+  readonly employeeId: string;
+  readonly currentLocationId?: string | null;
+  readonly onLocationChanged?: () => void;
 }
 
 export function LocationSelector({
@@ -39,13 +41,17 @@ export function LocationSelector({
 }: LocationSelectorProps) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [transferTargetLocationId, setTransferTargetLocationId] = useState<string | null>(null);
+  const [transferTargetLocationName, setTransferTargetLocationName] = useState<string | null>(null);
+  const [transferStatus, setTransferStatus] = useState<{
+    status: string | null;
+    toLocationId: string | null;
+    toLocationName: string | null;
+    effectiveDate: string | null;
+  }>({ status: null, toLocationId: null, toLocationName: null, effectiveDate: null });
 
-  useEffect(() => {
-    fetchLocations();
-  }, [businessId, employeeId]);
-
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -66,45 +72,45 @@ export function LocationSelector({
       })) || [];
 
       setLocations(locationsWithAssignment);
-    } catch (error) {
-      console.error('Error fetching locations:', error);
+    } catch {
       toast.error('Error al cargar las sedes');
     } finally {
       setLoading(false);
     }
-  };
+  }, [businessId, currentLocationId]);
 
-  const handleSelectLocation = async (locationId: string) => {
+  const fetchTransferStatus = useCallback(async () => {
     try {
-      setUpdating(locationId);
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('business_employees')
-        .update({ 
-          location_id: locationId,
-          updated_at: new Date().toISOString()
-        })
+        .select(`
+          transfer_status,
+          transfer_to_location_id,
+          transfer_effective_date,
+          locations!business_employees_transfer_to_location_id_fkey (name)
+        `)
         .eq('employee_id', employeeId)
-        .eq('business_id', businessId);
+        .eq('business_id', businessId)
+        .single();
 
-      if (error) throw error;
-
-      toast.success('Sede de trabajo actualizada correctamente');
-      
-      // Refrescar lista
-      await fetchLocations();
-      
-      // Notificar al componente padre
-      if (onLocationChanged) {
-        onLocationChanged();
+      if (!error && data) {
+        const locationData = data.locations as unknown as { name: string } | null;
+        setTransferStatus({
+          status: data.transfer_status,
+          toLocationId: data.transfer_to_location_id,
+          toLocationName: locationData?.name || null,
+          effectiveDate: data.transfer_effective_date,
+        });
       }
-    } catch (error) {
-      console.error('Error updating location:', error);
-      toast.error('Error al actualizar sede de trabajo');
-    } finally {
-      setUpdating(null);
+    } catch {
+      // Silently fail - transfer status is optional
     }
-  };
+  }, [businessId, employeeId]);
+
+  useEffect(() => {
+    fetchLocations();
+    fetchTransferStatus();
+  }, [fetchLocations, fetchTransferStatus]);
 
   if (loading) {
     return (
@@ -124,6 +130,59 @@ export function LocationSelector({
       </Alert>
     );
   }
+
+  // Función para formatear horarios
+  const formatBusinessHours = (hours: Record<string, { open: string; close: string; closed: boolean }> | string): React.ReactNode => {
+    if (!hours) return null;
+    
+    if (typeof hours === 'string') {
+      return hours;
+    }
+
+    // Si es un objeto JSON con días de la semana
+    if (typeof hours === 'object') {
+      const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      const daysSpanish: Record<string, string> = {
+        monday: 'Lunes',
+        tuesday: 'Martes',
+        wednesday: 'Miércoles',
+        thursday: 'Jueves',
+        friday: 'Viernes',
+        saturday: 'Sábado',
+        sunday: 'Domingo'
+      };
+
+      return (
+        <div className="space-y-1 text-sm">
+          {daysOrder.map((day) => {
+            const dayData = hours[day];
+            if (!dayData) return null;
+
+            const isClosed = dayData.closed === true;
+            const openTime = dayData.open;
+            const closeTime = dayData.close;
+
+            return (
+              <div key={day} className="flex justify-between items-center">
+                <span className="text-muted-foreground w-20">
+                  {daysSpanish[day]}
+                </span>
+                <span className="text-foreground font-medium">
+                  {isClosed ? (
+                    <span className="text-muted-foreground italic">Cerrado</span>
+                  ) : (
+                    `${openTime} - ${closeTime}`
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="space-y-4">
@@ -193,12 +252,9 @@ export function LocationSelector({
               {location.business_hours && (
                 <div className="text-sm space-y-1">
                   <p className="font-medium text-muted-foreground">Horarios</p>
-                  <p className="text-foreground text-xs">
-                    {typeof location.business_hours === 'string' 
-                      ? location.business_hours 
-                      : JSON.stringify(location.business_hours)
-                    }
-                  </p>
+                  <div className="text-foreground text-xs">
+                    {formatBusinessHours(location.business_hours)}
+                  </div>
                 </div>
               )}
 
@@ -207,11 +263,11 @@ export function LocationSelector({
                 <div>
                   <p className="font-medium text-muted-foreground text-sm mb-2">Fotos</p>
                   <div className="grid grid-cols-3 gap-2">
-                    {location.images.slice(0, 6).map((imageUrl, idx) => (
+                    {location.images.slice(0, 6).map((imageUrl) => (
                       <img
-                        key={idx}
+                        key={imageUrl}
                         src={imageUrl}
-                        alt={`${location.name} - ${idx + 1}`}
+                        alt={`${location.name}`}
                         className="w-full h-24 object-cover rounded-md"
                       />
                     ))}
@@ -219,33 +275,73 @@ export function LocationSelector({
                 </div>
               )}
 
-              {/* Botón Seleccionar */}
+              {/* Botón Seleccionar - Abre modal de traslado */}
               {!location.is_assigned && (
                 <div className="pt-3 border-t">
                   <Button
-                    onClick={() => handleSelectLocation(location.id)}
-                    disabled={updating === location.id}
+                    onClick={() => {
+                      setTransferTargetLocationId(location.id);
+                      setTransferTargetLocationName(location.name);
+                      setTransferModalOpen(true);
+                    }}
                     className="w-full"
                     variant="outline"
                   >
-                    {updating === location.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                        Seleccionando...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Seleccionar Sede de Trabajo
-                      </>
-                    )}
+                    <ArrowRightLeft className="h-4 w-4 mr-2" />
+                    Seleccionar Sede de Trabajo
                   </Button>
                 </div>
+              )}
+
+              {/* Botón Programar Traslado */}
+              {location.is_assigned && (
+                <div className="pt-3 border-t flex gap-2">
+                  <Button
+                    onClick={() => setTransferModalOpen(true)}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    <ArrowRightLeft className="h-4 w-4 mr-2" />
+                    Programar Traslado
+                  </Button>
+                </div>
+              )}
+
+              {/* Badge de traslado programado */}
+              {location.is_assigned && transferStatus.status === 'pending' && (
+                <TransferStatusBadge
+                  transferStatus={transferStatus.status as 'pending'}
+                  effectiveDate={transferStatus.effectiveDate}
+                  toLocationName={transferStatus.toLocationName}
+                  className="mt-2"
+                />
               )}
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Modal de Traslado */}
+      {currentLocationId && (
+        <LocationTransferModal
+          open={transferModalOpen}
+          onOpenChange={setTransferModalOpen}
+          businessId={businessId}
+          employeeId={employeeId}
+          currentLocationId={currentLocationId}
+          currentLocationName={
+            locations.find((loc) => loc.id === currentLocationId)?.name || 'Sede actual'
+          }
+          targetLocationId={transferTargetLocationId || undefined}
+          targetLocationName={transferTargetLocationName || undefined}
+          onTransferScheduled={() => {
+            setTransferTargetLocationId(null);
+            setTransferTargetLocationName(null);
+            fetchLocations();
+            fetchTransferStatus();
+          }}
+        />
+      )}
     </div>
   );
 }

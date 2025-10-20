@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Service {
   id: string;
@@ -38,7 +39,8 @@ export function ServiceSelector({
   employeeId,
   currentLocationId,
   onServicesChanged
-}: ServiceSelectorProps) {
+}: Readonly<ServiceSelectorProps>) {
+  const { t } = useLanguage()
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -108,8 +110,8 @@ export function ServiceSelector({
       });
       setServiceDetails(details);
 
-    } catch (error) {
-      toast.error('Error al cargar los servicios');
+    } catch {
+      toast.error(t('common.messages.loadError'));
     } finally {
       setLoading(false);
     }
@@ -237,7 +239,7 @@ export function ServiceSelector({
         }
       }
 
-      toast.success('Servicios actualizados correctamente');
+      toast.success(t('common.messages.updateSuccess'));
 
       // Refrescar lista
       await fetchServices();
@@ -249,7 +251,7 @@ export function ServiceSelector({
 
     } catch (error) {
       console.error('Error saving services:', error);
-      toast.error('Error al guardar los servicios');
+      toast.error(t('common.messages.saveError'));
     } finally {
       setSaving(false);
     }
@@ -302,12 +304,12 @@ export function ServiceSelector({
           {saving ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-              Guardando...
+              {t('common.actions.saving')}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Guardar Cambios
+              {t('common.actions.save')}
             </>
           )}
         </Button>

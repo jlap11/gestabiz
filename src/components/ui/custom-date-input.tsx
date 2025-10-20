@@ -10,7 +10,13 @@ import "react-datepicker/dist/react-datepicker.css"
 const PopperContainer = ({ children, popperRef }: { children: React.ReactNode, popperRef: React.RefObject<HTMLDivElement | null> }) => (
   <div
     ref={popperRef}
-    style={{position:'relative', background: '#18181b', borderRadius: '8px', padding: '0'}}
+    style={{
+      position: 'relative',
+      background: 'hsl(var(--background))',
+      borderRadius: '8px',
+      padding: '0',
+      display: 'block'
+    }}
   >
     {children}
   </div>
@@ -69,9 +75,11 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
             style.textContent = `
           .react-datepicker-wrapper {
             width: 100%;
+            background: hsl(var(--background)) !important;
           }
           .react-datepicker-popper {
             z-index: 9999 !important;
+            background: hsl(var(--background)) !important;
           }
           .react-datepicker-popper[data-placement] {
             background: hsl(var(--background)) !important;
@@ -86,21 +94,25 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
           }
           .react-datepicker,
           .react-datepicker__month,
-          .react-datepicker__header {
+          .react-datepicker__header,
+          .react-datepicker__header * {
             background: hsl(var(--background)) !important;
             background-color: hsl(var(--background)) !important;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
           }
           .react-datepicker {
             font-family: inherit;
             border: 1px solid hsl(var(--border));
             border-radius: 8px;
             color: hsl(var(--foreground));
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
           }
           .react-datepicker__header {
+            background: hsl(var(--background)) !important;
+            background-color: hsl(var(--background)) !important;
             border-bottom: 1px solid hsl(var(--border));
             border-radius: 8px 8px 0 0;
-            padding: 8px 0;
+            padding: 12px 8px;
+            display: block !important;
           }
           
           .react-datepicker__current-month {

@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { 
@@ -100,6 +101,7 @@ export function VacancyList({
   statusFilter: propStatusFilter = 'all',
   highlightedVacancyId
 }: Readonly<VacancyListProps>) {
+  const { t } = useLanguage()
   const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [filteredVacancies, setFilteredVacancies] = useState<JobVacancy[]>([])
   const [loading, setLoading] = useState(true)
@@ -298,7 +300,7 @@ export function VacancyList({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Título o descripción"
+                  placeholder={t('common.placeholders.titleOrDescription')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-background border-border text-foreground pl-10"

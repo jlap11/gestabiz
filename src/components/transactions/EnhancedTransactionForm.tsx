@@ -519,7 +519,7 @@ export function EnhancedTransactionForm({
           </Label>
           <Textarea
             id="description"
-            placeholder="Detalles adicionales de la transacción..."
+            placeholder={t('common.placeholders.transactionDetails')}
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
             rows={3}
@@ -538,7 +538,7 @@ export function EnhancedTransactionForm({
             disabled={formData.subtotal <= 0 || isSubmitting}
             className="flex-1"
           >
-            {isSubmitting ? 'Guardando...' : 'Guardar Transacción'}
+            {isSubmitting ? t('common.actions.saving') : t('common.actions.save')}
           </Button>
           {onCancel && (
             <Button
@@ -547,7 +547,7 @@ export function EnhancedTransactionForm({
               onClick={onCancel}
               disabled={isSubmitting}
             >
-              {t('common.cancel')}
+              {t('common.actions.cancel')}
             </Button>
           )}
         </div>

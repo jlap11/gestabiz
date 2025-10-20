@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useHealthInsurance } from '@/hooks/useCatalogs';
 import { Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HealthInsuranceSelectProps {
   value?: string;
@@ -33,6 +34,7 @@ export function HealthInsuranceSelect({
   required = false,
   className = '',
 }: HealthInsuranceSelectProps) {
+  const { t } = useLanguage()
   const { healthInsurance, loading } = useHealthInsurance();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -72,7 +74,7 @@ export function HealthInsuranceSelect({
           <div className="flex items-center border-b px-3 pb-2">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
-              placeholder="Buscar EPS..."
+              placeholder={t('common.placeholders.searchEPS')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="h-8 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"

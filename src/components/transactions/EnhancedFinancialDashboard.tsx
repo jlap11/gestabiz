@@ -260,10 +260,10 @@ export function EnhancedFinancialDashboard({
             {locations.length > 0 && (
               <Select value={selectedLocation} onValueChange={setSelectedLocation}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Todas las sedes" />
+                  <SelectValue placeholder={t('common.placeholders.allLocations')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas las sedes</SelectItem>
+                  <SelectItem value="all">{t('common.placeholders.allLocations')}</SelectItem>
                   {locations.map((loc) => (
                     <SelectItem key={loc.id} value={loc.id}>
                       {loc.name}
@@ -277,10 +277,10 @@ export function EnhancedFinancialDashboard({
             {employees.length > 0 && (
               <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Todos los empleados" />
+                  <SelectValue placeholder={t('common.placeholders.allEmployees')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los empleados</SelectItem>
+                  <SelectItem value="all">{t('common.placeholders.allEmployees')}</SelectItem>
                   {employees.map((emp) => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.name}
@@ -293,10 +293,10 @@ export function EnhancedFinancialDashboard({
             {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Todas las categorías" />
+                <SelectValue placeholder={t('common.placeholders.allCategories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
+                <SelectItem value="all">{t('common.placeholders.allCategories')}</SelectItem>
                 <SelectItem value="appointment_payment">Pagos de citas</SelectItem>
                 <SelectItem value="product_sale">Venta de productos</SelectItem>
                 <SelectItem value="membership">Membresías</SelectItem>

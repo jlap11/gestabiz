@@ -1,36 +1,460 @@
 export const translations = {
   en: {
-    // Common
+    // Common - Common translations used across multiple components
     common: {
-      cancel: 'Cancel',
-      save: 'Save',
-      delete: 'Delete',
-      edit: 'Edit',
-      create: 'Create',
-      update: 'Update',
-      saving: 'Saving...',
-      loading: 'Loading...',
-      error: 'Error',
-      success: 'Success',
-      confirm: 'Confirm',
-      yes: 'Yes',
-      no: 'No',
-      close: 'Close',
-      open: 'Open',
-  disabled: 'Disabled',
-      search: 'Search',
-      filter: 'Filter',
-      sort: 'Sort',
-      view: 'View',
-      back: 'Back',
-      next: 'Next',
-      previous: 'Previous',
-  of: 'of',
-      submit: 'Submit',
-      reset: 'Reset',
-      clear: 'Clear',
-      select: 'Select',
-      required: 'Required'
+      // Actions
+      actions: {
+        save: 'Save',
+        saving: 'Saving...',
+        cancel: 'Cancel',
+        delete: 'Delete',
+        deleting: 'Deleting...',
+        create: 'Create',
+        creating: 'Creating...',
+        update: 'Update',
+        updating: 'Updating...',
+        confirm: 'Confirm',
+        edit: 'Edit',
+        view: 'View',
+        close: 'Close',
+        back: 'Back',
+        next: 'Next',
+        previous: 'Previous',
+        submit: 'Submit',
+        search: 'Search',
+        filter: 'Filter',
+        reset: 'Reset',
+        apply: 'Apply',
+        download: 'Download',
+        upload: 'Upload',
+        select: 'Select',
+        deselect: 'Deselect',
+        selectAll: 'Select all',
+        deselectAll: 'Deselect all',
+        continue: 'Continue',
+        finish: 'Finish',
+        add: 'Add',
+        remove: 'Remove',
+        send: 'Send',
+        receive: 'Receive',
+        accept: 'Accept',
+        reject: 'Reject',
+        approve: 'Approve',
+        decline: 'Decline',
+        enable: 'Enable',
+        disable: 'Disable',
+        activate: 'Activate',
+        deactivate: 'Deactivate',
+        refresh: 'Refresh',
+        reload: 'Reload',
+        retry: 'Retry',
+        copy: 'Copy',
+        paste: 'Paste',
+        duplicate: 'Duplicate',
+        share: 'Share',
+        export: 'Export',
+        import: 'Import',
+        print: 'Print',
+      },
+      // States
+      states: {
+        loading: 'Loading...',
+        saved: 'Saved',
+        deleted: 'Deleted',
+        created: 'Created',
+        updated: 'Updated',
+        error: 'Error',
+        success: 'Success',
+        warning: 'Warning',
+        info: 'Information',
+        pending: 'Pending',
+        processing: 'Processing...',
+        completed: 'Completed',
+        failed: 'Failed',
+        active: 'Active',
+        inactive: 'Inactive',
+        enabled: 'Enabled',
+        disabled: 'Disabled',
+      },
+      // Messages
+      messages: {
+        confirmDelete: 'Are you sure you want to delete this?',
+        confirmCancel: 'Are you sure you want to cancel?',
+        unsavedChanges: 'You have unsaved changes. Do you want to continue?',
+        saveSuccess: 'Saved successfully',
+        saveError: 'Error saving',
+        deleteSuccess: 'Deleted successfully',
+        deleteError: 'Error deleting',
+        createSuccess: 'Created successfully',
+        createError: 'Error creating',
+        updateSuccess: 'Updated successfully',
+        updateError: 'Error updating',
+        loadError: 'Error loading data',
+        requiredFields: 'Please fill in all required fields',
+        invalidEmail: 'Please enter a valid email',
+        invalidPhone: 'Please enter a valid phone number',
+        passwordMismatch: 'Passwords do not match',
+        noResults: 'No results found',
+        noData: 'No data available',
+        tryAgain: 'Please try again',
+        sessionExpired: 'Your session has expired. Please log in again',
+        unauthorized: 'You do not have permission to perform this action',
+        notFound: 'Not found',
+        serverError: 'Server error. Please try again later',
+        networkError: 'Connection error. Check your internet',
+      },
+      // Forms
+      forms: {
+        required: 'Required',
+        optional: 'Optional',
+        pleaseSelect: 'Please select',
+        selectOption: 'Select an option',
+        enterValue: 'Enter a value',
+        chooseFile: 'Choose file',
+        noFileSelected: 'No file selected',
+        dragDropFiles: 'Drag files here or click to select',
+      },
+      // Placeholders
+      placeholders: {
+        businessName: 'Your business name',
+        businessDescription: 'Describe your business',
+        phoneNumber: 'Phone number',
+        email: 'contact@business.com',
+        website: 'https://www.yourbusiness.com',
+        address: 'Street and number',
+        city: 'City',
+        state: 'State',
+        legalName: 'Legal name or business name',
+        taxId: 'Tax identification number',
+        selectLocation: 'Select a location',
+        selectService: 'Select a service',
+        selectEmployee: 'Select an employee',
+        selectCity: 'Select a city',
+        selectActivityType: 'Select activity type',
+        selectDate: 'Select a date',
+        selectType: 'Select a type',
+        jobTitle: 'E.g: Professional Stylist',
+        jobDescription: 'Describe the position and main functions',
+        jobRequirements: 'List the requirements for this position',
+        jobResponsibilities: 'Describe the responsibilities of the position',
+        jobBenefits: 'Describe the benefits you offer',
+        clientName: 'E.g: John Doe',
+        clientPhone: 'E.g: 3001234567',
+        clientDocument: 'E.g: 1234567890',
+        clientEmail: 'E.g: client@example.com',
+        amount: 'E.g: 50000',
+        selectPaymentMethod: 'Select method',
+        notes: 'E.g: Frequent client, discount applied...',
+        transactionDetails: 'Additional transaction details...',
+        applicationLetter: 'Tell us why you are the ideal candidate for this position...',
+        availabilityNotes: 'Provide additional details about your request...',
+        portfolio: 'https://your-portfolio.com',
+        linkedin: 'https://linkedin.com/in/your-profile',
+        github: 'https://github.com/your-username',
+        bio: 'Describe your experience, skills and what makes you unique as a professional...',
+        skills: 'E.g: Web Development, Digital Marketing...',
+        languages: 'E.g: Spanish, English...',
+        certificationName: 'Certification name *',
+        certificationIssuer: 'Issuer *',
+        certificationIssueDate: 'Issue date *',
+        certificationExpiryDate: 'Expiry date',
+        certificationId: 'Credential ID',
+        certificationUrl: 'Credential URL',
+        searchCountry: 'Search country...',
+        searchCity: 'Search city...',
+        searchEPS: 'Search EPS...',
+        searchPrefix: 'Search prefix...',
+        deactivateAccount: 'DEACTIVATE ACCOUNT',
+        rejectionReason: 'Reason for decision...',
+        internalNotes: 'Internal notes...',
+        allLocations: 'All locations',
+        allEmployees: 'All employees',
+        allCategories: 'All categories',
+        selectDepartmentFirst: 'First select a department',
+        sortBy: 'Sort by',
+        priceRange: 'Price range',
+        status: 'Status',
+        titleOrDescription: 'Title or description',
+        expiryDate: 'Expiry date',
+        credentialId: 'Credential ID',
+        credentialUrl: 'Credential URL',
+        selectDepartment: 'Select a department',
+        all: 'All',
+        allStatuses: 'All statuses',
+        allVacancies: 'All vacancies',
+        selectCategory: 'Select a category',
+        selectBusiness: 'Select a business',
+        period: 'Period',
+      },
+      // Validation messages
+      validation: {
+        selectRequestType: 'Select a request type',
+        selectStartDate: 'Select start date',
+        selectEndDate: 'Select end date',
+        requestTooLong: 'Request cannot exceed 365 days',
+        selectType: 'Select a type',
+        selectDate: 'Select a date',
+      },
+      // Service Status
+      serviceStatus: {
+        connectionStatus: 'Connection Status',
+        platform: 'Platform',
+        authentication: 'Authentication',
+        database: 'Database',
+        storage: 'Storage',
+        verifyAgain: 'Verify again',
+        lastCheck: 'Last check',
+        connectionError: 'We could not connect to the platform. Please try again in a few minutes.',
+        persistentIssue: 'If the problem persists, contact us',
+      },
+      // Time & Date
+      time: {
+        today: 'Today',
+        yesterday: 'Yesterday',
+        tomorrow: 'Tomorrow',
+        thisWeek: 'This week',
+        lastWeek: 'Last week',
+        nextWeek: 'Next week',
+        thisMonth: 'This month',
+        lastMonth: 'Last month',
+        nextMonth: 'Next month',
+        am: 'AM',
+        pm: 'PM',
+        hour: 'hour',
+        hours: 'hours',
+        minute: 'minute',
+        minutes: 'minutes',
+        day: 'day',
+        days: 'days',
+        week: 'week',
+        weeks: 'weeks',
+        month: 'month',
+        months: 'months',
+        year: 'year',
+        years: 'years',
+        // Days of the week
+        monday: 'Monday',
+        tuesday: 'Tuesday',
+        wednesday: 'Wednesday',
+        thursday: 'Thursday',
+        friday: 'Friday',
+        saturday: 'Saturday',
+        sunday: 'Sunday',
+      },
+      // Misc
+      misc: {
+        yes: 'Yes',
+        no: 'No',
+        ok: 'OK',
+        all: 'All',
+        none: 'None',
+        other: 'Other',
+        more: 'More',
+        less: 'Less',
+        show: 'Show',
+        hide: 'Hide',
+        expand: 'Expand',
+        collapse: 'Collapse',
+        total: 'Total',
+        subtotal: 'Subtotal',
+        of: 'of',
+        page: 'Page',
+        perPage: 'per page',
+        results: 'results',
+        showing: 'Showing',
+        to: 'to',
+        from: 'from',
+        until: 'until',
+      },
+    },
+    // Landing Page
+    landing: {
+      nav: {
+        features: 'Features',
+        benefits: 'Benefits',
+        pricing: 'Pricing',
+        testimonials: 'Testimonials',
+        signIn: 'Sign In',
+        getStarted: 'Get Started Free'
+      },
+      hero: {
+        badge: 'Designed for Colombian SMBs',
+        title: 'Manage your business on',
+        titleHighlight: 'autopilot',
+        subtitle: 'The ALL-IN-ONE platform to manage appointments, clients, employees, accounting, and more. Save time, increase revenue, and grow without limits.',
+        cta: {
+          trial: '30-Day FREE Trial',
+          pricing: 'View Plans & Pricing',
+          noCreditCard: 'No credit card required',
+          cancelAnytime: 'Cancel anytime'
+        },
+        stats: {
+          businesses: 'Active Businesses',
+          appointments: 'Appointments Scheduled',
+          satisfaction: 'Satisfaction'
+        }
+      },
+      dashboard: {
+        title: 'Dashboard',
+        today: 'Today',
+        appointments: 'Appointments Today',
+        revenue: 'Monthly Revenue',
+        upcoming: 'Upcoming Appointments',
+        client: 'Client',
+        haircut: 'Haircut',
+        confirmed: 'Confirmed',
+        secureData: 'Secure & encrypted data'
+      },
+      features: {
+        badge: 'Features',
+        title: 'Everything you need in one platform',
+        subtitle: 'Stop using 5 different tools. Gestabiz has it ALL.',
+        list: {
+          appointments: {
+            title: 'Appointment Management',
+            description: 'Smart calendar with conflict prevention and Google Calendar sync.'
+          },
+          reminders: {
+            title: 'Auto Reminders',
+            description: 'WhatsApp, Email & SMS. Reduce no-shows by 70%. Your clients never forget.'
+          },
+          clients: {
+            title: 'Client Management',
+            description: 'Complete database with history, notes, and recurring client analysis.'
+          },
+          accounting: {
+            title: 'Accounting System',
+            description: 'VAT, ICA, Retention. Automatic P&L reports. Ready for Colombian DIAN.'
+          },
+          mobile: {
+            title: 'Native Mobile App',
+            description: 'iOS & Android. Manage your business from anywhere, anytime.'
+          },
+          jobs: {
+            title: 'Job Portal',
+            description: 'Post vacancies, manage applications, and find the talent you need.'
+          },
+          analytics: {
+            title: 'Advanced Analytics',
+            description: 'Interactive dashboards, real-time charts, and exportable reports.'
+          },
+          automation: {
+            title: 'Automation',
+            description: 'Confirmations, reminders, invoices. All automatic while you sleep.'
+          },
+          security: {
+            title: 'Total Security',
+            description: 'Data encryption, automatic backups, and privacy compliance.'
+          }
+        }
+      },
+      benefits: {
+        badge: 'Real Benefits',
+        title: 'Recover up to $1.5M pesos monthly in lost appointments',
+        subtitle: "It's not magic, it's data. Our clients recover an average of 70% of appointments that were previously lost due to forgetfulness or cancellations.",
+        stats: {
+          noShows: {
+            value: '70%',
+            label: 'Reduction in No-Shows',
+            description: 'Automatic reminders work'
+          },
+          timeSaved: {
+            value: '8-12h',
+            label: 'Weekly Time Saved',
+            description: 'No more time wasted on manual scheduling'
+          },
+          bookings: {
+            value: '35%',
+            label: 'Increase in Bookings',
+            description: 'Your clients book 24/7, even while you sleep'
+          },
+          roi: {
+            value: '900%',
+            label: 'Average ROI',
+            description: 'Investment pays for itself in the first month'
+          }
+        },
+        cta: 'Start Recovering Money Today',
+        calculator: {
+          lost: 'Monthly Lost Money',
+          lostDescription: 'If you lose 25 appointments/month at $50,000 each',
+          withGestabiz: 'With Gestabiz',
+          recovered: 'You Recover',
+          appointmentsRecovered: 'Appointments recovered (70%)',
+          cost: 'AppointSync Cost',
+          netProfit: 'Net Profit',
+          paysSelf: '🎉 Investment pays for ITSELF in the first month'
+        }
+      },
+      pricing: {
+        badge: 'Plans & Pricing',
+        title: 'Transparent pricing. No surprises.',
+        subtitle: 'Cheaper than competitors. More features. Fair pricing for your business.'
+      },
+      testimonials: {
+        badge: 'Testimonials',
+        title: 'What our clients say',
+        subtitle: 'More than 800 businesses in Colombia trust Gestabiz',
+        list: {
+          maria: {
+            name: 'María González',
+            business: 'Glamour Salon - Medellín',
+            text: "I can't believe I didn't start sooner. My clients say it looks super professional and I'm much calmer. I recovered $720,000/month in lost appointments.",
+            stat: '900% ROI'
+          },
+          carlos: {
+            name: 'Dr. Carlos Ramírez',
+            business: 'SmileCare Dental Office - Bogotá',
+            text: "As a doctor, my time is gold. AppointSync gave me back 10 hours a week. Now I see more patients and my accountant is happy.",
+            stat: '800% ROI'
+          },
+          juan: {
+            name: 'Juan Martínez',
+            business: 'Personal Trainer - Cali',
+            text: 'I invested $29,900 and it changed my life. Now I look like a professional business. I even raised my prices. Best investment ever.',
+            stat: '2000% ROI'
+          }
+        }
+      },
+      cta: {
+        title: 'Ready to transform your business?',
+        subtitle: 'Join over 800 businesses already saving time and increasing revenue with Gestabiz.',
+        buttons: {
+          trial: 'Start FREE for 30 Days',
+          login: 'I already have an account'
+        },
+        benefits: {
+          noCreditCard: 'No credit card required',
+          cancelAnytime: 'Cancel anytime',
+          spanishSupport: 'Spanish support'
+        }
+      },
+      footer: {
+        tagline: 'The #1 business management platform for Colombian SMBs.',
+        product: {
+          title: 'Product',
+          features: 'Features',
+          pricing: 'Pricing',
+          integrations: 'Integrations',
+          api: 'API'
+        },
+        resources: {
+          title: 'Resources',
+          blog: 'Blog',
+          help: 'Help',
+          tutorials: 'Tutorials',
+          contact: 'Contact'
+        },
+        legal: {
+          title: 'Legal',
+          terms: 'Terms',
+          privacy: 'Privacy',
+          cookies: 'Cookies',
+          licenses: 'Licenses'
+        },
+        copyright: '© 2025 Gestabiz. All rights reserved.',
+        madeIn: 'Made with ❤️ in Colombia 🇨🇴'
+      }
     },
 
     // Validations
@@ -98,7 +522,11 @@ export const translations = {
       and: 'and',
       privacyPolicy: 'Privacy Policy',
       or: 'or',
-      loginAsDemo: 'Login as Demo User'
+      loginAsDemo: 'Login as Demo User',
+      continueBooking: 'Sign in to continue with your booking',
+      accountInactive: 'Your account is inactive. You will not be able to sign in until you reactivate your account',
+      mustSignIn: 'You must sign in to create an appointment',
+      rememberMe: 'Remember me'
     },
 
     // Navigation
@@ -389,7 +817,24 @@ export const translations = {
       today: 'Today',
       this_week: 'This week',
       this_month: 'This month',
-      custom_range: 'Custom range'
+      custom_range: 'Custom range',
+      // Wizard errors
+      wizard_errors: {
+        professionalNotOffersService: 'This professional does not offer the selected service',
+        cannotVerifyCompatibility: 'Could not verify professional compatibility',
+        selectDate: 'Please select a date for the appointment',
+        selectTime: 'Please select a time for the appointment',
+        professionalNotAvailable: 'This professional is not available for bookings at this time',
+        professionalCannotAccept: 'This professional cannot accept appointments. Please select another professional',
+        missingRequiredData: 'Missing required data to create the appointment',
+        mustLogin: 'You must log in to create an appointment',
+        errorCreating: 'Error creating appointment',
+        errorModifying: 'Error modifying appointment',
+      },
+      wizard_success: {
+        created: 'Appointment created successfully!',
+        modified: 'Appointment modified successfully!',
+      },
     },
 
     // Clients
@@ -748,41 +1193,512 @@ export const translations = {
         avgRating: 'Avg Rating',
         occupancyRate: 'Occupancy Rate',
       },
-    }
+    },
+
+    // Image Cropper
+    imageCropper: {
+      title: 'Crop profile image',
+      dragToAdjust: 'Drag to adjust the crop area (will be circular)',
+      processing: 'Processing...',
+    },
+
+    // Jobs & Vacancies
+    jobs: {
+      application: {
+        submit: 'Submit Application',
+        sending: 'Sending...',
+      },
+    },
+
+    // Notifications
+    notifications: {
+      preferencesSaved: 'Your notification preferences have been updated',
+      markAllAsRead: 'Mark all as read',
+      closeNotifications: 'Close notifications',
+      moreActions: 'More notification actions',
+    },
   },
 
   es: {
-    // Common
+    // Landing Page
+    landing: {
+      nav: {
+        features: 'Características',
+        benefits: 'Beneficios',
+        pricing: 'Planes',
+        testimonials: 'Testimonios',
+        signIn: 'Iniciar Sesión',
+        getStarted: 'Comenzar Gratis'
+      },
+      hero: {
+        badge: 'Diseñado para PyMES Colombianas',
+        title: 'Gestiona tu negocio en',
+        titleHighlight: 'piloto automático',
+        subtitle: 'La plataforma TODO-EN-UNO para gestionar citas, clientes, empleados, contabilidad y más. Ahorra tiempo, aumenta ingresos y crece sin límites.',
+        cta: {
+          trial: 'Prueba 30 Días GRATIS',
+          pricing: 'Ver Planes y Precios',
+          noCreditCard: 'Sin tarjeta de crédito',
+          cancelAnytime: 'Cancela cuando quieras'
+        },
+        stats: {
+          businesses: 'Negocios Activos',
+          appointments: 'Citas Agendadas',
+          satisfaction: 'Satisfacción'
+        }
+      },
+      dashboard: {
+        title: 'Dashboard',
+        today: 'Hoy',
+        appointments: 'Citas Hoy',
+        revenue: 'Ingresos Mes',
+        upcoming: 'Próximas Citas',
+        client: 'Cliente',
+        haircut: 'Corte de cabello',
+        confirmed: 'Confirmada',
+        secureData: 'Datos seguros y encriptados'
+      },
+      features: {
+        badge: 'Funcionalidades',
+        title: 'Todo lo que necesitas en una sola plataforma',
+        subtitle: 'Deja de usar 5 herramientas diferentes. Gestabiz lo tiene TODO.',
+        list: {
+          appointments: {
+            title: 'Gestión de Citas',
+            description: 'Calendario inteligente con prevención de conflictos y sincronización con Google Calendar.'
+          },
+          reminders: {
+            title: 'Recordatorios Automáticos',
+            description: 'WhatsApp, Email y SMS. Reduce no-shows en un 70%. Tus clientes nunca olvidan.'
+          },
+          clients: {
+            title: 'Gestión de Clientes',
+            description: 'Base de datos completa con historial, notas y análisis de clientes recurrentes.'
+          },
+          accounting: {
+            title: 'Sistema Contable',
+            description: 'IVA, ICA, Retención. Reportes P&L automáticos. Preparado para DIAN Colombia.'
+          },
+          mobile: {
+            title: 'App Móvil Nativa',
+            description: 'iOS y Android. Gestiona tu negocio desde cualquier lugar, en cualquier momento.'
+          },
+          jobs: {
+            title: 'Portal de Empleos',
+            description: 'Publica vacantes, gestiona aplicaciones y encuentra el talento que necesitas.'
+          },
+          analytics: {
+            title: 'Analytics Avanzados',
+            description: 'Dashboards interactivos, gráficos en tiempo real y reportes exportables.'
+          },
+          automation: {
+            title: 'Automatizaciones',
+            description: 'Confirmaciones, recordatorios, facturas. Todo automático mientras duermes.'
+          },
+          security: {
+            title: 'Seguridad Total',
+            description: 'Encriptación de datos, backups automáticos y cumplimiento de privacidad.'
+          }
+        }
+      },
+      benefits: {
+        badge: 'Beneficios Reales',
+        title: 'Recupera hasta $1.5M pesos mensuales en citas perdidas',
+        subtitle: 'No es magia, son datos. Nuestros clientes recuperan en promedio 70% de las citas que antes se perdían por olvidos o cancelaciones.',
+        stats: {
+          noShows: {
+            value: '70%',
+            label: 'Reducción de No-Shows',
+            description: 'Los recordatorios automáticos funcionan'
+          },
+          timeSaved: {
+            value: '8-12h',
+            label: 'Tiempo Ahorrado Semanal',
+            description: 'Ya no pierdes tiempo agendando manualmente'
+          },
+          bookings: {
+            value: '35%',
+            label: 'Aumento en Reservas',
+            description: 'Tus clientes agendan 24/7, incluso cuando duermes'
+          },
+          roi: {
+            value: '900%',
+            label: 'ROI Promedio',
+            description: 'La inversión se paga sola en el primer mes'
+          }
+        },
+        cta: 'Empieza a Recuperar Dinero Hoy',
+        calculator: {
+          lost: 'Dinero Perdido Mensual',
+          lostDescription: 'Si pierdes 25 citas/mes a $50.000 cada una',
+          withGestabiz: 'Con Gestabiz',
+          recovered: 'Recuperas',
+          appointmentsRecovered: 'Citas recuperadas (70%)',
+          cost: 'Costo de AppointSync',
+          netProfit: 'Ganancia Neta',
+          paysSelf: '🎉 La inversión se paga SOLA en el primer mes'
+        }
+      },
+      pricing: {
+        badge: 'Planes y Precios',
+        title: 'Precios transparentes. Sin sorpresas.',
+        subtitle: 'Más barato que la competencia. Más funcionalidades. Precio justo para tu negocio.'
+      },
+      testimonials: {
+        badge: 'Testimonios',
+        title: 'Lo que dicen nuestros clientes',
+        subtitle: 'Más de 800 negocios en Colombia confían en Gestabiz',
+        list: {
+          maria: {
+            name: 'María González',
+            business: 'Salón Glamour - Medellín',
+            text: 'No puedo creer que no empecé antes. Mis clientas dicen que se ve súper profesional y yo estoy mucho más tranquila. Recuperé $720.000/mes en citas perdidas.',
+            stat: '900% ROI'
+          },
+          carlos: {
+            name: 'Dr. Carlos Ramírez',
+            business: 'Consultorio Dental SmileCare - Bogotá',
+            text: 'Como médico, mi tiempo vale oro. AppointSync me devolvió 10 horas a la semana. Ahora atiendo más pacientes y mi contador está feliz.',
+            stat: '800% ROI'
+          },
+          juan: {
+            name: 'Juan Martínez',
+            business: 'Personal Trainer - Cali',
+            text: 'Invertí $29.900 y me cambió la vida. Ahora parezco un negocio profesional. Incluso subí mis precios. Mejor inversión que he hecho.',
+            stat: '2000% ROI'
+          }
+        }
+      },
+      cta: {
+        title: '¿Listo para transformar tu negocio?',
+        subtitle: 'Únete a más de 800 negocios que ya están ahorrando tiempo y aumentando ingresos con Gestabiz.',
+        buttons: {
+          trial: 'Empieza GRATIS por 30 Días',
+          login: 'Ya tengo cuenta'
+        },
+        benefits: {
+          noCreditCard: 'Sin tarjeta de crédito',
+          cancelAnytime: 'Cancela cuando quieras',
+          spanishSupport: 'Soporte en español'
+        }
+      },
+      footer: {
+        tagline: 'La plataforma #1 de gestión empresarial para PyMES colombianas.',
+        product: {
+          title: 'Producto',
+          features: 'Características',
+          pricing: 'Precios',
+          integrations: 'Integraciones',
+          api: 'API'
+        },
+        resources: {
+          title: 'Recursos',
+          blog: 'Blog',
+          help: 'Ayuda',
+          tutorials: 'Tutoriales',
+          contact: 'Contacto'
+        },
+        legal: {
+          title: 'Legal',
+          terms: 'Términos',
+          privacy: 'Privacidad',
+          cookies: 'Cookies',
+          licenses: 'Licencias'
+        },
+        copyright: '© 2025 Gestabiz. Todos los derechos reservados.',
+        madeIn: 'Hecho con ❤️ en Colombia 🇨🇴'
+      }
+    },
+
+    // Common - Traducciones comunes usadas en múltiples componentes
     common: {
-      cancel: 'Cancelar',
-      save: 'Guardar',
-      delete: 'Eliminar',
-      edit: 'Editar',
-      create: 'Crear',
-      update: 'Actualizar',
-      saving: 'Guardando...',
-      loading: 'Cargando...',
-      error: 'Error',
-      success: 'Éxito',
-      confirm: 'Confirmar',
-      yes: 'Sí',
-      no: 'No',
-      close: 'Cerrar',
-      open: 'Abrir',
-  disabled: 'Inactivo',
-      search: 'Buscar',
-      filter: 'Filtrar',
-      sort: 'Ordenar',
-      view: 'Ver',
-      back: 'Atrás',
-      next: 'Siguiente',
-      previous: 'Anterior',
-  of: 'de',
-      submit: 'Enviar',
-      reset: 'Restablecer',
-      clear: 'Limpiar',
-      select: 'Seleccionar',
-      required: 'Requerido'
+      // Actions
+      actions: {
+        save: 'Guardar',
+        saving: 'Guardando...',
+        cancel: 'Cancelar',
+        delete: 'Eliminar',
+        deleting: 'Eliminando...',
+        create: 'Crear',
+        creating: 'Creando...',
+        update: 'Actualizar',
+        updating: 'Actualizando...',
+        confirm: 'Confirmar',
+        edit: 'Editar',
+        view: 'Ver',
+        close: 'Cerrar',
+        back: 'Volver',
+        next: 'Siguiente',
+        previous: 'Anterior',
+        submit: 'Enviar',
+        search: 'Buscar',
+        filter: 'Filtrar',
+        reset: 'Restablecer',
+        apply: 'Aplicar',
+        download: 'Descargar',
+        upload: 'Subir',
+        select: 'Seleccionar',
+        deselect: 'Deseleccionar',
+        selectAll: 'Seleccionar todo',
+        deselectAll: 'Deseleccionar todo',
+        continue: 'Continuar',
+        finish: 'Finalizar',
+        add: 'Agregar',
+        remove: 'Eliminar',
+        send: 'Enviar',
+        receive: 'Recibir',
+        accept: 'Aceptar',
+        reject: 'Rechazar',
+        approve: 'Aprobar',
+        decline: 'Rechazar',
+        enable: 'Habilitar',
+        disable: 'Deshabilitar',
+        activate: 'Activar',
+        deactivate: 'Desactivar',
+        refresh: 'Actualizar',
+        reload: 'Recargar',
+        retry: 'Reintentar',
+        copy: 'Copiar',
+        paste: 'Pegar',
+        duplicate: 'Duplicar',
+        share: 'Compartir',
+        export: 'Exportar',
+        import: 'Importar',
+        print: 'Imprimir',
+      },
+      // States
+      states: {
+        loading: 'Cargando...',
+        saved: 'Guardado',
+        deleted: 'Eliminado',
+        created: 'Creado',
+        updated: 'Actualizado',
+        error: 'Error',
+        success: 'Éxito',
+        warning: 'Advertencia',
+        info: 'Información',
+        pending: 'Pendiente',
+        processing: 'Procesando...',
+        completed: 'Completado',
+        failed: 'Fallido',
+        active: 'Activo',
+        inactive: 'Inactivo',
+        enabled: 'Habilitado',
+        disabled: 'Deshabilitado',
+      },
+      // Messages
+      messages: {
+        confirmDelete: '¿Estás seguro de que deseas eliminar esto?',
+        confirmCancel: '¿Estás seguro de que deseas cancelar?',
+        unsavedChanges: 'Tienes cambios sin guardar. ¿Deseas continuar?',
+        saveSuccess: 'Guardado exitosamente',
+        saveError: 'Error al guardar',
+        deleteSuccess: 'Eliminado exitosamente',
+        deleteError: 'Error al eliminar',
+        createSuccess: 'Creado exitosamente',
+        createError: 'Error al crear',
+        updateSuccess: 'Actualizado exitosamente',
+        updateError: 'Error al actualizar',
+        loadError: 'Error al cargar los datos',
+        requiredFields: 'Por favor completa todos los campos requeridos',
+        invalidEmail: 'Por favor ingresa un email válido',
+        invalidPhone: 'Por favor ingresa un teléfono válido',
+        passwordMismatch: 'Las contraseñas no coinciden',
+        noResults: 'No se encontraron resultados',
+        noData: 'No hay datos disponibles',
+        tryAgain: 'Por favor intenta nuevamente',
+        sessionExpired: 'Tu sesión ha expirado. Por favor inicia sesión nuevamente',
+        unauthorized: 'No tienes permisos para realizar esta acción',
+        notFound: 'No encontrado',
+        serverError: 'Error del servidor. Por favor intenta más tarde',
+        networkError: 'Error de conexión. Verifica tu internet',
+      },
+      // Forms
+      forms: {
+        required: 'Requerido',
+        optional: 'Opcional',
+        pleaseSelect: 'Por favor selecciona',
+        selectOption: 'Selecciona una opción',
+        enterValue: 'Ingresa un valor',
+        chooseFile: 'Elegir archivo',
+        noFileSelected: 'No se seleccionó ningún archivo',
+        dragDropFiles: 'Arrastra archivos aquí o haz clic para seleccionar',
+      },
+      // Placeholders
+      placeholders: {
+        businessName: 'Nombre de tu negocio',
+        businessDescription: 'Describe tu negocio',
+        phoneNumber: 'Número de teléfono',
+        email: 'contacto@negocio.com',
+        website: 'https://www.tunegocio.com',
+        address: 'Calle y número',
+        city: 'Ciudad',
+        state: 'Estado',
+        legalName: 'Razón social o nombre legal',
+        taxId: 'Número de identificación fiscal',
+        selectLocation: 'Selecciona una ubicación',
+        selectService: 'Selecciona el servicio prestado',
+        selectEmployee: 'Selecciona un empleado',
+        selectCity: 'Seleccione una ciudad',
+        selectActivityType: 'Seleccione tipo de actividad',
+        selectDate: 'Selecciona una fecha',
+        selectType: 'Selecciona un tipo',
+        jobTitle: 'Ej: Estilista Profesional',
+        jobDescription: 'Describe el puesto y las funciones principales',
+        jobRequirements: 'Lista los requisitos necesarios para el puesto',
+        jobResponsibilities: 'Describe las responsabilidades del puesto',
+        jobBenefits: 'Describe los beneficios que ofreces',
+        clientName: 'Ej: Juan Pérez',
+        clientPhone: 'Ej: 3001234567',
+        clientDocument: 'Ej: 1234567890',
+        clientEmail: 'Ej: cliente@example.com',
+        amount: 'Ej: 50000',
+        selectPaymentMethod: 'Selecciona método',
+        notes: 'Ej: Cliente frecuente, descuento aplicado...',
+        transactionDetails: 'Detalles adicionales de la transacción...',
+        applicationLetter: 'Cuéntanos por qué eres el candidato ideal para este puesto...',
+        availabilityNotes: 'Proporciona detalles adicionales sobre tu solicitud...',
+        portfolio: 'https://tu-portafolio.com',
+        linkedin: 'https://linkedin.com/in/tu-perfil',
+        github: 'https://github.com/tu-usuario',
+        bio: 'Describe tu experiencia, habilidades y qué te hace único como profesional...',
+        skills: 'Ej: Desarrollo Web, Marketing Digital...',
+        languages: 'Ej: Español, Inglés...',
+        certificationName: 'Nombre de la certificación *',
+        certificationIssuer: 'Emisor *',
+        certificationIssueDate: 'Fecha de emisión *',
+        certificationExpiryDate: 'Fecha de expiración',
+        certificationId: 'ID de credencial',
+        certificationUrl: 'URL de credencial',
+        searchCountry: 'Buscar país...',
+        searchCity: 'Buscar ciudad...',
+        searchEPS: 'Buscar EPS...',
+        searchPrefix: 'Buscar prefijo...',
+        deactivateAccount: 'DESACTIVAR CUENTA',
+        rejectionReason: 'Razón de la decisión...',
+        internalNotes: 'Notas internas...',
+        allLocations: 'Todas las sedes',
+        allEmployees: 'Todos los empleados',
+        allCategories: 'Todas las categorías',
+        selectDepartmentFirst: 'Primero seleccione un departamento',
+        sortBy: 'Ordenar por',
+        priceRange: 'Rango de precio',
+        status: 'Estado',
+        titleOrDescription: 'Título o descripción',
+        expiryDate: 'Fecha de vencimiento',
+        credentialId: 'ID de credencial',
+        credentialUrl: 'URL de credencial',
+        selectDepartment: 'Seleccione un departamento',
+        all: 'Todos',
+        allStatuses: 'Todos los estados',
+        allVacancies: 'Todas las vacantes',
+        selectCategory: 'Selecciona una categoría',
+        selectBusiness: 'Selecciona un negocio',
+        period: 'Período',
+      },
+      // Validation messages
+      validation: {
+        selectRequestType: 'Selecciona un tipo de solicitud',
+        selectStartDate: 'Selecciona la fecha de inicio',
+        selectEndDate: 'Selecciona la fecha de fin',
+        requestTooLong: 'La solicitud no puede exceder 365 días',
+        selectType: 'Selecciona un tipo',
+        selectDate: 'Selecciona una fecha',
+      },
+      // Service Status
+      serviceStatus: {
+        connectionStatus: 'Estado de la Conexión',
+        platform: 'Plataforma',
+        authentication: 'Inicio de Sesión',
+        database: 'Datos',
+        storage: 'Archivos',
+        verifyAgain: 'Verificar de nuevo',
+        lastCheck: 'Última verificación',
+        connectionError: 'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.',
+        persistentIssue: 'Si el problema persiste, contáctanos',
+      },
+      // Time & Date
+      time: {
+        today: 'Hoy',
+        yesterday: 'Ayer',
+        tomorrow: 'Mañana',
+        thisWeek: 'Esta semana',
+        lastWeek: 'Semana pasada',
+        nextWeek: 'Próxima semana',
+        thisMonth: 'Este mes',
+        lastMonth: 'Mes pasado',
+        nextMonth: 'Próximo mes',
+        am: 'AM',
+        pm: 'PM',
+        hour: 'hora',
+        hours: 'horas',
+        minute: 'minuto',
+        minutes: 'minutos',
+        day: 'día',
+        days: 'días',
+        week: 'semana',
+        weeks: 'semanas',
+        month: 'mes',
+        months: 'meses',
+        year: 'año',
+        years: 'años',
+        // Days of the week
+        monday: 'Lunes',
+        tuesday: 'Martes',
+        wednesday: 'Miércoles',
+        thursday: 'Jueves',
+        friday: 'Viernes',
+        saturday: 'Sábado',
+        sunday: 'Domingo',
+      },
+      // Misc
+      misc: {
+        yes: 'Sí',
+        no: 'No',
+        ok: 'OK',
+        all: 'Todos',
+        none: 'Ninguno',
+        other: 'Otro',
+        more: 'Más',
+        less: 'Menos',
+        show: 'Mostrar',
+        hide: 'Ocultar',
+        expand: 'Expandir',
+        collapse: 'Contraer',
+        total: 'Total',
+        subtotal: 'Subtotal',
+        of: 'de',
+        page: 'Página',
+        perPage: 'por página',
+        results: 'resultados',
+        showing: 'Mostrando',
+        to: 'a',
+        from: 'desde',
+        until: 'hasta',
+      },
+    },
+
+    // Image Cropper
+    imageCropper: {
+      title: 'Recortar imagen de perfil',
+      dragToAdjust: 'Arrastra para ajustar el área de recorte (será circular)',
+      processing: 'Procesando...',
+    },
+
+    // Jobs & Vacancies
+    jobs: {
+      application: {
+        submit: 'Enviar Aplicación',
+        sending: 'Enviando...',
+      },
+    },
+
+    // Notifications
+    notifications: {
+      preferencesSaved: 'Tus preferencias de notificación han sido actualizadas',
+      markAllAsRead: 'Marcar todas como leídas',
+      closeNotifications: 'Cerrar notificaciones',
+      moreActions: 'Más acciones de notificación',
     },
 
     // Validations
@@ -850,7 +1766,11 @@ export const translations = {
       and: 'y',
       privacyPolicy: 'Política de Privacidad',
       or: 'o',
-      loginAsDemo: 'Iniciar Sesión como Demo'
+      loginAsDemo: 'Iniciar Sesión como Demo',
+      continueBooking: 'Inicia sesión para continuar con tu reserva',
+      accountInactive: 'Tu cuenta está inactiva. No podrás iniciar sesión hasta reactivar tu cuenta',
+      mustSignIn: 'Debes iniciar sesión para crear una cita',
+      rememberMe: 'Recuérdame'
     },
 
     // Navigation
@@ -1142,7 +2062,24 @@ export const translations = {
       today: 'Hoy',
       this_week: 'Esta semana',
       this_month: 'Este mes',
-      custom_range: 'Rango personalizado'
+      custom_range: 'Rango personalizado',
+      // Errores del wizard
+      wizard_errors: {
+        professionalNotOffersService: 'Este profesional no ofrece el servicio seleccionado',
+        cannotVerifyCompatibility: 'No se pudo verificar la compatibilidad del profesional',
+        selectDate: 'Por favor selecciona una fecha para la cita',
+        selectTime: 'Por favor selecciona una hora para la cita',
+        professionalNotAvailable: 'Este profesional no está disponible para reservas en este momento',
+        professionalCannotAccept: 'Este profesional no puede aceptar citas. Selecciona otro profesional',
+        missingRequiredData: 'Faltan datos requeridos para crear la cita',
+        mustLogin: 'Debes iniciar sesión para crear una cita',
+        errorCreating: 'Error al crear la cita',
+        errorModifying: 'Error al modificar la cita',
+      },
+      wizard_success: {
+        created: '¡Cita creada exitosamente!',
+        modified: '¡Cita modificada exitosamente!',
+      },
     },
 
     // Clients

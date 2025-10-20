@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useCountries } from '@/hooks/useCatalogs';
 import { Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PhonePrefixSelectProps {
   value?: string;
@@ -35,6 +36,7 @@ export function PhonePrefixSelect({
   className = '',
   defaultToColombia = true,
 }: PhonePrefixSelectProps) {
+  const { t } = useLanguage()
   const { countries, loading } = useCountries();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -89,7 +91,7 @@ export function PhonePrefixSelect({
           <div className="flex items-center border-b px-3 pb-2">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
-              placeholder="Buscar prefijo..."
+              placeholder={t('common.placeholders.searchPrefix')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="h-8 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"

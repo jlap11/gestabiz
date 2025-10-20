@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useCountries } from '@/hooks/useCatalogs';
 import { Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CountrySelectProps {
   value?: string;
@@ -35,6 +36,7 @@ export function CountrySelect({
   className = '',
   defaultToColombia = true,
 }: CountrySelectProps) {
+  const { t } = useLanguage()
   const { countries, loading } = useCountries();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -84,7 +86,7 @@ export function CountrySelect({
           <div className="flex items-center border-b px-3 pb-2">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
-              placeholder="Buscar país..."
+              placeholder={t('common.placeholders.searchCountry')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="h-8 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"

@@ -293,7 +293,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 value={formData.name}
                 onChange={e => handleInputChange('name', e.target.value)}
                 className="w-full"
-                placeholder="Juan Pérez"
+                placeholder={t('common.placeholders.clientName')}
               />
             </div>
             

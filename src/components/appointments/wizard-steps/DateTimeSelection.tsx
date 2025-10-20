@@ -8,6 +8,7 @@ import type { Service, Appointment } from '@/types/types';
 import { format, addMinutes, parse } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useEmployeeTransferAvailability } from '@/hooks/useEmployeeTransferAvailability';
 
 interface DateTimeSelectionProps {
   readonly service: Service | null;
@@ -46,6 +47,51 @@ interface ExistingAppointment {
   end_time: string;
 }
 
+/**
+ * Helper para convertir hora a formato 12h
+ */
+function formatHourTo12h(hour: number): string {
+  if (hour > 12) {
+    return `${String(hour - 12).padStart(2, '0')}:00 PM`;
+  }
+  if (hour === 12) {
+    return '12:00 PM';
+  }
+  return `${String(hour).padStart(2, '0')}:00 AM`;
+}
+
+/**
+ * Helper para validar si hora se superpone con lunch break
+ */
+function isLunchBreakTime(
+  hour: number,
+  hasLunchBreak: boolean,
+  lunchStart: string | null,
+  lunchEnd: string | null
+): boolean {
+  if (!hasLunchBreak || !lunchStart || !lunchEnd) return false;
+
+  const lunchStartHour = Number.parseInt(lunchStart.split(':')[0]);
+  const lunchEndHour = Number.parseInt(lunchEnd.split(':')[0]);
+
+  return hour >= lunchStartHour && hour < lunchEndHour;
+}
+
+/**
+ * Helper para validar si slot se superpone con citas existentes
+ */
+function isSlotOccupied(
+  slotStartTime: Date,
+  slotEndTime: Date,
+  existingAppointments: ExistingAppointment[]
+): boolean {
+  return existingAppointments.some((apt) => {
+    const aptStart = new Date(apt.start_time);
+    const aptEnd = new Date(apt.end_time);
+    return slotStartTime < aptEnd && slotEndTime > aptStart;
+  });
+}
+
 export function DateTimeSelection({
   service,
   selectedDate,
@@ -62,14 +108,15 @@ export function DateTimeSelection({
   const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule | null>(null);
   const [existingAppointments, setExistingAppointments] = useState<ExistingAppointment[]>([]);
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
+  const { validateAvailability } = useEmployeeTransferAvailability();
 
-  // Cargar horarios y citas existentes
+  // Cargar horarios, citas existentes y validar disponibilidad de traslado
   useEffect(() => {
     const loadScheduleData = async () => {
-      if (!employeeId || !locationId || !businessId) return;
-      
+      if (!employeeId || !locationId || !businessId || !selectedDate) return;
+
       setIsLoadingSchedule(true);
-      
+
       try {
         // 1. Obtener horario de la sede
         const { data: locationData } = await supabase
@@ -77,7 +124,7 @@ export function DateTimeSelection({
           .select('opens_at, closes_at')
           .eq('id', locationId)
           .single();
-        
+
         setLocationSchedule(locationData);
 
         // 2. Obtener horario de almuerzo del empleado
@@ -87,84 +134,40 @@ export function DateTimeSelection({
           .eq('employee_id', employeeId)
           .eq('business_id', businessId)
           .single();
-        
+
         setEmployeeSchedule(employeeData);
 
-        // 3. Obtener citas existentes del empleado para la fecha seleccionada
-        if (selectedDate) {
-          // Usar Date objects para los límites del día
-          const dayStart = new Date(selectedDate);
-          dayStart.setHours(0, 0, 0, 0);
-          
-          const dayEnd = new Date(selectedDate);
-          dayEnd.setHours(23, 59, 59, 999);
+        // 3. Obtener citas existentes
+        const dayStart = new Date(selectedDate);
+        dayStart.setHours(0, 0, 0, 0);
 
-          console.log('🔍 [DateTimeSelection] Buscando citas:', {
-            selectedDate: format(selectedDate, 'yyyy-MM-dd'),
-            dayStart: dayStart.toISOString(),
-            dayEnd: dayEnd.toISOString(),
-            employeeId,
-            businessId
-          });
+        const dayEnd = new Date(selectedDate);
+        dayEnd.setHours(23, 59, 59, 999);
 
-          // Primero obtener el business_employee_id correcto
-          const { data: employeeRecord, error: employeeError } = await supabase
-            .from('business_employees')
-            .select('id')
-            .eq('employee_id', employeeId)
-            .eq('business_id', businessId)
-            .single();
+        const { data: employeeRecord } = await supabase
+          .from('business_employees')
+          .select('id')
+          .eq('employee_id', employeeId)
+          .eq('business_id', businessId)
+          .single();
 
-          if (employeeError) {
-            console.error('❌ Error al buscar business_employee:', employeeError);
-            return;
-          }
+        if (employeeRecord) {
+          const { data: appointments } = await supabase
+            .from('appointments')
+            .select('id, start_time, end_time')
+            .eq('employee_id', employeeRecord.id)
+            .gte('start_time', dayStart.toISOString())
+            .lte('start_time', dayEnd.toISOString())
+            .in('status', ['pending', 'confirmed'])
+            .order('start_time');
 
-          if (employeeRecord) {
-            console.log('✅ business_employee encontrado:', employeeRecord.id);
+          const filteredAppointments = appointmentToEdit
+            ? (appointments || []).filter((apt) => apt.id !== appointmentToEdit.id)
+            : (appointments || []);
 
-            const { data: appointments, error: appointmentsError } = await supabase
-              .from('appointments')
-              .select('id, start_time, end_time')
-              .eq('employee_id', employeeRecord.id)
-              .gte('start_time', dayStart.toISOString())
-              .lte('start_time', dayEnd.toISOString())
-              .in('status', ['pending', 'confirmed'])
-              .order('start_time');
-
-            if (appointmentsError) {
-              console.error('❌ Error al buscar citas:', appointmentsError);
-              return;
-            }
-
-            console.log(`📅 Citas encontradas: ${appointments?.length || 0}`);
-            if (appointments && appointments.length > 0) {
-              console.log('  Detalles:', appointments.map(apt => ({
-                id: apt.id,
-                start: format(new Date(apt.start_time), 'HH:mm'),
-                end: format(new Date(apt.end_time), 'HH:mm')
-              })));
-            }
-
-            // Excluir la cita que se está editando
-            const filteredAppointments = appointmentToEdit
-              ? (appointments || []).filter(apt => {
-                  const isExcluded = apt.id === appointmentToEdit.id;
-                  if (isExcluded) {
-                    console.log('⏭️ Excluyendo cita actual en edición:', apt.id);
-                  }
-                  return !isExcluded;
-                })
-              : (appointments || []);
-
-            console.log(`✅ Citas a validar: ${filteredAppointments.length}`);
-            setExistingAppointments(filteredAppointments);
-          } else {
-            console.warn('⚠️ No se encontró business_employee record');
-          }
+          setExistingAppointments(filteredAppointments);
         }
-      } catch (error) {
-        console.error('Error al cargar horarios:', error);
+      } catch {
         toast.error('No se pudo cargar la disponibilidad');
       } finally {
         setIsLoadingSchedule(false);
@@ -174,68 +177,68 @@ export function DateTimeSelection({
     loadScheduleData();
   }, [employeeId, locationId, businessId, selectedDate, appointmentToEdit]);
 
-  const generateTimeSlots = React.useCallback(() => {
-    if (!selectedDate) return;
-
-    console.log('🎰 [generateTimeSlots] Generando slots para:', format(selectedDate, 'yyyy-MM-dd'));
+  const generateTimeSlots = React.useCallback(async () => {
+    if (!selectedDate || !employeeId || !locationId || !businessId) return;
 
     const slots: TimeSlot[] = [];
     const popularTimes = new Set(['10:00 AM', '03:00 PM']);
 
-    // Determinar horario válido (usar location o default 9-17)
-    const openHour = locationSchedule?.opens_at 
-      ? Number.parseInt(locationSchedule.opens_at.split(':')[0]) 
-      : 9;
-    const closeHour = locationSchedule?.closes_at 
-      ? Number.parseInt(locationSchedule.closes_at.split(':')[0]) 
-      : 17;
+    const openHour = locationSchedule?.opens_at ? Number.parseInt(locationSchedule.opens_at.split(':')[0]) : 9;
+    const closeHour = locationSchedule?.closes_at ? Number.parseInt(locationSchedule.closes_at.split(':')[0]) : 17;
 
-    console.log('  Horario sede:', `${openHour}:00 - ${closeHour}:00`);
-    console.log('  Duración servicio:', service?.duration || 60, 'minutos');
-    console.log('  Citas a evitar:', existingAppointments.length);
+    // Validar disponibilidad por traslado
+    const transferValidation = await validateAvailability(employeeId, businessId, selectedDate, locationId);
 
     for (let hour = openHour; hour <= closeHour; hour++) {
-      const time12h = hour > 12 
-        ? `${String(hour - 12).padStart(2, '0')}:00 PM` 
-        : hour === 12
-        ? '12:00 PM'
-        : `${String(hour).padStart(2, '0')}:00 AM`;
-      
+      const time12h = formatHourTo12h(hour);
+
       let isAvailable = true;
       let unavailableReason = '';
 
-      // Validar horario de almuerzo
-      if (employeeSchedule?.has_lunch_break) {
-        const lunchStart = Number.parseInt(employeeSchedule.lunch_break_start?.split(':')[0] || '12');
-        const lunchEnd = Number.parseInt(employeeSchedule.lunch_break_end?.split(':')[0] || '13');
-        
-        if (hour >= lunchStart && hour < lunchEnd) {
-          isAvailable = false;
-          unavailableReason = 'Hora de almuerzo';
-        }
+      // Regla 1: Validar ausencias aprobadas
+      const checkDate = format(selectedDate, 'yyyy-MM-dd');
+      const { data: absenceData } = await supabase
+        .from('employee_absences')
+        .select('id, absence_type')
+        .eq('employee_id', employeeId)
+        .eq('business_id', businessId)
+        .eq('status', 'approved')
+        .lte('start_date', checkDate)
+        .gte('end_date', checkDate)
+        .single();
+
+      if (absenceData) {
+        isAvailable = false;
+        const typeLabels: Record<string, string> = {
+          vacation: 'Vacaciones',
+          emergency: 'Emergencia',
+          sick_leave: 'Incapacidad',
+          personal: 'Asunto personal',
+          other: 'Ausencia',
+        };
+        unavailableReason = typeLabels[absenceData.absence_type] || 'Ausente';
       }
 
-      // Validar citas existentes
+      // Regla 2: Validar traslado
+      if (isAvailable && !transferValidation.isAvailable) {
+        isAvailable = false;
+        unavailableReason = transferValidation.reason || 'Empleado en período de traslado';
+      }
+
+      // Regla 3: Validar horario de almuerzo
+      if (isAvailable && isLunchBreakTime(hour, employeeSchedule?.has_lunch_break || false, employeeSchedule?.lunch_break_start || null, employeeSchedule?.lunch_break_end || null)) {
+        isAvailable = false;
+        unavailableReason = 'Hora de almuerzo';
+      }
+
+      // Regla 4: Validar citas existentes
       if (isAvailable && service) {
         const slotStartTime = parse(time12h, 'hh:mm a', selectedDate);
         const slotEndTime = addMinutes(slotStartTime, service.duration || 60);
 
-        for (const apt of existingAppointments) {
-          const aptStart = new Date(apt.start_time);
-          const aptEnd = new Date(apt.end_time);
-
-          // Verificar solapamiento: (SlotStart < AptEnd) AND (SlotEnd > AptStart)
-          const overlaps = slotStartTime < aptEnd && slotEndTime > aptStart;
-          
-          if (overlaps) {
-            console.log(`  ⚠️ Slot ${time12h} OCUPADO por cita ${apt.id}:`, {
-              slotRange: `${format(slotStartTime, 'HH:mm')} - ${format(slotEndTime, 'HH:mm')}`,
-              aptRange: `${format(aptStart, 'HH:mm')} - ${format(aptEnd, 'HH:mm')}`
-            });
-            isAvailable = false;
-            unavailableReason = 'Ocupado';
-            break;
-          }
+        if (isSlotOccupied(slotStartTime, slotEndTime, existingAppointments)) {
+          isAvailable = false;
+          unavailableReason = 'Ocupado';
         }
       }
 
@@ -244,15 +247,12 @@ export function DateTimeSelection({
         time: time12h,
         available: isAvailable,
         isPopular: popularTimes.has(time12h),
-        unavailableReason
+        unavailableReason,
       });
     }
 
-    const availableCount = slots.filter(s => s.available).length;
-    console.log(`✅ Slots generados: ${slots.length} total, ${availableCount} disponibles`);
-
     setTimeSlots(slots);
-  }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments]);
+  }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments, employeeId, locationId, businessId, validateAvailability]);
 
   useEffect(() => {
     if (selectedDate && !isLoadingSchedule) {
@@ -263,7 +263,6 @@ export function DateTimeSelection({
   const handleTimeSelect = (slot: TimeSlot) => {
     if (!slot.available) return;
 
-    // Calcular hora de fin basada en la duración del servicio
     const startTimeParsed = parse(slot.time, 'hh:mm a', new Date());
     const endTime = addMinutes(startTimeParsed, service?.duration || 60);
     const endTimeFormatted = format(endTime, 'hh:mm a');
@@ -273,9 +272,7 @@ export function DateTimeSelection({
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      <h3 className="text-xl font-semibold text-foreground mb-6">
-        Select Date & Time
-      </h3>
+      <h3 className="text-xl font-semibold text-foreground mb-6">Select Date & Time</h3>
 
       {service && (
         <div className="mb-6 p-3 bg-card rounded-lg border border-border">
@@ -286,7 +283,6 @@ export function DateTimeSelection({
         </div>
       )}
 
-      {/* Mensaje informativo sobre la regla de 90 minutos */}
       {selectedDate && selectedDate.toDateString() === new Date().toDateString() && (
         <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
           <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -310,9 +306,7 @@ export function DateTimeSelection({
         <div className="flex-1 space-y-4 min-w-0">
           {selectedDate ? (
             <>
-              <h3 className="text-lg font-semibold text-foreground">
-                Available on {format(selectedDate, 'MMMM d, yyyy')}
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground">Available on {format(selectedDate, 'MMMM d, yyyy')}</h3>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-2">
                 {timeSlots.map((slot) => {
@@ -321,36 +315,29 @@ export function DateTimeSelection({
                       key={slot.id}
                       disabled={!slot.available}
                       onClick={() => handleTimeSelect(slot)}
-                      variant={selectedTime === slot.time ? "default" : "outline"}
+                      variant={selectedTime === slot.time ? 'default' : 'outline'}
                       className={cn(
-                        "relative w-full h-12 text-base font-medium transition-all",
-                        selectedTime === slot.time && "bg-primary text-primary-foreground border-primary hover:bg-primary/90",
-                        selectedTime !== slot.time && slot.available && "bg-card border-border text-foreground hover:border-primary",
-                        !slot.available && "opacity-40 cursor-not-allowed bg-muted"
+                        'relative w-full h-12 text-base font-medium transition-all',
+                        selectedTime === slot.time && 'bg-primary text-primary-foreground border-primary hover:bg-primary/90',
+                        selectedTime !== slot.time && slot.available && 'bg-card border-border text-foreground hover:border-primary',
+                        !slot.available && 'opacity-40 cursor-not-allowed bg-muted'
                       )}
                     >
                       {slot.time}
 
-                      {/* Badge HOT para horarios populares */}
                       {slot.isPopular && slot.available && (
-                        <Badge
-                          className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-0.5 
-                                   font-bold uppercase tracking-wide shadow-md border-none"
-                        >
+                        <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-0.5 font-bold uppercase tracking-wide shadow-md border-none">
                           HOT
                         </Badge>
                       )}
                     </Button>
                   );
 
-                  // Si el slot no está disponible, mostrar tooltip con la razón
                   if (!slot.available && slot.unavailableReason) {
                     return (
                       <TooltipProvider key={slot.id}>
                         <Tooltip>
-                          <TooltipTrigger asChild>
-                            {buttonContent}
-                          </TooltipTrigger>
+                          <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
                           <TooltipContent>
                             <p>{slot.unavailableReason}</p>
                           </TooltipContent>
@@ -365,9 +352,7 @@ export function DateTimeSelection({
             </>
           ) : (
             <div className="flex items-center justify-center h-full min-h-[200px]">
-              <p className="text-[#94a3b8] text-center">
-                Please select a date to see available time slots
-              </p>
+              <p className="text-[#94a3b8] text-center">Please select a date to see available time slots</p>
             </div>
           )}
         </div>

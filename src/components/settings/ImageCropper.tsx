@@ -4,6 +4,7 @@ import 'react-image-crop/dist/ReactCrop.css'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ImageCropperProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface ImageCropperProps {
 }
 
 export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: ImageCropperProps) {
+  const { t } = useLanguage();
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
     width: 90,
@@ -112,7 +114,7 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Recortar imagen de perfil</DialogTitle>
+          <DialogTitle>{t('imageCropper.title')}</DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-col items-center gap-4 py-4">
@@ -136,7 +138,7 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
           )}
           
           <p className="text-sm text-muted-foreground">
-            Arrastra para ajustar el área de recorte (será circular)
+            {t('imageCropper.dragToAdjust')}
           </p>
         </div>
 
@@ -146,7 +148,7 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
             onClick={onClose}
             disabled={isProcessing}
           >
-            Cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button
             onClick={handleCropConfirm}
@@ -155,10 +157,10 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
             {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Procesando...
+                {t('imageCropper.processing')}
               </>
             ) : (
-              'Confirmar'
+              t('common.actions.confirm')
             )}
           </Button>
         </DialogFooter>

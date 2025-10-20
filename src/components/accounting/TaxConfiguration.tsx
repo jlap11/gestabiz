@@ -24,7 +24,7 @@ interface TaxConfigurationProps {
 }
 
 export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
-  useLanguage();
+  const { t } = useLanguage();
   const { config: taxConfig, loading, updateConfig, refetch } = useBusinessTaxConfig(businessId);
 
   // Estados del formulario
@@ -94,9 +94,9 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
 
       await updateConfig(configData);
       setHasConfig(true);
-      toast.success('Configuración fiscal guardada exitosamente', { id: toastId });
+      toast.success(t('common.messages.saveSuccess'), { id: toastId });
     } catch (error) {
-      toast.error(`Error al guardar configuración: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(t('common.messages.saveError') + `: ${error instanceof Error ? error.message : 'Error'}`, { id: toastId });
       throw error;
     }
   };
@@ -134,11 +134,11 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleReset} disabled={loading || !hasConfig}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Restablecer
+            {t('common.actions.reset')}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={loading}>
             <Save className="h-4 w-4 mr-2" />
-            {hasConfig ? 'Actualizar' : 'Guardar'}
+            {hasConfig ? t('common.actions.update') : t('common.actions.save')}
           </Button>
         </div>
       </div>
@@ -223,7 +223,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                 <Label htmlFor="city">Ciudad (para ICA)</Label>
                 <Select value={cityCode} onValueChange={setCityCode}>
                   <SelectTrigger id="city">
-                    <SelectValue placeholder="Seleccione una ciudad" />
+                    <SelectValue placeholder={t('common.placeholders.selectCity')} />
                   </SelectTrigger>
                   <SelectContent>
                     {COLOMBIAN_CITIES_ICA.map((city) => (
@@ -375,7 +375,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                     <Label htmlFor="retention-type">Tipo de Actividad</Label>
                     <Select value={retentionType} onValueChange={setRetentionType}>
                       <SelectTrigger id="retention-type">
-                        <SelectValue placeholder="Seleccione tipo de actividad" />
+                        <SelectValue placeholder={t('common.placeholders.selectActivityType')} />
                       </SelectTrigger>
                       <SelectContent>
                         {RETENTION_CONFIGS.map((config) => (

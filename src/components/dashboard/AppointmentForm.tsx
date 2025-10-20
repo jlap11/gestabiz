@@ -211,7 +211,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
                 <Label htmlFor="business">Negocio *</Label>
                 <Select value={formData.business_id} onValueChange={(v) => handleInputChange('business_id', v)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un negocio" />
+                    <SelectValue placeholder={t('common.placeholders.selectBusiness')} />
                   </SelectTrigger>
                   <SelectContent>
                     {businesses.map(b => (

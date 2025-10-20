@@ -53,7 +53,6 @@ export function useScheduleConflicts() {
         .from('business_employees')
         .select(`
           business_id,
-          work_schedule,
           business:businesses!inner(name)
         `)
   .eq('employee_id', session.session.user.id)
@@ -63,8 +62,8 @@ export function useScheduleConflicts() {
 
       return (data || []).map(emp => ({
         business_id: emp.business_id,
-        business_name: Array.isArray(emp.business) ? emp.business[0]?.name : emp.business?.name || 'Negocio',
-        work_schedule: emp.work_schedule as WorkSchedule | undefined
+        business_name: 'Negocio', // work_schedule no se almacena en business_employees
+        work_schedule: undefined // work_schedule no se almacena en business_employees
       }));
     } catch (err: unknown) {
       const error = err as Error;
@@ -198,51 +197,9 @@ export function useScheduleConflicts() {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('business_employees')
-        .select(`
-          business_id,
-          work_schedule,
-          business:businesses!inner(name)
-        `)
-  .eq('employee_id', userId)
-  .eq('status', 'approved');
-
-      if (fetchError) throw fetchError;
-
-      const conflictingBusinessIds: string[] = [];
-
-      for (const emp of data || []) {
-        const existingSchedule = emp.work_schedule as WorkSchedule | undefined;
-        if (!existingSchedule) continue;
-
-        let hasConflict = false;
-
-        for (const day of DAYS_OF_WEEK) {
-          const existingDay = existingSchedule[day];
-          const newDay = schedule[day];
-
-          if (!existingDay?.enabled || !newDay?.enabled) continue;
-
-          const overlap = calculateTimeOverlap(
-            existingDay.start_time,
-            existingDay.end_time,
-            newDay.start_time,
-            newDay.end_time
-          );
-
-          if (overlap.hasOverlap) {
-            hasConflict = true;
-            break;
-          }
-        }
-
-        if (hasConflict) {
-          conflictingBusinessIds.push(emp.business_id);
-        }
-      }
-
-      return conflictingBusinessIds;
+      // NOTA: work_schedule no se almacena en business_employees
+      // Este método retorna un array vacío hasta que se implemente la tabla work_schedules
+      return [];
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);

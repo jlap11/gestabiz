@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { NotificationItemErrorBoundary } from './NotificationErrorBoundary'
 import { getNotificationNavigation } from '@/lib/notificationNavigation'
 import { 
@@ -94,6 +95,7 @@ function NotificationItem({
   readonly onDelete: (id: string) => void
   readonly onNavigate: (notification: InAppNotification) => void
 }) {
+  const { t } = useLanguage()
   const isUnread = notification.status === 'unread'
 
   const handleClick = () => {
@@ -143,7 +145,7 @@ function NotificationItem({
                     size="icon"
                     onClick={(event) => event.stopPropagation()}
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    aria-label="Más acciones de notificación"
+                    aria-label={t('notifications.moreActions')}
                   >
                     <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                   </Button>
@@ -224,6 +226,7 @@ export function NotificationCenter({
   onRoleSwitch,
   availableRoles = ['client', 'employee', 'admin']
 }: Readonly<NotificationCenterProps>) {
+  const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'system'>('unread')
 
   const { 
@@ -361,8 +364,8 @@ export function NotificationCenter({
               size="icon"
               onClick={markAllAsRead}
               className="h-9 w-9 sm:hidden min-h-[44px] min-w-[44px]"
-              title="Marcar todas como leídas"
-              aria-label="Marcar todas como leídas"
+              title={t('notifications.markAllAsRead')}
+              aria-label={t('notifications.markAllAsRead')}
             >
               <CheckCheck className="h-4 w-4" />
             </Button>
@@ -372,7 +375,7 @@ export function NotificationCenter({
             size="icon"
             className="h-9 w-9 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
             onClick={onClose}
-            aria-label="Cerrar notificaciones"
+            aria-label={t('notifications.closeNotifications')}
           >
             <X className="h-4 w-4" />
           </Button>

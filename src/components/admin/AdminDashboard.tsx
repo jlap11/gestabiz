@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
@@ -14,6 +14,7 @@ import { BillingDashboard } from '@/components/billing'
 import { RecruitmentDashboard } from '@/components/jobs/RecruitmentDashboard'
 import { QuickSalesPage } from '@/pages/QuickSalesPage'
 import { AppointmentsCalendar } from './AppointmentsCalendar'
+import { AbsencesTab } from './AbsencesTab'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
@@ -120,6 +121,11 @@ export function AdminDashboard({
       icon: <Calendar className="h-5 w-5" />
     },
     {
+      id: 'absences',
+      label: 'Ausencias',
+      icon: <CalendarOff className="h-5 w-5" />
+    },
+    {
       id: 'locations',
       label: 'Sedes',
       icon: <MapPin className="h-5 w-5" />
@@ -172,6 +178,8 @@ export function AdminDashboard({
         return <OverviewTab business={business} />
       case 'appointments':
         return <AppointmentsCalendar />
+      case 'absences':
+        return <AbsencesTab businessId={business.id} />
       case 'locations':
         return <LocationsManager businessId={business.id} />
       case 'services':

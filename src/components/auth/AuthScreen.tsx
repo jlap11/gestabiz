@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ServiceStatusBadge } from '@/components/ui/ServiceStatusBadge'
 import { useAuth } from '@/hooks/useAuth'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { AccountInactiveModal } from './AccountInactiveModal'
 import { User } from '@/types'
 import { APP_CONFIG } from '@/constants'
@@ -20,6 +21,7 @@ interface AuthScreenProps {
 
 export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScreenProps>) {
   const { signIn, signUp, signInWithGoogle } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const analytics = useAnalytics()
@@ -47,11 +49,11 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   // Show toast if user was redirected from booking attempt
   useEffect(() => {
     if (redirectUrl) {
-      toast.info('Inicia sesión para continuar con tu reserva', {
+      toast.info(t('auth.continueBooking'), {
         duration: 5000
       })
     }
-  }, [redirectUrl])
+  }, [redirectUrl, t])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -92,7 +94,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.email || !formData.password) {
-      setFormError('Por favor completa todos los campos')
+      setFormError(t('common.messages.requiredFields'))
       return
     }
     setFormError(null)
@@ -119,7 +121,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
         setFormError(result.error)
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Error desconocido al iniciar sesión'
+      const errorMsg = error instanceof Error ? error.message : t('auth.loginError')
       setFormError(errorMsg)
     } finally {
       setIsSigningIn(false)
@@ -129,7 +131,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.email || !formData.password || !formData.name) {
-      setFormError('Por favor completa todos los campos')
+      setFormError(t('common.messages.requiredFields'))
       return
     }
     setFormError(null)
@@ -169,12 +171,12 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
       } else if (result.success && result.needsEmailConfirmation) {
         // Show message that they need to confirm email
         setIsSignUpMode(false)
-        toast.info('Revisa tu email para confirmar tu cuenta antes de iniciar sesión')
+        toast.info(t('auth.checkEmailVerification'))
       } else if (result.error) {
         setFormError(result.error)
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Error desconocido al crear cuenta'
+      const errorMsg = error instanceof Error ? error.message : t('auth.registrationError')
       setFormError(errorMsg)
     } finally {
       setIsSigningIn(false)
@@ -217,14 +219,14 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-card rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Reset Password</h2>
-            <p className="text-muted-foreground text-sm">Enter your email to reset your password</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">{t('auth.resetPassword')}</h2>
+            <p className="text-muted-foreground text-sm">{t('auth.enterEmailFirst')}</p>
           </div>
           <form className="space-y-6">
             <div>
               <Input
                 type="email"
-                placeholder="Email address"
+                placeholder={t('auth.emailPlaceholder')}
                 className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4"
                 required
               />
@@ -233,7 +235,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               type="submit"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-colors"
             >
-              Send reset link
+              {t('auth.passwordResetSent')}
             </Button>
             <Button 
               type="button"
@@ -241,7 +243,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               className="w-full text-muted-foreground hover:text-foreground"
               onClick={() => setShowResetForm(false)}
             >
-              Back to login
+              {t('common.actions.back')}
             </Button>
           </form>
         </div>
@@ -270,8 +272,8 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
           </h1>
           <p className="text-muted-foreground text-sm mb-4">
             {isSignUpMode 
-              ? 'Create your account to get started' 
-              : 'Welcome back! Please enter your details.'
+              ? t('auth.signUpDescription')
+              : t('auth.signInDescription')
             }
           </p>
           
@@ -302,7 +304,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                   type="button"
                   onClick={() => setFormError(null)}
                   className="text-destructive/60 hover:text-destructive transition-colors text-lg font-semibold"
-                  aria-label="Cerrar error"
+                  aria-label={t('common.actions.close')}
                 >
                   ×
                 </button>
@@ -315,7 +317,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               <div className="space-y-2">
                 <Input
                   type="text"
-                  placeholder="Full name"
+                  placeholder={t('auth.namePlaceholder')}
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
@@ -328,7 +330,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             <div className="space-y-2">
               <Input
                 type="email"
-                placeholder="Email address"
+                placeholder={t('auth.emailPlaceholder')}
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
@@ -340,7 +342,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             <div className="space-y-2">
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
@@ -359,7 +361,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                     className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <label htmlFor="remember" className="text-muted-foreground cursor-pointer">
-                    Remember me
+                    {t('auth.rememberMe') || 'Remember me'}
                   </label>
                 </div>
                 <button
@@ -367,7 +369,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                   onClick={() => setShowResetForm(true)}
                   className="text-primary hover:text-primary/80 transition-colors cursor-pointer"
                 >
-                  Forgot your password?
+                  {t('auth.forgotPassword')}
                 </button>
               </div>
             )}
@@ -380,9 +382,9 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             >
               {(() => {
                 if (isSigningIn) {
-                  return isSignUpMode ? 'Creating account...' : 'Signing in...'
+                  return isSignUpMode ? t('auth.creatingAccount') : t('auth.signingIn')
                 }
-                return isSignUpMode ? 'Create account' : 'Login'
+                return isSignUpMode ? t('auth.signUp') : t('auth.signIn')
               })()}
             </Button>
 
@@ -393,7 +395,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-card text-muted-foreground">
-                  Or continue with
+                  {t('auth.orContinueWith')}
                 </span>
               </div>
             </div>
@@ -424,14 +426,14 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Continue with Google
+              {t('auth.continueWithGoogle')}
             </Button>
             </form>
 
             {/* Sign up/Login toggle link */}
             <div className="mt-6 text-center text-sm">
               <span className="text-muted-foreground">
-                {isSignUpMode ? 'Already have an account? ' : "Don't have an account? "}
+                {isSignUpMode ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
               </span>
               <button 
                 type="button"
@@ -441,7 +443,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                 }}
                 className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
               >
-                {isSignUpMode ? 'Sign in' : 'Sign up'}
+                {isSignUpMode ? t('auth.signInHere') : t('auth.signUpHere')}
               </button>
             </div>
           </div>

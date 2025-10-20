@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useBugReports, type BugReportSeverity } from '@/hooks/useBugReports'
 import { AlertCircle, Upload, X, FileIcon, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -69,6 +70,7 @@ const ALLOWED_TYPES = [
 ]
 
 export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
+  const { t } = useLanguage()
   const { createBugReport, loading } = useBugReports()
   
   const [title, setTitle] = useState('')
@@ -239,7 +241,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             </Label>
             <Select value={category || undefined} onValueChange={setCategory}>
               <SelectTrigger id="category">
-                <SelectValue placeholder="Selecciona una categoría" />
+                <SelectValue placeholder={t('common.placeholders.selectCategory')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="citas">Gestión de Citas</SelectItem>

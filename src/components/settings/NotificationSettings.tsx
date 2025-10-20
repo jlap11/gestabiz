@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import { Bell, Check, Clock, Envelope, Phone, WhatsappLogo, X } from '@phosphor-icons/react'
 
@@ -37,6 +38,7 @@ const NOTIFICATION_TYPES = [
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export function NotificationSettings({ userId }: { userId: string }) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null)
@@ -103,11 +105,11 @@ export function NotificationSettings({ userId }: { userId: string }) {
 
       if (error) throw error
 
-      toast.success('Preferencias guardadas', {
-        description: 'Tus preferencias de notificación han sido actualizadas'
+      toast.success(t('common.messages.saveSuccess'), {
+        description: t('notifications.preferencesSaved') || 'Your notification preferences have been updated'
       })
     } catch {
-      toast.error('No se pudieron guardar las preferencias')
+      toast.error(t('common.messages.saveError'))
     } finally {
       setSaving(false)
     }
@@ -392,7 +394,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
       {/* Botón guardar */}
       <div className="flex justify-end">
         <Button onClick={savePreferences} disabled={saving}>
-          {saving ? 'Guardando...' : 'Guardar preferencias'}
+          {saving ? t('common.actions.saving') : t('common.actions.save')}
         </Button>
       </div>
     </div>

@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 
 interface PaymentHistoryProps {
@@ -36,6 +37,7 @@ type StatusFilter = 'all' | 'succeeded' | 'failed' | 'pending' | 'refunded'
 type PeriodFilter = 'all' | 'last30' | 'last90' | 'last365' | 'custom'
 
 export function PaymentHistory({ payments }: PaymentHistoryProps) {
+  const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('all')
@@ -197,7 +199,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
           <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
               <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Estado" />
+              <SelectValue placeholder={t('common.placeholders.status')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los estados</SelectItem>
@@ -212,7 +214,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
           <Select value={periodFilter} onValueChange={(value) => setPeriodFilter(value as PeriodFilter)}>
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
               <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Período" />
+              <SelectValue placeholder={t('common.placeholders.period')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>

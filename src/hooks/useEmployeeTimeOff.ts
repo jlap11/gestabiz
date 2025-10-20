@@ -2,27 +2,26 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-export type TimeOffType = 'vacation' | 'sick_leave' | 'personal' | 'unpaid' | 'bereavement' | 'maternity' | 'paternity';
+export type TimeOffType = 'vacation' | 'emergency' | 'sick_leave' | 'personal' | 'other';
 export type TimeOffStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
 export interface TimeOffRequest {
   id: string;
   created_at: string;
+  updated_at: string;
   employee_id: string;
   business_id: string;
-  location_id: string | null;
-  type: TimeOffType;
+  absence_type: TimeOffType;
   start_date: string;
   end_date: string;
-  total_days: number;
   status: TimeOffStatus;
+  reason: string;
   employee_notes: string | null;
-  manager_notes: string | null;
-  rejection_reason: string | null;
-  requested_at: string;
-  reviewed_at: string | null;
-  reviewed_by: string | null;
-  cancelled_at: string | null;
+  admin_notes: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  appointments_cancelled_count: number;
+  appointments_cancelled_at: string | null;
 }
 
 interface UseEmployeeTimeOffResult {
@@ -65,10 +64,10 @@ export function useEmployeeTimeOff(
       setError(null);
 
       let query = supabase
-        .from('employee_time_off')
+        .from('employee_absences')
         .select('*')
         .eq('employee_id', employeeId)
-        .order('requested_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (businessId) {
         query = query.eq('business_id', businessId);
@@ -111,13 +110,14 @@ export function useEmployeeTimeOff(
       }
 
       const { error: insertError } = await supabase
-        .from('employee_time_off')
+        .from('employee_absences')
         .insert({
           employee_id: employeeId,
           business_id: businessId,
-          type,
+          absence_type: type,
           start_date: startDate,
           end_date: endDate,
+          reason: notes || '',
           employee_notes: notes || null,
           status: 'pending'
         });
@@ -136,14 +136,14 @@ export function useEmployeeTimeOff(
   const cancelRequest = async (requestId: string) => {
     try {
       const { error: updateError } = await supabase
-        .from('employee_time_off')
+        .from('employee_absences')
         .update({
           status: 'cancelled',
-          cancelled_at: new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
         .eq('id', requestId)
-        .eq('employee_id', employeeId) // Seguridad: solo puede cancelar sus propias solicitudes
-        .eq('status', 'pending'); // Solo se pueden cancelar solicitudes pendientes
+        .eq('employee_id', employeeId)
+        .eq('status', 'pending');
 
       if (updateError) throw updateError;
 

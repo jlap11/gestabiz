@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import type { SearchType } from './SearchBar'
@@ -77,9 +78,10 @@ export function SearchResults({
   userLocation,
   onResultClick,
   onClose 
-}: SearchResultsProps) {
-  const [results, setResults] = useState<SearchResultItem[]>([])
-  const [loading, setLoading] = useState(true)
+}: Readonly<SearchResultsProps>) {
+  const { t } = useLanguage()
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [loading, setLoading] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('balanced')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -499,7 +501,7 @@ export function SearchResults({
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
               <SelectTrigger className="w-full sm:w-[280px] min-h-[44px]">
                 <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
-                <SelectValue placeholder="Ordenar por" />
+                <SelectValue placeholder={t('common.placeholders.sortBy')} />
               </SelectTrigger>
               <SelectContent>
                 {sortOptions.map((option) => (

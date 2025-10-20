@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CustomDateInput } from '@/components/ui/custom-date-input';
 import { TimeOffType } from '@/hooks/useEmployeeTimeOff';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TimeOffRequestModalProps {
   open: boolean;
@@ -37,7 +39,8 @@ export function TimeOffRequestModal({
   businessName,
   defaultType = 'vacation',
   onSubmit
-}: TimeOffRequestModalProps) {
+}: Readonly<TimeOffRequestModalProps>) {
+  const { t } = useLanguage()
   const [type, setType] = useState<TimeOffType>(defaultType);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -52,7 +55,7 @@ export function TimeOffRequestModal({
     const end = new Date(endDate);
     const diffTime = end.getTime() - start.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return diffDays > 0 ? diffDays : 0;
+    return Math.max(diffDays, 0);
   };
 
   const totalDays = calculateDays();
@@ -62,17 +65,15 @@ export function TimeOffRequestModal({
     vacation: 'Vacaciones',
     sick_leave: 'Ausencia Médica',
     personal: 'Permiso Personal',
-    unpaid: 'Permiso No Remunerado',
-    bereavement: 'Duelo',
-    maternity: 'Maternidad',
-    paternity: 'Paternidad'
+    emergency: 'Emergencia',
+    other: 'Otro'
   };
 
   // Validar formulario
   const validateForm = (): string | null => {
-    if (!type) return 'Selecciona un tipo de solicitud';
-    if (!startDate) return 'Selecciona la fecha de inicio';
-    if (!endDate) return 'Selecciona la fecha de fin';
+    if (!type) return t('common.validation.selectRequestType');
+    if (!startDate) return t('common.validation.selectStartDate');
+    if (!endDate) return t('common.validation.selectEndDate');
     
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -82,7 +83,7 @@ export function TimeOffRequestModal({
     }
     
     if (totalDays > 365) {
-      return 'La solicitud no puede exceder 365 días';
+      return t('common.validation.requestTooLong');
     }
     
     return null;
@@ -110,7 +111,7 @@ export function TimeOffRequestModal({
       
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al enviar solicitud');
+      setError(err instanceof Error ? err.message : t('common.messages.saveError'));
     } finally {
       setLoading(false);
     }
@@ -153,7 +154,7 @@ export function TimeOffRequestModal({
             <Label htmlFor="type">Tipo de Solicitud *</Label>
             <Select value={type} onValueChange={(value) => setType(value as TimeOffType)}>
               <SelectTrigger id="type" className="min-h-[44px]">
-                <SelectValue placeholder="Selecciona un tipo" />
+                <SelectValue placeholder={t('common.validation.selectType')} />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(typeLabels).map(([value, label]) => (
@@ -167,29 +168,21 @@ export function TimeOffRequestModal({
 
           {/* Fechas */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Fecha de Inicio *</Label>
-              <input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                min={new Date().toISOString().split('T')[0]}
-              />
-            </div>
+            <CustomDateInput
+              id="startDate"
+              label="Fecha de Inicio *"
+              value={startDate}
+              onChange={(value) => setStartDate(value)}
+              min={new Date().toISOString().split('T')[0]}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="endDate">Fecha de Fin *</Label>
-              <input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                min={startDate || new Date().toISOString().split('T')[0]}
-              />
-            </div>
+            <CustomDateInput
+              id="endDate"
+              label="Fecha de Fin *"
+              value={endDate}
+              onChange={(value) => setEndDate(value)}
+              min={startDate || new Date().toISOString().split('T')[0]}
+            />
           </div>
 
           {/* Preview de Días */}
@@ -215,7 +208,7 @@ export function TimeOffRequestModal({
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Proporciona detalles adicionales sobre tu solicitud..."
+              placeholder={t('common.placeholders.availabilityNotes')}
               rows={4}
               className="resize-none"
             />
@@ -232,12 +225,12 @@ export function TimeOffRequestModal({
             </Alert>
           )}
 
-          {type === 'maternity' || type === 'paternity' && (
+          {type === 'emergency' && (
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                Recuerda verificar los requisitos legales y documentación necesaria para 
-                licencias de maternidad/paternidad según tu contrato.
+                Las ausencias de emergencia deben ser justificadas. Tu gerente se pondrá en contacto
+                para más detalles.
               </AlertDescription>
             </Alert>
           )}
@@ -251,7 +244,7 @@ export function TimeOffRequestModal({
             disabled={loading}
             className="w-full sm:w-auto min-h-[44px]"
           >
-            Cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="button"
@@ -259,7 +252,7 @@ export function TimeOffRequestModal({
             disabled={loading || !startDate || !endDate}
             className="w-full sm:w-auto min-h-[44px]"
           >
-            {loading ? 'Enviando...' : 'Enviar Solicitud'}
+            {loading ? t('common.actions.send') : t('common.actions.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -22,6 +22,7 @@ import supabase from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Service {
   id: string
@@ -48,6 +49,7 @@ interface QuickSaleFormProps {
 }
 
 export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
+  const { t } = useLanguage()
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [services, setServices] = useState<Service[]>([])
@@ -265,7 +267,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 id="clientName"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                placeholder="Ej: Juan Pérez"
+                placeholder={t('common.placeholders.clientName')}
                 required
               />
             </div>
@@ -277,7 +279,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 type="tel"
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
-                placeholder="Ej: 3001234567"
+                placeholder={t('common.placeholders.clientPhone')}
               />
             </div>
           </div>
@@ -290,7 +292,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 id="clientDocument"
                 value={clientDocument}
                 onChange={(e) => setClientDocument(e.target.value)}
-                placeholder="Ej: 1234567890"
+                placeholder={t('common.placeholders.clientDocument')}
               />
             </div>
 
@@ -301,7 +303,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 type="email"
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
-                placeholder="Ej: cliente@example.com"
+                placeholder={t('common.placeholders.clientEmail')}
               />
             </div>
           </div>
@@ -314,7 +316,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
             </Label>
             <Select value={serviceId} onValueChange={handleServiceChange} required>
               <SelectTrigger id="service">
-                <SelectValue placeholder="Selecciona el servicio prestado" />
+                <SelectValue placeholder={t('common.placeholders.selectService')} />
               </SelectTrigger>
               <SelectContent>
                 {services.map((service) => (
@@ -335,7 +337,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
               </Label>
               <Select value={locationId} onValueChange={handleLocationChange} required>
                 <SelectTrigger id="location">
-                  <SelectValue placeholder="Selecciona una sede" />
+                  <SelectValue placeholder={t('common.placeholders.selectLocation')} />
                 </SelectTrigger>
                 <SelectContent>
                   {locations.map((location) => (
@@ -351,7 +353,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
               <Label htmlFor="employee">Empleado que atendió (Opcional)</Label>
               <Select value={employeeId} onValueChange={setEmployeeId}>
                 <SelectTrigger id="employee">
-                  <SelectValue placeholder="Selecciona un empleado" />
+                  <SelectValue placeholder={t('common.placeholders.selectEmployee')} />
                 </SelectTrigger>
                 <SelectContent>
                   {employees.map((employee) => (
@@ -375,7 +377,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="Ej: 50000"
+                placeholder={t('common.placeholders.amount')}
                 required
               />
             </div>
@@ -391,7 +393,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 required
               >
                 <SelectTrigger id="paymentMethod">
-                  <SelectValue placeholder="Selecciona método" />
+                  <SelectValue placeholder={t('common.placeholders.selectPaymentMethod')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cash">💵 Efectivo</SelectItem>
@@ -409,7 +411,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ej: Cliente frecuente, descuento aplicado..."
+              placeholder={t('common.placeholders.notes')}
               rows={2}
             />
           </div>

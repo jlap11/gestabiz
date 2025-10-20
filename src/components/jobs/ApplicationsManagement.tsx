@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useJobApplications, JobApplication } from '@/hooks/useJobApplications'
 import { useJobVacancies } from '@/hooks/useJobVacancies'
 import { useChat } from '@/hooks/useChat'
@@ -32,6 +33,7 @@ interface ApplicationsManagementProps {
 }
 
 export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }: Readonly<ApplicationsManagementProps>) {
+  const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [vacancyFilter, setVacancyFilter] = useState<string>(vacancyId || 'all')
@@ -226,7 +228,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
               <Label>Estado</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Todos los estados" />
+                  <SelectValue placeholder={t('common.placeholders.allStatuses')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
@@ -244,7 +246,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
                 <Label>Vacante</Label>
                 <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas las vacantes" />
+                    <SelectValue placeholder={t('common.placeholders.allVacancies')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>

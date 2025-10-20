@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Activity, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import { useServiceStatus, ServiceStatus } from '@/hooks/useServiceStatus'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 
 interface ServiceStatusBadgeProps {
@@ -10,6 +11,7 @@ interface ServiceStatusBadgeProps {
 
 export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceStatusBadgeProps) {
   const { supabase, auth, database, storage, lastChecked, error, refresh } = useServiceStatus()
+  const { t } = useLanguage()
   const [isExpanded, setIsExpanded] = useState(false)
 
   const getStatusColor = (status: ServiceStatus) => {
@@ -81,29 +83,29 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Activity className="h-4 w-4" />
-                  Estado de la Conexión
+                  {t('common.serviceStatus.connectionStatus')}
                 </h3>
                 <button 
                   onClick={() => refresh()}
                   className="p-1 hover:bg-muted rounded transition-colors"
-                  title="Verificar de nuevo"
+                  title={t('common.serviceStatus.verifyAgain')}
                 >
                   <RefreshCw className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
 
               <div className="space-y-2">
-                <ServiceItem label="Plataforma" status={supabase} />
-                <ServiceItem label="Inicio de Sesión" status={auth} />
-                <ServiceItem label="Datos" status={database} />
-                <ServiceItem label="Archivos" status={storage} />
+                <ServiceItem label={t('common.serviceStatus.platform')} status={supabase} />
+                <ServiceItem label={t('common.serviceStatus.authentication')} status={auth} />
+                <ServiceItem label={t('common.serviceStatus.database')} status={database} />
+                <ServiceItem label={t('common.serviceStatus.storage')} status={storage} />
               </div>
 
               {error && (
                 <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
                   <p className="text-xs text-red-700 dark:text-red-400">
                     {error.includes('Supabase') 
-                      ? 'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.'
+                      ? t('common.serviceStatus.connectionError')
                       : error}
                   </p>
                 </div>
@@ -111,13 +113,13 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
 
               {lastChecked && (
                 <p className="text-xs text-muted-foreground mt-4 text-center">
-                  Última verificación: {lastChecked.toLocaleTimeString('es')}
+                  {t('common.serviceStatus.lastCheck')}: {lastChecked.toLocaleTimeString('es')}
                 </p>
               )}
 
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-xs text-muted-foreground text-center">
-                  Si el problema persiste, contáctanos
+                  {t('common.serviceStatus.persistentIssue')}
                 </p>
               </div>
             </div>
@@ -133,29 +135,29 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Activity className="h-4 w-4" />
-          Estado de la Conexión
+          {t('common.serviceStatus.connectionStatus')}
         </h3>
         <button 
           onClick={() => refresh()}
           className="p-1 hover:bg-muted rounded transition-colors"
-          title="Verificar de nuevo"
+          title={t('common.serviceStatus.verifyAgain')}
         >
           <RefreshCw className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 
       <div className="space-y-2">
-        <ServiceItem label="Plataforma" status={supabase} />
-        <ServiceItem label="Inicio de Sesión" status={auth} />
-        <ServiceItem label="Datos" status={database} />
-        <ServiceItem label="Archivos" status={storage} />
+        <ServiceItem label={t('common.serviceStatus.platform')} status={supabase} />
+        <ServiceItem label={t('common.serviceStatus.authentication')} status={auth} />
+        <ServiceItem label={t('common.serviceStatus.database')} status={database} />
+        <ServiceItem label={t('common.serviceStatus.storage')} status={storage} />
       </div>
 
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-xs text-red-700 dark:text-red-400">
             {error.includes('Supabase') 
-              ? 'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.'
+              ? t('common.serviceStatus.connectionError')
               : error}
           </p>
         </div>
@@ -163,7 +165,7 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
 
       {lastChecked && (
         <p className="text-xs text-muted-foreground text-center">
-          Última verificación: {lastChecked.toLocaleTimeString('es')}
+          {t('common.serviceStatus.lastCheck')}: {lastChecked.toLocaleTimeString('es')}
         </p>
       )}
     </div>

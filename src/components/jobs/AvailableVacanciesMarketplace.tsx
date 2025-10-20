@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { CitySelect } from '@/components/catalog/CitySelect';
 import { RegionSelect } from '@/components/catalog/RegionSelect';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Search,
   SlidersHorizontal,
@@ -38,6 +39,7 @@ interface AvailableVacanciesMarketplaceProps {
 export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketplaceProps> = ({
   userId,
 }) => {
+  const { t } = useLanguage();
   const {
     vacancies,
     loading,
@@ -230,7 +232,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                   setCityId(''); // Reset city when region changes
                 }}
                 disabled={!colombiaId}
-                placeholder="Seleccione un departamento"
+                placeholder={t('common.placeholders.selectDepartment')}
               />
             </div>
 
@@ -265,7 +267,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 }
               >
                 <SelectTrigger id="position-type-filter">
-                  <SelectValue placeholder="Todos" />
+                  <SelectValue placeholder={t('common.placeholders.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-types">Todos</SelectItem>
@@ -290,7 +292,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 }
               >
                 <SelectTrigger id="experience-filter">
-                  <SelectValue placeholder="Todos" />
+                  <SelectValue placeholder={t('common.placeholders.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-levels">Todos</SelectItem>

@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useCities } from '@/hooks/useCatalogs';
 import { Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CitySelectProps {
   regionId?: string;
@@ -35,6 +36,7 @@ export function CitySelect({
   required = false,
   className = '',
 }: CitySelectProps) {
+  const { t } = useLanguage()
   const { cities, loading } = useCities(regionId);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -50,7 +52,7 @@ export function CitySelect({
     return (
       <Select disabled>
         <SelectTrigger className={className}>
-          <SelectValue placeholder="Primero seleccione un departamento" />
+          <SelectValue placeholder={t('common.placeholders.selectDepartmentFirst')} />
         </SelectTrigger>
       </Select>
     );
@@ -80,7 +82,7 @@ export function CitySelect({
           <div className="flex items-center border-b px-3 pb-2">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Input
-              placeholder="Buscar ciudad..."
+              placeholder={t('common.placeholders.searchCity')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="h-8 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"

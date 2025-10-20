@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import { 
   Briefcase, 
@@ -89,6 +90,7 @@ const EXPERIENCE_LEVELS: Record<string, string> = {
 }
 
 export function ApplicationList({ userId, onViewApplication }: Readonly<ApplicationListProps>) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [applications, setApplications] = useState<JobApplicationWithVacancy[]>([])
   const [filteredApplications, setFilteredApplications] = useState<JobApplicationWithVacancy[]>([])
@@ -251,7 +253,7 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
             <div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="bg-background border-border text-foreground">
-                  <SelectValue placeholder="Estado" />
+                  <SelectValue placeholder={t('common.placeholders.status')} />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="all">Todos los Estados</SelectItem>

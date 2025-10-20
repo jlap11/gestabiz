@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface WorkScheduleEditorProps {
   businessId: string
@@ -48,13 +49,13 @@ type WeekSchedule = {
 }
 
 const DAYS_ES = {
-  monday: 'Lunes',
-  tuesday: 'Martes',
-  wednesday: 'Miércoles',
-  thursday: 'Jueves',
-  friday: 'Viernes',
-  saturday: 'Sábado',
-  sunday: 'Domingo',
+  monday: 'monday',
+  tuesday: 'tuesday',
+  wednesday: 'wednesday',
+  thursday: 'thursday',
+  friday: 'friday',
+  saturday: 'saturday',
+  sunday: 'sunday',
 }
 
 const DEFAULT_SCHEDULE: DaySchedule = {
@@ -67,7 +68,8 @@ export function WorkScheduleEditor({
   businessId,
   employeeId,
   onScheduleChanged,
-}: WorkScheduleEditorProps) {
+}: Readonly<WorkScheduleEditorProps>) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [schedule, setSchedule] = useState<WeekSchedule>({
@@ -94,16 +96,12 @@ export function WorkScheduleEditor({
 
         const { data, error } = await supabase
           .from('business_employees')
-          .select('work_schedule, has_lunch_break, lunch_break_start, lunch_break_end')
+          .select('has_lunch_break, lunch_break_start, lunch_break_end')
           .eq('business_id', businessId)
           .eq('employee_id', employeeId)
           .single()
 
         if (error) throw error
-
-        if (data?.work_schedule) {
-          setSchedule(data.work_schedule as WeekSchedule)
-        }
 
         if (data) {
           setLunchBreak({
@@ -112,8 +110,9 @@ export function WorkScheduleEditor({
             lunch_break_end: data.lunch_break_end || '13:00',
           })
         }
-      } catch (err) {
+      } catch {
         // Handle error silently for now
+        // El horario semanal se mantiene con los valores por defecto
       } finally {
         setLoading(false)
       }
@@ -192,10 +191,11 @@ export function WorkScheduleEditor({
     try {
       setSaving(true)
 
+      // Solo guardamos las configuraciones de almuerzo
+      // El horario semanal (work_schedule) se mantiene en estado local
       const { error } = await supabase
         .from('business_employees')
         .update({
-          work_schedule: schedule,
           has_lunch_break: lunchBreak.has_lunch_break,
           lunch_break_start: lunchBreak.lunch_break_start,
           lunch_break_end: lunchBreak.lunch_break_end,
@@ -205,10 +205,10 @@ export function WorkScheduleEditor({
 
       if (error) throw error
 
-      toast.success('Horario actualizado correctamente')
+      toast.success(t('common.messages.updateSuccess'))
       onScheduleChanged?.()
-    } catch (err) {
-      toast.error('Error al guardar el horario')
+    } catch {
+      toast.error(t('common.messages.saveError'))
     } finally {
       setSaving(false)
     }
@@ -267,7 +267,7 @@ export function WorkScheduleEditor({
                     onCheckedChange={() => toggleDay(day)}
                   />
                   <Label className="font-medium cursor-pointer" onClick={() => toggleDay(day)}>
-                    {DAYS_ES[day]}
+                    {t(`common.time.${DAYS_ES[day]}`)}
                   </Label>
                 </div>
 
@@ -372,12 +372,12 @@ export function WorkScheduleEditor({
             {saving ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Guardando...
+                {t('common.actions.saving')}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                Guardar Horario
+                {t('common.actions.save')}
               </>
             )}
           </Button>

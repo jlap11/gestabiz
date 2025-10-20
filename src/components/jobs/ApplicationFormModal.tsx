@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertTriangle, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useJobApplications } from '@/hooks/useJobApplications';
 import { useScheduleConflicts, type ScheduleConflict, type WorkSchedule } from '@/hooks/useScheduleConflicts';
 import { ScheduleConflictAlert } from './ScheduleConflictAlert';
@@ -45,6 +46,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const { createApplication, loading: submitting } = useJobApplications({ businessId: undefined });
   const { checkConflict, loading: checkingConflicts } = useScheduleConflicts();
 
@@ -231,7 +233,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               id="cover-letter"
               value={coverLetter}
               onChange={(e) => setCoverLetter(e.target.value)}
-              placeholder="Cuéntanos por qué eres el candidato ideal para esta posición..."
+              placeholder={t('common.placeholders.applicationLetter')}
               className="min-h-[150px] resize-y"
               required
             />
@@ -277,7 +279,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
               value={availabilityDate}
               onChange={setAvailabilityDate}
               min={minDate}
-              placeholder="Selecciona una fecha"
+              placeholder={t('common.validation.selectDate')}
             />
             <p className="text-xs text-muted-foreground">¿Cuándo podrías comenzar a trabajar?</p>
           </div>
@@ -349,16 +351,16 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
-              Cancelar
+              {t('common.actions.cancel')}
             </Button>
             <Button type="submit" disabled={submitting || checkingConflicts}>
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
+                  {t('common.actions.send') || 'Sending...'}
                 </>
               ) : (
-                'Enviar Aplicación'
+                t('jobs.application.submit') || 'Submit Application'
               )}
             </Button>
           </DialogFooter>

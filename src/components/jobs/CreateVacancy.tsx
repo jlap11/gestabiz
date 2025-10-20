@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { X, Save, Briefcase } from 'lucide-react'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface CreateVacancyProps {
   businessId: string
@@ -25,6 +26,7 @@ interface Location {
 }
 
 export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Readonly<CreateVacancyProps>) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(!!vacancyId)
   const [locations, setLocations] = useState<Location[]>([])
@@ -199,10 +201,10 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
 
       onSuccess()
       onClose()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error completo:', error)
-      const errorMessage = error?.message || 'Error desconocido'
-      toast.error(vacancyId ? `Error al actualizar: ${errorMessage}` : `Error al crear: ${errorMessage}`)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      toast.error(vacancyId ? `${t('common.messages.updateError')}: ${errorMessage}` : `${t('common.messages.createError')}: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
@@ -240,7 +242,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
         </div>
         <Button variant="outline" onClick={onClose} className="border-border">
           <X className="h-4 w-4 mr-2" />
-          Cancelar
+          {t('common.actions.cancel')}
         </Button>
       </div>
 
@@ -259,7 +261,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Ej: Estilista Profesional"
+                placeholder={t('common.placeholders.jobTitle')}
                 className="bg-background border-border text-foreground"
                 required
               />
@@ -270,7 +272,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe el puesto y las funciones principales"
+                placeholder={t('common.placeholders.jobDescription')}
                 rows={4}
                 className="bg-background border-border text-foreground"
                 required
@@ -330,7 +332,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Textarea
                 value={formData.requirements}
                 onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                placeholder="Lista los requisitos necesarios para el puesto"
+                placeholder={t('common.placeholders.jobRequirements')}
                 rows={3}
                 className="bg-background border-border text-foreground"
               />
@@ -341,7 +343,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Textarea
                 value={formData.responsibilities}
                 onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
-                placeholder="Describe las responsabilidades del puesto"
+                placeholder={t('common.placeholders.jobResponsibilities')}
                 rows={3}
                 className="bg-background border-border text-foreground"
               />
@@ -352,7 +354,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Textarea
                 value={formData.benefits}
                 onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-                placeholder="Describe los beneficios que ofreces"
+                placeholder={t('common.placeholders.jobBenefits')}
                 rows={3}
                 className="bg-background border-border text-foreground"
               />
@@ -436,7 +438,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
                 onValueChange={(value) => setFormData({ ...formData, location_id: value === 'no-location' ? '' : value })}
               >
                 <SelectTrigger className="bg-background border-border text-foreground">
-                  <SelectValue placeholder="Selecciona una ubicación" />
+                  <SelectValue placeholder={t('common.placeholders.selectLocation')} />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="no-location">Sin ubicación específica</SelectItem>
@@ -498,7 +500,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
             onClick={onClose}
             className="border-border"
           >
-            Cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
@@ -507,8 +509,8 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
           >
             <Save className="h-4 w-4 mr-2" />
             {(() => {
-              if (loading) return 'Guardando...'
-              return vacancyId ? 'Actualizar Vacante' : 'Crear Vacante'
+              if (loading) return t('common.actions.saving')
+              return vacancyId ? t('common.actions.update') : t('common.actions.create')
             })()}
           </Button>
         </div>

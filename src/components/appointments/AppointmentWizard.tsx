@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   BusinessSelection,
   LocationSelection,
@@ -91,6 +92,8 @@ export function AppointmentWizard({
   preselectedTime,
   appointmentToEdit
 }: Readonly<AppointmentWizardProps>) {
+  const { t } = useLanguage()
+  
   // Determinar el paso inicial basado en preselecciones
   const getInitialStep = () => {
     // Sin businessId: empezar en selección de negocio (paso 0)
@@ -310,7 +313,7 @@ export function AppointmentWizard({
 
         if (!compatibility) {
           // El empleado no ofrece este servicio - limpiar preselección
-          toast.error('Este profesional no ofrece el servicio seleccionado');
+          toast.error(t('appointments.wizard_errors.professionalNotOffersService'));
           updateWizardData({
             employeeId: null,
             employee: null,
@@ -318,7 +321,7 @@ export function AppointmentWizard({
         }
       } catch {
         // Si hay error, limpiar preselección por seguridad
-        toast.error('No se pudo verificar la compatibilidad del profesional');
+        toast.error(t('appointments.wizard_errors.cannotVerifyCompatibility'));
         updateWizardData({
           employeeId: null,
           employee: null,
@@ -414,11 +417,11 @@ export function AppointmentWizard({
       });
 
       if (!wizardData.date) {
-        toast.error('Por favor selecciona una fecha para la cita');
+        toast.error(t('appointments.wizard_errors.selectDate'));
         return;
       }
       if (!wizardData.startTime) {
-        toast.error('Por favor selecciona una hora para la cita');
+        toast.error(t('appointments.wizard_errors.selectTime'));
         return;
       }
     }
@@ -441,7 +444,7 @@ export function AppointmentWizard({
     if (currentStep === getStepNumber('employee') && needsEmployeeBusinessSelection) {
       // Validar que el empleado esté vinculado a al menos un negocio
       if (!isEmployeeOfAnyBusiness) {
-        toast.error('Este profesional no está disponible para reservas en este momento.');
+        toast.error(t('appointments.wizard_errors.professionalNotAvailable'));
         return;
       }
       // Ir al paso de selección de negocio del empleado
@@ -461,7 +464,7 @@ export function AppointmentWizard({
 
     // Si el empleado no tiene negocios, no permitir continuar
     if (currentStep === getStepNumber('employee') && !isEmployeeOfAnyBusiness) {
-      toast.error('Este profesional no puede aceptar citas. Selecciona otro profesional.');
+      toast.error(t('appointments.wizard_errors.professionalCannotAccept'));
       return;
     }
 
@@ -525,12 +528,12 @@ export function AppointmentWizard({
   // Función para crear la cita en Supabase
   const createAppointment = async () => {
     if (!wizardData.businessId || !wizardData.serviceId || !wizardData.date || !wizardData.startTime) {
-      toast.error('Faltan datos requeridos para crear la cita');
+      toast.error(t('appointments.wizard_errors.missingRequiredData'));
       return false;
     }
 
     if (!userId) {
-      toast.error('Debes iniciar sesión para crear una cita');
+      toast.error(t('appointments.wizard_errors.mustLogin'));
       return false;
     }
 
@@ -618,11 +621,11 @@ export function AppointmentWizard({
           .single();
 
         if (error) {
-          toast.error(`Error al modificar la cita: ${error.message}`);
+          toast.error(`${t('appointments.wizard_errors.errorModifying')}: ${error.message}`);
           return false;
         }
 
-        toast.success('¡Cita modificada exitosamente!');
+        toast.success(t('appointments.wizard_success.modified'));
       } else {
         // MODO CREACIÓN: Insertar nueva cita
         const appointmentDataWithCreatedAt = {
@@ -637,7 +640,7 @@ export function AppointmentWizard({
           .single();
 
         if (error) {
-          toast.error(`Error al crear la cita: ${error.message}`);
+          toast.error(`${t('appointments.wizard_errors.errorCreating')}: ${error.message}`);
           return false;
         }
 
@@ -655,7 +658,7 @@ export function AppointmentWizard({
           duration: wizardData.service?.duration || 60,
         });
 
-        toast.success('¡Cita creada exitosamente!');
+        toast.success(t('appointments.wizard_success.created'));
       }
       
       // Llamar callback de éxito
@@ -666,7 +669,9 @@ export function AppointmentWizard({
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado';
-      toast.error(`Error al ${appointmentToEdit ? 'modificar' : 'crear'} la cita: ${message}`);
+      const errorKey = appointmentToEdit ? 'errorModifying' : 'errorCreating'
+      const errorMessage = t('appointments.wizard_errors.' + errorKey)
+      toast.error(`${errorMessage}: ${message}`);
       return false;
     } finally {
       setIsSubmitting(false);
