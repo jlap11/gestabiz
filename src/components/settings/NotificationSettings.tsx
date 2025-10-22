@@ -28,14 +28,22 @@ interface NotificationPreferences {
 }
 
 const NOTIFICATION_TYPES = [
-  { key: 'appointment_reminder', label: 'Recordatorios de citas', icon: Clock },
-  { key: 'appointment_confirmation', label: 'Confirmaciones de citas', icon: Check },
-  { key: 'appointment_cancellation', label: 'Cancelaciones', icon: X },
-  { key: 'appointment_rescheduled', label: 'Reagendamientos', icon: Clock },
-  { key: 'security_alert', label: 'Alertas de seguridad', icon: Bell },
+  { key: 'appointment_reminder', label: 'notifications.types.appointmentReminder', icon: Clock },
+  { key: 'appointment_confirmation', label: 'notifications.types.appointmentConfirmation', icon: Check },
+  { key: 'appointment_cancellation', label: 'notifications.types.appointmentCancellation', icon: X },
+  { key: 'appointment_rescheduled', label: 'notifications.types.appointmentRescheduled', icon: Clock },
+  { key: 'security_alert', label: 'notifications.types.securityAlert', icon: Bell },
 ]
 
-const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+const DAYS_KEYS = [
+  'notifications.days.sunday',
+  'notifications.days.monday',
+  'notifications.days.tuesday',
+  'notifications.days.wednesday',
+  'notifications.days.thursday',
+  'notifications.days.friday',
+  'notifications.days.saturday',
+]
 
 export function NotificationSettings({ userId }: { userId: string }) {
   const { t } = useLanguage()
@@ -80,7 +88,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
         setPreferences(data as NotificationPreferences)
       }
     } catch {
-      toast.error('No se pudieron cargar las preferencias')
+      toast.error(t('notifications.errors.loadError'))
     } finally {
       setLoading(false)
     }
@@ -152,7 +160,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
   if (!preferences) {
     return (
       <div className="text-center p-8">
-        <p className="text-muted-foreground">No se pudieron cargar las preferencias</p>
+        <p className="text-muted-foreground">{t('notifications.errors.noPreferences')}</p>
       </div>
     )
   }
@@ -163,18 +171,18 @@ export function NotificationSettings({ userId }: { userId: string }) {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Bell className="h-5 w-5" />
-          Canales de notificación
+          {t('notifications.channels.title')}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Envelope className="h-5 w-5 text-muted-foreground" />
               <div>
-                <Label htmlFor="email-channel">Email</Label>
+                <Label htmlFor="email-channel">{t('notifications.channels.email')}</Label>
                 {preferences.email_verified && (
                   <Badge variant="outline" className="ml-2 text-xs">
                     <Check className="h-3 w-3 mr-1" />
-                    Verificado
+                    {t('notifications.channels.verified')}
                   </Badge>
                 )}
               </div>
@@ -190,11 +198,11 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <div className="flex items-center gap-3">
               <Phone className="h-5 w-5 text-muted-foreground" />
               <div>
-                <Label htmlFor="sms-channel">SMS</Label>
+                <Label htmlFor="sms-channel">{t('notifications.channels.sms')}</Label>
                 {preferences.phone_verified && (
                   <Badge variant="outline" className="ml-2 text-xs">
                     <Check className="h-3 w-3 mr-1" />
-                    Verificado
+                    {t('notifications.channels.verified')}
                   </Badge>
                 )}
               </div>
@@ -210,11 +218,11 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <div className="flex items-center gap-3">
               <WhatsappLogo className="h-5 w-5 text-muted-foreground" />
               <div>
-                <Label htmlFor="whatsapp-channel">WhatsApp</Label>
+                <Label htmlFor="whatsapp-channel">{t('notifications.channels.whatsapp')}</Label>
                 {preferences.whatsapp_verified && (
                   <Badge variant="outline" className="ml-2 text-xs">
                     <Check className="h-3 w-3 mr-1" />
-                    Verificado
+                    {t('notifications.channels.verified')}
                   </Badge>
                 )}
               </div>
@@ -230,7 +238,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
 
       {/* Tipos de notificación */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Preferencias por tipo</h3>
+        <h3 className="text-lg font-semibold mb-4">{t('notifications.types.title')}</h3>
         <div className="space-y-4">
           {NOTIFICATION_TYPES.map((type) => {
             const Icon = type.icon
@@ -244,7 +252,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
               <div key={type.key} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Icon className="h-4 w-4 text-muted-foreground" />
-                  <Label>{type.label}</Label>
+                  <Label>{t(type.label)}</Label>
                 </div>
                 <div className="flex gap-4 ml-6">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -255,7 +263,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
                       disabled={!preferences.email_enabled}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-muted-foreground">Email</span>
+                    <span className="text-sm text-muted-foreground">{t('notifications.channels.email')}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -265,7 +273,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
                       disabled={!preferences.sms_enabled}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-muted-foreground">SMS</span>
+                    <span className="text-sm text-muted-foreground">{t('notifications.channels.sms')}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -275,10 +283,10 @@ export function NotificationSettings({ userId }: { userId: string }) {
                       disabled={!preferences.whatsapp_enabled}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-muted-foreground">WhatsApp</span>
+                    <span className="text-sm text-muted-foreground">{t('notifications.channels.whatsapp')}</span>
                   </label>
                 </div>
-                {type.key !== NOTIFICATION_TYPES[NOTIFICATION_TYPES.length - 1].key && (
+                {type.key !== NOTIFICATION_TYPES[NOTIFICATION_TYPES.length - 1]?.key && (
                   <Separator className="mt-4" />
                 )}
               </div>
@@ -290,7 +298,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
       {/* No molestar */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">No molestar</h3>
+          <h3 className="text-lg font-semibold">{t('notifications.doNotDisturb.title')}</h3>
           <Switch
             checked={preferences.do_not_disturb_enabled}
             onCheckedChange={(checked) =>
@@ -301,7 +309,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
         {preferences.do_not_disturb_enabled && (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="dnd-start">Desde</Label>
+              <Label htmlFor="dnd-start">{t('notifications.doNotDisturb.from')}</Label>
               <input
                 id="dnd-start"
                 type="time"
@@ -313,7 +321,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
               />
             </div>
             <div>
-              <Label htmlFor="dnd-end">Hasta</Label>
+              <Label htmlFor="dnd-end">{t('notifications.doNotDisturb.until')}</Label>
               <input
                 id="dnd-end"
                 type="time"
@@ -330,10 +338,10 @@ export function NotificationSettings({ userId }: { userId: string }) {
 
       {/* Resúmenes */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Resúmenes</h3>
+        <h3 className="text-lg font-semibold mb-4">{t('notifications.summaries.title')}</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label htmlFor="daily-digest">Resumen diario</Label>
+            <Label htmlFor="daily-digest">{t('notifications.summaries.dailyDigest')}</Label>
             <Switch
               id="daily-digest"
               checked={preferences.daily_digest_enabled}
@@ -344,7 +352,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
           </div>
           {preferences.daily_digest_enabled && (
             <div>
-              <Label htmlFor="digest-time">Hora de envío</Label>
+              <Label htmlFor="digest-time">{t('notifications.summaries.sendTime')}</Label>
               <input
                 id="digest-time"
                 type="time"
@@ -360,7 +368,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
           <Separator />
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="weekly-summary">Resumen semanal</Label>
+            <Label htmlFor="weekly-summary">{t('notifications.summaries.weeklyDigest')}</Label>
             <Switch
               id="weekly-summary"
               checked={preferences.weekly_summary_enabled}
@@ -371,18 +379,18 @@ export function NotificationSettings({ userId }: { userId: string }) {
           </div>
           {preferences.weekly_summary_enabled && (
             <div>
-              <Label htmlFor="summary-day">Día de envío</Label>
+              <Label htmlFor="summary-day">{t('notifications.summaries.sendDay')}</Label>
               <select
                 id="summary-day"
                 value={preferences.weekly_summary_day}
                 onChange={(e) =>
-                  setPreferences({ ...preferences, weekly_summary_day: parseInt(e.target.value) })
+                  setPreferences({ ...preferences, weekly_summary_day: Number.parseInt(e.target.value) })
                 }
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
               >
-                {DAYS.map((day, index) => (
-                  <option key={index} value={index}>
-                    {day}
+                {DAYS_KEYS.map((dayKey, index) => (
+                  <option key={dayKey} value={index}>
+                    {t(dayKey)}
                   </option>
                 ))}
               </select>

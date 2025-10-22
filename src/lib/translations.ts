@@ -1718,6 +1718,94 @@ export const translations = {
       markAllAsRead: 'Mark all as read',
       closeNotifications: 'Close notifications',
       moreActions: 'More notification actions',
+      
+      // NotificationSettings component
+      channels: {
+        title: 'Notification channels',
+        email: 'Email',
+        sms: 'SMS',
+        whatsapp: 'WhatsApp',
+        verified: 'Verified',
+      },
+      types: {
+        title: 'Preferences by type',
+        appointmentReminder: 'Appointment reminders',
+        appointmentConfirmation: 'Appointment confirmations',
+        appointmentCancellation: 'Cancellations',
+        appointmentRescheduled: 'Rescheduling',
+        securityAlert: 'Security alerts',
+      },
+      doNotDisturb: {
+        title: 'Do not disturb',
+        from: 'From',
+        until: 'Until',
+      },
+      summaries: {
+        title: 'Summaries',
+        dailyDigest: 'Daily digest',
+        weeklyDigest: 'Weekly digest',
+        sendTime: 'Send time',
+        sendDay: 'Send day',
+      },
+      days: {
+        sunday: 'Sunday',
+        monday: 'Monday',
+        tuesday: 'Tuesday',
+        wednesday: 'Wednesday',
+        thursday: 'Thursday',
+        friday: 'Friday',
+        saturday: 'Saturday',
+      },
+      errors: {
+        loadError: 'Could not load preferences',
+        noPreferences: 'Could not load preferences',
+      },
+    },
+
+    // User Profile
+    userProfile: {
+      tabs: {
+        services: 'Services',
+        experience: 'Experience',
+        reviews: 'Reviews',
+      },
+      header: {
+        completedAppointments: 'completed appointments',
+        verifiedProfessional: 'Verified professional',
+      },
+      services: {
+        title: 'Services',
+        noServices: 'No services available',
+        schedule: 'Schedule',
+      },
+      experience: {
+        title: 'Experience',
+        businessesTitle: 'Businesses where they work',
+        independentProfessional: 'Independent professional',
+        aboutMe: 'About me',
+        statistics: 'Statistics',
+        stats: {
+          completedAppointments: 'Completed appointments',
+          rating: 'Rating',
+          services: 'Services',
+        },
+      },
+      reviews: {
+        title: 'Reviews',
+        leaveReview: 'Leave review',
+      },
+      footer: {
+        scheduleWith: 'Schedule Appointment with {name}',
+        notAvailable: 'Professional not available',
+        notLinkedMessage: 'This professional is not linked to any active business',
+      },
+      errors: {
+        loadError: 'Could not load professional information',
+        submitReviewError: 'Could not send review at this time',
+      },
+      actions: {
+        close: 'Close',
+      },
     },
   },
 
@@ -2201,6 +2289,48 @@ export const translations = {
       markAllAsRead: 'Marcar todas como leídas',
       closeNotifications: 'Cerrar notificaciones',
       moreActions: 'Más acciones de notificación',
+      
+      // NotificationSettings component
+      channels: {
+        title: 'Canales de notificación',
+        email: 'Email',
+        sms: 'SMS',
+        whatsapp: 'WhatsApp',
+        verified: 'Verificado',
+      },
+      types: {
+        title: 'Preferencias por tipo',
+        appointmentReminder: 'Recordatorios de citas',
+        appointmentConfirmation: 'Confirmaciones de citas',
+        appointmentCancellation: 'Cancelaciones',
+        appointmentRescheduled: 'Reagendamientos',
+        securityAlert: 'Alertas de seguridad',
+      },
+      doNotDisturb: {
+        title: 'No molestar',
+        from: 'Desde',
+        until: 'Hasta',
+      },
+      summaries: {
+        title: 'Resúmenes',
+        dailyDigest: 'Resumen diario',
+        weeklyDigest: 'Resumen semanal',
+        sendTime: 'Hora de envío',
+        sendDay: 'Día de envío',
+      },
+      days: {
+        sunday: 'Domingo',
+        monday: 'Lunes',
+        tuesday: 'Martes',
+        wednesday: 'Miércoles',
+        thursday: 'Jueves',
+        friday: 'Viernes',
+        saturday: 'Sábado',
+      },
+      errors: {
+        loadError: 'No se pudieron cargar las preferencias',
+        noPreferences: 'No se pudieron cargar las preferencias',
+      },
     },
 
     // Validations
@@ -3442,6 +3572,52 @@ export const translations = {
         noInfo: 'No hay información de vacaciones disponible',
         loading: 'Cargando días de vacaciones...',
       },
-    }
+    },
+
+    // User Profile
+    userProfile: {
+      tabs: {
+        services: 'Servicios',
+        experience: 'Experiencia',
+        reviews: 'Reseñas',
+      },
+      header: {
+        completedAppointments: 'citas completadas',
+        verifiedProfessional: 'Profesional verificado',
+      },
+      services: {
+        title: 'Servicios',
+        noServices: 'No hay servicios disponibles',
+        schedule: 'Agendar',
+      },
+      experience: {
+        title: 'Experiencia',
+        businessesTitle: 'Negocios donde trabaja',
+        independentProfessional: 'Profesional independiente',
+        aboutMe: 'Acerca de mí',
+        statistics: 'Estadísticas',
+        stats: {
+          completedAppointments: 'Citas completadas',
+          rating: 'Calificación',
+          services: 'Servicios',
+        },
+      },
+      reviews: {
+        title: 'Reseñas',
+        leaveReview: 'Dejar reseña',
+      },
+      footer: {
+        scheduleWith: 'Agendar Cita con {name}',
+        notAvailable: 'Profesional no disponible',
+        notLinkedMessage: 'Este profesional no está vinculado a ningún negocio activo',
+      },
+      errors: {
+        loadError: 'No se pudo cargar la información del profesional',
+        submitReviewError: 'No se puede enviar la reseña en este momento',
+      },
+      actions: {
+        close: 'Cerrar',
+      },
+    },
   }
 }
