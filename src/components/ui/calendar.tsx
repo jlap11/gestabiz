@@ -17,6 +17,7 @@ export interface CalendarProps {
   selected?: Date
   onSelect?: (date: Date | undefined) => void
   disabled?: (date: Date) => boolean
+  title?: (date: Date) => string | ''  // Para mostrar tooltip de días deshabilitados
   className?: string
   dateRangeStart?: Date // Fecha de inicio del rango (para sombrear)
   dateRangeEnd?: Date // Fecha de fin del rango (para sombrear)
@@ -29,7 +30,7 @@ const MONTHS = [
 
 const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
-export const Calendar = ({ selected, onSelect, disabled, className, dateRangeStart, dateRangeEnd }: CalendarProps) => {
+export const Calendar = ({ selected, onSelect, disabled, title, className, dateRangeStart, dateRangeEnd }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(selected || new Date())
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right'>('right')
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false)
@@ -267,12 +268,14 @@ export const Calendar = ({ selected, onSelect, disabled, className, dateRangeSta
           >
             {calendarDays.map((day, index) => {
               const isDisabled = disabled ? disabled(day.date) : false
+              const tooltipText = title ? title(day.date) : ''
               
               return (
                 <motion.button
                   key={`${day.date.toISOString()}-${index}`}
                   onClick={() => handleDateClick(day.date, day.isCurrentMonth)}
                   disabled={!day.isCurrentMonth || isDisabled}
+                  title={tooltipText}
                   className={`
                     h-9 w-9 sm:h-10 sm:w-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 relative
                     ${day.isCurrentMonth && !isDisabled

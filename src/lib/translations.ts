@@ -1133,6 +1133,16 @@ export const translations = {
         3: 'Team Lead',
         4: 'Staff',
       },
+      hierarchy: {
+        changeLevel: 'Change hierarchy level for {{name}}',
+        level: 'Level',
+        note: 'Note',
+        noteLevel: 'Level determines position in organizational chart',
+        noteReports: 'Update supervisor separately if needed',
+        updateSuccess: 'Hierarchy level updated successfully',
+        updateError: 'Error updating hierarchy level',
+        confirmChange: 'Are you sure you want to change the level?',
+      },
       types: {
         fullTime: 'Full Time',
         partTime: 'Part Time',
@@ -2377,6 +2387,16 @@ export const translations = {
         2: 'Gerente',
         3: 'Líder de Equipo',
         4: 'Personal',
+      },
+      hierarchy: {
+        changeLevel: 'Cambiar nivel jerárquico de {{name}}',
+        level: 'Nivel',
+        note: 'Nota',
+        noteLevel: 'El nivel determina la posición en el organigrama',
+        noteReports: 'Actualiza el supervisor por separado si es necesario',
+        updateSuccess: 'Nivel jerárquico actualizado correctamente',
+        updateError: 'Error al actualizar el nivel jerárquico',
+        confirmChange: '¿Estás seguro de que quieres cambiar el nivel?',
       },
       types: {
         fullTime: 'Tiempo Completo',

@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/card'
 import { FiltersPanel } from './FiltersPanel'
 import { EmployeeListView } from './EmployeeListView'
 import { HierarchyMapView } from './HierarchyMapView'
+import { EmployeeProfileModal } from './EmployeeProfileModal'
 import type { EmployeeHierarchy } from '@/types'
 
 // =====================================================
@@ -39,6 +40,8 @@ export function EmployeeManagementHierarchy({
   const { t } = useLanguage()
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [showFilters, setShowFilters] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   
   // Hook de sede preferida
   const { preferredLocationId } = usePreferredLocation(businessId)
@@ -74,7 +77,7 @@ export function EmployeeManagementHierarchy({
       4: employees.filter(e => e.hierarchy_level === 4).length, // Staff
     },
     avgOccupancy: employees.length > 0
-      ? employees.reduce((acc, e) => acc + (e.occupancy_percentage || 0), 0) / employees.length
+      ? employees.reduce((acc, e) => acc + (e.occupancy_rate || 0), 0) / employees.length
       : 0,
     avgRating: employees.length > 0
       ? employees.reduce((acc, e) => acc + (e.average_rating || 0), 0) / employees.length
@@ -86,6 +89,8 @@ export function EmployeeManagementHierarchy({
   // =====================================================
 
   const handleEmployeeClick = (employee: EmployeeHierarchy) => {
+    setSelectedEmployee(employee)
+    setIsProfileModalOpen(true)
     onEmployeeSelect?.(employee)
   }
 
@@ -288,6 +293,7 @@ export function EmployeeManagementHierarchy({
           <Card className="p-6">
             <EmployeeListView
               employees={employees}
+              businessId={businessId}
               onEmployeeSelect={handleEmployeeClick}
               onEdit={handleEmployeeClick}
               onViewProfile={handleEmployeeClick}
@@ -303,6 +309,13 @@ export function EmployeeManagementHierarchy({
           </Card>
         )}
       </div>
+
+      {/* EMPLOYEE PROFILE MODAL */}
+      <EmployeeProfileModal
+        employee={selectedEmployee}
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </div>
   )
 }

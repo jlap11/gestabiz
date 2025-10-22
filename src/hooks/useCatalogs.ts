@@ -245,25 +245,94 @@ export function useDocumentTypes(countryId?: string, forCompany?: boolean) {
   useEffect(() => {
     const fetchDocumentTypes = async () => {
       if (!countryId) {
-        setDocumentTypes([]);
-        setLoading(false);
+        // No country specified — as a fallback, load all document types
+        try {
+          setLoading(true);
+          const { data, error: fetchError } = await supabase
+            .from('document_types')
+            .select('id, name, abbreviation, country_id')
+            .order('name');
+
+          if (fetchError) throw fetchError;
+
+          setDocumentTypes(data || []);
+        } catch (err) {
+          console.error('Error fetching document types (fallback all):', err);
+          setError(err instanceof Error ? err.message : 'Error al cargar tipos de documento');
+        } finally {
+          setLoading(false);
+        }
+
         return;
       }
 
       try {
         setLoading(true);
-        const query = supabase
-          .from('document_types')
-          .select('id, name, abbreviation, country_id')
-          .eq('country_id', countryId)
-          .order('name');
+        // Try to fetch by provided countryId (may be UUID, country code or name)
+        let data: DocumentType[] | null = null;
+        let fetchError: any = null;
 
-        const { data, error: fetchError } = await query;
+        // First attempt: treat countryId as country UUID
+        try {
+          const resp = await supabase
+            .from('document_types')
+            .select('id, name, abbreviation, country_id')
+            .eq('country_id', countryId)
+            .order('name');
+
+          data = resp.data as DocumentType[] | null;
+          fetchError = resp.error;
+        } catch (e) {
+          fetchError = e;
+        }
+
+        // If nothing found, try to resolve country by code or name and re-query
+        if ((!data || data.length === 0) && !fetchError) {
+          try {
+            const countryResp = await supabase
+              .from('countries')
+              .select('id')
+              .or(`code.eq.${countryId},name.ilike.%${countryId}%`)
+              .limit(1)
+              .maybeSingle();
+
+            const countryRow = countryResp.data as { id: string } | null;
+            const resolvedCountryId = countryRow?.id;
+
+            if (resolvedCountryId) {
+              const resp2 = await supabase
+                .from('document_types')
+                .select('id, name, abbreviation, country_id')
+                .eq('country_id', resolvedCountryId)
+                .order('name');
+
+              data = resp2.data as DocumentType[] | null;
+              fetchError = resp2.error;
+            }
+          } catch (e) {
+            fetchError = e;
+          }
+        }
+
+        // Final fallback: if still empty, load all document types (so dropdown stays enabled)
+        if ((!data || data.length === 0) && !fetchError) {
+          try {
+            const respAll = await supabase
+              .from('document_types')
+              .select('id, name, abbreviation, country_id')
+              .order('name');
+
+            data = respAll.data as DocumentType[] | null;
+            fetchError = respAll.error;
+          } catch (e) {
+            fetchError = e;
+          }
+        }
 
         if (fetchError) throw fetchError;
 
         // Filtrar según tipo de entidad
-        let filteredData = data || [];
+  let filteredData = (data || []) as DocumentType[];
         
         if (forCompany !== undefined) {
           // NIT es para empresas, los demás para personas

@@ -40,6 +40,10 @@ export function DocumentTypeSelect({
   forCompany,
 }: DocumentTypeSelectProps) {
   const { documentTypes, loading } = useDocumentTypes(countryId, forCompany);
+  // Ensure stable alphabetical order by name (locale 'es')
+  const sortedDocumentTypes = documentTypes.slice().sort((a, b) =>
+    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+  );
 
   if (!countryId) {
     return (
@@ -71,12 +75,12 @@ export function DocumentTypeSelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {documentTypes.length === 0 ? (
+          {sortedDocumentTypes.length === 0 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
               No hay tipos de documento disponibles
             </div>
           ) : (
-            documentTypes.map(docType => (
+            sortedDocumentTypes.map(docType => (
               <SelectItem key={docType.id} value={docType.id}>
                 {docType.name} ({docType.abbreviation})
               </SelectItem>

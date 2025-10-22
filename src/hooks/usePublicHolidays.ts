@@ -32,16 +32,28 @@ export interface UsePublicHolidaysResult {
   getHolidayName: (date: Date | string) => string | null;
 }
 
+// Mapa de nombres de países a UUIDs para normalización
+const COUNTRY_UUID_MAP: Record<string, string> = {
+  'Colombia': '01b4e9d1-a84e-41c9-8768-253209225a21',
+  'colombia': '01b4e9d1-a84e-41c9-8768-253209225a21',
+  'CO': '01b4e9d1-a84e-41c9-8768-253209225a21',
+};
+
 export function usePublicHolidays(
   countryId: string | null | undefined,
   year?: number
 ): UsePublicHolidaysResult {
   const currentYear = year || new Date().getFullYear();
 
+  // ✅ Normalizar countryId: convertir nombre de país a UUID si es necesario
+  const normalizedCountryId = countryId 
+    ? (COUNTRY_UUID_MAP[countryId] || countryId)
+    : null;
+
   const { data: holidays = [], isLoading: loading, error } = useQuery({
-    queryKey: ['public-holidays', countryId, currentYear],
+    queryKey: ['public-holidays', normalizedCountryId, currentYear],
     queryFn: async () => {
-      if (!countryId) return [];
+      if (!normalizedCountryId) return [];
 
       // Obtener festivos para el año especificado
       const startDate = `${currentYear}-01-01`;
@@ -50,7 +62,7 @@ export function usePublicHolidays(
       const { data, error: queryError } = await supabase
         .from('public_holidays')
         .select('*')
-        .eq('country_id', countryId)
+        .eq('country_id', normalizedCountryId)
         .gte('holiday_date', startDate)
         .lte('holiday_date', endDate)
         .order('holiday_date', { ascending: true });
@@ -63,7 +75,7 @@ export function usePublicHolidays(
 
       return (data || []) as Holiday[];
     },
-    enabled: !!countryId,
+    enabled: !!normalizedCountryId,
     staleTime: 1000 * 60 * 60 * 24, // 24 horas
     gcTime: 1000 * 60 * 60 * 24 * 7, // 7 días (antes "cacheTime")
   });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff, Box } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
@@ -15,6 +15,7 @@ import { RecruitmentDashboard } from '@/components/jobs/RecruitmentDashboard'
 import { QuickSalesPage } from '@/pages/QuickSalesPage'
 import { AppointmentsCalendar } from './AppointmentsCalendar'
 import { AbsencesTab } from './AbsencesTab'
+import { ResourcesManager } from './ResourcesManager'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
@@ -109,6 +110,9 @@ export function AdminDashboard({
     setCurrentUser(user)
   }, [user])
 
+  // Determinar si mostrar tab de recursos
+  const showResourcesTab = business.resource_model && business.resource_model !== 'professional'
+
   const sidebarItems = [
     {
       id: 'overview',
@@ -135,6 +139,12 @@ export function AdminDashboard({
       label: 'Servicios',
       icon: <Briefcase className="h-5 w-5" />
     },
+    // Tab de recursos (solo para negocios con recursos físicos)
+    ...(showResourcesTab ? [{
+      id: 'resources',
+      label: 'Recursos',
+      icon: <Box className="h-5 w-5" />
+    }] : []),
     {
       id: 'employees',
       label: 'Empleados',
@@ -184,6 +194,8 @@ export function AdminDashboard({
         return <LocationsManager businessId={business.id} />
       case 'services':
         return <ServicesManager businessId={business.id} />
+      case 'resources':
+        return <ResourcesManager business={business} />
       case 'employees':
         return (
           <>

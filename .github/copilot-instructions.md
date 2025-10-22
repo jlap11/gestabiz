@@ -11,12 +11,12 @@
 
 **Gestabiz** es una plataforma omnicanal (web/móvil/extensión) para gestión de citas y negocios con:
 
-- **10 sistemas principales completados**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, Preferencias de Mensajes para Empleados, **Sistema de Ausencias y Vacaciones** ⭐ NUEVO
+- **13 sistemas principales**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, Preferencias de Mensajes para Empleados, Sistema de Ausencias y Vacaciones, Registración Automática de Owners, Tabla de Festivos Públicos, **Sistema de Modelo de Negocio Flexible** ⭐ NUEVO (Backend completo)
 - **40+ tablas en Supabase**: PostgreSQL 15+ con RLS, extensiones (pg_trgm, postgis), Edge Functions (Deno)
 - **30+ Edge Functions desplegadas**: Notificaciones multicanal, pagos (Stripe/PayU/MercadoPago), chat, reviews
 - **Arquitectura multi-rol**: Admin/Employee/Client calculados dinámicamente (NO guardados en BD)
-- **55 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, useBusinessEmployeesForChat, etc.
-- **Base de código**: ~150k líneas TypeScript, 1,056 archivos .ts/.tsx
+- **58 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, useBusinessEmployeesForChat, **useBusinessResources**, **useAssigneeAvailability** ⭐ NUEVOS
+- **Base de código**: ~151k líneas TypeScript, 1,060 archivos .ts/.tsx
 
 ### Principios de Desarrollo
 1. **No generar .md sin solicitud explícita** - Mantener repo limpio
@@ -206,6 +206,42 @@
 - **Documentación**: `docs/FASE_8_OWNER_REGISTRATION_FIX_COMPLETADA.md`
 - **Ver**: `docs/FASE_8_OWNER_REGISTRATION_FIX_COMPLETADA.md`
 
+### 12. Tabla de Festivos Públicos ⭐ NUEVO (2025-10-20)
+**Sistema de gestión de festivos públicos para validar ausencias y vacaciones**
+
+- **Base de Datos**:
+  - Nueva tabla: `public.public_holidays` (country_id, name, holiday_date, is_recurring, description)
+  - Índices: country_id, holiday_date, combined (country_id, holiday_date)
+  - RLS: Lectura pública (SELECT), gestión por admins
+  - Triggers: Auto-actualización de updated_at
+  - Migraciones: `20251020000003_create_public_holidays_table.sql` (aplicada)
+
+- **Datos Cargados**:
+  - 54 festivos colombianos para 2025-2027
+  - 13 festivos fijos por año (Año Nuevo, Navidad, etc)
+  - 5 festivos móviles por año (basados en Pascua: Carnaval, Semana Santa, etc)
+  - Seed data: `20251020000004_seed_colombian_holidays.sql` (aplicada)
+
+- **Hook**: `usePublicHolidays` (85 líneas)
+  - Query cacheada: `['public-holidays', countryId, currentYear]`
+  - StaleTime: 24 horas (STABLE)
+  - Helpers: `isHoliday()`, `getHolidayName()`
+  - Formato: YYYY-MM-DD
+
+- **Integración Completa**:
+  - ✅ AbsenceRequestModal: Valida festivos en rangos de ausencia
+  - ✅ VacationDaysWidget: Excluye festivos del cálculo de vacaciones
+  - ✅ DateTimeSelection: Bloquea slots en festivos públicos
+  - ✅ Validación automática en formularios
+
+- **Error Anterior (Resuelto - Oct 20)**:
+  - Problema: "PGRST205: Could not find the table 'public.public_holidays'"
+  - Causa: Tabla no existía en Supabase
+  - Solución: Crear tabla + cargar datos + RLS + Índices
+  - Estado: ✅ RESUELTO
+
+- **Documentación**: `docs/SESION_OPTIMIZACIONES_20-OCT-2025.md`
+
 ### 11. Sistema de Ausencias y Vacaciones ⭐ COMPLETADO (2025-01-20) + POLÍTICA OBLIGATORIA (2025-10-20)
 **Sistema completo de gestión de ausencias y vacaciones con balance automático y APROBACIÓN OBLIGATORIA**
 
@@ -272,6 +308,71 @@
   - `docs/RESUMEN_EJECUTIVO_AUSENCIAS_COMPLETO.md` ✨ NEW (2025-10-20): Resumen ejecutivo final
 - **Ver**: `docs/POLITICA_APROBACION_OBLIGATORIA_AUSENCIAS.md`
 
+### 13. Sistema de Modelo de Negocio Flexible ⭐ EN DESARROLLO (2025-10-21)
+**Backend completo para negocios con recursos físicos (hoteles, restaurantes, centros deportivos)**
+
+- **Problema Solucionado**:
+  - App solo soportaba negocios con empleados (salón belleza, clínica)
+  - Hoteles, restaurantes y centros deportivos necesitan reservar recursos físicos
+  - Solución: Arquitectura dual (employee_id OR resource_id en appointments)
+
+- **Base de Datos** (2 migraciones aplicadas):
+  - `resource_model` ENUM: 'professional', 'physical_resource', 'hybrid', 'group_class'
+  - `business_resources` TABLE: 15 tipos (room, table, court, desk, equipment, vehicle, space, lane, field, station, parking_spot, bed, studio, meeting_room, other)
+  - `resource_services` TABLE: Junction M:N con custom_price override
+  - `appointments.resource_id` (nullable): Alternativa a employee_id
+  - CHECK constraint: `employee_id IS NOT NULL OR resource_id IS NOT NULL`
+  - Materialized view: `resource_availability` (bookings, revenue)
+  - 3 funciones SQL: get_resource_stats, is_resource_available, refresh_resource_availability
+
+- **Backend Completo** (Fase 2 COMPLETADA - 21 Oct):
+  - **Servicio**: `src/lib/services/resources.ts` (303 líneas, 15 métodos)
+    - CRUD completo: getByBusinessId, getByLocationId, getByType, getById, create, update, delete
+    - Disponibilidad: getAvailability, isAvailable (usa RPC)
+    - Servicios: assignServices, getServices (M:N junction)
+    - Stats: getStats, getAvailableForService
+  - **Hook principal**: `src/hooks/useBusinessResources.ts` (277 líneas)
+    - 8 queries React Query: useBusinessResources, useLocationResources, useResourcesByType, useResourceDetail, useResourceAvailability, useResourceServices, useResourceStats, useResourcesForService
+    - 5 mutations: useCreateResource, useUpdateResource, useDeleteResource, useAssignServices, useRefreshResourceAvailability
+    - Query keys centralizadas, cache TTL diferenciado (5 min estables, 30 seg volátiles)
+    - Toast notifications automáticas con sonner
+  - **Hook de disponibilidad**: `src/hooks/useAssigneeAvailability.ts` (230 líneas)
+    - Validación unificada: empleado OR recurso (automático)
+    - 3 variantes: useAssigneeAvailability, useIsAssigneeAvailable, useValidateAssigneeSlot
+    - Retorna conflicts detallados (cliente, servicio, horario)
+    - Cache 30s, RPC fallback a query manual
+
+- **Características**:
+  - ✅ 15 tipos de recursos físicos cubiertos
+  - ✅ Capacity, hourly_rate, status, amenities (JSONB)
+  - ✅ Soft delete por defecto (is_active = false)
+  - ✅ Custom pricing por servicio (resource_services.custom_price)
+  - ✅ Estadísticas de uso (total_bookings, revenue_total, revenue_this_month)
+  - ✅ Validación overlap automática (RPC is_resource_available)
+  - ✅ Retrocompatibilidad 100% (negocios existentes resource_model = 'professional')
+
+- **Casos de Uso Habilitados**:
+  - 🏨 **Hoteles**: Reservar habitaciones (standard, suite, deluxe)
+  - 🍽️ **Restaurantes**: Reservar mesas (2-4-6-8 personas)
+  - 🎾 **Centros Deportivos**: Reservar canchas (tenis, fútbol, padel)
+  - 🏋️ **Gimnasios**: Reservar equipos (caminadora, bicicleta, banco)
+  - 🏢 **Co-working**: Reservar espacios (escritorio, sala reuniones)
+  - 🎳 **Bowling**: Reservar carriles (lane_1, lane_2, etc.)
+  - 🅿️ **Parqueaderos**: Reservar espacios de estacionamiento
+  - 🏥 **Hospitales**: Reservar camas/consultorios
+
+- **Progreso**: 40% completado (Backend listo)
+  - ✅ Fase 1: Migraciones DB (2/2 aplicadas)
+  - ✅ Fase 2: Backend & Services (3 archivos, 810 líneas)
+  - ⏳ Fase 3: Componentes UI (pendiente)
+  - ⏳ Fase 4: Integración AppointmentWizard (pendiente)
+
+- **Documentación**:
+  - `docs/ANALISIS_MODELO_NEGOCIO_FLEXIBLE.md` (30 páginas - análisis)
+  - `docs/PLAN_ACCION_MODELO_NEGOCIO_FLEXIBLE.md` (50 páginas - roadmap)
+  - `docs/RESUMEN_EJECUTIVO_MODELO_FLEXIBLE.md` (5 páginas - executive summary)
+  - `docs/FASE_1_2_BACKEND_COMPLETADO.md` (resumen técnico)
+- **Ver**: `docs/FASE_1_2_BACKEND_COMPLETADO.md`
 
 
 
@@ -789,6 +890,69 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 - Permisos: `src/lib/permissions.ts`
 - Google Calendar: `src/lib/googleCalendar.ts`
 - Docs de despliegue: `src/docs/deployment-guide.md`, `supabase/functions/README.md`
+
+## Nuevas Implementaciones (2025-10-20) ⭐ OPTIMIZACIONES DE RED
+
+### Optimizaciones de React Query - Reducción Masiva de Requests
+**Reducir 409 requests → <100 mediante React Query deduplication y caching**
+
+#### Fase 1: Hooks Refacturizados (Oct 20 - COMPLETADA)
+
+**1. useEmployeeBusinesses.ts** (Refactorizado)
+- Antes: 120 líneas con useState + useEffect (4+ duplicados)
+- Después: 90 líneas con useQuery
+- Query Key: `['employee-businesses', employeeId, includeIndependent]`
+- Cache: QUERY_CONFIG.STABLE (5 minutos)
+- Impacto: -3 a -4 requests por sesión
+- Status: ✅ Deployed
+
+**2. useAdminBusinesses.ts** (Refactorizado)
+- Antes: 65 líneas con useState + useEffect (2-3 duplicados)
+- Después: 45 líneas con useQuery
+- Query Key: `['admin-businesses', userId]`
+- Cache: QUERY_CONFIG.STABLE (5 minutos)
+- Impacto: -2 requests por sesión
+- Status: ✅ Deployed
+
+**3. useInAppNotifications.ts** (Refactorizado - MAYOR IMPACTO)
+- Antes: 521 líneas con 5 queries separadas (límites: 50, 1, 1 + RPC unread)
+- Después: 205 líneas con 1 query base + local filtering
+- Arquitectura:
+  - Query Key: `QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)`
+  - Base Query: limit=50 (cacheado 1 min)
+  - Filtros Locales: status, type, businessId, excludeChatMessages aplicados en memoria
+  - UnreadCount: Calculado localmente (sin RPC extra)
+  - Realtime: Subscription invalida query, sin refetch continuo
+- Impacto: -4 requests (5 → 1 por sesión)
+- Components Verificados:
+  - ✅ NotificationBell.tsx
+  - ✅ NotificationCenter.tsx
+  - ✅ FloatingChatButton.tsx
+- Status: ✅ Deployed
+
+**4. public_holidays Table** (Creada e Indexada)
+- Nueva tabla: `public.public_holidays`
+- Datos: 54 festivos colombianos (2025-2027)
+- RLS: Lectura pública, escritura por admins
+- Índices: country_id, holiday_date, combined
+- Hook: `usePublicHolidays` (24h cache)
+- Status: ✅ Deployed
+- Error Resuelto: PGRST205 (table not found)
+
+#### Resultados Medibles (Oct 20)
+- Sesión anterior (Jan 20): 150+ → 60-80 requests
+- Sesión actual (Oct 20):
+  - Usuario reportaba: 409 requests (¡muy altos!)
+  - Después de optimizaciones: ~399-400 estimado
+  - Reducción inmediata: -9 a -10 requests
+  - **Próximo objetivo**: <100 requests (necesita 2-3 sesiones más)
+
+#### Próximos Pasos (No Completados)
+1. useChat.ts refactor: -3 a -5 requests
+2. useEmployeeRequests.ts refactor: -2 a -3 requests
+3. Medición final y validación de impacto
+
+---
 
 ## Nuevas Implementaciones (2025-10-12) ⭐
 ### Sistema de Búsqueda Completo

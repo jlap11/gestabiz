@@ -85,12 +85,42 @@ CREATE POLICY all_locations_owner ON public.locations
 -- ============================================================================
 DROP POLICY IF EXISTS sel_business_employees_self ON public.business_employees;
 DROP POLICY IF EXISTS ins_business_employees_self ON public.business_employees;
+DROP POLICY IF EXISTS upd_business_employees_self ON public.business_employees;
+DROP POLICY IF EXISTS del_business_employees_by_owner ON public.business_employees;
+
 CREATE POLICY sel_business_employees_self ON public.business_employees
   FOR SELECT USING (
     auth.uid() = employee_id OR is_business_owner(business_id)
   );
+
 CREATE POLICY ins_business_employees_self ON public.business_employees
-  FOR INSERT WITH CHECK (auth.uid() = employee_id);
+  FOR INSERT WITH CHECK (
+    auth.uid() = employee_id 
+    OR auth.uid() IN (
+      SELECT owner_id FROM public.businesses WHERE id = business_id
+    )
+  );
+
+CREATE POLICY upd_business_employees_self ON public.business_employees
+  FOR UPDATE USING (
+    auth.uid() = employee_id 
+    OR auth.uid() IN (
+      SELECT owner_id FROM public.businesses WHERE id = business_id
+    )
+  )
+  WITH CHECK (
+    auth.uid() = employee_id 
+    OR auth.uid() IN (
+      SELECT owner_id FROM public.businesses WHERE id = business_id
+    )
+  );
+
+CREATE POLICY del_business_employees_by_owner ON public.business_employees
+  FOR DELETE USING (
+    auth.uid() IN (
+      SELECT owner_id FROM public.businesses WHERE id = business_id
+    )
+  );
 
 -- ============================================================================
 -- SERVICES

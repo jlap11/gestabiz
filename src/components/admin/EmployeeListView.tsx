@@ -16,6 +16,7 @@ import type { EmployeeHierarchy } from '@/types'
 
 interface EmployeeListViewProps {
   employees: EmployeeHierarchy[]
+  businessId: string
   onEmployeeSelect?: (employee: EmployeeHierarchy) => void
   onEdit?: (employee: EmployeeHierarchy) => void
   onViewProfile?: (employee: EmployeeHierarchy) => void
@@ -31,6 +32,7 @@ type SortDirection = 'asc' | 'desc'
 
 export function EmployeeListView({
   employees,
+  businessId,
   onEmployeeSelect,
   onEdit,
   onViewProfile,
@@ -39,6 +41,9 @@ export function EmployeeListView({
   const [sortField, setSortField] = useState<SortField>('level')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set())
+
+  const getEmployeeId = (employee: EmployeeHierarchy): string | undefined =>
+    employee.user_id ?? employee.employee_id
 
   // =====================================================
   // SORTING
@@ -64,13 +69,13 @@ export function EmployeeListView({
         comparison = a.hierarchy_level - b.hierarchy_level
         break
       case 'occupancy':
-        comparison = (a.occupancy_percentage || 0) - (b.occupancy_percentage || 0)
+        comparison = (a.occupancy_rate ?? 0) - (b.occupancy_rate ?? 0)
         break
       case 'rating':
         comparison = (a.average_rating || 0) - (b.average_rating || 0)
         break
       case 'revenue':
-        comparison = (a.total_revenue || 0) - (b.total_revenue || 0)
+        comparison = (a.gross_revenue ?? 0) - (b.gross_revenue ?? 0)
         break
     }
 
@@ -81,7 +86,8 @@ export function EmployeeListView({
   // EXPANSION
   // =====================================================
 
-  const toggleExpand = (userId: string) => {
+  const toggleExpand = (userId?: string) => {
+    if (!userId) return
     setExpandedEmployees(prev => {
       const newSet = new Set(prev)
       if (newSet.has(userId)) {
@@ -101,7 +107,7 @@ export function EmployeeListView({
   // RENDER SORT BUTTON
   // =====================================================
 
-  const SortButton = ({ field, label }: { field: SortField; label: string }) => (
+  const renderSortButton = (field: SortField, label: string) => (
     <Button
       variant="ghost"
       size="sm"
@@ -118,12 +124,18 @@ export function EmployeeListView({
   // =====================================================
 
   const renderEmployeeRow = (employee: EmployeeHierarchy, depth = 0) => {
-    const subordinates = getSubordinates(employee.user_id)
-    const isExpanded = expandedEmployees.has(employee.user_id)
+    const employeeId = getEmployeeId(employee)
+
+    if (!employeeId) {
+      return null
+    }
+
+    const subordinates = getSubordinates(employeeId)
+    const isExpanded = expandedEmployees.has(employeeId)
     const hasSubordinates = subordinates.length > 0
 
     return (
-      <div key={employee.user_id}>
+      <div key={employeeId}>
         {/* MAIN ROW */}
         <div
           className="relative"
@@ -134,7 +146,7 @@ export function EmployeeListView({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => toggleExpand(employee.user_id)}
+              onClick={() => toggleExpand(employeeId)}
               className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
               style={{ left: `${depth * 2}rem` }}
             >
@@ -147,17 +159,19 @@ export function EmployeeListView({
           )}
 
           {/* EMPLOYEE CARD */}
-          <div
-            className={hasSubordinates ? 'pl-8' : ''}
+          <button
+            type="button"
+            className={`${hasSubordinates ? 'pl-8' : ''} w-full bg-transparent text-left border-0 outline-none`}
             onClick={() => onEmployeeSelect?.(employee)}
           >
             <EmployeeCard
               employee={employee}
+              businessId={businessId}
               onEdit={onEdit}
               onViewProfile={onViewProfile}
               onAssignSupervisor={onAssignSupervisor}
             />
-          </div>
+          </button>
         </div>
 
         {/* SUBORDINATES (Recursive) */}
@@ -175,9 +189,12 @@ export function EmployeeListView({
   // =====================================================
 
   // Filtrar solo empleados de nivel top (sin supervisor o supervisor no en la lista)
-  const topLevelEmployees = sortedEmployees.filter(
-    emp => !emp.reports_to || !employees.find(e => e.user_id === emp.reports_to)
-  )
+  const topLevelEmployees = sortedEmployees.filter(emp => {
+    const reportsTo = emp.reports_to
+    if (!reportsTo) return true
+
+    return !employees.some(e => getEmployeeId(e) === reportsTo)
+  })
 
   return (
     <div className="space-y-4">
@@ -185,11 +202,11 @@ export function EmployeeListView({
       <div className="flex items-center gap-2 pb-3 border-b">
         <span className="text-sm font-medium text-muted-foreground">Ordenar por:</span>
         <div className="flex items-center gap-1">
-          <SortButton field="name" label="Nombre" />
-          <SortButton field="level" label="Nivel" />
-          <SortButton field="occupancy" label="Ocupación" />
-          <SortButton field="rating" label="Rating" />
-          <SortButton field="revenue" label="Revenue" />
+          {renderSortButton('name', 'Nombre')}
+          {renderSortButton('level', 'Nivel')}
+          {renderSortButton('occupancy', 'Ocupación')}
+          {renderSortButton('rating', 'Rating')}
+          {renderSortButton('revenue', 'Revenue')}
         </div>
       </div>
 

@@ -447,7 +447,7 @@ export function ClientDashboard({
             name,
             description
           ),
-          locations!inner (
+          locations!appointments_location_id_fkey (
             id,
             name,
             address,

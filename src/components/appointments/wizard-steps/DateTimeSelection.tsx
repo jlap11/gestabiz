@@ -17,6 +17,7 @@ interface DateTimeSelectionProps {
   readonly onSelectDate: (date: Date) => void;
   readonly onSelectTime: (startTime: string, endTime: string) => void;
   readonly employeeId: string | null;
+  readonly resourceId?: string | null; // NUEVO: Soporte para recursos físicos
   readonly locationId: string | null;
   readonly businessId: string | null;
   readonly appointmentToEdit?: Appointment | null;
@@ -99,6 +100,7 @@ export function DateTimeSelection({
   onSelectDate,
   onSelectTime,
   employeeId,
+  resourceId,
   locationId,
   businessId,
   appointmentToEdit,
@@ -110,10 +112,11 @@ export function DateTimeSelection({
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
   const { validateAvailability } = useEmployeeTransferAvailability();
 
-  // Cargar horarios, citas existentes y validar disponibilidad de traslado
+  // Cargar horarios, citas existentes y validar disponibilidad
   useEffect(() => {
     const loadScheduleData = async () => {
-      if (!employeeId || !locationId || !businessId || !selectedDate) return;
+      // Validar que haya employeeId O resourceId (al menos uno)
+      if ((!employeeId && !resourceId) || !locationId || !businessId || !selectedDate) return;
 
       setIsLoadingSchedule(true);
 
@@ -127,15 +130,20 @@ export function DateTimeSelection({
 
         setLocationSchedule(locationData);
 
-        // 2. Obtener horario de almuerzo del empleado
-        const { data: employeeData } = await supabase
-          .from('business_employees')
-          .select('lunch_break_start, lunch_break_end, has_lunch_break')
-          .eq('employee_id', employeeId)
-          .eq('business_id', businessId)
-          .single();
+        // 2. Obtener horario de almuerzo del empleado (solo si es empleado)
+        if (employeeId) {
+          const { data: employeeData } = await supabase
+            .from('business_employees')
+            .select('lunch_break_start, lunch_break_end, has_lunch_break')
+            .eq('employee_id', employeeId)
+            .eq('business_id', businessId)
+            .single();
 
-        setEmployeeSchedule(employeeData);
+          setEmployeeSchedule(employeeData);
+        } else {
+          // Si es recurso, no tiene lunch break
+          setEmployeeSchedule(null);
+        }
 
         // 3. Obtener citas existentes
         const dayStart = new Date(selectedDate);
@@ -144,18 +152,37 @@ export function DateTimeSelection({
         const dayEnd = new Date(selectedDate);
         dayEnd.setHours(23, 59, 59, 999);
 
-        const { data: employeeRecord } = await supabase
-          .from('business_employees')
-          .select('id')
-          .eq('employee_id', employeeId)
-          .eq('business_id', businessId)
-          .single();
+        if (employeeId) {
+          // Buscar citas del empleado
+          const { data: employeeRecord } = await supabase
+            .from('business_employees')
+            .select('id')
+            .eq('employee_id', employeeId)
+            .eq('business_id', businessId)
+            .single();
 
-        if (employeeRecord) {
+          if (employeeRecord) {
+            const { data: appointments } = await supabase
+              .from('appointments')
+              .select('id, start_time, end_time')
+              .eq('employee_id', employeeRecord.id)
+              .gte('start_time', dayStart.toISOString())
+              .lte('start_time', dayEnd.toISOString())
+              .in('status', ['pending', 'confirmed'])
+              .order('start_time');
+
+            const filteredAppointments = appointmentToEdit
+              ? (appointments || []).filter((apt) => apt.id !== appointmentToEdit.id)
+              : (appointments || []);
+
+            setExistingAppointments(filteredAppointments);
+          }
+        } else if (resourceId) {
+          // Buscar reservas del recurso físico
           const { data: appointments } = await supabase
             .from('appointments')
             .select('id, start_time, end_time')
-            .eq('employee_id', employeeRecord.id)
+            .eq('resource_id', resourceId)
             .gte('start_time', dayStart.toISOString())
             .lte('start_time', dayEnd.toISOString())
             .in('status', ['pending', 'confirmed'])
@@ -175,7 +202,7 @@ export function DateTimeSelection({
     };
 
     loadScheduleData();
-  }, [employeeId, locationId, businessId, selectedDate, appointmentToEdit]);
+  }, [employeeId, resourceId, locationId, businessId, selectedDate, appointmentToEdit]);
 
   const generateTimeSlots = React.useCallback(async () => {
     if (!selectedDate || !employeeId || !locationId || !businessId) return;
@@ -238,7 +265,8 @@ export function DateTimeSelection({
 
         if (isSlotOccupied(slotStartTime, slotEndTime, existingAppointments)) {
           isAvailable = false;
-          unavailableReason = 'Ocupado';
+          // Diferenciar entre recurso y empleado en el mensaje
+          unavailableReason = resourceId ? 'Recurso Ocupado' : 'Ocupado';
         }
       }
 
@@ -252,7 +280,7 @@ export function DateTimeSelection({
     }
 
     setTimeSlots(slots);
-  }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments, employeeId, locationId, businessId, validateAvailability]);
+  }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments, employeeId, resourceId, locationId, businessId, validateAvailability]);
 
   useEffect(() => {
     if (selectedDate && !isLoadingSchedule) {

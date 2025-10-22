@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import QUERY_CONFIG from '@/lib/queryConfig';
 
 interface Business {
   id: string;
@@ -20,61 +21,31 @@ interface UseEmployeeBusinessesResult {
   isEmployeeOfAnyBusiness: boolean;
 }
 
-/**
- * Hook para obtener los negocios donde un empleado/profesional está vinculado
- * @param employeeId - ID del empleado/profesional
- * @param includeIndependent - Si incluir negocios independientes (donde el empleado es owner)
- * @returns Objeto con businesses, loading, error, e isEmployeeOfAnyBusiness
- */
 export function useEmployeeBusinesses(
   employeeId: string | null | undefined,
   includeIndependent: boolean = true
 ): UseEmployeeBusinessesResult {
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: businesses = [], isLoading: loading, error } = useQuery({
+    queryKey: ['employee-businesses', employeeId, includeIndependent],
+    queryFn: async () => {
+      if (!employeeId) return [];
 
-  useEffect(() => {
-    if (!employeeId) {
-      setBusinesses([]);
-      setLoading(false);
-      return;
-    }
-
-    const fetchEmployeeBusinesses = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        console.log('🔍 useEmployeeBusinesses - employeeId:', employeeId);
-        console.log('🔍 useEmployeeBusinesses - includeIndependent:', includeIndependent);
-
-        // 1. Obtener negocios donde el usuario es empleado (via business_employees)
+        // 1. Obtener negocios donde el usuario es empleado
         const { data: employeeBusinesses, error: employeeError } = await supabase
           .from('business_employees')
           .select(`
             business_id,
             businesses:business_id (
-              id,
-              name,
-              description,
-              logo_url,
-              phone,
-              email,
-              address,
-              city,
-              state
+              id, name, description, logo_url, phone, email, address, city, state
             )
           `)
           .eq('employee_id', employeeId)
           .eq('status', 'approved')
           .eq('is_active', true);
 
-        console.log('🔍 useEmployeeBusinesses - employeeBusinesses from business_employees:', employeeBusinesses);
-        if (employeeError) console.error('❌ useEmployeeBusinesses - employeeError:', employeeError);
         if (employeeError) throw employeeError;
 
-        // Mapear los negocios como empleado
         const businessesAsEmployee = (employeeBusinesses || [])
           .map((item) => {
             const biz = Array.isArray(item.businesses) 
@@ -86,7 +57,7 @@ export function useEmployeeBusinesses(
 
         let allBusinesses = [...businessesAsEmployee];
 
-        // 2. Si includeIndependent, obtener negocios donde el usuario es owner (independiente)
+        // 2. Si includeIndependent, obtener negocios donde el usuario es owner
         if (includeIndependent) {
           const { data: ownedBusinesses, error: ownerError } = await supabase
             .from('businesses')
@@ -94,13 +65,9 @@ export function useEmployeeBusinesses(
             .eq('owner_id', employeeId)
             .eq('is_active', true);
 
-          console.log('🔍 useEmployeeBusinesses - ownedBusinesses from businesses:', ownedBusinesses);
-          if (ownerError) console.error('❌ useEmployeeBusinesses - ownerError:', ownerError);
           if (ownerError) throw ownerError;
 
-          // Combinar y eliminar duplicados
           const employeeIds = businessesAsEmployee.map(b => b.id);
-          
           const uniqueOwnedBusinesses = (ownedBusinesses || []).filter(
             b => !employeeIds.includes(b.id)
           );
@@ -108,24 +75,20 @@ export function useEmployeeBusinesses(
           allBusinesses = [...businessesAsEmployee, ...uniqueOwnedBusinesses];
         }
 
-        console.log('🔍 useEmployeeBusinesses - FINAL allBusinesses:', allBusinesses);
-        setBusinesses(allBusinesses);
+        return allBusinesses;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error al cargar negocios';
-        setError(errorMessage);
-        setBusinesses([]);
-      } finally {
-        setLoading(false);
+        throw new Error(errorMessage);
       }
-    };
-
-    fetchEmployeeBusinesses();
-  }, [employeeId, includeIndependent]);
+    },
+    ...QUERY_CONFIG.STABLE,
+    enabled: !!employeeId,
+  });
 
   return {
     businesses,
     loading,
-    error,
+    error: error?.message || null,
     isEmployeeOfAnyBusiness: businesses.length > 0
   };
 }

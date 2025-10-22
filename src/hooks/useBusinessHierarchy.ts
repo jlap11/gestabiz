@@ -22,7 +22,8 @@ export interface HierarchyFilters {
 }
 
 export interface EmployeeHierarchy {
-  employee_id: string;
+  user_id: string;
+  employee_id?: string;
   full_name: string;
   email: string;
   role: string;
@@ -94,8 +95,25 @@ export function useBusinessHierarchy(businessId: string | null, initialFilters?:
       });
 
       if (error) throw new Error(error.message);
-      
-      return (data || []) as EmployeeHierarchy[];
+
+      const rawItems = (data || []) as Array<Partial<EmployeeHierarchy> & { employee_id?: string }>;
+
+      const normalized = rawItems.reduce<EmployeeHierarchy[]>((acc, item) => {
+        const normalizedId = item.user_id ?? item.employee_id;
+        if (!normalizedId) {
+          return acc;
+        }
+
+        acc.push({
+          ...item,
+          user_id: normalizedId,
+          employee_id: item.employee_id ?? item.user_id ?? normalizedId,
+        } as EmployeeHierarchy);
+
+        return acc;
+      }, []);
+
+      return normalized;
     },
     enabled: !!businessId,
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
@@ -221,11 +239,15 @@ export function useBusinessHierarchy(businessId: string | null, initialFilters?:
     setFilters({});
   };
 
+  const resolveEmployeeId = (employee: EmployeeHierarchy): string | undefined => {
+    return employee.user_id ?? employee.employee_id;
+  };
+
   /**
    * Obtiene empleado por ID
    */
   const getEmployeeById = (userId: string): EmployeeHierarchy | undefined => {
-    return rawData?.find(emp => emp.employee_id === userId);
+    return rawData?.find(emp => resolveEmployeeId(emp) === userId);
   };
 
   /**
@@ -265,8 +287,11 @@ export function useBusinessHierarchy(businessId: string | null, initialFilters?:
     for (const report of directReports) {
       subordinates.push(report);
       // Recursivamente agregar subordinados de este empleado
-      const subReports = getAllSubordinates(report.employee_id);
-      subordinates.push(...subReports);
+      const reportId = resolveEmployeeId(report);
+      if (reportId) {
+        const subReports = getAllSubordinates(reportId);
+        subordinates.push(...subReports);
+      }
 
       // Prevenir recursión infinita
       if (subordinates.length > 200) break;

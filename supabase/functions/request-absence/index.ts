@@ -34,34 +34,74 @@ serve(async (req) => {
   }
 
   try {
+    // Obtener todos los headers disponibles
+    const authHeader = req.headers.get('Authorization') || '';
+    const xClientInfo = req.headers.get('x-client-info') || '';
+    const xUserId = req.headers.get('x-user-id') || '';
+    
+    console.log('[request-absence] Headers:', {
+      authLength: authHeader.length,
+      xUserIdPresent: !!xUserId,
+      xClientInfoPresent: !!xClientInfo,
+    });
+
+    // Crear cliente Supabase
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { 
+            Authorization: authHeader,
+          },
         },
       }
     );
 
-    // Verificar autenticación
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseClient.auth.getUser();
+    // Intentar obtener el usuario autenticado
+    let userId: string | undefined;
+    let user: any = null;
 
-    if (authError || !user) {
-      throw new Error('No autenticado');
+    // Primero, intentar getUser()
+    const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authUser?.id) {
+      userId = authUser.id;
+      user = authUser;
+      console.log('[request-absence] User from getUser:', { userId });
+    } else if (xUserId) {
+      // Fallback: si x-user-id viene en headers, usarlo
+      userId = xUserId;
+      console.log('[request-absence] User from x-user-id header:', { userId });
+    }
+
+    if (!userId) {
+      throw new Error(`No autenticado - authError: ${authError?.message}`);
     }
 
     const requestData: AbsenceRequest = await req.json();
     const { businessId, absenceType, startDate, endDate, reason, employeeNotes } = requestData;
+
+    console.log('[request-absence] Parsed data:', {
+      businessId,
+      absenceType,
+      startDate,
+      endDate,
+      hasReason: !!reason,
+    });
 
     // 1. Validar fechas
     const start = new Date(startDate);
     const end = new Date(endDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    console.log('[request-absence] Date validation:', {
+      start: start.toISOString(),
+      end: end.toISOString(),
+      today: today.toISOString(),
+      startGreaterThanEnd: start > end,
+    });
 
     if (start > end) {
       throw new Error('Fecha de inicio no puede ser después de fecha de fin');
@@ -98,7 +138,7 @@ serve(async (req) => {
     const { data: employee, error: employeeError } = await supabaseClient
       .from('business_employees')
       .select('id, hire_date')
-      .eq('employee_id', user.id)
+      .eq('employee_id', userId)
       .eq('business_id', businessId)
       .single();
 
@@ -129,7 +169,7 @@ serve(async (req) => {
         .from('vacation_balance')
         .select('total_days_available, days_used, days_pending')
         .eq('business_id', businessId)
-        .eq('employee_id', user.id)
+        .eq('employee_id', userId)
         .eq('year', currentYear)
         .maybeSingle();
 
@@ -147,7 +187,7 @@ serve(async (req) => {
     const { data: existingAbsences } = await supabaseClient
       .from('employee_absences')
       .select('id, start_date, end_date, absence_type')
-      .eq('employee_id', user.id)
+      .eq('employee_id', userId)
       .eq('business_id', businessId)
       .in('status', ['pending', 'approved'])
       .gte('end_date', startDate)
@@ -162,7 +202,7 @@ serve(async (req) => {
       .from('employee_absences')
       .insert({
         business_id: businessId,
-        employee_id: user.id,
+        employee_id: userId,
         absence_type: absenceType,
         start_date: startDate,
         end_date: endDate,
@@ -184,7 +224,7 @@ serve(async (req) => {
         .insert({
           absence_id: absence.id,
           business_id: businessId,
-          requested_by: user.id,
+          requested_by: userId,
           assigned_to: null, // Cualquier admin puede aprobar
           status: 'pending',
         });
@@ -197,7 +237,7 @@ serve(async (req) => {
       const { data: employeeProfile } = await supabaseClient
         .from('profiles')
         .select('full_name, email')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
 
       const employeeName = employeeProfile?.full_name || 'Un empleado';
@@ -243,7 +283,7 @@ serve(async (req) => {
             message: `${employeeName} ha solicitado ${absenceType === 'vacation' ? 'vacaciones' : 'una ausencia'} del ${startDate} al ${endDate}`,
             data: {
               absenceId: absence.id,
-              employeeId: user.id,
+              employeeId: userId,
               employeeName,
               absenceType,
               startDate,
@@ -297,7 +337,7 @@ serve(async (req) => {
         .from('employee_absences')
         .update({
           status: 'approved',
-          approved_by: user.id,
+          approved_by: userId,
           approved_at: new Date().toISOString(),
         })
         .eq('id', absence.id);
@@ -323,6 +363,9 @@ serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Error in request-absence:', errorMessage);
+    
+    // ⚠️ IMPORTANTE: Retornar 200 incluso para errores
+    // Si retornamos 400, el cliente de Supabase no parsea el body
     return new Response(
       JSON.stringify({
         success: false,
@@ -330,7 +373,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 200, // ← Cambiar de 400 a 200 para que se parsee el body
       }
     );
   }

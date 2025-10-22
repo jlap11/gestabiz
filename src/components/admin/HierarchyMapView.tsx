@@ -33,6 +33,7 @@ interface TreeNode {
 export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<HierarchyMapViewProps>) {
   const [zoom, setZoom] = useState(100)
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set())
+  const getEmployeeId = (employee: EmployeeHierarchy): string | undefined => employee.user_id ?? employee.employee_id
 
   // =====================================================
   // TREE BUILDER
@@ -40,19 +41,23 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
 
   const buildTree = (): TreeNode[] => {
     // Encontrar nodos raíz (sin supervisor o supervisor no en lista)
-    const rootEmployees = employees.filter(
-      emp => !emp.reports_to || !employees.find(e => e.user_id === emp.reports_to)
-    )
+    const rootEmployees = employees.filter(emp => {
+      const reportsTo = emp.reports_to
+      if (!reportsTo) return true
+      return !employees.some(e => getEmployeeId(e) === reportsTo)
+    })
 
     const buildNode = (employee: EmployeeHierarchy): TreeNode => {
-      const children = employees
-        .filter(emp => emp.reports_to === employee.user_id)
-        .map(emp => buildNode(emp))
+      const employeeId = getEmployeeId(employee)
+      const childEmployees = employeeId
+        ? employees.filter(emp => emp.reports_to === employeeId)
+        : []
+      const children = childEmployees.map(child => buildNode(child))
 
       return {
         employee,
         children,
-        isExpanded: expandedNodes.has(employee.user_id),
+        isExpanded: employeeId ? expandedNodes.has(employeeId) : false,
       }
     }
 
@@ -65,7 +70,8 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
   // HANDLERS
   // =====================================================
 
-  const toggleExpand = (userId: string) => {
+  const toggleExpand = (userId?: string) => {
+    if (!userId) return
     setExpandedNodes(prev => {
       const newSet = new Set(prev)
       if (newSet.has(userId)) {
@@ -90,7 +96,11 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
   }
 
   const handleExpandAll = () => {
-    const allIds = new Set(employees.map(e => e.user_id))
+    const allIds = new Set(
+      employees
+        .map(getEmployeeId)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+    )
     setExpandedNodes(allIds)
   }
 
@@ -105,13 +115,15 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
   const renderNode = (node: TreeNode, depth = 0): React.ReactElement => {
     const hasChildren = node.children.length > 0
 
+    const nodeId = getEmployeeId(node.employee)
+
     return (
-      <div key={node.employee.user_id} className="flex flex-col items-center">
+      <div key={nodeId ?? node.employee.email ?? node.employee.full_name} className="flex flex-col items-center">
         {/* NODO */}
         <HierarchyNode
           employee={node.employee}
           isExpanded={node.isExpanded}
-          onToggleExpand={hasChildren ? () => toggleExpand(node.employee.user_id) : undefined}
+          onToggleExpand={hasChildren ? () => toggleExpand(nodeId) : undefined}
           onClick={() => onEmployeeSelect?.(node.employee)}
           depth={depth}
         />
@@ -125,7 +137,7 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
         {hasChildren && node.isExpanded && (
           <div className="flex items-start gap-8">
             {node.children.map(child => (
-              <div key={child.employee.user_id} className="relative">
+              <div key={getEmployeeId(child.employee) ?? child.employee.email ?? child.employee.full_name} className="relative">
                 {/* CONECTOR HORIZONTAL (para múltiples hijos) */}
                 {node.children.length > 1 && (
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-8 bg-border" />

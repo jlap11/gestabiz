@@ -15,6 +15,7 @@ import {
   SuccessStep,
   ProgressBar,
 } from './wizard-steps';
+import { ResourceSelection } from './ResourceSelection';
 import type { Service, Location, Appointment } from '@/types/types';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -41,6 +42,7 @@ interface Business {
   id: string;
   name: string;
   description: string | null;
+  resource_model?: 'professional' | 'physical_resource' | 'hybrid' | 'group_class';
 }
 
 interface Employee {
@@ -62,6 +64,7 @@ interface WizardData {
   employee: Employee | null;
   employeeBusinessId: string | null; // Negocio bajo el cual se hace la reserva (si el empleado tiene múltiples)
   employeeBusiness: Business | null;
+  resourceId: string | null; // ⭐ NUEVO: Recurso físico seleccionado
   date: Date | null;
   startTime: string | null;
   endTime: string | null;
@@ -129,6 +132,7 @@ export function AppointmentWizard({
     employee: null,
     employeeBusinessId: null,
     employeeBusiness: null,
+    resourceId: null, // ⭐ NUEVO: Para recursos físicos
     date: preselectedDate || null,
     startTime: preselectedTime || null,
     endTime: null,
@@ -512,6 +516,7 @@ export function AppointmentWizard({
         employee: null,
         employeeBusinessId: null,
         employeeBusiness: null,
+        resourceId: null,
         date: null,
         startTime: null,
         endTime: null,
@@ -602,7 +607,9 @@ export function AppointmentWizard({
         business_id: finalBusinessId,
         service_id: wizardData.serviceId,
         location_id: wizardData.locationId,
-        employee_id: wizardData.employeeId,
+        // Condicional: employee_id O resource_id (CHECK constraint: exactamente uno debe ser NOT NULL)
+        employee_id: wizardData.employeeId || null,
+        resource_id: wizardData.resourceId || null,
         start_time: utcTime.toISOString(),
         end_time: endDateTime.toISOString(),
         status: 'pending' as const,
@@ -690,6 +697,11 @@ export function AppointmentWizard({
       return wizardData.serviceId !== null;
     }
     if (currentStep === getStepNumber('employee')) {
+      // Si negocio usa recursos físicos → Validar resourceId
+      if (wizardData.business?.resource_model && wizardData.business.resource_model !== 'professional') {
+        return wizardData.resourceId !== null;
+      }
+      // Si negocio usa modelo profesional → Validar employeeId
       return wizardData.employeeId !== null && isEmployeeOfAnyBusiness;
     }
     if (currentStep === getStepNumber('employeeBusiness')) {
@@ -823,21 +835,45 @@ export function AppointmentWizard({
             />
           )}
 
-          {/* Paso 3: Selección de Profesional */}
+          {/* Paso 3: Selección de Profesional o Recurso */}
           {currentStep === getStepNumber('employee') && (
-            <EmployeeSelection
-              businessId={wizardData.businessId || businessId || ''}
-              locationId={wizardData.locationId || ''}
-              serviceId={wizardData.serviceId || ''}
-              selectedEmployeeId={wizardData.employeeId}
-              onSelectEmployee={(employee) => {
-                updateWizardData({ 
-                  employeeId: employee.id, 
-                  employee 
-                });
-              }}
-              isPreselected={!!preselectedEmployeeId}
-            />
+            <>
+              {/* Si el negocio usa modelo profesional o no tiene modelo definido → Mostrar EmployeeSelection */}
+              {(!wizardData.business?.resource_model || wizardData.business.resource_model === 'professional') && (
+                <EmployeeSelection
+                  businessId={wizardData.businessId || businessId || ''}
+                  locationId={wizardData.locationId || ''}
+                  serviceId={wizardData.serviceId || ''}
+                  selectedEmployeeId={wizardData.employeeId}
+                  onSelectEmployee={(employee) => {
+                    updateWizardData({ 
+                      employeeId: employee.id, 
+                      employee,
+                      resourceId: null // Limpiar recurso si se selecciona empleado
+                    });
+                  }}
+                  isPreselected={!!preselectedEmployeeId}
+                />
+              )}
+
+              {/* Si el negocio usa recursos físicos → Mostrar ResourceSelection */}
+              {wizardData.business?.resource_model && 
+               wizardData.business.resource_model !== 'professional' && (
+                <ResourceSelection
+                  businessId={wizardData.businessId || businessId || ''}
+                  serviceId={wizardData.serviceId || ''}
+                  locationId={wizardData.locationId || ''}
+                  selectedResourceId={wizardData.resourceId || undefined}
+                  onSelect={(resourceId) => {
+                    updateWizardData({ 
+                      resourceId,
+                      employeeId: null, // Limpiar empleado si se selecciona recurso
+                      employee: null
+                    });
+                  }}
+                />
+              )}
+            </>
           )}
 
           {/* Paso 3.5: Selección de Negocio del Empleado (CONDICIONAL) */}
@@ -862,6 +898,7 @@ export function AppointmentWizard({
               selectedDate={wizardData.date}
               selectedTime={wizardData.startTime}
               employeeId={wizardData.employeeId}
+              resourceId={wizardData.resourceId}
               locationId={wizardData.locationId}
               businessId={wizardData.businessId}
               appointmentToEdit={appointmentToEdit}

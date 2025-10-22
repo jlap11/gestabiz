@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useCompletedAppointments } from './useCompletedAppointments';
 
 export interface PendingReviewCheck {
   hasPendingReviews: boolean;
@@ -18,14 +19,14 @@ interface RemindLaterEntry {
 export function useMandatoryReviews(userId?: string) {
   const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
   const [shouldShowModal, setShouldShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  
+  // ✅ Usar hook compartido en lugar de query directa (OPTIMIZACIÓN)
+  const { appointments: completedAppointments, loading, getIds } = useCompletedAppointments(userId);
 
   const checkPendingReviews = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || loading) return;
 
     try {
-      setLoading(true);
-
       // Check if user has "remind later" active
       const remindLater = getRemindLaterStatus(userId);
       if (remindLater) {
@@ -33,24 +34,14 @@ export function useMandatoryReviews(userId?: string) {
         return;
       }
 
-      // Count completed appointments without reviews
-      // Get all completed appointments for the user
-      const { data: completedAppointments, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select('id')
-        .eq('client_id', userId)
-        .eq('status', 'completed');
-
-      if (appointmentsError) throw appointmentsError;
-
-      if (!completedAppointments || completedAppointments.length === 0) {
+      if (completedAppointments.length === 0) {
         setPendingReviewsCount(0);
         setShouldShowModal(false);
         return;
       }
 
       // Get appointments that have reviews
-      const appointmentIds = completedAppointments.map(a => a.id);
+      const appointmentIds = getIds();
       const { data: reviewedAppointments, error: reviewsError } = await supabase
         .from('reviews')
         .select('appointment_id')
@@ -68,10 +59,8 @@ export function useMandatoryReviews(userId?: string) {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error checking pending reviews:', error);
-    } finally {
-      setLoading(false);
     }
-  }, [userId]);
+  }, [userId, loading, completedAppointments, getIds]);
 
   useEffect(() => {
     checkPendingReviews();
@@ -131,7 +120,7 @@ export function useMandatoryReviews(userId?: string) {
   return {
     pendingReviewsCount,
     shouldShowModal,
-    loading,
+    loading, // From useCompletedAppointments
     checkPendingReviews,
     dismissModal,
     remindLater,

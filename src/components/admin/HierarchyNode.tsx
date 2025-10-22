@@ -31,17 +31,17 @@ interface HierarchyNodeProps {
 const getLevelColor = (level: number): string => {
   switch (level) {
     case 0:
-      return 'border-purple-500 bg-purple-50 dark:bg-purple-950'
+      return 'border-purple-500 bg-purple-900 text-white'
     case 1:
-      return 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+      return 'border-blue-500 bg-blue-900 text-white'
     case 2:
-      return 'border-green-500 bg-green-50 dark:bg-green-950'
+      return 'border-green-500 bg-green-900 text-white'
     case 3:
-      return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
+      return 'border-yellow-500 bg-yellow-900 text-white'
     case 4:
-      return 'border-gray-500 bg-gray-50 dark:bg-gray-950'
+      return 'border-gray-500 bg-gray-900 text-white'
     default:
-      return 'border-gray-300 bg-gray-50 dark:bg-gray-900'
+      return 'border-gray-300 bg-gray-900 text-white'
   }
 }
 
@@ -120,8 +120,8 @@ export function HierarchyNode({
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate">{employee.full_name}</p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="font-semibold truncate text-white">{employee.full_name}</p>
+            <p className="text-xs text-gray-300 truncate">
               {employee.job_title || employee.employee_type}
             </p>
           </div>
@@ -129,11 +129,11 @@ export function HierarchyNode({
 
         {/* NIVEL */}
         <div className="flex items-center justify-between">
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs bg-white/20 border-white/50 text-white">
             {getLevelLabel(employee.hierarchy_level)}
           </Badge>
           {hasSubordinates && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-gray-300">
               <Users className="h-3 w-3" />
               {employee.direct_reports_count}
             </div>
@@ -141,25 +141,29 @@ export function HierarchyNode({
         </div>
 
         {/* MÉTRICAS COMPACTAS */}
-        <div className="grid grid-cols-3 gap-2 pt-2 border-t text-xs">
+        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/20 text-xs">
           <div className="text-center">
-            <p className="text-muted-foreground">Ocup.</p>
-            <p className="font-semibold">
-              {employee.occupancy_percentage !== null
-                ? `${employee.occupancy_percentage.toFixed(0)}%`
+            <p className="text-gray-300">Ocup.</p>
+            <p className="font-semibold text-white">
+              {employee.occupancy_rate !== null && employee.occupancy_rate !== undefined
+                ? `${Number(employee.occupancy_rate).toFixed(0)}%`
                 : '-'}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-muted-foreground">Rating</p>
-            <p className="font-semibold">
-              {employee.average_rating !== null ? `${employee.average_rating.toFixed(1)} ⭐` : '-'}
+            <p className="text-gray-300">Rating</p>
+            <p className="font-semibold text-white">
+              {employee.average_rating !== null && employee.average_rating !== undefined
+                ? `${Number(employee.average_rating).toFixed(1)} ⭐`
+                : '-'}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-muted-foreground">Rev.</p>
-            <p className="font-semibold">
-              {employee.total_revenue !== null ? `$${(employee.total_revenue / 1000).toFixed(0)}k` : '-'}
+            <p className="text-gray-300">Rev.</p>
+            <p className="font-semibold text-white">
+              {employee.gross_revenue !== null && employee.gross_revenue !== undefined
+                ? `$${(Number(employee.gross_revenue) / 1000).toFixed(0)}k`
+                : '-'}
             </p>
           </div>
         </div>

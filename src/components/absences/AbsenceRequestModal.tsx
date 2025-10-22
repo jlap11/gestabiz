@@ -22,7 +22,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences';
 import { usePublicHolidays } from '@/hooks/usePublicHolidays';
 import { useBusinessCountry } from '@/hooks/useBusinessCountry';
@@ -47,7 +46,7 @@ const absenceTypeLabels: Record<AbsenceType, string> = {
 export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<AbsenceRequestModalProps>) {
   const { requestAbsence, vacationBalance, loading, validateWorkDays } = useEmployeeAbsences(businessId);
   const { data: businessData } = useBusinessCountry(businessId);
-  const { holidays } = usePublicHolidays(businessData?.country_id);
+  const { holidays } = usePublicHolidays(businessData?.country);
 
   const [absenceType, setAbsenceType] = useState<AbsenceType>('vacation');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -59,15 +58,41 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
   const [invalidWorkDays, setInvalidWorkDays] = useState<string[]>([]);
   const [holidaysInRange, setHolidaysInRange] = useState<string[]>([]);
 
-  // Calcular días solicitados
+  // Calcular días solicitados (restando días no laborales y festivos)
   const daysRequested = startDate && endDate
-    ? Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+    ? Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 - invalidWorkDays.length - holidaysInRange.length
     : 0;
 
   // Verificar si tiene balance suficiente para vacaciones
   const hasEnoughVacationDays = absenceType === 'vacation'
     ? vacationBalance && daysRequested <= vacationBalance.daysRemaining
     : true;
+
+  // Función para determinar si un día debe estar deshabilitado (mostrado con estilo atenuado)
+  const isDayDisabled = (date: Date): boolean => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    // Deshabilitar si es fin de semana, día no laboral o festivo
+    const dayOfWeek = date.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isNonWorkDay = invalidWorkDays.includes(dateStr);
+    const isHoliday = holidaysInRange.includes(dateStr);
+    return isWeekend || isNonWorkDay || isHoliday;
+  };
+
+  // Función para obtener el motivo por el cual un día está deshabilitado
+  const getDisabledReason = (date: Date): string | null => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dayOfWeek = date.getDay();
+    
+    if (dayOfWeek === 0) return 'Domingo - Fin de semana';
+    if (dayOfWeek === 6) return 'Sábado - Fin de semana';
+    if (invalidWorkDays.includes(dateStr)) return 'Día no laboral';
+    if (holidaysInRange.includes(dateStr)) {
+      const holiday = holidays.find(h => h.holiday_date === dateStr);
+      return holiday ? `${holiday.name} - Festivo` : 'Festivo';
+    }
+    return null;
+  };
 
   // Cargar citas afectadas, validar días de trabajo y detectar festivos cuando cambien las fechas
   useEffect(() => {
@@ -112,7 +137,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
     };
 
     loadAffectedAppointmentsAndValidate();
-  }, [startDate, endDate, businessId, validateWorkDays, holidays]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate, endDate, businessId]);  // ✅ SOLO primitivas, sin validateWorkDays ni holidays
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,19 +147,8 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
       return;
     }
 
-    // Validar que no haya días no laborales
-    if (invalidWorkDays.length > 0) {
-      toast.error('No puedes solicitar ausencia en días que no trabajas. Por favor, ajusta tus fechas.');
-      return;
-    }
-
-    // Validar que no haya festivos en el rango
-    if (holidaysInRange.length > 0) {
-      toast.error(
-        `No puedes solicitar ausencia en ${holidaysInRange.length} día(s) festivo(s). Por favor, ajusta tus fechas.`
-      );
-      return;
-    }
+    // Nota: Los días no laborales y festivos se permiten, pero no se cuentan
+    // en el balance de vacaciones (ya están restados del conteo)
 
     const success = await requestAbsence({
       absenceType,
@@ -219,10 +234,11 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <Calendar
                   selected={startDate}
                   onSelect={setStartDate}
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => date < new Date() || isDayDisabled(date)}
                   dateRangeStart={startDate}
                   dateRangeEnd={endDate}
                   className="w-full"
+                  title={(date) => getDisabledReason(date) || ''}
                 />
               </div>
               <p className="text-sm text-muted-foreground">
@@ -240,10 +256,11 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <Calendar
                   selected={endDate}
                   onSelect={setEndDate}
-                  disabled={(date) => !startDate || date < startDate}
+                  disabled={(date) => !startDate || date < startDate || isDayDisabled(date)}
                   dateRangeStart={startDate}
                   dateRangeEnd={endDate}
                   className="w-full"
+                  title={(date) => getDisabledReason(date) || ''}
                 />
               </div>
               <p className="text-sm text-muted-foreground">
@@ -376,8 +393,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 !endDate ||
                 !reason.trim() ||
                 !hasEnoughVacationDays ||
-                loadingAppointments ||
-                invalidWorkDays.length > 0
+                loadingAppointments
               }
             >
               {loading ? 'Enviando...' : 'Enviar Solicitud'}

@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { Calendar, Clock, Briefcase, Search, CalendarOff } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { MyEmployments } from '@/components/employee/MyEmploymentsEnhanced'
 import { EmployeeOnboarding } from '@/components/employee/EmployeeOnboarding'
 import { EmployeeAbsencesTab } from '@/components/employee/EmployeeAbsencesTab'
-import { AvailableVacanciesMarketplace } from '@/components/jobs/AvailableVacanciesMarketplace'
-import { VacationDaysWidget } from '@/components/absences/VacationDaysWidget'
-import { AbsenceRequestModal } from '@/components/absences/AbsenceRequestModal'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
 import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { 
   Select,
   SelectContent,
@@ -20,6 +18,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { UserRole, User } from '@/types/types'
+
+// Lazy load components that are not critical on initial render
+const AvailableVacanciesMarketplace = lazy(() => 
+  import('@/components/jobs/AvailableVacanciesMarketplace').then(m => ({ default: m.AvailableVacanciesMarketplace }))
+);
+const VacationDaysWidget = lazy(() => 
+  import('@/components/absences/VacationDaysWidget').then(m => ({ default: m.VacationDaysWidget }))
+);
+const AbsenceRequestModal = lazy(() => 
+  import('@/components/absences/AbsenceRequestModal').then(m => ({ default: m.AbsenceRequestModal }))
+);
 
 interface EmployeeDashboardProps {
   currentRole: UserRole
@@ -145,7 +154,9 @@ export function EmployeeDashboard({
       case 'vacancies':
         return (
           <div className="p-6">
-            <AvailableVacanciesMarketplace userId={currentUser.id} />
+            <Suspense fallback={<div className="flex items-center justify-center h-96"><LoadingSpinner /></div>}>
+              <AvailableVacanciesMarketplace userId={currentUser.id} />
+            </Suspense>
           </div>
         )
       case 'absences':

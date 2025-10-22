@@ -19,6 +19,97 @@ export interface UserRoleAssignment {
 // Tipos de empleado
 export type EmployeeType = 'service_provider' | 'support_staff'
 
+// =====================================================
+// MODELO DE NEGOCIO FLEXIBLE (21/10/2025)
+// =====================================================
+
+// Tipos de modelo de recurso para negocios
+export type ResourceModel = 
+  | 'professional'       // Modelo actual (empleados/profesionales)
+  | 'physical_resource'  // Recursos físicos (habitaciones, mesas, canchas)
+  | 'hybrid'             // Ambos (profesional + recurso)
+  | 'group_class'        // Clases grupales con capacidad múltiple
+
+// Tipos de recursos físicos
+export type PhysicalResourceType = 
+  | 'room'          // Habitaciones (hoteles, hostales)
+  | 'table'         // Mesas (restaurantes, cafés)
+  | 'court'         // Canchas (deportes: fútbol, tenis, paddle)
+  | 'studio'        // Estudios (grabación, fotografía)
+  | 'meeting_room'  // Salas de reuniones
+  | 'desk'          // Escritorios (coworking)
+  | 'equipment'     // Equipos (cámaras, instrumentos)
+  | 'vehicle'       // Vehículos (autos, bicicletas)
+  | 'space'         // Espacios genéricos
+  | 'lane'          // Pistas (bowling, natación)
+  | 'field'         // Campos (golf, paintball)
+  | 'station'       // Estaciones (computadoras, laboratorio)
+  | 'parking_spot'  // Espacios de parqueadero
+  | 'bed'           // Camas (hospital, hostel)
+  | 'other'         // Otros recursos
+
+// Interface para recursos físicos de negocios
+export interface BusinessResource {
+  id: string
+  created_at: string
+  updated_at: string
+  
+  // Relaciones
+  business_id: string
+  location_id?: string
+  
+  // Información del recurso
+  name: string
+  resource_type: PhysicalResourceType
+  description?: string
+  
+  // Capacidad
+  capacity?: number
+  
+  // Disponibilidad
+  is_active: boolean
+  available_hours?: {
+    monday: { open: string; close: string; closed: boolean }
+    tuesday: { open: string; close: string; closed: boolean }
+    wednesday: { open: string; close: string; closed: boolean }
+    thursday: { open: string; close: string; closed: boolean }
+    friday: { open: string; close: string; closed: boolean }
+    saturday: { open: string; close: string; closed: boolean }
+    sunday: { open: string; close: string; closed: boolean }
+  }
+  
+  // Metadata
+  image_url?: string
+  amenities?: string[]
+  price_per_hour?: number
+  price_per_day?: number
+  currency?: string
+  
+  // Para clases grupales
+  max_simultaneous_bookings?: number
+  
+  // Computed properties (frontend only - poblados con JOINs)
+  location?: Location
+  services?: Service[]
+  upcoming_bookings?: number
+  next_available_from?: string
+}
+
+// Relación N:M entre recursos y servicios
+export interface ResourceService {
+  id: string
+  created_at: string
+  updated_at: string
+  resource_id: string
+  service_id: string
+  custom_price?: number
+  is_active: boolean
+  
+  // Computed properties (frontend only)
+  resource?: BusinessResource
+  service?: Service
+}
+
 // Business Role (admin o employee)
 export interface BusinessRole {
   id: string
@@ -365,6 +456,11 @@ export interface Business {
   review_count?: number            // From business_ratings_stats view
   location_count?: number          // Count of active locations
   service_count?: number           // Count of active services
+  
+  // NUEVO: Modelo de Negocio Flexible (21/10/2025)
+  resource_model: ResourceModel    // Tipo de recurso que ofrece el negocio
+  resources?: BusinessResource[]   // Recursos físicos disponibles (computed)
+  resource_count?: number          // Cantidad de recursos activos (computed)
 }
 
 // Business locations (branches/offices)
@@ -470,7 +566,8 @@ export interface Appointment {
   business_id: string
   location_id?: string
   service_id?: string
-  user_id: string // employee assigned
+  user_id: string // employee assigned (DEPRECATED - usar employee_id)
+  employee_id?: string // ID del empleado asignado (OPCIONAL ahora)
   client_id: string
   title: string
   description?: string
@@ -493,6 +590,18 @@ export interface Appointment {
   cancelled_reason?: string
   rescheduled_from?: string
   google_calendar_event_id?: string
+  
+  // NUEVO: Modelo de Negocio Flexible (21/10/2025)
+  resource_id?: string              // ID del recurso físico asignado
+  resource?: BusinessResource       // Recurso poblado con JOIN
+  
+  // Para clases grupales
+  capacity_used?: number            // Cupos tomados
+  participants?: Array<{
+    client_id: string
+    client_name: string
+    client_email?: string
+  }>
   
   // Legacy fields for backward compatibility
   clientId?: string
@@ -1591,9 +1700,12 @@ export interface PresenceEvent {
  * Incluye datos personales, jerarquía, métricas y relaciones
  */
 export interface EmployeeHierarchy {
-  employee_id: string
+  employee_id?: string
+  user_id: string
   full_name: string
   email: string
+  phone: string | null
+  avatar_url: string | null
   role: string
   employee_type: string
   hierarchy_level: number
@@ -1602,25 +1714,23 @@ export interface EmployeeHierarchy {
   supervisor_name: string | null
   location_id: string | null
   location_name: string | null
-  direct_reports_count: number
-  all_reports_count: number
-  occupancy_rate: number | null
-  average_rating: number | null
-  gross_revenue: number | null
+  is_active: boolean
+  hired_at: string | null
   total_appointments: number
   completed_appointments: number
   cancelled_appointments: number
+  average_rating: number | null
   total_reviews: number
+  occupancy_rate: number | null
+  gross_revenue: number | null
   services_offered: Array<{
     service_id: string
     service_name: string
     expertise_level: string
     commission_percentage: number
   }> | null
-  is_active: boolean
-  hired_at: string | null
-  phone: string | null
-  avatar_url: string | null
+  direct_reports_count: number
+  all_reports_count: number
 }
 
 /**

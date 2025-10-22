@@ -1,23 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Business } from '@/types/types'
+import QUERY_CONFIG from '@/lib/queryConfig'
 
 export function useAdminBusinesses(userId: string | undefined) {
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: businesses = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['admin-businesses', userId],
+    queryFn: async () => {
+      if (!userId) return [];
 
-  const fetchBusinesses = useCallback(async () => {
-    if (!userId) {
-      setBusinesses([])
-      setIsLoading(false)
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
       const { data, error: fetchError } = await supabase
         .from('businesses')
         .select(`
@@ -42,24 +32,16 @@ export function useAdminBusinesses(userId: string | undefined) {
         .order('created_at', { ascending: false })
 
       if (fetchError) throw fetchError
-
-      setBusinesses(data || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar negocios')
-      setBusinesses([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [userId])
-
-  useEffect(() => {
-    fetchBusinesses()
-  }, [fetchBusinesses])
+      return data || [];
+    },
+    ...QUERY_CONFIG.STABLE,
+    enabled: !!userId,
+  });
 
   return {
     businesses,
     isLoading,
-    error,
-    refetch: fetchBusinesses,
+    error: error?.message || null,
+    refetch,
   }
 }

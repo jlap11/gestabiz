@@ -11,7 +11,11 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import type { User, LegalEntityType, UserRole, Business } from '@/types/types'
-import { PhonePrefixSelect } from '@/components/catalog'
+import { PhonePrefixSelect, RegionSelect, CitySelect } from '@/components/catalog'
+import { DocumentTypeSelect } from '@/components/catalog/DocumentTypeSelect'
+import { BannerCropper } from '@/components/settings/BannerCropper'
+import { slugify } from '@/lib/utils'
+import { compressImageForLogo, compressImageForBanner } from '@/lib/imageCompression'
 
 interface AdminOnboardingProps {
   user: User
@@ -41,9 +45,11 @@ export function AdminOnboarding({
   const [activePage, setActivePage] = useState('overview') // Track active page for sidebar
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
+  const [showBannerCropper, setShowBannerCropper] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState('') // For filtering categories
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]) // Max 3
-  const [subcategoryDescriptions, setSubcategoryDescriptions] = useState<Record<string, string>>({}) // Descriptions per subcategory
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]) // Max 3 free-text subcategories
   const [phonePrefix, setPhonePrefix] = useState('+57') // Colombia default
   
   // Form data
@@ -52,21 +58,23 @@ export function AdminOnboarding({
     name: '',
     category_id: '', // Changed from category to category_id
     description: '',
-    logo_url: '', // URL del logo (opcional)
-    banner_url: '', // URL del banner (opcional)
     // Legal info
     legal_entity_type: 'individual' as LegalEntityType,
     tax_id: '',
     legal_name: '',
     registration_number: '',
     document_type_id: '', // UUID from document_types table
+  document_type: 'cedula', // simple local field for UI ('cedula'|'nit')
     // Contact & location
     phone: '',
     email: '',
     address: '',
-    city: '', // Text field for city name
-    state: '', // Text field for state/department
+    city: '', // Text field for city name (for display)
+    state: '', // Text field for state/department (for display)
     country: 'Colombia', // Default to Colombia
+    country_id: '01b4e9d1-a84e-41c9-8768-253209225a21', // Colombia UUID
+    region_id: '', // UUID from regions table (departamento)
+    city_id: '', // UUID from cities table
     postal_code: '',
   })
 
@@ -74,22 +82,57 @@ export function AdminOnboarding({
   const { mainCategories, categories, isLoading: categoriesLoading } = useBusinessCategories()
   
   // Filter MAIN categories by search term (frontend filter)
-  const filteredMainCategories = mainCategories.filter(cat => 
-    cat.name.toLowerCase().includes(categoryFilter.toLowerCase())
-  )
-  
-  // Get subcategories of selected main category
-  const availableSubcategories = formData.category_id
-    ? categories.find(c => c.id === formData.category_id)?.subcategories || []
-    : [] 
+  // Also sort alphabetically (case-insensitive, locale 'es') for consistent dropdown order
+  const normalizeName = (s: string) =>
+    s
+      .normalize('NFD')
+      // Remove combining diacritical marks (safe range)
+      .replaceAll(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+
+  const filteredMainCategories = mainCategories
+    .slice() // create a copy to avoid mutating original
+    .filter(cat => normalizeName(cat.name).includes(categoryFilter.toLowerCase()))
+    .sort((a, b) => {
+      const na = normalizeName(a.name)
+      const nb = normalizeName(b.name)
+
+      // Force 'otros servicios' to the end
+      if (na === 'otros servicios' && nb !== 'otros servicios') return 1
+      if (nb === 'otros servicios' && na !== 'otros servicios') return -1
+
+      return na.localeCompare(nb, 'es', { sensitivity: 'base' })
+    }) 
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value }
+
+      // If legal entity type changes, update the document_type default
+      if (field === 'legal_entity_type') {
+        next.document_type = value === 'company' ? 'nit' : 'cedula'
+      }
+
+      return next
+    })
+
     // Reset subcategories when changing main category
     if (field === 'category_id') {
       setSelectedSubcategories([])
     }
+  }
+
+  // Handle banner crop completion
+  const handleBannerCropComplete = (croppedBlob: Blob) => {
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(croppedBlob)
+    setBannerPreview(previewUrl)
+    
+    // Convert Blob to File
+    const croppedFile = new File([croppedBlob], bannerFile?.name || 'banner.jpg', {
+      type: 'image/jpeg',
+    })
+    setBannerFile(croppedFile)
   }
 
   const handleSubmit = async () => {
@@ -100,14 +143,16 @@ export function AdminOnboarding({
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
-        console.error('[AdminOnboarding] Session error:', sessionError);
+        // Session error: sessionData retrieval failed
+        // console.error('[AdminOnboarding] Session error:', sessionError);
         toast.error('Error al verificar autenticación. Por favor recarga la página.');
         setIsLoading(false);
         return;
       }
 
       if (!sessionData?.session?.user) {
-        console.error('[AdminOnboarding] No active session found');
+        // No active session found
+        // console.error('[AdminOnboarding] No active session found');
         toast.error('No estás autenticado. Por favor inicia sesión nuevamente.');
         setIsLoading(false);
         return;
@@ -116,20 +161,20 @@ export function AdminOnboarding({
       const authenticatedUserId = sessionData.session.user.id;
       
       if (!authenticatedUserId || !user?.id) {
-        console.error('[AdminOnboarding] User ID missing', { authenticatedUserId, userPropId: user?.id });
+        // Missing user ID
+        // console.error('[AdminOnboarding] User ID missing', { authenticatedUserId, userPropId: user?.id });
         toast.error('ID de usuario no disponible. Por favor recarga la página.');
         setIsLoading(false);
         return;
       }
 
       if (authenticatedUserId !== user.id) {
-        console.error('[AdminOnboarding] User ID mismatch', { authenticatedUserId, userPropId: user.id });
+        // User ID mismatch
+        // console.error('[AdminOnboarding] User ID mismatch', { authenticatedUserId, userPropId: user.id });
         toast.error('Error de autenticación. Por favor cierra sesión y vuelve a iniciar.');
         setIsLoading(false);
         return;
       }
-
-      console.log('[AdminOnboarding] Authentication verified:', { userId: authenticatedUserId, email: sessionData.session.user.email });
 
       // Validate required fields
       if (!formData.name || !formData.category_id) {
@@ -174,25 +219,24 @@ export function AdminOnboarding({
       }
 
       // Step 1: Create business with optional logo and banner
-      console.log('[AdminOnboarding] Creating business in Supabase...')
+  // Creating business in Supabase...
       const { data: business, error: businessError } = await supabase
         .from('businesses')
         .insert({
           name: formData.name.trim(),
+          slug: slugify(formData.name.trim()), // Generate slug from business name
           category_id: formData.category_id, // FK to business_categories
           description: formData.description.trim() || null,
           legal_entity_type: formData.legal_entity_type,
           tax_id: formData.tax_id.trim() || null,
           legal_name: formData.legal_name.trim() || null,
           registration_number: formData.registration_number.trim() || null,
-          logo_url: formData.logo_url.trim() || null,
-          banner_url: formData.banner_url.trim() || null,
           phone: formData.phone.trim() || null,
           email: formData.email.trim() || null,
           address: formData.address.trim() || null,
-          city: formData.city.trim() || null,
-          state: formData.state.trim() || null,
-          country: formData.country,
+          city_id: formData.city_id || null, // UUID from cities table
+          region_id: formData.region_id || null, // UUID from regions table
+          country_id: formData.country_id, // UUID for Colombia
           postal_code: formData.postal_code.trim() || null,
           owner_id: user.id,
           business_hours: {
@@ -218,62 +262,12 @@ export function AdminOnboarding({
         .select()
         .single()
 
-      console.log('[AdminOnboarding] Business creation result:', { business, businessError })
+  // Business creation result: logged for debugging
       if (businessError) throw businessError
 
       toast.success(`¡Negocio "${formData.name}" creado exitosamente!`)
 
-      // Step 2: Auto-insert owner as employee in business_employees
-      if (business) {
-        try {
-          console.log('[AdminOnboarding] Auto-inserting owner as employee...')
-          const { error: employeeError } = await supabase
-            .from('business_employees')
-            .insert({
-              business_id: business.id,
-              employee_id: user.id,
-              role: 'manager', // Los propietarios son managers
-              status: 'approved', // Ya están aprobados
-              is_active: true,
-              hire_date: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
-              employee_type: 'location_manager',
-            })
-
-          if (employeeError) {
-            console.error('[AdminOnboarding] Error inserting owner as employee:', employeeError)
-            // Don't fail the whole operation, just log the error
-            toast.warning('Negocio creado, pero no se pudo vincular como empleado')
-          } else {
-            console.log('[AdminOnboarding] Owner successfully added as employee')
-          }
-        } catch (err) {
-          console.error('[AdminOnboarding] Exception inserting owner as employee:', err)
-        }
-      }
-
-      // Step 3: Insert selected subcategories (máximo 3) with descriptions
-      if (selectedSubcategories.length > 0 && business) {
-        try {
-          const subcategoryInserts = selectedSubcategories.map(subcatId => ({
-            business_id: business.id,
-            subcategory_id: subcatId,
-            description: subcategoryDescriptions[subcatId] || null,
-          }))
-
-          const { error: subcatError } = await supabase
-            .from('business_subcategories')
-            .insert(subcategoryInserts)
-
-          if (subcatError) throw subcatError
-
-          toast.success(`${selectedSubcategories.length} subcategoría(s) asignada(s)`)
-        } catch {
-          // Don't fail if subcategories fail
-          toast.warning('Negocio creado, pero hubo un problema al asignar subcategorías')
-        }
-      }
-
-      // Step 4: Upload logo if exists (NOW user is owner, RLS will allow it)
+      // Step 2: Upload logo if exists (owner is automatically registered by trigger, RLS will allow it)
       if (logoFile && business) {
         try {
           // Upload to business-logos/{business.id}/logo.ext
@@ -310,6 +304,43 @@ export function AdminOnboarding({
         }
       }
 
+      // Step 5: Upload banner if exists
+      if (bannerFile && business) {
+        try {
+          // Upload to business-logos/{business.id}/banner.ext
+          const fileExt = bannerFile.name.split('.').pop()
+          const fileName = `banner.${fileExt}`
+          const filePath = `${business.id}/${fileName}`
+
+          const { error: uploadError } = await supabase.storage
+            .from('business-logos')
+            .upload(filePath, bannerFile, {
+              upsert: true,
+              contentType: bannerFile.type,
+            })
+
+          if (uploadError) throw uploadError
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('business-logos')
+            .getPublicUrl(filePath)
+
+          // Update business with banner URL
+          const { error: updateError } = await supabase
+            .from('businesses')
+            .update({ banner_url: urlData.publicUrl })
+            .eq('id', business.id)
+
+          if (updateError) throw updateError
+
+          toast.success('Banner subido correctamente')
+        } catch {
+          // Don't fail the whole operation if banner upload fails
+          toast.warning('Negocio creado, pero hubo un problema al subir el banner')
+        }
+      }
+
       // Show invitation code
       if (business) {
         toast.success(
@@ -321,14 +352,14 @@ export function AdminOnboarding({
         )
       }
 
-      console.log('[AdminOnboarding] Business created successfully, calling onBusinessCreated callback')
+      // Business created successfully, calling onBusinessCreated callback
       onBusinessCreated?.()
     } catch (error) {
-      console.error('[AdminOnboarding] Error creating business:', error)
+      // Error creating business: logged for debugging
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
       toast.error(`Error al crear negocio: ${errorMsg}`)
     } finally {
-      console.log('[AdminOnboarding] Setting loading to false')
+      // Setting loading to false
       setIsLoading(false)
     }
   }
@@ -379,7 +410,7 @@ export function AdminOnboarding({
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      } as any
+  } as unknown as Business
 
   const sidebarItems = [
     {
@@ -524,6 +555,43 @@ export function AdminOnboarding({
                   />
                 </div>
 
+                  <input
+                    id="logo-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        try {
+                          // Mostrar que estamos comprimiendo
+                          toast.loading('Comprimiendo imagen...')
+                          
+                          // Comprimir imagen
+                          const compressedBlob = await compressImageForLogo(file)
+                          
+                          // Convertir blob a File
+                          const compressedFile = new File(
+                            [compressedBlob],
+                            file.name,
+                            { type: 'image/jpeg' }
+                          )
+                          
+                          // Descartar el toast de carga
+                          toast.dismiss()
+                          
+                          setLogoFile(compressedFile)
+                          setLogoPreview(URL.createObjectURL(compressedBlob))
+                          toast.success(`Logo comprimido exitosamente`)
+                        } catch (error) {
+                          toast.dismiss()
+                          const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
+                          toast.error(`Error al comprimir imagen: ${errorMsg}`)
+                        }
+                      }
+                    }}
+                  />
+
                 {/* Category - Main Category with Filter */}
                 <div className="space-y-2">
                   <label htmlFor="category" className="text-sm font-medium text-foreground">
@@ -581,81 +649,45 @@ export function AdminOnboarding({
                   )}
                 </div>
 
-                {/* Subcategories - Only show if main category selected and has subcategories */}
-                {formData.category_id && availableSubcategories.length > 0 && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
+                {/* Subcategories - Free text input (max 3) */}
+                {formData.category_id && (
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium text-foreground">
                       Subcategorías (máximo 3)
-                    </label>
-                    <p className="text-xs text-muted-foreground">
-                      Selecciona hasta 3 subcategorías que describan mejor tu negocio
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-background rounded-md border border-border">
-                      {availableSubcategories.map((subcat) => {
-                        const isSelected = selectedSubcategories.includes(subcat.id)
-                        const canSelect = selectedSubcategories.length < 3 || isSelected
-                        
-                        return (
-                          <button
-                            key={subcat.id}
-                            type="button"
-                            disabled={!canSelect}
-                            onClick={() => {
-                              if (isSelected) {
-                                setSelectedSubcategories(prev => prev.filter(id => id !== subcat.id))
-                              } else if (selectedSubcategories.length < 3) {
-                                setSelectedSubcategories(prev => [...prev, subcat.id])
-                              }
-                            }}
-                            className={`p-2 rounded-md text-sm text-left transition-colors ${
-                              isSelected
-                                ? 'bg-primary/20 border-2 border-primary text-foreground'
-                                : canSelect
-                                ? 'bg-card border border-border text-foreground/90 hover:border-primary/50'
-                                : 'bg-card border border-border/50 text-muted-foreground cursor-not-allowed'
-                            }`}
-                          >
-                            {subcat.name}
-                          </button>
-                        )
-                      })}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {selectedSubcategories.length}/3 subcategorías seleccionadas
+                      Escribe hasta 3 subcategorías que describan mejor tu negocio
                     </p>
                     
-                    {/* Subcategory Descriptions */}
-                    {selectedSubcategories.length > 0 && (
-                      <div className="mt-4 space-y-3">
-                        <p className="text-sm font-medium text-foreground">
-                          Descripción por Subcategoría
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Describe brevemente los servicios específicos de cada subcategoría
-                        </p>
-                        {selectedSubcategories.map((subcatId) => {
-                          const subcat = availableSubcategories.find(s => s.id === subcatId)
-                          if (!subcat) return null
-                          
-                          return (
-                            <div key={subcatId} className="space-y-1">
-                              <label className="text-xs font-medium text-foreground/90">
-                                {subcat.name}
-                              </label>
-                              <Textarea
-                                value={subcategoryDescriptions[subcatId] || ''}
-                                onChange={(e) => setSubcategoryDescriptions(prev => ({
-                                  ...prev,
-                                  [subcatId]: e.target.value
-                                }))}
-                                placeholder={`Ej: Servicios específicos de ${subcat.name}...`}
-                                className="bg-background border-border text-foreground/90 min-h-[80px]"
-                              />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
+                    {/* 3 Input fields for free-form subcategories */}
+                    <div className="space-y-2">
+                      {[0, 1, 2].map((index) => (
+                        <div key={index} className="space-y-1">
+                          <label htmlFor={`subcategory-${index}`} className="text-xs font-medium text-foreground/80">
+                            Subcategoría {index + 1}
+                          </label>
+                          <Input
+                            id={`subcategory-${index}`}
+                            value={selectedSubcategories[index] || ''}
+                            onChange={(e) => {
+                              const newSubcategories = [...selectedSubcategories]
+                              if (e.target.value.trim()) {
+                                newSubcategories[index] = e.target.value
+                              } else {
+                                newSubcategories[index] = ''
+                              }
+                              setSelectedSubcategories(newSubcategories.filter(s => s !== ''))
+                            }}
+                            placeholder={`Ej: ${['Boliche', 'Billar', 'Arcade'][index]}`}
+                            className="bg-background border-border text-foreground"
+                            maxLength={50}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedSubcategories.length}/3 subcategorías ingresadas
+                    </p>
                   </div>
                 )}
 
@@ -677,67 +709,7 @@ export function AdminOnboarding({
                   />
                 </div>
 
-                {/* Logo URL */}
-                <div className="space-y-2">
-                  <label htmlFor="logo_url" className="text-sm font-medium text-foreground">
-                    URL del Logo (opcional)
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    Enlace a la imagen del logo de tu negocio (recomendado cuadrado, 200x200px mínimo)
-                  </p>
-                  <Input
-                    id="logo_url"
-                    type="url"
-                    value={formData.logo_url}
-                    onChange={(e) => handleChange('logo_url', e.target.value)}
-                    placeholder="https://ejemplo.com/mi-logo.png"
-                    className="bg-background border-border"
-                  />
-                  {formData.logo_url && (
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                      <img 
-                        src={formData.logo_url} 
-                        alt="Preview logo" 
-                        className="h-12 w-12 object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                      <span className="text-xs text-muted-foreground">Vista previa del logo</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Banner URL */}
-                <div className="space-y-2">
-                  <label htmlFor="banner_url" className="text-sm font-medium text-foreground">
-                    URL del Banner (opcional)
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    Enlace a la imagen del banner de tu negocio (recomendado panorámico, 1200x400px)
-                  </p>
-                  <Input
-                    id="banner_url"
-                    type="url"
-                    value={formData.banner_url}
-                    onChange={(e) => handleChange('banner_url', e.target.value)}
-                    placeholder="https://ejemplo.com/mi-banner.png"
-                    className="bg-background border-border"
-                  />
-                  {formData.banner_url && (
-                    <div className="space-y-1">
-                      <img 
-                        src={formData.banner_url} 
-                        alt="Preview banner" 
-                        className="w-full h-24 object-cover rounded-md"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                      <span className="text-xs text-muted-foreground">Vista previa del banner</span>
-                    </div>
-                  )}
-                </div>
+                {/* Banner Upload (moved) - placeholder, will be rendered after Logo Upload */}
               </CardContent>
             </Card>
 
@@ -745,63 +717,79 @@ export function AdminOnboarding({
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
-                  <Mail className="h-5 w-5 text-primary" />
-                  Información legal
+                  <FileText className="h-5 w-5 text-primary" />
+                  Información de constitución legal de la empresa
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Datos legales para Colombia (opcional pero recomendado)
+                  Datos legales para Colombia (opcional pero recomendado). Diferente a la información de las sedes.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Legal Entity Type */}
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-foreground">Tipo de entidad</label>
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-medium text-foreground">Tipo de entidad</legend>
                   <div className="grid grid-cols-2 gap-4">
-                    <button
-                      type="button"
-                      onClick={() => handleChange('legal_entity_type', 'company')}
-                      className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                        formData.legal_entity_type === 'company'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                    <label
+                      className={`p-4 rounded-lg border-2 text-left transition-colors cursor-pointer flex flex-col ${formData.legal_entity_type === 'company' ? 'border-primary bg-primary/5' : 'border-border'}`}
+                      htmlFor="entity-company"
                     >
+                      <input
+                        id="entity-company"
+                        type="radio"
+                        name="legal_entity_type"
+                        value="company"
+                        checked={formData.legal_entity_type === 'company'}
+                        onChange={() => handleChange('legal_entity_type', 'company')}
+                        className="sr-only"
+                      />
                       <div className="font-medium text-foreground">Empresa</div>
                       <div className="text-xs text-muted-foreground mt-1">Negocio registrado con NIT</div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleChange('legal_entity_type', 'individual')}
-                      className={`p-4 rounded-lg border-2 text-left transition-colors ${
-                        formData.legal_entity_type === 'individual'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/50'
-                      }`}
+                    </label>
+
+                    <label
+                      className={`p-4 rounded-lg border-2 text-left transition-colors cursor-pointer flex flex-col ${formData.legal_entity_type === 'individual' ? 'border-primary bg-primary/5' : 'border-border'}`}
+                      htmlFor="entity-individual"
                     >
+                      <input
+                        id="entity-individual"
+                        type="radio"
+                        name="legal_entity_type"
+                        value="individual"
+                        checked={formData.legal_entity_type === 'individual'}
+                        onChange={() => handleChange('legal_entity_type', 'individual')}
+                        className="sr-only"
+                      />
                       <div className="font-medium text-foreground">Independiente</div>
                       <div className="text-xs text-muted-foreground mt-1">Persona natural con cédula</div>
-                    </button>
+                    </label>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Document Type - Simple Text (removed complex selector) */}
                 <div className="space-y-2">
                   <label htmlFor="doc-type" className="text-sm font-medium text-foreground">
                     Tipo de documento
                   </label>
-                  <select
-                    id="doc-type"
-                    value={formData.legal_entity_type === 'company' ? 'nit' : 'cedula'}
-                    disabled
-                    className="bg-background border border-border rounded px-3 py-2 text-sm text-foreground"
-                  >
-                    <option value="nit">NIT</option>
-                    <option value="cedula">Cédula</option>
-                  </select>
+                  {formData.legal_entity_type === 'company' ? (
+                    <Input
+                      id="doc-type"
+                      value={/* Visual only */ 'NIT'}
+                      disabled
+                      className="bg-background border-border"
+                    />
+                  ) : (
+                    <DocumentTypeSelect
+                      countryId={formData.country === 'Colombia' ? '01b4e9d1-a84e-41c9-8768-253209225a21' : formData.country}
+                      value={formData.document_type_id}
+                      onChange={(val) => handleChange('document_type_id', val)}
+                      forCompany={false}
+                      className="bg-background border-border"
+                    />
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {formData.legal_entity_type === 'company'
-                      ? 'Tipo de documento automático según tipo de entidad'
-                      : 'Tipo de documento automático según tipo de entidad'}
+                      ? 'Tipo de documento fijado para empresas'
+                      : 'Selecciona el tipo de documento apropiado para tu negocio'}
                   </p>
                 </div>
 
@@ -813,7 +801,7 @@ export function AdminOnboarding({
                   <Input
                     id="tax_id"
                     value={formData.tax_id}
-                    onChange={(e) => handleChange('tax_id', e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => handleChange('tax_id', e.target.value.replaceAll(/\D/g, ''))}
                     placeholder={
                       formData.legal_entity_type === 'company'
                         ? 'Ej: 900123456'
@@ -911,41 +899,120 @@ export function AdminOnboarding({
                       </Button>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                    <button
+                      type="button"
+                      className="w-full text-left"
                       onClick={() => document.getElementById('logo-input')?.click()}
                     >
-                      <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-sm text-foreground/90 mb-2">
-                        Click para seleccionar o arrastra una imagen
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        PNG, JPG, WEBP (máx. 2MB)
-                      </p>
-                      <Input
-                        id="logo-input"
-                        type="file"
-                        accept="image/png,image/jpeg,image/jpg,image/webp"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) {
-                            // Validate file size (2MB max)
-                            if (file.size > 2 * 1024 * 1024) {
-                              toast.error('El archivo es muy grande. Máximo 2MB')
-                              return
-                            }
-                            setLogoFile(file)
-                            // Create preview URL
-                            const reader = new FileReader()
-                            reader.onload = (event) => {
-                              setLogoPreview(event.target?.result as string)
-                            }
-                            reader.readAsDataURL(file)
-                          }
-                        }}
-                      />
-                    </div>
+                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+                        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-sm text-foreground/90 mb-2">Click para seleccionar o arrastra una imagen</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (máx. 2MB)</p>
+                      </div>
+                    </button>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Banner Upload */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  Banner del negocio
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Sube un banner panorámico para tu negocio (opcional, se subirá al crear el negocio)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {bannerPreview ? (
+                    <div className="space-y-4">
+                      <div className="relative w-full bg-muted rounded-lg border-2 border-violet-500/20 overflow-hidden">
+                        <div className="aspect-video flex items-center justify-center bg-muted">
+                          <img
+                            src={bannerPreview}
+                            alt="Preview banner"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8"
+                          onClick={() => {
+                            setBannerFile(null)
+                            setBannerPreview(null)
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setBannerFile(null)
+                          setBannerPreview(null)
+                        }}
+                        className="w-full"
+                      >
+                        Cambiar imagen
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="w-full text-left"
+                      onClick={() => document.getElementById('banner-input')?.click()}
+                    >
+                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+                        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-sm text-foreground/90 mb-2">Click para seleccionar o arrastra una imagen</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (máx. 2MB) - Aspecto 16:9</p>
+                      </div>
+                    </button>
+                  )}
+
+                  <input
+                    id="banner-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        try {
+                          // Mostrar que estamos comprimiendo
+                          toast.loading('Comprimiendo banner...')
+                          
+                          // Comprimir imagen para banner
+                          const compressedBlob = await compressImageForBanner(file)
+                          
+                          // Convertir blob a File
+                          const compressedFile = new File(
+                            [compressedBlob],
+                            file.name,
+                            { type: 'image/jpeg' }
+                          )
+                          
+                          // Descartar el toast de carga
+                          toast.dismiss()
+                          
+                          setBannerFile(compressedFile)
+                          setShowBannerCropper(true)
+                          toast.success('Banner comprimido exitosamente')
+                        } catch (error) {
+                          toast.dismiss()
+                          const errorMsg = error instanceof Error ? error.message : 'Error desconocido'
+                          toast.error(`Error al comprimir banner: ${errorMsg}`)
+                        }
+                      }
+                    }}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -983,7 +1050,7 @@ export function AdminOnboarding({
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => handleChange('phone', e.target.value.replaceAll(/\D/g, ''))}
                     placeholder="Número de teléfono"
                     className="flex-1 bg-background border-border"
                   />
@@ -1036,11 +1103,15 @@ export function AdminOnboarding({
               {/* State/Department */}
               <div className="space-y-2">
                 <label htmlFor="state" className="text-sm font-medium">Departamento</label>
-                <Input
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) => handleChange('state', e.target.value)}
-                  placeholder="Ej: Cundinamarca"
+                <RegionSelect
+                  countryId={formData.country_id}
+                  value={formData.region_id}
+                  onChange={(value) => {
+                    handleChange('region_id', value)
+                    // Reset city when department changes
+                    handleChange('city_id', '')
+                  }}
+                  placeholder="Seleccione un departamento"
                   className="bg-background border-border"
                 />
               </div>
@@ -1048,11 +1119,11 @@ export function AdminOnboarding({
               {/* City */}
               <div className="space-y-2">
                 <label htmlFor="city" className="text-sm font-medium">Ciudad</label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  placeholder="Ej: Bogotá"
+                <CitySelect
+                  regionId={formData.region_id}
+                  value={formData.city_id}
+                  onChange={(value) => handleChange('city_id', value)}
+                  placeholder="Seleccione una ciudad"
                   className="bg-background border-border"
                 />
               </div>
@@ -1163,6 +1234,14 @@ export function AdminOnboarding({
           </Card>
         </div>
       </div>
+
+      {/* Banner Cropper Modal */}
+      <BannerCropper
+        isOpen={showBannerCropper}
+        onClose={() => setShowBannerCropper(false)}
+        imageFile={bannerFile}
+        onCropComplete={handleBannerCropComplete}
+      />
     </UnifiedLayout>
   )
 }

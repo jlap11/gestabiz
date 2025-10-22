@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { HierarchyLevelSelector } from './HierarchyLevelSelector'
+import { useUpdateEmployeeHierarchySimple } from '@/hooks/useUpdateEmployeeHierarchy'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { EmployeeHierarchy } from '@/types'
 
 // =====================================================
@@ -24,6 +27,7 @@ import type { EmployeeHierarchy } from '@/types'
 
 interface EmployeeCardProps {
   employee: EmployeeHierarchy
+  businessId: string
   onEdit?: (employee: EmployeeHierarchy) => void
   onViewProfile?: (employee: EmployeeHierarchy) => void
   onAssignSupervisor?: (employee: EmployeeHierarchy) => void
@@ -51,21 +55,16 @@ const getLevelBadgeColor = (level: number): string => {
   }
 }
 
-const getLevelLabel = (level: number): string => {
-  switch (level) {
-    case 0:
-      return 'Propietario'
-    case 1:
-      return 'Administrador'
-    case 2:
-      return 'Gerente'
-    case 3:
-      return 'Líder'
-    case 4:
-      return 'Personal'
-    default:
-      return `Nivel ${level}`
+const getLevelLabel = (level: number, t: (key: string) => string): string => {
+  const levelKey = `employees.levels.${level}` as const
+  const label = t(levelKey)
+  
+  // Fallback si la traducción no existe
+  if (label === levelKey) {
+    return `${t('employees.list.level')} ${level}`
   }
+  
+  return label
 }
 
 const getInitials = (name: string): string => {
@@ -83,12 +82,24 @@ const getInitials = (name: string): string => {
 
 export function EmployeeCard({
   employee,
+  businessId,
   onEdit,
   onViewProfile,
   onAssignSupervisor,
   compact = false,
-}: EmployeeCardProps) {
+}: Readonly<EmployeeCardProps>) {
+  const { t } = useLanguage()
   const initials = getInitials(employee.full_name)
+  const employeeId = employee.user_id ?? employee.employee_id
+  const { updateLevel, isUpdating } = useUpdateEmployeeHierarchySimple(businessId)
+
+  const handleLevelChange = async (newLevel: number) => {
+    if (!employeeId) {
+      return
+    }
+
+    await updateLevel(employeeId, newLevel, employee.full_name)
+  }
 
   // =====================================================
   // RENDER COMPACT
@@ -108,7 +119,7 @@ export function EmployeeCard({
           </p>
         </div>
         <Badge className={getLevelBadgeColor(employee.hierarchy_level)}>
-          {getLevelLabel(employee.hierarchy_level)}
+          {getLevelLabel(employee.hierarchy_level, t)}
         </Badge>
       </div>
     )
@@ -156,15 +167,15 @@ export function EmployeeCard({
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onViewProfile?.(employee)}>
                   <Eye className="h-4 w-4 mr-2" />
-                  Ver perfil
+                  {t('employees.card.viewProfile')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onEdit?.(employee)}>
                   <Edit className="h-4 w-4 mr-2" />
-                  Editar jerarquía
+                  {t('employees.card.edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAssignSupervisor?.(employee)}>
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Asignar supervisor
+                  {t('employees.card.assignSupervisor')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -172,9 +183,15 @@ export function EmployeeCard({
 
           {/* HIERARCHY INFO */}
           <div className="flex items-center gap-3 flex-wrap">
-            <Badge className={getLevelBadgeColor(employee.hierarchy_level)}>
-              {getLevelLabel(employee.hierarchy_level)}
-            </Badge>
+            <HierarchyLevelSelector
+              currentLevel={employee.hierarchy_level}
+              employeeId={employeeId ?? ''}
+              employeeName={employee.full_name}
+              onLevelChange={handleLevelChange}
+              disabled={isUpdating}
+              size="sm"
+              variant="outline"
+            />
             {employee.supervisor_name && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <User className="h-3 w-3" />

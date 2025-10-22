@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase';
 export interface BusinessCountry {
   id: string;
   name: string;
-  country_id: string;
+  country: string;
 }
 
 export function useBusinessCountry(businessId: string | null | undefined) {
@@ -24,7 +24,7 @@ export function useBusinessCountry(businessId: string | null | undefined) {
 
       const { data, error } = await supabase
         .from('businesses')
-        .select('id, name, country_id')
+        .select('id, name, country')
         .eq('id', businessId)
         .single();
 

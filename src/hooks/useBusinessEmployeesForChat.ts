@@ -4,13 +4,16 @@
  * Obtiene empleados de un negocio que permiten recibir mensajes de clientes.
  * Filtra por `allow_client_messages = true` y `is_active = true`.
  * 
+ * ✨ OPTIMIZADO: Usa React Query con deduplicación y caché de 5 minutos
+ * 
  * @author Gestabiz Team
- * @version 1.0.0
- * @date 2025-10-19
+ * @version 2.0.0 (React Query)
+ * @date 2025-10-20
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import QUERY_CONFIG from '@/lib/queryConfig';
 
 export interface BusinessEmployeeForChat {
   employee_id: string;
@@ -31,16 +34,10 @@ export function useBusinessEmployeesForChat({
   businessId, 
   enabled = true 
 }: UseBusinessEmployeesForChatOptions) {
-  const [employees, setEmployees] = useState<BusinessEmployeeForChat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchEmployees = useCallback(async () => {
-    if (!businessId || !enabled) return;
-
-    try {
-      setLoading(true);
-      setError(null);
+  const { data: employees = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: QUERY_CONFIG.KEYS.BUSINESS_EMPLOYEES(businessId),
+    queryFn: async () => {
+      if (!businessId) return [];
 
       // Fetch employees with allow_client_messages = true
       const { data: employeesData, error: employeesError } = await supabase
@@ -74,8 +71,7 @@ export function useBusinessEmployeesForChat({
       }
 
       if (!employeesData || employeesData.length === 0) {
-        setEmployees([]);
-        return;
+        return [];
       }
 
       // Map to interface
@@ -95,24 +91,16 @@ export function useBusinessEmployeesForChat({
         };
       });
 
-      setEmployees(mappedEmployees);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching employees for chat:', err);
-      setError(err instanceof Error ? err.message : 'Error al cargar empleados');
-    } finally {
-      setLoading(false);
-    }
-  }, [businessId, enabled]);
-
-  useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+      return mappedEmployees;
+    },
+    ...QUERY_CONFIG.STABLE, // 5 minutos de caché
+    enabled: enabled && !!businessId,
+  });
 
   return {
     employees,
     loading,
-    error,
-    refetch: fetchEmployees,
+    error: error?.message || null,
+    refetch,
   };
 }

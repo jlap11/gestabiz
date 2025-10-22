@@ -1,6 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * Hook para gestionar solicitudes de tiempo libre (vacaciones, ausencias)
+ * ✨ OPTIMIZADO: Usa React Query con deduplicación y caché de 5 minutos
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import QUERY_CONFIG from '@/lib/queryConfig';
 
 export type TimeOffType = 'vacation' | 'emergency' | 'sick_leave' | 'personal' | 'other';
 export type TimeOffStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
@@ -40,7 +45,7 @@ interface UseEmployeeTimeOffResult {
 }
 
 /**
- * Hook para gestionar solicitudes de tiempo libre (vacaciones, ausencias)
+ * Hook para gestionar solicitudes de tiempo libre
  * @param employeeId - ID del empleado
  * @param businessId - (Opcional) Filtrar por negocio específico
  */
@@ -48,20 +53,18 @@ export function useEmployeeTimeOff(
   employeeId: string | null | undefined,
   businessId?: string | null
 ): UseEmployeeTimeOffResult {
-  const [requests, setRequests] = useState<TimeOffRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchRequests = useCallback(async () => {
-    if (!employeeId) {
-      setRequests([]);
-      setLoading(false);
-      return;
-    }
+  // Query key que incluye el filtro de negocio si existe
+  const queryKey = businessId 
+    ? ['time-off-requests', employeeId, businessId]
+    : ['time-off-requests', employeeId];
 
-    try {
-      setLoading(true);
-      setError(null);
+  // Query para obtener solicitudes
+  const { data: requests = [], isLoading: loading, error, refetch: refetchQuery } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!employeeId) return [];
 
       let query = supabase
         .from('employee_absences')
@@ -74,67 +77,62 @@ export function useEmployeeTimeOff(
       }
 
       const { data, error: fetchError } = await query;
-
       if (fetchError) throw fetchError;
+      return data as TimeOffRequest[] || [];
+    },
+    ...QUERY_CONFIG.FREQUENT, // Caché corto (1 minuto) porque cambia frecuentemente
+    enabled: !!employeeId,
+  });
 
-      setRequests(data || []);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al cargar solicitudes';
-      setError(errorMessage);
-      setRequests([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [employeeId, businessId]);
+  // Mutation para crear solicitud
+  const createRequestMutation = useMutation({
+    mutationFn: async (
+      params: {
+        businessId: string;
+        type: TimeOffType;
+        startDate: string;
+        endDate: string;
+        notes?: string;
+      }
+    ) => {
+      if (!employeeId) {
+        throw new Error('No se pudo identificar al empleado');
+      }
 
-  const createRequest = async (
-    businessId: string,
-    type: TimeOffType,
-    startDate: string,
-    endDate: string,
-    notes?: string
-  ) => {
-    if (!employeeId) {
-      toast.error('No se pudo identificar al empleado');
-      return;
-    }
-
-    try {
-      // Validar fechas
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      const start = new Date(params.startDate);
+      const end = new Date(params.endDate);
       
       if (end < start) {
-        toast.error('La fecha de fin debe ser posterior a la fecha de inicio');
-        return;
+        throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
       }
 
       const { error: insertError } = await supabase
         .from('employee_absences')
         .insert({
           employee_id: employeeId,
-          business_id: businessId,
-          absence_type: type,
-          start_date: startDate,
-          end_date: endDate,
-          reason: notes || '',
-          employee_notes: notes || null,
+          business_id: params.businessId,
+          absence_type: params.type,
+          start_date: params.startDate,
+          end_date: params.endDate,
+          reason: params.notes || '',
+          employee_notes: params.notes || null,
           status: 'pending'
         });
 
       if (insertError) throw insertError;
-
+    },
+    onSuccess: () => {
       toast.success('Solicitud enviada correctamente');
-      await fetchRequests(); // Refrescar lista
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al crear solicitud';
-      toast.error(errorMessage);
-      throw err;
-    }
-  };
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Error al crear solicitud');
+    },
+  });
 
-  const cancelRequest = async (requestId: string) => {
-    try {
+  // Mutation para cancelar solicitud
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (requestId: string) => {
       const { error: updateError } = await supabase
         .from('employee_absences')
         .update({
@@ -146,26 +144,34 @@ export function useEmployeeTimeOff(
         .eq('status', 'pending');
 
       if (updateError) throw updateError;
-
+    },
+    onSuccess: () => {
       toast.success('Solicitud cancelada');
-      await fetchRequests(); // Refrescar lista
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al cancelar solicitud';
-      toast.error(errorMessage);
-      throw err;
-    }
-  };
-
-  useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Error al cancelar solicitud');
+    },
+  });
 
   return {
     requests,
-    loading,
-    error,
-    createRequest,
-    cancelRequest,
-    refetch: fetchRequests
+    loading: loading || createRequestMutation.isPending || cancelRequestMutation.isPending,
+    error: error?.message || null,
+    createRequest: async (businessId, type, startDate, endDate, notes) => {
+      await createRequestMutation.mutateAsync({
+        businessId,
+        type,
+        startDate,
+        endDate,
+        notes,
+      });
+    },
+    cancelRequest: async (requestId) => {
+      await cancelRequestMutation.mutateAsync(requestId);
+    },
+    refetch: async () => {
+      await refetchQuery();
+    },
   };
 }
