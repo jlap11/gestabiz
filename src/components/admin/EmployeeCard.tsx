@@ -147,7 +147,7 @@ export function EmployeeCard({
                 <h3 className="font-semibold text-lg truncate">{employee.full_name}</h3>
                 {!employee.is_active && (
                   <Badge variant="outline" className="text-xs">
-                    Inactivo
+                    {t('employees.card.inactive')}
                   </Badge>
                 )}
               </div>
@@ -195,13 +195,13 @@ export function EmployeeCard({
             {employee.supervisor_name && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <User className="h-3 w-3" />
-                Reporta a: <span className="font-medium">{employee.supervisor_name}</span>
+                {t('employees.card.supervisor')}: <span className="font-medium">{employee.supervisor_name}</span>
               </div>
             )}
             {employee.direct_reports_count > 0 && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <User className="h-3 w-3" />
-                {employee.direct_reports_count} subordinado{employee.direct_reports_count > 1 ? 's' : ''}
+                {employee.direct_reports_count} {t('employees.card.subordinates')}
               </div>
             )}
           </div>
@@ -214,7 +214,7 @@ export function EmployeeCard({
                 <TrendingUp className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Ocupación</p>
+                <p className="text-xs text-muted-foreground">{t('employees.card.occupancy')}</p>
                 <p className="font-semibold">
                   {employee.occupancy_rate !== null && employee.occupancy_rate !== undefined
                     ? `${Number(employee.occupancy_rate).toFixed(0)}%`
@@ -229,7 +229,7 @@ export function EmployeeCard({
                 <Star className="h-4 w-4 text-yellow-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Rating</p>
+                <p className="text-xs text-muted-foreground">{t('employees.card.rating')}</p>
                 <p className="font-semibold">
                   {employee.average_rating !== null && employee.average_rating !== undefined
                     ? `${Number(employee.average_rating).toFixed(1)} ⭐`
@@ -244,7 +244,7 @@ export function EmployeeCard({
                 <DollarSign className="h-4 w-4 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Revenue</p>
+                <p className="text-xs text-muted-foreground">{t('employees.card.revenue')}</p>
                 <p className="font-semibold">
                   {employee.gross_revenue !== null && employee.gross_revenue !== undefined
                     ? `$${(Number(employee.gross_revenue) / 1000).toFixed(0)}k`

@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useBusinessResources, useDeleteResource, useCreateResource, useUpdateResource } from '@/hooks/useBusinessResources'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import type { BusinessResource, Business, Location } from '@/types/types'
 import { toast } from 'sonner'
@@ -50,28 +51,24 @@ interface ResourcesManagerProps {
   business: Business
 }
 
-const RESOURCE_TYPE_LABELS: Record<string, string> = {
-  room: 'Habitación',
-  table: 'Mesa',
-  court: 'Cancha',
-  desk: 'Escritorio',
-  equipment: 'Equipo',
-  vehicle: 'Vehículo',
-  space: 'Espacio',
-  lane: 'Carril',
-  field: 'Campo',
-  station: 'Estación',
-  parking_spot: 'Parqueadero',
-  bed: 'Cama',
-  studio: 'Estudio',
-  meeting_room: 'Sala de Reuniones',
-  other: 'Otro',
-}
-
 export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) {
+  const { t } = useLanguage()
   const [selectedType, setSelectedType] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingResource, setEditingResource] = useState<BusinessResource | null>(null)
+  
+  // Helper function to get resource type label from translations
+  const getResourceTypeLabel = (type: string): string => {
+    const key = `businessResources.types.${type}`
+    return t(key) || type
+  }
+  
+  // List of all resource types
+  const resourceTypes: Array<BusinessResource['resource_type']> = [
+    'room', 'table', 'court', 'desk', 'equipment', 'vehicle',
+    'space', 'lane', 'field', 'station', 'parking_spot',
+    'bed', 'studio', 'meeting_room', 'other'
+  ]
   
   // Estado del formulario
   const [formData, setFormData] = useState({
@@ -215,14 +212,14 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
       {/* Header con acciones */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Recursos Físicos</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t('businessResources.title')}</h2>
           <p className="text-muted-foreground">
-            Gestiona habitaciones, mesas, canchas y otros recursos
+            {t('businessResources.subtitle')}
           </p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Agregar Recurso
+          {t('businessResources.addResource')}
         </Button>
       </div>
 
@@ -236,17 +233,17 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los tipos</SelectItem>
-                  {Object.entries(RESOURCE_TYPE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
+                  <SelectItem value="all">{t('businessResources.allTypes')}</SelectItem>
+                  {resourceTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {getResourceTypeLabel(type)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="text-sm text-muted-foreground">
-              {filteredResources?.length || 0} recursos encontrados
+              {filteredResources?.length || 0} {t('common.misc.results')}
             </div>
           </div>
         </CardHeader>
@@ -261,12 +258,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
           {!isLoading && filteredResources?.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
-                No hay recursos registrados.{' '}
+                {t('businessResources.noResources')}{' '}
                 <button
                   onClick={handleCreate}
                   className="text-primary hover:underline"
                 >
-                  Crea el primero
+                  {t('common.actions.create')}
                 </button>
               </p>
             </div>
@@ -293,7 +290,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {RESOURCE_TYPE_LABELS[resource.resource_type]}
+                        {getResourceTypeLabel(resource.resource_type)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -399,9 +396,9 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(RESOURCE_TYPE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
+                  {resourceTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {getResourceTypeLabel(type)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -1205,6 +1205,90 @@ export const translations = {
       },
     },
 
+    // Physical Resources System
+    businessResources: {
+      title: 'Resource Management',
+      subtitle: 'Manage rooms, tables, courts and more',
+      addResource: 'Add Resource',
+      editResource: 'Edit Resource',
+      deleteResource: 'Delete Resource',
+      noResources: 'No resources registered',
+      filterByType: 'Filter by type',
+      allTypes: 'All types',
+      
+      form: {
+        name: 'Resource Name',
+        namePlaceholder: 'E.g: Room 101, VIP Table, Court #1',
+        type: 'Resource Type',
+        location: 'Location',
+        selectLocation: 'Select location',
+        capacity: 'Capacity',
+        capacityPlaceholder: 'Number of people',
+        pricePerHour: 'Price per Hour',
+        pricePlaceholder: 'Price in COP',
+        description: 'Description',
+        descriptionPlaceholder: 'Describe the resource features...',
+        amenities: 'Services / Amenities',
+        amenitiesPlaceholder: 'WiFi, Air Conditioning, TV, etc. (comma separated)',
+        status: 'Status',
+        active: 'Active',
+        inactive: 'Inactive',
+      },
+
+      types: {
+        room: 'Room',
+        table: 'Table',
+        court: 'Court',
+        desk: 'Desk',
+        equipment: 'Equipment',
+        vehicle: 'Vehicle',
+        space: 'Space',
+        lane: 'Lane',
+        field: 'Field',
+        station: 'Station',
+        parking_spot: 'Parking Spot',
+        bed: 'Bed',
+        studio: 'Studio',
+        meeting_room: 'Meeting Room',
+        other: 'Other',
+      },
+
+      table: {
+        name: 'Name',
+        type: 'Type',
+        location: 'Location',
+        capacity: 'Capacity',
+        price: 'Price/Hour',
+        status: 'Status',
+        actions: 'Actions',
+      },
+
+      status: {
+        available: 'Available',
+        occupied: 'Occupied',
+        maintenance: 'Maintenance',
+        inactive: 'Inactive',
+      },
+
+      actions: {
+        createSuccess: 'Resource created successfully',
+        createError: 'Error creating resource',
+        updateSuccess: 'Resource updated successfully',
+        updateError: 'Error updating resource',
+        deleteSuccess: 'Resource deleted successfully',
+        deleteError: 'Error deleting resource',
+        confirmDelete: 'Are you sure you want to delete this resource?',
+        deleteWarning: 'This action cannot be undone',
+      },
+
+      stats: {
+        totalResources: 'Total Resources',
+        activeResources: 'Active Resources',
+        occupancyRate: 'Occupancy Rate',
+        totalRevenue: 'Total Revenue',
+      },
+    },
+
     // Image Cropper
     imageCropper: {
       title: 'Crop profile image',
@@ -2457,6 +2541,90 @@ export const translations = {
         totalRevenue: 'Ingresos Totales',
         avgRating: 'Rating Promedio',
         occupancyRate: 'Tasa de Ocupación',
+      },
+    },
+
+    // Sistema de Recursos Físicos
+    businessResources: {
+      title: 'Gestión de Recursos',
+      subtitle: 'Administra habitaciones, mesas, canchas y más',
+      addResource: 'Agregar Recurso',
+      editResource: 'Editar Recurso',
+      deleteResource: 'Eliminar Recurso',
+      noResources: 'No hay recursos registrados',
+      filterByType: 'Filtrar por tipo',
+      allTypes: 'Todos los tipos',
+      
+      form: {
+        name: 'Nombre del Recurso',
+        namePlaceholder: 'Ej: Habitación 101, Mesa VIP, Cancha #1',
+        type: 'Tipo de Recurso',
+        location: 'Ubicación',
+        selectLocation: 'Seleccionar ubicación',
+        capacity: 'Capacidad',
+        capacityPlaceholder: 'Número de personas',
+        pricePerHour: 'Precio por Hora',
+        pricePlaceholder: 'Precio en COP',
+        description: 'Descripción',
+        descriptionPlaceholder: 'Describe las características del recurso...',
+        amenities: 'Servicios / Amenidades',
+        amenitiesPlaceholder: 'WiFi, Aire Acondicionado, TV, etc. (separados por comas)',
+        status: 'Estado',
+        active: 'Activo',
+        inactive: 'Inactivo',
+      },
+
+      types: {
+        room: 'Habitación',
+        table: 'Mesa',
+        court: 'Cancha',
+        desk: 'Escritorio',
+        equipment: 'Equipo',
+        vehicle: 'Vehículo',
+        space: 'Espacio',
+        lane: 'Carril',
+        field: 'Campo',
+        station: 'Estación',
+        parking_spot: 'Parqueadero',
+        bed: 'Cama',
+        studio: 'Estudio',
+        meeting_room: 'Sala de Reuniones',
+        other: 'Otro',
+      },
+
+      table: {
+        name: 'Nombre',
+        type: 'Tipo',
+        location: 'Ubicación',
+        capacity: 'Capacidad',
+        price: 'Precio/Hora',
+        status: 'Estado',
+        actions: 'Acciones',
+      },
+
+      status: {
+        available: 'Disponible',
+        occupied: 'Ocupado',
+        maintenance: 'Mantenimiento',
+        inactive: 'Inactivo',
+      },
+
+      actions: {
+        createSuccess: 'Recurso creado exitosamente',
+        createError: 'Error al crear el recurso',
+        updateSuccess: 'Recurso actualizado exitosamente',
+        updateError: 'Error al actualizar el recurso',
+        deleteSuccess: 'Recurso eliminado exitosamente',
+        deleteError: 'Error al eliminar el recurso',
+        confirmDelete: '¿Estás seguro de que deseas eliminar este recurso?',
+        deleteWarning: 'Esta acción no se puede deshacer',
+      },
+
+      stats: {
+        totalResources: 'Total Recursos',
+        activeResources: 'Recursos Activos',
+        occupancyRate: 'Tasa de Ocupación',
+        totalRevenue: 'Ingresos Totales',
       },
     }
   }
