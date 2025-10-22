@@ -101,20 +101,20 @@ export default function CompleteUnifiedSettings({
 
   // Tabs dinámicas según rol
   const tabs = [
-    { value: 'general', label: 'Ajustes Generales', icon: <Palette className="h-4 w-4" /> },
-    { value: 'profile', label: t('settings.profile'), icon: <UserIcon className="h-4 w-4" /> },
-    { value: 'notifications', label: t('settings.notifications'), icon: <Bell className="h-4 w-4" /> },
+    { value: 'general', label: t('settings.tabs.general'), icon: <Palette className="h-4 w-4" /> },
+    { value: 'profile', label: t('settings.tabs.profile'), icon: <UserIcon className="h-4 w-4" /> },
+    { value: 'notifications', label: t('settings.tabs.notifications'), icon: <Bell className="h-4 w-4" /> },
   ]
 
   // Pestaña específica por rol
   const getRoleSpecificTab = () => {
     switch (currentRole) {
       case 'admin':
-        return { value: 'role-specific', label: 'Preferencias del Negocio', icon: <Briefcase className="h-4 w-4" /> }
+        return { value: 'role-specific', label: t('settings.tabs.businessPreferences'), icon: <Briefcase className="h-4 w-4" /> }
       case 'employee':
-        return { value: 'role-specific', label: 'Preferencias de Empleado', icon: <UserCircle className="h-4 w-4" /> }
+        return { value: 'role-specific', label: t('settings.tabs.employeePreferences'), icon: <UserCircle className="h-4 w-4" /> }
       case 'client':
-        return { value: 'role-specific', label: 'Preferencias de Cliente', icon: <ShoppingCart className="h-4 w-4" /> }
+        return { value: 'role-specific', label: t('settings.tabs.clientPreferences'), icon: <ShoppingCart className="h-4 w-4" /> }
       default:
         return null
     }
@@ -128,7 +128,7 @@ export default function CompleteUnifiedSettings({
   // Agregar pestaña Zona Peligrosa al final
   tabs.push({ 
     value: 'danger-zone', 
-    label: 'Zona Peligrosa', 
+    label: t('settings.tabs.dangerZone'), 
     icon: <AlertCircle className="h-4 w-4" /> 
   })
 
@@ -138,7 +138,7 @@ export default function CompleteUnifiedSettings({
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h2>
           <p className="text-muted-foreground">
-            Configura tu cuenta y preferencias
+            {t('settings.subtitle')}
           </p>
         </div>
       </div>
@@ -159,10 +159,10 @@ export default function CompleteUnifiedSettings({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Apariencia y Sistema
+                {t('settings.themeSection.title')}
               </CardTitle>
               <CardDescription>
-                Personaliza el tema y el idioma de la aplicación
+                {t('settings.themeSection.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -170,30 +170,30 @@ export default function CompleteUnifiedSettings({
               <div className="space-y-3">
                 <Label className="text-base font-medium flex items-center gap-2">
                   <Sun className="h-4 w-4" />
-                  Tema de la interfaz
+                  {t('settings.themeSection.themeLabel')}
                 </Label>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Selecciona el tema que prefieres para la aplicación
+                  {t('settings.themeSection.themeDescription')}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
                     { 
                       value: 'light', 
-                      label: 'Claro', 
+                      label: t('settings.themeSection.themes.light.label'), 
                       icon: <Sun className="h-5 w-5" />,
-                      description: 'Interfaz con colores claros'
+                      description: t('settings.themeSection.themes.light.description')
                     },
                     { 
                       value: 'dark', 
-                      label: 'Oscuro', 
+                      label: t('settings.themeSection.themes.dark.label'), 
                       icon: <Moon className="h-5 w-5" />,
-                      description: 'Interfaz con colores oscuros'
+                      description: t('settings.themeSection.themes.dark.description')
                     },
                     { 
                       value: 'system', 
-                      label: 'Sistema', 
+                      label: t('settings.themeSection.themes.system.label'), 
                       icon: <Monitor className="h-5 w-5" />,
-                      description: 'Según preferencias del sistema'
+                      description: t('settings.themeSection.themes.system.description')
                     }
                   ].map((themeOption) => (
                     <button
@@ -226,12 +226,12 @@ export default function CompleteUnifiedSettings({
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">
-                      Tema actual: {themeInfo.label}
+                      {t('settings.themeSection.currentTheme', { theme: themeInfo.label })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {theme === 'system' 
-                        ? 'El tema cambia automáticamente según las preferencias de tu sistema operativo'
-                        : 'Puedes cambiar el tema en cualquier momento'}
+                        ? t('settings.themeSection.systemThemeNote')
+                        : t('settings.themeSection.changeAnytime')}
                     </p>
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export default function CompleteUnifiedSettings({
                   {t('settings.language')}
                 </Label>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Selecciona el idioma de la interfaz
+                  {t('settings.languageSection.description')}
                 </p>
                 <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full md:w-64">
@@ -379,7 +379,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           className="flex items-center gap-2"
         >
           <Building2 className="h-4 w-4" />
-          Información del Negocio
+          {t('settings.businessInfo.tabs.info')}
         </Button>
         <Button
           variant={activeSubTab === 'notifications' ? 'default' : 'outline'}
@@ -387,7 +387,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           className="flex items-center gap-2"
         >
           <Bell className="h-4 w-4" />
-          Notificaciones del Negocio
+          {t('settings.businessInfo.tabs.notifications')}
         </Button>
         <Button
           variant={activeSubTab === 'tracking' ? 'default' : 'outline'}
@@ -395,7 +395,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           className="flex items-center gap-2"
         >
           <Calendar className="h-4 w-4" />
-          Historial
+          {t('settings.businessInfo.tabs.tracking')}
         </Button>
       </div>
 
@@ -404,30 +404,30 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Información Básica</CardTitle>
+              <CardTitle>{t('settings.businessInfo.basicInfo.title')}</CardTitle>
               <CardDescription>
-                Información general de tu negocio
+                {t('settings.businessInfo.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="name">Nombre del Negocio *</Label>
+                <Label htmlFor="name">{t('settings.businessInfo.basicInfo.nameLabel')}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder={t('common.placeholders.businessName')}
+                  placeholder={t('settings.businessInfo.basicInfo.namePlaceholder')}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="description">Descripción</Label>
+                <Label htmlFor="description">{t('settings.businessInfo.basicInfo.descriptionLabel')}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder={t('common.placeholders.businessDescription')}
+                  placeholder={t('settings.businessInfo.basicInfo.descriptionPlaceholder')}
                   rows={4}
                 />
               </div>
@@ -437,42 +437,42 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           {/* Contact Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Información de Contacto</CardTitle>
+              <CardTitle>{t('settings.businessInfo.contactInfo.title')}</CardTitle>
               <CardDescription>
-                Cómo pueden contactarte tus clientes
+                {t('settings.businessInfo.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="phone">Teléfono</Label>
+                <Label htmlFor="phone">{t('settings.businessInfo.contactInfo.phoneLabel')}</Label>
                 <PhoneInput
                   value={formData.phone}
                   onChange={(value) => handleChange('phone', value)}
                   prefix={phonePrefix}
                   onPrefixChange={setPhonePrefix}
-                  placeholder={t('common.placeholders.phoneNumber')}
+                  placeholder={t('settings.businessInfo.contactInfo.phonePlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('settings.businessInfo.contactInfo.emailLabel')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder={t('common.placeholders.email')}
+                  placeholder={t('settings.businessInfo.contactInfo.emailPlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="website">Sitio Web</Label>
+                <Label htmlFor="website">{t('settings.businessInfo.contactInfo.websiteLabel')}</Label>
                 <Input
                   id="website"
                   type="url"
                   value={formData.website}
                   onChange={(e) => handleChange('website', e.target.value)}
-                  placeholder={t('common.placeholders.website')}
+                  placeholder={t('settings.businessInfo.contactInfo.websitePlaceholder')}
                 />
               </div>
             </CardContent>
@@ -481,40 +481,40 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           {/* Address Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Dirección</CardTitle>
+              <CardTitle>{t('settings.businessInfo.addressInfo.title')}</CardTitle>
               <CardDescription>
-                Ubicación principal de tu negocio
+                {t('settings.businessInfo.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="address">Dirección</Label>
+                <Label htmlFor="address">{t('settings.businessInfo.addressInfo.addressLabel')}</Label>
                 <Input
                   id="address"
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder={t('common.placeholders.address')}
+                  placeholder={t('settings.businessInfo.addressInfo.addressPlaceholder')}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="city">Ciudad</Label>
+                  <Label htmlFor="city">{t('settings.businessInfo.addressInfo.cityLabel')}</Label>
                   <Input
                     id="city"
                     value={formData.city}
                     onChange={(e) => handleChange('city', e.target.value)}
-                    placeholder={t('common.placeholders.city')}
+                    placeholder={t('settings.businessInfo.addressInfo.cityPlaceholder')}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="state">Estado/Provincia</Label>
+                  <Label htmlFor="state">{t('settings.businessInfo.addressInfo.stateLabel')}</Label>
                   <Input
                     id="state"
                     value={formData.state}
                     onChange={(e) => handleChange('state', e.target.value)}
-                    placeholder={t('common.placeholders.state')}
+                    placeholder={t('settings.businessInfo.addressInfo.statePlaceholder')}
                   />
                 </div>
               </div>
@@ -524,29 +524,29 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           {/* Legal Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Información Legal</CardTitle>
+              <CardTitle>{t('settings.businessInfo.legalInfo.title')}</CardTitle>
               <CardDescription>
-                Datos fiscales y legales de tu negocio
+                {t('settings.businessInfo.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="legal_name">Razón Social</Label>
+                <Label htmlFor="legal_name">{t('settings.businessInfo.legalInfo.legalNameLabel')}</Label>
                 <Input
                   id="legal_name"
                   value={formData.legal_name}
                   onChange={(e) => handleChange('legal_name', e.target.value)}
-                  placeholder={t('common.placeholders.legalName')}
+                  placeholder={t('settings.businessInfo.legalInfo.legalNamePlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="tax_id">NIT / RFC / Tax ID</Label>
+                <Label htmlFor="tax_id">{t('settings.businessInfo.legalInfo.taxIdLabel')}</Label>
                 <Input
                   id="tax_id"
                   value={formData.tax_id}
                   onChange={(e) => handleChange('tax_id', e.target.value)}
-                  placeholder={t('common.placeholders.taxId')}
+                  placeholder={t('settings.businessInfo.legalInfo.taxIdPlaceholder')}
                 />
               </div>
             </CardContent>
@@ -555,17 +555,17 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           {/* Configuraciones de Operación */}
           <Card>
             <CardHeader>
-              <CardTitle>Configuraciones de Operación</CardTitle>
+              <CardTitle>{t('settings.businessInfo.operationSettings.title')}</CardTitle>
               <CardDescription>
-                Ajusta cómo funciona tu negocio en la plataforma
+                {t('settings.businessInfo.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">Permitir reservas online</Label>
+                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.allowOnlineBooking.label')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Los clientes pueden agendar citas directamente desde la plataforma
+                    {t('settings.businessInfo.operationSettings.allowOnlineBooking.description')}
                   </p>
                 </div>
                 <Switch defaultChecked />
@@ -573,9 +573,9 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">Confirmación automática</Label>
+                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.autoConfirm.label')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Las citas se confirman automáticamente sin necesidad de aprobación manual
+                    {t('settings.businessInfo.operationSettings.autoConfirm.description')}
                   </p>
                 </div>
                 <Switch />
@@ -583,9 +583,9 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">Recordatorios automáticos</Label>
+                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.autoReminders.label')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Envía recordatorios automáticos a los clientes antes de sus citas
+                    {t('settings.businessInfo.operationSettings.autoReminders.description')}
                   </p>
                 </div>
                 <Switch defaultChecked />
@@ -593,9 +593,9 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">Mostrar precios públicamente</Label>
+                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.showPrices.label')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Los precios de los servicios son visibles para todos
+                    {t('settings.businessInfo.operationSettings.showPrices.description')}
                   </p>
                 </div>
                 <Switch defaultChecked />
@@ -742,12 +742,12 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
       setAllowClientMessages(newValue)
       toast.success(
         newValue 
-          ? 'Ahora los clientes pueden enviarte mensajes' 
-          : 'Los clientes no podrán enviarte mensajes'
+          ? t('settings.employeePrefs.messages.allowClientMessages.successEnabled')
+          : t('settings.employeePrefs.messages.allowClientMessages.successDisabled')
       )
     } catch (error) {
       const err = error as Error
-      toast.error(err.message || 'Error al actualizar preferencia de mensajes')
+      toast.error(err.message || t('settings.employeePrefs.messages.allowClientMessages.error'))
       // Revert the switch on error
       setAllowClientMessages(!newValue)
     } finally {
@@ -762,17 +762,17 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
       // Validations
       if (professionalSummary.trim().length > 0 && professionalSummary.trim().length < 50) {
-        setValidationError('El resumen profesional debe tener al menos 50 caracteres')
+        setValidationError(t('settings.employeePrefs.professionalInfo.errors.summaryTooShort'))
         return
       }
 
       if (yearsOfExperience < 0 || yearsOfExperience > 50) {
-        setValidationError('Los años de experiencia deben estar entre 0 y 50')
+        setValidationError(t('settings.employeePrefs.professionalInfo.errors.experienceRange'))
         return
       }
 
       if (expectedSalaryMin > 0 && expectedSalaryMax > 0 && expectedSalaryMin > expectedSalaryMax) {
-        setValidationError('El salario mínimo no puede ser mayor que el máximo')
+        setValidationError(t('settings.employeePrefs.salary.errors.minGreaterThanMax'))
         return
       }
 
@@ -788,10 +788,10 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         github_url: githubUrl.trim() || undefined,
       })
 
-      toast.success('Perfil actualizado exitosamente')
+      toast.success(t('settings.employeePrefs.profileUpdateSuccess'))
     } catch (error) {
       const err = error as Error
-      toast.error(err.message || 'Error al actualizar perfil')
+      toast.error(err.message || t('settings.employeePrefs.profileUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -803,7 +803,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
     try {
       await addSpecialization(newSpecialization.trim())
       setNewSpecialization('')
-      toast.success('Especialización agregada')
+      toast.success(t('settings.employeePrefs.specializations.successAdd'))
     } catch (error) {
       const err = error as Error
       toast.error(err.message)
@@ -816,7 +816,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
     try {
       await addLanguage(newLanguage.trim())
       setNewLanguage('')
-      toast.success('Idioma agregado')
+      toast.success(t('settings.employeePrefs.languages.successAdd'))
     } catch (error) {
       const err = error as Error
       toast.error(err.message)
@@ -825,7 +825,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
   const handleAddCertification = async () => {
     if (!certName.trim() || !certIssuer.trim() || !certIssueDate) {
-      toast.error('Nombre, emisor y fecha de emisión son requeridos')
+      toast.error(t('settings.employeePrefs.certifications.requiredFields'))
       return
     }
 
@@ -847,7 +847,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
       setCertCredentialId('')
       setCertCredentialUrl('')
       setShowCertificationForm(false)
-      toast.success('Certificación agregada')
+      toast.success(t('settings.employeePrefs.certifications.successAdd'))
     } catch (error) {
       const err = error as Error
       toast.error(err.message)
@@ -857,7 +857,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
   const handleRemoveSpecialization = async (spec: string) => {
     try {
       await removeSpecialization(spec)
-      toast.success('Especialización eliminada')
+      toast.success(t('settings.employeePrefs.specializations.successRemove'))
     } catch (error) {
       const err = error as Error
       toast.error(err.message)
@@ -867,7 +867,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
   const handleRemoveLanguage = async (lang: string) => {
     try {
       await removeLanguage(lang)
-      toast.success('Idioma eliminado')
+      toast.success(t('settings.employeePrefs.languages.successRemove'))
     } catch (error) {
       const err = error as Error
       toast.error(err.message)
@@ -877,7 +877,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
   const handleRemoveCertification = async (certId: string) => {
     try {
       await removeCertification(certId)
-      toast.success('Certificación eliminada')
+      toast.success(t('settings.employeePrefs.certifications.successRemove'))
     } catch (error) {
       const err = error as Error
       toast.error(err.message)
@@ -914,18 +914,18 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserCircle className="h-5 w-5" />
-            Disponibilidad Laboral
+            {t('settings.employeePrefs.availability.title')}
           </CardTitle>
           <CardDescription>
-            Configura tus horarios y disponibilidad para atender citas
+            {t('settings.employeePrefs.availability.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Disponible para nuevas citas</Label>
+              <Label className="text-base font-medium">{t('settings.employeePrefs.availability.availableForHire.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Acepta nuevas asignaciones de citas de clientes
+                {t('settings.employeePrefs.availability.availableForHire.description')}
               </p>
             </div>
             <Switch 
@@ -936,9 +936,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Notificar nuevas asignaciones</Label>
+              <Label className="text-base font-medium">{t('settings.employeePrefs.availability.notifyAssignments.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Recibe alertas cuando te asignen una nueva cita
+                {t('settings.employeePrefs.availability.notifyAssignments.description')}
               </p>
             </div>
             <Switch defaultChecked />
@@ -946,9 +946,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Recordatorios de citas</Label>
+              <Label className="text-base font-medium">{t('settings.employeePrefs.availability.reminders.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Recibe recordatorios antes de cada cita agendada
+                {t('settings.employeePrefs.availability.reminders.description')}
               </p>
             </div>
             <Switch defaultChecked />
@@ -957,12 +957,20 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Mi horario de trabajo</Label>
+            <Label className="text-base font-medium">{t('settings.employeePrefs.schedule.title')}</Label>
             <p className="text-sm text-muted-foreground">
-              Define los días y horarios en los que estás disponible para atender
+              {t('settings.employeePrefs.schedule.description')}
             </p>
             <div className="space-y-2 mt-3">
-              {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((day) => (
+              {[
+                t('settings.employeePrefs.schedule.days.monday'),
+                t('settings.employeePrefs.schedule.days.tuesday'),
+                t('settings.employeePrefs.schedule.days.wednesday'),
+                t('settings.employeePrefs.schedule.days.thursday'),
+                t('settings.employeePrefs.schedule.days.friday'),
+                t('settings.employeePrefs.schedule.days.saturday'),
+                t('settings.employeePrefs.schedule.days.sunday')
+              ].map((day) => (
                 <div key={day} className="flex items-center gap-4 p-3 border rounded-lg">
                   <Switch defaultChecked={!day.includes('Domingo')} />
                   <span className="w-24 font-medium">{day}</span>
@@ -1003,18 +1011,18 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Mensajes de Clientes
+            {t('settings.employeePrefs.messages.title')}
           </CardTitle>
           <CardDescription>
-            Controla si los clientes pueden enviarte mensajes directamente
+            {t('settings.employeePrefs.messages.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">Permitir mensajes de clientes</Label>
+              <Label className="text-base font-medium">{t('settings.employeePrefs.messages.allowClientMessages.label')}</Label>
               <p className="text-sm text-muted-foreground">
-                Los clientes podrán contactarte a través del chat interno
+                {t('settings.employeePrefs.messages.allowClientMessages.description')}
               </p>
             </div>
             <Switch 
@@ -1031,26 +1039,26 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Briefcase className="h-5 w-5" />
-            Información Profesional
+            {t('settings.employeePrefs.professionalInfo.title')}
           </CardTitle>
-          <CardDescription>Tu experiencia y tipo de trabajo preferido</CardDescription>
+          <CardDescription>{t('settings.employeePrefs.professionalInfo.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Resumen Profesional */}
           <div className="space-y-2">
             <Label htmlFor="professional-summary">
-              Resumen Profesional
+              {t('settings.employeePrefs.professionalInfo.summaryLabel')}
             </Label>
             <Textarea
               id="professional-summary"
               value={professionalSummary}
               onChange={(e) => setProfessionalSummary(e.target.value)}
-              placeholder={t('common.placeholders.bio')}
+              placeholder={t('settings.employeePrefs.professionalInfo.summaryPlaceholder')}
               className="min-h-[120px] resize-y"
             />
             {professionalSummary.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                {professionalSummary.length} / 50 caracteres mínimos
+                {t('settings.employeePrefs.professionalInfo.minCharacters', { count: professionalSummary.length.toString() })}
               </p>
             )}
           </div>
@@ -1058,7 +1066,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
           {/* Años de Experiencia */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="years-experience">Años de Experiencia</Label>
+              <Label htmlFor="years-experience">{t('settings.employeePrefs.professionalInfo.yearsExperienceLabel')}</Label>
               <Input
                 id="years-experience"
                 type="number"
@@ -1070,16 +1078,16 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="work-type">Tipo de Trabajo Preferido</Label>
+              <Label htmlFor="work-type">{t('settings.employeePrefs.professionalInfo.workTypeLabel')}</Label>
               <Select value={preferredWorkType} onValueChange={(v) => setPreferredWorkType(v as typeof preferredWorkType)}>
                 <SelectTrigger id="work-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full_time">Tiempo Completo</SelectItem>
-                  <SelectItem value="part_time">Medio Tiempo</SelectItem>
-                  <SelectItem value="contract">Contrato</SelectItem>
-                  <SelectItem value="flexible">Flexible</SelectItem>
+                  <SelectItem value="full_time">{t('settings.employeePrefs.professionalInfo.workTypes.fullTime')}</SelectItem>
+                  <SelectItem value="part_time">{t('settings.employeePrefs.professionalInfo.workTypes.partTime')}</SelectItem>
+                  <SelectItem value="contract">{t('settings.employeePrefs.professionalInfo.workTypes.contract')}</SelectItem>
+                  <SelectItem value="flexible">{t('settings.employeePrefs.professionalInfo.workTypes.flexible')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1092,21 +1100,21 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Expectativas Salariales
+            {t('settings.employeePrefs.salary.title')}
           </CardTitle>
-          <CardDescription>Opcional: Ayuda a los empleadores a hacerte ofertas adecuadas</CardDescription>
+          <CardDescription>{t('settings.employeePrefs.salary.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="salary-min">Salario Mínimo Esperado</Label>
+              <Label htmlFor="salary-min">{t('settings.employeePrefs.salary.minLabel')}</Label>
               <Input
                 id="salary-min"
                 type="number"
                 min={0}
                 value={expectedSalaryMin}
                 onChange={(e) => setExpectedSalaryMin(Number(e.target.value))}
-                placeholder="2000000"
+                placeholder={t('settings.employeePrefs.salary.minPlaceholder')}
               />
               {expectedSalaryMin > 0 && (
                 <p className="text-xs text-muted-foreground">{formatSalary(expectedSalaryMin)}</p>
@@ -1114,14 +1122,14 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="salary-max">Salario Máximo Esperado</Label>
+              <Label htmlFor="salary-max">{t('settings.employeePrefs.salary.maxLabel')}</Label>
               <Input
                 id="salary-max"
                 type="number"
                 min={0}
                 value={expectedSalaryMax}
                 onChange={(e) => setExpectedSalaryMax(Number(e.target.value))}
-                placeholder="5000000"
+                placeholder={t('settings.employeePrefs.salary.maxPlaceholder')}
               />
               {expectedSalaryMax > 0 && (
                 <p className="text-xs text-muted-foreground">{formatSalary(expectedSalaryMax)}</p>
@@ -1136,9 +1144,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5" />
-            Especializaciones
+            {t('settings.employeePrefs.specializations.title')}
           </CardTitle>
-          <CardDescription>Tus áreas de experiencia</CardDescription>
+          <CardDescription>{t('settings.employeePrefs.specializations.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
@@ -1157,7 +1165,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex gap-2">
             <Input
-              placeholder={t('common.placeholders.skills')}
+              placeholder={t('settings.employeePrefs.specializations.placeholder')}
               value={newSpecialization}
               onChange={(e) => setNewSpecialization(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddSpecialization()}
@@ -1174,9 +1182,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Languages className="h-5 w-5" />
-            Idiomas
+            {t('settings.employeePrefs.languages.title')}
           </CardTitle>
-          <CardDescription>Los idiomas que hablas</CardDescription>
+          <CardDescription>{t('settings.employeePrefs.languages.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
@@ -1195,7 +1203,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex gap-2">
             <Input
-              placeholder={t('common.placeholders.languages')}
+              placeholder={t('settings.employeePrefs.languages.placeholder')}
               value={newLanguage}
               onChange={(e) => setNewLanguage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddLanguage()}
@@ -1214,9 +1222,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Certificaciones
+                {t('settings.employeePrefs.certifications.title')}
               </CardTitle>
-              <CardDescription>Tus certificaciones profesionales</CardDescription>
+              <CardDescription>{t('settings.employeePrefs.certifications.description')}</CardDescription>
             </div>
             <Button
               variant="outline"
@@ -1224,7 +1232,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
               onClick={() => setShowCertificationForm(!showCertificationForm)}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Agregar
+              {t('settings.employeePrefs.certifications.addButton')}
             </Button>
           </div>
         </CardHeader>
@@ -1235,42 +1243,42 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
               <CardContent className="pt-6 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Input
-                    placeholder={t('common.placeholders.certificationName')}
+                    placeholder={t('settings.employeePrefs.certifications.namePlaceholder')}
                     value={certName}
                     onChange={(e) => setCertName(e.target.value)}
                   />
                   <Input
-                    placeholder={t('common.placeholders.certificationIssuer')}
+                    placeholder={t('settings.employeePrefs.certifications.issuerPlaceholder')}
                     value={certIssuer}
                     onChange={(e) => setCertIssuer(e.target.value)}
                   />
                   <Input
                     type="date"
-                    placeholder={t('common.placeholders.certificationIssueDate')}
+                    placeholder={t('settings.employeePrefs.certifications.issueDatePlaceholder')}
                     value={certIssueDate}
                     onChange={(e) => setCertIssueDate(e.target.value)}
                   />
                   <Input
                     type="date"
-                    placeholder={t('common.placeholders.certificationExpiryDate')}
+                    placeholder={t('settings.employeePrefs.certifications.expiryDatePlaceholder')}
                     value={certExpiryDate}
                     onChange={(e) => setCertExpiryDate(e.target.value)}
                   />
                   <Input
-                    placeholder={t('common.placeholders.certificationId')}
+                    placeholder={t('settings.employeePrefs.certifications.credentialIdPlaceholder')}
                     value={certCredentialId}
                     onChange={(e) => setCertCredentialId(e.target.value)}
                   />
                   <Input
-                    placeholder={t('common.placeholders.certificationUrl')}
+                    placeholder={t('settings.employeePrefs.certifications.credentialUrlPlaceholder')}
                     value={certCredentialUrl}
                     onChange={(e) => setCertCredentialUrl(e.target.value)}
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleAddCertification} size="sm">Guardar</Button>
+                  <Button onClick={handleAddCertification} size="sm">{t('common.actions.save')}</Button>
                   <Button variant="outline" size="sm" onClick={() => setShowCertificationForm(false)}>
-                    Cancelar
+                    {t('common.actions.cancel')}
                   </Button>
                 </div>
               </CardContent>
@@ -1286,9 +1294,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                     <h4 className="font-semibold">{cert.name}</h4>
                     <p className="text-sm text-muted-foreground">{cert.issuer}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                      <span>Emisión: {new Date(cert.issue_date).toLocaleDateString()}</span>
+                      <span>{t('settings.employeePrefs.certifications.issuedLabel')}: {new Date(cert.issue_date).toLocaleDateString()}</span>
                       {cert.expiry_date && (
-                        <span>• Vencimiento: {new Date(cert.expiry_date).toLocaleDateString()}</span>
+                        <span>• {t('settings.employeePrefs.certifications.expiresLabel')}: {new Date(cert.expiry_date).toLocaleDateString()}</span>
                       )}
                     </div>
                     {cert.credential_url && (
@@ -1298,7 +1306,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                         rel="noopener noreferrer"
                         className="text-xs text-primary hover:underline mt-1 inline-block"
                       >
-                        Ver credencial →
+                        {t('settings.employeePrefs.certifications.viewCredential')} →
                       </a>
                     )}
                   </div>
@@ -1321,37 +1329,37 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LinkIcon className="h-5 w-5" />
-            Enlaces Externos
+            {t('settings.employeePrefs.links.title')}
           </CardTitle>
-          <CardDescription>Portfolio, LinkedIn, GitHub, etc.</CardDescription>
+          <CardDescription>{t('settings.employeePrefs.links.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="portfolio-url">Portfolio / Sitio Web</Label>
+            <Label htmlFor="portfolio-url">{t('settings.employeePrefs.links.portfolioLabel')}</Label>
             <Input
               id="portfolio-url"
               type="url"
-              placeholder={t('common.placeholders.portfolio')}
+              placeholder={t('settings.employeePrefs.links.portfolioPlaceholder')}
               value={portfolioUrl}
               onChange={(e) => setPortfolioUrl(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="linkedin-url">LinkedIn</Label>
+            <Label htmlFor="linkedin-url">{t('settings.employeePrefs.links.linkedinLabel')}</Label>
             <Input
               id="linkedin-url"
               type="url"
-              placeholder={t('common.placeholders.linkedin')}
+              placeholder={t('settings.employeePrefs.links.linkedinPlaceholder')}
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="github-url">GitHub</Label>
+            <Label htmlFor="github-url">{t('settings.employeePrefs.links.githubLabel')}</Label>
             <Input
               id="github-url"
               type="url"
-              placeholder={t('common.placeholders.github')}
+              placeholder={t('settings.employeePrefs.links.githubPlaceholder')}
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
@@ -1367,12 +1375,12 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Guardando...
+              {t('common.actions.saving')}...
             </>
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              Guardar Cambios
+              {t('settings.employeePrefs.saveChanges')}
             </>
           )}
         </Button>
@@ -1385,25 +1393,27 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 // COMPONENTE: Preferencias del Cliente
 // ============================================
 function ClientRolePreferences() {
+  const { t } = useLanguage()
+  
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
-            Preferencias de Reserva
+            {t('settings.clientPrefs.bookingPrefs.title')}
           </CardTitle>
           <CardDescription>
-            Configura tus preferencias de reserva y comunicación
+            {t('settings.clientPrefs.bookingPrefs.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">Recordatorios de citas</Label>
+                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.reminders.label')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Recibe recordatorios automáticos antes de tus citas
+                  {t('settings.clientPrefs.bookingPrefs.reminders.description')}
                 </p>
               </div>
               <Switch defaultChecked />
@@ -1411,9 +1421,9 @@ function ClientRolePreferences() {
 
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">Confirmación por email</Label>
+                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.emailConfirmation.label')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Recibe confirmación por correo al agendar una cita
+                  {t('settings.clientPrefs.bookingPrefs.emailConfirmation.description')}
                 </p>
               </div>
               <Switch defaultChecked />
@@ -1421,9 +1431,9 @@ function ClientRolePreferences() {
 
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">Notificaciones de promociones</Label>
+                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.promotions.label')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Recibe ofertas especiales de los negocios que sigues
+                  {t('settings.clientPrefs.bookingPrefs.promotions.description')}
                 </p>
               </div>
               <Switch />
@@ -1431,9 +1441,9 @@ function ClientRolePreferences() {
 
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">Guardar métodos de pago</Label>
+                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.savePayment.label')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Almacena tarjetas para reservas más rápidas
+                  {t('settings.clientPrefs.bookingPrefs.savePayment.description')}
                 </p>
               </div>
               <Switch />
@@ -1443,20 +1453,20 @@ function ClientRolePreferences() {
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Tiempo de anticipación preferido</Label>
+            <Label className="text-base font-medium">{t('settings.clientPrefs.advanceTime.title')}</Label>
             <p className="text-sm text-muted-foreground">
-              ¿Con cuánta anticipación quieres recibir recordatorios?
+              {t('settings.clientPrefs.advanceTime.description')}
             </p>
             <Select defaultValue="24">
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1 hora antes</SelectItem>
-                <SelectItem value="2">2 horas antes</SelectItem>
-                <SelectItem value="4">4 horas antes</SelectItem>
-                <SelectItem value="24">1 día antes</SelectItem>
-                <SelectItem value="48">2 días antes</SelectItem>
+                <SelectItem value="1">{t('settings.clientPrefs.advanceTime.options.oneHour')}</SelectItem>
+                <SelectItem value="2">{t('settings.clientPrefs.advanceTime.options.twoHours')}</SelectItem>
+                <SelectItem value="4">{t('settings.clientPrefs.advanceTime.options.fourHours')}</SelectItem>
+                <SelectItem value="24">{t('settings.clientPrefs.advanceTime.options.oneDay')}</SelectItem>
+                <SelectItem value="48">{t('settings.clientPrefs.advanceTime.options.twoDays')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1464,15 +1474,15 @@ function ClientRolePreferences() {
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Método de pago preferido</Label>
+            <Label className="text-base font-medium">{t('settings.clientPrefs.paymentMethods.title')}</Label>
             <Select defaultValue="card">
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="card">Tarjeta de crédito/débito</SelectItem>
-                <SelectItem value="cash">Efectivo en el lugar</SelectItem>
-                <SelectItem value="transfer">Transferencia bancaria</SelectItem>
+                <SelectItem value="card">{t('settings.clientPrefs.paymentMethods.options.card')}</SelectItem>
+                <SelectItem value="cash">{t('settings.clientPrefs.paymentMethods.options.cash')}</SelectItem>
+                <SelectItem value="transfer">{t('settings.clientPrefs.paymentMethods.options.transfer')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1480,19 +1490,19 @@ function ClientRolePreferences() {
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">Historial de servicios</Label>
+            <Label className="text-base font-medium">{t('settings.clientPrefs.serviceHistory.title')}</Label>
             <div className="p-4 bg-muted/30 rounded-lg">
               <p className="text-sm text-muted-foreground">
-                Has completado <strong className="text-foreground">0 servicios</strong> hasta ahora
+                {t('settings.clientPrefs.serviceHistory.completedServices', { count: '0' })}
               </p>
               <Button variant="outline" className="mt-3 w-full">
-                Ver Historial Completo
+                {t('settings.clientPrefs.serviceHistory.viewHistory')}
               </Button>
             </div>
           </div>
 
           <div className="pt-4">
-            <Button className="w-full">Guardar Preferencias</Button>
+            <Button className="w-full">{t('settings.clientPrefs.savePreferences')}</Button>
           </div>
         </CardContent>
       </Card>
@@ -1508,6 +1518,7 @@ interface DangerZoneProps {
 }
 
 function DangerZone({ user }: DangerZoneProps) {
+  const { t } = useLanguage()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteStep, setDeleteStep] = useState<1 | 2>(1)
   const [confirmEmail, setConfirmEmail] = useState('')
@@ -1538,7 +1549,7 @@ function DangerZone({ user }: DangerZoneProps) {
 
   const handleDeleteAccount = async () => {
     if (confirmText !== 'DESACTIVAR CUENTA') {
-      toast.error('Debes escribir "DESACTIVAR CUENTA" para confirmar')
+      toast.error(t('settings.dangerZone.delete.mustTypeCorrectly'))
       return
     }
 
@@ -1559,8 +1570,8 @@ function DangerZone({ user }: DangerZoneProps) {
       // Cerrar sesión
       await supabase.auth.signOut()
 
-      toast.success('Cuenta desactivada exitosamente', {
-        description: 'Tu cuenta ha sido desactivada. Contáctanos si deseas reactivarla.'
+      toast.success(t('settings.dangerZone.delete.successTitle'), {
+        description: t('settings.dangerZone.delete.successDescription')
       })
       
       // Limpiar localStorage
@@ -1572,8 +1583,8 @@ function DangerZone({ user }: DangerZoneProps) {
       }, 2000)
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      toast.error('Error al desactivar la cuenta', {
+      const errorMessage = error instanceof Error ? error.message : t('settings.dangerZone.delete.unknownError')
+      toast.error(t('settings.dangerZone.delete.errorTitle'), {
         description: errorMessage
       })
       setIsDeleting(false)
@@ -1586,42 +1597,42 @@ function DangerZone({ user }: DangerZoneProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            Zona Peligrosa
+            {t('settings.dangerZone.title')}
           </CardTitle>
           <CardDescription>
-            Acciones que afectarán el estado de tu cuenta
+            {t('settings.dangerZone.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Advertencia:</strong> Desactivar tu cuenta cerrará tu sesión y cancelará tus citas futuras.
+              <strong>{t('settings.dangerZone.warning.label')}:</strong> {t('settings.dangerZone.warning.message')}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-4">
             <div>
-              <h4 className="text-base font-semibold mb-2">Desactivar mi cuenta</h4>
+              <h4 className="text-base font-semibold mb-2">{t('settings.dangerZone.deactivate.title')}</h4>
               <p className="text-sm text-muted-foreground mb-4">
-                Tu cuenta será desactivada temporalmente. Podrás reactivarla contactando a soporte. Tus datos no se eliminarán.
+                {t('settings.dangerZone.deactivate.subtitle')}
               </p>
               
               <div className="bg-muted/30 rounded-lg p-4 mb-4">
-                <p className="text-sm font-medium mb-2">Qué sucederá al desactivar:</p>
+                <p className="text-sm font-medium mb-2">{t('settings.dangerZone.deactivate.whatHappens')}</p>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                  <li>Tu cuenta será marcada como inactiva</li>
-                  <li>Se cerrará tu sesión automáticamente</li>
-                  <li>Todas tus citas futuras pendientes serán canceladas</li>
-                  <li>No podrás iniciar sesión hasta reactivar tu cuenta</li>
-                  <li>Tus datos se conservarán para posible reactivación</li>
+                  <li>{t('settings.dangerZone.deactivate.consequences.markedInactive')}</li>
+                  <li>{t('settings.dangerZone.deactivate.consequences.sessionClosed')}</li>
+                  <li>{t('settings.dangerZone.deactivate.consequences.futureAppointments')}</li>
+                  <li>{t('settings.dangerZone.deactivate.consequences.noLogin')}</li>
+                  <li>{t('settings.dangerZone.deactivate.consequences.dataPreserved')}</li>
                 </ul>
                 <div className="mt-3 pt-3 border-t border-border">
                   <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-                    ✓ Tus datos NO se eliminarán
+                    ✓ {t('settings.dangerZone.deactivate.dataNotDeleted')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Contacta a soporte si deseas reactivar tu cuenta más adelante
+                    {t('settings.dangerZone.deactivate.contactSupport')}
                   </p>
                 </div>
               </div>
@@ -1632,7 +1643,7 @@ function DangerZone({ user }: DangerZoneProps) {
                 className="w-full"
               >
                 <AlertCircle className="h-4 w-4 mr-2" />
-                Desactivar mi cuenta
+                {t('settings.dangerZone.deactivate.button')}
               </Button>
             </div>
           </div>
@@ -1645,12 +1656,12 @@ function DangerZone({ user }: DangerZoneProps) {
           <DialogHeader>
             <DialogTitle className="text-destructive flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
-              {deleteStep === 1 ? 'Confirmar desactivación de cuenta' : 'Confirmación final'}
+              {deleteStep === 1 ? t('settings.dangerZone.delete.step1Title') : t('settings.dangerZone.delete.step2Title')}
             </DialogTitle>
             <DialogDescription>
               {deleteStep === 1 
-                ? 'Tu cuenta será desactivada temporalmente. Podrás reactivarla contactando a soporte.'
-                : 'Último paso antes de desactivar tu cuenta.'}
+                ? t('settings.dangerZone.delete.step1Description')
+                : t('settings.dangerZone.delete.step2Description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -1659,18 +1670,18 @@ function DangerZone({ user }: DangerZoneProps) {
               <Alert className="border-yellow-500 bg-yellow-500/10">
                 <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                 <AlertDescription className="text-sm text-yellow-800 dark:text-white-200">
-                  Tu cuenta será desactivada, no eliminada. Tus datos se conservarán para reactivación futura.
+                  {t('settings.dangerZone.delete.step1Warning')}
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-email">
-                  Para confirmar, escribe tu email: <strong>{user.email}</strong>
+                  {t('settings.dangerZone.delete.emailPrompt')}: <strong>{user.email}</strong>
                 </Label>
                 <Input
                   id="confirm-email"
                   type="email"
-                  placeholder="tu@email.com"
+                  placeholder={t('settings.dangerZone.delete.emailPlaceholder')}
                   value={confirmEmail}
                   onChange={(e) => setConfirmEmail(e.target.value)}
                   className="w-full"
@@ -1687,7 +1698,7 @@ function DangerZone({ user }: DangerZoneProps) {
                   htmlFor="understand"
                   className="text-sm leading-tight cursor-pointer"
                 >
-                  Entiendo que mi cuenta será desactivada y mis citas futuras serán canceladas
+                  {t('settings.dangerZone.delete.understandCheckbox')}
                 </label>
               </div>
             </div>
@@ -1698,18 +1709,18 @@ function DangerZone({ user }: DangerZoneProps) {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-sm font-semibold">
-                  ⚠️ CONFIRMACIÓN FINAL: Tu cuenta será desactivada y tus citas canceladas.
+                  ⚠️ {t('settings.dangerZone.delete.finalWarning')}
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-text">
-                  Escribe exactamente: <code className="bg-muted px-2 py-1 rounded">DESACTIVAR CUENTA</code>
+                  {t('settings.dangerZone.delete.typeExactly')}: <code className="bg-muted px-2 py-1 rounded">DESACTIVAR CUENTA</code>
                 </Label>
                 <Input
                   id="confirm-text"
                   type="text"
-                  placeholder={t('common.placeholders.deactivateAccount')}
+                  placeholder={t('settings.dangerZone.delete.confirmPlaceholder')}
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   className="w-full font-mono"
@@ -1718,17 +1729,17 @@ function DangerZone({ user }: DangerZoneProps) {
 
               <div className="bg-muted/50 rounded-lg p-3">
                 <p className="text-xs text-muted-foreground mb-2">
-                  Al confirmar, tu cuenta será desactivada:
+                  {t('settings.dangerZone.delete.confirmDetails')}:
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>⚠️ Cuenta: {user.email}</li>
-                  <li>⚠️ Perfil: {user.name}</li>
-                  <li>⚠️ Roles: {user.roles?.length || 0} activos</li>
-                  <li>⚠️ Citas futuras: Canceladas automáticamente</li>
+                  <li>⚠️ {t('settings.dangerZone.delete.accountLabel')}: {user.email}</li>
+                  <li>⚠️ {t('settings.dangerZone.delete.profileLabel')}: {user.name}</li>
+                  <li>⚠️ {t('settings.dangerZone.delete.rolesLabel')}: {user.roles?.length || 0} {t('settings.dangerZone.delete.activeLabel')}</li>
+                  <li>⚠️ {t('settings.dangerZone.delete.appointmentsLabel')}: {t('settings.dangerZone.delete.cancelledAuto')}</li>
                 </ul>
                 <div className="mt-3 pt-3 border-t border-border">
                   <p className="text-xs font-medium text-green-600 dark:text-green-400">
-                    ✓ Tus datos se conservarán para reactivación
+                    ✓ {t('settings.dangerZone.delete.dataPreservedNote')}
                   </p>
                 </div>
               </div>
@@ -1742,7 +1753,7 @@ function DangerZone({ user }: DangerZoneProps) {
               disabled={isDeleting}
               className="w-full sm:w-auto"
             >
-              Cancelar
+              {t('common.actions.cancel')}
             </Button>
             {deleteStep === 1 ? (
               <Button
@@ -1754,7 +1765,7 @@ function DangerZone({ user }: DangerZoneProps) {
                 }
                 className="w-full sm:w-auto"
               >
-                Continuar
+                {t('settings.dangerZone.delete.continue')}
               </Button>
             ) : (
               <Button
@@ -1766,12 +1777,12 @@ function DangerZone({ user }: DangerZoneProps) {
                 {isDeleting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Desactivando...
+                    {t('settings.dangerZone.delete.deactivating')}...
                   </>
                 ) : (
                   <>
                     <AlertCircle className="h-4 w-4 mr-2" />
-                    Desactivar cuenta ahora
+                    {t('settings.dangerZone.delete.deactivateNow')}
                   </>
                 )}
               </Button>

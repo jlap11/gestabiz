@@ -273,13 +273,13 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Ubicación</TableHead>
-                  <TableHead>Capacidad</TableHead>
-                  <TableHead>Precio/hora</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead>{t('businessResources.table.name')}</TableHead>
+                  <TableHead>{t('businessResources.table.type')}</TableHead>
+                  <TableHead>{t('businessResources.table.location')}</TableHead>
+                  <TableHead>{t('businessResources.table.capacity')}</TableHead>
+                  <TableHead>{t('businessResources.table.price')}</TableHead>
+                  <TableHead>{t('businessResources.table.status')}</TableHead>
+                  <TableHead className="text-right">{t('businessResources.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -356,12 +356,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingResource ? 'Editar Recurso' : 'Crear Recurso'}
+              {editingResource ? t('businessResources.editResource') : t('businessResources.addResource')}
             </DialogTitle>
             <DialogDescription>
               {editingResource
-                ? 'Modifica los datos del recurso físico'
-                : 'Registra un nuevo recurso físico para reservas'}
+                ? t('businessResources.form.description')
+                : t('businessResources.subtitle')}
             </DialogDescription>
           </DialogHeader>
 
@@ -369,13 +369,13 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             {/* Nombre */}
             <div className="space-y-2">
               <Label htmlFor="name">
-                Nombre <span className="text-destructive">*</span>
+                {t('businessResources.form.name')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Ej: Habitación 101, Mesa 5, Cancha de Tenis 1"
+                placeholder={t('businessResources.form.namePlaceholder')}
                 required
               />
             </div>
@@ -383,7 +383,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             {/* Tipo de Recurso */}
             <div className="space-y-2">
               <Label htmlFor="resource_type">
-                Tipo de Recurso <span className="text-destructive">*</span>
+                {t('businessResources.form.type')} <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={formData.resource_type}
@@ -408,14 +408,14 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             {/* Sede */}
             <div className="space-y-2">
               <Label htmlFor="location_id">
-                Sede <span className="text-destructive">*</span>
+                {t('businessResources.form.location')} <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={formData.location_id}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, location_id: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una sede" />
+                  <SelectValue placeholder={t('businessResources.form.selectLocation')} />
                 </SelectTrigger>
                 <SelectContent>
                   {locations.map(location => (
@@ -427,7 +427,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               </Select>
               {locations.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  No hay sedes activas. Crea una sede primero.
+                  {t('locations.no_locations')}
                 </p>
               )}
             </div>
@@ -436,7 +436,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="capacity">
-                  Capacidad <span className="text-destructive">*</span>
+                  {t('businessResources.form.capacity')} <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -450,6 +450,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                       capacity: Number.parseInt(e.target.value, 10) || 1 
                     }))}
                     className="pl-10"
+                    placeholder={t('businessResources.form.capacityPlaceholder')}
                     required
                   />
                 </div>
@@ -457,7 +458,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
 
               <div className="space-y-2">
                 <Label htmlFor="price_per_hour">
-                  Precio por Hora (COP)
+                  {t('businessResources.form.pricePerHour')}
                 </Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -472,7 +473,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                       price_per_hour: Number.parseFloat(e.target.value) || 0 
                     }))}
                     className="pl-10"
-                    placeholder="0"
+                    placeholder={t('businessResources.form.pricePlaceholder')}
                   />
                 </div>
               </div>
@@ -480,12 +481,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
 
             {/* Descripción */}
             <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
+              <Label htmlFor="description">{t('businessResources.form.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe las características del recurso"
+                placeholder={t('businessResources.form.descriptionPlaceholder')}
                 rows={3}
               />
             </div>
@@ -493,22 +494,22 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             {/* Amenidades */}
             <div className="space-y-2">
               <Label htmlFor="amenities">
-                Amenidades
+                {t('businessResources.form.amenities')}
               </Label>
               <Input
                 id="amenities"
                 value={formData.amenities}
                 onChange={(e) => setFormData(prev => ({ ...prev, amenities: e.target.value }))}
-                placeholder="WiFi, Aire Acondicionado, TV (separadas por comas)"
+                placeholder={t('businessResources.form.amenitiesPlaceholder')}
               />
               <p className="text-xs text-muted-foreground">
-                Separa cada amenidad con una coma (,)
+                {t('businessResources.form.amenitiesPlaceholder')}
               </p>
             </div>
 
             {/* Estado */}
             <div className="space-y-2">
-              <Label htmlFor="is_active">Estado</Label>
+              <Label htmlFor="is_active">{t('businessResources.form.status')}</Label>
               <Select
                 value={formData.is_active ? 'active' : 'inactive'}
                 onValueChange={(value) => setFormData(prev => ({ 
@@ -520,8 +521,8 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Activo</SelectItem>
-                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="active">{t('businessResources.form.active')}</SelectItem>
+                  <SelectItem value="inactive">{t('businessResources.form.inactive')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -532,7 +533,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                 variant="outline"
                 onClick={handleCloseModal}
               >
-                Cancelar
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -541,7 +542,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                 {(createMutation.isPending || updateMutation.isPending) && (
                   <span className="mr-2">⏳</span>
                 )}
-                {editingResource ? 'Actualizar' : 'Crear'}
+                {editingResource ? t('common.actions.update') : t('common.actions.create')}
               </Button>
             </DialogFooter>
           </form>

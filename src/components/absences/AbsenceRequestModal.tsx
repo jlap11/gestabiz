@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences';
 import { usePublicHolidays } from '@/hooks/usePublicHolidays';
 import { useBusinessCountry } from '@/hooks/useBusinessCountry';
@@ -35,15 +36,8 @@ interface AbsenceRequestModalProps {
 
 type AbsenceType = 'vacation' | 'emergency' | 'sick_leave' | 'personal' | 'other';
 
-const absenceTypeLabels: Record<AbsenceType, string> = {
-  vacation: '🌴 Vacaciones',
-  emergency: '🚨 Emergencia',
-  sick_leave: '🤒 Incapacidad médica',
-  personal: '👤 Asunto personal',
-  other: '📋 Otro',
-};
-
 export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<AbsenceRequestModalProps>) {
+  const { t } = useLanguage();
   const { requestAbsence, vacationBalance, loading, validateWorkDays } = useEmployeeAbsences(businessId);
   const { data: businessData } = useBusinessCountry(businessId);
   const { holidays } = usePublicHolidays(businessData?.country);
@@ -182,7 +176,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Solicitar Ausencia o Vacaciones</DialogTitle>
+          <DialogTitle>{t('absences.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -191,19 +185,19 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-blue-900 dark:text-blue-100">Balance de Vacaciones {vacationBalance.year}</p>
+                  <p className="font-medium text-blue-900 dark:text-blue-100">{t('absences.vacationBalance')} {vacationBalance.year}</p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    {Math.max(0, vacationBalance.daysRemaining)} días disponibles de {Math.max(0, vacationBalance.totalDaysAvailable)}
+                    {Math.max(0, vacationBalance.daysRemaining)} {t('absences.daysAvailable')} {Math.max(0, vacationBalance.totalDaysAvailable)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{Math.max(0, vacationBalance.daysRemaining)}</p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400">días libres</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">{t('absences.daysRemaining')}</p>
                 </div>
               </div>
               {vacationBalance.daysPending > 0 && (
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                  {Math.max(0, vacationBalance.daysPending)} días pendientes de aprobación
+                  {Math.max(0, vacationBalance.daysPending)} {t('absences.daysRemaining')}
                 </p>
               )}
             </div>
@@ -211,15 +205,15 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
 
           {/* Tipo de ausencia */}
           <div className="space-y-2">
-            <Label htmlFor="absenceType">Tipo de Ausencia *</Label>
+            <Label htmlFor="absenceType">{t('absences.absenceType')} *</Label>
             <Select value={absenceType} onValueChange={(value) => setAbsenceType(value as AbsenceType)}>
               <SelectTrigger id="absenceType">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(absenceTypeLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
+                {(['vacation', 'emergency', 'sick_leave', 'personal', 'other'] as AbsenceType[]).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`absences.types.${type}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -229,7 +223,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
           {/* Fechas */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Fecha de Inicio *</Label>
+              <Label>{t('absences.startDate')} *</Label>
               <div className="border rounded-md p-2">
                 <Calendar
                   selected={startDate}
@@ -251,7 +245,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
             </div>
 
             <div className="space-y-2">
-              <Label>Fecha de Fin *</Label>
+              <Label>{t('absences.endDate')} *</Label>
               <div className="border rounded-md p-2">
                 <Calendar
                   selected={endDate}
@@ -277,13 +271,13 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
           {daysRequested > 0 && (
             <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <p className="text-sm font-medium">
-                Días solicitados: <span className="text-lg font-bold">{daysRequested}</span>
+                {t('absences.daysRequested')}: <span className="text-lg font-bold">{daysRequested}</span>
               </p>
               {absenceType === 'vacation' && !hasEnoughVacationDays && (
                 <div className="flex items-center gap-2 mt-2 text-red-600 dark:text-red-400">
                   <AlertCircle className="h-4 w-4" />
                   <p className="text-sm">
-                    No tiene suficientes días disponibles ({Math.max(0, vacationBalance?.daysRemaining ?? 0)} días restantes)
+                    {t('absences.insufficientBalance')} ({Math.max(0, vacationBalance?.daysRemaining ?? 0)} {t('absences.daysRemaining')})
                   </p>
                 </div>
               )}
@@ -297,13 +291,15 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-red-900 dark:text-red-100">
-                    {invalidWorkDays.length} día{invalidWorkDays.length === 1 ? '' : 's'} no laboral{invalidWorkDays.length === 1 ? '' : 'es'}
+                    {t('absences.invalidDays.title')}
                   </p>
                   <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                    Los siguientes días no están en tu horario de trabajo: {invalidWorkDays.map(d => format(new Date(d), 'dd/MM')).join(', ')}
+                    {t('absences.invalidDays.message', {
+                      days: invalidWorkDays.map(d => format(new Date(d), 'dd/MM')).join(', ')
+                    })}
                   </p>
                   <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                    Por favor, selecciona solamente días en los que trabajas.
+                    {t('absences.invalidDays.instruction')}
                   </p>
                 </div>
               </div>
@@ -317,19 +313,20 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-orange-900 dark:text-orange-100">
-                    {holidaysInRange.length} festivo{holidaysInRange.length === 1 ? '' : 's'} en el rango
+                    {t('absences.holidays.title')}
                   </p>
                   <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
-                    Los siguientes días son festivos públicos y no se pueden solicitar como ausencia:{' '}
-                    {holidaysInRange
-                      .map((date) => {
-                        const holiday = holidays.find((h) => h.holiday_date === date);
-                        return `${format(new Date(date), 'dd/MM')} (${holiday?.name || 'Festivo'})`;
-                      })
-                      .join(', ')}
+                    {t('absences.holidays.message', {
+                      days: holidaysInRange
+                        .map((date) => {
+                          const holiday = holidays.find((h) => h.holiday_date === date);
+                          return `${format(new Date(date), 'dd/MM')} (${holiday?.name || 'Festivo'})`;
+                        })
+                        .join(', ')
+                    })}
                   </p>
                   <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                    Ajusta tus fechas excluyendo estos días.
+                    {t('absences.holidays.instruction')}
                   </p>
                 </div>
               </div>
@@ -343,12 +340,15 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                 <div>
                   <p className="font-medium text-yellow-900 dark:text-yellow-100">
-                    {affectedAppointmentsCount} cita{affectedAppointmentsCount === 1 ? '' : 's'} afectada{affectedAppointmentsCount === 1 ? '' : 's'}
+                    {t(affectedAppointmentsCount === 1 ? 'absences.affected.title' : 'absences.affected.titlePlural', {
+                      count: String(affectedAppointmentsCount)
+                    })}
                   </p>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    {affectedAppointmentsCount === 1
-                      ? 'Esta cita será cancelada si se aprueba la ausencia'
-                      : 'Estas citas serán canceladas si se aprueba la ausencia'}
+                    {t(affectedAppointmentsCount === 1 
+                      ? 'absences.affected.messageSingle' 
+                      : 'absences.affected.messagePlural'
+                    )}
                   </p>
                 </div>
               </div>
@@ -357,12 +357,12 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
 
           {/* Razón */}
           <div className="space-y-2">
-            <Label htmlFor="reason">Razón de la Ausencia *</Label>
+            <Label htmlFor="reason">{t('absences.labels.reasonRequired')}</Label>
             <Textarea
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Describa brevemente la razón de su ausencia..."
+              placeholder={t('absences.labels.reasonPlaceholder')}
               rows={3}
               required
             />
@@ -370,12 +370,12 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
 
           {/* Notas adicionales */}
           <div className="space-y-2">
-            <Label htmlFor="employeeNotes">Notas Adicionales (opcional)</Label>
+            <Label htmlFor="employeeNotes">{t('absences.labels.notesLabel')}</Label>
             <Textarea
               id="employeeNotes"
               value={employeeNotes}
               onChange={(e) => setEmployeeNotes(e.target.value)}
-              placeholder="Información adicional que desee compartir..."
+              placeholder={t('absences.labels.notesPlaceholder')}
               rows={2}
             />
           </div>
@@ -383,7 +383,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
-              Cancelar
+              {t('absences.labels.cancelButton')}
             </Button>
             <Button
               type="submit"
@@ -396,7 +396,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
                 loadingAppointments
               }
             >
-              {loading ? 'Enviando...' : 'Enviar Solicitud'}
+              {loading ? t('absences.labels.submittingButton') : t('absences.labels.submitButton')}
             </Button>
           </div>
         </form>

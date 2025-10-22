@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export type SearchType = 'services' | 'businesses' | 'categories' | 'users'
 
@@ -26,14 +27,15 @@ interface SearchBarProps {
   className?: string
 }
 
-const searchTypeConfig = {
-  services: { label: 'Servicios', icon: Briefcase, placeholder: 'Buscar servicios...' },
-  businesses: { label: 'Negocios', icon: Building2, placeholder: 'Buscar negocios...' },
-  categories: { label: 'Categorías', icon: Tag, placeholder: 'Buscar categorías...' },
-  users: { label: 'Profesionales', icon: User, placeholder: 'Buscar profesionales...' }
+const searchTypeIconConfig = {
+  services: Briefcase,
+  businesses: Building2,
+  categories: Tag,
+  users: User
 }
 
 export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarProps) {
+  const { t } = useLanguage()
   const [searchType, setSearchType] = useState<SearchType>('services')
   const [searchTerm, setSearchTerm] = useState('')
   const [isSearching, setIsSearching] = useState(false)
@@ -42,8 +44,9 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   const debounceTimerRef = useRef<NodeJS.Timeout>()
   const searchBarRef = useRef<HTMLDivElement>(null)
 
-  const config = searchTypeConfig[searchType]
-  const Icon = config.icon
+  const Icon = searchTypeIconConfig[searchType]
+  const typeLabel = t(`search.types.${searchType}`)
+  const placeholder = t(`search.placeholders.${searchType}`)
 
   // Close results when clicking outside
   useEffect(() => {
@@ -92,7 +95,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             id: service.id,
             name: service.name,
             type: 'services' as SearchType,
-            subtitle: service.business?.name || 'Servicio independiente',
+            subtitle: service.business?.name || t('search.results.independentService'),
             category: service.description
           }))
           break
@@ -124,8 +127,8 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             id: business.id,
             name: business.name,
             type: 'businesses' as SearchType,
-            subtitle: business.category?.name || 'Sin categoría',
-            location: business.locations?.[0]?.city || 'Ubicación no especificada'
+            subtitle: business.category?.name || t('search.results.noCategory'),
+            location: business.locations?.[0]?.city || t('search.results.locationNotSpecified')
           }))
           break
         }
@@ -144,7 +147,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             id: category.id,
             name: category.name,
             type: 'categories' as SearchType,
-            subtitle: category.description || 'Categoría de servicios'
+            subtitle: category.description || t('search.results.serviceCategory')
           }))
           break
         }
@@ -171,10 +174,10 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
 
           data = (usersData || []).map((user: any) => ({
             id: user.id,
-            name: user.full_name || 'Usuario sin nombre',
+            name: user.full_name || t('search.results.userNoName'),
             type: 'users' as SearchType,
-            subtitle: user.business_employees?.[0]?.business?.name || 'Profesional independiente',
-            category: user.bio || 'Profesional de servicios'
+            subtitle: user.business_employees?.[0]?.business?.name || t('search.results.independentProfessional'),
+            category: user.bio || t('search.results.professionalServices')
           }))
           break
         }
@@ -188,7 +191,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
     } finally {
       setIsSearching(false)
     }
-  }, [])
+  }, [t])
 
   // Debounced search
   useEffect(() => {
@@ -254,26 +257,26 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             <button className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 hover:bg-accent rounded-l-lg transition-colors border-r border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px]">
               <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
               <span className="hidden sm:inline text-sm font-medium text-foreground whitespace-nowrap">
-                {config.label}
+                {typeLabel}
               </span>
               <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44 sm:w-48">
-            {Object.entries(searchTypeConfig).map(([type, conf]) => {
-              const TypeIcon = conf.icon
+            {(Object.keys(searchTypeIconConfig) as SearchType[]).map((type) => {
+              const TypeIcon = searchTypeIconConfig[type]
               const isActive = type === searchType
               return (
                 <DropdownMenuItem
                   key={type}
-                  onClick={() => handleSearchTypeChange(type as SearchType)}
+                  onClick={() => handleSearchTypeChange(type)}
                   className={cn(
                     "gap-2 cursor-pointer",
                     isActive && "bg-accent text-accent-foreground"
                   )}
                 >
                   <TypeIcon className="h-4 w-4" />
-                  {conf.label}
+                  {t(`search.types.${type}`)}
                 </DropdownMenuItem>
               )
             })}
@@ -285,7 +288,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
           <Search className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           <input
             type="text"
-            placeholder={config.placeholder}
+            placeholder={placeholder}
             value={searchTerm}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
@@ -304,7 +307,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
           {results.length > 0 ? (
             <>
               {results.map((result) => {
-                const ResultIcon = searchTypeConfig[result.type].icon
+                const ResultIcon = searchTypeIconConfig[result.type]
                 return (
                   <button
                     key={result.id}
@@ -339,14 +342,14 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                 onClick={handleViewMore}
                 className="w-full px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-primary hover:bg-accent transition-colors text-center border-t-2 border-border hover:border-primary min-h-[48px]"
               >
-                Ver todos los resultados →
+                {t('search.results.viewAll')}
               </button>
             </>
           ) : searchTerm.length >= 2 && !isSearching ? (
             <div className="px-3 sm:px-5 py-6 sm:py-8 text-center text-muted-foreground">
               <Search className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 sm:mb-3 opacity-40" />
-              <p className="text-xs sm:text-sm font-medium">No se encontraron resultados</p>
-              <p className="text-[10px] sm:text-xs mt-1">Intenta con otros términos de búsqueda</p>
+              <p className="text-xs sm:text-sm font-medium">{t('search.results.noResults')}</p>
+              <p className="text-[10px] sm:text-xs mt-1">{t('search.results.tryDifferent')}</p>
             </div>
           ) : null}
         </div>

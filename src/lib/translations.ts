@@ -711,6 +711,8 @@ export const translations = {
     // Settings
     settings: {
       title: 'Settings',
+      subtitle: 'Configure your account and preferences',
+      profile: 'Profile',
       appearance: 'Appearance',
       theme: 'Theme',
       light: 'Light',
@@ -730,7 +732,263 @@ export const translations = {
       daily_digest: 'Daily digest',
       weekly_report: 'Weekly reports',
       save_preferences: 'Save Preferences',
-      preferences_saved: 'Preferences saved successfully'
+      preferences_saved: 'Preferences saved successfully',
+      // Tabs
+      tabs: {
+        general: 'General Settings',
+        profile: 'Profile',
+        notifications: 'Notifications',
+        businessPreferences: 'Business Preferences',
+        employeePreferences: 'Employee Preferences',
+        clientPreferences: 'Client Preferences',
+        dangerZone: 'Danger Zone'
+      },
+      // Theme section
+      themeSection: {
+        title: 'Appearance and System',
+        subtitle: 'Customize the theme and language of the application',
+        themeLabel: 'Interface theme',
+        themeDescription: 'Select your preferred theme for the application',
+        themes: {
+          light: {
+            label: 'Light',
+            description: 'Light colored interface'
+          },
+          dark: {
+            label: 'Dark',
+            description: 'Dark colored interface'
+          },
+          system: {
+            label: 'System',
+            description: 'According to system preferences'
+          }
+        },
+        currentTheme: 'Current theme: {{theme}}',
+        systemThemeNote: 'The theme automatically changes according to your operating system preferences',
+        changeAnytime: 'You can change the theme at any time'
+      },
+      // Language section
+      languageSection: {
+        label: 'Interface Language',
+        description: 'Select the interface language'
+      },
+      // Admin Business Preferences
+      businessInfo: {
+        title: 'Business Information',
+        subtitle: 'Basic business information',
+        tabs: {
+          info: 'Business Information',
+          notifications: 'Business Notifications',
+          tracking: 'History'
+        },
+        basicInfo: {
+          title: 'Basic Information',
+          nameLabel: 'Business Name *',
+          namePlaceholder: 'Enter business name',
+          descriptionLabel: 'Description',
+          descriptionPlaceholder: 'Describe your business...'
+        },
+        contactInfo: {
+          title: 'Contact Information',
+          phoneLabel: 'Phone',
+          phonePlaceholder: 'Phone number',
+          emailLabel: 'Email',
+          emailPlaceholder: 'contact@business.com',
+          websiteLabel: 'Website',
+          websitePlaceholder: 'https://www.business.com'
+        },
+        addressInfo: {
+          title: 'Address',
+          addressLabel: 'Address',
+          addressPlaceholder: 'Street, number, neighborhood',
+          cityLabel: 'City',
+          cityPlaceholder: 'City',
+          stateLabel: 'Department/State',
+          statePlaceholder: 'Department or State'
+        },
+        legalInfo: {
+          title: 'Legal Information',
+          legalNameLabel: 'Legal Name',
+          legalNamePlaceholder: 'Legal business name',
+          taxIdLabel: 'Tax ID / NIT',
+          taxIdPlaceholder: 'Tax identification number'
+        },
+        operationSettings: {
+          title: 'Operation Settings',
+          allowOnlineBooking: 'Allow online bookings',
+          autoConfirm: 'Automatic confirmation',
+          autoReminders: 'Automatic reminders',
+          showPrices: 'Show prices publicly'
+        },
+        nameRequired: 'Business name is required',
+        saveSettings: 'Save Settings'
+      },
+      // Employee Preferences
+      employeePrefs: {
+        title: 'Employee Preferences',
+        subtitle: 'Configure your work preferences',
+        availability: {
+          title: 'Availability',
+          availableForAppointments: 'Available for new appointments',
+          notifyNewAssignments: 'Notify new assignments',
+          appointmentReminders: 'Appointment reminders'
+        },
+        schedule: {
+          title: 'My Work Schedule',
+          workingDay: 'Working day',
+          restDay: 'Rest day',
+          startTime: 'Start',
+          endTime: 'End',
+          lunchBreak: 'Lunch',
+          saveSchedule: 'Save Schedules'
+        },
+        messages: {
+          title: 'Client Messages',
+          allowMessages: 'Allow messages from clients',
+          description: 'When enabled, clients can send you direct messages'
+        },
+        professionalInfo: {
+          title: 'Professional Information',
+          subtitle: 'Your experience and preferred work type',
+          summaryLabel: 'Professional Summary',
+          summaryPlaceholder: 'Describe your experience, skills, and specialties...',
+          yearsExperienceLabel: 'Years of Experience',
+          workTypeLabel: 'Preferred Work Type',
+          workTypes: {
+            fullTime: 'Full Time',
+            partTime: 'Part Time',
+            contract: 'Contract',
+            flexible: 'Flexible'
+          }
+        },
+        salary: {
+          title: 'Salary Expectations',
+          minLabel: 'Minimum Expected Salary',
+          maxLabel: 'Maximum Expected Salary',
+          minPlaceholder: 'Min amount',
+          maxPlaceholder: 'Max amount',
+          invalidRange: 'The minimum salary cannot be greater than the maximum'
+        },
+        specializations: {
+          title: 'Specializations',
+          noSpecializations: 'No specializations added yet',
+          newPlaceholder: 'New specialization',
+          addButton: 'Add'
+        },
+        languages: {
+          title: 'Languages',
+          noLanguages: 'No languages added yet',
+          newPlaceholder: 'Language (e.g., English - Advanced)',
+          addButton: 'Add'
+        },
+        certifications: {
+          title: 'Certifications and Licenses',
+          noCertifications: 'No certifications added yet',
+          addButton: 'Add Certification',
+          form: {
+            nameLabel: 'Certification Name',
+            namePlaceholder: 'Name of certification or license',
+            issuerLabel: 'Issuing Entity',
+            issuerPlaceholder: 'Entity that issued the certification',
+            dateLabel: 'Date Obtained',
+            datePlaceholder: 'MM/YYYY',
+            urlLabel: 'Credential URL (optional)',
+            urlPlaceholder: 'https://...',
+            cancelButton: 'Cancel',
+            saveButton: 'Save'
+          },
+          issued: 'Issued',
+          verifyCredential: 'Verify credential',
+          deleteButton: 'Delete'
+        },
+        links: {
+          title: 'Professional Links',
+          portfolioLabel: 'Portfolio / Website',
+          portfolioPlaceholder: 'https://your-portfolio.com',
+          linkedinLabel: 'LinkedIn',
+          linkedinPlaceholder: 'https://linkedin.com/in/yourprofile'
+        },
+        saveButton: 'Save Preferences',
+        resetButton: 'Reset'
+      },
+      // Client Preferences
+      clientPrefs: {
+        title: 'Client Preferences',
+        subtitle: 'Configure your booking preferences',
+        bookingPrefs: {
+          title: 'Booking Preferences',
+          appointmentReminders: 'Appointment reminders',
+          emailConfirmation: 'Email confirmation',
+          promotionNotifications: 'Promotion notifications',
+          savePaymentMethods: 'Save payment methods'
+        },
+        advanceTime: {
+          title: 'Preferred Advance Time',
+          label: 'Preferred notice time for appointments',
+          options: {
+            sameDay: 'Same day',
+            oneDay: '1 day',
+            twoDays: '2 days',
+            threeDays: '3 days',
+            oneWeek: '1 week'
+          }
+        },
+        serviceHistory: {
+          title: 'Service History',
+          label: 'Save my service history for recommendations',
+          description: 'We use this to suggest similar services'
+        },
+        paymentMethods: {
+          title: 'Payment Methods',
+          noneAdded: 'No payment methods added',
+          types: {
+            card: 'Credit/Debit Card',
+            pse: 'PSE',
+            cash: 'Cash',
+            transfer: 'Bank Transfer'
+          },
+          addButton: 'Add Payment Method'
+        },
+        savePreferences: 'Save Preferences'
+      },
+      // Danger Zone
+      dangerZone: {
+        title: 'Danger Zone',
+        subtitle: 'Irreversible account actions',
+        deactivate: {
+          title: 'Deactivate Account',
+          description: 'Temporarily suspend your account. You can reactivate it anytime.',
+          button: 'Deactivate Account',
+          confirmTitle: 'Are you sure you want to deactivate your account?',
+          confirmDescription: 'Your account will be temporarily suspended. All your data will be preserved and you can reactivate it anytime by signing in again.',
+          inputLabel: 'Confirm your email to continue:',
+          inputPlaceholder: 'your@email.com',
+          checkbox: 'I understand that my account will be temporarily suspended',
+          cancel: 'Cancel',
+          confirm: 'Yes, deactivate my account'
+        },
+        delete: {
+          title: 'Delete Account',
+          description: 'Permanently delete your account and all associated data. This action cannot be undone.',
+          button: 'Delete Account',
+          confirmTitle: 'Delete account permanently',
+          warningTitle: 'Warning: This action is irreversible',
+          warningDescription: 'You are about to permanently delete your account and all associated data. This includes:',
+          warningItems: {
+            profile: 'Your profile and personal information',
+            appointments: 'All your appointments (past and future)',
+            history: 'Your complete service history',
+            payments: 'Payment history and methods',
+            preferences: 'All your preferences and settings'
+          },
+          confirmText: 'Type "DEACTIVATE ACCOUNT" to confirm',
+          confirmPlaceholder: 'DEACTIVATE ACCOUNT',
+          mustTypeCorrectly: 'You must type "DEACTIVATE ACCOUNT" to confirm',
+          cancel: 'Cancel',
+          confirm: 'Yes, delete permanently',
+          processing: 'Processing...'
+        }
+      }
     },
 
     // Dashboard
@@ -770,6 +1028,64 @@ export const translations = {
       perAppointment: 'Per Appointment',
       weeklyAppointments: 'Weekly Appointments',
       appointmentStatus: 'Appointment Status'
+    },
+
+    // Search
+    search: {
+      types: {
+        services: 'Services',
+        businesses: 'Businesses',
+        categories: 'Categories',
+        users: 'Professionals'
+      },
+      placeholders: {
+        services: 'Search services...',
+        businesses: 'Search businesses...',
+        categories: 'Search categories...',
+        users: 'Search professionals...'
+      },
+      results: {
+        viewAll: 'View all results →',
+        noResults: 'No results found',
+        tryDifferent: 'Try different search terms',
+        independentService: 'Independent service',
+        noCategory: 'No category',
+        locationNotSpecified: 'Location not specified',
+        serviceCategory: 'Service category',
+        userNoName: 'User without name',
+        independentProfessional: 'Independent professional',
+        professionalServices: 'Service professional'
+      },
+      sorting: {
+        relevance: 'Relevance',
+        balanced: 'Balanced (Location + Rating)',
+        distance: 'Nearest',
+        rating: 'Best rated',
+        newest: 'Newest',
+        oldest: 'Oldest'
+      },
+      filters: {
+        filters: 'Filters',
+        filter: 'Filter',
+        active: 'Active',
+        enableLocation: 'Enable location to see distances',
+        enableLocationShort: 'Enable location'
+      },
+      resultsPage: {
+        title: 'Search results',
+        resultsFor: 'result for',
+        resultsForPlural: 'results for',
+        in: 'in',
+        searching: 'Searching for results...',
+        noResultsTitle: 'No results found',
+        noResultsDescription: 'Try searching with other terms or change the search type',
+        typeLabels: {
+          service: 'Service',
+          business: 'Business',
+          category: 'Category',
+          user: 'Professional'
+        }
+      }
     },
 
     // Appointments
@@ -1079,6 +1395,8 @@ export const translations = {
       searchReviews: 'Search reviews...',
       noReviews: 'No reviews yet',
       noReviewsDescription: 'Be the first to leave a review',
+      review: 'review',
+      reviewsPlural: 'reviews',
       ratings: {
         poor: 'Poor',
         fair: 'Fair',
@@ -1286,6 +1604,96 @@ export const translations = {
         activeResources: 'Active Resources',
         occupancyRate: 'Occupancy Rate',
         totalRevenue: 'Total Revenue',
+      },
+    },
+
+    // Absence and Vacation System
+    absences: {
+      title: 'Request Absence',
+      subtitle: 'Request time off or vacation',
+      absenceType: 'Absence Type',
+      selectType: 'Select type',
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      reason: 'Reason',
+      reasonPlaceholder: 'Describe the reason for your absence...',
+      employeeNotes: 'Additional Notes',
+      notesPlaceholder: 'Any additional information...',
+      daysRequested: 'Days Requested',
+      vacationBalance: 'Vacation Balance',
+      daysAvailable: 'days available',
+      daysRemaining: 'days remaining',
+      insufficientBalance: 'Insufficient vacation balance',
+      affectedAppointments: 'Affected Appointments',
+      appointment: 'appointment',
+      appointments: 'appointments',
+      noAppointments: 'No appointments affected',
+      loadingAppointments: 'Loading appointments...',
+      submit: 'Request Absence',
+      submitting: 'Submitting...',
+      cancel: 'Cancel',
+      success: 'Absence request submitted successfully',
+      error: 'Error submitting absence request',
+      types: {
+        vacation: '🌴 Vacation',
+        emergency: '🚨 Emergency',
+        sick_leave: '🤒 Sick Leave',
+        personal: '👤 Personal',
+        other: '📋 Other',
+      },
+      validation: {
+        selectType: 'Select absence type',
+        selectStartDate: 'Select start date',
+        selectEndDate: 'Select end date',
+        endAfterStart: 'End date must be after start date',
+        reasonRequired: 'Reason is required',
+        maxDays: 'Request cannot exceed 365 days',
+      },
+      disabledDays: {
+        weekend: 'Weekend',
+        saturday: 'Saturday - Weekend',
+        sunday: 'Sunday - Weekend',
+        nonWorkDay: 'Non-working day',
+        holiday: 'Public Holiday',
+      },
+      invalidDays: {
+        title: 'Non-working days',
+        message: 'The following days are not in your work schedule: {{days}}',
+        instruction: 'Please select only days when you work.',
+      },
+      holidays: {
+        title: 'Public holidays in range',
+        message: 'The following days are public holidays and cannot be requested as absence: {{days}}',
+        instruction: 'Adjust your dates excluding these days.',
+      },
+      affected: {
+        title: '{{count}} appointment affected',
+        titlePlural: '{{count}} appointments affected',
+        messageSingle: 'This appointment will be cancelled if the absence is approved',
+        messagePlural: 'These appointments will be cancelled if the absence is approved',
+      },
+      labels: {
+        reasonRequired: 'Reason for Absence *',
+        reasonPlaceholder: 'Briefly describe the reason for your absence...',
+        notesLabel: 'Additional Notes (optional)',
+        notesPlaceholder: 'Additional information you want to share...',
+        cancelButton: 'Cancel',
+        submitButton: 'Submit Request',
+        submittingButton: 'Submitting...',
+      },
+      vacationWidget: {
+        title: 'Vacation',
+        titleWithYear: 'Vacation {{year}}',
+        totalDays: 'total days',
+        daysAvailable: 'Days Available',
+        daysUsed: 'Used',
+        daysPending: 'Pending',
+        daysFree: 'Available',
+        used: 'Used',
+        pending: 'Pending',
+        remaining: 'Remaining',
+        noInfo: 'No vacation information available',
+        loading: 'Loading vacation days...',
       },
     },
 
@@ -2049,6 +2457,8 @@ export const translations = {
     // Settings
     settings: {
       title: 'Configuración',
+      subtitle: 'Configura tu cuenta y preferencias',
+      profile: 'Perfil',
       appearance: 'Apariencia',
       theme: 'Tema',
       light: 'Claro',
@@ -2068,7 +2478,263 @@ export const translations = {
       daily_digest: 'Resumen diario',
       weekly_report: 'Reporte semanal',
       save_preferences: 'Guardar Preferencias',
-      preferences_saved: 'Preferencias guardadas exitosamente'
+      preferences_saved: 'Preferencias guardadas exitosamente',
+      // Tabs
+      tabs: {
+        general: 'Ajustes Generales',
+        profile: 'Perfil',
+        notifications: 'Notificaciones',
+        businessPreferences: 'Preferencias del Negocio',
+        employeePreferences: 'Preferencias de Empleado',
+        clientPreferences: 'Preferencias de Cliente',
+        dangerZone: 'Zona Peligrosa'
+      },
+      // Theme section
+      themeSection: {
+        title: 'Apariencia y Sistema',
+        subtitle: 'Personaliza el tema y el idioma de la aplicación',
+        themeLabel: 'Tema de la interfaz',
+        themeDescription: 'Selecciona el tema que prefieres para la aplicación',
+        themes: {
+          light: {
+            label: 'Claro',
+            description: 'Interfaz con colores claros'
+          },
+          dark: {
+            label: 'Oscuro',
+            description: 'Interfaz con colores oscuros'
+          },
+          system: {
+            label: 'Sistema',
+            description: 'Según preferencias del sistema'
+          }
+        },
+        currentTheme: 'Tema actual: {{theme}}',
+        systemThemeNote: 'El tema cambia automáticamente según las preferencias de tu sistema operativo',
+        changeAnytime: 'Puedes cambiar el tema en cualquier momento'
+      },
+      // Language section
+      languageSection: {
+        label: 'Idioma de la interfaz',
+        description: 'Selecciona el idioma de la interfaz'
+      },
+      // Admin Business Preferences
+      businessInfo: {
+        title: 'Información del Negocio',
+        subtitle: 'Información básica del negocio',
+        tabs: {
+          info: 'Información del Negocio',
+          notifications: 'Notificaciones del Negocio',
+          tracking: 'Historial'
+        },
+        basicInfo: {
+          title: 'Información Básica',
+          nameLabel: 'Nombre del Negocio *',
+          namePlaceholder: 'Ingresa el nombre del negocio',
+          descriptionLabel: 'Descripción',
+          descriptionPlaceholder: 'Describe tu negocio...'
+        },
+        contactInfo: {
+          title: 'Información de Contacto',
+          phoneLabel: 'Teléfono',
+          phonePlaceholder: 'Número de teléfono',
+          emailLabel: 'Correo Electrónico',
+          emailPlaceholder: 'contacto@negocio.com',
+          websiteLabel: 'Sitio Web',
+          websitePlaceholder: 'https://www.negocio.com'
+        },
+        addressInfo: {
+          title: 'Dirección',
+          addressLabel: 'Dirección',
+          addressPlaceholder: 'Calle, número, barrio',
+          cityLabel: 'Ciudad',
+          cityPlaceholder: 'Ciudad',
+          stateLabel: 'Departamento/Estado',
+          statePlaceholder: 'Departamento o Estado'
+        },
+        legalInfo: {
+          title: 'Información Legal',
+          legalNameLabel: 'Razón Social',
+          legalNamePlaceholder: 'Nombre legal del negocio',
+          taxIdLabel: 'NIT / Identificación Tributaria',
+          taxIdPlaceholder: 'Número de identificación tributaria'
+        },
+        operationSettings: {
+          title: 'Configuraciones de Operación',
+          allowOnlineBooking: 'Permitir reservas online',
+          autoConfirm: 'Confirmación automática',
+          autoReminders: 'Recordatorios automáticos',
+          showPrices: 'Mostrar precios públicamente'
+        },
+        nameRequired: 'El nombre del negocio es requerido',
+        saveSettings: 'Guardar Configuraciones'
+      },
+      // Employee Preferences
+      employeePrefs: {
+        title: 'Preferencias de Empleado',
+        subtitle: 'Configura tus preferencias de trabajo',
+        availability: {
+          title: 'Disponibilidad',
+          availableForAppointments: 'Disponible para nuevas citas',
+          notifyNewAssignments: 'Notificar nuevas asignaciones',
+          appointmentReminders: 'Recordatorios de citas'
+        },
+        schedule: {
+          title: 'Mi horario de trabajo',
+          workingDay: 'Día laboral',
+          restDay: 'Día de descanso',
+          startTime: 'Inicio',
+          endTime: 'Fin',
+          lunchBreak: 'Almuerzo',
+          saveSchedule: 'Guardar Horarios'
+        },
+        messages: {
+          title: 'Mensajes de Clientes',
+          allowMessages: 'Permitir mensajes de clientes',
+          description: 'Cuando esté activado, los clientes pueden enviarte mensajes directos'
+        },
+        professionalInfo: {
+          title: 'Información Profesional',
+          subtitle: 'Tu experiencia y tipo de trabajo preferido',
+          summaryLabel: 'Resumen Profesional',
+          summaryPlaceholder: 'Describe tu experiencia, habilidades y especialidades...',
+          yearsExperienceLabel: 'Años de Experiencia',
+          workTypeLabel: 'Tipo de Trabajo Preferido',
+          workTypes: {
+            fullTime: 'Tiempo Completo',
+            partTime: 'Medio Tiempo',
+            contract: 'Contrato',
+            flexible: 'Flexible'
+          }
+        },
+        salary: {
+          title: 'Expectativas Salariales',
+          minLabel: 'Salario Mínimo Esperado',
+          maxLabel: 'Salario Máximo Esperado',
+          minPlaceholder: 'Monto mínimo',
+          maxPlaceholder: 'Monto máximo',
+          invalidRange: 'El salario mínimo no puede ser mayor al máximo'
+        },
+        specializations: {
+          title: 'Especializaciones',
+          noSpecializations: 'No se han agregado especializaciones aún',
+          newPlaceholder: 'Nueva especialización',
+          addButton: 'Agregar'
+        },
+        languages: {
+          title: 'Idiomas',
+          noLanguages: 'No se han agregado idiomas aún',
+          newPlaceholder: 'Idioma (ej: Inglés - Avanzado)',
+          addButton: 'Agregar'
+        },
+        certifications: {
+          title: 'Certificaciones y Licencias',
+          noCertifications: 'No se han agregado certificaciones aún',
+          addButton: 'Agregar Certificación',
+          form: {
+            nameLabel: 'Nombre de la Certificación',
+            namePlaceholder: 'Nombre de la certificación o licencia',
+            issuerLabel: 'Entidad Emisora',
+            issuerPlaceholder: 'Entidad que emitió la certificación',
+            dateLabel: 'Fecha de Obtención',
+            datePlaceholder: 'MM/AAAA',
+            urlLabel: 'URL de Credencial (opcional)',
+            urlPlaceholder: 'https://...',
+            cancelButton: 'Cancelar',
+            saveButton: 'Guardar'
+          },
+          issued: 'Emitida',
+          verifyCredential: 'Verificar credencial',
+          deleteButton: 'Eliminar'
+        },
+        links: {
+          title: 'Enlaces Profesionales',
+          portfolioLabel: 'Portfolio / Sitio Web',
+          portfolioPlaceholder: 'https://tu-portfolio.com',
+          linkedinLabel: 'LinkedIn',
+          linkedinPlaceholder: 'https://linkedin.com/in/tuperfil'
+        },
+        saveButton: 'Guardar Preferencias',
+        resetButton: 'Restablecer'
+      },
+      // Client Preferences
+      clientPrefs: {
+        title: 'Preferencias de Cliente',
+        subtitle: 'Configura tus preferencias de reserva',
+        bookingPrefs: {
+          title: 'Preferencias de Reserva',
+          appointmentReminders: 'Recordatorios de citas',
+          emailConfirmation: 'Confirmación por email',
+          promotionNotifications: 'Notificaciones de promociones',
+          savePaymentMethods: 'Guardar métodos de pago'
+        },
+        advanceTime: {
+          title: 'Tiempo de Anticipación Preferido',
+          label: 'Tiempo de aviso preferido para citas',
+          options: {
+            sameDay: 'El mismo día',
+            oneDay: '1 día',
+            twoDays: '2 días',
+            threeDays: '3 días',
+            oneWeek: '1 semana'
+          }
+        },
+        serviceHistory: {
+          title: 'Historial de Servicios',
+          label: 'Guardar mi historial de servicios para recomendaciones',
+          description: 'Usamos esto para sugerirte servicios similares'
+        },
+        paymentMethods: {
+          title: 'Métodos de Pago',
+          noneAdded: 'No se han agregado métodos de pago',
+          types: {
+            card: 'Tarjeta de Crédito/Débito',
+            pse: 'PSE',
+            cash: 'Efectivo',
+            transfer: 'Transferencia bancaria'
+          },
+          addButton: 'Agregar Método de Pago'
+        },
+        savePreferences: 'Guardar Preferencias'
+      },
+      // Danger Zone
+      dangerZone: {
+        title: 'Zona Peligrosa',
+        subtitle: 'Acciones irreversibles de cuenta',
+        deactivate: {
+          title: 'Desactivar Cuenta',
+          description: 'Suspende temporalmente tu cuenta. Puedes reactivarla en cualquier momento.',
+          button: 'Desactivar Cuenta',
+          confirmTitle: '¿Estás seguro de que deseas desactivar tu cuenta?',
+          confirmDescription: 'Tu cuenta será suspendida temporalmente. Todos tus datos se preservarán y podrás reactivarla en cualquier momento iniciando sesión nuevamente.',
+          inputLabel: 'Confirma tu correo para continuar:',
+          inputPlaceholder: 'tu@correo.com',
+          checkbox: 'Entiendo que mi cuenta será suspendida temporalmente',
+          cancel: 'Cancelar',
+          confirm: 'Sí, desactivar mi cuenta'
+        },
+        delete: {
+          title: 'Eliminar Cuenta',
+          description: 'Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.',
+          button: 'Eliminar Cuenta',
+          confirmTitle: 'Eliminar cuenta permanentemente',
+          warningTitle: 'Advertencia: Esta acción es irreversible',
+          warningDescription: 'Estás a punto de eliminar permanentemente tu cuenta y todos los datos asociados. Esto incluye:',
+          warningItems: {
+            profile: 'Tu perfil e información personal',
+            appointments: 'Todas tus citas (pasadas y futuras)',
+            history: 'Tu historial completo de servicios',
+            payments: 'Historial de pagos y métodos',
+            preferences: 'Todas tus preferencias y configuraciones'
+          },
+          confirmText: 'Escribe "DESACTIVAR CUENTA" para confirmar',
+          confirmPlaceholder: 'DESACTIVAR CUENTA',
+          mustTypeCorrectly: 'Debes escribir "DESACTIVAR CUENTA" para confirmar',
+          cancel: 'Cancelar',
+          confirm: 'Sí, eliminar permanentemente',
+          processing: 'Procesando...'
+        }
+      }
     },
 
     // Dashboard
@@ -2109,6 +2775,64 @@ export const translations = {
       perAppointment: 'Por Cita',
       weeklyAppointments: 'Citas Semanales',
       appointmentStatus: 'Estado de Citas'
+    },
+
+    // Search
+    search: {
+      types: {
+        services: 'Servicios',
+        businesses: 'Negocios',
+        categories: 'Categorías',
+        users: 'Profesionales'
+      },
+      placeholders: {
+        services: 'Buscar servicios...',
+        businesses: 'Buscar negocios...',
+        categories: 'Buscar categorías...',
+        users: 'Buscar profesionales...'
+      },
+      results: {
+        viewAll: 'Ver todos los resultados →',
+        noResults: 'No se encontraron resultados',
+        tryDifferent: 'Intenta con otros términos de búsqueda',
+        independentService: 'Servicio independiente',
+        noCategory: 'Sin categoría',
+        locationNotSpecified: 'Ubicación no especificada',
+        serviceCategory: 'Categoría de servicios',
+        userNoName: 'Usuario sin nombre',
+        independentProfessional: 'Profesional independiente',
+        professionalServices: 'Profesional de servicios'
+      },
+      sorting: {
+        relevance: 'Relevancia',
+        balanced: 'Balanceado (Ubicación + Calificación)',
+        distance: 'Más cercanos',
+        rating: 'Mejor calificados',
+        newest: 'Más nuevos',
+        oldest: 'Más antiguos'
+      },
+      filters: {
+        filters: 'Filtros',
+        filter: 'Filtrar',
+        active: 'Activos',
+        enableLocation: 'Habilita la ubicación para ver distancias',
+        enableLocationShort: 'Activa ubicación'
+      },
+      resultsPage: {
+        title: 'Resultados de búsqueda',
+        resultsFor: 'resultado para',
+        resultsForPlural: 'resultados para',
+        in: 'en',
+        searching: 'Buscando resultados...',
+        noResultsTitle: 'No se encontraron resultados',
+        noResultsDescription: 'Intenta buscar con otros términos o cambia el tipo de búsqueda',
+        typeLabels: {
+          service: 'Servicio',
+          business: 'Negocio',
+          category: 'Categoría',
+          user: 'Profesional'
+        }
+      }
     },
 
     // Appointments
@@ -2418,6 +3142,8 @@ export const translations = {
       searchReviews: 'Buscar reseñas...',
       noReviews: 'Aún no hay reseñas',
       noReviewsDescription: 'Sé el primero en dejar una reseña',
+      review: 'reseña',
+      reviewsPlural: 'reseñas',
       ratings: {
         poor: 'Malo',
         fair: 'Regular',
@@ -2625,6 +3351,96 @@ export const translations = {
         activeResources: 'Recursos Activos',
         occupancyRate: 'Tasa de Ocupación',
         totalRevenue: 'Ingresos Totales',
+      },
+    },
+
+    // Sistema de Ausencias y Vacaciones
+    absences: {
+      title: 'Solicitar Ausencia',
+      subtitle: 'Solicita tiempo libre o vacaciones',
+      absenceType: 'Tipo de Ausencia',
+      selectType: 'Selecciona el tipo',
+      startDate: 'Fecha de Inicio',
+      endDate: 'Fecha de Fin',
+      reason: 'Motivo',
+      reasonPlaceholder: 'Describe el motivo de tu ausencia...',
+      employeeNotes: 'Notas Adicionales',
+      notesPlaceholder: 'Cualquier información adicional...',
+      daysRequested: 'Días Solicitados',
+      vacationBalance: 'Balance de Vacaciones',
+      daysAvailable: 'días disponibles',
+      daysRemaining: 'días restantes',
+      insufficientBalance: 'Balance de vacaciones insuficiente',
+      affectedAppointments: 'Citas Afectadas',
+      appointment: 'cita',
+      appointments: 'citas',
+      noAppointments: 'No hay citas afectadas',
+      loadingAppointments: 'Cargando citas...',
+      submit: 'Solicitar Ausencia',
+      submitting: 'Enviando...',
+      cancel: 'Cancelar',
+      success: 'Solicitud de ausencia enviada exitosamente',
+      error: 'Error al enviar la solicitud de ausencia',
+      types: {
+        vacation: '🌴 Vacaciones',
+        emergency: '🚨 Emergencia',
+        sick_leave: '🤒 Incapacidad médica',
+        personal: '👤 Asunto personal',
+        other: '📋 Otro',
+      },
+      validation: {
+        selectType: 'Selecciona el tipo de ausencia',
+        selectStartDate: 'Selecciona la fecha de inicio',
+        selectEndDate: 'Selecciona la fecha de fin',
+        endAfterStart: 'La fecha de fin debe ser posterior a la de inicio',
+        reasonRequired: 'El motivo es requerido',
+        maxDays: 'La solicitud no puede exceder 365 días',
+      },
+      disabledDays: {
+        weekend: 'Fin de semana',
+        saturday: 'Sábado - Fin de semana',
+        sunday: 'Domingo - Fin de semana',
+        nonWorkDay: 'Día no laboral',
+        holiday: 'Festivo',
+      },
+      invalidDays: {
+        title: 'Días no laborales',
+        message: 'Los siguientes días no están en tu horario de trabajo: {{days}}',
+        instruction: 'Por favor, selecciona solamente días en los que trabajas.',
+      },
+      holidays: {
+        title: 'Festivos en el rango',
+        message: 'Los siguientes días son festivos públicos y no se pueden solicitar como ausencia: {{days}}',
+        instruction: 'Ajusta tus fechas excluyendo estos días.',
+      },
+      affected: {
+        title: '{{count}} cita afectada',
+        titlePlural: '{{count}} citas afectadas',
+        messageSingle: 'Esta cita será cancelada si se aprueba la ausencia',
+        messagePlural: 'Estas citas serán canceladas si se aprueba la ausencia',
+      },
+      labels: {
+        reasonRequired: 'Razón de la Ausencia *',
+        reasonPlaceholder: 'Describa brevemente la razón de su ausencia...',
+        notesLabel: 'Notas Adicionales (opcional)',
+        notesPlaceholder: 'Información adicional que desee compartir...',
+        cancelButton: 'Cancelar',
+        submitButton: 'Enviar Solicitud',
+        submittingButton: 'Enviando...',
+      },
+      vacationWidget: {
+        title: 'Vacaciones',
+        titleWithYear: 'Vacaciones {{year}}',
+        totalDays: 'días totales',
+        daysAvailable: 'Días Disponibles',
+        daysUsed: 'Usados',
+        daysPending: 'Pendientes',
+        daysFree: 'Libres',
+        used: 'Usados',
+        pending: 'Pendientes',
+        remaining: 'Disponibles',
+        noInfo: 'No hay información de vacaciones disponible',
+        loading: 'Cargando días de vacaciones...',
       },
     }
   }

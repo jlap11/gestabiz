@@ -63,15 +63,6 @@ interface SearchResultItem {
 
 type SortOption = 'relevance' | 'distance' | 'rating' | 'newest' | 'oldest' | 'balanced'
 
-const sortOptions = [
-  { value: 'relevance', label: 'Relevancia' },
-  { value: 'balanced', label: 'Balanceado (Ubicación + Calificación)' },
-  { value: 'distance', label: 'Más cercanos' },
-  { value: 'rating', label: 'Mejor calificados' },
-  { value: 'newest', label: 'Más nuevos' },
-  { value: 'oldest', label: 'Más antiguos' }
-]
-
 export function SearchResults({ 
   searchTerm, 
   searchType, 
@@ -80,10 +71,19 @@ export function SearchResults({
   onClose 
 }: Readonly<SearchResultsProps>) {
   const { t } = useLanguage()
-  const [results, setResults] = useState<SearchResult[]>([])
+  const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('balanced')
   const [showFilters, setShowFilters] = useState(false)
+  
+  const sortOptions = [
+    { value: 'relevance' as SortOption, label: t('search.sorting.relevance') },
+    { value: 'balanced' as SortOption, label: t('search.sorting.balanced') },
+    { value: 'distance' as SortOption, label: t('search.sorting.distance') },
+    { value: 'rating' as SortOption, label: t('search.sorting.rating') },
+    { value: 'newest' as SortOption, label: t('search.sorting.newest') },
+    { value: 'oldest' as SortOption, label: t('search.sorting.oldest') }
+  ]
 
   // Calculate distance between two points (Haversine formula)
   const calculateDistance = (
@@ -447,10 +447,10 @@ export function SearchResults({
 
   const getTypeLabel = (type: SearchType) => {
     switch (type) {
-      case 'services': return 'Servicio'
-      case 'businesses': return 'Negocio'
-      case 'categories': return 'Categoría'
-      case 'users': return 'Profesional'
+      case 'services': return t('search.resultsPage.typeLabels.service')
+      case 'businesses': return t('search.resultsPage.typeLabels.business')
+      case 'categories': return t('search.resultsPage.typeLabels.category')
+      case 'users': return t('search.resultsPage.typeLabels.user')
       default: return type
     }
   }
@@ -461,9 +461,9 @@ export function SearchResults({
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-            <p className="text-lg font-medium text-foreground">Buscando resultados...</p>
+            <p className="text-lg font-medium text-foreground">{t('search.resultsPage.searching')}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              "{searchTerm}" en {getTypeLabel(searchType)}s
+              "{searchTerm}" {t('search.resultsPage.in')} {getTypeLabel(searchType)}s
             </p>
           </CardContent>
         </Card>
@@ -479,10 +479,10 @@ export function SearchResults({
           <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-1 sm:mb-2 truncate">
-                Resultados de búsqueda
+                {t('search.resultsPage.title')}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                <span className="font-semibold">{sortedResults.length}</span> resultado{sortedResults.length !== 1 ? 's' : ''} para "<span className="font-semibold text-foreground truncate inline-block max-w-[150px] sm:max-w-none align-bottom">{searchTerm}</span>" en{' '}
+                <span className="font-semibold">{sortedResults.length}</span> {t(sortedResults.length === 1 ? 'search.resultsPage.resultsFor' : 'search.resultsPage.resultsForPlural')} "<span className="font-semibold text-foreground truncate inline-block max-w-[150px] sm:max-w-none align-bottom">{searchTerm}</span>" {t('search.resultsPage.in')}{' '}
                 {getTypeLabel(searchType)}s
               </p>
             </div>
@@ -518,16 +518,16 @@ export function SearchResults({
               className="gap-2 min-h-[44px] w-full sm:w-auto"
             >
               <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Filtros</span>
-              <span className="sm:hidden">Filtrar</span>
-              {showFilters && <Badge variant="secondary" className="ml-2 text-[10px]">Activos</Badge>}
+              <span className="hidden sm:inline">{t('search.filters.filters')}</span>
+              <span className="sm:hidden">{t('search.filters.filter')}</span>
+              {showFilters && <Badge variant="secondary" className="ml-2 text-[10px]">{t('search.filters.active')}</Badge>}
             </Button>
 
             {!userLocation && (
               <div className="flex-1 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 p-2 sm:p-0">
                 <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Habilita la ubicación para ver distancias</span>
-                <span className="sm:hidden">Activa ubicación</span>
+                <span className="hidden sm:inline">{t('search.filters.enableLocation')}</span>
+                <span className="sm:hidden">{t('search.filters.enableLocationShort')}</span>
               </div>
             )}
           </div>
@@ -542,10 +542,10 @@ export function SearchResults({
                   })}
                 </div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-                  No se encontraron resultados
+                  {t('search.resultsPage.noResultsTitle')}
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Intenta buscar con otros términos o cambia el tipo de búsqueda
+                  {t('search.resultsPage.noResultsDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -613,7 +613,7 @@ export function SearchResults({
                             </div>
                             {result.reviewCount !== undefined && result.reviewCount > 0 && (
                               <span className="text-xs sm:text-sm text-muted-foreground">
-                                ({result.reviewCount} reseña{result.reviewCount !== 1 ? 's' : ''})
+                                ({result.reviewCount} {t(result.reviewCount === 1 ? 'reviews.review' : 'reviews.reviewsPlural')})
                               </span>
                             )}
                           </div>
