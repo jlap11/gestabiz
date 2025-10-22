@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner'
 import type { Business } from '@/types/types'
 import QRCode from 'qrcode'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface BusinessInvitationCardProps {
   business: Business
@@ -14,6 +15,7 @@ interface BusinessInvitationCardProps {
 export function BusinessInvitationCard({ business, className }: BusinessInvitationCardProps) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
+  const { t } = useLanguage()
 
   const invitationCode = business.invitation_code || 'N/A'
 
@@ -28,7 +30,7 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(invitationCode)
-    toast.success('Código copiado al portapapeles')
+    toast.success(t('businessInvitationCard.copied'))
   }
 
   const handleGenerateQR = async () => {
@@ -43,10 +45,10 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
         },
       })
       setQrCodeDataUrl(dataUrl)
-      toast.success('Código QR generado')
+      toast.success(t('businessInvitationCard.qrGenerated'))
     } catch (error) {
       console.error('Error generating QR:', error)
-      toast.error('Error al generar código QR')
+      toast.error(t('businessInvitationCard.qrError'))
     } finally {
       setIsGeneratingQR(false)
     }
@@ -56,32 +58,32 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
     if (!qrCodeDataUrl) return
 
     const link = document.createElement('a')
-    link.download = `${business.name.replace(/\s+/g, '-')}-invitacion-QR.png`
+    link.download = `${business.name.replaceAll(/\s+/g, '-')}-invitacion-QR.png`
     link.href = qrCodeDataUrl
     link.click()
-    toast.success('Código QR descargado')
+    toast.success(t('businessInvitationCard.qrDownloaded'))
   }
 
   const handleShare = async () => {
-    const shareText = `¡Únete a ${business.name}!\n\nCódigo de invitación: ${invitationCode}\n\nIngresa este código en AppointSync para unirte como empleado.`
+    const shareText = `¡Únete a ${business.name}!\n\n${t('businessInvitationCard.code')}: ${invitationCode}\n\nIngresa este código en AppointSync para unirte como empleado.`
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Invitación a ${business.name}`,
+          title: `${t('businessInvitationCard.invitationTo')} ${business.name}`,
           text: shareText,
         })
-        toast.success('Compartido exitosamente')
+        toast.success(t('businessInvitationCard.shareSuccess'))
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
           console.error('Error sharing:', error)
-          toast.error('Error al compartir')
+          toast.error(t('businessInvitationCard.shareError'))
         }
       }
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(shareText)
-      toast.success('Texto de invitación copiado')
+      toast.success(t('businessInvitationCard.copyCode'))
     }
   }
 
@@ -90,10 +92,10 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <QrCode className="h-5 w-5" />
-          Código de invitación
+          {t('businessInvitationCard.title')}
         </CardTitle>
         <CardDescription>
-          Comparte este código con empleados para que puedan unirse a tu negocio
+          {t('businessInvitationCard.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -101,7 +103,7 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
         <div className="space-y-3">
           <div className="flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 to-purple-100 dark:from-violet-950/30 dark:to-purple-900/30 rounded-lg border-2 border-dashed border-violet-300 dark:border-violet-700">
             <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground font-medium">Tu código de invitación</p>
+              <p className="text-sm text-muted-foreground font-medium">{t('businessInvitationCard.yourCode')}</p>
               <p className="text-4xl font-bold font-mono tracking-widest text-violet-600 dark:text-violet-400">
                 {invitationCode}
               </p>
@@ -112,11 +114,11 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" onClick={handleCopyCode} className="w-full">
               <Copy className="h-4 w-4 mr-2" />
-              Copiar código
+              {t('businessInvitationCard.copyCode')}
             </Button>
             <Button variant="outline" size="sm" onClick={handleShare} className="w-full">
               <Share2 className="h-4 w-4 mr-2" />
-              Compartir
+              {t('businessInvitationCard.share')}
             </Button>
           </div>
         </div>
@@ -135,12 +137,12 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
               {isGeneratingQR ? (
                 <>
                   <CheckCircle className="h-4 w-4 mr-2 animate-spin" />
-                  Generando...
+                  {t('businessInvitationCard.generating')}
                 </>
               ) : (
                 <>
                   <QrCode className="h-4 w-4 mr-2" />
-                  Generar código QR
+                  {t('businessInvitationCard.generateQR')}
                 </>
               )}
             </Button>
@@ -155,11 +157,11 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" size="sm" onClick={handleDownloadQR} className="w-full">
                   <Download className="h-4 w-4 mr-2" />
-                  Descargar QR
+                  {t('businessInvitationCard.downloadQR')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleGenerateQR} className="w-full">
                   <QrCode className="h-4 w-4 mr-2" />
-                  Regenerar
+                  {t('businessInvitationCard.regenerate')}
                 </Button>
               </div>
             </div>
@@ -168,12 +170,12 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
 
         {/* Instructions */}
         <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 p-3 rounded-lg">
-          <p className="font-medium text-foreground">¿Cómo funciona?</p>
+          <p className="font-medium text-foreground">{t('businessInvitationCard.howItWorks')}</p>
           <ol className="list-decimal list-inside space-y-0.5">
-            <li>Comparte el código o QR con tu empleado</li>
-            <li>El empleado lo ingresa en la app o escanea el QR</li>
-            <li>Recibirás una notificación para aprobar la solicitud</li>
-            <li>Una vez aprobado, podrá acceder como empleado</li>
+            <li>{t('businessInvitationCard.step1')}</li>
+            <li>{t('businessInvitationCard.step2')}</li>
+            <li>{t('businessInvitationCard.step3')}</li>
+            <li>{t('businessInvitationCard.step4')}</li>
           </ol>
         </div>
       </CardContent>

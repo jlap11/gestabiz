@@ -3,6 +3,7 @@ import ReactCrop, { Crop, PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface BannerCropperProps {
   isOpen: boolean
@@ -17,6 +18,7 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
   imageFile,
   onCropComplete
 }) => {
+  const { t } = useLanguage()
   const [imageSrc, setImageSrc] = useState<string | null>(null)
   const [crop, setCrop] = useState<Crop>()
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
@@ -118,7 +120,7 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Recortar Banner</DialogTitle>
+          <DialogTitle>{t('bannerCropper.title')}</DialogTitle>
         </DialogHeader>
 
         {imageSrc && (
@@ -139,17 +141,17 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
             </ReactCrop>
 
             <div className="text-sm text-muted-foreground">
-              Ajusta el área rectangular para el banner (16:9)
+              {t('bannerCropper.instructions')}
             </div>
           </div>
         )}
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleCropConfirm} disabled={!completedCrop}>
-            Confirmar
+            {t('bannerCropper.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

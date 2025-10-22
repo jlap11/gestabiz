@@ -1,10 +1,6 @@
-// =====================================================
-// COMPONENTE: OwnerBadge - Gestabiz
-// Badge visual para indicar Admin Dueño
-// =====================================================
-
 import React from 'react'
 import { Crown } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 
 export interface OwnerBadgeProps {
@@ -14,11 +10,12 @@ export interface OwnerBadgeProps {
 }
 
 export function OwnerBadge({ isOwner, variant = 'default', className }: OwnerBadgeProps) {
+  const { t } = useLanguage()
   if (!isOwner) return null
 
   if (variant === 'icon-only') {
     return (
-      <span title="Dueño del negocio">
+      <span title={t('ownerBadge.owner')}>
         <Crown
           className={cn(
             'h-4 w-4 text-yellow-500',
@@ -42,7 +39,7 @@ export function OwnerBadge({ isOwner, variant = 'default', className }: OwnerBad
         )}
       >
         <Crown className="h-3 w-3" />
-        <span>Dueño</span>
+        <span>{t('ownerBadge.owner')}</span>
       </span>
     )
   }
@@ -60,9 +57,9 @@ export function OwnerBadge({ isOwner, variant = 'default', className }: OwnerBad
       )}
     >
       <Crown className="h-4 w-4 animate-pulse" />
-      <span>Dueño del Negocio</span>
+      <span>{t('ownerBadge.owner')}</span>
       <span className="ml-1 px-2 py-0.5 rounded-full bg-yellow-500/20 text-xs">
-        Control Total
+        {t('ownerBadge.admin')}
       </span>
     </div>
   )
@@ -75,7 +72,7 @@ export function OwnerBadge({ isOwner, variant = 'default', className }: OwnerBad
 /**
  * Badge para mostrar en avatar de usuario
  */
-export function OwnerAvatarBadge({ isOwner }: { isOwner: boolean }) {
+export function OwnerAvatarBadge({ isOwner }: Readonly<{ isOwner: boolean }>) {
   if (!isOwner) return null
 
   return (
@@ -88,14 +85,15 @@ export function OwnerAvatarBadge({ isOwner }: { isOwner: boolean }) {
 /**
  * Badge para mostrar en header/navbar
  */
-export function OwnerHeaderBadge({ isOwner }: { isOwner: boolean }) {
+export function OwnerHeaderBadge({ isOwner }: Readonly<{ isOwner: boolean }>) {
+  const { t } = useLanguage()
   if (!isOwner) return null
 
   return (
     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
       <Crown className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
       <span className="text-xs font-medium text-yellow-700 dark:text-yellow-400">
-        Dueño
+        {t('ownerBadge.owner')}
       </span>
     </div>
   )
@@ -104,13 +102,14 @@ export function OwnerHeaderBadge({ isOwner }: { isOwner: boolean }) {
 /**
  * Badge para mostrar en lista de usuarios
  */
-export function OwnerListBadge({ isOwner }: { isOwner: boolean }) {
+export function OwnerListBadge({ isOwner }: Readonly<{ isOwner: boolean }>) {
+  const { t } = useLanguage()
   if (!isOwner) return null
 
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
       <Crown className="h-3 w-3" />
-      Dueño
+      {t('ownerBadge.owner')}
     </span>
   )
 }

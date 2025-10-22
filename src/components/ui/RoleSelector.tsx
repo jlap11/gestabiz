@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, Briefcase, Users, ShoppingCart } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -22,17 +23,17 @@ interface RoleSelectorProps {
 
 const ROLE_CONFIG: Record<UserRole, { label: string; icon: typeof Briefcase; color: string }> = {
   admin: {
-    label: 'Administrador',
+    label: 'Admin',
     icon: Briefcase,
     color: 'text-violet-500',
   },
   employee: {
-    label: 'Empleado',
+    label: 'Employee',
     icon: Users,
     color: 'text-blue-500',
   },
   client: {
-    label: 'Cliente',
+    label: 'Client',
     icon: ShoppingCart,
     color: 'text-emerald-500',
   },
@@ -46,6 +47,7 @@ export function RoleSelector({
   className,
 }: Readonly<RoleSelectorProps>) {
   const [isOpen, setIsOpen] = useState(false)
+  const { t } = useLanguage()
 
   const activeRoleConfig = ROLE_CONFIG[activeRole]
   const ActiveIcon = activeRoleConfig.icon
@@ -97,13 +99,13 @@ export function RoleSelector({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel>Cambiar Rol</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('roleSelector.label')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         {/* Admin Roles */}
         <>
           <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
-            Como Administrador
+            {t('roleSelector.admin')}
           </DropdownMenuLabel>
           {adminRoles.length > 0 ? (
             adminRoles.map((roleAssignment) => {
@@ -121,7 +123,7 @@ export function RoleSelector({
                 >
                   <Icon className={cn('h-4 w-4', ROLE_CONFIG.admin.color)} />
                   <div className="flex flex-col flex-1">
-                    <span className="text-sm font-medium">Admin</span>
+                    <span className="text-sm font-medium">{t('roleSelector.admin')}</span>
                     <span className="text-xs text-muted-foreground">
                       {roleAssignment.business_name}
                     </span>
@@ -143,9 +145,9 @@ export function RoleSelector({
             >
               <Briefcase className={cn('h-4 w-4', ROLE_CONFIG.admin.color)} />
               <div className="flex flex-col flex-1">
-                <span className="text-sm font-medium">Admin</span>
+                <span className="text-sm font-medium">{t('roleSelector.admin')}</span>
                 <span className="text-xs text-muted-foreground">
-                  Crear negocio
+                  {t('roleSelector.createBusiness')}
                 </span>
               </div>
             </DropdownMenuItem>
@@ -156,7 +158,7 @@ export function RoleSelector({
         {/* Employee Roles */}
         <>
           <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
-            Como Empleado
+            {t('roleSelector.employee')}
           </DropdownMenuLabel>
           {employeeRoles.length > 0 ? (
             employeeRoles.map((roleAssignment) => {
@@ -174,7 +176,7 @@ export function RoleSelector({
                 >
                   <Icon className={cn('h-4 w-4', ROLE_CONFIG.employee.color)} />
                   <div className="flex flex-col flex-1">
-                    <span className="text-sm font-medium">Empleado</span>
+                    <span className="text-sm font-medium">{t('roleSelector.employee')}</span>
                     <span className="text-xs text-muted-foreground">
                       {roleAssignment.business_name}
                     </span>
@@ -196,9 +198,9 @@ export function RoleSelector({
             >
               <Users className={cn('h-4 w-4', ROLE_CONFIG.employee.color)} />
               <div className="flex flex-col flex-1">
-                <span className="text-sm font-medium">Empleado</span>
+                <span className="text-sm font-medium">{t('roleSelector.employee')}</span>
                 <span className="text-xs text-muted-foreground">
-                  Unirse a negocio
+                  {t('roleSelector.joinBusiness')}
                 </span>
               </div>
             </DropdownMenuItem>
@@ -210,7 +212,7 @@ export function RoleSelector({
         {clientRoles.length > 0 && (
           <>
             <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
-              Como Cliente
+              {t('roleSelector.client')}
             </DropdownMenuLabel>
             {clientRoles.map((roleAssignment) => {
               const Icon = ROLE_CONFIG.client.icon
@@ -227,9 +229,9 @@ export function RoleSelector({
                 >
                   <Icon className={cn('h-4 w-4', ROLE_CONFIG.client.color)} />
                   <div className="flex flex-col flex-1">
-                    <span className="text-sm font-medium">Cliente</span>
+                    <span className="text-sm font-medium">{t('roleSelector.client')}</span>
                     <span className="text-xs text-muted-foreground">
-                      Reservar servicios
+                      {t('roleSelector.bookServices')}
                     </span>
                   </div>
                   {isActive && (

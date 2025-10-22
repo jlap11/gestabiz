@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { AlertCircle } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface AccountInactiveModalProps {
   isOpen: boolean
@@ -19,6 +20,7 @@ export function AccountInactiveModal({
   onReactivate,
   onReject,
 }: AccountInactiveModalProps) {
+  const { t } = useLanguage()
   const [isLoading, setIsLoading] = useState(false)
 
   if (!isOpen) return null
@@ -33,14 +35,14 @@ export function AccountInactiveModal({
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
 
       if (error) {
-        toast.error('Error al reactivar la cuenta')
+        toast.error(t('accountInactive.reactivateError'))
         return
       }
 
-      toast.success('Cuenta reactivada exitosamente')
+      toast.success(t('accountInactive.reactivateSuccess'))
       onReactivate()
     } catch {
-      toast.error('Error inesperado al reactivar la cuenta')
+      toast.error(t('accountInactive.unexpectedError'))
     } finally {
       setIsLoading(false)
     }
@@ -64,12 +66,12 @@ export function AccountInactiveModal({
 
         {/* Title */}
         <h2 className="text-2xl font-bold text-foreground text-center mb-2">
-          Cuenta Inactiva
+          {t('accountInactive.title')}
         </h2>
 
         {/* Message */}
         <p className="text-muted-foreground text-center mb-6">
-          Tu cuenta ({email}) ha sido desactivada. ¿Deseas reactivarla ahora?
+          {t('accountInactive.message')} ({email})
         </p>
 
         {/* Buttons */}
@@ -79,7 +81,7 @@ export function AccountInactiveModal({
             disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-all"
           >
-            {isLoading ? 'Reactivando...' : 'Sí, reactivar'}
+          {isLoading ? t('accountInactive.reactivating') : t('accountInactive.reactivate')}
           </Button>
           
           <Button
@@ -88,13 +90,13 @@ export function AccountInactiveModal({
             variant="outline"
             className="w-full bg-background border-border hover:bg-muted text-foreground font-semibold h-12 rounded-lg transition-all"
           >
-            No, cerrar sesión
+            {t('accountInactive.logout')}
           </Button>
         </div>
 
         {/* Info text */}
         <p className="text-xs text-muted-foreground text-center mt-4">
-          Si reactivas tu cuenta podrás acceder inmediatamente.
+          {t('accountInactive.infoText')}
         </p>
       </div>
     </div>

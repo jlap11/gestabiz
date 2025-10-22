@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
+import { sendBrevoEmail, createBasicEmailTemplate } from '../_shared/brevo.ts'
 
 // Initialize Sentry
 initSentry('send-notification')
@@ -68,8 +69,8 @@ serve(async (req) => {
           case 'email': {
             const emailResult = await sendEmail(request, content)
             sent = emailResult.success
-            externalId = emailResult.id
-            errorMsg = emailResult.error
+            externalId = ('messageId' in emailResult) ? emailResult.messageId : null
+            errorMsg = emailResult.error || null
             break
           }
             
@@ -372,13 +373,8 @@ function getRecipientContact(request: NotificationRequest, channel: string): str
 }
 
 async function sendEmail(request: NotificationRequest, content: any) {
-  const awsAccessKeyId = Deno.env.get('AWS_ACCESS_KEY_ID')
-  const awsSecretAccessKey = Deno.env.get('AWS_SECRET_ACCESS_KEY')
-  const awsRegion = Deno.env.get('AWS_REGION') || 'us-east-1'
-  const sesFromEmail = Deno.env.get('SES_FROM_EMAIL') || 'notificaciones@appointsync.com'
-  
-  if (!awsAccessKeyId || !awsSecretAccessKey || !request.recipient_email) {
-    return { success: false, error: 'Email not configured or recipient missing' }
+  if (!request.recipient_email) {
+    return { success: false, error: 'Recipient email missing' }
   }
 
   try {
@@ -393,68 +389,31 @@ async function sendEmail(request: NotificationRequest, content: any) {
       if (customTemplate) {
         htmlBody = renderHTMLTemplate(customTemplate, request.data)
       } else {
-        // Fallback al template básico
-        htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #8b5cf6; margin: 0;">AppointSync</h1>
-            </div>
-            <h2 style="color: #333; margin-top: 0;">${content.subject}</h2>
-            <div style="color: #555; line-height: 1.6; white-space: pre-line;">
-              ${content.message}
-            </div>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">
-              <p>Este es un mensaje automático de AppointSync. Por favor no respondas a este email.</p>
-            </div>
-          </div>
-        </div>`
+        // Fallback al template básico desde brevo.ts
+        htmlBody = createBasicEmailTemplate(
+          content.subject,
+          content.message
+        )
       }
     } else {
       // Template básico para otros tipos
-      htmlBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #8b5cf6; margin: 0;">AppointSync</h1>
-          </div>
-          <h2 style="color: #333; margin-top: 0;">${content.subject}</h2>
-          <div style="color: #555; line-height: 1.6; white-space: pre-line;">
-            ${content.message}
-          </div>
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 12px;">
-            <p>Este es un mensaje automático de AppointSync. Por favor no respondas a este email.</p>
-          </div>
-        </div>
-      </div>`
+      htmlBody = createBasicEmailTemplate(
+        content.subject,
+        content.message
+      )
     }
     
-    // Preparar parámetros para Amazon SES
-    const params = {
-      Destination: {
-        ToAddresses: [request.recipient_email]
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: 'UTF-8',
-            Data: htmlBody
-          },
-          Text: {
-            Charset: 'UTF-8',
-            Data: content.message
-          }
-        },
-        Subject: {
-          Charset: 'UTF-8',
-          Data: content.subject
-        }
-      },
-      Source: sesFromEmail
-    }
-
-    // Usar AWS SDK v3 para SES
-    const response = await sendSESEmail(params, awsAccessKeyId, awsSecretAccessKey, awsRegion)
+    // Enviar email usando Brevo
+    const result = await sendBrevoEmail({
+      to: request.recipient_email,
+      subject: content.subject,
+      htmlBody: htmlBody,
+      textBody: content.message,
+      fromEmail: 'no-reply@gestabiz.com',
+      fromName: 'Gestabiz'
+    })
     
-    return response
+    return result
   } catch (error) {
     return { success: false, error: error.message }
   }

@@ -32,8 +32,8 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 - Exports a PDF/CSV/Excel
 
 ### 🔔 Notificaciones Multicanal
-- **Email**: AWS SES
-- **SMS**: AWS SNS
+- **Email**: Brevo (Sendinblue) - 300 emails/día gratis
+- **SMS**: AWS SNS (opcional)
 - **WhatsApp**: WhatsApp Business API
 - Recordatorios automáticos configurables
 - 17 tipos de notificaciones
@@ -81,8 +81,8 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 
 ### Integraciones
 - **Stripe** (pagos y suscripciones)
-- **AWS SES** (emails transaccionales)
-- **AWS SNS** (SMS)
+- **Brevo** (emails transaccionales - 300/día gratis)
+- **AWS SNS** (SMS - opcional)
 - **WhatsApp Business API** (mensajes)
 - **Google Calendar API** (sincronización de calendarios)
 

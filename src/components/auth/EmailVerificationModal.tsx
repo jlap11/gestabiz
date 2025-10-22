@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Mail, RefreshCw, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface EmailVerificationModalProps {
   email: string
@@ -10,6 +11,7 @@ interface EmailVerificationModalProps {
 }
 
 export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVerificationModalProps>) {
+  const { t } = useLanguage()
   const [isResending, setIsResending] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const [resentCount, setResentCount] = useState(0)
@@ -23,13 +25,13 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
       })
 
       if (error) {
-        toast.error('Error al reenviar el correo: ' + error.message)
+        toast.error(t('emailVerification.resendError') + ' ' + error.message)
       } else {
         setResentCount(prev => prev + 1)
-        toast.success('Correo de verificación reenviado')
+        toast.success(t('emailVerification.resendSuccess'))
       }
     } catch {
-      toast.error('Error inesperado al reenviar el correo')
+      toast.error(t('emailVerification.unexpectedError'))
     } finally {
       setIsResending(false)
     }
@@ -42,15 +44,15 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
       const { data: { user }, error } = await supabase.auth.getUser()
 
       if (error) {
-        toast.error('Error al verificar: ' + error.message)
+        toast.error(t('emailVerification.checkError') + ' ' + error.message)
       } else if (user?.email_confirmed_at) {
-        toast.success('¡Email verificado exitosamente!')
+        toast.success(t('emailVerification.verifySuccess'))
         onVerified()
       } else {
-        toast.warning('El email aún no ha sido verificado. Por favor revisa tu bandeja de entrada.')
+        toast.warning(t('emailVerification.notVerified'))
       }
     } catch {
-      toast.error('Error al verificar el estado del email')
+      toast.error(t('emailVerification.verifyUnexpectedError'))
     } finally {
       setIsChecking(false)
     }
@@ -73,12 +75,12 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-center text-foreground mb-2">
-            Verifica tu correo electrónico
+            {t('emailVerification.title')}
           </h2>
 
           {/* Description */}
           <p className="text-center text-muted-foreground mb-6">
-            Hemos enviado un correo de verificación a:
+            {t('emailVerification.description')}
           </p>
 
           {/* Email */}
@@ -92,15 +94,15 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
           <div className="space-y-3 mb-6 text-sm text-muted-foreground">
             <div className="flex items-start gap-2">
               <span className="text-primary font-bold mt-0.5">1.</span>
-              <p>Revisa tu bandeja de entrada (y spam)</p>
+              <p>{t('emailVerification.step1')}</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-primary font-bold mt-0.5">2.</span>
-              <p>Haz clic en el enlace de verificación</p>
+              <p>{t('emailVerification.step2')}</p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-primary font-bold mt-0.5">3.</span>
-              <p>Regresa aquí y haz clic en "Ya verifiqué mi email"</p>
+              <p>{t('emailVerification.step3')}</p>
             </div>
           </div>
 
@@ -114,12 +116,12 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
               {isChecking ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Verificando...
+                  {t('emailVerification.verifying')}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Ya verifiqué mi email
+                  {t('emailVerification.verified')}
                 </>
               )}
             </Button>
@@ -133,12 +135,12 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
               {isResending ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Reenviando...
+                  {t('emailVerification.resending')}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  {resentCount > 0 ? `Reenviar correo (${resentCount}/3)` : 'Reenviar correo'}
+                  {resentCount > 0 ? `${t('emailVerification.resend')} (${resentCount}/3)` : t('emailVerification.resend')}
                 </>
               )}
             </Button>
@@ -146,7 +148,7 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
 
           {/* Help text */}
           <p className="text-center text-xs text-muted-foreground mt-6">
-            ¿No recibiste el correo? Verifica tu carpeta de spam o reenvía el correo.
+            {t('emailVerification.helpText')}
           </p>
         </div>
       </div>

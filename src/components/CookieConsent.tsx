@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { X, Cookie } from 'lucide-react'
 import { grantAnalyticsConsent, revokeAnalyticsConsent } from '@/hooks/useAnalytics'
 import { initializeGA4, updateGA4Consent } from '@/lib/ga4'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 /**
  * CookieConsent Banner Component
@@ -20,6 +21,7 @@ import { initializeGA4, updateGA4Consent } from '@/lib/ga4'
  */
 export function CookieConsent() {
   const [show, setShow] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     // Mostrar banner solo si no hay decisión previa
@@ -76,13 +78,13 @@ export function CookieConsent() {
                 id="cookie-consent-title" 
                 className="text-base font-semibold text-foreground"
               >
-                Usamos cookies para mejorar tu experiencia
+                {t('cookieConsent.title')}
               </h3>
               <p 
                 id="cookie-consent-description" 
                 className="text-sm text-muted-foreground leading-relaxed"
               >
-                Este sitio utiliza cookies analíticas para entender cómo interactúas con nuestra plataforma. No compartimos tus datos con terceros y respetamos tu privacidad.
+                {t('cookieConsent.description')}
               </p>
             </div>
           </div>
@@ -95,21 +97,21 @@ export function CookieConsent() {
               onClick={handleReject}
               className="text-muted-foreground hover:text-foreground"
             >
-              Rechazar
+              {t('cookieConsent.reject')}
             </Button>
             <Button
               size="sm"
               onClick={handleAccept}
               className="bg-primary hover:bg-primary/90"
             >
-              Aceptar cookies
+              {t('cookieConsent.accept')}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleClose}
               className="text-muted-foreground hover:text-foreground"
-              aria-label="Cerrar"
+              aria-label={t('cookieConsent.close')}
             >
               <X className="w-4 h-4" />
             </Button>

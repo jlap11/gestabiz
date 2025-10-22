@@ -529,6 +529,40 @@ export const translations = {
       rememberMe: 'Remember me'
     },
 
+    // Email Verification Modal
+    emailVerification: {
+      title: 'Verify your email',
+      description: 'We sent a verification email to:',
+      verified: 'I verified my email',
+      verifying: 'Verifying...',
+      resend: 'Resend email',
+      resending: 'Resending...',
+      step1: 'Check your inbox (and spam folder)',
+      step2: 'Click the verification link',
+      step3: 'Return here and click "I verified my email"',
+      helpText: 'Did not receive the email? Check your spam folder or resend the email.',
+      resendSuccess: 'Verification email resent',
+      resendError: 'Error resending email:',
+      unexpectedError: 'Unexpected error while resending email',
+      checkError: 'Error checking verification:',
+      verifySuccess: 'Email verified successfully!',
+      notVerified: 'Email not yet verified. Please check your inbox.',
+      verifyUnexpectedError: 'Error checking email verification status',
+    },
+
+    // Account Inactive Modal
+    accountInactive: {
+      title: 'Inactive Account',
+      message: 'Your account has been deactivated. Do you want to reactivate it now?',
+      reactivate: 'Yes, reactivate',
+      reactivating: 'Reactivating...',
+      logout: 'No, sign out',
+      infoText: 'If you reactivate your account you will be able to access it immediately.',
+      reactivateError: 'Error reactivating account',
+      reactivateSuccess: 'Account reactivated successfully',
+      unexpectedError: 'Unexpected error while reactivating account',
+    },
+
     // Navigation
     nav: {
       dashboard: 'Dashboard',
@@ -1364,6 +1398,13 @@ export const translations = {
       main_location: 'Main Location'
     },
 
+    // Banner Cropper
+    bannerCropper: {
+      title: 'Crop Banner',
+      instructions: 'Adjust the rectangular area for the banner (16:9)',
+      confirm: 'Confirm',
+    },
+
     reviews: {
       title: 'Reviews',
       leaveReview: 'Leave a Review',
@@ -1974,6 +2015,177 @@ export const translations = {
     businessSelector: {
       selectBusiness: 'Select Business',
     },
+
+    // Theme Toggle
+    themeToggle: {
+      label: 'Toggle theme',
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System',
+    },
+
+    // Role Selector
+    roleSelector: {
+      label: 'Change Role',
+      admin: 'Administrator',
+      employee: 'Employee',
+      client: 'Client',
+      selectRole: 'Select a role',
+      createBusiness: 'Create business',
+      joinBusiness: 'Join business',
+      bookServices: 'Book services',
+    },
+
+    // Service Status Badge
+    serviceStatusBadge: {
+      active: 'Active',
+      inactive: 'Inactive',
+    },
+
+    // Language Toggle
+    languageToggle: {
+      label: 'Language',
+      spanish: 'Español',
+      english: 'English',
+    },
+
+    // Owner Badge
+    ownerBadge: {
+      owner: 'Owner',
+      admin: 'Admin',
+    },
+
+    // Business Invitation Card
+    businessInvitationCard: {
+      copied: 'Code copied to clipboard',
+      qrGenerated: 'QR Code generated',
+      qrError: 'Error generating QR code',
+      qrDownloaded: 'QR Code downloaded',
+      shareSuccess: 'Shared successfully',
+      shareError: 'Error sharing',
+      copyCode: 'Copy Code',
+      generateQR: 'Generate QR',
+      downloadQR: 'Download QR',
+      share: 'Share Invitation',
+    },
+
+    // Quick Sale Form
+    quickSaleForm: {
+      title: 'Quick Sale',
+      subtitle: 'Register a quick walk-in sale',
+      clientNameLabel: 'Client Name',
+      clientPhoneLabel: 'Phone',
+      clientDocumentLabel: 'Document',
+      clientEmailLabel: 'Email',
+      serviceLabel: 'Service',
+      locationLabel: 'Location',
+      employeeLabel: 'Employee (Optional)',
+      paymentMethodLabel: 'Payment Method',
+      amountLabel: 'Amount',
+      notesLabel: 'Notes',
+      cash: 'Cash',
+      card: 'Card',
+      transfer: 'Transfer',
+      clientNameRequired: 'Client name is required',
+      selectService: 'Select a service',
+      selectLocation: 'Select a location',
+      enterAmount: 'Enter a valid amount',
+      selectPaymentMethod: 'Select a payment method',
+      register: 'Register Sale',
+      loading: 'Loading...',
+      error: 'Error loading data',
+      errorRegistering: 'Error registering sale',
+      successRegistering: 'Sale registered successfully',
+      cancel: 'Cancel',
+    },
+
+    // Review Form
+    reviewForm: {
+      title: 'Leave a Review',
+      subtitle: 'Share your experience',
+      ratingLabel: 'Rating',
+      commentLabel: 'Comment',
+      submitButton: 'Submit Review',
+      cancelButton: 'Cancel',
+      selectRating: 'Select a rating',
+      loading: 'Submitting...',
+      successSubmit: 'Thank you for your review!',
+      errorSubmit: 'Error submitting review',
+    },
+
+    // Review Card
+    reviewCard: {
+      anonymous: 'Anonymous',
+      rating: 'Rating',
+      verified: 'Verified Purchase',
+      helpful: 'Helpful',
+      notHelpful: 'Not Helpful',
+      report: 'Report',
+      loading: 'Loading...',
+    },
+
+    // Review List
+    reviewList: {
+      noReviews: 'No reviews yet',
+      loading: 'Loading reviews...',
+      error: 'Error loading reviews',
+      sortBy: 'Sort by',
+      recent: 'Recent',
+      highest: 'Highest Rating',
+      lowest: 'Lowest Rating',
+      mostHelpful: 'Most Helpful',
+    },
+
+    // Profile Page
+    profilePage: {
+      title: 'My Profile',
+      editProfile: 'Edit Profile',
+      saveChanges: 'Save Changes',
+      cancel: 'Cancel',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email',
+      phone: 'Phone',
+      successUpdate: 'Profile updated successfully',
+      errorUpdate: 'Error updating profile',
+    },
+
+    // Recommended Businesses
+    recommendedBusinesses: {
+      title: 'Recommended for You',
+      noRecommendations: 'No recommendations available',
+      loading: 'Loading recommendations...',
+    },
+
+    // Business Suggestions
+    businessSuggestions: {
+      title: 'Popular Businesses',
+      noSuggestions: 'No suggestions available',
+      loading: 'Loading suggestions...',
+      viewMore: 'View More',
+      basedOnReviews: 'Based on your reviews',
+      inCity: 'In',
+    },
+
+    // Dashboard Overview
+    dashboardOverview: {
+      title: 'Dashboard',
+      welcomeBack: 'Welcome back',
+      upcoming: 'Upcoming',
+      noUpcoming: 'No upcoming appointments',
+      recent: 'Recent Activity',
+      noActivity: 'No recent activity',
+      viewMore: 'View More',
+    },
+
+    // Cookie Consent
+    cookieConsent: {
+      title: 'We use cookies to improve your experience',
+      description: 'This site uses analytics cookies to understand how you interact with our platform. We do not share your data with third parties and respect your privacy.',
+      reject: 'Reject',
+      accept: 'Accept cookies',
+      close: 'Close',
+    },
   },
 
   es: {
@@ -2570,6 +2782,40 @@ export const translations = {
       accountInactive: 'Tu cuenta está inactiva. No podrás iniciar sesión hasta reactivar tu cuenta',
       mustSignIn: 'Debes iniciar sesión para crear una cita',
       rememberMe: 'Recuérdame'
+    },
+
+    // Email Verification Modal
+    emailVerification: {
+      title: 'Verifica tu correo electrónico',
+      description: 'Hemos enviado un correo de verificación a:',
+      verified: 'Ya verifiqué mi email',
+      verifying: 'Verificando...',
+      resend: 'Reenviar correo',
+      resending: 'Reenviando...',
+      step1: 'Revisa tu bandeja de entrada (y spam)',
+      step2: 'Haz clic en el enlace de verificación',
+      step3: 'Regresa aquí y haz clic en "Ya verifiqué mi email"',
+      helpText: '¿No recibiste el correo? Verifica tu carpeta de spam o reenvía el correo.',
+      resendSuccess: 'Correo de verificación reenviado',
+      resendError: 'Error al reenviar el correo:',
+      unexpectedError: 'Error inesperado al reenviar el correo',
+      checkError: 'Error al verificar:',
+      verifySuccess: '¡Email verificado exitosamente!',
+      notVerified: 'El email aún no ha sido verificado. Por favor revisa tu bandeja de entrada.',
+      verifyUnexpectedError: 'Error al verificar el estado del email',
+    },
+
+    // Account Inactive Modal
+    accountInactive: {
+      title: 'Cuenta Inactiva',
+      message: 'Tu cuenta ha sido desactivada. ¿Deseas reactivarla ahora?',
+      reactivate: 'Sí, reactivar',
+      reactivating: 'Reactivando...',
+      logout: 'No, cerrar sesión',
+      infoText: 'Si reactivas tu cuenta podrás acceder inmediatamente.',
+      reactivateError: 'Error al reactivar la cuenta',
+      reactivateSuccess: 'Cuenta reactivada exitosamente',
+      unexpectedError: 'Error inesperado al reactivar la cuenta',
     },
 
     // Navigation
@@ -3952,6 +4198,184 @@ export const translations = {
     // Business Selector
     businessSelector: {
       selectBusiness: 'Seleccionar negocio',
+    },
+
+    // Theme Toggle
+    themeToggle: {
+      label: 'Cambiar tema',
+      light: 'Claro',
+      dark: 'Oscuro',
+      system: 'Sistema',
+    },
+
+    // Role Selector
+    roleSelector: {
+      label: 'Cambiar Rol',
+      admin: 'Administrador',
+      employee: 'Empleado',
+      client: 'Cliente',
+      selectRole: 'Selecciona un rol',
+      createBusiness: 'Crear negocio',
+      joinBusiness: 'Unirse a negocio',
+      bookServices: 'Reservar servicios',
+    },
+
+    // Service Status Badge
+    serviceStatusBadge: {
+      active: 'Activo',
+      inactive: 'Inactivo',
+    },
+
+    // Language Toggle
+    languageToggle: {
+      label: 'Idioma',
+      spanish: 'Español',
+      english: 'English',
+    },
+
+    // Owner Badge
+    ownerBadge: {
+      owner: 'Propietario',
+      admin: 'Admin',
+    },
+
+    // Business Invitation Card
+    businessInvitationCard: {
+      copied: 'Código copiado al portapapeles',
+      qrGenerated: 'Código QR generado',
+      qrError: 'Error al generar código QR',
+      qrDownloaded: 'Código QR descargado',
+      shareSuccess: 'Compartido exitosamente',
+      shareError: 'Error al compartir',
+      copyCode: 'Copiar Código',
+      generateQR: 'Generar QR',
+      downloadQR: 'Descargar QR',
+      share: 'Compartir Invitación',
+    },
+
+    // Quick Sale Form
+    quickSaleForm: {
+      title: 'Venta Rápida',
+      subtitle: 'Registrar una venta de mostrador',
+      clientNameLabel: 'Nombre del Cliente',
+      clientPhoneLabel: 'Teléfono',
+      clientDocumentLabel: 'Documento',
+      clientEmailLabel: 'Email',
+      serviceLabel: 'Servicio',
+      locationLabel: 'Sede',
+      employeeLabel: 'Empleado (Opcional)',
+      paymentMethodLabel: 'Método de Pago',
+      amountLabel: 'Monto',
+      notesLabel: 'Notas',
+      cash: 'Efectivo',
+      card: 'Tarjeta',
+      transfer: 'Transferencia',
+      clientNameRequired: 'El nombre del cliente es requerido',
+      selectService: 'Selecciona un servicio',
+      selectLocation: 'Selecciona una sede',
+      enterAmount: 'Ingresa un monto válido',
+      selectPaymentMethod: 'Selecciona un método de pago',
+      register: 'Registrar Venta',
+      loading: 'Cargando...',
+      error: 'Error al cargar datos',
+      errorRegistering: 'Error al registrar venta',
+      successRegistering: 'Venta registrada exitosamente',
+      cancel: 'Cancelar',
+    },
+
+    // Review Form
+    reviewForm: {
+      title: 'Dejar una Reseña',
+      subtitle: 'Comparte tu experiencia',
+      ratingLabel: 'Calificación',
+      commentLabel: 'Comentario',
+      submitButton: 'Enviar Reseña',
+      cancelButton: 'Cancelar',
+      selectRating: 'Selecciona una calificación',
+      loading: 'Enviando...',
+      successSubmit: '¡Gracias por tu reseña!',
+      errorSubmit: 'Error al enviar reseña',
+    },
+
+    // Review Card
+    reviewCard: {
+      anonymous: 'Anónimo',
+      rating: 'Calificación',
+      verified: 'Compra Verificada',
+      helpful: 'Útil',
+      notHelpful: 'No Útil',
+      report: 'Reportar',
+      loading: 'Cargando...',
+    },
+
+    // Review List
+    reviewList: {
+      noReviews: 'Sin reseñas aún',
+      loading: 'Cargando reseñas...',
+      error: 'Error al cargar reseñas',
+      sortBy: 'Ordenar por',
+      recent: 'Reciente',
+      highest: 'Calificación Más Alta',
+      lowest: 'Calificación Más Baja',
+      mostHelpful: 'Más Útil',
+    },
+
+    // Profile Page
+    profilePage: {
+      title: 'Mi Perfil',
+      editProfile: 'Editar Perfil',
+      saveChanges: 'Guardar Cambios',
+      cancel: 'Cancelar',
+      firstName: 'Nombre',
+      lastName: 'Apellido',
+      email: 'Email',
+      phone: 'Teléfono',
+      successUpdate: 'Perfil actualizado exitosamente',
+      errorUpdate: 'Error al actualizar perfil',
+    },
+
+    // Recommended Businesses
+    recommendedBusinesses: {
+      title: 'Recomendado para Ti',
+      noRecommendations: 'Sin recomendaciones disponibles',
+      loading: 'Cargando recomendaciones...',
+    },
+
+    // Business Suggestions
+    businessSuggestions: {
+      title: 'Negocios Populares',
+      noSuggestions: 'Sin sugerencias disponibles',
+      loading: 'Cargando sugerencias...',
+      viewMore: 'Ver Más',
+      basedOnReviews: 'Basado en tus reseñas',
+      inCity: 'En',
+    },
+
+    // Dashboard Overview
+    dashboardOverview: {
+      title: 'Panel de Control',
+      welcomeBack: 'Bienvenido de vuelta',
+      upcoming: 'Próximas',
+      noUpcoming: 'Sin citas próximas',
+      recent: 'Actividad Reciente',
+      noActivity: 'Sin actividad reciente',
+      viewMore: 'Ver Más',
+    },
+
+    // Banner Cropper
+    bannerCropper: {
+      title: 'Recortar Banner',
+      instructions: 'Ajusta el área rectangular para el banner (16:9)',
+      confirm: 'Confirmar',
+    },
+
+    // Cookie Consent
+    cookieConsent: {
+      title: 'Usamos cookies para mejorar tu experiencia',
+      description: 'Este sitio utiliza cookies analíticas para entender cómo interactúas con nuestra plataforma. No compartimos tus datos con terceros y respetamos tu privacidad.',
+      reject: 'Rechazar',
+      accept: 'Aceptar cookies',
+      close: 'Cerrar',
     },
   }
 }

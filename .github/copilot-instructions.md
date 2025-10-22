@@ -830,10 +830,13 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
     - `send-notification`: Envío multi-canal (Email via AWS SES, SMS via AWS SNS, WhatsApp)
     - `process-reminders`: Procesador automático de recordatorios (ejecuta cada 5 min via cron)
   - **Políticas RLS**: Configuradas y funcionando correctamente sin recursión infinita.
+- **Brevo (Sendinblue)**: 
+  - **SMTP/API**: Envío de emails transaccionales (300 emails/día gratis)
+  - Variables requeridas: `BREVO_API_KEY`, `BREVO_SMTP_HOST`, `BREVO_SMTP_PORT`, `BREVO_SMTP_USER`, `BREVO_SMTP_PASSWORD`
+  - Configuración: smtp-relay.brevo.com:587
 - **Amazon Web Services**: 
-  - **SES (Simple Email Service)**: Envío de emails transaccionales ($0.10/1000 emails)
-  - **SNS (Simple Notification Service)**: Envío de SMS ($0.00645/SMS en US)
-  - Variables requeridas: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `SES_FROM_EMAIL`
+  - **SNS (Simple Notification Service)**: Envío de SMS ($0.00645/SMS en US) - OPCIONAL
+  - Variables requeridas (SMS): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
 - **WhatsApp Business API**: Envío de mensajes WhatsApp
   - Variables requeridas: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`
 - Google Calendar: `src/lib/googleCalendar.ts` maneja OAuth (client-side) con `VITE_GOOGLE_CLIENT_ID`/`VITE_GOOGLE_CLIENT_SECRET` y métodos `getCalendars/getEvents/create/update/delete` y `syncAppointments`. No colocar secretos sensibles en código cliente.
@@ -1118,11 +1121,18 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
 
 **Edge Functions** (Supabase Secrets):
 ```bash
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-AWS_REGION=us-east-1
-SES_FROM_EMAIL=noreply@gestabiz.com
+# Email (Brevo/Sendinblue)
+BREVO_API_KEY=xkeysib-YOUR_API_KEY_HERE
+BREVO_SMTP_HOST=smtp-relay.brevo.com
+BREVO_SMTP_PORT=587
+BREVO_SMTP_USER=no-reply@gestabiz.com
+BREVO_SMTP_PASSWORD=xsmtpsib-YOUR_SMTP_PASSWORD_HERE
+SUPPORT_EMAIL=soporte@gestabiz.com
+
+# WhatsApp
 WHATSAPP_ACCESS_TOKEN=...
+
+# Pagos
 STRIPE_SECRET_KEY=sk_test_...
 ```
 

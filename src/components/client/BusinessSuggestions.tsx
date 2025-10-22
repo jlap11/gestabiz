@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Building2, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SimpleBusiness {
   id: string;
@@ -31,6 +32,7 @@ export function BusinessSuggestions({
   preferredRegionName,
   onBusinessSelect
 }: Readonly<BusinessSuggestionsProps>) {
+  const { t } = useLanguage()
   const [favoriteBusiness, setFavoriteBusiness] = useState<SimpleBusiness | null>(null);
   const [allSuggestedBusinesses, setAllSuggestedBusinesses] = useState<SimpleBusiness[]>([]);
   const [displayedBusinesses, setDisplayedBusinesses] = useState<SimpleBusiness[]>([]);
@@ -286,7 +288,7 @@ export function BusinessSuggestions({
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Sugerencias para ti
+              {t('businessSuggestions.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -309,7 +311,7 @@ export function BusinessSuggestions({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Sugerencias para ti
+            {t('businessSuggestions.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -317,7 +319,7 @@ export function BusinessSuggestions({
           {favoriteBusiness && (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Basado en tus reseñas
+                {t('businessSuggestions.basedOnReviews')}
               </h3>
               {renderBusinessCard(favoriteBusiness, true)}
             </div>
@@ -327,7 +329,7 @@ export function BusinessSuggestions({
           {displayedBusinesses.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                En {preferredCityName || preferredRegionName}
+                {t('businessSuggestions.inCity')} {preferredCityName || preferredRegionName}
               </h3>
               <div className="space-y-3">
                 {displayedBusinesses.map((business) => renderBusinessCard(business, false))}
@@ -340,7 +342,7 @@ export function BusinessSuggestions({
                   className="w-full mt-4"
                   onClick={handleLoadMore}
                 >
-                  Ver más...
+                  {t('businessSuggestions.viewMore')}
                 </Button>
               )}
             </div>

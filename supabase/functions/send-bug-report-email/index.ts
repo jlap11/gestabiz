@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { SendEmailCommand, SESClient } from 'https://esm.sh/@aws-sdk/client-ses@3.391.0'
+import { sendBrevoEmail } from '../_shared/brevo.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,20 +59,11 @@ serve(async (req) => {
       throw new Error('Missing required fields')
     }
 
-    // Configurar AWS SES
-    const sesClient = new SESClient({
-      region: Deno.env.get('AWS_REGION') || 'us-east-1',
-      credentials: {
-        accessKeyId: Deno.env.get('AWS_ACCESS_KEY_ID') || '',
-        secretAccessKey: Deno.env.get('AWS_SECRET_ACCESS_KEY') || '',
-      },
-    })
-
+    // Configuración de correo
     const supportEmail = Deno.env.get('SUPPORT_EMAIL')
-    const fromEmail = Deno.env.get('SES_FROM_EMAIL')
 
-    if (!supportEmail || !fromEmail) {
-      throw new Error('SUPPORT_EMAIL or SES_FROM_EMAIL not configured')
+    if (!supportEmail) {
+      throw new Error('SUPPORT_EMAIL not configured')
     }
 
     // Crear cliente de Supabase
@@ -314,31 +305,15 @@ ID del Reporte: ${bugReportId}
 Este email fue generado automáticamente por el sistema de reporte de bugs de Gestabiz.
     `
 
-    // Enviar email vía AWS SES
-    const sendEmailCommand = new SendEmailCommand({
-      Source: fromEmail,
-      Destination: {
-        ToAddresses: [supportEmail],
-      },
-      Message: {
-        Subject: {
-          Data: `🐛 [${config.label}] ${title}`,
-          Charset: 'UTF-8',
-        },
-        Body: {
-          Html: {
-            Data: htmlBody,
-            Charset: 'UTF-8',
-          },
-          Text: {
-            Data: textBody,
-            Charset: 'UTF-8',
-          },
-        },
-      },
+    // Enviar email vía Brevo
+    const emailResult = await sendBrevoEmail({
+      to: supportEmail,
+      subject: `🐛 [${config.label}] ${title}`,
+      htmlBody: htmlBody,
+      textBody: textBody,
+      fromEmail: 'no-reply@gestabiz.com',
+      fromName: 'Gestabiz Bug Reporter'
     })
-
-    const emailResult = await sesClient.send(sendEmailCommand)
 
     // Actualizar log de notificaciones si existe
     if (bugReport) {
@@ -349,7 +324,7 @@ Este email fue generado automáticamente por el sistema de reporte de bugs de Ge
           sent_at: new Date().toISOString(),
           metadata: {
             ...bugReport,
-            ses_message_id: emailResult.MessageId
+            brevo_message_id: emailResult.messageId
           }
         })
         .eq('metadata->bug_report_id', bugReportId)
@@ -359,7 +334,7 @@ Este email fue generado automáticamente por el sistema de reporte de bugs de Ge
     return new Response(
       JSON.stringify({
         success: true,
-        messageId: emailResult.MessageId,
+        messageId: emailResult.messageId,
         message: 'Bug report email sent successfully'
       }),
       {
