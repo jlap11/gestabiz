@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { Business } from '@/types/types'
 
 interface BusinessSelectorProps {
@@ -23,6 +24,7 @@ export function BusinessSelector({
   onSelectBusiness,
   className = '',
 }: BusinessSelectorProps) {
+  const { t } = useLanguage()
   const selectedBusiness = businesses.find((b) => b.id === selectedBusinessId)
 
   // Si solo hay un negocio, mostrar info card sin selector
@@ -80,7 +82,7 @@ export function BusinessSelector({
                 </div>
               </div>
             ) : (
-              'Seleccionar negocio'
+              t('businessSelector.selectBusiness')
             )}
           </SelectValue>
           <ChevronDown className="h-4 w-4 opacity-50" />

@@ -1959,6 +1959,21 @@ export const translations = {
       businessesMarked: 'businesses marked as favorites',
       tipDescription: 'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
     },
+
+    // City Selector
+    citySelector: {
+      selectRegion: 'Select Region',
+      loading: 'Loading...',
+      noRegions: 'No regions available',
+      retry: 'Retry',
+      allCities: 'All cities',
+      loadingCities: 'Loading cities...',
+    },
+
+    // Business Selector
+    businessSelector: {
+      selectBusiness: 'Select Business',
+    },
   },
 
   es: {
@@ -3922,6 +3937,21 @@ export const translations = {
       businessMarked: 'negocio marcado',
       businessesMarked: 'negocios marcados',
       tipDescription: 'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
+    },
+
+    // City Selector
+    citySelector: {
+      selectRegion: 'Seleccionar departamento',
+      loading: 'Cargando...',
+      noRegions: 'No hay departamentos',
+      retry: 'Reintentar',
+      allCities: 'Todas las ciudades',
+      loadingCities: 'Cargando ciudades...',
+    },
+
+    // Business Selector
+    businessSelector: {
+      selectBusiness: 'Seleccionar negocio',
     },
   }
 }

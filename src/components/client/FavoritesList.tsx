@@ -20,6 +20,7 @@ import BusinessProfile from '@/components/business/BusinessProfile';
  */
 export default function FavoritesList() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { favorites, loading, error } = useFavorites(user?.id);
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
 
@@ -28,7 +29,7 @@ export default function FavoritesList() {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground text-center">Cargando tus negocios favoritos...</p>
+        <p className="text-muted-foreground text-center">{t('favoritesList.loading')}</p>
       </div>
     );
   }
@@ -38,7 +39,7 @@ export default function FavoritesList() {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <div className="bg-destructive/10 border border-destructive rounded-lg p-6 max-w-md">
-          <p className="text-destructive font-semibold mb-2">Error al cargar favoritos</p>
+          <p className="text-destructive font-semibold mb-2">{t('favoritesList.errorTitle')}</p>
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>
@@ -53,14 +54,14 @@ export default function FavoritesList() {
           <Heart className="h-16 w-16 text-muted-foreground" />
         </div>
         <h3 className="text-2xl font-semibold text-foreground mb-2">
-          No tienes favoritos aún
+          {t('favoritesList.emptyTitle')}
         </h3>
         <p className="text-muted-foreground text-center max-w-md mb-8">
-          Marca tus negocios preferidos como favoritos para acceder rápidamente a ellos y reservar citas más fácilmente.
+          {t('favoritesList.emptyDescription')}
         </p>
         <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-md">
           <p className="text-sm text-primary font-medium">
-            Tip: Busca un negocio y haz clic en el ícono de corazón para agregarlo a favoritos
+            {t('favoritesList.tipHeader')}
           </p>
         </div>
       </div>
@@ -138,7 +139,7 @@ export default function FavoritesList() {
               setSelectedBusinessId(business.id);
             }}
           >
-            Reservar cita
+            {t('favoritesList.bookButton')}
           </Button>
         </div>
       </CardContent>
@@ -153,10 +154,10 @@ export default function FavoritesList() {
           <div>
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary fill-primary" />
-              Mis Favoritos
+              {t('favoritesList.myFavorites')}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {favorites.length} {favorites.length === 1 ? 'negocio marcado' : 'negocios marcados'} como favorito
+              {favorites.length} {favorites.length === 1 ? t('favoritesList.businessMarked') : t('favoritesList.businessesMarked')} {t('favoritesList.tipDescription')}
             </p>
           </div>
         </div>
@@ -169,8 +170,7 @@ export default function FavoritesList() {
         {/* Info adicional */}
         <div className="bg-muted/50 border border-border rounded-lg p-4 text-sm text-muted-foreground">
           <p>
-            💡 <strong className="text-foreground">Tip:</strong> Haz clic en cualquier tarjeta para ver el perfil completo del negocio, 
-            sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.
+            💡 <strong className="text-foreground">Tip:</strong> {t('favoritesList.tipDescription')}
           </p>
         </div>
       </div>

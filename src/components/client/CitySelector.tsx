@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ChevronDown } from 'lucide-react';
 import { useRegions, useCities } from '@/hooks/useCatalogs';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,7 @@ export function CitySelector({
   preferredCityName,
   onCitySelect
 }: CitySelectorProps) {
+  const { t } = useLanguage();
   const [regionMenuOpen, setRegionMenuOpen] = useState(false);
   const [cityMenuOpen, setCityMenuOpen] = useState(false);
   const [regionsLocal, setRegionsLocal] = useState<Region[]>([]);
@@ -120,7 +122,7 @@ export function CitySelector({
             className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
           >
             <span className="truncate max-w-[120px] sm:max-w-[150px]">
-              {preferredRegionName || 'Seleccionar departamento'}
+              {preferredRegionName || t('citySelector.selectRegion')}
             </span>
             <ChevronDown className="h-3 w-3 flex-shrink-0" />
           </button>
@@ -129,9 +131,9 @@ export function CitySelector({
             <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[200px] max-h-[300px] overflow-y-auto">
               {regionsLocal.length === 0 ? (
                 <div className="px-3 py-2 text-sm text-muted-foreground">
-                  {regionsLoading ? 'Cargando...' : 'No hay departamentos'}
+                  {regionsLoading ? t('citySelector.loading') : t('citySelector.noRegions')}
                   <button onClick={reloadRegions} className="ml-2 underline text-primary text-xs">
-                    Reintentar
+                    {t('citySelector.retry')}
                   </button>
                 </div>
               ) : (
@@ -167,7 +169,7 @@ export function CitySelector({
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
               >
                 <span className="truncate max-w-[120px] sm:max-w-[150px]">
-                  {preferredCityName || 'Todas las ciudades'}
+                  {preferredCityName || t('citySelector.allCities')}
                 </span>
                 <ChevronDown className="h-3 w-3 flex-shrink-0" />
               </button>
@@ -185,11 +187,11 @@ export function CitySelector({
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
                   >
-                    Todas las ciudades
+                    {t('citySelector.allCities')}
                   </button>
                   {citiesLoading ? (
                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                      Cargando ciudades...
+                      {t('citySelector.loadingCities')}
                     </div>
                   ) : (
                     hookCities.map((city) => (
