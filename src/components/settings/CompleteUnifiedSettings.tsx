@@ -337,7 +337,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
     e.preventDefault()
 
     if (!formData.name.trim()) {
-      toast.error('El nombre del negocio es requerido')
+      toast.error(t('settings.businessInfo.errors.nameRequired'))
       return
     }
 
@@ -725,7 +725,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
   // NEW: Handle message preference toggle
   const handleMessagePreferenceToggle = async (newValue: boolean) => {
     if (!businessId) {
-      toast.error('No se pudo identificar el negocio')
+      toast.error(t('settings.employeePrefs.messages.allowClientMessages.errorBusinessId'))
       return
     }
 
