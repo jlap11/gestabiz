@@ -12,6 +12,8 @@ import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { useReviews } from '@/hooks/useReviews';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
+
 
 interface UserProfileProps {
   userId: string;
@@ -78,6 +80,7 @@ export default function UserProfile({
   userLocation 
 }: UserProfileProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('services');
@@ -276,7 +279,7 @@ export default function UserProfile({
 
   const handleSubmitReview = async (rating: number, comment: string) => {
     if (!user || !eligibleAppointmentId || !selectedBusinessId) {
-      toast.error('No se puede enviar la reseña en este momento');
+      toast.error(t('userProfile.errors.submitReviewError'));
       return;
     }
 
@@ -333,8 +336,8 @@ export default function UserProfile({
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">No se pudo cargar la información del profesional</p>
-            <Button onClick={onClose} className="mt-4">Cerrar</Button>
+            <p className="text-muted-foreground">{t('userProfile.errors.loadError')}</p>
+            <Button onClick={onClose} className="mt-4">{t('userProfile.actions.close')}</Button>
           </div>
         </Card>
       </div>
@@ -383,12 +386,12 @@ export default function UserProfile({
                 </div>
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Award className="h-3 w-3" />
-                  {userData.totalAppointments} citas completadas
+                  {userData.totalAppointments} {t('userProfile.header.completedAppointments')}
                 </Badge>
                 {isEmployeeOfAnyBusiness && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Briefcase className="h-3 w-3" />
-                    Profesional verificado
+                    {t('userProfile.header.verifiedProfessional')}
                   </Badge>
                 )}
               </div>
@@ -407,16 +410,16 @@ export default function UserProfile({
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="px-6">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="services">Servicios</TabsTrigger>
-              <TabsTrigger value="experience">Experiencia</TabsTrigger>
-              <TabsTrigger value="reviews">Reseñas</TabsTrigger>
+              <TabsTrigger value="services">{t('userProfile.tabs.services')}</TabsTrigger>
+              <TabsTrigger value="experience">{t('userProfile.tabs.experience')}</TabsTrigger>
+              <TabsTrigger value="reviews">{t('userProfile.tabs.reviews')}</TabsTrigger>
             </TabsList>
 
             {/* Tab: Servicios */}
             <TabsContent value="services" className="space-y-4 mt-6">
               {userData.services.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No hay servicios disponibles
+                  {t('userProfile.services.noServices')}
                 </p>
               ) : (
                 <div className="grid gap-4">
@@ -459,7 +462,7 @@ export default function UserProfile({
                             size="sm"
                           >
                             <Calendar className="h-4 w-4 mr-2" />
-                            Agendar
+                            {t('userProfile.services.schedule')}
                           </Button>
                         </div>
                       </div>
@@ -473,10 +476,10 @@ export default function UserProfile({
             <TabsContent value="experience" className="space-y-6 mt-6">
               {/* Businesses */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Negocios donde trabaja</h3>
+                <h3 className="text-lg font-semibold mb-4">{t('userProfile.experience.businessesTitle')}</h3>
                 {userData.businesses.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    Profesional independiente
+                    {t('userProfile.experience.independentProfessional')}
                   </p>
                 ) : (
                   <div className="grid gap-3">
@@ -516,29 +519,29 @@ export default function UserProfile({
               {/* Bio */}
               {userData.bio && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Acerca de mí</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('userProfile.experience.aboutMe')}</h3>
                   <p className="text-muted-foreground whitespace-pre-wrap">{userData.bio}</p>
                 </div>
               )}
 
               {/* Stats */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Estadísticas</h3>
+                <h3 className="text-lg font-semibold mb-4">{t('userProfile.experience.statistics')}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <Card className="p-4 text-center">
                     <Award className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="text-2xl font-bold">{userData.totalAppointments}</p>
-                    <p className="text-xs text-muted-foreground">Citas completadas</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.experience.stats.completedAppointments')}</p>
                   </Card>
                   <Card className="p-4 text-center">
                     <Star className="h-8 w-8 mx-auto mb-2 text-yellow-400 fill-yellow-400" />
                     <p className="text-2xl font-bold">{userData.rating.toFixed(1)}</p>
-                    <p className="text-xs text-muted-foreground">Calificación</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.experience.stats.rating')}</p>
                   </Card>
                   <Card className="p-4 text-center">
                     <Briefcase className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="text-2xl font-bold">{userData.services.length}</p>
-                    <p className="text-xs text-muted-foreground">Servicios</p>
+                    <p className="text-xs text-muted-foreground">{t('userProfile.experience.stats.services')}</p>
                   </Card>
                 </div>
               </div>
@@ -567,7 +570,7 @@ export default function UserProfile({
                     size="sm"
                     onClick={() => setShowReviewForm(true)}
                   >
-                    Dejar reseña
+                    {t('userProfile.reviews.leaveReview')}
                   </Button>
                 </div>
               )}
@@ -591,13 +594,13 @@ export default function UserProfile({
           >
             <Calendar className="h-5 w-5 mr-2" />
             {isEmployeeOfAnyBusiness 
-              ? `Agendar Cita con ${userData.full_name}`
-              : 'Profesional no disponible'
+              ? t('userProfile.footer.scheduleWith', { name: userData.full_name })
+              : t('userProfile.footer.notAvailable')
             }
           </Button>
           {!isEmployeeOfAnyBusiness && (
             <p className="text-xs text-center text-muted-foreground mt-2">
-              Este profesional no está vinculado a ningún negocio activo
+              {t('userProfile.footer.notLinkedMessage')}
             </p>
           )}
         </div>

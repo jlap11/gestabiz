@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFavorites, FavoriteBusiness } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

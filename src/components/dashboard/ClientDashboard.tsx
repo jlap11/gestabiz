@@ -102,27 +102,27 @@ export default function ClientDashboard({
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; className: string }> = {
       confirmed: { 
-        label: 'Confirmed', 
+        label: t('clientDashboard.status.confirmed'), 
         className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-medium' 
       },
       pending: { 
-        label: 'Pending', 
+        label: t('clientDashboard.status.pending'), 
         className: 'bg-amber-500/20 text-amber-400 border-amber-500/30 font-medium' 
       },
       completed: { 
-        label: 'Completed', 
+        label: t('clientDashboard.status.completed'), 
         className: 'bg-blue-500/20 text-blue-400 border-blue-500/30 font-medium' 
       },
       cancelled: { 
-        label: 'Cancelled', 
+        label: t('clientDashboard.status.cancelled'), 
         className: 'bg-red-500/20 text-red-400 border-red-500/30 font-medium' 
       },
       scheduled: { 
-        label: 'Scheduled', 
+        label: t('clientDashboard.status.scheduled'), 
         className: 'bg-primary/20 text-primary border-primary/30 font-medium' 
       },
       'no-show': { 
-        label: 'No Show', 
+        label: t('clientDashboard.status.noShow'), 
         className: 'bg-muted text-muted-foreground border-border font-medium' 
       },
     }
@@ -199,7 +199,7 @@ export default function ClientDashboard({
 
   // Función para eliminar cita
   const handleDeleteAppointment = async (appointmentId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
+    if (!confirm(t('clientDashboard.confirmDelete'))) {
       return
     }
 
@@ -212,15 +212,15 @@ export default function ClientDashboard({
         .eq('id', appointmentId)
 
       if (error) {
-        toast.error(`Error al eliminar la cita: ${error.message}`)
+        toast.error(t('clientDashboard.deleteError'))
         return
       }
 
-      toast.success('Cita eliminada exitosamente')
+      toast.success(t('clientDashboard.deleteSuccess'))
       refetch() // Recargar la lista de citas
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado'
-      toast.error(`Error al eliminar: ${message}`)
+      toast.error(t('clientDashboard.errorDeleting', { message }))
     } finally {
       setDeletingId(null)
     }
@@ -235,11 +235,11 @@ export default function ClientDashboard({
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">
-              Upcoming Appointments
+              {t('clientDashboard.upcomingTitle')}
             </h2>
             {upcomingAppointments.length > 0 && (
               <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                View All
+                {t('clientDashboard.viewAll')}
               </Button>
             )}
           </div>
@@ -248,16 +248,16 @@ export default function ClientDashboard({
             <Card className="border-dashed border-2 border-border bg-transparent">
               <CardContent className="py-16 text-center">
                 <CalendarX className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2 text-foreground">No upcoming appointments</h3>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">{t('clientDashboard.noUpcoming')}</h3>
                 <p className="text-muted-foreground mb-6">
-                  Book your first appointment to get started
+                  {t('clientDashboard.bookFirstAppointment')}
                 </p>
                 <Button 
                   onClick={() => setShowAppointmentForm(true)}
                   className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Book Appointment
+                  {t('clientDashboard.bookAppointment')}
                 </Button>
               </CardContent>
             </Card>
@@ -272,14 +272,14 @@ export default function ClientDashboard({
                     {/* Title and Badge */}
                     <div className="flex items-start justify-between mb-4">
                       <h3 className="text-xl font-semibold text-foreground">
-                        {appointment.title || 'Appointment'}
+                        {appointment.title || t('clientDashboard.appointment')}
                       </h3>
                       {getStatusBadge(appointment.status)}
                     </div>
 
                     {/* Provider */}
                     <div className="text-muted-foreground mb-4">
-                      with {appointment.employee_name || 'Provider'}
+                      {t('clientDashboard.with')} {appointment.employee_name || t('clientDashboard.table.provider')}
                     </div>
 
                     {/* Date, Time, Location */}
@@ -308,7 +308,7 @@ export default function ClientDashboard({
                         className="text-muted-foreground hover:text-green-500 hover:bg-muted"
                         onClick={() => handleConfirmAppointment(appointment.id)}
                         disabled={confirmingId === appointment.id || appointment.status === 'confirmed'}
-                        title={appointment.status === 'confirmed' ? 'Ya confirmada' : 'Confirmar cita'}
+                        title={appointment.status === 'confirmed' ? t('clientDashboard.alreadyConfirmed') : t('clientDashboard.confirmButton')}
                       >
                         {confirmingId === appointment.id ? (
                           <span className="animate-spin">⏳</span>
@@ -321,7 +321,7 @@ export default function ClientDashboard({
                         size="icon"
                         className="text-muted-foreground hover:text-blue-500 hover:bg-muted"
                         onClick={() => handleAddToGoogleCalendar(appointment)}
-                        title="Agregar a Google Calendar"
+                        title={t('clientDashboard.addToCalendar')}
                       >
                         <CalendarPlus className="h-5 w-5" />
                       </Button>
@@ -331,7 +331,7 @@ export default function ClientDashboard({
                         className="text-muted-foreground hover:text-red-500 hover:bg-muted"
                         onClick={() => handleDeleteAppointment(appointment.id)}
                         disabled={deletingId === appointment.id}
-                        title="Eliminar cita"
+                        title={t('clientDashboard.deleteAppointment')}
                       >
                         {deletingId === appointment.id ? (
                           <span className="animate-spin">⏳</span>
@@ -352,7 +352,7 @@ export default function ClientDashboard({
           <section>
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-2xl font-bold text-foreground">
-                Past Appointments
+                {t('clientDashboard.pastTitle')}
               </h2>
             </div>
 
@@ -364,19 +364,19 @@ export default function ClientDashboard({
                     <thead className="border-b border-border">
                       <tr>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                          Service
+                          {t('clientDashboard.table.service')}
                         </th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                          Date & Time
+                          {t('clientDashboard.table.dateTime')}
                         </th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                          Provider
+                          {t('clientDashboard.table.provider')}
                         </th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                          Location
+                          {t('clientDashboard.table.location')}
                         </th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
-                          Actions
+                          {t('clientDashboard.table.actions')}
                         </th>
                       </tr>
                     </thead>
@@ -388,7 +388,7 @@ export default function ClientDashboard({
                         >
                           <td className="px-6 py-4">
                             <div className="font-medium text-foreground">
-                              {appointment.title || 'Appointment'}
+                              {appointment.title || t('clientDashboard.appointment')}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -397,10 +397,10 @@ export default function ClientDashboard({
                             </div>
                           </td>
                           <td className="px-6 py-4 text-sm text-foreground/90">
-                            {appointment.employee_name || 'Provider'}
+                            {appointment.employee_name || t('clientDashboard.table.provider')}
                           </td>
                           <td className="px-6 py-4 text-sm text-foreground/90">
-                            {appointment.location || 'Location'}
+                            {appointment.location || t('clientDashboard.table.location')}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
@@ -409,7 +409,7 @@ export default function ClientDashboard({
                                 size="sm"
                                 className="text-[#8B5CF6] hover:text-[#a78bfa] font-semibold p-0 h-auto"
                               >
-                                Rebook
+                                {t('clientDashboard.rebook')}
                               </Button>
                               <Button 
                                 variant="ghost" 
@@ -417,7 +417,7 @@ export default function ClientDashboard({
                                 onClick={() => handleDeleteAppointment(appointment.id)}
                                 disabled={deletingId === appointment.id}
                                 className="text-muted-foreground hover:text-red-500 p-1 h-auto"
-                                title="Eliminar cita"
+                                title={t('clientDashboard.deleteAppointment')}
                               >
                                 {deletingId === appointment.id ? (
                                   <span className="animate-spin text-sm">⏳</span>
@@ -440,7 +440,7 @@ export default function ClientDashboard({
                       <div className="space-y-3">
                         {/* Service Title */}
                         <div className="font-semibold text-foreground text-base">
-                          {appointment.title || 'Appointment'}
+                          {appointment.title || t('clientDashboard.appointment')}
                         </div>
 
                         {/* Date & Time */}
@@ -453,13 +453,13 @@ export default function ClientDashboard({
 
                         {/* Provider */}
                         <div className="text-sm text-foreground/70">
-                          <span className="font-medium">Provider:</span> {appointment.employee_name || 'Provider'}
+                          <span className="font-medium">{t('clientDashboard.table.provider')}:</span> {appointment.employee_name || t('clientDashboard.table.provider')}
                         </div>
 
                         {/* Location */}
                         <div className="flex items-center gap-2 text-sm text-foreground/70">
                           <MapPin className="h-4 w-4" />
-                          <span>{appointment.location || 'Location'}</span>
+                          <span>{appointment.location || t('clientDashboard.table.location')}</span>
                         </div>
 
                         {/* Actions */}
@@ -469,7 +469,7 @@ export default function ClientDashboard({
                             size="sm"
                             className="flex-1 min-h-[44px] text-[#8B5CF6] hover:text-[#a78bfa] border-[#8B5CF6]"
                           >
-                            Rebook
+                            {t('clientDashboard.rebook')}
                           </Button>
                           <Button 
                             variant="outline" 
@@ -477,7 +477,7 @@ export default function ClientDashboard({
                             onClick={() => handleDeleteAppointment(appointment.id)}
                             disabled={deletingId === appointment.id}
                             className="min-w-[44px] min-h-[44px] border-destructive/50 hover:bg-destructive/10"
-                            title="Eliminar cita"
+                            title={t('clientDashboard.deleteAppointment')}
                           >
                             {deletingId === appointment.id ? (
                               <span className="animate-spin text-sm">⏳</span>

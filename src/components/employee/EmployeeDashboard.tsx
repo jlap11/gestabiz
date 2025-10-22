@@ -8,6 +8,7 @@ import { EmployeeAbsencesTab } from '@/components/employee/EmployeeAbsencesTab'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { 
@@ -54,6 +55,7 @@ export function EmployeeDashboard({
   
   // Obtener todos los negocios donde el empleado trabaja
   const { businesses: employeeBusinesses, loading: loadingBusinesses } = useEmployeeBusinesses(user?.id)
+  const { t } = useLanguage()
   
   // Hook de ausencias para el widget y el modal
   // Usa el negocio seleccionado, o el primero si hay múltiples, o el que viene por props
@@ -106,27 +108,27 @@ export function EmployeeDashboard({
   const sidebarItems = [
     {
       id: 'employments',
-      label: 'Mis Empleos',
+      label: t('employeeDashboard.sidebar.myEmployments'),
       icon: <Briefcase className="h-5 w-5" />
     },
     {
       id: 'vacancies',
-      label: 'Buscar Vacantes',
+      label: t('employeeDashboard.sidebar.searchVacancies'),
       icon: <Search className="h-5 w-5" />
     },
     {
       id: 'absences',
-      label: 'Mis Ausencias',
+      label: t('employeeDashboard.sidebar.myAbsences'),
       icon: <CalendarOff className="h-5 w-5" />
     },
     {
       id: 'appointments',
-      label: 'Mis Citas',
+      label: t('employeeDashboard.sidebar.myAppointments'),
       icon: <Calendar className="h-5 w-5" />
     },
     {
       id: 'schedule',
-      label: 'Horario',
+      label: t('employeeDashboard.sidebar.schedule'),
       icon: <Clock className="h-5 w-5" />
     }
   ]

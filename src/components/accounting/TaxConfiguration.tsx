@@ -78,7 +78,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
   }, [retentionType]);
 
   const handleSave = async () => {
-    const toastId = toast.loading('Guardando configuración fiscal...');
+    const toastId = toast.loading(t('common.messages.saving'));
     try {
       const configData = {
         business_id: businessId,
@@ -115,7 +115,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
       setRetentionRate(taxConfig.retention_rate);
       setTaxIdNumber(taxConfig.dian_code || '');
     }
-    toast.success('Configuración restablecida');
+    toast.success(t('taxConfiguration.resetSuccess'));
   };
 
   return (
@@ -125,10 +125,10 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Settings className="h-6 w-6" />
-            Configuración Fiscal
+            {t('taxConfiguration.title')}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure los impuestos y obligaciones tributarias de su negocio
+            {t('taxConfiguration.subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -150,10 +150,10 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                Régimen Simplificado
+                {t('taxConfiguration.alerts.simpleRegimeTitle')}
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
-                En régimen simplificado no se cobra IVA. El ICA puede aplicarse según la ciudad.
+                {t('taxConfiguration.alerts.simpleRegimeDescription')}
               </p>
             </div>
           </div>
@@ -165,19 +165,19 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
         <TabsList className="bg-muted">
           <TabsTrigger value="general">
             <FileText className="h-4 w-4 mr-2" />
-            General
+            {t('taxConfiguration.tabs.general')}
           </TabsTrigger>
           <TabsTrigger value="iva">
             <DollarSign className="h-4 w-4 mr-2" />
-            IVA
+            {t('taxConfiguration.tabs.iva')}
           </TabsTrigger>
           <TabsTrigger value="ica">
             <DollarSign className="h-4 w-4 mr-2" />
-            ICA
+            {t('taxConfiguration.tabs.ica')}
           </TabsTrigger>
           <TabsTrigger value="retention">
             <DollarSign className="h-4 w-4 mr-2" />
-            Retención
+            {t('taxConfiguration.tabs.retention')}
           </TabsTrigger>
         </TabsList>
 
@@ -187,40 +187,40 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
             <div className="space-y-4">
               {/* Régimen Tributario */}
               <div className="space-y-2">
-                <Label htmlFor="tax-regime">Régimen Tributario</Label>
+                <Label htmlFor="tax-regime">{t('taxConfiguration.general.taxRegime')}</Label>
                 <Select value={taxRegime} onValueChange={(v) => setTaxRegime(v as typeof taxRegime)}>
                   <SelectTrigger id="tax-regime">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="common">Régimen Común</SelectItem>
-                    <SelectItem value="simple">Régimen Simplificado</SelectItem>
+                    <SelectItem value="common">{t('taxConfiguration.general.regimes.common')}</SelectItem>
+                    <SelectItem value="simple">{t('taxConfiguration.general.regimes.simple')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  El régimen común cobra IVA, el simplificado generalmente no
+                  {t('taxConfiguration.general.taxRegimeDescription')}
                 </p>
               </div>
 
               {/* NIT */}
               <div className="space-y-2">
-                <Label htmlFor="tax-id">NIT (Número de Identificación Tributaria)</Label>
+                <Label htmlFor="tax-id">{t('taxConfiguration.general.taxId')}</Label>
                 <Input
                   id="tax-id"
                   type="text"
                   value={taxIdNumber}
                   onChange={(e) => setTaxIdNumber(e.target.value)}
-                  placeholder="900123456-7"
+                  placeholder={t('taxConfiguration.general.taxIdPlaceholder')}
                   className="bg-background"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Incluya el dígito de verificación
+                  {t('taxConfiguration.general.taxIdDescription')}
                 </p>
               </div>
 
               {/* Ciudad */}
               <div className="space-y-2">
-                <Label htmlFor="city">Ciudad (para ICA)</Label>
+                <Label htmlFor="city">{t('taxConfiguration.general.city')}</Label>
                 <Select value={cityCode} onValueChange={setCityCode}>
                   <SelectTrigger id="city">
                     <SelectValue placeholder={t('common.placeholders.selectCity')} />
@@ -234,7 +234,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Cada ciudad tiene una tarifa de ICA diferente
+                  {t('taxConfiguration.general.cityDescription')}
                 </p>
               </div>
             </div>
@@ -248,9 +248,9 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Habilitar IVA */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="iva-enabled">Cobrar IVA</Label>
+                  <Label htmlFor="iva-enabled">{t('taxConfiguration.iva.enable')}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Impuesto al Valor Agregado
+                    {t('taxConfiguration.iva.description')}
                   </p>
                 </div>
                 <Switch
@@ -264,19 +264,19 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Tasa de IVA */}
               {ivaEnabled && taxRegime === 'common' && (
                 <div className="space-y-2">
-                  <Label htmlFor="iva-rate">Tasa de IVA (%)</Label>
+                  <Label htmlFor="iva-rate">{t('taxConfiguration.iva.rate')}</Label>
                   <Select value={ivaRate.toString()} onValueChange={(v) => setIvaRate(Number(v))}>
                     <SelectTrigger id="iva-rate">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0">0% (Exento)</SelectItem>
-                      <SelectItem value="5">5% (Productos básicos)</SelectItem>
-                      <SelectItem value="19">19% (General)</SelectItem>
+                      <SelectItem value="0">{t('taxConfiguration.iva.rates.exempt')}</SelectItem>
+                      <SelectItem value="5">{t('taxConfiguration.iva.rates.basic')}</SelectItem>
+                      <SelectItem value="19">{t('taxConfiguration.iva.rates.general')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    19% es la tasa general en Colombia
+                    {t('taxConfiguration.iva.rateDescription')}
                   </p>
                 </div>
               )}
@@ -284,8 +284,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Info box */}
               <Card className="p-4 bg-muted border-border">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Nota:</strong> El IVA se calcula sobre el subtotal de cada transacción.
-                  Los productos pueden tener tasas diferentes (0%, 5%, 19%).
+                  <strong>{t('common.note')}:</strong> {t('taxConfiguration.iva.infoNote')}
                 </p>
               </Card>
             </div>
@@ -299,9 +298,9 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Habilitar ICA */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="ica-enabled">Cobrar ICA</Label>
+                  <Label htmlFor="ica-enabled">{t('taxConfiguration.ica.enable')}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Impuesto de Industria y Comercio
+                    {t('taxConfiguration.ica.description')}
                   </p>
                 </div>
                 <Switch
@@ -314,7 +313,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Tasa de ICA (calculada automáticamente) */}
               {icaEnabled && (
                 <div className="space-y-2">
-                  <Label>Tasa de ICA</Label>
+                  <Label>{t('taxConfiguration.ica.rate')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="text"
@@ -323,11 +322,11 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                       className="bg-muted"
                     />
                     <span className="text-sm text-muted-foreground">
-                      (calculado según ciudad)
+                      {t('taxConfiguration.ica.rateCalculated')}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Seleccione la ciudad en la pestaña General para actualizar la tasa
+                    {t('taxConfiguration.ica.selectCityHint')}
                   </p>
                 </div>
               )}
@@ -335,7 +334,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Info box */}
               <Card className="p-4 bg-muted border-border">
                 <p className="text-sm text-muted-foreground">
-                  <strong>ICA por ciudad:</strong>
+                  <strong>{t('taxConfiguration.ica.cityRates')}</strong>
                 </p>
                 <ul className="text-xs text-muted-foreground mt-2 space-y-1">
                   <li>• Bogotá: 0.966% - 1.38%</li>
@@ -356,9 +355,9 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Habilitar Retención */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="retention-enabled">Aplicar Retención en la Fuente</Label>
+                  <Label htmlFor="retention-enabled">{t('taxConfiguration.retention.enable')}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Para grandes contribuyentes
+                    {t('taxConfiguration.retention.description')}
                   </p>
                 </div>
                 <Switch
@@ -372,7 +371,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {retentionEnabled && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="retention-type">Tipo de Actividad</Label>
+                    <Label htmlFor="retention-type">{t('taxConfiguration.retention.activityType')}</Label>
                     <Select value={retentionType} onValueChange={setRetentionType}>
                       <SelectTrigger id="retention-type">
                         <SelectValue placeholder={t('common.placeholders.selectActivityType')} />
@@ -390,7 +389,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                   {/* Tasa de Retención */}
                   {retentionType && (
                     <div className="space-y-2">
-                      <Label>Tasa de Retención</Label>
+                      <Label>{t('taxConfiguration.retention.rate')}</Label>
                       <Input
                         type="text"
                         value={`${(retentionRate * 100).toFixed(1)}%`}
@@ -398,7 +397,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                         className="bg-muted"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Tasa automática según el tipo de actividad seleccionado
+                        {t('taxConfiguration.retention.rateDescription')}
                       </p>
                     </div>
                   )}
@@ -408,8 +407,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Info box */}
               <Card className="p-4 bg-muted border-border">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Nota:</strong> La retención en la fuente se descuenta del valor a pagar
-                  al proveedor y se debe declarar mensualmente ante la DIAN.
+                  <strong>{t('common.note')}:</strong> {t('taxConfiguration.retention.infoNote')}
                 </p>
               </Card>
             </div>
@@ -419,54 +417,64 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
 
       {/* Resumen de configuración */}
       <Card className="p-6 bg-card">
-        <h3 className="text-lg font-semibold mb-4 text-foreground">Resumen de Configuración</h3>
+        <h3 className="text-lg font-semibold mb-4 text-foreground">{t('taxConfiguration.summary.title')}</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Régimen:</span>
+              <span className="text-muted-foreground">{t('taxConfiguration.summary.regime')}</span>
               <span className="font-medium text-foreground">
-                {taxRegime === 'common' ? 'Común' : taxRegime === 'simple' ? 'Simplificado' : 'Especial'}
+                {taxRegime === 'common' 
+                  ? t('taxConfiguration.general.regimes.common') 
+                  : taxRegime === 'simple' 
+                    ? t('taxConfiguration.general.regimes.simple')
+                    : t('taxConfiguration.general.regimes.special')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">NIT:</span>
+              <span className="text-muted-foreground">{t('taxConfiguration.summary.taxId')}</span>
               <span className="font-medium text-foreground">
-                {taxIdNumber || 'No configurado'}
+                {taxIdNumber || t('taxConfiguration.summary.notConfigured')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Ciudad:</span>
+              <span className="text-muted-foreground">{t('taxConfiguration.summary.city')}</span>
               <span className="font-medium text-foreground">
-                {cityCode ? COLOMBIAN_CITIES_ICA.find(c => c.dane_code === cityCode)?.city : 'No seleccionada'}
+                {cityCode ? COLOMBIAN_CITIES_ICA.find(c => c.dane_code === cityCode)?.city : t('taxConfiguration.summary.notSelected')}
               </span>
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">IVA:</span>
+              <span className="text-muted-foreground">{t('taxConfiguration.tabs.iva')}:</span>
               <span className={cn(
                 "font-medium",
                 ivaEnabled && taxRegime === 'common' ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
               )}>
-                {ivaEnabled && taxRegime === 'common' ? `Activo (${ivaRate}%)` : 'Inactivo'}
+                {ivaEnabled && taxRegime === 'common' 
+                  ? `${t('taxConfiguration.summary.active')} (${ivaRate}%)` 
+                  : t('taxConfiguration.summary.inactive')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">ICA:</span>
+              <span className="text-muted-foreground">{t('taxConfiguration.tabs.ica')}:</span>
               <span className={cn(
                 "font-medium",
                 icaEnabled ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
               )}>
-                {icaEnabled ? `Activo (${(icaRate * 100).toFixed(3)}%)` : 'Inactivo'}
+                {icaEnabled 
+                  ? `${t('taxConfiguration.summary.active')} (${(icaRate * 100).toFixed(3)}%)` 
+                  : t('taxConfiguration.summary.inactive')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Retención:</span>
+              <span className="text-muted-foreground">{t('taxConfiguration.tabs.retention')}:</span>
               <span className={cn(
                 "font-medium",
                 retentionEnabled ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
               )}>
-                {retentionEnabled ? `Activa (${(retentionRate * 100).toFixed(1)}%)` : 'Inactiva'}
+                {retentionEnabled 
+                  ? `${t('taxConfiguration.summary.active')} (${(retentionRate * 100).toFixed(1)}%)` 
+                  : t('taxConfiguration.summary.inactive')}
               </span>
             </div>
           </div>

@@ -1807,6 +1807,158 @@ export const translations = {
         close: 'Close',
       },
     },
+
+    // Tax Configuration
+    taxConfiguration: {
+      title: 'Tax Configuration',
+      subtitle: 'Configure taxes and tax obligations for your business',
+      resetSuccess: 'Configuration reset',
+      tabs: {
+        general: 'General',
+        iva: 'VAT',
+        ica: 'ICA',
+        retention: 'Retention',
+      },
+      general: {
+        taxRegime: 'Tax Regime',
+        taxRegimeDescription: 'Common regime charges VAT, simplified generally does not',
+        taxId: 'Tax ID Number (NIT)',
+        taxIdPlaceholder: '900123456-7',
+        taxIdDescription: 'Include verification digit',
+        city: 'City (for ICA)',
+        cityDescription: 'Each city has a different ICA rate',
+        regimes: {
+          common: 'Common Regime',
+          simple: 'Simplified Regime',
+          special: 'Special Regime',
+        },
+      },
+      iva: {
+        title: 'VAT',
+        enable: 'Charge VAT',
+        description: 'Value Added Tax',
+        rate: 'VAT Rate (%)',
+        rateDescription: '19% is the general rate in Colombia',
+        rates: {
+          exempt: '0% (Exempt)',
+          basic: '5% (Basic products)',
+          general: '19% (General)',
+        },
+        infoNote: 'VAT is calculated on the subtotal of each transaction. Products may have different rates (0%, 5%, 19%).',
+      },
+      ica: {
+        title: 'ICA',
+        enable: 'Charge ICA',
+        description: 'Industry and Commerce Tax',
+        rate: 'ICA Rate',
+        rateCalculated: '(calculated by city)',
+        selectCityHint: 'Select city in General tab to update rate',
+        cityRates: 'ICA by city:',
+      },
+      retention: {
+        title: 'Retention',
+        enable: 'Apply Withholding Tax',
+        description: 'For large taxpayers',
+        activityType: 'Activity Type',
+        rate: 'Retention Rate',
+        rateDescription: 'Automatic rate based on selected activity type',
+        infoNote: 'Withholding tax is deducted from the amount to be paid to the supplier and must be declared monthly to DIAN.',
+      },
+      summary: {
+        title: 'Configuration Summary',
+        regime: 'Regime:',
+        taxId: 'Tax ID:',
+        city: 'City:',
+        notConfigured: 'Not configured',
+        notSelected: 'Not selected',
+        active: 'Active',
+        inactive: 'Inactive',
+      },
+      alerts: {
+        simpleRegimeTitle: 'Simplified Regime',
+        simpleRegimeDescription: 'In simplified regime, VAT is not charged. ICA may apply depending on the city.',
+      },
+    },
+
+    // Admin Dashboard
+    adminDashboard: {
+      sidebar: {
+        overview: 'Overview',
+        appointments: 'Appointments',
+        absences: 'Absences',
+        locations: 'Locations',
+        services: 'Services',
+        resources: 'Resources',
+        employees: 'Employees',
+        recruitment: 'Recruitment',
+        quickSales: 'Quick Sales',
+        accounting: 'Accounting',
+        reports: 'Reports',
+        billing: 'Billing',
+        permissions: 'Permissions',
+      },
+    },
+
+    // Employee Dashboard
+    employeeDashboard: {
+      sidebar: {
+        myEmployments: 'My Jobs',
+        searchVacancies: 'Search Vacancies',
+        myAbsences: 'My Absences',
+        myAppointments: 'My Appointments',
+        schedule: 'Schedule',
+      },
+    },
+
+    // Client Dashboard
+    clientDashboard: {
+      upcomingTitle: 'Upcoming Appointments',
+      viewAll: 'View All',
+      noUpcoming: 'No upcoming appointments',
+      bookFirstAppointment: 'Book your first appointment to get started',
+      bookAppointment: 'Book Appointment',
+      pastTitle: 'Past Appointments',
+      confirmButton: 'Confirm',
+      alreadyConfirmed: 'Already confirmed',
+      addToCalendar: 'Add to Google Calendar',
+      deleteAppointment: 'Delete appointment',
+      rebook: 'Rebook',
+      appointment: 'Appointment',
+      with: 'with',
+      confirmDelete: 'Are you sure you want to delete this appointment?',
+      deleteSuccess: 'Appointment deleted successfully',
+      deleteError: 'Error deleting appointment',
+      errorDeleting: 'Error deleting: {message}',
+      status: {
+        confirmed: 'Confirmed',
+        pending: 'Pending',
+        completed: 'Completed',
+        cancelled: 'Cancelled',
+        scheduled: 'Scheduled',
+        noShow: 'No Show',
+      },
+      table: {
+        service: 'Service',
+        dateTime: 'Date & Time',
+        provider: 'Provider',
+        location: 'Location',
+        actions: 'Actions',
+      },
+    },
+
+    // Favorites List
+    favoritesList: {
+      loading: 'Loading your favorite businesses...',
+      errorTitle: 'Error loading favorites',
+      emptyTitle: 'No favorites yet',
+      emptyDescription: 'Mark your preferred businesses as favorites to access them quickly and book appointments more easily.',
+      tipHeader: 'Tip: Search for a business and click the heart icon to add it to favorites',
+      bookButton: 'Book Appointment',
+      myFavorites: 'My Favorites',
+      businessMarked: 'business marked as favorite',
+      businessesMarked: 'businesses marked as favorites',
+      tipDescription: 'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
+    },
   },
 
   es: {
@@ -3618,6 +3770,158 @@ export const translations = {
       actions: {
         close: 'Cerrar',
       },
+    },
+
+    // Tax Configuration
+    taxConfiguration: {
+      title: 'Configuración Fiscal',
+      subtitle: 'Configure los impuestos y obligaciones tributarias de su negocio',
+      resetSuccess: 'Configuración restablecida',
+      tabs: {
+        general: 'General',
+        iva: 'IVA',
+        ica: 'ICA',
+        retention: 'Retención',
+      },
+      general: {
+        taxRegime: 'Régimen Tributario',
+        taxRegimeDescription: 'El régimen común cobra IVA, el simplificado generalmente no',
+        taxId: 'NIT (Número de Identificación Tributaria)',
+        taxIdPlaceholder: '900123456-7',
+        taxIdDescription: 'Incluya el dígito de verificación',
+        city: 'Ciudad (para ICA)',
+        cityDescription: 'Cada ciudad tiene una tarifa de ICA diferente',
+        regimes: {
+          common: 'Régimen Común',
+          simple: 'Régimen Simplificado',
+          special: 'Régimen Especial',
+        },
+      },
+      iva: {
+        title: 'IVA',
+        enable: 'Cobrar IVA',
+        description: 'Impuesto al Valor Agregado',
+        rate: 'Tasa de IVA (%)',
+        rateDescription: '19% es la tasa general en Colombia',
+        rates: {
+          exempt: '0% (Exento)',
+          basic: '5% (Productos básicos)',
+          general: '19% (General)',
+        },
+        infoNote: 'El IVA se calcula sobre el subtotal de cada transacción. Los productos pueden tener tasas diferentes (0%, 5%, 19%).',
+      },
+      ica: {
+        title: 'ICA',
+        enable: 'Cobrar ICA',
+        description: 'Impuesto de Industria y Comercio',
+        rate: 'Tasa de ICA',
+        rateCalculated: '(calculado según ciudad)',
+        selectCityHint: 'Seleccione la ciudad en la pestaña General para actualizar la tasa',
+        cityRates: 'ICA por ciudad:',
+      },
+      retention: {
+        title: 'Retención',
+        enable: 'Aplicar Retención en la Fuente',
+        description: 'Para grandes contribuyentes',
+        activityType: 'Tipo de Actividad',
+        rate: 'Tasa de Retención',
+        rateDescription: 'Tasa automática según el tipo de actividad seleccionado',
+        infoNote: 'La retención en la fuente se descuenta del valor a pagar al proveedor y se debe declarar mensualmente ante la DIAN.',
+      },
+      summary: {
+        title: 'Resumen de Configuración',
+        regime: 'Régimen:',
+        taxId: 'NIT:',
+        city: 'Ciudad:',
+        notConfigured: 'No configurado',
+        notSelected: 'No seleccionada',
+        active: 'Activo',
+        inactive: 'Inactivo',
+      },
+      alerts: {
+        simpleRegimeTitle: 'Régimen Simplificado',
+        simpleRegimeDescription: 'En régimen simplificado no se cobra IVA. El ICA puede aplicarse según la ciudad.',
+      },
+    },
+
+    // Admin Dashboard
+    adminDashboard: {
+      sidebar: {
+        dashboard: 'Panel de Control',
+        appointments: 'Citas',
+        services: 'Servicios',
+        employees: 'Empleados',
+        locations: 'Sedes',
+        chats: 'Chats',
+        settings: 'Configuración',
+        recruitment: 'Reclutamiento',
+        absences: 'Ausencias',
+        quickSales: 'Ventas Rápidas',
+        accounting: 'Contabilidad',
+        reports: 'Reportes',
+        businessProfile: 'Perfil del Negocio',
+      },
+    },
+
+    // Employee Dashboard
+    employeeDashboard: {
+      sidebar: {
+        myEmployments: 'Mis Empleos',
+        searchVacancies: 'Buscar Vacantes',
+        myAbsences: 'Mis Ausencias',
+        myAppointments: 'Mis Citas',
+        schedule: 'Horario',
+      },
+    },
+
+    // Client Dashboard
+    clientDashboard: {
+      upcomingTitle: 'Próximas Citas',
+      viewAll: 'Ver Todo',
+      noUpcoming: 'No hay citas próximas',
+      bookFirstAppointment: 'Agenda tu primera cita para comenzar',
+      bookAppointment: 'Agendar Cita',
+      pastTitle: 'Citas Pasadas',
+      confirmButton: 'Confirmar',
+      alreadyConfirmed: 'Ya confirmada',
+      addToCalendar: 'Agregar a Google Calendar',
+      deleteAppointment: 'Eliminar cita',
+      rebook: 'Reagendar',
+      appointment: 'Cita',
+      with: 'con',
+      confirmDelete: '¿Estás seguro de que deseas eliminar esta cita?',
+      deleteSuccess: 'Cita eliminada exitosamente',
+      deleteError: 'Error al eliminar la cita',
+      errorDeleting: 'Error al eliminar: {message}',
+      status: {
+        confirmed: 'Confirmada',
+        pending: 'Pendiente',
+        completed: 'Completada',
+        cancelled: 'Cancelada',
+        scheduled: 'Agendada',
+        noShow: 'No Asistió',
+      },
+      table: {
+        service: 'Servicio',
+        dateTime: 'Fecha y Hora',
+        provider: 'Profesional',
+        location: 'Ubicación',
+        actions: 'Acciones',
+      },
+    },
+
+    // Favorites List
+    favoritesList: {
+      loading: 'Cargando tus negocios favoritos...',
+      errorTitle: 'Error al cargar favoritos',
+      emptyTitle: 'No tienes favoritos aún',
+      emptyDescription: 'Marca tus negocios preferidos como favoritos para acceder rápidamente a ellos y reservar citas más fácilmente.',
+      tipHeader: 'Tip: Busca un negocio y haz clic en el ícono de corazón para agregarlo a favoritos',
+      bookButton: 'Reservar cita',
+      myFavorites: 'Mis Favoritos',
+      businessMarked: 'negocio marcado',
+      businessesMarked: 'negocios marcados',
+      tipDescription: 'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
     },
   }
 }

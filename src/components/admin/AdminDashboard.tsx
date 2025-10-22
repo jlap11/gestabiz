@@ -3,6 +3,7 @@ import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { OverviewTab } from './OverviewTab'
 import { LocationsManager } from './LocationsManager'
 import { ServicesManager } from './ServicesManager'
@@ -45,6 +46,7 @@ export function AdminDashboard({
   onRoleChange,
   user
 }: Readonly<AdminDashboardProps>) {
+  const { t } = useLanguage()
   const [activePage, setActivePage] = useState('overview')
   const [currentUser, setCurrentUser] = useState(user)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
@@ -116,68 +118,68 @@ export function AdminDashboard({
   const sidebarItems = [
     {
       id: 'overview',
-      label: 'Resumen',
+      label: t('adminDashboard.sidebar.overview'),
       icon: <LayoutDashboard className="h-5 w-5" />
     },
     {
       id: 'appointments',
-      label: 'Citas',
+      label: t('adminDashboard.sidebar.appointments'),
       icon: <Calendar className="h-5 w-5" />
     },
     {
       id: 'absences',
-      label: 'Ausencias',
+      label: t('adminDashboard.sidebar.absences'),
       icon: <CalendarOff className="h-5 w-5" />
     },
     {
       id: 'locations',
-      label: 'Sedes',
+      label: t('adminDashboard.sidebar.locations'),
       icon: <MapPin className="h-5 w-5" />
     },
     {
       id: 'services',
-      label: 'Servicios',
+      label: t('adminDashboard.sidebar.services'),
       icon: <Briefcase className="h-5 w-5" />
     },
     // Tab de recursos (solo para negocios con recursos físicos)
     ...(showResourcesTab ? [{
       id: 'resources',
-      label: 'Recursos',
+      label: t('adminDashboard.sidebar.resources'),
       icon: <Box className="h-5 w-5" />
     }] : []),
     {
       id: 'employees',
-      label: 'Empleados',
+      label: t('adminDashboard.sidebar.employees'),
       icon: <Users className="h-5 w-5" />
     },
     {
       id: 'recruitment',
-      label: 'Reclutamiento',
+      label: t('adminDashboard.sidebar.recruitment'),
       icon: <BriefcaseBusiness className="h-5 w-5" />
     },
     {
       id: 'quick-sales',
-      label: 'Ventas Rápidas',
+      label: t('adminDashboard.sidebar.quickSales'),
       icon: <ShoppingCart className="h-5 w-5" />
     },
     {
       id: 'accounting',
-      label: 'Contabilidad',
+      label: t('adminDashboard.sidebar.accounting'),
       icon: <Calculator className="h-5 w-5" />
     },
     {
       id: 'reports',
-      label: 'Reportes',
+      label: t('adminDashboard.sidebar.reports'),
       icon: <FileText className="h-5 w-5" />
     },
     {
       id: 'billing',
-      label: 'Facturación',
+      label: t('adminDashboard.sidebar.billing'),
       icon: <CreditCard className="h-5 w-5" />
     },
     {
       id: 'permissions',
-      label: 'Permisos',
+      label: t('adminDashboard.sidebar.permissions'),
       icon: <Shield className="h-5 w-5" />
     }
   ]
