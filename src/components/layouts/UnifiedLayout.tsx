@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { SearchBar, type SearchType } from '@/components/client/SearchBar'
 import { CitySelector } from '@/components/client/CitySelector'
 import { usePreferredCity } from '@/hooks/usePreferredCity'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -100,6 +101,7 @@ export function UnifiedLayout({
   chatConversationId,
   onChatClose
 }: Readonly<UnifiedLayoutProps>) {
+  const { t } = useLanguage()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [bugReportOpen, setBugReportOpen] = useState(false)
   const [locationMenuOpen, setLocationMenuOpen] = useState(false)
@@ -194,7 +196,7 @@ export function UnifiedLayout({
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <Bug className="h-5 w-5" />
-            <span className="font-medium">Reportar problema</span>
+            <span className="font-medium">{t('support.reportProblem')}</span>
           </button>
           {onLogout && (
             <button
@@ -202,7 +204,7 @@ export function UnifiedLayout({
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <LogOut className="h-5 w-5" />
-              <span className="font-medium">Cerrar Sesión</span>
+              <span className="font-medium">{t('auth.logout')}</span>
             </button>
           )}
         </div>
