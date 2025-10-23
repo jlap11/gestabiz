@@ -2233,6 +2233,9 @@ export const translations = {
       scheduledInterview: 'Scheduled Interview',
       myApplications: 'My Applications',
       availableVacancies: 'Available Vacancies',
+      salaryMustBePositive: 'Expected salary must be positive',
+      salaryExceedsMaximum: 'Expected salary cannot exceed the maximum of the vacancy',
+      professionalSummaryMinLength: 'Professional summary must have at least 50 characters',
     },
   },
 
@@ -4472,6 +4475,9 @@ export const translations = {
       scheduledInterview: 'Entrevista Programada',
       myApplications: 'Mis Aplicaciones',
       availableVacancies: 'Vacantes Disponibles',
+      salaryMustBePositive: 'El salario esperado debe ser positivo',
+      salaryExceedsMaximum: 'El salario esperado no puede exceder el máximo de la vacante',
+      professionalSummaryMinLength: 'El resumen profesional debe tener al menos 50 caracteres',
     },
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -116,6 +117,7 @@ export function ApplicationDetail({
   onBack, 
   onUpdate 
 }: Readonly<ApplicationDetailProps>) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [application, setApplication] = useState<JobApplicationDetail | null>(null)
@@ -519,7 +521,7 @@ export function ApplicationDetail({
               <CardContent className="space-y-3">
                 {application.available_from && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Disponible desde:</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('jobsUI.availableFrom')}:</p>
                     <p className="text-foreground font-medium">
                       {new Date(application.available_from).toLocaleDateString('es-CO', {
                         day: 'numeric',
@@ -604,7 +606,7 @@ export function ApplicationDetail({
 
                       {application.interview_scheduled_at && (
                         <div>
-                          <Label className="text-foreground">Entrevista Programada</Label>
+                          <Label className="text-foreground">{t('jobsUI.scheduledInterview')}</Label>
                           <p className="text-foreground/90 mt-1">
                             {new Date(application.interview_scheduled_at).toLocaleString('es-CO')}
                           </p>
@@ -695,7 +697,7 @@ export function ApplicationDetail({
                       </div>
 
                       <div>
-                        <Label className="text-foreground">Notas Administrativas</Label>
+                        <Label className="text-foreground">{t('jobsUI.administrativeNotes')}</Label>
                         <Textarea
                           value={newAdminNotes}
                           onChange={(e) => setNewAdminNotes(e.target.value)}
@@ -740,7 +742,7 @@ export function ApplicationDetail({
           {isAdmin && application.admin_notes && !editMode && (
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-foreground">Notas Administrativas</CardTitle>
+                <CardTitle className="text-foreground">{t('jobsUI.administrativeNotes')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-foreground/90 whitespace-pre-wrap">{application.admin_notes}</p>

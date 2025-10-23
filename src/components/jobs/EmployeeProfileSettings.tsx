@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ interface EmployeeProfileSettingsProps {
 }
 
 export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = ({ userId }) => {
+  const { t } = useLanguage();
   const {
     profile,
     loading,
@@ -96,7 +98,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
 
       // Validations
       if (professionalSummary.trim().length < 50) {
-        setValidationError('El resumen profesional debe tener al menos 50 caracteres');
+        setValidationError(t('jobsUI.professionalSummaryMinLength'));
         return;
       }
 
@@ -263,7 +265,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
           {/* Resumen Profesional */}
           <div className="space-y-2">
             <Label htmlFor="professional-summary">
-              Resumen Profesional <span className="text-red-500">*</span>
+              {t('jobsUI.professionalSummary')} <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="professional-summary"

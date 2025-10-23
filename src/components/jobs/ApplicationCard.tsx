@@ -1,4 +1,5 @@
 import { JobApplication } from '@/hooks/useJobApplications'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +36,7 @@ export function ApplicationCard({
   onStartSelectionProcess,
   onSelectAsEmployee
 }: Readonly<ApplicationCardProps>) {
+  const { t } = useLanguage()
   const statusStyle = statusConfig[application.status]
   
   // Validar que created_at sea una fecha válida
@@ -103,7 +105,7 @@ export function ApplicationCard({
           {application.expected_salary && (
             <div className="flex items-center gap-2 text-sm">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Salario esperado:</span>
+              <span className="text-muted-foreground">{t('jobsUI.expectedSalary')}:</span>
               <span className="font-medium">
                 {new Intl.NumberFormat('es-CO', {
                   style: 'currency',
@@ -117,7 +119,7 @@ export function ApplicationCard({
           {application.available_from && (
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Disponible desde:</span>
+              <span className="text-muted-foreground">{t('jobsUI.availableFrom')}:</span>
               <span className="font-medium">
                 {new Date(application.available_from).toLocaleDateString('es-CO')}
               </span>

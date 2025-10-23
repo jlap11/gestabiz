@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,7 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
   onOpenChange,
   userId,
 }) => {
+  const { t } = useLanguage();
   const { applications, loading } = useJobApplications({ userId });
   const [activeTab, setActiveTab] = useState<JobApplication['status'] | 'all'>('all');
 
@@ -168,6 +170,7 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
                       key={application.id}
                       application={application}
                       onDownloadCV={handleDownloadCV}
+                      t={t}
                     />
                   ))
                 ) : null}
@@ -183,11 +186,13 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
 interface ApplicationCardProps {
   application: JobApplication;
   onDownloadCV: (cvUrl: string | undefined) => void;
+  t: (key: string) => string;
 }
 
 const ApplicationCard: React.FC<ApplicationCardProps> = ({
   application,
   onDownloadCV,
+  t,
 }) => {
   const statusConfig = STATUS_CONFIG[application.status];
   const StatusIcon = statusConfig.icon;
@@ -233,7 +238,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Tu salario esperado</p>
+                <p className="text-xs text-muted-foreground">{t('jobsUI.expectedSalary')}</p>
                 <p className="text-sm font-semibold">
                   {formatCurrency(application.expected_salary, 'COP')}
                 </p>
@@ -245,7 +250,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Disponible desde</p>
+                <p className="text-xs text-muted-foreground">{t('jobsUI.availableFrom')}</p>
                 <p className="text-sm font-semibold">
                   {new Date(application.available_from).toLocaleDateString('es-CO')}
                 </p>

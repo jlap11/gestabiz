@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -126,6 +127,7 @@ export function VacancyDetail({
   onEdit, 
   onViewApplication 
 }: Readonly<VacancyDetailProps>) {
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [vacancy, setVacancy] = useState<JobVacancy | null>(null)
   const [applications, setApplications] = useState<JobApplication[]>([])
@@ -413,7 +415,7 @@ export function VacancyDetail({
                       {application.interview_scheduled_at && (
                         <div className="flex items-center gap-1 text-xs text-blue-400">
                           <Calendar className="h-3 w-3" />
-                          Entrevista programada
+                          {t('jobsUI.scheduledInterview')}
                         </div>
                       )}
                     </div>

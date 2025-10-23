@@ -133,13 +133,13 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     }
 
     if (expectedSalary && expectedSalary < 0) {
-      setValidationError('El salario esperado debe ser positivo');
+      setValidationError(t('jobsUI.salaryMustBePositive'));
       return;
     }
 
     if (vacancy.salary_max && expectedSalary && expectedSalary > vacancy.salary_max) {
       setValidationError(
-        `El salario esperado no puede exceder el máximo de la vacante (${new Intl.NumberFormat('es-CO', {
+        `${t('jobsUI.salaryExceedsMaximum')} (${new Intl.NumberFormat('es-CO', {
           style: 'currency',
           currency: 'COP',
           minimumFractionDigits: 0,
@@ -244,7 +244,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
 
           {/* Salario esperado */}
           <div className="space-y-2">
-            <Label htmlFor="expected-salary">Salario Esperado (Opcional)</Label>
+            <Label htmlFor="expected-salary">{t('jobsUI.expectedSalary')} (Opcional)</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                 $

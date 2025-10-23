@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { JobApplication } from '@/hooks/useJobApplications'
 import { useEmployeeProfile } from '@/hooks/useEmployeeProfile'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,7 @@ export function ApplicantProfileModal({
   onAccept,
   onReject
 }: Readonly<ApplicantProfileModalProps>) {
+  const { t } = useLanguage()
   const { profile, loading, fetchProfile } = useEmployeeProfile()
   const [activeTab, setActiveTab] = useState('info')
 
@@ -145,7 +147,7 @@ export function ApplicantProfileModal({
                 {profile.professional_summary && (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg">Resumen Profesional</CardTitle>
+                      <CardTitle className="text-lg">{t('jobsUI.professionalSummary')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm leading-relaxed">{profile.professional_summary}</p>
@@ -394,7 +396,7 @@ export function ApplicantProfileModal({
               <CardContent className="space-y-4">
                 {application.expected_salary && (
                   <div>
-                    <Label className="text-sm text-muted-foreground">Salario Esperado</Label>
+                    <Label className="text-sm text-muted-foreground">{t('jobsUI.expectedSalary')}</Label>
                     <p className="text-lg font-semibold mt-1">
                       {new Intl.NumberFormat('es-CO', {
                         style: 'currency',
@@ -407,7 +409,7 @@ export function ApplicantProfileModal({
 
                 {application.available_from && (
                   <div>
-                    <Label className="text-sm text-muted-foreground">Disponible Desde</Label>
+                    <Label className="text-sm text-muted-foreground">{t('jobsUI.availableFrom')}</Label>
                     <p className="text-lg font-semibold mt-1 flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
                       {new Date(application.available_from).toLocaleDateString('es-CO', {
