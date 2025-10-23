@@ -23,6 +23,7 @@ import { useBusinessAdmins } from '@/hooks/useBusinessAdmins';
 import { useBusinessEmployeesForChat } from '@/hooks/useBusinessEmployeesForChat';
 import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 interface ChatWithAdminModalProps {
@@ -46,6 +47,7 @@ export default function ChatWithAdminModal({
   onCloseParent,
 }: ChatWithAdminModalProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { admins, loading: adminLoading, error: adminError } = useBusinessAdmins({ businessId, userLocation });
   const { employees, loading: employeesLoading, error: employeesError } = useBusinessEmployeesForChat({ businessId });
   const { createOrGetConversation } = useChat(user?.id || null);
@@ -96,11 +98,11 @@ export default function ChatWithAdminModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
-            <h2 className="text-xl font-bold">Iniciar Chat</h2>
+            <h2 className="text-xl font-bold">{t('chat.startChat')}</h2>
             <p className="text-sm text-muted-foreground mt-1">
               {isUserTheOwner
-                ? `Administrador de ${businessName}`
-                : `Empleados disponibles de ${businessName}`}
+                ? `${t('chat.administratorOf')} ${businessName}`
+                : `${t('chat.employeesOf')} ${businessName}`}
             </p>
           </div>
           <Button
@@ -130,7 +132,7 @@ export default function ChatWithAdminModal({
                 onClick={() => globalThis.location.reload()}
                 className="mt-4"
               >
-                Reintentar
+                {t('common.actions.retry')}
               </Button>
             </div>
           )}
@@ -139,7 +141,7 @@ export default function ChatWithAdminModal({
             <div className="text-center py-12">
               <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No hay administradores disponibles en este momento.
+                {t('chat.noAvailability')}
               </p>
             </div>
           )}
@@ -213,12 +215,12 @@ export default function ChatWithAdminModal({
                       {creatingChat ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Iniciando...
+                          {t('chat.loading')}
                         </>
                       ) : (
                         <>
                           <MessageCircle className="h-4 w-4 mr-2" />
-                          Chatear
+                          {t('chat.chatWith')}
                         </>
                       )}
                     </Button>
@@ -230,7 +232,7 @@ export default function ChatWithAdminModal({
                   {employees && employees.length > 0 ? (
                     <>
                       <p className="text-sm font-medium text-foreground">
-                        Empleados disponibles ({employees.length})
+                        {t('chat.availableEmployees')} ({employees.length})
                       </p>
 
                       {employees.map((employee) => {
@@ -282,12 +284,12 @@ export default function ChatWithAdminModal({
                                 {isLoading ? (
                                   <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Iniciando...
+                                    {t('chat.loading')}
                                   </>
                                 ) : (
                                   <>
                                     <MessageCircle className="h-4 w-4 mr-2" />
-                                    Chatear
+                                    {t('chat.chatWith')}
                                   </>
                                 )}
                               </Button>
@@ -300,7 +302,7 @@ export default function ChatWithAdminModal({
                     <div className="text-center py-12">
                       <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">
-                        No hay empleados disponibles para chatear en este momento.
+                        {t('chat.noAvailability')}
                       </p>
                     </div>
                   )}

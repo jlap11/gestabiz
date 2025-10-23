@@ -2186,6 +2186,54 @@ export const translations = {
       accept: 'Accept cookies',
       close: 'Close',
     },
+
+    // Chat
+    chat: {
+      startChat: 'Start Chat',
+      availableEmployees: 'Available Employees',
+      administratorOf: 'Administrator of',
+      employeesOf: 'Available employees from',
+      noAvailability: 'No employees available at the moment',
+      loading: 'Loading...',
+      error: 'Error loading employees',
+      chatWith: 'Chat with',
+      location: 'Location',
+      noLocation: 'No location',
+    },
+
+    // UI Elements
+    ui: {
+      morePages: 'More pages',
+      toggleSidebar: 'Toggle Sidebar',
+      previousSlide: 'Previous slide',
+      nextSlide: 'Next slide',
+    },
+
+    // Settings
+    settingsButtons: {
+      saveConfigurations: 'Save Configurations',
+      saveSchedule: 'Save Schedule',
+      savePreferences: 'Save Preferences',
+    },
+
+    // Issues & Support
+    support: {
+      reportProblem: 'Report Problem',
+      reportIssue: 'Report an Issue',
+      describeProblem: 'Describe the problem you experienced',
+      attachScreenshot: 'Attach a screenshot (optional)',
+    },
+
+    // Jobs & Recruitment
+    jobsUI: {
+      professionalSummary: 'Professional Summary',
+      expectedSalary: 'Expected Salary',
+      availableFrom: 'Available From',
+      administrativeNotes: 'Administrative Notes',
+      scheduledInterview: 'Scheduled Interview',
+      myApplications: 'My Applications',
+      availableVacancies: 'Available Vacancies',
+    },
   },
 
   es: {
@@ -4376,6 +4424,54 @@ export const translations = {
       reject: 'Rechazar',
       accept: 'Aceptar cookies',
       close: 'Cerrar',
+    },
+
+    // Chat
+    chat: {
+      startChat: 'Iniciar Chat',
+      availableEmployees: 'Empleados Disponibles',
+      administratorOf: 'Administrador de',
+      employeesOf: 'Empleados disponibles de',
+      noAvailability: 'No hay empleados disponibles en este momento',
+      loading: 'Cargando...',
+      error: 'Error al cargar empleados',
+      chatWith: 'Chatear con',
+      location: 'Ubicación',
+      noLocation: 'Sin ubicación',
+    },
+
+    // UI Elements
+    ui: {
+      morePages: 'Más páginas',
+      toggleSidebar: 'Alternar Panel Lateral',
+      previousSlide: 'Diapositiva Anterior',
+      nextSlide: 'Siguiente Diapositiva',
+    },
+
+    // Settings
+    settingsButtons: {
+      saveConfigurations: 'Guardar Configuraciones',
+      saveSchedule: 'Guardar Horarios',
+      savePreferences: 'Guardar Preferencias',
+    },
+
+    // Issues & Support
+    support: {
+      reportProblem: 'Reportar Problema',
+      reportIssue: 'Reportar un Problema',
+      describeProblem: 'Describe el problema que experimentaste',
+      attachScreenshot: 'Adjunta una captura de pantalla (opcional)',
+    },
+
+    // Jobs & Recruitment
+    jobsUI: {
+      professionalSummary: 'Resumen Profesional',
+      expectedSalary: 'Salario Esperado',
+      availableFrom: 'Disponible Desde',
+      administrativeNotes: 'Notas Administrativas',
+      scheduledInterview: 'Entrevista Programada',
+      myApplications: 'Mis Aplicaciones',
+      availableVacancies: 'Vacantes Disponibles',
     },
   }
 }
