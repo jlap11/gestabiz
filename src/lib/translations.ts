@@ -1796,6 +1796,18 @@ export const translations = {
         noInfo: 'No vacation information available',
         loading: 'Loading vacation days...',
       },
+      management: {
+        title: 'Absence Management',
+        subtitle: 'Approve or reject absence and vacation requests from your employees',
+        tabs: {
+          pending: 'Pending ({{count}})',
+          history: 'History ({{count}})'
+        },
+        empty: {
+          noPending: 'No pending requests',
+          noHistory: 'No request history',
+        },
+      },
     },
 
     // Image Cropper
@@ -4256,6 +4268,18 @@ export const translations = {
         remaining: 'Disponibles',
         noInfo: 'No hay información de vacaciones disponible',
         loading: 'Cargando días de vacaciones...',
+      },
+      management: {
+        title: 'Gestión de Ausencias',
+        subtitle: 'Aprueba o rechaza solicitudes de ausencias y vacaciones de tus empleados',
+        tabs: {
+          pending: 'Pendientes ({{count}})',
+          history: 'Historial ({{count}})'
+        },
+        empty: {
+          noPending: 'No hay solicitudes pendientes',
+          noHistory: 'No hay historial de solicitudes',
+        },
       },
     },
 

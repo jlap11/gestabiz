@@ -9,6 +9,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AbsenceApprovalCard } from '@/components/absences/AbsenceApprovalCard';
 import { useAbsenceApprovals } from '@/hooks/useAbsenceApprovals';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader2 } from 'lucide-react';
 
 interface AbsencesTabProps {
@@ -16,6 +17,7 @@ interface AbsencesTabProps {
 }
 
 export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
+  const { t } = useLanguage();
   const { pendingAbsences, approvedAbsences, rejectedAbsences, loading, approveAbsence, rejectAbsence } = useAbsenceApprovals(businessId);
 
   const historyAbsences = [...approvedAbsences, ...rejectedAbsences];
@@ -31,26 +33,26 @@ export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Gestión de Ausencias</h2>
+        <h2 className="text-2xl font-bold text-foreground">{t('absences.management.title')}</h2>
         <p className="text-muted-foreground mt-1">
-          Aprueba o rechaza solicitudes de ausencias y vacaciones de tus empleados
+          {t('absences.management.subtitle')}
         </p>
       </div>
 
       <Tabs defaultValue="pending" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pending">
-            Pendientes ({pendingAbsences.length})
+            {t('absences.management.tabs.pending', { count: String(pendingAbsences.length) })}
           </TabsTrigger>
           <TabsTrigger value="history">
-            Historial ({historyAbsences.length})
+            {t('absences.management.tabs.history', { count: String(historyAbsences.length) })}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="space-y-4 mt-4">
           {pendingAbsences.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
-              <p className="text-muted-foreground">No hay solicitudes pendientes</p>
+              <p className="text-muted-foreground">{t('absences.management.empty.noPending')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
@@ -73,7 +75,7 @@ export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
         <TabsContent value="history" className="space-y-4 mt-4">
           {historyAbsences.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
-              <p className="text-muted-foreground">No hay historial de solicitudes</p>
+              <p className="text-muted-foreground">{t('absences.management.empty.noHistory')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
