@@ -2089,35 +2089,7 @@ export const translations = {
           confirmDeleteLocation: 'Are you sure you want to delete this location?',
         },
 
-        // Services (Admin)
-        services: {
-          title: 'Services',
-          subtitle: 'Manage the services you offer',
-          noServicesTitle: 'No services yet',
-          noServicesDesc: 'Add your first service so clients can book appointments',
-          nameLabel: 'Service Name *',
-          namePlaceholder: 'E.g: Haircut',
-          descriptionLabel: 'Description',
-          descriptionPlaceholder: 'Describe the service',
-          durationLabel: 'Duration (minutes) *',
-          priceLabel: 'Price *',
-          imageLabel: 'Service Image (Optional)',
-          imageDesc: 'You can upload an image to showcase the service',
-          availableAtLocations: 'Available at the following locations:',
-          selectAtLeastOneLocation: 'You must select at least one location',
-          providedBy: 'Provided by:',
-          activeLabel: 'Service active',
-        },
-
-        // Admin actions used across admin screens
-        actions: {
-          addNewLocation: 'Add new location',
-          addNewService: 'Add new service',
-          addService: 'Add Service',
-          createFirstService: 'Create first service',
-          confirmDeleteService: 'Are you sure you want to delete this service?',
-          confirmDeleteLocation: 'Are you sure you want to delete this location?',
-        },
+        // (admin services/actions deduplicated - canonical entries exist earlier)
 
     // Absence and Vacation System
     absences: {
@@ -4194,6 +4166,7 @@ export const translations = {
         completeServiceInfo: 'Completa la información del nuevo servicio',
         createFirstService: 'Crear Primer Servicio',
         confirmDeleteService: '¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.',
+        confirmDeleteLocation: '¿Estás seguro de que quieres eliminar esta ubicación?',
         searchCategory: 'Buscar categoría...',
         searchByName: 'Buscar por nombre...',
         exportCSV: 'Exportar CSV',
@@ -4584,14 +4557,7 @@ export const translations = {
       },
 
       // Admin actions used across admin screens
-      actions: {
-        addNewLocation: 'Agregar nueva sede',
-        addNewService: 'Agregar nuevo servicio',
-        addService: 'Agregar Servicio',
-        createFirstService: 'Crear primer servicio',
-        confirmDeleteService: '¿Estás seguro de que quieres eliminar este servicio?',
-        confirmDeleteLocation: '¿Estás seguro de que quieres eliminar esta ubicación?',
-      },
+      // (merged into admin.actions above to avoid duplicate keys)
 
       // Resources Manager
       resourcesManager: {
