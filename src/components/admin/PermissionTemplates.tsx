@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Accordion,
   AccordionContent,
@@ -404,7 +405,8 @@ export function PermissionTemplates({
   businessId,
   ownerId,
   currentUserId,
-}: PermissionTemplatesProps) {
+}: Readonly<PermissionTemplatesProps>) {
+  const { t } = useLanguage()
   const { 
     templates, 
     createTemplate, 
