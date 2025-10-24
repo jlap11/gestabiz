@@ -321,7 +321,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
         // Subir imágenes pendientes con el service_id real
         if (pendingImageFiles.length > 0) {
-          toast.info(t('common.messages.loading'))
+          toast.info(t('common.messages.uploadingImages'))
           const uploadedUrls: string[] = []
 
           for (const file of pendingImageFiles) {
