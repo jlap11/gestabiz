@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Send, Paperclip, X, Smile, FileIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -38,7 +39,8 @@ export function ChatInput({
   onCancelReply,
   disabled = false,
   placeholder = 'Escribe un mensaje...'
-}: ChatInputProps) {
+}: Readonly<ChatInputProps>) {
+  const { t } = useLanguage()
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);

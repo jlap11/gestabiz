@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { MessageSquare, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,7 +20,8 @@ export function FloatingChatButton({
   businessId,
   initialConversationId = null,
   onOpenChange
-}: FloatingChatButtonProps) {
+}: Readonly<FloatingChatButtonProps>) {
+  const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   
   // Contexto de notificaciones

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { MessageCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -8,7 +9,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
  * ErrorBoundary especializado para el sistema de chat
  * Muestra un fallback más compacto y contextual
  */
-export function ChatErrorBoundary({ children }: { children: React.ReactNode }) {
+export function ChatErrorBoundary({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { t } = useLanguage()
   return (
     <ErrorBoundary
       componentName="Chat"

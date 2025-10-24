@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Search, Pin, Archive, X } from 'lucide-react';
@@ -35,7 +36,8 @@ export function ConversationList({
   onSelectConversation,
   totalUnreadCount = 0,
   loading = false
-}: ConversationListProps) {
+}: Readonly<ConversationListProps>) {
+  const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrar conversaciones por búsqueda

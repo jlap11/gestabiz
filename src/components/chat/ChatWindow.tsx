@@ -3,6 +3,7 @@ import { MoreVertical, Phone, Video, Search as SearchIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +60,8 @@ export function ChatWindow({
   onToggleMute,
   onTogglePin,
   loading = false
-}: ChatWindowProps) {
+}: Readonly<ChatWindowProps>) {
+  const { t } = useLanguage()
   const [replyToMessage, setReplyToMessage] = useState<MessageWithSender | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

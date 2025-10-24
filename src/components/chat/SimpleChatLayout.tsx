@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/hooks/useChat';
 import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness';
 import { useNotificationContext } from '@/contexts/NotificationContext';
@@ -28,7 +29,8 @@ export function SimpleChatLayout({
   businessId,
   initialConversationId,
   onMessagesRead // ✨ Callback para refrescar badge
-}: SimpleChatLayoutProps) {
+}: Readonly<SimpleChatLayoutProps>) {
+  const { t } = useLanguage()
   const {
     conversations,
     activeMessages,
