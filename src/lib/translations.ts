@@ -1972,6 +1972,20 @@ export const translations = {
         loadDataError: 'Error loading data',
         errorMarkingNoShow: 'Error marking as no-show',
       },
+
+      // Resources Manager
+      resourcesManager: {
+        nameRequired: 'Name is required',
+        locationRequired: 'Must select a location',
+      },
+
+      // Business Notification Settings
+      businessNotificationSettings: {
+        loadError: 'Could not load settings',
+        saveError: 'Could not save settings',
+        minutesInvalid: 'Enter a valid number of minutes',
+        timeAlreadyExists: 'This time is already in the list',
+      },
     },
 
     // Absence and Vacation System
@@ -4382,6 +4396,20 @@ export const translations = {
       businessSettings: {
         businessNameRequired: 'El nombre del negocio es requerido',
         updateError: 'Error al actualizar la configuración',
+      },
+
+      // Resources Manager
+      resourcesManager: {
+        nameRequired: 'El nombre es requerido',
+        locationRequired: 'Debe seleccionar una sede',
+      },
+
+      // Business Notification Settings
+      businessNotificationSettings: {
+        loadError: 'No se pudieron cargar las configuraciones',
+        saveError: 'No se pudieron guardar las configuraciones',
+        minutesInvalid: 'Ingrese un número de minutos válido',
+        timeAlreadyExists: 'Este tiempo ya está en la lista',
       },
 
       // Calendar & Appointments
