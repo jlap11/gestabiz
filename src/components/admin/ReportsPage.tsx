@@ -63,26 +63,26 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
       <div>
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <FileText className="h-6 w-6" />
-          Reportes Financieros
+          {t('admin.reports.title')}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Dashboard interactivo con gráficos, filtros y exportación a PDF/CSV/Excel
+          {t('admin.reports.subtitle')}
         </p>
       </div>
 
       {/* Filtro de Sede */}
       <div className="flex items-center gap-4 p-4 bg-card border rounded-lg">
         <div className="flex-1 max-w-xs">
-          <Label htmlFor="location-filter">Filtrar por sede</Label>
+          <Label htmlFor="location-filter">{t('admin.reports.locationFilter')}</Label>
           <Select
             value={selectedLocationId || 'all'}
             onValueChange={handleLocationChange}
           >
             <SelectTrigger id="location-filter" className="mt-1">
-              <SelectValue placeholder="Todas las sedes" />
+              <SelectValue placeholder={t('admin.reports.allLocations')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las sedes</SelectItem>
+              <SelectItem value="all">{t('admin.reports.allLocations')}</SelectItem>
               {locations.map(location => (
                 <SelectItem key={location.id} value={location.id}>
                   {location.name}
@@ -93,7 +93,7 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
         </div>
         {selectedLocationId && (
           <p className="text-sm text-muted-foreground">
-            Mostrando reportes de: <span className="font-medium text-foreground">
+            {t('admin.reports.showing')} <span className="font-medium text-foreground">
               {locations.find(l => l.id === selectedLocationId)?.name}
             </span>
           </p>
@@ -101,7 +101,7 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
       </div>
 
       {/* Dashboard */}
-      <Suspense fallback={<SuspenseFallback text="Cargando dashboard financiero..." />}>
+      <Suspense fallback={<SuspenseFallback text={t('admin.reports.loading')} />}>
         <EnhancedFinancialDashboard 
           businessId={businessId}
           locationId={selectedLocationId}

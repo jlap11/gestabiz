@@ -1706,6 +1706,15 @@ export const translations = {
         occupancyRate: 'Occupancy Rate',
         totalRevenue: 'Total Revenue',
       },
+
+      reports: {
+        title: 'Financial Reports',
+        subtitle: 'Interactive dashboard with charts, filters and PDF/CSV/Excel export',
+        locationFilter: 'Filter by location',
+        allLocations: 'All locations',
+        showing: 'Showing reports from:',
+        loading: 'Loading financial dashboard...',
+      },
     },
 
     // Absence and Vacation System
@@ -1808,14 +1817,6 @@ export const translations = {
           noHistory: 'No request history',
         },
       },
-    },
-    reports: {
-      title: 'Financial Reports',
-      subtitle: 'Interactive dashboard with charts, filters and PDF/CSV/Excel export',
-      locationFilter: 'Filter by location',
-      allLocations: 'All locations',
-      showing: 'Showing reports from:',
-      loading: 'Loading financial dashboard...',
     },
 
     // Image Cropper
@@ -4186,6 +4187,15 @@ export const translations = {
         activeResources: 'Recursos Activos',
         occupancyRate: 'Tasa de Ocupación',
         totalRevenue: 'Ingresos Totales',
+      },
+
+      reports: {
+        title: 'Reportes Financieros',
+        subtitle: 'Dashboard interactivo con gráficos, filtros y exportación a PDF/CSV/Excel',
+        locationFilter: 'Filtrar por sede',
+        allLocations: 'Todas las sedes',
+        showing: 'Mostrando reportes de:',
+        loading: 'Cargando dashboard financiero...',
       },
     },
 
