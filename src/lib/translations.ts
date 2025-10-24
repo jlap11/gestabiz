@@ -1809,6 +1809,14 @@ export const translations = {
         },
       },
     },
+    reports: {
+      title: 'Financial Reports',
+      subtitle: 'Interactive dashboard with charts, filters and PDF/CSV/Excel export',
+      locationFilter: 'Filter by location',
+      allLocations: 'All locations',
+      showing: 'Showing reports from:',
+      loading: 'Loading financial dashboard...',
+    },
 
     // Image Cropper
     imageCropper: {

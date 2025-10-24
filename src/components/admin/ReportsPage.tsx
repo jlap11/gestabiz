@@ -5,6 +5,7 @@
 
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { SuspenseFallback } from '@/components/ui/loading-spinner';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { usePreferredLocation } from '@/hooks/usePreferredLocation';
@@ -31,7 +32,8 @@ interface ReportsPageProps {
   user: User;
 }
 
-export function ReportsPage({ businessId, locationId: initialLocationId, user }: ReportsPageProps) {
+export function ReportsPage({ businessId, locationId: initialLocationId, user }: Readonly<ReportsPageProps>) {
+  const { t } = useLanguage();
   const { locations, services, fetchLocations, fetchServices } = useSupabaseData({ user, autoFetch: false });
   const { preferredLocationId } = usePreferredLocation(businessId);
   
