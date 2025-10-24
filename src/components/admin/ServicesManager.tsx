@@ -627,11 +627,11 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-              ) : pendingImageFiles.length > 0 ? (
+                  ) : pendingImageFiles.length > 0 ? (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2 bg-muted">
                   <img
                     src={URL.createObjectURL(pendingImageFiles[0])}
-                    alt="Vista previa"
+                    alt={t('admin.services.previewAlt')}
                     className="w-full h-full object-cover"
                   />
                   <button
