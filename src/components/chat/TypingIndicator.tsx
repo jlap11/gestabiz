@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { ChatTypingUser } from '@/hooks/useChat';
 
 interface TypingIndicatorProps {
@@ -11,7 +12,8 @@ interface TypingIndicatorProps {
  * Muestra un indicador animado cuando otros usuarios están escribiendo.
  * Maneja singular/plural y muestra hasta 3 nombres.
  */
-export function TypingIndicator({ typingUsers }: TypingIndicatorProps) {
+export function TypingIndicator({ typingUsers }: Readonly<TypingIndicatorProps>) {
+  const { t } = useLanguage()
   if (typingUsers.length === 0) {
     return null;
   }

@@ -13,6 +13,7 @@
 
 import React from 'react'
 import { Check, CheckCheck } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 
 export interface ReadReceiptsProps {
@@ -37,7 +38,8 @@ export function ReadReceipts({
   deliveredAt,
   sentAt,
   size = 'sm'
-}: ReadReceiptsProps) {
+}: Readonly<ReadReceiptsProps>) {
+  const { t } = useLanguage()
   // Solo mostrar receipts para mensajes propios
   if (senderId !== currentUserId) {
     return null

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Check, CheckCheck, Clock, AlertCircle } from 'lucide-react';
 import type { MessageWithSender } from '@/hooks/useMessages';
 
@@ -20,7 +21,8 @@ interface MessageStatusProps {
  * Solo se muestra para mensajes del usuario actual.
  * Usa el campo delivery_status de MessageWithSender.
  */
-export function MessageStatus({ message, currentUserId }: MessageStatusProps) {
+export function MessageStatus({ message, currentUserId }: Readonly<MessageStatusProps>) {
+  const { t } = useLanguage()
   // No mostrar status si no es mensaje del usuario actual
   if (message.sender_id !== currentUserId) {
     return null;

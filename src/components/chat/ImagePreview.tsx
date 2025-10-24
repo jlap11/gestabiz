@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { X, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +26,8 @@ interface ImagePreviewProps {
  * - Download button
  * - Close con ESC o click fuera
  */
-export function ImagePreview({ src, alt, className }: ImagePreviewProps) {
+export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps>) {
+  const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false);
   const [zoom, setZoom] = useState(100);
 

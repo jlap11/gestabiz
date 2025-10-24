@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, X, File, Image as ImageIcon, FileText, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -47,7 +48,8 @@ export function FileUpload({
     'text/plain',
     'application/zip'
   ]
-}: FileUploadProps) {
+}: Readonly<FileUploadProps>) {
+  const { t } = useLanguage()
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
