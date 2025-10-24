@@ -238,14 +238,19 @@ export function PermissionEditor({
     setIsSubmitting(false)
 
     if (errors.length === 0) {
-      toast.success('Permisos actualizados exitosamente', {
-        description: `Se aplicaron ${pendingChanges.length} cambios para ${targetUserName}`,
+      toast.success(t('admin.permissionEditor.updatedSuccess'), {
+        description: t('admin.permissionEditor.updatedSuccessDesc', { 
+          count: String(pendingChanges.length),
+          name: targetUserName 
+        }),
       })
       onSuccess?.()
       onClose()
     } else {
-      toast.error('Algunos permisos no se pudieron actualizar', {
-        description: `Errores en: ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`,
+      toast.error(t('admin.permissionEditor.updateError'), {
+        description: t('admin.permissionEditor.updateErrorDesc', {
+          errors: errors.slice(0, 3).join(', ') + (errors.length > 3 ? '...' : '')
+        }),
       })
     }
   }
@@ -271,36 +276,37 @@ export function PermissionEditor({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            Editor de Permisos
+            {t('admin.permissionEditor.title')}
           </DialogTitle>
           <DialogDescription>
             {isTargetOwner
-              ? 'El propietario del negocio tiene todos los permisos automáticamente'
-              : `Configura los permisos detallados para ${targetUserName}`}
+              ? t('admin.permissionEditor.ownerAllPermissions')
+              : t('admin.permissionEditor.configurePermissions', { name: targetUserName })}
           </DialogDescription>
         </DialogHeader>
 
         {/* Información del usuario */}
-        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-          <div>
-            <p className="font-medium">{targetUserName}</p>
-            <p className="text-sm text-muted-foreground">{targetUserEmail}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {selectedPermissions.size} / {Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length} permisos
-            </Badge>
-          </div>
-        </div>
-
-        {/* Advertencia para owner */}
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+            <div>
+              <p className="font-medium">{targetUserName}</p>
+              <p className="text-sm text-muted-foreground">{targetUserEmail}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {t('admin.permissionEditor.permissionsOf', { 
+                  granted: String(selectedPermissions.size),
+                  total: String(Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length)
+                })}
+              </Badge>
+            </div>
+          </div>        {/* Advertencia para owner */}
         {isTargetOwner && (
           <div className="flex items-start gap-3 p-4 border rounded-lg bg-destructive/10 text-destructive">
             <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold">No se pueden editar permisos del propietario</p>
+              <p className="font-semibold">{t('admin.permissionEditor.cannotEditOwner')}</p>
               <p className="text-sm">
-                El propietario del negocio siempre tiene acceso completo a todas las funcionalidades.
+                {t('admin.permissionEditor.ownerFullAccess')}
               </p>
             </div>
           </div>
@@ -317,7 +323,7 @@ export function PermissionEditor({
                 className="gap-2"
               >
                 <CheckSquare className="h-4 w-4" />
-                Seleccionar Todos
+                {t('admin.permissionEditor.selectAll')}
               </Button>
               <Button
                 variant="outline"
@@ -326,7 +332,7 @@ export function PermissionEditor({
                 className="gap-2"
               >
                 <XSquare className="h-4 w-4" />
-                Limpiar Todos
+                {t('admin.permissionEditor.clearAll')}
               </Button>
             </div>
 
@@ -336,13 +342,13 @@ export function PermissionEditor({
                 {changesCount.grant > 0 && (
                   <Badge className="gap-1 bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
                     <Plus className="h-3 w-3" />
-                    {changesCount.grant} a otorgar
+                    {changesCount.grant} {t('admin.permissionEditor.toGrant')}
                   </Badge>
                 )}
                 {changesCount.revoke > 0 && (
                   <Badge className="gap-1 bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20">
                     <Minus className="h-3 w-3" />
-                    {changesCount.revoke} a revocar
+                    {changesCount.revoke} {t('admin.permissionEditor.toRevoke')}
                   </Badge>
                 )}
               </div>
@@ -432,7 +438,7 @@ export function PermissionEditor({
                                   isPending.action === 'revoke' && 'text-red-700 dark:text-red-400'
                                 )}
                               >
-                                {isPending.action === 'grant' ? 'Nuevo' : 'Revocar'}
+                                {isPending.action === 'grant' ? t('admin.permissionEditor.new') : t('admin.permissionEditor.revoke')}
                               </Badge>
                             )}
                           </div>
@@ -449,7 +455,7 @@ export function PermissionEditor({
         {/* Footer */}
         <DialogFooter className="pt-4 border-t">
           <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-            Cancelar
+            {t('admin.permissionEditor.cancel')}
           </Button>
           {canModify && (
             <Button 
@@ -457,7 +463,7 @@ export function PermissionEditor({
               disabled={isSubmitting || pendingChanges.length === 0}
             >
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Guardar Cambios ({pendingChanges.length})
+              {t('admin.permissionEditor.saveChanges', { count: String(pendingChanges.length) })}
             </Button>
           )}
         </DialogFooter>
