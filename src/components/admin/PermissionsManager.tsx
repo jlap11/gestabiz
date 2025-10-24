@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { OwnerBadge, OwnerListBadge } from '@/components/ui/owner-badge'
 import { 
@@ -72,7 +73,8 @@ export function PermissionsManager({
   businessId, 
   ownerId, 
   currentUserId 
-}: PermissionsManagerProps) {
+}: Readonly<PermissionsManagerProps>) {
+  const { t } = useLanguage()
   const { 
     businessRoles, 
     userPermissions,

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/accordion'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { 
   PERMISSION_CATEGORIES, 
@@ -78,7 +79,8 @@ export function PermissionEditor({
   isOpen,
   onClose,
   onSuccess,
-}: PermissionEditorProps) {
+}: Readonly<PermissionEditorProps>) {
+  const { t } = useLanguage()
   const { grantPermission, revokePermission, isOwner } = usePermissions({
     userId: currentUserId,
     businessId,

@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { UserCheck, Shield, Crown, Wrench, AlertCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -57,7 +58,8 @@ export function RoleAssignment({
   isOpen,
   onClose,
   onSuccess,
-}: RoleAssignmentProps) {
+}: Readonly<RoleAssignmentProps>) {
+  const { t } = useLanguage()
   const { assignRole, revokeRole, isOwner } = usePermissions({
     userId: currentUserId,
     businessId,
