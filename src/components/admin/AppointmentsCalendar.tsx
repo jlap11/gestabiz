@@ -144,6 +144,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
   onCancel,
   onNoShow 
 }) => {
+  const { t } = useLanguage();
   const [tip, setTip] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
 

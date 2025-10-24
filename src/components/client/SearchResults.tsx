@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { 
   ArrowUpDown, 
   MapPin, 
@@ -63,7 +63,7 @@ interface SearchResultItem {
 
 type SortOption = 'relevance' | 'distance' | 'rating' | 'newest' | 'oldest' | 'balanced'
 
-export function SearchResults({ 
+export const SearchResults = React.memo(function SearchResults({ 
   searchTerm, 
   searchType, 
   userLocation,
@@ -86,7 +86,7 @@ export function SearchResults({
   ]
 
   // Calculate distance between two points (Haversine formula)
-  const calculateDistance = (
+  const calculateDistance = useCallback((
     lat1: number,
     lon1: number,
     lat2: number,
@@ -105,7 +105,7 @@ export function SearchResults({
     
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c // Distance in km
-  }
+  }, [])
 
   // Fetch results
   useEffect(() => {
@@ -661,4 +661,4 @@ export function SearchResults({
       </div>
     </div>
   )
-}
+})

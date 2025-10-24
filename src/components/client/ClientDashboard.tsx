@@ -20,7 +20,7 @@ import { useChat } from '@/hooks/useChat'
 import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { usePreferredCity } from '@/hooks/usePreferredCity'
-import type { UserRole, User } from '@/types/types'
+import type { UserRole, User, Appointment } from '@/types/types'
 import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -62,21 +62,7 @@ interface SearchResultItem {
 }
 
 // Extended appointment type with relations
-interface AppointmentWithRelations {
-  id: string
-  business_id: string
-  location_id?: string
-  service_id?: string
-  user_id: string
-  client_id: string
-  title: string
-  description?: string
-  start_time: string
-  end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
-  notes?: string
-  price?: number
-  currency?: string
+type AppointmentWithRelations = Appointment & {
   business?: {
     id: string
     name: string
@@ -1126,7 +1112,7 @@ export function ClientDashboard({
             
             setShowAppointmentWizard(true);
             // eslint-disable-next-line no-console
-            console.log('Book with professional:', { serviceId, businessId });
+            
           }}
           userLocation={
             geolocation.hasLocation

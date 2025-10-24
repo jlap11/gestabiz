@@ -90,7 +90,7 @@ export function useAnalytics() {
       title: title || document.title,
     });
 
-    console.debug('[Analytics] Page view:', path, title);
+
   }, [isEnabled]);
 
   // ============================================
@@ -108,7 +108,7 @@ export function useAnalytics() {
       currency: params.currency || 'COP',
     });
 
-    console.debug('[Analytics] Booking started:', params);
+
   }, [isEnabled]);
 
   const trackBookingStepCompleted = useCallback((params: BookingEventParams) => {
@@ -123,7 +123,7 @@ export function useAnalytics() {
       location_id: params.locationId,
     });
 
-    console.debug('[Analytics] Booking step completed:', params.stepNumber);
+
   }, [isEnabled]);
 
   const trackBookingCompleted = useCallback((params: BookingEventParams) => {

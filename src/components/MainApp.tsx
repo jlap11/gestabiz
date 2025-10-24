@@ -1,14 +1,17 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRoles } from '@/hooks/useUserRoles'
 import { useAdminBusinesses } from '@/hooks/useAdminBusinesses'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
-import { EmployeeOnboarding } from '@/components/employee/EmployeeOnboarding'
-import { AdminOnboarding } from '@/components/admin/AdminOnboarding'
-import { AdminDashboard } from '@/components/admin/AdminDashboard'
-import { EmployeeDashboard } from '@/components/employee/EmployeeDashboard'
-import { ClientDashboard } from '@/components/client/ClientDashboard'
+import { SuspenseFallback } from '@/components/ui/loading-spinner'
+
+// Lazy load components for better performance
+const EmployeeOnboarding = React.lazy(() => import('@/components/employee/EmployeeOnboarding').then(m => ({ default: m.EmployeeOnboarding })))
+const AdminOnboarding = React.lazy(() => import('@/components/admin/AdminOnboarding').then(m => ({ default: m.AdminOnboarding })))
+const AdminDashboard = React.lazy(() => import('@/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
+const EmployeeDashboard = React.lazy(() => import('@/components/employee/EmployeeDashboard').then(m => ({ default: m.EmployeeDashboard })))
+const ClientDashboard = React.lazy(() => import('@/components/client/ClientDashboard').then(m => ({ default: m.ClientDashboard })))
 
 interface MainAppProps {
   onLogout: () => void
@@ -202,7 +205,11 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   }
 
   // All roles now use UnifiedLayout via their respective dashboards
-  return <>{renderCurrentView()}</>
+  return (
+    <Suspense fallback={<SuspenseFallback />}>
+      {renderCurrentView()}
+    </Suspense>
+  )
 }
 
 export default MainApp

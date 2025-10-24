@@ -4,22 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn, DEFAULT_TIME_ZONE, extractTimeZoneParts } from '@/lib/utils'
+import type { Appointment } from '@/types'
 
-interface AppointmentWithRelations {
-  id: string
-  business_id: string
-  location_id?: string
-  service_id?: string
-  user_id: string
-  client_id: string
-  title: string
-  description?: string
-  start_time: string
-  end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
-  notes?: string
-  price?: number
-  currency?: string
+type AppointmentWithRelations = Appointment & {
   business?: {
     id: string
     name: string

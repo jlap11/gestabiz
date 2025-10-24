@@ -901,12 +901,12 @@ export function AppointmentWizard({
               onSelectDate={(date) => {
                 updateWizardData({ date });
                 // eslint-disable-next-line no-console
-                console.log('📅 Fecha seleccionada:', date);
+            
               }}
               onSelectTime={(startTime, endTime) => {
                 updateWizardData({ startTime, endTime });
                 // eslint-disable-next-line no-console
-                console.log('⏰ Hora seleccionada:', startTime, 'Fin:', endTime);
+                
               }}
             />
           )}

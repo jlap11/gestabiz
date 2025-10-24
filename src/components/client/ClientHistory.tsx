@@ -88,7 +88,7 @@ interface Employee {
   full_name: string
 }
 
-export function ClientHistory({ userId }: ClientHistoryProps) {
+export const ClientHistory = React.memo(function ClientHistory({ userId }: ClientHistoryProps) {
   const { t } = useLanguage()
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
   const [loading, setLoading] = useState(true)
@@ -1030,4 +1030,4 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
       )}
     </div>
   )
-}
+})
