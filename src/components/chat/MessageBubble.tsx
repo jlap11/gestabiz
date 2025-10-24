@@ -234,14 +234,14 @@ export function MessageBubble({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'h-8 w-8 sm:h-6 sm:w-6 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0',
+                  'h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0',
                   animations.hoverScale
-                )} // ✨ Touch target móvil 44x44px
+                )}
                 onClick={() => onReply(message)}
                 title="Responder"
                 aria-label={`Responder al mensaje de ${senderName}`}
               >
-                <Reply className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
+                <Reply className="h-5 w-5" aria-hidden="true" />
               </Button>
             )}
 
@@ -251,14 +251,14 @@ export function MessageBubble({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'h-8 w-8 sm:h-6 sm:w-6 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0',
+                  'h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0',
                   animations.hoverScale
-                )} // ✨ Touch target móvil
+                )}
                 onClick={() => onEdit(message.id)}
                 title="Editar"
                 aria-label="Editar mensaje"
               >
-                <Pencil className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
+                <Pencil className="h-5 w-5" aria-hidden="true" />
               </Button>
             )}
 
@@ -268,14 +268,14 @@ export function MessageBubble({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'h-8 w-8 sm:h-6 sm:w-6 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-destructive hover:text-destructive',
+                  'h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-destructive hover:text-destructive',
                   animations.hoverScale
-                )} // ✨ Touch target móvil
+                )}
                 onClick={() => onDelete(message.id)}
                 title="Eliminar"
                 aria-label="Eliminar mensaje"
               >
-                <Trash2 className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
+                <Trash2 className="h-5 w-5" aria-hidden="true" />
               </Button>
             )}
           </div>

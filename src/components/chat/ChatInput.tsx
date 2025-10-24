@@ -42,7 +42,7 @@ export function ChatInput({
   replyToMessage,
   onCancelReply,
   disabled = false,
-  placeholder = 'Escribe un mensaje...',
+  placeholder,
 }: Readonly<ChatInputProps>) {
   const { t } = useLanguage()
   const [message, setMessage] = useState('')
@@ -67,6 +67,9 @@ export function ChatInput({
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`
     }
   }, [message])
+
+  // Effective placeholder (use translated fallback when not provided)
+  const effectivePlaceholder = placeholder ?? t('chat.inputPlaceholder')
 
   // Limpiar typing timeout al desmontar
   useEffect(() => {
@@ -185,8 +188,8 @@ export function ChatInput({
     // Esc: cancelar reply
     if (e.key === 'Escape' && replyToMessage) {
       e.preventDefault()
-      onCancelReply?.()
-      announce('Respuesta cancelada', 'polite')
+  onCancelReply?.()
+  announce(t('chat.input.replyCancelled'), 'polite')
       textareaRef.current?.focus()
     }
   }
@@ -195,9 +198,8 @@ export function ChatInput({
     <div className="border-t bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Screen reader announcements */}
       <output className="sr-only" aria-live="polite" aria-atomic="true">
-        {isSending && 'Enviando mensaje...'}
-        {attachments.length > 0 &&
-          `${attachments.length} archivo${attachments.length > 1 ? 's' : ''} adjunto${attachments.length > 1 ? 's' : ''}`}
+        {isSending && t('chat.input.sr.sending')}
+        {attachments.length > 0 && t('chat.input.sr.attachments', { count: attachments.length })}
       </output>
 
       {/* Preview de mensaje al que se responde */}
@@ -205,10 +207,10 @@ export function ChatInput({
         <div className="px-3 py-2 sm:px-4 bg-muted/50 border-b flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="text-xs font-medium text-muted-foreground mb-0.5">
-              Respondiendo a {replyToMessage.sender?.full_name || 'Usuario'}
+              {t('chat.input.replyingTo', { name: replyToMessage.sender?.full_name || t('chat.userAlt') })}
             </div>
             <p className="text-sm text-foreground line-clamp-1">
-              {replyToMessage.body || '(mensaje sin contenido)'}
+              {replyToMessage.body || t('chat.input.emptyMessage')}
             </p>
           </div>
           {onCancelReply && (
@@ -217,8 +219,8 @@ export function ChatInput({
               size="icon"
               className="h-8 w-8 sm:h-6 sm:w-6 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex-shrink-0"
               onClick={onCancelReply}
-              aria-label="Cancelar respuesta"
-              title="Cancelar respuesta (Esc)"
+              aria-label={t('chat.input.cancelReplyAria')}
+              title={t('chat.input.cancelReplyTitle')}
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </Button>
@@ -230,7 +232,7 @@ export function ChatInput({
       {attachments.length > 0 && (
         <div className="px-3 py-2 sm:px-4 bg-muted/30 border-b overflow-x-auto">
           <div className="text-xs font-medium text-muted-foreground mb-2">
-            Archivos adjuntos ({attachments.length})
+            {t('chat.input.attachments', { count: attachments.length })}
           </div>
           <div className="flex flex-wrap gap-2">
             {attachments.map((attachment, index) => (
@@ -248,7 +250,7 @@ export function ChatInput({
                   size="icon"
                   className="h-11 w-11 sm:h-9 sm:w-9 p-0 hover:bg-destructive hover:text-destructive-foreground min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   onClick={() => handleRemoveAttachment(index)}
-                  aria-label={`Eliminar archivo ${attachment.name}`}
+                  aria-label={t('chat.input.removeAttachmentAria', { name: attachment.name })}
                 >
                   <X className="h-5 w-5" aria-hidden="true" />
                 </Button>
@@ -268,8 +270,8 @@ export function ChatInput({
               size="icon"
               className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden sm:flex"
               disabled={disabled}
-              title="Adjuntar archivo"
-              aria-label="Adjuntar archivo"
+              title={t('chat.input.attachTitle')}
+              aria-label={t('chat.input.attachAria')}
               aria-haspopup="dialog"
               aria-expanded={isUploadOpen}
             >
@@ -293,14 +295,14 @@ export function ChatInput({
           value={message}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           disabled={disabled || isSending}
           className={cn(
             'min-h-[44px] sm:min-h-[40px] max-h-[120px] sm:max-h-[160px] resize-none text-base sm:text-sm leading-tight overflow-y-auto',
             'focus-visible:ring-1'
           )}
           rows={1}
-          aria-label="Escribe un mensaje"
+          aria-label={t('chat.input.ariaLabel')}
           aria-describedby="chat-input-hint"
           aria-multiline="true"
         />
@@ -311,8 +313,8 @@ export function ChatInput({
           size="icon"
           className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden sm:flex"
           disabled={disabled}
-          title="Emojis (próximamente)"
-          aria-label="Agregar emoji (próximamente)"
+          title={t('chat.input.emojisComingSoon')}
+          aria-label={t('chat.input.emojisAria')}
         >
           <Smile className="h-5 w-5" aria-hidden="true" />
         </Button>
@@ -323,7 +325,7 @@ export function ChatInput({
           disabled={(!message.trim() && attachments.length === 0) || disabled || isSending}
           size="icon"
           className="flex-shrink-0 h-11 w-11 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-          aria-label={isSending ? 'Enviando mensaje...' : 'Enviar mensaje'}
+          aria-label={isSending ? t('chat.input.sr.sending') : t('chat.send')}
           aria-busy={isSending}
         >
           <Send className="h-5 w-5" aria-hidden="true" />
@@ -332,12 +334,11 @@ export function ChatInput({
 
       {/* Hint de shortcuts - oculto en móvil */}
       <div id="chat-input-hint" className="hidden sm:block px-4 pb-2 text-xs text-muted-foreground">
-        <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> para enviar ·{' '}
-        <kbd className="px-1 py-0.5 bg-muted rounded">Shift+Enter</kbd> para nueva línea
+        {t('chat.input.hint')}
         {replyToMessage && (
           <>
             {' '}
-            · <kbd className="px-1 py-0.5 bg-muted rounded">Esc</kbd> para cancelar respuesta
+            · {t('chat.input.hintEsc')}
           </>
         )}
       </div>

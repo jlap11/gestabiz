@@ -273,7 +273,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
               <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-44 sm:w-48">
+          <DropdownMenuContent align="start" className="max-w-[95vw] sm:w-48">
             {(Object.keys(searchTypeIconConfig) as SearchType[]).map(type => {
               const TypeIcon = searchTypeIconConfig[type]
               const isActive = type === searchType

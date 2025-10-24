@@ -442,7 +442,7 @@ export function UnifiedLayout({
                     )}
                   </DropdownMenuTrigger>
                   {uniqueRoles.length > 1 && (
-                    <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                    <DropdownMenuContent align="end" className="max-w-[95vw] sm:w-48 bg-card border-border">
                       {uniqueRoles.map(role => (
                         <DropdownMenuItem
                           key={role}
@@ -479,26 +479,27 @@ export function UnifiedLayout({
                       </div>
                     )}
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-card border-border">
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                    </div>
-                    <DropdownMenuItem
-                      onClick={() => onPageChange('profile')}
-                      className="cursor-pointer"
-                    >
-                      <UserIcon className="h-4 w-4 mr-2" />
-                      Mi Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onPageChange('settings')}
-                      className="cursor-pointer"
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Configuración
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
+                  <DropdownMenuContent align="end" className="max-w-[95vw] sm:w-56 bg-card border-border">
++                    <div className="px-3 py-2 border-b border-border">
++                      <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
++                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
++                    </div>
++                    <DropdownMenuItem
++                      onClick={() => onPageChange('profile')}
++                      className="cursor-pointer"
++                    >
++                      <UserIcon className="h-4 w-4 mr-2" />
++                      Mi Perfil
++                    </DropdownMenuItem>
++                    <DropdownMenuItem
++                      onClick={() => onPageChange('settings')}
++                      className="cursor-pointer"
++                    >
++                      <Settings className="h-4 w-4 mr-2" />
++                      Configuración
++                    </DropdownMenuItem>
+-                  </DropdownMenuContent>
++                  </DropdownMenuContent>
                 </DropdownMenu>
               )}
             </div>

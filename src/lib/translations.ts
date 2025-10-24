@@ -2176,6 +2176,26 @@ export const translations = {
           unpin: 'Unpin',
           mute: 'Mute',
           unmute: 'Unmute',
+          input: {
+            sr: {
+              sending: 'Sending message...',
+              attachments: '{{count}} attachment(s) selected',
+            },
+            replyingTo: 'Replying to {{name}}',
+            emptyMessage: '(no content)',
+            cancelReplyAria: 'Cancel reply',
+            cancelReplyTitle: 'Cancel reply (Esc)',
+            attachTitle: 'Attach file',
+            attachAria: 'Attach file',
+            removeAttachmentAria: 'Remove file {{name}}',
+            attachments: 'Attachments ({{count}})',
+            emojisComingSoon: 'Emojis (coming soon)',
+            emojisAria: 'Add emoji (coming soon)',
+            ariaLabel: 'Type a message',
+            hint: 'Press Enter to send · Shift+Enter for new line',
+            hintEsc: 'Esc to cancel reply',
+            replyCancelled: 'Reply cancelled',
+          },
         },
 
         // Resources Manager

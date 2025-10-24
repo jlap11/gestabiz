@@ -181,7 +181,7 @@ export function ConversationList({
 
         {/* Búsqueda */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t('chat.conversations.searchPlaceholder')}
             value={searchQuery}
@@ -193,7 +193,7 @@ export function ConversationList({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-8 sm:w-8"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-9 sm:w-9"
               onClick={() => setSearchQuery('')}
               aria-label={t('chat.clear')}
             >
