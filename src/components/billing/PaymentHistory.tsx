@@ -130,7 +130,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
     link.click()
     document.body.removeChild(link)
 
-    toast.success('Historial exportado a CSV')
+    toast.success(t('billing.historyExportedCSV'))
   }
 
   // Export to PDF (basic implementation)
@@ -174,9 +174,9 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Historial de Pagos</CardTitle>
+        <CardTitle>{t('billing.paymentHistory')}</CardTitle>
         <CardDescription>
-          Consulta todas tus transacciones y descarga facturas
+          {t('billing.paymentHistoryDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>

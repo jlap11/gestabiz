@@ -6,6 +6,7 @@
 
 import { useState } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,8 @@ export function CancelSubscriptionModal({
   businessId,
   onClose,
   onSuccess,
-}: CancelSubscriptionModalProps) {
+}: Readonly<CancelSubscriptionModalProps>) {
+  const { t } = useLanguage()
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(true)
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,16 +55,16 @@ export function CancelSubscriptionModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Cancelar Suscripción</DialogTitle>
+          <DialogTitle>{t('billing.cancelSubscriptionTitle')}</DialogTitle>
           <DialogDescription>
-            Lamentamos que te vayas. Por favor cuéntanos por qué cancelas.
+            {t('billing.cancelSubscriptionDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Tipo de cancelación */}
           <div className="space-y-2">
-            <Label>¿Cuándo quieres cancelar?</Label>
+            <Label>{t('billing.cancelWhenQuestion')}</Label>
             <RadioGroup
               value={cancelAtPeriodEnd ? 'end' : 'now'}
               onValueChange={(value) => setCancelAtPeriodEnd(value === 'end')}
@@ -71,11 +73,10 @@ export function CancelSubscriptionModal({
                 <RadioGroupItem value="end" id="end" />
                 <div className="flex-1">
                   <Label htmlFor="end" className="cursor-pointer font-medium">
-                    Al final del período actual
+                    {t('billing.cancelAtPeriodEnd')}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Podrás seguir usando el servicio hasta que termine tu período de
-                    facturación actual. No se te cobrará nuevamente.
+                    {t('billing.cancelAtPeriodEndDescription')}
                   </p>
                 </div>
               </div>
@@ -84,10 +85,10 @@ export function CancelSubscriptionModal({
                 <RadioGroupItem value="now" id="now" />
                 <div className="flex-1">
                   <Label htmlFor="now" className="cursor-pointer font-medium">
-                    Inmediatamente
+                    {t('billing.cancelImmediately')}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Tu acceso será revocado de inmediato. Esta acción no se puede deshacer.
+                    {t('billing.cancelImmediatelyDescription')}
                   </p>
                 </div>
               </div>
@@ -96,10 +97,10 @@ export function CancelSubscriptionModal({
 
           {/* Razón de cancelación */}
           <div className="space-y-2">
-            <Label htmlFor="reason">Razón de cancelación (Opcional)</Label>
+            <Label htmlFor="reason">{t('billing.cancellationReason')}</Label>
             <Textarea
               id="reason"
-              placeholder="Ayúdanos a mejorar contándonos por qué cancelas..."
+              placeholder={t('billing.cancellationReasonPlaceholder')}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
@@ -110,11 +111,11 @@ export function CancelSubscriptionModal({
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-2">
             <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-yellow-900">Ten en cuenta:</p>
+              <p className="font-medium text-yellow-900">{t('billing.cancelWarningTitle')}</p>
               <ul className="list-disc list-inside mt-1 text-yellow-800 space-y-1">
-                <li>Perderás acceso a todas las funcionalidades del plan</li>
-                <li>Tus datos se conservarán por 30 días</li>
-                <li>Podrás reactivar tu cuenta en cualquier momento</li>
+                <li>{t('billing.cancelWarning1')}</li>
+                <li>{t('billing.cancelWarning2')}</li>
+                <li>{t('billing.cancelWarning3')}</li>
               </ul>
             </div>
           </div>
@@ -122,7 +123,7 @@ export function CancelSubscriptionModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-            No cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button 
             variant="destructive"
@@ -132,10 +133,10 @@ export function CancelSubscriptionModal({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cancelando...
+                {t('billing.cancelingSubscription')}
               </>
             ) : (
-              'Confirmar Cancelación'
+              t('billing.confirmCancellation')
             )}
           </Button>
         </DialogFooter>

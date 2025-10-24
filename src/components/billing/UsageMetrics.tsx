@@ -4,6 +4,7 @@
 
 import React from 'react'
 import { AlertTriangle, TrendingUp, MapPin, Users, Briefcase, Calendar } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -22,7 +23,8 @@ interface UsageMetricsProps {
   billingCycle: 'monthly' | 'yearly'
 }
 
-export function UsageMetrics({ usage, planName, billingCycle }: UsageMetricsProps) {
+export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMetricsProps>) {
+  const { t } = useLanguage()
   // Resource icons mapping
   const getResourceIcon = (resourceType: string) => {
     const icons: Record<string, React.ReactNode> = {
@@ -79,14 +81,14 @@ export function UsageMetrics({ usage, planName, billingCycle }: UsageMetricsProp
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Uso de Recursos</h2>
+          <h2 className="text-2xl font-bold">{t('billing.usageMetrics')}</h2>
           <p className="text-muted-foreground">
-            Plan {planName} • Ciclo {billingCycle === 'monthly' ? 'Mensual' : 'Anual'}
+            {t('billing.planLabel')} {planName} • {t('billing.cycleLabel')} {billingCycle === 'monthly' ? t('billing.billingMonthly') : t('billing.billingAnnual')}
           </p>
         </div>
         {alerts.length > 0 && (
           <Badge variant="destructive" className="text-lg px-4 py-2">
-            {alerts.length} Alerta{alerts.length > 1 ? 's' : ''}
+            {alerts.length} {t('billing.alertCount', { count: alerts.length })}
           </Badge>
         )}
       </div>
@@ -95,7 +97,7 @@ export function UsageMetrics({ usage, planName, billingCycle }: UsageMetricsProp
       {alerts.length > 0 && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Límites Próximos</AlertTitle>
+          <AlertTitle>{t('billing.upcomingLimits')}</AlertTitle>
           <AlertDescription>
             Algunos recursos están cerca del límite de tu plan. Considera actualizar para evitar interrupciones.
           </AlertDescription>

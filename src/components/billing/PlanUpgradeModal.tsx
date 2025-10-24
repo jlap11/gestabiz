@@ -6,6 +6,7 @@
 
 import { useState } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Dialog,
   DialogContent,
@@ -62,7 +63,8 @@ export function PlanUpgradeModal({
   currentCycle,
   onClose,
   onSuccess,
-}: PlanUpgradeModalProps) {
+}: Readonly<PlanUpgradeModalProps>) {
+  const { t } = useLanguage()
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(currentPlan)
   const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(currentCycle)
   const [discountCode, setDiscountCode] = useState('')
@@ -118,16 +120,16 @@ export function PlanUpgradeModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Actualizar Plan</DialogTitle>
+          <DialogTitle>{t('billing.upgradePlan')}</DialogTitle>
           <DialogDescription>
-            {isUpgrade() ? 'Mejora tu plan' : 'Cambia tu plan'} para ajustarlo a tus necesidades
+            {isUpgrade() ? t('billing.upgradePlanDescription') : t('billing.changePlanDescription')} {t('billing.adjustPlanNeeds')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Selector de ciclo de facturación */}
           <div className="space-y-2">
-            <Label>Ciclo de Facturación</Label>
+            <Label>{t('billing.billingCycle')}</Label>
             <RadioGroup
               value={selectedCycle}
               onValueChange={(value) => setSelectedCycle(value as BillingCycle)}
@@ -136,13 +138,13 @@ export function PlanUpgradeModal({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="monthly" id="monthly" />
                 <Label htmlFor="monthly" className="cursor-pointer">
-                  Mensual
+                  {t('billing.billingMonthly')}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yearly" id="yearly" />
                 <Label htmlFor="yearly" className="cursor-pointer">
-                  Anual (ahorra 17%)
+                  {t('billing.billingAnnualSavings')}
                 </Label>
               </div>
             </RadioGroup>
@@ -220,7 +222,7 @@ export function PlanUpgradeModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-            Cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button 
             onClick={handleSubmit} 
@@ -232,10 +234,10 @@ export function PlanUpgradeModal({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Actualizando...
+                {t('billing.updatingPlan')}
               </>
             ) : (
-              'Confirmar Cambio'
+              t('billing.confirmChange')
             )}
           </Button>
         </DialogFooter>
