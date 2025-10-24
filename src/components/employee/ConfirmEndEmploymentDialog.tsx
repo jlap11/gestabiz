@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ConfirmEndEmploymentDialogProps {
   open: boolean;
@@ -24,7 +25,8 @@ export function ConfirmEndEmploymentDialog({
   onClose,
   businessName,
   onConfirm
-}: ConfirmEndEmploymentDialogProps) {
+}: Readonly<ConfirmEndEmploymentDialogProps>) {
+  const { t } = useLanguage();
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +146,7 @@ export function ConfirmEndEmploymentDialog({
             disabled={loading}
             className="w-full sm:w-auto min-h-[44px]"
           >
-            Cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="button"
@@ -153,7 +155,7 @@ export function ConfirmEndEmploymentDialog({
             disabled={loading || !confirmed}
             className="w-full sm:w-auto min-h-[44px]"
           >
-            {loading ? 'Finalizando...' : 'Confirmar Finalización'}
+            {loading ? t('common.states.processing') : t('employee.absences.confirmEndEmployment')}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

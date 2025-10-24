@@ -10,6 +10,7 @@ import { useBusinessCategories } from '@/hooks/useBusinessCategories'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { User, LegalEntityType, UserRole, Business } from '@/types/types'
 import { PhonePrefixSelect, RegionSelect, CitySelect } from '@/components/catalog'
 import { DocumentTypeSelect } from '@/components/catalog/DocumentTypeSelect'
@@ -40,6 +41,7 @@ export function AdminOnboarding({
   onSelectBusiness,
   onNavigateToAdmin
 }: Readonly<AdminOnboardingProps>) {
+  const { t } = useLanguage();
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [activePage, setActivePage] = useState('overview') // Track active page for sidebar
@@ -497,7 +499,7 @@ export function AdminOnboarding({
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Crear tu Negocio</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('admin.actions.createBusiness')}</h1>
             <p className="text-muted-foreground">
               Registra tu negocio y empieza a gestionar citas en minutos
             </p>
@@ -620,7 +622,7 @@ export function AdminOnboarding({
                           <div className="px-2 pt-2 pb-1 sticky top-0 bg-background border-b border-border z-10">
                             <Input
                               type="text"
-                              placeholder="Buscar categoría..."
+                              placeholder={t('admin.actions.searchCategory')}
                               value={categoryFilter}
                               onChange={(e) => setCategoryFilter(e.target.value)}
                               className="bg-card border-border h-8 text-sm"

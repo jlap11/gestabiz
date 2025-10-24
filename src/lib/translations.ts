@@ -717,6 +717,13 @@ export const translations = {
           approved: 'Approved',
           rejected: 'Rejected'
         }
+      },
+      absences: {
+        cancelRequest: 'Cancel Request',
+        cancelRequestConfirm: 'Are you sure you want to cancel this absence request? This action cannot be undone.',
+        deleting: 'Deleting...',
+        confirmEndEmployment: 'Confirm End Employment',
+        endEmploymentMessage: 'Are you sure you want to end your employment? This action will deactivate your account.'
       }
     },
 
@@ -1267,6 +1274,22 @@ export const translations = {
       no_data_available: 'No data available for selected period'
     },
     admin: {
+      actions: {
+        createBusiness: 'Create Your Business',
+        addLocation: 'Add Location',
+        newLocation: 'New Location',
+        addService: 'Add Service',
+        newService: 'New Service',
+        editLocation: 'Edit Location',
+        createLocation: 'Create New Location',
+        editService: 'Edit Service',
+        searchCategory: 'Search category...',
+        searchByName: 'Search by name...',
+        exportCSV: 'Export CSV',
+        completeLocationInfo: 'Complete the information of the new location',
+        addNewLocation: 'Add a new location for your business',
+        addNewService: 'Add a new service'
+      },
       clientManagement: {
         search_placeholder: 'Search clients by name, email or phone...',
         filter_by_status: 'Filter by status',
@@ -3023,6 +3046,13 @@ export const translations = {
           approved: 'Aprobado',
           rejected: 'Rechazado'
         }
+      },
+      absences: {
+        cancelRequest: 'Cancelar Solicitud',
+        cancelRequestConfirm: '¿Está seguro de que desea cancelar esta solicitud de ausencia? Esta acción no se puede deshacer.',
+        deleting: 'Eliminando...',
+        confirmEndEmployment: 'Confirmar Finalización de Empleo',
+        endEmploymentMessage: '¿Está seguro de que desea finalizar su empleo? Esta acción desactivará su cuenta.'
       }
     },
 
@@ -3574,6 +3604,22 @@ export const translations = {
       no_data_available: 'No hay datos disponibles para el período seleccionado'
     },
     admin: {
+      actions: {
+        createBusiness: 'Crear tu Negocio',
+        addLocation: 'Agregar Sede',
+        newLocation: 'Nueva Sede',
+        addService: 'Agregar Servicio',
+        newService: 'Nuevo Servicio',
+        editLocation: 'Editar Sede',
+        createLocation: 'Crear Nueva Sede',
+        editService: 'Editar Servicio',
+        searchCategory: 'Buscar categoría...',
+        searchByName: 'Buscar por nombre...',
+        exportCSV: 'Exportar CSV',
+        completeLocationInfo: 'Completa la información de la nueva sede',
+        addNewLocation: 'Agrega una nueva ubicación para tu negocio',
+        addNewService: 'Agrega un nuevo servicio'
+      },
       clientManagement: {
         search_placeholder: 'Buscar clientes por nombre, email o teléfono...',
         filter_by_status: 'Filtrar por estado',

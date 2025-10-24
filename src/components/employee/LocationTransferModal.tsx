@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Select,
   SelectContent,
@@ -67,6 +68,7 @@ export function LocationTransferModal({
   targetLocationName,
   onTransferScheduled,
 }: LocationTransferModalProps) {
+  const { t } = useLanguage();
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<string>('');
   const [daysUntilTransfer, setDaysUntilTransfer] = useState<number>(7); // Días elegibles 1-30
@@ -317,7 +319,7 @@ export function LocationTransferModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Cancelar
+            {t('common.actions.cancel')}
           </Button>
           <Button
             onClick={handleSchedule}

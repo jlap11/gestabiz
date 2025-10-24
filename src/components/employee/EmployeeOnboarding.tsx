@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useEmployeeRequests } from '@/hooks/useEmployeeRequests'
 import { QRScannerWeb } from '@/components/ui/QRScannerWeb'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { User } from '@/types/types'
 import type { BusinessInvitationQRData } from '@/components/ui/QRScannerWeb'
 
@@ -18,6 +19,7 @@ export function EmployeeOnboarding({
   user, 
   onRequestCreated
 }: Readonly<EmployeeOnboardingProps>) {
+  const { t } = useLanguage();
   const [invitationCode, setInvitationCode] = useState('')
   const [message, setMessage] = useState('')
   const [showScanner, setShowScanner] = useState(false)
@@ -183,7 +185,7 @@ export function EmployeeOnboarding({
                 El escaneo de códigos QR está disponible en la aplicación móvil. Por ahora, ingresa el código manualmente.
               </AlertDescription>
               <Button variant="ghost" size="sm" className="mt-2" onClick={() => setShowScanner(false)}>
-                Cerrar
+                {t('common.actions.close')}
               </Button>
             </Alert>
           )}

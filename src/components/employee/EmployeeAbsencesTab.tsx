@@ -13,6 +13,7 @@ import { Loader2, Trash2, CheckCircle2, XCircle, Clock, AlertCircle } from 'luci
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEmployeeAbsences, type EmployeeAbsence } from '@/hooks/useEmployeeAbsences';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +32,7 @@ interface AbsenceCardProps {
 }
 
 function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceCardProps>) {
+  const { t } = useLanguage();
   const [cancelingId, setCancelingId] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -100,20 +102,19 @@ function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceC
             </Button>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Cancelar Solicitud</AlertDialogTitle>
+                <AlertDialogTitle>{t('employee.absences.cancelRequest')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  ¿Está seguro de que desea cancelar esta solicitud de ausencia?
-                  Esta acción no se puede deshacer.
+                  {t('employee.absences.cancelRequestConfirm')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel disabled={isLoading}>{t('common.actions.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isLoading}
                   className="bg-red-600 hover:bg-red-700"
                   onClick={handleCancel}
                 >
-                  {isLoading ? 'Eliminando...' : 'Eliminar'}
+                  {isLoading ? t('employee.absences.deleting') : t('common.actions.delete')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

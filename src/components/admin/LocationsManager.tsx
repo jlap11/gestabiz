@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   X,
 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -72,7 +73,8 @@ const initialFormData: Omit<Location, 'id' | 'created_at' | 'updated_at' | 'busi
   is_primary: false,
 }
 
-export function LocationsManager({ businessId }: LocationsManagerProps) {
+export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>) {
+  const { t } = useLanguage();
   const [locations, setLocations] = useState<Location[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -310,8 +312,8 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
           className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
         >
           <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Agregar Sede</span>
-          <span className="sm:hidden">Nueva Sede</span>
+          <span className="hidden sm:inline">{t('admin.actions.addLocation')}</span>
+          <span className="sm:hidden">{t('admin.actions.newLocation')}</span>
         </Button>
       </div>
 
@@ -425,12 +427,12 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
   <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
-              {editingLocation ? 'Editar Sede' : 'Crear Nueva Sede'}
+              {editingLocation ? t('admin.actions.editLocation') : t('admin.actions.createLocation')}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               {editingLocation
                 ? 'Actualiza la información de la sede'
-                : 'Completa la información de la nueva sede'}
+                : t('admin.actions.completeLocationInfo')}
             </DialogDescription>
           </DialogHeader>
 
