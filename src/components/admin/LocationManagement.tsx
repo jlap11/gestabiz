@@ -249,14 +249,14 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
   }
 
   const deleteLocation = (locationId: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) {
+    if (window.confirm(t('admin.locationManagement.confirmDeleteLocation'))) {
       setLocations(locations.filter(loc => loc.id !== locationId))
       toast.success(t('admin.locationManagement.locationDeleteSuccess'))
     }
   }
 
   const deleteService = (serviceId: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este servicio?')) {
+    if (window.confirm(t('admin.locationManagement.confirmDeleteService'))) {
       setServices(services.filter(srv => srv.id !== serviceId))
       toast.success(t('admin.locationManagement.serviceDeleteSuccess'))
     }
@@ -277,7 +277,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
         <div>
           <h1 className="text-3xl font-bold">{t('locations.title')}</h1>
           <p className="text-muted-foreground">
-            Gestiona las ubicaciones y servicios de tu negocio
+            {t('admin.locationManagement.subtitle')}
           </p>
         </div>
         

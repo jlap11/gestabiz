@@ -80,6 +80,7 @@ export const translations = {
       // Messages
       messages: {
         confirmDelete: 'Are you sure you want to delete this?',
+        uploadingImages: 'Uploading images...',
         confirmCancel: 'Are you sure you want to cancel?',
         unsavedChanges: 'You have unsaved changes. Do you want to continue?',
         saveSuccess: 'Saved successfully',
@@ -103,6 +104,10 @@ export const translations = {
         notFound: 'Not found',
         serverError: 'Server error. Please try again later',
         networkError: 'Connection error. Check your internet',
+      },
+      // Uploads
+      uploads: {
+        uploadingImages: 'Uploading images...'
       },
       // Forms
       forms: {
@@ -4424,6 +4429,7 @@ export const translations = {
         serviceSaveError: 'Error al guardar el servicio',
         locationDeleteSuccess: 'Ubicación eliminada exitosamente',
         serviceDeleteSuccess: 'Servicio eliminado exitosamente',
+        subtitle: 'Gestiona las ubicaciones y servicios de tu negocio',
       },
 
       // Job Applications

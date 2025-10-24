@@ -321,7 +321,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
         // Subir imágenes pendientes con el service_id real
         if (pendingImageFiles.length > 0) {
-          toast.info('Subiendo imágenes...')
+          toast.info(t('common.messages.loading'))
           const uploadedUrls: string[] = []
 
           for (const file of pendingImageFiles) {
@@ -379,11 +379,11 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       // eslint-disable-next-line no-console
       console.error('Error en handleSubmit:', error)
       const err = error as { message?: string }
-      const errorMessage = err?.message || 'Error desconocido'
+      const errorMessage = err?.message || undefined
       toast.error(
-        editingService 
-          ? `Error al actualizar el servicio: ${errorMessage}` 
-          : `Error al crear el servicio: ${errorMessage}`
+        editingService
+          ? `${t('common.messages.updateError')}${errorMessage ? `: ${errorMessage}` : ''}`
+          : `${t('common.messages.createError')}${errorMessage ? `: ${errorMessage}` : ''}`
       )
     } finally {
       setIsSaving(false)
