@@ -40,9 +40,9 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
 
   // Helper para obtener info del tema actual
   const getThemeInfo = () => {
-    if (theme === 'light') return { label: 'Claro', classes: 'bg-yellow-100 text-yellow-600', icon: Sun }
-    if (theme === 'dark') return { label: 'Oscuro', classes: 'bg-blue-100 text-blue-600', icon: Moon }
-    return { label: 'Sistema', classes: 'bg-primary/10 text-primary', icon: Monitor }
+    if (theme === 'light') return { label: t('settings.themeSection.themes.light.label'), classes: 'bg-yellow-100 text-yellow-600', icon: Sun }
+    if (theme === 'dark') return { label: t('settings.themeSection.themes.dark.label'), classes: 'bg-blue-100 text-blue-600', icon: Moon }
+    return { label: t('settings.themeSection.themes.system.label'), classes: 'bg-primary/10 text-primary', icon: Monitor }
   }
 
   const themeInfo = getThemeInfo()
@@ -71,18 +71,18 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
 
   // Tabs dinámicas según rol
   const tabs = [
-    { value: 'general', label: 'Ajustes Generales', icon: <Palette className="h-4 w-4" /> },
+    { value: 'general', label: t('settings.general'), icon: <Palette className="h-4 w-4" /> },
     { value: 'profile', label: t('settings.profile'), icon: <UserIcon className="h-4 w-4" /> },
     { value: 'notifications', label: t('settings.notifications'), icon: <Bell className="h-4 w-4" /> },
   ]
 
   // Pestaña específica por rol
   if (currentRole === 'admin') {
-    tabs.push({ value: 'admin', label: 'Admin del Negocio', icon: <Briefcase className="h-4 w-4" /> })
+    tabs.push({ value: 'admin', label: t('businessInfo.title'), icon: <Briefcase className="h-4 w-4" /> })
   } else if (currentRole === 'employee') {
-    tabs.push({ value: 'employee', label: 'Preferencias de Empleado', icon: <UserCircle className="h-4 w-4" /> })
+    tabs.push({ value: 'employee', label: t('settings.employeePrefs.title'), icon: <UserCircle className="h-4 w-4" /> })
   } else if (currentRole === 'client') {
-    tabs.push({ value: 'client', label: 'Preferencias de Cliente', icon: <ShoppingCart className="h-4 w-4" /> })
+    tabs.push({ value: 'client', label: t('settings.clientPreferences'), icon: <ShoppingCart className="h-4 w-4" /> })
   }
 
   return (
@@ -90,9 +90,7 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h2>
-          <p className="text-muted-foreground">
-            Configura tu cuenta y preferencias
-          </p>
+          <p className="text-muted-foreground">{t('settings.preferences')}</p>
         </div>
       </div>
 
@@ -112,41 +110,37 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Apariencia y Sistema
+                {t('settings.themeSection.title')}
               </CardTitle>
-              <CardDescription>
-                Personaliza el tema y el idioma de la aplicación
-              </CardDescription>
+              <CardDescription>{t('settings.themeSection.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Theme Selection */}
               <div className="space-y-3">
                 <Label className="text-base font-medium flex items-center gap-2">
                   <Sun className="h-4 w-4" />
-                  Tema de la interfaz
+                  {t('settings.themeSection.themeLabel')}
                 </Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Selecciona el tema que prefieres para la aplicación
-                </p>
+                <p className="text-sm text-muted-foreground mb-3">{t('settings.themeSection.themeDescription')}</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
                     { 
                       value: 'light', 
-                      label: 'Claro', 
+                      label: t('settings.themeSection.themes.light.label'), 
                       icon: <Sun className="h-5 w-5" />,
-                      description: 'Interfaz con colores claros'
+                      description: t('settings.themeSection.themes.light.description')
                     },
                     { 
                       value: 'dark', 
-                      label: 'Oscuro', 
+                      label: t('settings.themeSection.themes.dark.label'), 
                       icon: <Moon className="h-5 w-5" />,
-                      description: 'Interfaz con colores oscuros'
+                      description: t('settings.themeSection.themes.dark.description')
                     },
                     { 
                       value: 'system', 
-                      label: 'Sistema', 
+                      label: t('settings.themeSection.themes.system.label'), 
                       icon: <Monitor className="h-5 w-5" />,
-                      description: 'Según preferencias del sistema'
+                      description: t('settings.themeSection.themes.system.description')
                     }
                   ].map((themeOption) => (
                     <button
@@ -178,13 +172,9 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                     <ThemeIcon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      Tema actual: {themeInfo.label}
-                    </p>
+                    <p className="text-sm font-medium">{t('settings.themeSection.currentTheme', { theme: themeInfo.label })}</p>
                     <p className="text-xs text-muted-foreground">
-                      {theme === 'system' 
-                        ? 'El tema cambia automáticamente según las preferencias de tu sistema operativo'
-                        : 'Puedes cambiar el tema en cualquier momento'}
+                      {theme === 'system' ? t('settings.themeSection.systemThemeNote') : t('settings.themeSection.changeAnytime')}
                     </p>
                   </div>
                 </div>
@@ -198,9 +188,7 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                   <Globe className="h-4 w-4" />
                   {t('settings.language')}
                 </Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Selecciona el idioma de la interfaz
-                </p>
+                <p className="text-sm text-muted-foreground mb-3">{t('settings.languageSection.description')}</p>
                 <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full md:w-64">
                     <SelectValue />

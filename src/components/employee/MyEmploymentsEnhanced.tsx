@@ -15,7 +15,7 @@ import { countUpcomingForEmployee } from '@/lib/services/appointments';
 interface MyEmploymentsProps {
   employeeId: string;
   onJoinBusiness?: () => void;
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: string, context?: Record<string, unknown>) => void;
 }
 
 export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmploymentsProps) {
@@ -460,7 +460,7 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
         businessName={selectedBusinessForEnd?.name || ''}
         onConfirm={handleConfirmEndEmployment}
         upcomingCount={selectedBusinessForEnd?.upcomingCount || 0}
-        onGoToAgenda={() => onNavigate?.('appointments')}
+        onGoToAgenda={() => onNavigate?.('appointments', { source: 'end-employment-dialog' })}
       />
 
       <EmploymentDetailModal

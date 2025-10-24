@@ -402,3 +402,63 @@ export const formatFileSize = (bytes: number): string => {
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+
+export const DEFAULT_TIME_ZONE = 'America/Bogota'
+
+export function extractTimeZoneParts(date: Date, timeZone: string = DEFAULT_TIME_ZONE) {
+  try {
+    const dateString = date.toLocaleString('en-US', {
+      timeZone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+
+    const [datePart, timePart] = dateString.split(', ')
+    const [month, day, year] = datePart.split('/').map(Number)
+    const [hour, minute] = timePart.split(':').map(Number)
+
+    return { year, month, day, hour, minute } as const
+  } catch {
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+    } as const
+  }
+}
+
+export function getTimeZoneParts(date: Date, timeZone: string) {
+  try {
+    const dateString = date.toLocaleString('en-US', {
+      timeZone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    const [, timePart] = dateString.split(', ')
+    const [hourStr, minuteStr] = timePart.split(':')
+    return { hour: Number(hourStr), minute: Number(minuteStr) }
+  } catch {
+    return { hour: date.getHours(), minute: date.getMinutes() }
+  }
+}
+
+export function getDayOfWeekInTZ(date: Date, timeZone: string): number {
+  try {
+    const weekday = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(date)
+    const DAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+    return DAY_MAP[weekday as keyof typeof DAY_MAP] ?? date.getDay()
+  } catch {
+    return date.getDay()
+  }
+}

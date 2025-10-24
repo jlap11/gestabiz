@@ -1084,6 +1084,46 @@ export const translations = {
       }
     },
 
+    // Financial dashboard (translations used by EnhancedFinancialDashboard)
+    financial: {
+      dashboard: 'Financial Dashboard',
+      dashboardDescription: 'Interactive financial overview with charts, filters and PDF/CSV/Excel export',
+      filters: 'Filters:',
+      period: {
+        lastMonth: 'Last month',
+        last3Months: 'Last 3 months',
+        last6Months: 'Last 6 months',
+        lastYear: 'Last year'
+      },
+      tabs: {
+        overview: 'Overview',
+        categories: 'By Category',
+        locations: 'By Location',
+        employees: 'By Employee'
+      },
+      incomeVsExpense: 'Income vs Expenses',
+      monthlyTrend: 'Monthly Trend',
+      categoryDistribution: 'Category Distribution',
+      categoryBreakdown: 'Category Breakdown',
+      transactionsCount: '{{count}} transactions',
+      locationComparison: 'Location Comparison',
+      employeePerformance: 'Employee Performance',
+      category: {
+        appointment_payment: 'Appointment Payments',
+        product_sale: 'Product Sales',
+        membership: 'Memberships',
+        salary: 'Salaries',
+        commission: 'Commissions',
+        rent: 'Rent',
+        utilities: 'Utilities',
+        supplies: 'Supplies',
+        equipment: 'Equipment',
+        marketing: 'Marketing',
+        maintenance: 'Maintenance',
+        tax: 'Taxes'
+      }
+    },
+
     // Dashboard
     dashboard: {
       title: 'Dashboard',
@@ -2838,7 +2878,7 @@ export const translations = {
       professionalSummaryMinLength: 'Professional summary must have at least 50 characters',
     },
   },
-
+  },
   es: {
   
     // Landing Page
@@ -3974,6 +4014,46 @@ export const translations = {
       }
     },
 
+    // Panel financiero (usado por EnhancedFinancialDashboard)
+    financial: {
+      dashboard: 'Panel Financiero',
+      dashboardDescription: 'Vista financiera interactiva con gráficas, filtros y exportación a PDF/CSV/Excel',
+      filters: 'Filtros:',
+      period: {
+        lastMonth: 'Último mes',
+        last3Months: 'Últimos 3 meses',
+        last6Months: 'Últimos 6 meses',
+        lastYear: 'Último año'
+      },
+      tabs: {
+        overview: 'Resumen',
+        categories: 'Por Categoría',
+        locations: 'Por Sede',
+        employees: 'Por Empleado'
+      },
+      incomeVsExpense: 'Ingresos vs Egresos',
+      monthlyTrend: 'Tendencia Mensual',
+      categoryDistribution: 'Distribución por Categoría',
+      categoryBreakdown: 'Desglose de Categorías',
+      transactionsCount: '{{count}} transacciones',
+      locationComparison: 'Comparación por Sede',
+      employeePerformance: 'Rendimiento por Empleado',
+      category: {
+        appointment_payment: 'Pagos de citas',
+        product_sale: 'Venta de productos',
+        membership: 'Membresías',
+        salary: 'Salarios',
+        commission: 'Comisiones',
+        rent: 'Alquiler',
+        utilities: 'Servicios públicos',
+        supplies: 'Suministros',
+        equipment: 'Equipos',
+        marketing: 'Marketing',
+        maintenance: 'Mantenimiento',
+        tax: 'Impuestos'
+      }
+    },
+
     // Dashboard
     dashboard: {
       title: 'Panel Principal',
@@ -4608,27 +4688,7 @@ export const translations = {
         },
       },
 
-      // Services (Admin)
-      services: {
-        title: 'Servicios',
-        subtitle: 'Gestiona los servicios que ofreces',
-        noServicesTitle: 'No hay servicios aún',
-        noServicesDesc: 'Agrega tu primer servicio para que los clientes puedan reservar citas',
-        nameLabel: 'Nombre del Servicio *',
-        namePlaceholder: 'Ej: Corte de Cabello',
-        descriptionLabel: 'Descripción',
-        descriptionPlaceholder: 'Describe el servicio',
-        durationLabel: 'Duración (minutos) *',
-        priceLabel: 'Precio *',
-        imageLabel: 'Imagen del Servicio (Opcional)',
-        imageDesc: 'Puedes subir una imagen para mostrar resultados o ejemplos del servicio',
-        availableAtLocations: 'Disponible en las siguientes sedes:',
-        selectAtLeastOneLocation: 'Debes seleccionar al menos una sede',
-        providedBy: 'Prestado por:',
-        noName: 'Sin nombre',
-        imageAlt: 'Imagen del servicio',
-        activeLabel: 'Servicio activo',
-      },
+      
 
       // Admin actions used across admin screens
       // (merged into admin.actions above to avoid duplicate keys)
@@ -5628,5 +5688,6 @@ export const translations = {
       salaryExceedsMaximum: 'El salario esperado no puede exceder el máximo de la vacante',
       professionalSummaryMinLength: 'El resumen profesional debe tener al menos 50 caracteres',
     },
-  }
+  },
 };
+

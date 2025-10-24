@@ -221,15 +221,15 @@ export function EnhancedFinancialDashboard({
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="h-4 w-4 mr-2" />
-              CSV
+              {t('common.export.csv')}
             </Button>
             <Button variant="outline" size="sm" onClick={handleExportExcel}>
               <Download className="h-4 w-4 mr-2" />
-              Excel
+              {t('common.export.excel')}
             </Button>
             <Button variant="outline" size="sm" onClick={handleExportPDF}>
               <Download className="h-4 w-4 mr-2" />
-              PDF
+              {t('common.export.pdf')}
             </Button>
           </div>
         </div>
@@ -239,7 +239,7 @@ export function EnhancedFinancialDashboard({
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Filtros:</span>
+              <span className="text-sm font-medium text-foreground">{t('financial.filters')}</span>
             </div>
             
             {/* Period Filter */}
@@ -249,10 +249,10 @@ export function EnhancedFinancialDashboard({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1m">Último mes</SelectItem>
-                <SelectItem value="3m">Últimos 3 meses</SelectItem>
-                <SelectItem value="6m">Últimos 6 meses</SelectItem>
-                <SelectItem value="1y">Último año</SelectItem>
+                <SelectItem value="1m">{t('financial.period.lastMonth')}</SelectItem>
+                <SelectItem value="3m">{t('financial.period.last3Months')}</SelectItem>
+                <SelectItem value="6m">{t('financial.period.last6Months')}</SelectItem>
+                <SelectItem value="1y">{t('financial.period.lastYear')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -297,18 +297,18 @@ export function EnhancedFinancialDashboard({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('common.placeholders.allCategories')}</SelectItem>
-                <SelectItem value="appointment_payment">Pagos de citas</SelectItem>
-                <SelectItem value="product_sale">Venta de productos</SelectItem>
-                <SelectItem value="membership">Membresías</SelectItem>
-                <SelectItem value="salary">Salarios</SelectItem>
-                <SelectItem value="commission">Comisiones</SelectItem>
-                <SelectItem value="rent">Alquiler</SelectItem>
-                <SelectItem value="utilities">Servicios públicos</SelectItem>
-                <SelectItem value="supplies">Suministros</SelectItem>
-                <SelectItem value="equipment">Equipos</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="maintenance">Mantenimiento</SelectItem>
-                <SelectItem value="tax">Impuestos</SelectItem>
+                <SelectItem value="appointment_payment">{t('financial.category.appointment_payment')}</SelectItem>
+                <SelectItem value="product_sale">{t('financial.category.product_sale')}</SelectItem>
+                <SelectItem value="membership">{t('financial.category.membership')}</SelectItem>
+                <SelectItem value="salary">{t('financial.category.salary')}</SelectItem>
+                <SelectItem value="commission">{t('financial.category.commission')}</SelectItem>
+                <SelectItem value="rent">{t('financial.category.rent')}</SelectItem>
+                <SelectItem value="utilities">{t('financial.category.utilities')}</SelectItem>
+                <SelectItem value="supplies">{t('financial.category.supplies')}</SelectItem>
+                <SelectItem value="equipment">{t('financial.category.equipment')}</SelectItem>
+                <SelectItem value="marketing">{t('financial.category.marketing')}</SelectItem>
+                <SelectItem value="maintenance">{t('financial.category.maintenance')}</SelectItem>
+                <SelectItem value="tax">{t('financial.category.tax')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -414,17 +414,17 @@ export function EnhancedFinancialDashboard({
         <TabsList className="bg-muted">
           <TabsTrigger value="overview">
             <BarChart3 className="h-4 w-4 mr-2" />
-            Resumen
+            {t('financial.tabs.overview')}
           </TabsTrigger>
           <TabsTrigger value="categories">
             <PieChartIcon className="h-4 w-4 mr-2" />
-            Por Categoría
+            {t('financial.tabs.categories')}
           </TabsTrigger>
           <TabsTrigger value="locations">
-            Por Sede
+            {t('financial.tabs.locations')}
           </TabsTrigger>
           <TabsTrigger value="employees">
-            Por Empleado
+            {t('financial.tabs.employees')}
           </TabsTrigger>
         </TabsList>
 
@@ -432,14 +432,14 @@ export function EnhancedFinancialDashboard({
         <TabsContent value="overview" className="space-y-4">
           <Card className="p-6 bg-card">
             <h3 className="text-lg font-semibold mb-4 text-foreground">
-              Ingresos vs Egresos
+              {t('financial.incomeVsExpense')}
             </h3>
             <IncomeVsExpenseChart data={incomeVsExpenseData} height={350} />
           </Card>
 
           <Card className="p-6 bg-card">
             <h3 className="text-lg font-semibold mb-4 text-foreground">
-              Tendencia Mensual
+              {t('financial.monthlyTrend')}
             </h3>
             <MonthlyTrendChart data={monthlyTrendData} height={350} showArea />
           </Card>
@@ -450,14 +450,14 @@ export function EnhancedFinancialDashboard({
           <div className="grid md:grid-cols-2 gap-4">
             <Card className="p-6 bg-card">
               <h3 className="text-lg font-semibold mb-4 text-foreground">
-                Distribución por Categoría
+                {t('financial.categoryDistribution')}
               </h3>
               <CategoryPieChart data={categoryDistributionData} height={400} />
             </Card>
 
             <Card className="p-6 bg-card">
               <h3 className="text-lg font-semibold mb-4 text-foreground">
-                Desglose de Categorías
+                {t('financial.categoryBreakdown')}
               </h3>
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
                 {categoryDistributionData.map((cat) => (
@@ -473,7 +473,7 @@ export function EnhancedFinancialDashboard({
                       <div>
                         <p className="font-medium text-foreground">{cat.category}</p>
                         <p className="text-xs text-muted-foreground">
-                          {cat.count} transacciones
+                          {t('financial.transactionsCount', { count: cat.count })}
                         </p>
                       </div>
                     </div>
@@ -496,7 +496,7 @@ export function EnhancedFinancialDashboard({
         <TabsContent value="locations" className="space-y-4">
           <Card className="p-6 bg-card">
             <h3 className="text-lg font-semibold mb-4 text-foreground">
-              Comparación por Sede
+              {t('financial.locationComparison')}
             </h3>
             <LocationBarChart data={locationComparisonData} height={400} />
           </Card>
@@ -506,7 +506,7 @@ export function EnhancedFinancialDashboard({
         <TabsContent value="employees" className="space-y-4">
           <Card className="p-6 bg-card">
             <h3 className="text-lg font-semibold mb-4 text-foreground">
-              Rendimiento por Empleado
+              {t('financial.employeePerformance')}
             </h3>
             <EmployeeRevenueChart data={employeePerformanceData} height={400} />
           </Card>

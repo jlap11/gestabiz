@@ -333,7 +333,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
             <div className="space-y-2">
               <Label htmlFor="location" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                Sede *
+                {t('quickSaleForm.locationLabel')} *
               </Label>
               <Select value={locationId} onValueChange={handleLocationChange} required>
                 <SelectTrigger id="location">
@@ -350,7 +350,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employee">Empleado que atendió (Opcional)</Label>
+              <Label htmlFor="employee">{t('quickSaleForm.employeeLabel')}</Label>
               <Select value={employeeId} onValueChange={setEmployeeId}>
                 <SelectTrigger id="employee">
                   <SelectValue placeholder={t('common.placeholders.selectEmployee')} />
@@ -369,7 +369,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
           {/* Payment */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Monto Pagado (COP) *</Label>
+              <Label htmlFor="amount">{t('quickSaleForm.amountLabel')} (COP) *</Label>
               <Input
                 id="amount"
                 type="number"
@@ -396,9 +396,9 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                   <SelectValue placeholder={t('common.placeholders.selectPaymentMethod')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">💵 Efectivo</SelectItem>
-                  <SelectItem value="card">💳 Tarjeta</SelectItem>
-                  <SelectItem value="transfer">🏦 Transferencia</SelectItem>
+                  <SelectItem value="cash">💵 {t('quickSaleForm.cash')}</SelectItem>
+                  <SelectItem value="card">💳 {t('quickSaleForm.card')}</SelectItem>
+                  <SelectItem value="transfer">🏦 {t('quickSaleForm.transfer')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

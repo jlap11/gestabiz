@@ -9,57 +9,11 @@ import { toast } from 'sonner';
 import { format, addDays, subDays, parseISO, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { usePreferredLocation } from '@/hooks/usePreferredLocation';
-
-const DEFAULT_TIME_ZONE = 'America/Bogota';
-const COLOMBIA_UTC_OFFSET = -5; // GMT-5
+import { DEFAULT_TIME_ZONE, extractTimeZoneParts } from '@/lib/utils';
+// COLOMBIA_UTC_OFFSET ya no es necesario al usar utilidades centralizadas
 const DEBUG_MODE = import.meta.env.DEV; // Solo logs en desarrollo
 
-const extractTimeZoneParts = (date: Date, timeZone: string = DEFAULT_TIME_ZONE) => {
-  // Método 1: Intentar con toLocaleString
-  try {
-    const dateString = date.toLocaleString('en-US', { 
-      timeZone, 
-      hour12: false,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    
-    // Parse the formatted string: "MM/DD/YYYY, HH:MM:SS"
-    const [datePart, timePart] = dateString.split(', ');
-    const [month, day, year] = datePart.split('/').map(Number);
-    const [hour, minute] = timePart.split(':').map(Number);
-
-    const result = {
-      year,
-      month,
-      day,
-      hour,
-      minute,
-    } as const;
-    
-    return result;
-  } catch (error) {
-    console.warn('⚠️ toLocaleString falló, usando offset manual', error);
-  }
-  
-  // Método 2: Fallback con offset manual (más confiable)
-  const utcTime = date.getTime();
-  const colombiaTime = new Date(utcTime + (COLOMBIA_UTC_OFFSET * 60 * 60 * 1000));
-  
-  const result = {
-    year: colombiaTime.getUTCFullYear(),
-    month: colombiaTime.getUTCMonth() + 1,
-    day: colombiaTime.getUTCDate(),
-    hour: colombiaTime.getUTCHours(),
-    minute: colombiaTime.getUTCMinutes(),
-  } as const;
-  
-  return result;
-};
+// extractTimeZoneParts está centralizado en '@/lib/utils'
 
 const isSameDayInTimeZone = (dateA: Date, dateB: Date, timeZone: string = DEFAULT_TIME_ZONE) => {
   const partsA = extractTimeZoneParts(dateA, timeZone);

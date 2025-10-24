@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { UserRole, User } from '@/types/types'
-import AppointmentsView from '@/components/dashboard/AppointmentsView'
+import EmployeeAppointmentsCalendar from '@/components/employee/EmployeeAppointmentsCalendar'
 
 // Lazy load components that are not critical on initial render
 const AvailableVacanciesMarketplace = lazy(() => 
@@ -147,7 +147,7 @@ export function EmployeeDashboard({
             <MyEmployments
               employeeId={currentUser.id}
               onJoinBusiness={handleJoinBusiness}
-              onNavigate={(page) => handlePageChange(page)}
+              onNavigate={(page, context) => handlePageChange(page, context)}
             />
           </div>
         )
@@ -220,7 +220,7 @@ export function EmployeeDashboard({
       case 'appointments':
         return (
           <div className="p-6">
-            <AppointmentsView user={currentUser as any} />
+            <EmployeeAppointmentsCalendar />
           </div>
         )
       case 'schedule':
@@ -257,7 +257,7 @@ export function EmployeeDashboard({
       onLogout={onLogout}
       sidebarItems={sidebarItems}
       activePage={activePage}
-      onPageChange={setActivePage}
+      onPageChange={handlePageChange}
       user={currentUser ? {
         id: currentUser.id,
         name: currentUser.name,

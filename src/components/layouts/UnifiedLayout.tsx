@@ -27,6 +27,7 @@ import type { Business, UserRole } from '@/types/types'
 import { NotificationBell } from '@/components/notifications'
 import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
 import { BugReportModal } from '@/components/bug-report/BugReportModal'
+import { ScheduleStatusBadge } from '@/components/employees/ScheduleStatusBadge'
 
 
 interface SearchResult {
@@ -421,6 +422,11 @@ export function UnifiedLayout({
                 onRoleSwitch={onRoleChange}
                 availableRoles={availableRoles}
               />
+            )}
+
+            {/* Schedule Status - Employees only */}
+            {currentRole === 'employee' && user?.id && (
+              <ScheduleStatusBadge employeeId={user.id} />
             )}
 
             {/* Role Selector - Responsive */}
