@@ -149,7 +149,7 @@ export function EnhancedTransactionForm({
     e.preventDefault();
 
     if (formData.subtotal <= 0) {
-      toast.error('El subtotal debe ser mayor a 0');
+      toast.error(t('admin.transactionValidation.subtotalRequired'));
       return;
     }
 

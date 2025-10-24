@@ -144,7 +144,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
   // Export to CSV
   const handleExportCSV = () => {
     if (!filteredLog || filteredLog.length === 0) {
-      toast.error('No hay registros para exportar')
+      toast.error(t('admin.auditActions.noRecords'))
       return
     }
 
@@ -184,9 +184,9 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
       link.click()
       document.body.removeChild(link)
 
-      toast.success('Auditoría exportada exitosamente')
+      toast.success(t('admin.auditActions.exported'))
     } catch (error) {
-      toast.error('Error al exportar auditoría', {
+      toast.error(t('admin.auditActions.exportError'), {
         description: error instanceof Error ? error.message : 'Error desconocido'
       })
     }
@@ -199,7 +199,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
     setDateFrom(undefined)
     setDateTo(undefined)
     setCurrentPage(1)
-    toast.success('Filtros limpiados')
+    toast.success(t('admin.auditActions.filtersClear'))
   }
 
   // Get unique action types from log

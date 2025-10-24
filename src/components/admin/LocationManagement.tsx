@@ -115,7 +115,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
     e.preventDefault()
     
     if (!locationForm.name.trim() || !locationForm.address.trim()) {
-      toast.error('Por favor completa todos los campos requeridos')
+      toast.error(t('admin.locationManagement.missingFields'))
       return
     }
 
@@ -137,7 +137,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
           return loc
         })
         setLocations(updatedLocations)
-        toast.success('Ubicación actualizada exitosamente')
+        toast.success(t('admin.locationManagement.locationUpdateSuccess'))
       } else {
         // Create new location
         const newLocation: Location = {
@@ -162,13 +162,13 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
         }
         
         setLocations(finalLocations)
-        toast.success('Ubicación creada exitosamente')
+        toast.success(t('admin.locationManagement.locationCreateSuccess'))
       }
       
       setIsLocationDialogOpen(false)
       resetLocationForm()
   } catch {
-      toast.error('Error al guardar la ubicación')
+      toast.error(t('admin.locationManagement.locationSaveError'))
     }
   }
 
@@ -176,7 +176,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
     e.preventDefault()
     
     if (!serviceForm.name.trim()) {
-      toast.error('Por favor ingresa el nombre del servicio')
+      toast.error(t('admin.locationManagement.serviceNameRequired'))
       return
     }
 
@@ -194,7 +194,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
             : srv
         )
         setServices(updatedServices)
-        toast.success('Servicio actualizado exitosamente')
+        toast.success(t('admin.locationManagement.serviceUpdateSuccess'))
       } else {
         // Create new service
         const newService: Service = {
@@ -207,13 +207,13 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
           updated_at: new Date().toISOString()
         }
         setServices([...services, newService])
-        toast.success('Servicio creado exitosamente')
+        toast.success(t('admin.locationManagement.serviceCreateSuccess'))
       }
       
       setIsServiceDialogOpen(false)
       resetServiceForm()
   } catch {
-      toast.error('Error al guardar el servicio')
+      toast.error(t('admin.locationManagement.serviceSaveError'))
     }
   }
 
@@ -251,14 +251,14 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
   const deleteLocation = (locationId: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) {
       setLocations(locations.filter(loc => loc.id !== locationId))
-      toast.success('Ubicación eliminada exitosamente')
+      toast.success(t('admin.locationManagement.locationDeleteSuccess'))
     }
   }
 
   const deleteService = (serviceId: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este servicio?')) {
       setServices(services.filter(srv => srv.id !== serviceId))
-      toast.success('Servicio eliminado exitosamente')
+      toast.success(t('admin.locationManagement.serviceDeleteSuccess'))
     }
   }
 

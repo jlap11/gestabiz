@@ -237,12 +237,12 @@ function CreateTemplateDialog({
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error('El nombre es requerido')
+      toast.error(t('admin.templateActions.nameRequired'))
       return
     }
 
     if (selectedPermissions.size === 0) {
-      toast.error('Debes seleccionar al menos un permiso')
+      toast.error(t('admin.templateActions.permissionRequired'))
       return
     }
 
@@ -446,11 +446,11 @@ export function PermissionTemplates({
       },
       {
         onSuccess: () => {
-          toast.success('Plantilla creada exitosamente')
+            toast.success(t('admin.templateActions.created'))
           setCreateDialogOpen(false)
         },
         onError: (error) => {
-          toast.error('Error al crear plantilla', {
+            toast.error(t('admin.templateActions.createError'), {
             description: error.message,
           })
         },
@@ -471,10 +471,10 @@ export function PermissionTemplates({
         { templateId: template.id },
         {
           onSuccess: () => {
-            toast.success('Plantilla eliminada')
+            toast.success(t('admin.templateActions.deleted'))
           },
           onError: (error) => {
-            toast.error('Error al eliminar plantilla', {
+            toast.error(t('admin.templateActions.deleteError'), {
               description: error.message,
             })
           },

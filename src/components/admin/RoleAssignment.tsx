@@ -108,7 +108,7 @@ export function RoleAssignment({
               },
               {
                 onSuccess: () => {
-                  toast.success('Rol modificado exitosamente', {
+                  toast.success(t('admin.roleActions.modified'), {
                     description: `${userName} ahora es ${selectedRole === 'admin' ? 'Administrador' : 'Empleado'}`,
                   })
                   onSuccess?.()
@@ -116,7 +116,7 @@ export function RoleAssignment({
                   setIsSubmitting(false)
                 },
                 onError: (error) => {
-                  toast.error('Error al asignar nuevo rol', {
+                  toast.error(t('admin.roleActions.modifyError'), {
                     description: error.message || 'Por favor intenta de nuevo',
                   })
                   setIsSubmitting(false)
@@ -125,7 +125,7 @@ export function RoleAssignment({
             )
           },
           onError: (error) => {
-            toast.error('Error al revocar rol anterior', {
+            toast.error(t('admin.roleActions.revokeError'), {
               description: error.message || 'Por favor intenta de nuevo',
             })
             setIsSubmitting(false)
@@ -143,7 +143,7 @@ export function RoleAssignment({
         },
         {
           onSuccess: () => {
-            toast.success('Rol asignado exitosamente', {
+            toast.success(t('admin.roleActions.assigned'), {
               description: `${userName} ahora es ${selectedRole === 'admin' ? 'Administrador' : 'Empleado'}`,
             })
             onSuccess?.()
@@ -151,7 +151,7 @@ export function RoleAssignment({
             setIsSubmitting(false)
           },
           onError: (error) => {
-            toast.error('Error al asignar rol', {
+            toast.error(t('admin.roleActions.assignError'), {
               description: error.message || 'Por favor intenta de nuevo',
             })
             setIsSubmitting(false)

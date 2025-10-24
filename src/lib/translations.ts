@@ -1826,12 +1826,55 @@ export const translations = {
         deleted: 'Template deleted successfully',
         createError: 'Error creating template',
         deleteError: 'Error deleting template',
+        nameRequired: 'Template name is required',
+        permissionRequired: 'At least one permission must be selected',
       },
       
       // Audit & Tracking
       auditActions: {
         exported: 'Audit exported successfully',
         exportError: 'Error exporting',
+        noRecords: 'No records to export',
+        filtersClear: 'Filters cleared',
+      },
+
+      // Services Management
+      serviceValidation: {
+        nameRequired: 'Service name is required',
+        priceRequired: 'Price must be greater than or equal to 0',
+        durationRequired: 'Duration must be greater than 0',
+        loadError: 'Error loading data',
+        assignError: 'Error loading assignments',
+        updateSuccess: 'Service updated successfully',
+        createSuccess: 'Service created successfully',
+        deleteSuccess: 'Service deleted successfully',
+        deleteError: 'Error deleting service',
+      },
+
+      // Notification Tracking
+      notificationTracking: {
+        loadError: 'Could not load notifications',
+        exportSuccess: '{{count}} notifications exported',
+        exportError: 'Error exporting',
+      },
+
+      // Transaction Form
+      transactionValidation: {
+        subtotalRequired: 'Subtotal must be greater than 0',
+      },
+
+      // Location & Service Management  
+      locationManagement: {
+        missingFields: 'Please complete all required fields',
+        locationUpdateSuccess: 'Location updated successfully',
+        locationCreateSuccess: 'Location created successfully',
+        locationSaveError: 'Error saving location',
+        serviceNameRequired: 'Please enter the service name',
+        serviceUpdateSuccess: 'Service updated successfully',
+        serviceCreateSuccess: 'Service created successfully',
+        serviceSaveError: 'Error saving service',
+        locationDeleteSuccess: 'Location deleted successfully',
+        serviceDeleteSuccess: 'Service deleted successfully',
       },
     },
 
@@ -4114,12 +4157,55 @@ export const translations = {
         deleted: 'Plantilla eliminada exitosamente',
         createError: 'Error al crear plantilla',
         deleteError: 'Error al eliminar plantilla',
+        nameRequired: 'El nombre de la plantilla es requerido',
+        permissionRequired: 'Debes seleccionar al menos un permiso',
       },
       
       // Audit & Tracking
       auditActions: {
         exported: 'Auditoría exportada exitosamente',
         exportError: 'Error al exportar',
+        noRecords: 'No hay registros para exportar',
+        filtersClear: 'Filtros limpiados',
+      },
+
+      // Services Management
+      serviceValidation: {
+        nameRequired: 'El nombre del servicio es requerido',
+        priceRequired: 'El precio debe ser mayor o igual a 0',
+        durationRequired: 'La duración debe ser mayor a 0',
+        loadError: 'Error al cargar los datos',
+        assignError: 'Error al cargar asignaciones',
+        updateSuccess: 'Servicio actualizado exitosamente',
+        createSuccess: 'Servicio creado exitosamente',
+        deleteSuccess: 'Servicio eliminado exitosamente',
+        deleteError: 'Error al eliminar el servicio',
+      },
+
+      // Notification Tracking
+      notificationTracking: {
+        loadError: 'No se pudieron cargar las notificaciones',
+        exportSuccess: '{{count}} notificaciones exportadas',
+        exportError: 'Error al exportar',
+      },
+
+      // Transaction Form
+      transactionValidation: {
+        subtotalRequired: 'El subtotal debe ser mayor a 0',
+      },
+
+      // Location & Service Management  
+      locationManagement: {
+        missingFields: 'Por favor completa todos los campos requeridos',
+        locationUpdateSuccess: 'Ubicación actualizada exitosamente',
+        locationCreateSuccess: 'Ubicación creada exitosamente',
+        locationSaveError: 'Error al guardar la ubicación',
+        serviceNameRequired: 'Por favor ingresa el nombre del servicio',
+        serviceUpdateSuccess: 'Servicio actualizado exitosamente',
+        serviceCreateSuccess: 'Servicio creado exitosamente',
+        serviceSaveError: 'Error al guardar el servicio',
+        locationDeleteSuccess: 'Ubicación eliminada exitosamente',
+        serviceDeleteSuccess: 'Servicio eliminado exitosamente',
       },
     },
 

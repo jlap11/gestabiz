@@ -144,7 +144,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error al cargar datos:', error)
-      toast.error('Error al cargar los datos')
+      toast.error(t('admin.serviceValidation.loadError'))
       // En caso de error, establecer arrays vacíos para no romper la UI
       setServices([])
       setLocations([])
@@ -175,7 +175,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       setSelectedLocations(locationAssignments?.map((a) => a.location_id) || [])
       setSelectedEmployees(employeeAssignments?.map((a) => a.employee_id) || [])
     } catch {
-      toast.error('Error al cargar asignaciones')
+      toast.error(t('admin.serviceValidation.assignError'))
     }
   }
 
@@ -253,17 +253,17 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
     e.preventDefault()
 
     if (!formData.name.trim()) {
-      toast.error('El nombre del servicio es requerido')
+      toast.error(t('admin.serviceValidation.nameRequired'))
       return
     }
 
     if (formData.price < 0) {
-      toast.error('El precio debe ser mayor o igual a 0')
+      toast.error(t('admin.serviceValidation.priceRequired'))
       return
     }
 
     if (formData.duration_minutes <= 0) {
-      toast.error('La duración debe ser mayor a 0')
+      toast.error(t('admin.serviceValidation.durationRequired'))
       return
     }
 
@@ -292,7 +292,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
         if (error) throw error
         serviceId = editingService.id
-        toast.success('Servicio actualizado exitosamente')
+        toast.success(t('admin.serviceValidation.updateSuccess'))
       } else {
         // Create new service (no incluir updated_at en INSERT)
         const newServiceData = {
@@ -350,7 +350,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
           }
         }
 
-        toast.success('Servicio creado exitosamente')
+        toast.success(t('admin.serviceValidation.createSuccess'))
       }
 
       // Update location assignments
@@ -412,10 +412,10 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
         .eq('id', serviceId)
 
       if (error) throw error
-      toast.success('Servicio eliminado exitosamente')
+      toast.success(t('admin.serviceValidation.deleteSuccess'))
       await fetchData()
     } catch {
-      toast.error('Error al eliminar el servicio')
+      toast.error(t('admin.serviceValidation.deleteError'))
     }
   }
 

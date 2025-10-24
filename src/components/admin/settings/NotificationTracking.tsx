@@ -156,7 +156,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
       setLogs(data || [])
       calculateStats(data || [])
     } catch {
-      toast.error('No se pudieron cargar las notificaciones')
+      toast.error(t('admin.notificationTracking.loadError'))
     } finally {
       setLoading(false)
     }
@@ -265,9 +265,9 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
       link.click()
       document.body.removeChild(link)
 
-      toast.success(`${filteredLogs.length} notificaciones exportadas`)
+      toast.success(t('admin.notificationTracking.exportSuccess', { count: filteredLogs.length.toString() }))
     } catch {
-      toast.error('Error al exportar')
+      toast.error(t('admin.notificationTracking.exportError'))
     } finally {
       setExporting(false)
     }

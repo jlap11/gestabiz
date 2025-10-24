@@ -189,7 +189,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
 
         if (error) throw error
         locationId = editingLocation.id
-        toast.success('Sede actualizada exitosamente')
+        toast.success(t('admin.locationActions.updated'))
       } else {
         // Create new location and get its ID
         const { data: newLocation, error } = await supabase
@@ -244,7 +244,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
           }
         }
         
-        toast.success('Sede creada exitosamente')
+        toast.success(t('admin.locationActions.created'))
       }
 
       await fetchLocations()
@@ -252,7 +252,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
       setPendingImageFiles([]) // Clear pending files
     } catch (err) {
       console.error('Error saving location:', err)
-      toast.error(editingLocation ? 'Error al actualizar la sede' : 'Error al crear la sede')
+      toast.error(editingLocation ? t('admin.locationActions.updateError') : t('admin.locationActions.createError'))
     } finally {
       setIsSaving(false)
     }
@@ -270,10 +270,10 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
         .eq('id', locationId)
 
       if (error) throw error
-      toast.success('Sede eliminada exitosamente')
+      toast.success(t('admin.locationActions.deleted'))
       await fetchLocations()
     } catch {
-      toast.error('Error al eliminar la sede')
+      toast.error(t('admin.locationActions.deleteError'))
     }
   }
 
