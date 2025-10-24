@@ -165,7 +165,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
       id: `service-${Date.now()}`,
       business_id: business?.id || '',
       location_id: undefined,
-      name: 'Nuevo Servicio',
+      name: t('admin.actions.newService'),
       description: '',
       duration: 60,
       price: 0,

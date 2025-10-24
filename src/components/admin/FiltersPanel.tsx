@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,7 +42,8 @@ interface RangeFilter {
 // COMPONENTE
 // =====================================================
 
-export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: FiltersPanelProps) {
+export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: Readonly<FiltersPanelProps>) {
+  const { t } = useLanguage()
   // Estados locales para rangos
   const [occupancyRange, setOccupancyRange] = useState<RangeFilter>({ min: 0, max: 100 })
   const [ratingRange, setRatingRange] = useState<RangeFilter>({ min: 0, max: 5 })
@@ -129,7 +131,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
 
       {/* BÚSQUEDA */}
       <div className="space-y-2">
-        <Label htmlFor="search">Buscar</Label>
+        <Label htmlFor="search">{t('common.actions.search')}</Label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

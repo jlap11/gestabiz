@@ -297,7 +297,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                 <DialogDescription>
                   {editingLocation 
                     ? 'Edita la información de la ubicación'
-                    : 'Agrega una nueva ubicación para tu negocio'
+                    : t('admin.actions.addNewLocation')
                   }
                 </DialogDescription>
               </DialogHeader>
@@ -498,7 +498,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                 <DialogDescription>
                   {editingService 
                     ? 'Edita la información del servicio'
-                    : 'Agrega un nuevo servicio'
+                    : t('admin.actions.addNewService')
                   }
                 </DialogDescription>
               </DialogHeader>
