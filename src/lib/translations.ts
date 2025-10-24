@@ -1876,6 +1876,46 @@ export const translations = {
         locationDeleteSuccess: 'Location deleted successfully',
         serviceDeleteSuccess: 'Service deleted successfully',
       },
+
+      // Job Applications
+      jobApplications: {
+        cvDownloadError: 'Error downloading CV',
+        loadError: 'Error loading application',
+        updateError: 'Error updating application',
+        formError: 'Error submitting application',
+        fileTypeError: 'Only PDF or DOCX files are allowed',
+        fileSizeError: 'File must be smaller than 5MB',
+        chatInitError: 'Unable to start chat at this time',
+        chatError: 'Error starting chat',
+      },
+
+      // Quick Sales
+      quickSale: {
+        loadDataError: 'Error loading data',
+        clientNameRequired: 'Client name is required',
+        serviceRequired: 'Select a service',
+        locationRequired: 'Select a location',
+        amountRequired: 'Enter a valid amount',
+        paymentMethodRequired: 'Select a payment method',
+        saleRegistrationError: 'Error registering sale',
+      },
+
+      // Recurring Clients
+      recurringClients: {
+        daysSinceLastVisit: 'days since last visit',
+      },
+
+      // Client Dashboard
+      clientDashboard: {
+        confirmError: 'Error confirming appointment',
+        confirmErrorWithMsg: 'Error confirming',
+        googleCalendarError: 'Error opening Google Calendar',
+        deleteError: 'Error deleting appointment',
+        errorDeleting: 'Error deleting: {{message}}',
+        chatInitError: 'Unable to start chat at this time',
+        chatError: 'Could not start chat. Please try again.',
+        cancelError: 'Could not cancel appointment. Please try again.',
+      },
     },
 
     // Absence and Vacation System
@@ -4206,6 +4246,46 @@ export const translations = {
         serviceSaveError: 'Error al guardar el servicio',
         locationDeleteSuccess: 'Ubicación eliminada exitosamente',
         serviceDeleteSuccess: 'Servicio eliminado exitosamente',
+      },
+
+      // Job Applications
+      jobApplications: {
+        cvDownloadError: 'Error al descargar CV',
+        loadError: 'Error al cargar la aplicación',
+        updateError: 'Error al actualizar la aplicación',
+        formError: 'Error al enviar aplicación',
+        fileTypeError: 'Solo se permiten archivos PDF o DOCX',
+        fileSizeError: 'El archivo debe ser menor a 5MB',
+        chatInitError: 'No se puede iniciar el chat en este momento',
+        chatError: 'Error al iniciar el chat',
+      },
+
+      // Quick Sales
+      quickSale: {
+        loadDataError: 'Error al cargar datos',
+        clientNameRequired: 'El nombre del cliente es requerido',
+        serviceRequired: 'Selecciona un servicio',
+        locationRequired: 'Selecciona una sede',
+        amountRequired: 'Ingresa un monto válido',
+        paymentMethodRequired: 'Selecciona un método de pago',
+        saleRegistrationError: 'Error al registrar venta',
+      },
+
+      // Recurring Clients
+      recurringClients: {
+        daysSinceLastVisit: 'días sin visitar',
+      },
+
+      // Client Dashboard
+      clientDashboard: {
+        confirmError: 'Error al confirmar la cita',
+        confirmErrorWithMsg: 'Error al confirmar',
+        googleCalendarError: 'Error al abrir Google Calendar',
+        deleteError: 'Error al eliminar la cita',
+        errorDeleting: 'Error al eliminar: {{message}}',
+        chatInitError: 'No se puede iniciar el chat en este momento',
+        chatError: 'No se pudo iniciar el chat. Por favor, intenta de nuevo.',
+        cancelError: 'No se pudo cancelar la cita. Intenta de nuevo.',
       },
     },
 
