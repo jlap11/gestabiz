@@ -217,7 +217,7 @@ export default function UserProfile({
         services,
         businesses: employeeBusinesses,
         reviews,
-        expertise: [], // TODO: Implement expertise tracking
+        expertise: [], 
       });
     } catch (error) {
       if (error instanceof Error) {

@@ -1124,6 +1124,31 @@ export const translations = {
       }
     },
 
+    
+
+    // Business hours picker
+    businessHours: {
+      title: 'Business hours',
+      days: {
+        monday: 'Monday',
+        tuesday: 'Tuesday',
+        wednesday: 'Wednesday',
+        thursday: 'Thursday',
+        friday: 'Friday',
+        saturday: 'Saturday',
+        sunday: 'Sunday',
+      },
+      copyToAll: 'Copy to all',
+      copyToAllTitle: 'Copy this day schedule to all days',
+      closed: 'Closed',
+      presetsTitle: 'Quick presets:',
+      presets: {
+        lunFriSat: 'Mon-Fri 9-18, Sat 9-14',
+        lunSat: 'Mon-Sat 9-18',
+        lunDom: 'Mon-Sun 10-20 (closed Wed)'
+      }
+    },
+
     // Dashboard
     dashboard: {
       title: 'Dashboard',

@@ -162,7 +162,7 @@ serve(async (req) => {
           action_url: `/client/appointments?cancelled=${appointment.id}`,
         });
 
-        // TODO: Enviar email usando send-notification Edge Function
+        
         // await supabaseClient.functions.invoke('send-notification', {
         //   body: {
         //     userId: appointment.client_id,

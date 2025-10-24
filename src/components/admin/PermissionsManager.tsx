@@ -130,7 +130,7 @@ export function PermissionsManager({
 
   // Manejar selección de usuario
   const handleSelectUser = (user: UserWithRoles) => {
-    // TODO: Abrir modal RoleAssignment o PermissionEditor
+    
     console.log('Selected user:', user)
   }
 

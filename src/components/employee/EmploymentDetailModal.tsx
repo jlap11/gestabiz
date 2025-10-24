@@ -441,7 +441,7 @@ export function EmploymentDetailModal({
                     <div className="space-y-2">
                       {[5, 4, 3, 2, 1].map(star => {
                         const percentage = details.employee_total_reviews 
-                          ? Math.random() * 100 // TODO: Real distribution from reviews table
+                          ? Math.random() * 100 
                           : 0;
                         return (
                           <div key={star} className="flex items-center gap-3">

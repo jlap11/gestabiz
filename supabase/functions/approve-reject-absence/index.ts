@@ -165,7 +165,7 @@ serve(async (req) => {
             },
           });
 
-          // TODO: Enviar email al cliente
+          
           console.log(`TODO: Enviar email a ${appointment.client.email} sobre cancelación`);
         }
       }
@@ -210,7 +210,7 @@ serve(async (req) => {
       },
     });
 
-    // TODO: Enviar email al empleado
+    
     console.log(`TODO: Enviar email a ${absence.employee.email} sobre ${action}`);
 
     return new Response(

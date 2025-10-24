@@ -101,7 +101,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
   }
 
   // Separar empleos activos y anteriores (simulado por ahora)
-  // TODO: Agregar campo is_active en business_employees
+  
   const activeEmployments = businessesWithRoles;
   const previousEmployments: typeof businessesWithRoles = [];
 

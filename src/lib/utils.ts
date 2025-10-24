@@ -462,3 +462,21 @@ export function getDayOfWeekInTZ(date: Date, timeZone: string): number {
     return date.getDay()
   }
 }
+
+export function localTimeInTZToUTC(
+  year: number,
+  monthIndex: number,
+  day: number,
+  hour: number,
+  minute: number,
+  timeZone: string = DEFAULT_TIME_ZONE
+): Date {
+  try {
+    const candidateUTC = new Date(Date.UTC(year, monthIndex, day, hour, minute, 0))
+    const { hour: tzHour, minute: tzMinute } = getTimeZoneParts(candidateUTC, timeZone)
+    const deltaMinutes = (hour - tzHour) * 60 + (minute - tzMinute)
+    return new Date(candidateUTC.getTime() + deltaMinutes * 60 * 1000)
+  } catch {
+    return new Date(Date.UTC(year, monthIndex, day, hour, minute, 0))
+  }
+}

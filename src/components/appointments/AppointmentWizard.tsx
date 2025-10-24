@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, DEFAULT_TIME_ZONE, localTimeInTZToUTC } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   BusinessSelection,
@@ -578,16 +578,12 @@ export function AppointmentWizard({
       const month = wizardData.date.getMonth();
       const day = wizardData.date.getDate();
       
-      // Crear timestamp ajustando por zona horaria Colombia (UTC-5)
-      // Si el usuario selecciona 3 PM en Colombia, queremos almacenar 3 PM UTC en la BD
-      // Pero JavaScript UTC es UTC+0, así que calculamos: 3 PM + 5 horas = 8 PM UTC
-      const colombiaTimezoneOffset = 5; // UTC-5, así que sumamos 5
-      const utcTime = new Date(Date.UTC(year, month, day, hourNum + colombiaTimezoneOffset, minuteNum, 0));
+      // Crear timestamp respetando zona horaria configurada (DEFAULT_TIME_ZONE)
+      const utcTime = localTimeInTZToUTC(year, month, day, hourNum, minuteNum, DEFAULT_TIME_ZONE);
       
       console.log('📌 DEBUG - Hora calculada:', {
         hourNum,
-        colombiaTimezoneOffset,
-        hourParaUTC: hourNum + colombiaTimezoneOffset,
+        timeZone: DEFAULT_TIME_ZONE,
         resultISO: utcTime.toISOString(),
         selectedDate: wizardData.date.toISOString()
       });

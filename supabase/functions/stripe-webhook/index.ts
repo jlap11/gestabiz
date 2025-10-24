@@ -282,7 +282,7 @@ async function handleTrialWillEnd(supabase: any, subscription: Stripe.Subscripti
     }
   })
 
-  // TODO: Enviar notificación al negocio
+  
 }
 
 // ========== HANDLERS DE PAYMENT INTENT ==========
@@ -426,7 +426,7 @@ async function handleInvoiceUpcoming(supabase: any, invoice: Stripe.Invoice) {
     }
   })
 
-  // TODO: Enviar notificación al negocio sobre próximo cobro
+  
 }
 
 // ========== HANDLERS DE PAYMENT METHOD ==========

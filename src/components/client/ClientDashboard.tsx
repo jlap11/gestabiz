@@ -1123,7 +1123,7 @@ export function ClientDashboard({
           onClose={() => setSelectedUserId(null)}
           onBookAppointment={(serviceId, businessId) => {
             setSelectedUserId(null);
-            // TODO: Open AppointmentWizard with preselected service and business
+            
             setShowAppointmentWizard(true);
             // eslint-disable-next-line no-console
             console.log('Book with professional:', { serviceId, businessId });

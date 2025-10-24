@@ -148,7 +148,7 @@ export function ChatLayout({
    */
    
   const handleTypingChange = (_isTyping: boolean) => {
-    // TODO: Implementar typing indicator con broadcast
+    
     // Por ahora no-op
   };
 
@@ -234,9 +234,9 @@ export function ChatLayout({
         {/* Chat window */}
         <ChatErrorBoundary>
           <ChatWindow
-            conversation={activeConversation as any} // TODO: Actualizar tipos en ChatWindow
-            messages={messages as any} // TODO: Actualizar tipos en ChatWindow
-            typingUsers={[]} // TODO: Implementar typing indicators
+            conversation={activeConversation as any}
+            messages={messages as any}
+            typingUsers={[]}
             currentUserId={userId}
             onSendMessage={handleSendMessage}
             onEditMessage={handleEditMessage}

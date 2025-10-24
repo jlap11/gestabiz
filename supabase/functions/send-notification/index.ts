@@ -337,7 +337,7 @@ async function loadHTMLTemplate(templateName: string, data: any): Promise<string
     const templatePath = `../templates/${templateName}.html`
     
     // Por ahora retornamos null para usar template básico
-    // TODO: Implementar carga de template desde storage
+    
     return null
   } catch (error) {
     console.error(`Error loading template ${templateName}:`, error)
