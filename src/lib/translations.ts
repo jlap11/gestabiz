@@ -1327,6 +1327,7 @@ export const translations = {
         addNewLocation: 'Add a new location for your business',
         addNewService: 'Add a new service'
       },
+      
       clientManagement: {
         search_placeholder: 'Search clients by name, email or phone...',
         filter_by_status: 'Filter by status',
@@ -2695,6 +2696,7 @@ export const translations = {
       noRecommendations: 'No recommendations available',
       loading: 'Loading recommendations...',
     },
+    
 
     // Business Suggestions
     businessSuggestions: {
@@ -2779,6 +2781,7 @@ export const translations = {
   },
 
   es: {
+  
     // Landing Page
     landing: {
       nav: {
@@ -4175,6 +4178,7 @@ export const translations = {
         addNewService: 'Agrega un nuevo servicio',
         exporting: 'Exportando...'
       },
+      
       billing: {
         securePayment: 'Pago Seguro',
         addPaymentMethod: 'Agregar Método de Pago',
