@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
@@ -20,7 +21,8 @@ export function ServiceSelection({
   onSelectService,
   preloadedServices,
   isPreselected = false,
-}: ServiceSelectionProps) {
+}: Readonly<ServiceSelectionProps>) {
+  const { t } = useLanguage()
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(!preloadedServices);
 

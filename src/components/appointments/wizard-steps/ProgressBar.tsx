@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -9,7 +10,8 @@ interface ProgressBarProps {
   completedSteps?: number[]; // Array de índices de pasos completados (ej: [1, 2, 3])
 }
 
-export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [] }: ProgressBarProps) {
+export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [] }: Readonly<ProgressBarProps>) {
+  const { t } = useLanguage()
   const percentage = (currentStep / totalSteps) * 100;
 
   // Generar array de todos los pasos

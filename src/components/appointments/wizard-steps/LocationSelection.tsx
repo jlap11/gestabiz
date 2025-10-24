@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { MapPin, Building2, Phone, Mail, Loader2, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ export function LocationSelection({
   preloadedLocations,
   isPreselected = false
 }: Readonly<LocationSelectionProps>) {
+  const { t } = useLanguage()
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(!preloadedLocations);
 

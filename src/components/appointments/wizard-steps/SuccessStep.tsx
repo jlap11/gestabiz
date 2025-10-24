@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Calendar, Share2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -16,7 +17,8 @@ interface SuccessStepProps {
   readonly onClose: () => void;
 }
 
-export function SuccessStep({ appointmentData, onClose }: SuccessStepProps) {
+export function SuccessStep({ appointmentData, onClose }: Readonly<SuccessStepProps>) {
+  const { t } = useLanguage()
   const [status, setStatus] = useState<'loading' | 'success'>('loading');
 
   useEffect(() => {
