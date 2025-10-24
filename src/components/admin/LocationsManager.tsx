@@ -259,7 +259,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
   }
 
   const handleDelete = async (locationId: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta sede? Esta acción no se puede deshacer.')) {
+    if (!confirm(t('admin.locationManagement.confirmDeleteLocation'))) {
       return
     }
 
@@ -351,7 +351,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                       )}
                       {preferredLocationId === location.id && (
                         <Badge variant="outline" className="text-[10px] sm:text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700">
-                          ⭐ Administrada
+                            toast.info(t('common.messages.uploadingImages'))
                         </Badge>
                       )}
                     </div>
@@ -406,8 +406,9 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                 )}
                 {location.business_hours && (
                   <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="font-medium">{editingLocation ? t('admin.actions.editLocation') : t('admin.actions.createLocation')}</span>
                     <span className="text-muted-foreground">Horarios configurados</span>
+                    <span className="text-sm text-muted-foreground block mt-1">{editingLocation ? t('admin.locationManagement.editDescription') : t('admin.actions.completeLocationInfo')}</span>
                   </div>
                 )}
                 {location.images && location.images.length > 0 && (

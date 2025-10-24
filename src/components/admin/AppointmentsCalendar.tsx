@@ -232,7 +232,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-card border border-border rounded-lg shadow-lg max-w-lg w-full my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="text-lg font-semibold text-foreground">Detalles de la Cita</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('appointments.appointment_details')}</h3>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground"
@@ -245,31 +245,31 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Cliente:</span>
+              <span className="text-sm font-medium text-foreground">{t('appointments.client_name')}:</span>
               <span className="text-sm text-muted-foreground">{appointment.client_name}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Servicio:</span>
+              <span className="text-sm font-medium text-foreground">{t('appointments.service')}:</span>
               <span className="text-sm text-muted-foreground">{appointment.service_name}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Horario:</span>
+              <span className="text-sm font-medium text-foreground">{t('appointments.startTime')}:</span>
               <span className="text-sm text-muted-foreground">
                 {formatTimeInColombia(appointment.start_time)} - {formatTimeInColombia(appointment.end_time)}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Precio:</span>
+              <span className="text-sm font-medium text-foreground">{t('services.priceLabel').replace('*','')}:</span>
               <span className="text-sm text-muted-foreground">
                 ${appointment.service_price.toLocaleString('es-CO')} COP
               </span>
             </div>
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Empleado:</span>
+              <span className="text-sm font-medium text-foreground">{t('appointments.employee')}:</span>
               <span className="text-sm text-muted-foreground">{appointment.employee_name}</span>
             </div>
             {appointment.notes && (
@@ -300,20 +300,20 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
             </div>
           )}
 
-          {isCompleted && (
+            {isCompleted && (
             <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-md">
               <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
                 <Check className="h-4 w-4" />
-                Cita completada
+                {t('admin.appointmentCalendar.successCompleted')}
               </p>
             </div>
           )}
 
-          {isCancelled && (
+            {isCancelled && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
               <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                 <X className="h-4 w-4" />
-                Cita cancelada
+                {t('admin.appointmentCalendar.successCancelled')}
               </p>
             </div>
           )}
@@ -327,7 +327,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
               className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="h-4 w-4 inline mr-2" />
-              Marcar Completada
+              {t('admin.appointmentCalendar.markCompleted')}
             </button>
             <button
               onClick={handleNoShow}
@@ -335,7 +335,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
               className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <AlertCircle className="h-4 w-4 inline mr-2" />
-              Sin Asistencia
+              {t('admin.appointmentCalendar.markNoShow')}
             </button>
             <button
               onClick={handleCancel}
@@ -343,7 +343,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <X className="h-4 w-4 inline mr-2" />
-              Cancelar
+              {t('admin.appointmentCalendar.cancelAppointment')}
             </button>
           </div>
         )}

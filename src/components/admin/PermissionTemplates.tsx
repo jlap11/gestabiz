@@ -466,7 +466,7 @@ export function PermissionTemplates({
 
   // Eliminar plantilla
   const handleDeleteTemplate = (template: PermissionTemplate) => {
-    if (window.confirm(`¿Eliminar la plantilla "${template.name}"?`)) {
+    if (window.confirm(`${t('admin.permissionTemplates.confirmDelete')} ${template.name}?`)) {
       deleteTemplate(
         { templateId: template.id },
         {

@@ -267,7 +267,7 @@ export function AdminOnboarding({
   // Business creation result: logged for debugging
       if (businessError) throw businessError
 
-      toast.success(`¡Negocio "${formData.name}" creado exitosamente!`)
+  toast.success(t('common.messages.createSuccess'))
 
       // Step 2: Upload logo if exists (owner is automatically registered by trigger, RLS will allow it)
       if (logoFile && business) {
@@ -299,10 +299,10 @@ export function AdminOnboarding({
 
           if (updateError) throw updateError
 
-          toast.success('Logo subido correctamente')
+          toast.success(t('common.messages.saveSuccess'))
         } catch {
           // Don't fail the whole operation if logo upload fails
-          toast.warning('Negocio creado, pero hubo un problema al subir el logo')
+          toast.warning(t('common.messages.tryAgain'))
         }
       }
 
@@ -336,22 +336,16 @@ export function AdminOnboarding({
 
           if (updateError) throw updateError
 
-          toast.success('Banner subido correctamente')
+          toast.success(t('common.messages.saveSuccess'))
         } catch {
           // Don't fail the whole operation if banner upload fails
-          toast.warning('Negocio creado, pero hubo un problema al subir el banner')
+          toast.warning(t('common.messages.tryAgain'))
         }
       }
 
       // Show invitation code
       if (business) {
-        toast.success(
-          `Código de invitación: ${business.invitation_code}`,
-          {
-            duration: 10000,
-            description: 'Comparte este código con tus empleados',
-          }
-        )
+        toast.success(t('common.messages.createSuccess'))
       }
 
       // Business created successfully, calling onBusinessCreated callback

@@ -134,8 +134,8 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
   }
 
   const handleDelete = async (resourceId: string) => {
-    if (!confirm('¿Está seguro de desactivar este recurso?')) return
-    
+    if (!confirm(t('admin.resourcesManager.confirmDisable'))) return
+
     deleteMutation.mutate(resourceId)
   }
 

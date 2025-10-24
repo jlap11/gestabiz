@@ -109,6 +109,16 @@ export const translations = {
       uploads: {
         uploadingImages: 'Uploading images...'
       },
+
+      // Admin - Permission templates
+      permissionTemplates: {
+        confirmDelete: 'Delete template'
+      },
+
+      // Admin - Resources Manager
+      resourcesManager: {
+        confirmDisable: 'Are you sure you want to disable this resource?'
+      },
       // Forms
       forms: {
         required: 'Required',
@@ -1262,6 +1272,13 @@ export const translations = {
     // Services
     services: {
       title: 'Services',
+      subtitle: 'Manage the services you offer',
+      imageLabel: 'Service Image (Optional)',
+      imageDesc: 'You can upload an image to showcase the service or examples',
+      availableAtLocations: 'Available at the following locations:',
+      selectAtLeastOneLocation: 'You must select at least one location',
+      providedBy: 'Provided by:',
+      noName: 'No name',
       new_service: 'New Service',
       edit_service: 'Edit Service',
       service_details: 'Service Details',
@@ -1968,6 +1985,7 @@ export const translations = {
         proposalLabel: 'Proposal (optional)',
         tipLabel: 'Tip (optional)',
         markCompleted: 'Mark as completed',
+        markNoShow: 'Mark as no-show',
         cancelAppointment: 'Cancel appointment',
         notes: 'Notes',
         noNotes: 'No notes for this appointment',
@@ -3057,6 +3075,7 @@ export const translations = {
       // Messages
       messages: {
         confirmDelete: '¿Estás seguro de que deseas eliminar esto?',
+        uploadingImages: 'Subiendo imágenes...',
         confirmCancel: '¿Estás seguro de que deseas cancelar?',
         unsavedChanges: 'Tienes cambios sin guardar. ¿Deseas continuar?',
         saveSuccess: 'Guardado exitosamente',
@@ -4625,6 +4644,7 @@ export const translations = {
         proposalLabel: 'Propuesta (opcional)',
         tipLabel: 'Propina (opcional)',
         markCompleted: 'Marcar como completada',
+        markNoShow: 'Marcar sin asistencia',
         cancelAppointment: 'Cancelar cita',
         notes: 'Notas',
         noNotes: 'Sin notas para esta cita',
