@@ -202,20 +202,20 @@ export function EmployeeListView({
     <div className="space-y-4">
       {/* SORT CONTROLS */}
       <div className="flex items-center gap-2 pb-3 border-b">
-        <span className="text-sm font-medium text-muted-foreground">Ordenar por:</span>
+        <span className="text-sm font-medium text-muted-foreground">{t('admin.employeeListView.sortBy')}</span>
         <div className="flex items-center gap-1">
-          {renderSortButton('name', 'Nombre')}
-          {renderSortButton('level', 'Nivel')}
-          {renderSortButton('occupancy', 'Ocupación')}
-          {renderSortButton('rating', 'Rating')}
-          {renderSortButton('revenue', 'Revenue')}
+          {renderSortButton('name', t('admin.employeeListView.name'))}
+          {renderSortButton('level', t('admin.employeeListView.level'))}
+          {renderSortButton('occupancy', t('admin.employeeListView.occupancy'))}
+          {renderSortButton('rating', t('admin.employeeListView.rating'))}
+          {renderSortButton('revenue', t('admin.employeeListView.revenue'))}
         </div>
       </div>
 
       {/* EMPLOYEES LIST */}
       {employees.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No hay empleados para mostrar</p>
+          <p className="text-muted-foreground">{t('admin.employeeListView.noEmployees')}</p>
         </div>
       ) : (
         <div className="space-y-3">

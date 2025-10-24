@@ -1761,6 +1761,15 @@ export const translations = {
         updateError: 'Some permissions could not be updated',
         updateErrorDesc: 'Errors in: {{errors}}',
       },
+      employeeListView: {
+        sortBy: 'Sort by:',
+        name: 'Name',
+        level: 'Level',
+        occupancy: 'Occupancy',
+        rating: 'Rating',
+        revenue: 'Revenue',
+        noEmployees: 'No employees to display',
+      },
     },
 
     // Absence and Vacation System
@@ -4303,6 +4312,15 @@ export const translations = {
         updatedSuccessDesc: '{{count}} cambios aplicados a {{name}}',
         updateError: 'Algunos permisos no se pudieron actualizar',
         updateErrorDesc: 'Errores en: {{errors}}',
+      },
+      employeeListView: {
+        sortBy: 'Ordenar por:',
+        name: 'Nombre',
+        level: 'Nivel',
+        occupancy: 'Ocupación',
+        rating: 'Rating',
+        revenue: 'Revenue',
+        noEmployees: 'No hay empleados para mostrar',
       },
     },
 
