@@ -1916,6 +1916,42 @@ export const translations = {
         chatError: 'Could not start chat. Please try again.',
         cancelError: 'Could not cancel appointment. Please try again.',
       },
+
+      // Appointment Form
+      appointmentForm: {
+        clientNameRequired: 'Client name is required',
+        dateRequired: 'Date is required',
+        startTimeRequired: 'Start time is required',
+        serviceRequired: 'Service is required',
+        createdSuccess: 'Appointment created successfully',
+        updatedSuccess: 'Appointment updated successfully',
+        createError: 'Error creating appointment',
+        updateError: 'Error updating appointment',
+      },
+
+      // Unified Settings
+      unifiedSettings: {
+        availableForAppointments: 'Available for new appointments',
+        notifyNewAssignments: 'Notify new assignments',
+        appointmentReminders: 'Appointment reminders',
+        availabilityDescription: 'Accept new appointments from clients',
+        assignmentNotificationDescription: 'Get alerts when assigned new appointments',
+        remindersDescription: 'Receive reminders about your appointments',
+      },
+
+      // Calendar & Appointments
+      appointmentCalendar: {
+        proposalLabel: 'Proposal (optional)',
+        tipLabel: 'Tip (optional)',
+        markCompleted: 'Mark as completed',
+        cancelAppointment: 'Cancel appointment',
+        notes: 'Notes',
+        noNotes: 'No notes for this appointment',
+        successCompleted: 'Appointment marked as completed',
+        successCancelled: 'Appointment cancelled successfully',
+        errorCompleting: 'Error completing appointment',
+        errorCancelling: 'Error cancelling appointment',
+      },
     },
 
     // Absence and Vacation System
@@ -4286,6 +4322,42 @@ export const translations = {
         chatInitError: 'No se puede iniciar el chat en este momento',
         chatError: 'No se pudo iniciar el chat. Por favor, intenta de nuevo.',
         cancelError: 'No se pudo cancelar la cita. Intenta de nuevo.',
+      },
+
+      // Appointment Form
+      appointmentForm: {
+        clientNameRequired: 'El nombre del cliente es requerido',
+        dateRequired: 'La fecha es requerida',
+        startTimeRequired: 'La hora de inicio es requerida',
+        serviceRequired: 'El servicio es requerido',
+        createdSuccess: 'Cita creada exitosamente',
+        updatedSuccess: 'Cita actualizada exitosamente',
+        createError: 'Error al crear la cita',
+        updateError: 'Error al actualizar la cita',
+      },
+
+      // Unified Settings
+      unifiedSettings: {
+        availableForAppointments: 'Disponible para nuevas citas',
+        notifyNewAssignments: 'Notificar nuevas asignaciones',
+        appointmentReminders: 'Recordatorios de citas',
+        availabilityDescription: 'Acepta nuevas asignaciones de citas de clientes',
+        assignmentNotificationDescription: 'Recibe alertas cuando te asignen una nueva cita',
+        remindersDescription: 'Recibe recordatorios sobre tus citas',
+      },
+
+      // Calendar & Appointments
+      appointmentCalendar: {
+        proposalLabel: 'Propuesta (opcional)',
+        tipLabel: 'Propina (opcional)',
+        markCompleted: 'Marcar como completada',
+        cancelAppointment: 'Cancelar cita',
+        notes: 'Notas',
+        noNotes: 'Sin notas para esta cita',
+        successCompleted: 'Cita marcada como completada',
+        successCancelled: 'Cita cancelada exitosamente',
+        errorCompleting: 'Error al completar la cita',
+        errorCancelling: 'Error al cancelar la cita',
       },
     },
 

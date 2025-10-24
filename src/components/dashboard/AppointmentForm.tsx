@@ -139,19 +139,19 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
 
     try {
       if (!formData.client_name.trim()) {
-        toast.error(t('validation.clientNameRequired'))
+        toast.error(t('admin.appointmentForm.clientNameRequired'))
         return
       }
       if (!formData.date) {
-        toast.error(t('validation.dateRequired'))
+        toast.error(t('admin.appointmentForm.dateRequired'))
         return
       }
       if (!formData.start_time) {
-        toast.error(t('validation.startTimeRequired'))
+        toast.error(t('admin.appointmentForm.startTimeRequired'))
         return
       }
       if (!formData.service_id) {
-        toast.error(t('validation.serviceRequired'))
+        toast.error(t('admin.appointmentForm.serviceRequired'))
         return
       }
 
@@ -183,7 +183,7 @@ export function AppointmentForm({ isOpen, onClose, onSubmit, user, appointment }
       }
 
       await onSubmit(appointmentData)
-      toast.success(appointment ? t('appointments.updated') : t('appointments.created'))
+      toast.success(appointment ? t('admin.appointmentForm.updatedSuccess') : t('admin.appointmentForm.createdSuccess'))
       onClose()
     } catch (error) {
       toast.error(t('common.error'))

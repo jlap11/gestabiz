@@ -737,14 +737,14 @@ export function AppointmentWizard({
       >
         {/* DialogTitle para accesibilidad (screen readers) */}
         <DialogTitle className="sr-only">
-          {appointmentToEdit ? 'Editar Cita' : 'Nueva Cita'}
+          {appointmentToEdit ? t('appointments.edit') : t('appointments.create')}
         </DialogTitle>
         {/* Header - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
           <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
             <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
               <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
-                {appointmentToEdit ? 'Editar Cita' : 'Nueva Cita'}
+                {appointmentToEdit ? t('appointments.edit') : t('appointments.create')}
               </h2>
               <button
                 onClick={handleClose}

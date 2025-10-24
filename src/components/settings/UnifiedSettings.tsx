@@ -64,7 +64,7 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
       onUserUpdate(updatedUser)
       toast.success(t('settings.preferences_saved'))
     } catch (error) {
-      toast.error('Error updating language')
+      toast.error(t('common.messages.updateError'))
       throw error
     }
   }

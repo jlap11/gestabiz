@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallba
 import { Calendar, Clock, ChevronLeft, ChevronRight, User, DollarSign, X, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { format, addDays, subDays, parseISO, isWithinInterval } from 'date-fns';
@@ -273,8 +274,8 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
             </div>
             {appointment.notes && (
               <div className="mt-2 p-2 bg-muted rounded-md">
-                <span className="text-sm font-medium text-foreground">Notas:</span>
-                <p className="text-sm text-muted-foreground mt-1">{appointment.notes}</p>
+                <span className="text-sm font-medium text-foreground">{t('admin.appointmentCalendar.notes')}:</span>
+                <p className="text-sm text-muted-foreground mt-1">{appointment.notes || t('admin.appointmentCalendar.noNotes')}</p>
               </div>
             )}
           </div>
@@ -282,7 +283,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
           {!isCompleted && !isCancelled && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Propina (opcional)
+                {t('admin.appointmentCalendar.tipLabel')}
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -353,6 +354,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
 
 export const AppointmentsCalendar: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const isSelectedDateToday = useMemo(
     () => isSameDayInTimeZone(selectedDate, new Date()),
@@ -771,7 +773,7 @@ export const AppointmentsCalendar: React.FC = () => {
 
       if (transactionError) throw transactionError;
 
-      toast.success('Cita completada y venta registrada');
+      toast.success(t('admin.appointmentCalendar.successCompleted'));
       
       // Refresh appointments
       if (currentBusinessId) {
@@ -779,7 +781,7 @@ export const AppointmentsCalendar: React.FC = () => {
       }
     } catch (error) {
       console.error('Error al completar la cita en el calendario admin', error);
-      toast.error('Error al completar la cita');
+      toast.error(t('admin.appointmentCalendar.errorCompleting'));
     }
   };
 
@@ -792,14 +794,14 @@ export const AppointmentsCalendar: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Cita cancelada');
+      toast.success(t('admin.appointmentCalendar.successCancelled'));
       
       // Refresh appointments
       if (currentBusinessId) {
         await fetchAppointments(currentBusinessId, selectedDate);
       }
     } catch {
-      toast.error('Error al cancelar la cita');
+      toast.error(t('admin.appointmentCalendar.errorCancelling'));
     }
   };
 
