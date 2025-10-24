@@ -481,7 +481,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                     <CardTitle className="text-foreground text-base sm:text-lg truncate">{service.name}</CardTitle>
                     {!service.is_active && (
                       <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
-                        Inactivo
+                        {t('common.states.inactive')}
                       </Badge>
                     )}
                   </div>
@@ -613,7 +613,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2">
                   <img
                     src={formData.image_url}
-                    alt="Servicio"
+                    alt={t('admin.services.imageAlt')}
                     className="w-full h-full object-cover"
                   />
                   <button
@@ -667,7 +667,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
             {/* Location Assignment */}
             {locations.length > 0 && (
               <div>
-                <Label className="mb-2 block">Disponible en las siguientes sedes:</Label>
+                <Label className="mb-2 block">{t('admin.services.availableAtLocations')}</Label>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
                   {locations.map((location) => (
                     <div key={location.id} className="flex items-center gap-2">
@@ -688,7 +688,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 </div>
                 {selectedLocations.length === 0 && (
                   <p className="text-xs text-amber-400 mt-1">
-                    Debes seleccionar al menos una sede
+                    {t('admin.services.selectAtLeastOneLocation')}
                   </p>
                 )}
               </div>
@@ -697,7 +697,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
             {/* Employee Assignment */}
             {employees.length > 0 && (
               <div>
-                <Label className="mb-2 block">Prestado por:</Label>
+                <Label className="mb-2 block">{t('admin.services.providedBy')}</Label>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
                   {employees.map((employee) => (
                     <div key={employee.id} className="flex items-center gap-2">
@@ -711,7 +711,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                         className="text-sm text-foreground cursor-pointer flex items-center gap-2"
                       >
                         <Users className="h-3 w-3 text-muted-foreground" />
-                        {employee.profiles?.full_name || employee.profiles?.email || 'Sin nombre'}
+                        {employee.profiles?.full_name || employee.profiles?.email || t('admin.services.noName')}
                       </label>
                     </div>
                   ))}

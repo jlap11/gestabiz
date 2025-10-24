@@ -1438,6 +1438,26 @@ export const translations = {
         },
         errors: {
           generate_failed: 'Could not generate reports'
+        },
+        services: {
+          title: 'Services',
+          subtitle: 'Manage the services you offer',
+          noServicesTitle: 'No services yet',
+          noServicesDesc: 'Add your first service so customers can book appointments',
+          nameLabel: 'Service Name *',
+          namePlaceholder: 'E.g: Haircut',
+          descriptionLabel: 'Description',
+          descriptionPlaceholder: 'Describe the service',
+          durationLabel: 'Duration (minutes) *',
+          priceLabel: 'Price *',
+          imageLabel: 'Service Image (Optional)',
+          imageDesc: 'You can upload an image to showcase the service or examples',
+          availableAtLocations: 'Available at the following locations:',
+          selectAtLeastOneLocation: 'You must select at least one location',
+          providedBy: 'Provided by:',
+          noName: 'No name',
+          imageAlt: 'Service image',
+          activeLabel: 'Service active',
         }
       }
     },
@@ -4582,6 +4602,8 @@ export const translations = {
         availableAtLocations: 'Disponible en las siguientes sedes:',
         selectAtLeastOneLocation: 'Debes seleccionar al menos una sede',
         providedBy: 'Prestado por:',
+        noName: 'Sin nombre',
+        imageAlt: 'Imagen del servicio',
         activeLabel: 'Servicio activo',
       },
 
