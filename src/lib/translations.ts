@@ -1033,6 +1033,37 @@ export const translations = {
       }
     },
 
+    // Accounting
+    accounting: {
+      title: 'Colombian Tax System',
+      subtitle: 'Complete management of taxes, transactions and tax configuration',
+      tabs: {
+        taxConfig: 'Tax Configuration',
+        transactions: 'Transactions'
+      },
+      sections: {
+        taxConfig: 'Business Tax Configuration',
+        configDescription: 'Configure VAT, ICA, Withholding Tax and taxpayer information',
+        transactions: 'Register Transaction',
+        transactionDescription: 'Register income and expenses with automatic tax calculation',
+      },
+      cards: {
+        vat: 'VAT',
+        vatValue: '3 Rates',
+        vatSubtitle: '0%, 5%, 19%',
+        ica: 'ICA',
+        icaValue: '30 Cities',
+        icaSubtitle: 'Automatic rates',
+        withholding: 'Withholding',
+        withholdingValue: '5 Types',
+        withholdingSubtitle: 'Professional, Services, etc.'
+      },
+      messages: {
+        saved: 'Transaction saved successfully',
+        error: 'Error saving transaction'
+      }
+    },
+
     // Dashboard
     dashboard: {
       title: 'Dashboard',
@@ -3416,6 +3447,37 @@ export const translations = {
           confirm: 'Sí, eliminar permanentemente',
           processing: 'Procesando...'
         }
+      }
+    },
+
+    // Contabilidad
+    accounting: {
+      title: 'Sistema Contable Colombiano',
+      subtitle: 'Gestión completa de impuestos, transacciones y configuración fiscal',
+      tabs: {
+        taxConfig: 'Configuración Fiscal',
+        transactions: 'Transacciones'
+      },
+      sections: {
+        taxConfig: 'Configuración Fiscal del Negocio',
+        configDescription: 'Configure IVA, ICA, Retención en la Fuente y datos del contribuyente',
+        transactions: 'Registrar Transacción',
+        transactionDescription: 'Registre ingresos y egresos con cálculo automático de impuestos',
+      },
+      cards: {
+        vat: 'IVA',
+        vatValue: '3 Tasas',
+        vatSubtitle: '0%, 5%, 19%',
+        ica: 'ICA',
+        icaValue: '30 Ciudades',
+        icaSubtitle: 'Tarifas automáticas',
+        withholding: 'Retención',
+        withholdingValue: '5 Tipos',
+        withholdingSubtitle: 'Profesional, Servicios, etc.'
+      },
+      messages: {
+        saved: 'Transacción guardada exitosamente',
+        error: 'Error al guardar transacción'
       }
     },
 

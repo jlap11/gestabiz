@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, FileText, Settings } from 'lucide-react';
 import { SuspenseFallback } from '@/components/ui/loading-spinner';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 // Lazy load componentes pesados
@@ -29,7 +30,8 @@ interface AccountingPageProps {
   onUpdate?: () => void;
 }
 
-export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
+export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPageProps>) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('config');
   const { createFiscalTransaction } = useTransactions();
 
@@ -39,10 +41,10 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
       <div>
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Calculator className="h-6 w-6" />
-          Sistema Contable Colombiano
+          {t('accounting.title')}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Gestión completa de impuestos, transacciones y configuración fiscal
+          {t('accounting.subtitle')}
         </p>
       </div>
 
@@ -51,11 +53,11 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="config" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Configuración Fiscal
+            {t('accounting.tabs.taxConfig')}
           </TabsTrigger>
           <TabsTrigger value="transactions" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Transacciones
+            {t('accounting.tabs.transactions')}
           </TabsTrigger>
         </TabsList>
 
@@ -63,13 +65,13 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
         <TabsContent value="config" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Configuración Fiscal del Negocio</CardTitle>
+              <CardTitle>{t('accounting.sections.taxConfig')}</CardTitle>
               <CardDescription>
-                Configure IVA, ICA, Retención en la Fuente y datos del contribuyente
+                {t('accounting.sections.configDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<SuspenseFallback text="Cargando configuración fiscal..." />}>
+              <Suspense fallback={<SuspenseFallback text={t('accounting.sections.taxConfig')} />}>
                 <TaxConfiguration 
                   businessId={businessId}
                 />
@@ -82,13 +84,13 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
         <TabsContent value="transactions" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Registrar Transacción</CardTitle>
+              <CardTitle>{t('accounting.sections.transactions')}</CardTitle>
               <CardDescription>
-                Registre ingresos y egresos con cálculo automático de impuestos
+                {t('accounting.sections.transactionDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<SuspenseFallback text="Cargando formulario de transacciones..." />}>
+              <Suspense fallback={<SuspenseFallback text={t('accounting.sections.transactions')} />}>
                 <EnhancedTransactionForm 
                   businessId={businessId}
                   onSubmit={async (transaction) => {
@@ -108,10 +110,10 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
                         transaction_date: transaction.transaction_date,
                         payment_method: transaction.payment_method,
                       });
-                      toast.success('Transacción guardada exitosamente');
+                      toast.success(t('accounting.messages.saved'));
                       onUpdate?.();
                     } catch (error) {
-                      toast.error('Error al guardar transacción');
+                      toast.error(t('accounting.messages.error'));
                       throw error;
                     }
                   }}
@@ -130,36 +132,36 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              IVA
+              {t('accounting.cards.vat')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">3 Tasas</p>
-            <p className="text-xs text-muted-foreground mt-1">0%, 5%, 19%</p>
+            <p className="text-2xl font-bold text-foreground">{t('accounting.cards.vatValue')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('accounting.cards.vatSubtitle')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              ICA
+              {t('accounting.cards.ica')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">30 Ciudades</p>
-            <p className="text-xs text-muted-foreground mt-1">Tarifas automáticas</p>
+            <p className="text-2xl font-bold text-foreground">{t('accounting.cards.icaValue')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('accounting.cards.icaSubtitle')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Retención
+              {t('accounting.cards.withholding')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">5 Tipos</p>
-            <p className="text-xs text-muted-foreground mt-1">Profesional, Servicios, etc.</p>
+            <p className="text-2xl font-bold text-foreground">{t('accounting.cards.withholdingValue')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('accounting.cards.withholdingSubtitle')}</p>
           </CardContent>
         </Card>
       </div>
