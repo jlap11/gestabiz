@@ -131,7 +131,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
 
     } catch (error: any) {
       console.error('Error fetching data:', error)
-      toast.error(`Error al cargar datos: ${error.message}`)
+      toast.error(t('admin.quickSale.loadDataError') + ': ${error.message}')
     }
   }
 
@@ -154,27 +154,27 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
 
     // Validations
     if (!clientName.trim()) {
-      toast.error('El nombre del cliente es requerido')
+      toast.error(t('admin.quickSale.clientNameRequired'))
       return
     }
 
     if (!serviceId) {
-      toast.error('Selecciona un servicio')
+      toast.error(t('admin.quickSale.serviceRequired'))
       return
     }
 
     if (!locationId) {
-      toast.error('Selecciona una sede')
+      toast.error(t('admin.quickSale.locationRequired'))
       return
     }
 
     if (!amount || Number.parseFloat(amount) <= 0) {
-      toast.error('Ingresa un monto válido')
+      toast.error(t('admin.quickSale.amountRequired'))
       return
     }
 
     if (!paymentMethod) {
-      toast.error('Selecciona un método de pago')
+      toast.error(t('admin.quickSale.paymentMethodRequired'))
       return
     }
 
@@ -232,7 +232,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
 
     } catch (error: any) {
       console.error('Error creating quick sale:', error)
-      toast.error(`Error al registrar venta: ${error.message}`)
+      toast.error(t('admin.quickSale.saleRegistrationError') + ': ${error.message}')
     } finally {
       setLoading(false)
     }

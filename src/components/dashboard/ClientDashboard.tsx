@@ -151,7 +151,7 @@ export default function ClientDashboard({
         .eq('id', appointmentId)
 
       if (error) {
-        toast.error(`Error al confirmar la cita: ${error.message}`)
+        toast.error(t('clientDashboard.confirmError') + ': ${error.message}')
         return
       }
 
@@ -159,7 +159,7 @@ export default function ClientDashboard({
       refetch() // Recargar la lista de citas
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado'
-      toast.error(`Error al confirmar: ${message}`)
+      toast.error(t('clientDashboard.confirmErrorWithMsg') + ': ${message}')
     } finally {
       setConfirmingId(null)
     }
@@ -193,7 +193,7 @@ export default function ClientDashboard({
       window.open(googleCalendarUrl, '_blank')
       toast.success('📅 Abriendo Google Calendar...')
     } catch (error) {
-      toast.error('Error al abrir Google Calendar')
+      toast.error(t('clientDashboard.googleCalendarError'))
     }
   }
 

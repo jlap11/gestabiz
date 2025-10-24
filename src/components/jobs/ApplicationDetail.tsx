@@ -162,7 +162,7 @@ export function ApplicationDetail({
       toast.success('CV descargado exitosamente')
     } catch (err) {
       const error = err as Error
-      toast.error('Error al descargar CV: ' + error.message)
+      toast.error(t('admin.jobApplications.cvDownloadError') + ': ' + error.message)
     } finally {
       setDownloadingCV(false)
     }
@@ -204,7 +204,7 @@ export function ApplicationDetail({
       setNewDecisionNotes(data.decision_notes || '')
       setNewInterviewDate(data.interview_scheduled_at ? new Date(data.interview_scheduled_at).toISOString().slice(0, 16) : '')
     } catch {
-      toast.error('Error al cargar la aplicación')
+      toast.error(t('admin.jobApplications.loadError'))
       onBack()
     } finally {
       setLoading(false)
@@ -253,7 +253,7 @@ export function ApplicationDetail({
       loadApplication()
       if (onUpdate) onUpdate()
     } catch {
-      toast.error('Error al actualizar la aplicación')
+      toast.error(t('admin.jobApplications.updateError'))
     } finally {
       setSaving(false)
     }

@@ -153,7 +153,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   // Handle starting chat with applicant
   const handleChat = useCallback(async (applicantUserId: string, applicantName: string) => {
     if (!user?.id || !applicantUserId) {
-      toast.error('No se puede iniciar el chat en este momento')
+      toast.error(t('admin.jobApplications.chatInitError'))
       return
     }
 
@@ -171,7 +171,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
         toast.success(`Chat abierto con ${applicantName}`)
       }
     } catch {
-      toast.error('Error al iniciar el chat')
+      toast.error(t('admin.jobApplications.chatError'))
     }
   }, [user?.id, businessId, createOrGetConversation, onChatStarted])
 

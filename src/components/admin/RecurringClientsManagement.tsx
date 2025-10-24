@@ -377,7 +377,7 @@ function ClientCard({
                 {renderClientStatusBadge(analytics.status)}
                 {analytics.daysSinceLastVisit > 30 && analytics.daysSinceLastVisit < Infinity && (
                   <Badge variant="outline">
-                    {analytics.daysSinceLastVisit} días sin visitar
+                    {analytics.daysSinceLastVisit} {t('admin.recurringClients.daysSinceLastVisit')}
                   </Badge>
                 )}
               </div>
