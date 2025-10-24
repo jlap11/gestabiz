@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { PhoneInput } from '@/components/ui/PhoneInput'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import type { Business } from '@/types/types'
 import { BusinessNotificationSettings } from './settings/BusinessNotificationSettings'
@@ -19,6 +20,7 @@ interface BusinessSettingsProps {
 }
 
 export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettingsProps>) {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState({
     name: business.name,
     description: business.description || '',

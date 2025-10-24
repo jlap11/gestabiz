@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { Business } from '@/types/types'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -34,7 +35,8 @@ interface Stats {
   averageAppointmentValue: number
 }
 
-export function OverviewTab({ business }: OverviewTabProps) {
+export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
+  const { t } = useLanguage()
   const [stats, setStats] = useState<Stats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 

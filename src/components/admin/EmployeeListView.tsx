@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { ArrowUpDown, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmployeeCard } from './EmployeeCard'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { EmployeeHierarchy } from '@/types'
 
 // =====================================================
@@ -37,7 +38,8 @@ export function EmployeeListView({
   onEdit,
   onViewProfile,
   onAssignSupervisor,
-}: EmployeeListViewProps) {
+}: Readonly<EmployeeListViewProps>) {
+  const { t } = useLanguage()
   const [sortField, setSortField] = useState<SortField>('level')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [expandedEmployees, setExpandedEmployees] = useState<Set<string>>(new Set())

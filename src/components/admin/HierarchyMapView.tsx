@@ -9,6 +9,7 @@ import React, { useState } from 'react'
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { HierarchyNode } from './HierarchyNode'
+import { useLanguage } from '@/contexts/LanguageContext'
 import type { EmployeeHierarchy } from '@/types'
 
 // =====================================================
@@ -31,6 +32,7 @@ interface TreeNode {
 // =====================================================
 
 export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<HierarchyMapViewProps>) {
+  const { t } = useLanguage()
   const [zoom, setZoom] = useState(100)
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set())
   const getEmployeeId = (employee: EmployeeHierarchy): string | undefined => employee.user_id ?? employee.employee_id

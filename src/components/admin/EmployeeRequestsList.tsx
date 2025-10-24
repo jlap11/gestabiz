@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useEmployeeRequests } from '@/hooks/useEmployeeRequests'
 import type { EmployeeRequest } from '@/types/types'
 import { formatDistanceToNow } from 'date-fns'
@@ -17,7 +18,8 @@ interface EmployeeRequestsListProps {
   className?: string
 }
 
-export function EmployeeRequestsList({ businessId, adminId, className }: EmployeeRequestsListProps) {
+export function EmployeeRequestsList({ businessId, adminId, className }: Readonly<EmployeeRequestsListProps>) {
+  const { t } = useLanguage()
   const { requests, isLoading, approveRequest, rejectRequest, pendingCount } = useEmployeeRequests({
     businessId,
     autoFetch: true,
