@@ -230,7 +230,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             <div className="flex-1">
               <Select value={selectedType} onValueChange={setSelectedType}>
                 <SelectTrigger className="w-[240px]">
-                  <SelectValue placeholder="Filtrar por tipo" />
+                  <SelectValue placeholder={t('businessResources.filterByType')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('businessResources.allTypes')}</SelectItem>
@@ -317,12 +317,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                           : 'N/A'}
                       </div>
                     </TableCell>
-                    <TableCell>
+                      <TableCell>
                       <Badge
                         variant="outline"
                         className={resource.is_active ? 'bg-green-500/10 text-green-700 border-green-500/20' : 'bg-red-500/10 text-red-700 border-red-500/20'}
                       >
-                        {resource.is_active ? 'Disponible' : 'Inactivo'}
+                        {resource.is_active ? t('businessResources.status.available') : t('businessResources.status.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">

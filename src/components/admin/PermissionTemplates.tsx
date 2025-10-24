@@ -104,19 +104,19 @@ function TemplateCard({
               {isSystem && (
                 <Badge variant="secondary" className="gap-1">
                   <Shield className="h-3 w-3" />
-                  Sistema
+                  {t('common.permissionTemplates.system')}
                 </Badge>
               )}
             </div>
             <CardDescription>{template.description}</CardDescription>
           </div>
-          <Badge variant={template.role === 'admin' ? 'default' : 'outline'}>
+            <Badge variant={template.role === 'admin' ? 'default' : 'outline'}>
             {template.role === 'admin' ? (
               <Crown className="h-3 w-3 mr-1" />
             ) : (
               <UserCheck className="h-3 w-3 mr-1" />
             )}
-            {template.role === 'admin' ? 'Admin' : 'Empleado'}
+            {template.role === 'admin' ? t('roleSelector.admin') : t('roleSelector.employee')}
           </Badge>
         </div>
       </CardHeader>
@@ -153,7 +153,7 @@ function TemplateCard({
             size="sm"
           >
             <Copy className="h-4 w-4" />
-            Aplicar Plantilla
+            {t('common.permissionTemplates.applyTemplate')}
           </Button>
           {!isSystem && onEdit && (
             <Button
@@ -260,7 +260,7 @@ function CreateTemplateDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            {editingTemplate ? 'Editar Plantilla' : 'Nueva Plantilla'}
+            {editingTemplate ? t('common.permissionTemplates.editTemplate') : t('common.permissionTemplates.newTemplate')}
           </DialogTitle>
           <DialogDescription>
             Define un conjunto reutilizable de permisos para asignar a múltiples usuarios

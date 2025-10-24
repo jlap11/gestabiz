@@ -112,7 +112,11 @@ export const translations = {
 
       // Admin - Permission templates
       permissionTemplates: {
-        confirmDelete: 'Delete template'
+        confirmDelete: 'Delete template',
+        newTemplate: 'New Template',
+        editTemplate: 'Edit Template',
+        applyTemplate: 'Apply Template',
+        system: 'System'
       },
 
       // Admin - Resources Manager
@@ -130,6 +134,7 @@ export const translations = {
         noFileSelected: 'No file selected',
         dragDropFiles: 'Drag files here or click to select',
       },
+      
       // Placeholders
       placeholders: {
         businessName: 'Your business name',

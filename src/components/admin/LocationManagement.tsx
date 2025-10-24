@@ -569,10 +569,10 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                     onValueChange={(value) => setServiceForm({ ...serviceForm, location_id: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Disponible en todas las ubicaciones" />
+                      <SelectValue placeholder={t('common.placeholders.allLocations')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todas las ubicaciones</SelectItem>
+                      <SelectItem value="">{t('common.placeholders.allLocations')}</SelectItem>
                       {locations.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
                           {location.name}
