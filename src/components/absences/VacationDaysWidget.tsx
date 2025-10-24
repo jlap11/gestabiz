@@ -1,25 +1,25 @@
 /**
  * Component: VacationDaysWidget
- * 
+ *
  * Widget para mostrar balance de vacaciones disponibles.
  * Se muestra en EmployeeDashboard.
  */
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import type { VacationBalance } from '@/hooks/useEmployeeAbsences';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { AlertCircle, Calendar, CheckCircle, Clock } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import type { VacationBalance } from '@/hooks/useEmployeeAbsences'
 
 interface VacationDaysWidgetProps {
-  balance: VacationBalance | null;
-  loading?: boolean;
+  balance: VacationBalance | null
+  loading?: boolean
 }
 
 export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWidgetProps>) {
-  const { t } = useLanguage();
-  
+  const { t } = useLanguage()
+
   if (loading) {
     return (
       <Card>
@@ -36,7 +36,7 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (!balance) {
@@ -55,11 +55,13 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const percentageUsed = (Math.max(0, balance.daysUsed) / Math.max(1, balance.totalDaysAvailable)) * 100;
-  const percentageRemaining = (Math.max(0, balance.daysRemaining) / Math.max(1, balance.totalDaysAvailable)) * 100;
+  const percentageUsed =
+    (Math.max(0, balance.daysUsed) / Math.max(1, balance.totalDaysAvailable)) * 100
+  const percentageRemaining =
+    (Math.max(0, balance.daysRemaining) / Math.max(1, balance.totalDaysAvailable)) * 100
 
   return (
     <Card>
@@ -69,14 +71,20 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
             <Calendar className="h-5 w-5" />
             {t('absences.vacationWidget.titleWithYear', { year: String(balance.year) })}
           </CardTitle>
-          <Badge variant="outline">{balance.totalDaysAvailable} {t('absences.vacationWidget.totalDays')}</Badge>
+          <Badge variant="outline">
+            {balance.totalDaysAvailable} {t('absences.vacationWidget.totalDays')}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Días disponibles (principal) */}
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-200 dark:border-blue-800">
-          <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">{t('absences.vacationWidget.daysAvailable')}</p>
-          <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{Math.max(0, balance.daysRemaining)}</p>
+          <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">
+            {t('absences.vacationWidget.daysAvailable')}
+          </p>
+          <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">
+            {Math.max(0, balance.daysRemaining)}
+          </p>
         </div>
 
         {/* Barra de progreso */}
@@ -93,7 +101,9 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
             />
             <div
               className="bg-yellow-500 transition-all"
-              style={{ width: `${(Math.max(0, balance.daysPending) / Math.max(1, balance.totalDaysAvailable)) * 100}%` }}
+              style={{
+                width: `${(Math.max(0, balance.daysPending) / Math.max(1, balance.totalDaysAvailable)) * 100}%`,
+              }}
               title={`${Math.max(0, balance.daysPending)} ${t('absences.vacationWidget.daysPending')}`}
             />
             <div
@@ -109,28 +119,40 @@ export function VacationDaysWidget({ balance, loading }: Readonly<VacationDaysWi
           <div className="p-2 bg-green-50 dark:bg-green-950 rounded">
             <div className="flex items-center justify-center gap-1 mb-1">
               <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
-              <p className="text-xs text-green-700 dark:text-green-300">{t('absences.vacationWidget.daysUsed')}</p>
+              <p className="text-xs text-green-700 dark:text-green-300">
+                {t('absences.vacationWidget.daysUsed')}
+              </p>
             </div>
-            <p className="text-lg font-bold text-green-900 dark:text-green-100">{Math.max(0, balance.daysUsed)}</p>
+            <p className="text-lg font-bold text-green-900 dark:text-green-100">
+              {Math.max(0, balance.daysUsed)}
+            </p>
           </div>
 
           <div className="p-2 bg-yellow-50 dark:bg-yellow-950 rounded">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Clock className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-              <p className="text-xs text-yellow-700 dark:text-yellow-300">{t('absences.vacationWidget.daysPending')}</p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                {t('absences.vacationWidget.daysPending')}
+              </p>
             </div>
-            <p className="text-lg font-bold text-yellow-900 dark:text-yellow-100">{Math.max(0, balance.daysPending)}</p>
+            <p className="text-lg font-bold text-yellow-900 dark:text-yellow-100">
+              {Math.max(0, balance.daysPending)}
+            </p>
           </div>
 
           <div className="p-2 bg-blue-50 dark:bg-blue-950 rounded">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Calendar className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-              <p className="text-xs text-blue-700 dark:text-blue-300">{t('absences.vacationWidget.daysFree')}</p>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                {t('absences.vacationWidget.daysFree')}
+              </p>
             </div>
-            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{Math.max(0, balance.daysRemaining)}</p>
+            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
+              {Math.max(0, balance.daysRemaining)}
+            </p>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

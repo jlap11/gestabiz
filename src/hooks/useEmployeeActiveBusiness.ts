@@ -1,13 +1,13 @@
 /**
  * useEmployeeActiveBusinesshook - Determina el negocio activo de un empleado según horario
- * 
+ *
  * Para empleados con múltiples negocios, determina en cuál debería estar
  * trabajando según el horario actual y los horarios configurados.
  */
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { getTimeZoneParts, getDayOfWeekInTZ } from '@/lib/utils'
+import { getDayOfWeekInTZ, getTimeZoneParts } from '@/lib/utils'
 
 // =====================================================
 // Helpers de Zona Horaria
@@ -41,7 +41,9 @@ interface ActiveBusinessResult {
  * @param employeeId - ID del empleado (user_id)
  * @returns Información del negocio activo y estado del horario
  */
-export function useEmployeeActiveBusiness(employeeId: string | null | undefined): ActiveBusinessResult {
+export function useEmployeeActiveBusiness(
+  employeeId: string | null | undefined
+): ActiveBusinessResult {
   const [result, setResult] = useState<ActiveBusinessResult>({
     business_id: null,
     business_name: null,
@@ -67,7 +69,8 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
         // 1. Obtener todos los negocios donde el empleado trabaja
         const { data: employeeBusinesses, error } = await supabase
           .from('business_employees')
-          .select(`
+          .select(
+            `
             business_id,
             location_id,
             businesses!inner (
@@ -76,7 +79,8 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
               logo_url,
               timezone
             )
-          `)
+          `
+          )
           .eq('employee_id', employeeId)
           .eq('status', 'approved')
 
@@ -105,32 +109,35 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
 
         // 2. Validar horarios con tabla work_schedules y seleccionar negocio activo
         const now = new Date()
- 
-         let activeBiz: any = null
-         let isWithin = false
-         let status: ActiveBusinessResult['status'] = 'no-schedule'
+
+        let activeBiz: any = null
+        let isWithin = false
+        let status: ActiveBusinessResult['status'] = 'no-schedule'
 
         for (const empBiz of employeeBusinesses) {
           const biz = (empBiz as any).businesses
 
-            const tz = biz?.timezone || DEFAULT_TIME_ZONE
-            const dayOfWeek = getDayOfWeekInTZ(now, tz)
+          const tz = biz?.timezone || DEFAULT_TIME_ZONE
+          const dayOfWeek = getDayOfWeekInTZ(now, tz)
 
           try {
             let wsQuery = supabase
-               .from('work_schedules')
-               .select('start_time, end_time, is_working')
-               .eq('employee_id', employeeId)
-               .eq('day_of_week', dayOfWeek)
- 
-             if ((empBiz as any).location_id) {
-               wsQuery = wsQuery.eq('location_id', (empBiz as any).location_id)
-             }
- 
-             const { data: wsData, error: wsError } = await wsQuery.limit(1)
+              .from('work_schedules')
+              .select('start_time, end_time, is_working')
+              .eq('employee_id', employeeId)
+              .eq('day_of_week', dayOfWeek)
+
+            if ((empBiz as any).location_id) {
+              wsQuery = wsQuery.eq('location_id', (empBiz as any).location_id)
+            }
+
+            const { data: wsData, error: wsError } = await wsQuery.limit(1)
 
             if (wsError) {
-              console.warn('[useEmployeeActiveBusiness] Error consultando work_schedules:', wsError.message)
+              console.warn(
+                '[useEmployeeActiveBusiness] Error consultando work_schedules:',
+                wsError.message
+              )
               continue
             }
 
@@ -149,9 +156,9 @@ export function useEmployeeActiveBusiness(employeeId: string | null | undefined)
             }
 
             const { hour, minute } = getTimeZoneParts(now, tz)
-             const nowMinutes = hour * 60 + minute
-             const startMinutes = parseToMinutes(String(ws.start_time))
-             const endMinutes = parseToMinutes(String(ws.end_time))
+            const nowMinutes = hour * 60 + minute
+            const startMinutes = parseToMinutes(String(ws.start_time))
+            const endMinutes = parseToMinutes(String(ws.end_time))
 
             isWithin = !!ws.is_working && nowMinutes >= startMinutes && nowMinutes < endMinutes
             activeBiz = biz

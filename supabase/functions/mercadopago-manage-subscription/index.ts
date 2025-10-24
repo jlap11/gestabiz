@@ -1,15 +1,15 @@
 /**
  * MercadoPago Manage Subscription Edge Function
- * 
+ *
  * Maneja operaciones de suscripción: update, cancel, pause, resume, reactivate
- * 
+ *
  * @author GitHub Copilot
  * @date 2025-10-17
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-Deno.serve(async (req) => {
+Deno.serve(async req => {
   try {
     if (req.method === 'OPTIONS') {
       return new Response(null, {
@@ -60,15 +60,12 @@ Deno.serve(async (req) => {
       },
     })
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    })
   }
 })

@@ -3,7 +3,7 @@
 // Tests unitarios para el servicio de jerarquía de empleados
 // ============================================================================
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { hierarchyService } from '../hierarchyService'
 import supabase from '@/lib/supabase'
 import type { EmployeeHierarchy } from '@/types/types'
@@ -82,9 +82,9 @@ describe('hierarchyService', () => {
         error: mockError,
       })
 
-      await expect(
-        hierarchyService.getBusinessHierarchy('biz-1')
-      ).rejects.toThrow('Error fetching business hierarchy: Database error')
+      await expect(hierarchyService.getBusinessHierarchy('biz-1')).rejects.toThrow(
+        'Error fetching business hierarchy: Database error'
+      )
     })
 
     it('debería retornar array vacío si no hay datos', async () => {

@@ -1,12 +1,18 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { useJobApplications, JobApplication } from '@/hooks/useJobApplications'
+import { JobApplication, useJobApplications } from '@/hooks/useJobApplications'
 import { useJobVacancies } from '@/hooks/useJobVacancies'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
@@ -32,7 +38,11 @@ interface ApplicationsManagementProps {
   onChatStarted?: (conversationId: string) => void // Callback para notificar que se inició un chat
 }
 
-export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }: Readonly<ApplicationsManagementProps>) {
+export function ApplicationsManagement({
+  businessId,
+  vacancyId,
+  onChatStarted,
+}: Readonly<ApplicationsManagementProps>) {
   const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -42,7 +52,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   const [showRejectDialog, setShowRejectDialog] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [applicationToReject, setApplicationToReject] = useState<string | null>(null)
-  
+
   // ⭐ NUEVO: Estado para modal de selección de empleado
   const [showSelectEmployeeModal, setShowSelectEmployeeModal] = useState(false)
   const [applicationToSelect, setApplicationToSelect] = useState<JobApplication | null>(null)
@@ -67,7 +77,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
     acceptApplication,
     rejectApplication,
     startSelectionProcess, // ⭐ NUEVO
-    selectAsEmployee // ⭐ NUEVO
+    selectAsEmployee, // ⭐ NUEVO
   } = useJobApplications({ businessId })
 
   useEffect(() => {
@@ -76,8 +86,9 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
 
   // Filter applications
   const filteredApplications = applications.filter(app => {
-    const matchesSearch = app.applicant?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      app.applicant?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      app.applicant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter
     const matchesVacancy = vacancyFilter === 'all' || app.vacancy_id === vacancyFilter
     return matchesSearch && matchesStatus && matchesVacancy
@@ -86,7 +97,9 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   // Group by status
   const pendingApplications = filteredApplications.filter(app => app.status === 'pending')
   const reviewingApplications = filteredApplications.filter(app => app.status === 'reviewing')
-  const inSelectionApplications = filteredApplications.filter(app => app.status === 'in_selection_process') // ⭐ NUEVO
+  const inSelectionApplications = filteredApplications.filter(
+    app => app.status === 'in_selection_process'
+  ) // ⭐ NUEVO
   const acceptedApplications = filteredApplications.filter(app => app.status === 'accepted')
   const rejectedApplications = filteredApplications.filter(app => app.status === 'rejected')
 
@@ -151,29 +164,32 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
   }
 
   // Handle starting chat with applicant
-  const handleChat = useCallback(async (applicantUserId: string, applicantName: string) => {
-    if (!user?.id || !applicantUserId) {
+  const handleChat = useCallback(
+    async (applicantUserId: string, applicantName: string) => {
+      if (!user?.id || !applicantUserId) {
         toast.error(t('admin.jobApplications.chatInitError'))
-      return
-    }
-
-    try {
-      const conversationId = await createOrGetConversation({
-        other_user_id: applicantUserId,
-        business_id: businessId,
-        initial_message: `¡Hola ${applicantName}! Me gustaría hablar contigo sobre tu aplicación.`
-      })
-
-      if (conversationId) {
-        // Notificar al componente padre que se inició un chat
-        // Esto abrirá el chat automáticamente en el FloatingChatButton
-        onChatStarted?.(conversationId)
-        toast.success(`Chat abierto con ${applicantName}`)
+        return
       }
-    } catch {
+
+      try {
+        const conversationId = await createOrGetConversation({
+          other_user_id: applicantUserId,
+          business_id: businessId,
+          initial_message: `¡Hola ${applicantName}! Me gustaría hablar contigo sobre tu aplicación.`,
+        })
+
+        if (conversationId) {
+          // Notificar al componente padre que se inició un chat
+          // Esto abrirá el chat automáticamente en el FloatingChatButton
+          onChatStarted?.(conversationId)
+          toast.success(`Chat abierto con ${applicantName}`)
+        }
+      } catch {
         toast.error(t('admin.jobApplications.chatError'))
-    }
-  }, [user?.id, businessId, createOrGetConversation, onChatStarted])
+      }
+    },
+    [user?.id, businessId, createOrGetConversation, onChatStarted]
+  )
 
   // Stats
   const stats = [
@@ -181,14 +197,14 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
     { label: 'Pendientes', value: pendingApplications.length, color: 'text-yellow-600' },
     { label: 'En Proceso', value: inSelectionApplications.length, color: 'text-purple-600' }, // ⭐ NUEVO
     { label: 'Aceptadas', value: acceptedApplications.length, color: 'text-green-600' },
-    { label: 'Rechazadas', value: rejectedApplications.length, color: 'text-red-600' }
+    { label: 'Rechazadas', value: rejectedApplications.length, color: 'text-red-600' },
   ]
 
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {stats.map((stat) => (
+        {stats.map(stat => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
@@ -217,7 +233,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
                 <Input
                   placeholder="Nombre o email..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-9"
                 />
               </div>
@@ -250,7 +266,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
-                    {vacancies.map((vacancy) => (
+                    {vacancies.map(vacancy => (
                       <SelectItem key={vacancy.id} value={vacancy.id}>
                         {vacancy.title}
                       </SelectItem>
@@ -300,7 +316,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
               </CardContent>
             </Card>
           ) : (
-            pendingApplications.map((application) => (
+            pendingApplications.map(application => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -323,7 +339,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
               </CardContent>
             </Card>
           ) : (
-            reviewingApplications.map((application) => (
+            reviewingApplications.map(application => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -349,7 +365,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
               </CardContent>
             </Card>
           ) : (
-            inSelectionApplications.map((application) => (
+            inSelectionApplications.map(application => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -372,7 +388,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
               </CardContent>
             </Card>
           ) : (
-            acceptedApplications.map((application) => (
+            acceptedApplications.map(application => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -394,7 +410,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
               </CardContent>
             </Card>
           ) : (
-            rejectedApplications.map((application) => (
+            rejectedApplications.map(application => (
               <ApplicationCard
                 key={application.id}
                 application={application}
@@ -420,9 +436,10 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
           candidateName={applicationToSelect.applicant?.full_name || 'Candidato'}
           vacancyTitle={applicationToSelect.vacancy?.title || 'Vacante'}
           otherCandidatesCount={
-            inSelectionApplications.filter(app => 
-              app.vacancy_id === applicationToSelect.vacancy_id && 
-              app.id !== applicationToSelect.id
+            inSelectionApplications.filter(
+              app =>
+                app.vacancy_id === applicationToSelect.vacancy_id &&
+                app.id !== applicationToSelect.id
             ).length
           }
           isLoading={isSelectingEmployee}
@@ -445,7 +462,7 @@ export function ApplicationsManagement({ businessId, vacancyId, onChatStarted }:
                 id="rejection-reason"
                 placeholder="Ej: El perfil no se ajusta a los requisitos de la posición..."
                 value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
+                onChange={e => setRejectionReason(e.target.value)}
                 rows={4}
               />
             </div>

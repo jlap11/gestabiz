@@ -14,14 +14,27 @@ export const businessesService = {
   _buildDbUpdates(updates: Partial<Business>): Update<'businesses'> {
     const db: Update<'businesses'> = {}
     const nullableScalars: Array<keyof Update<'businesses'> & keyof Business> = [
-      'name','description','phone','email','address','city','state','country','postal_code','latitude','longitude','logo_url','website'
+      'name',
+      'description',
+      'phone',
+      'email',
+      'address',
+      'city',
+      'state',
+      'country',
+      'postal_code',
+      'latitude',
+      'longitude',
+      'logo_url',
+      'website',
     ]
     const dbAssign = db as unknown as Record<string, unknown>
     for (const k of nullableScalars) {
       const v = updates[k]
       if (v !== undefined) dbAssign[k as string] = v ?? null
     }
-    if (updates.business_hours !== undefined) db.business_hours = updates.business_hours as unknown as Json
+    if (updates.business_hours !== undefined)
+      db.business_hours = updates.business_hours as unknown as Json
     if (updates.settings !== undefined) db.settings = updates.settings as unknown as Json
     if (updates.is_active !== undefined) db.is_active = updates.is_active
     return db
@@ -81,7 +94,12 @@ export const businessesService = {
 
   async update(id: string, updates: Partial<Business>): Promise<Business> {
     const dbUpdates = this._buildDbUpdates(updates)
-    const { data, error } = await supabase.from('businesses').update(dbUpdates).eq('id', id).select().single()
+    const { data, error } = await supabase
+      .from('businesses')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single()
     if (error) throw error
     return normalizeBusiness(data as Row<'businesses'>)
   },
@@ -89,5 +107,5 @@ export const businessesService = {
   async remove(id: string): Promise<void> {
     const { error } = await supabase.from('businesses').delete().eq('id', id)
     if (error) throw error
-  }
+  },
 }

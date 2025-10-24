@@ -1,19 +1,19 @@
 /**
  * Component: EmployeeAbsencesTab
- * 
+ *
  * Tab de ausencias en EmployeeDashboard para que empleados vean sus solicitudes.
  * Muestra solicitudes pendientes, aprobadas, rechazadas y canceladas.
  */
 
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Loader2, Trash2, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { useEmployeeAbsences, type EmployeeAbsence } from '@/hooks/useEmployeeAbsences';
-import { useLanguage } from '@/contexts/LanguageContext';
+import React from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, CheckCircle2, Clock, Loader2, Trash2, XCircle } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { type EmployeeAbsence, useEmployeeAbsences } from '@/hooks/useEmployeeAbsences'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,34 +23,34 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@/components/ui/alert-dialog'
 
 interface AbsenceCardProps {
-  absence: EmployeeAbsence;
-  canCancel?: boolean;
-  onCancel?: (absenceId: string) => Promise<boolean>;
+  absence: EmployeeAbsence
+  canCancel?: boolean
+  onCancel?: (absenceId: string) => Promise<boolean>
 }
 
 function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceCardProps>) {
-  const { t } = useLanguage();
-  const [cancelingId, setCancelingId] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { t } = useLanguage()
+  const [cancelingId, setCancelingId] = React.useState<string | null>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
 
   const handleCancel = async () => {
     if (onCancel && absence.id) {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
-        await onCancel(absence.id);
-        setCancelingId(null);
+        await onCancel(absence.id)
+        setCancelingId(null)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
-  };
+  }
 
-  const startDate = parseISO(absence.startDate);
-  const endDate = parseISO(absence.endDate);
-  const daysCount = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const startDate = parseISO(absence.startDate)
+  const endDate = parseISO(absence.endDate)
+  const daysCount = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
 
   const absenceTypeLabels: Record<string, string> = {
     vacation: 'Vacaciones',
@@ -58,39 +58,59 @@ function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceC
     sick_leave: 'Ausencia Médica',
     personal: 'Permiso Personal',
     other: 'Otro',
-  };
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className="w-3 h-3 mr-1" /> Pendiente</Badge>;
+        return (
+          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+            <Clock className="w-3 h-3 mr-1" /> Pendiente
+          </Badge>
+        )
       case 'approved':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle2 className="w-3 h-3 mr-1" /> Aprobada</Badge>;
+        return (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            <CheckCircle2 className="w-3 h-3 mr-1" /> Aprobada
+          </Badge>
+        )
       case 'rejected':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className="w-3 h-3 mr-1" /> Rechazada</Badge>;
+        return (
+          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+            <XCircle className="w-3 h-3 mr-1" /> Rechazada
+          </Badge>
+        )
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>
     }
-  };
+  }
 
   return (
     <div className="border rounded-lg p-4 space-y-3 bg-card hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-foreground">{absenceTypeLabels[absence.absenceType] || absence.absenceType}</h3>
+            <h3 className="font-semibold text-foreground">
+              {absenceTypeLabels[absence.absenceType] || absence.absenceType}
+            </h3>
             {getStatusBadge(absence.status)}
           </div>
           <p className="text-sm text-muted-foreground">
-            {format(startDate, 'dd MMMM yyyy', { locale: es })} - {format(endDate, 'dd MMMM yyyy', { locale: es })}
+            {format(startDate, 'dd MMMM yyyy', { locale: es })} -{' '}
+            {format(endDate, 'dd MMMM yyyy', { locale: es })}
           </p>
           <p className="text-sm font-medium text-foreground mt-1">
-            <strong>{daysCount} día{daysCount > 1 ? 's' : ''}</strong>
+            <strong>
+              {daysCount} día{daysCount > 1 ? 's' : ''}
+            </strong>
           </p>
         </div>
 
         {canCancel && (
-          <AlertDialog open={cancelingId === absence.id} onOpenChange={(open) => setCancelingId(open ? absence.id : null)}>
+          <AlertDialog
+            open={cancelingId === absence.id}
+            onOpenChange={open => setCancelingId(open ? absence.id : null)}
+          >
             <Button
               variant="ghost"
               size="sm"
@@ -108,7 +128,9 @@ function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceC
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isLoading}>{t('common.actions.cancel')}</AlertDialogCancel>
+                <AlertDialogCancel disabled={isLoading}>
+                  {t('common.actions.cancel')}
+                </AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isLoading}
                   className="bg-red-600 hover:bg-red-700"
@@ -138,7 +160,9 @@ function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceC
 
       {absence.adminNotes && (
         <div className="bg-amber-50 dark:bg-amber-950 rounded p-2">
-          <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">Notas del Administrador:</p>
+          <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">
+            Notas del Administrador:
+          </p>
           <p className="text-sm text-amber-900 dark:text-amber-100">{absence.adminNotes}</p>
         </div>
       )}
@@ -149,26 +173,26 @@ function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceC
         </p>
       )}
     </div>
-  );
+  )
 }
 
 interface EmployeeAbsencesTabProps {
-  businessId: string;
+  businessId: string
 }
 
 export function EmployeeAbsencesTab({ businessId }: Readonly<EmployeeAbsencesTabProps>) {
-  const { absences, loading, cancelAbsence } = useEmployeeAbsences(businessId);
+  const { absences, loading, cancelAbsence } = useEmployeeAbsences(businessId)
 
-  const pendingAbsences = absences.filter(a => a.status === 'pending');
-  const approvedAbsences = absences.filter(a => a.status === 'approved');
-  const rejectedAbsences = absences.filter(a => a.status === 'rejected');
+  const pendingAbsences = absences.filter(a => a.status === 'pending')
+  const approvedAbsences = absences.filter(a => a.status === 'approved')
+  const rejectedAbsences = absences.filter(a => a.status === 'rejected')
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    );
+    )
   }
 
   return (
@@ -212,8 +236,13 @@ export function EmployeeAbsencesTab({ businessId }: Readonly<EmployeeAbsencesTab
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {pendingAbsences.map((absence) => (
-                  <AbsenceCard key={absence.id} absence={absence} canCancel={true} onCancel={cancelAbsence} />
+                {pendingAbsences.map(absence => (
+                  <AbsenceCard
+                    key={absence.id}
+                    absence={absence}
+                    canCancel={true}
+                    onCancel={cancelAbsence}
+                  />
                 ))}
               </div>
             )}
@@ -226,7 +255,7 @@ export function EmployeeAbsencesTab({ businessId }: Readonly<EmployeeAbsencesTab
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {approvedAbsences.map((absence) => (
+                {approvedAbsences.map(absence => (
                   <AbsenceCard key={absence.id} absence={absence} canCancel={false} />
                 ))}
               </div>
@@ -240,7 +269,7 @@ export function EmployeeAbsencesTab({ businessId }: Readonly<EmployeeAbsencesTab
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
-                {rejectedAbsences.map((absence) => (
+                {rejectedAbsences.map(absence => (
                   <AbsenceCard key={absence.id} absence={absence} canCancel={false} />
                 ))}
               </div>
@@ -249,5 +278,5 @@ export function EmployeeAbsencesTab({ businessId }: Readonly<EmployeeAbsencesTab
         </Tabs>
       )}
     </div>
-  );
+  )
 }

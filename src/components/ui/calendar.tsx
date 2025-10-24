@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -17,26 +17,44 @@ export interface CalendarProps {
   selected?: Date
   onSelect?: (date: Date | undefined) => void
   disabled?: (date: Date) => boolean
-  title?: (date: Date) => string | ''  // Para mostrar tooltip de días deshabilitados
+  title?: (date: Date) => string | '' // Para mostrar tooltip de días deshabilitados
   className?: string
   dateRangeStart?: Date // Fecha de inicio del rango (para sombrear)
   dateRangeEnd?: Date // Fecha de fin del rango (para sombrear)
 }
 
 const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
 ]
 
 const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
-export const Calendar = ({ selected, onSelect, disabled, title, className, dateRangeStart, dateRangeEnd }: CalendarProps) => {
+export const Calendar = ({
+  selected,
+  onSelect,
+  disabled,
+  title,
+  className,
+  dateRangeStart,
+  dateRangeEnd,
+}: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(selected || new Date())
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right'>('right')
   const [isYearPickerOpen, setIsYearPickerOpen] = useState(false)
 
   const today = useMemo(() => new Date(), [])
-  
+
   const currentMonth = currentDate.getMonth()
   const currentYear = currentDate.getFullYear()
 
@@ -45,7 +63,7 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0)
     const firstDayWeekday = firstDayOfMonth.getDay()
     const daysInMonth = lastDayOfMonth.getDate()
-    
+
     // Función auxiliar para verificar si una fecha está en el rango
     const isDateInRange = (date: Date): boolean => {
       if (!dateRangeStart || !dateRangeEnd) return false
@@ -54,18 +72,18 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
       const endTime = dateRangeEnd.getTime()
       return dateTime >= startTime && dateTime <= endTime
     }
-    
+
     // Función para verificar si es inicio o fin del rango
     const isDateRangeStart = (date: Date): boolean => {
       return dateRangeStart ? date.toDateString() === dateRangeStart.toDateString() : false
     }
-    
+
     const isDateRangeEnd = (date: Date): boolean => {
       return dateRangeEnd ? date.toDateString() === dateRangeEnd.toDateString() : false
     }
-    
+
     const days: CalendarDay[] = []
-    
+
     // Días del mes anterior
     for (let i = firstDayWeekday - 1; i >= 0; i--) {
       const date = new Date(currentYear, currentMonth, -i)
@@ -76,16 +94,18 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
         isSelected: false,
         isInRange: isDateInRange(date),
         isRangeStart: isDateRangeStart(date),
-        isRangeEnd: isDateRangeEnd(date)
+        isRangeEnd: isDateRangeEnd(date),
       })
     }
-    
+
     // Días del mes actual
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day)
       const isToday = date.toDateString() === today.toDateString()
-      const isSelected = Boolean(selected && selected instanceof Date && date.toDateString() === selected.toDateString())
-      
+      const isSelected = Boolean(
+        selected && selected instanceof Date && date.toDateString() === selected.toDateString()
+      )
+
       days.push({
         date,
         isCurrentMonth: true,
@@ -93,10 +113,10 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
         isSelected,
         isInRange: isDateInRange(date),
         isRangeStart: isDateRangeStart(date),
-        isRangeEnd: isDateRangeEnd(date)
+        isRangeEnd: isDateRangeEnd(date),
       })
     }
-    
+
     // Completar con días del siguiente mes
     const remainingDays = 42 - days.length // 6 semanas * 7 días
     for (let day = 1; day <= remainingDays; day++) {
@@ -108,24 +128,24 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
         isSelected: false,
         isInRange: isDateInRange(date),
         isRangeStart: isDateRangeStart(date),
-        isRangeEnd: isDateRangeEnd(date)
+        isRangeEnd: isDateRangeEnd(date),
       })
     }
-    
+
     return days
   }, [currentYear, currentMonth, selected, today, dateRangeStart, dateRangeEnd])
 
   const handleDateClick = (date: Date, isCurrentMonth: boolean) => {
     if (!isCurrentMonth) return
     if (disabled?.(date)) return
-    
+
     const newDate = new Date(date)
     onSelect?.(newDate)
   }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     setAnimationDirection(direction === 'prev' ? 'left' : 'right')
-    
+
     setCurrentDate(prev => {
       const newDate = new Date(prev)
       if (direction === 'prev') {
@@ -178,9 +198,9 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
         >
           <ChevronLeft size={16} />
         </Button>
-        
+
         <div className="flex items-center gap-2">
-          <motion.h2 
+          <motion.h2
             className="text-xl font-medium text-foreground tracking-tight"
             key={currentMonth}
             initial={{ y: -20, opacity: 0 }}
@@ -189,7 +209,7 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
           >
             {MONTHS[currentMonth]}
           </motion.h2>
-          
+
           <Button
             variant="ghost"
             onClick={() => setIsYearPickerOpen(!isYearPickerOpen)}
@@ -198,7 +218,7 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
             {currentYear}
           </Button>
         </div>
-        
+
         <Button
           variant="ghost"
           size="icon"
@@ -240,7 +260,7 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
 
       {/* Weekdays */}
       <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
-        {WEEKDAYS.map((day) => (
+        {WEEKDAYS.map(day => (
           <div
             key={day}
             className="h-7 sm:h-8 flex items-center justify-center text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide"
@@ -261,15 +281,15 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
             animate="center"
             exit="exit"
             transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
+              x: { type: 'spring', stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
             }}
             className="grid grid-cols-7 gap-0.5 sm:gap-1"
           >
             {calendarDays.map((day, index) => {
               const isDisabled = disabled ? disabled(day.date) : false
               const tooltipText = title ? title(day.date) : ''
-              
+
               return (
                 <motion.button
                   key={`${day.date.toISOString()}-${index}`}
@@ -278,21 +298,25 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
                   title={tooltipText}
                   className={`
                     h-9 w-9 sm:h-10 sm:w-10 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 relative
-                    ${day.isCurrentMonth && !isDisabled
-                      ? 'hover:bg-secondary/80 cursor-pointer' 
-                      : 'text-muted-foreground/30 cursor-default'
+                    ${
+                      day.isCurrentMonth && !isDisabled
+                        ? 'hover:bg-secondary/80 cursor-pointer'
+                        : 'text-muted-foreground/30 cursor-default'
                     }
-                    ${day.isInRange && !day.isSelected && !day.isRangeStart && !day.isRangeEnd
-                      ? 'bg-accent/20 text-foreground'
-                      : ''
+                    ${
+                      day.isInRange && !day.isSelected && !day.isRangeStart && !day.isRangeEnd
+                        ? 'bg-accent/20 text-foreground'
+                        : ''
                     }
-                    ${(day.isRangeStart || day.isRangeEnd || day.isSelected)
-                      ? 'bg-accent text-accent-foreground shadow-lg'
-                      : 'text-foreground'
+                    ${
+                      day.isRangeStart || day.isRangeEnd || day.isSelected
+                        ? 'bg-accent text-accent-foreground shadow-lg'
+                        : 'text-foreground'
                     }
-                    ${day.isToday && !day.isSelected && !day.isRangeStart && !day.isRangeEnd
-                      ? 'ring-2 ring-accent/50' 
-                      : ''
+                    ${
+                      day.isToday && !day.isSelected && !day.isRangeStart && !day.isRangeEnd
+                        ? 'ring-2 ring-accent/50'
+                        : ''
                     }
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
@@ -300,13 +324,13 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
                   whileTap={day.isCurrentMonth && !isDisabled ? { scale: 0.95 } : {}}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.01,
-                    duration: 0.2 
+                    duration: 0.2,
                   }}
                 >
                   {day.date.getDate()}
-                  
+
                   {day.isToday && (
                     <motion.div
                       className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-accent rounded-full"
@@ -339,7 +363,7 @@ export const Calendar = ({ selected, onSelect, disabled, title, className, dateR
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
-                  day: 'numeric'
+                  day: 'numeric',
                 })}
               </p>
             </div>

@@ -1,21 +1,21 @@
-import React from 'react';
+import React from 'react'
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import { LocationComparison } from '@/types/accounting.types';
-import { formatCOP } from '@/lib/accounting/colombiaTaxes';
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { LocationComparison } from '@/types/accounting.types'
+import { formatCOP } from '@/lib/accounting/colombiaTaxes'
 
 interface LocationBarChartProps {
-  data: LocationComparison[];
-  height?: number;
-  horizontal?: boolean;
+  data: LocationComparison[]
+  height?: number
+  horizontal?: boolean
 }
 
 export const LocationBarChart: React.FC<LocationBarChartProps> = ({
@@ -25,18 +25,12 @@ export const LocationBarChart: React.FC<LocationBarChartProps> = ({
 }) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const locationData = payload[0].payload;
+      const locationData = payload[0].payload
       return (
         <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-semibold text-foreground mb-2">
-            {locationData.location}
-          </p>
-          <p className="text-sm text-chart-1">
-            Ingresos: {formatCOP(locationData.income)}
-          </p>
-          <p className="text-sm text-chart-2">
-            Egresos: {formatCOP(locationData.expense)}
-          </p>
+          <p className="text-sm font-semibold text-foreground mb-2">{locationData.location}</p>
+          <p className="text-sm text-chart-1">Ingresos: {formatCOP(locationData.income)}</p>
+          <p className="text-sm text-chart-2">Egresos: {formatCOP(locationData.expense)}</p>
           {locationData.profit !== undefined && (
             <p className="text-sm font-semibold text-foreground mt-2 pt-2 border-t border-border">
               Ganancia: {formatCOP(locationData.profit)}
@@ -48,10 +42,10 @@ export const LocationBarChart: React.FC<LocationBarChartProps> = ({
             </p>
           )}
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   if (horizontal) {
     return (
@@ -66,7 +60,7 @@ export const LocationBarChart: React.FC<LocationBarChartProps> = ({
             type="number"
             className="text-muted-foreground"
             tick={{ fill: 'currentColor' }}
-            tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+            tickFormatter={value => `$${(value / 1000000).toFixed(1)}M`}
           />
           <YAxis
             type="category"
@@ -76,29 +70,16 @@ export const LocationBarChart: React.FC<LocationBarChartProps> = ({
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
-          <Bar
-            dataKey="income"
-            name="Ingresos"
-            fill="#10b981"
-            radius={[0, 8, 8, 0]}
-          />
-          <Bar
-            dataKey="expense"
-            name="Egresos"
-            fill="#ef4444"
-            radius={[0, 8, 8, 0]}
-          />
+          <Bar dataKey="income" name="Ingresos" fill="#10b981" radius={[0, 8, 8, 0]} />
+          <Bar dataKey="expense" name="Egresos" fill="#ef4444" radius={[0, 8, 8, 0]} />
         </BarChart>
       </ResponsiveContainer>
-    );
+    )
   }
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart
-        data={data}
-        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-      >
+      <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
         <XAxis
           dataKey="location"
@@ -111,23 +92,13 @@ export const LocationBarChart: React.FC<LocationBarChartProps> = ({
         <YAxis
           className="text-muted-foreground"
           tick={{ fill: 'currentColor' }}
-          tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+          tickFormatter={value => `$${(value / 1000000).toFixed(1)}M`}
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend wrapperStyle={{ paddingTop: '10px' }} />
-        <Bar
-          dataKey="income"
-          name="Ingresos"
-          fill="#10b981"
-          radius={[8, 8, 0, 0]}
-        />
-        <Bar
-          dataKey="expense"
-          name="Egresos"
-          fill="#ef4444"
-          radius={[8, 8, 0, 0]}
-        />
+        <Bar dataKey="income" name="Ingresos" fill="#10b981" radius={[8, 8, 0, 0]} />
+        <Bar dataKey="expense" name="Egresos" fill="#ef4444" radius={[8, 8, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
-  );
-};
+  )
+}

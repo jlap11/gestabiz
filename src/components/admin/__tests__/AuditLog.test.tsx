@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AuditLog } from '../AuditLog'
@@ -8,14 +8,14 @@ import { toast } from 'sonner'
 
 // Mocks
 vi.mock('@/hooks/usePermissions-v2', () => ({
-  usePermissions: vi.fn()
+  usePermissions: vi.fn(),
 }))
 
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
-    error: vi.fn()
-  }
+    error: vi.fn(),
+  },
 }))
 
 // Helper to create mock audit log entries
@@ -32,12 +32,14 @@ function createMockAuditEntry(overrides?: Partial<AuditLogEntry>): AuditLogEntry
     performed_by_name: 'Admin User',
     notes: 'Test note',
     created_at: '2025-01-10T10:00:00Z',
-    ...overrides
+    ...overrides,
   }
 }
 
 // Helper to mock usePermissions hook
-function mockUsePermissions(overrides?: Partial<ReturnType<typeof usePermissionsModule.usePermissions>>): ReturnType<typeof usePermissionsModule.usePermissions> {
+function mockUsePermissions(
+  overrides?: Partial<ReturnType<typeof usePermissionsModule.usePermissions>>
+): ReturnType<typeof usePermissionsModule.usePermissions> {
   return {
     isLoading: false,
     isOwner: true,
@@ -73,7 +75,7 @@ describe('AuditLog', () => {
   const defaultProps = {
     businessId: 'bus-1',
     ownerId: 'owner-1',
-    currentUserId: 'user-1'
+    currentUserId: 'user-1',
   }
 
   beforeEach(() => {
@@ -87,20 +89,22 @@ describe('AuditLog', () => {
   describe('Render y Estados', () => {
     it('renderiza el título y descripción correctamente', () => {
       const mockHook = mockUsePermissions({
-        auditLog: []
+        auditLog: [],
       })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
       render(<AuditLog {...defaultProps} />)
 
       expect(screen.getByText('Historial de Auditoría')).toBeInTheDocument()
-      expect(screen.getByText('Registro completo de cambios en roles y permisos')).toBeInTheDocument()
+      expect(
+        screen.getByText('Registro completo de cambios en roles y permisos')
+      ).toBeInTheDocument()
     })
 
     it('muestra estado de carga cuando isLoading es true', () => {
       const mockHook = mockUsePermissions({
         isLoading: true,
-        auditLog: []
+        auditLog: [],
       })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
@@ -111,7 +115,7 @@ describe('AuditLog', () => {
 
     it('muestra mensaje cuando no hay registros', () => {
       const mockHook = mockUsePermissions({
-        auditLog: []
+        auditLog: [],
       })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
@@ -126,7 +130,7 @@ describe('AuditLog', () => {
         createMockAuditEntry({ id: '2', user_name: 'María García' }),
       ]
       const mockHook = mockUsePermissions({
-        auditLog: entries
+        auditLog: entries,
       })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
@@ -173,7 +177,7 @@ describe('AuditLog', () => {
       // Abrir select y filtrar por "permission.grant"
       const actionSelect = screen.getByLabelText('Tipo de Acción')
       await user.click(actionSelect)
-      
+
       // Esperar a que aparezcan las opciones y buscar "Permiso Otorgado"
       const permissionGrantOption = await screen.findByRole('option', { name: /Permiso Otorgado/i })
       await user.click(permissionGrantOption)
@@ -206,9 +210,7 @@ describe('AuditLog', () => {
     })
 
     it('limpia todos los filtros al hacer click en "Limpiar filtros"', async () => {
-      const entries = [
-        createMockAuditEntry({ id: '1', user_name: 'Juan Pérez' }),
-      ]
+      const entries = [createMockAuditEntry({ id: '1', user_name: 'Juan Pérez' })]
       const mockHook = mockUsePermissions({ auditLog: entries })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
@@ -228,15 +230,13 @@ describe('AuditLog', () => {
 
       // Verificar que el input se limpió
       expect(userInput).toHaveValue('')
-      
+
       // Verificar toast
       expect(toast.success).toHaveBeenCalledWith('Filtros limpiados')
     })
 
     it('muestra mensaje cuando no hay coincidencias con los filtros', async () => {
-      const entries = [
-        createMockAuditEntry({ id: '1', user_name: 'Juan Pérez' }),
-      ]
+      const entries = [createMockAuditEntry({ id: '1', user_name: 'Juan Pérez' })]
       const mockHook = mockUsePermissions({ auditLog: entries })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
@@ -261,7 +261,7 @@ describe('AuditLog', () => {
       // Buscar headers dentro de la tabla (thead) para evitar duplicados con filtros
       const tableHeaders = screen.getAllByRole('columnheader')
       const headerTexts = tableHeaders.map(th => th.textContent)
-      
+
       expect(headerTexts).toContain('Fecha')
       expect(headerTexts).toContain('Usuario')
       expect(headerTexts).toContain('Acción')
@@ -272,10 +272,10 @@ describe('AuditLog', () => {
 
     it('muestra badge con acción correctamente coloreado', () => {
       const entries = [
-        createMockAuditEntry({ 
-          id: '1', 
+        createMockAuditEntry({
+          id: '1',
           action: 'permission.grant',
-          user_name: 'Test User'
+          user_name: 'Test User',
         }),
       ]
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -286,18 +286,18 @@ describe('AuditLog', () => {
       // Buscar badge "Permiso Otorgado"
       const badge = screen.getByText(/Permiso Otorgado/i)
       expect(badge).toBeInTheDocument()
-      
+
       // Verificar que tiene el icono
       expect(badge.textContent).toContain('✓')
     })
 
     it('muestra detalles de permiso en código', () => {
       const entries = [
-        createMockAuditEntry({ 
+        createMockAuditEntry({
           id: '1',
           action: 'permission.grant',
           permission: 'read_appointments',
-          role: null
+          role: null,
         }),
       ]
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -313,11 +313,11 @@ describe('AuditLog', () => {
 
     it('muestra detalles de rol como badge', () => {
       const entries = [
-        createMockAuditEntry({ 
+        createMockAuditEntry({
           id: '1',
           action: 'role.assign',
           permission: null,
-          role: 'admin'
+          role: 'admin',
         }),
       ]
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -330,10 +330,10 @@ describe('AuditLog', () => {
 
     it('muestra "N/A" cuando no hay detalles', () => {
       const entries = [
-        createMockAuditEntry({ 
+        createMockAuditEntry({
           id: '1',
           permission: null,
-          role: null
+          role: null,
         }),
       ]
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -349,9 +349,9 @@ describe('AuditLog', () => {
 
     it('muestra avatar con inicial del usuario', () => {
       const entries = [
-        createMockAuditEntry({ 
+        createMockAuditEntry({
           id: '1',
-          user_name: 'Juan Pérez'
+          user_name: 'Juan Pérez',
         }),
       ]
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -367,10 +367,10 @@ describe('AuditLog', () => {
   describe('Paginación', () => {
     it('muestra controles de paginación cuando hay más de 50 registros', () => {
       // Crear 60 registros (más del límite de 50 por página)
-      const entries = Array.from({ length: 60 }, (_, i) => 
-        createMockAuditEntry({ 
+      const entries = Array.from({ length: 60 }, (_, i) =>
+        createMockAuditEntry({
           id: `entry-${i}`,
-          user_name: `Usuario ${i}`
+          user_name: `Usuario ${i}`,
         })
       )
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -384,7 +384,7 @@ describe('AuditLog', () => {
     })
 
     it('deshabilita botón "Anterior" en la primera página', () => {
-      const entries = Array.from({ length: 60 }, (_, i) => 
+      const entries = Array.from({ length: 60 }, (_, i) =>
         createMockAuditEntry({ id: `entry-${i}` })
       )
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -397,7 +397,7 @@ describe('AuditLog', () => {
     })
 
     it('deshabilita botón "Siguiente" en la última página', async () => {
-      const entries = Array.from({ length: 60 }, (_, i) => 
+      const entries = Array.from({ length: 60 }, (_, i) =>
         createMockAuditEntry({ id: `entry-${i}` })
       )
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -412,13 +412,13 @@ describe('AuditLog', () => {
 
       // Verificar que estamos en página 2
       expect(screen.getByText('Página 2 de 2')).toBeInTheDocument()
-      
+
       // Verificar que "Siguiente" está deshabilitado
       expect(nextButton).toBeDisabled()
     })
 
     it('navega entre páginas correctamente', async () => {
-      const entries = Array.from({ length: 60 }, (_, i) => 
+      const entries = Array.from({ length: 60 }, (_, i) =>
         createMockAuditEntry({ id: `entry-${i}`, user_name: `Usuario ${i}` })
       )
       const mockHook = mockUsePermissions({ auditLog: entries })
@@ -453,17 +453,17 @@ describe('AuditLog', () => {
       // Mock para document.createElement y métodos relacionados
       global.URL.createObjectURL = vi.fn(() => 'mock-url')
       global.URL.revokeObjectURL = vi.fn()
-      
+
       const mockLink = {
         setAttribute: vi.fn(),
         click: vi.fn(),
-        style: { visibility: '' }
+        style: { visibility: '' },
       }
-      
+
       vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLElement)
       vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as unknown as Node)
       vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as unknown as Node)
-      
+
       const mockHook = mockUsePermissions({ auditLog: [] })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
 
@@ -477,17 +477,17 @@ describe('AuditLog', () => {
       // Mock para document.createElement y métodos relacionados
       global.URL.createObjectURL = vi.fn(() => 'mock-url')
       global.URL.revokeObjectURL = vi.fn()
-      
+
       const mockLink = {
         setAttribute: vi.fn(),
         click: vi.fn(),
-        style: { visibility: '' }
+        style: { visibility: '' },
       }
-      
+
       vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLElement)
       vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as unknown as Node)
       vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as unknown as Node)
-      
+
       const entries = [createMockAuditEntry({ id: '1' })]
       const mockHook = mockUsePermissions({ auditLog: entries })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
@@ -502,17 +502,17 @@ describe('AuditLog', () => {
       // Mock para document.createElement y métodos relacionados
       global.URL.createObjectURL = vi.fn(() => 'mock-url')
       global.URL.revokeObjectURL = vi.fn()
-      
+
       const mockLink = {
         setAttribute: vi.fn(),
         click: vi.fn(),
-        style: { visibility: '' }
+        style: { visibility: '' },
       }
-      
+
       vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLElement)
       vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as unknown as Node)
       vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as unknown as Node)
-      
+
       const entries = [
         createMockAuditEntry({
           id: '1',
@@ -520,8 +520,8 @@ describe('AuditLog', () => {
           action: 'permission.grant',
           permission: 'read_appointments',
           performed_by_name: 'Admin User',
-          notes: 'Test note'
-        })
+          notes: 'Test note',
+        }),
       ]
       const mockHook = mockUsePermissions({ auditLog: entries })
       vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockHook)
@@ -547,13 +547,13 @@ describe('AuditLog', () => {
         throw new Error('Export failed')
       })
       global.URL.revokeObjectURL = vi.fn()
-      
+
       const mockLink = {
         setAttribute: vi.fn(),
         click: vi.fn(),
-        style: { visibility: '' }
+        style: { visibility: '' },
       }
-      
+
       vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLElement)
       vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as unknown as Node)
       vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as unknown as Node)
@@ -565,7 +565,7 @@ describe('AuditLog', () => {
       await user.click(exportButton)
 
       expect(toast.error).toHaveBeenCalledWith('Error al exportar auditoría', {
-        description: 'Export failed'
+        description: 'Export failed',
       })
     })
   })

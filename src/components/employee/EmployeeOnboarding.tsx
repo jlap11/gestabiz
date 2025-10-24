@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react'
-import { Camera, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
+import { AlertCircle, Camera, CheckCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,23 +15,20 @@ interface EmployeeOnboardingProps {
   onRequestCreated?: () => void
 }
 
-export function EmployeeOnboarding({ 
-  user, 
-  onRequestCreated
-}: Readonly<EmployeeOnboardingProps>) {
-  const { t } = useLanguage();
+export function EmployeeOnboarding({ user, onRequestCreated }: Readonly<EmployeeOnboardingProps>) {
+  const { t } = useLanguage()
   const [invitationCode, setInvitationCode] = useState('')
   const [message, setMessage] = useState('')
   const [showScanner, setShowScanner] = useState(false)
   const [requestStatus, setRequestStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const { createRequest, isLoading, requests } = useEmployeeRequests({ 
+  const { createRequest, isLoading, requests } = useEmployeeRequests({
     userId: user.id,
-    autoFetch: false
+    autoFetch: false,
   })
 
-  const pendingRequests = requests.filter((r) => r.status === 'pending')
-  const approvedRequests = requests.filter((r) => r.status === 'approved')
+  const pendingRequests = requests.filter(r => r.status === 'pending')
+  const approvedRequests = requests.filter(r => r.status === 'approved')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +38,10 @@ export function EmployeeOnboarding({
       return
     }
 
-    const success = await createRequest(invitationCode.trim().toUpperCase(), message.trim() || undefined)
+    const success = await createRequest(
+      invitationCode.trim().toUpperCase(),
+      message.trim() || undefined
+    )
 
     if (success) {
       setRequestStatus('success')
@@ -54,7 +54,10 @@ export function EmployeeOnboarding({
   }
 
   const handleCodeChange = (value: string) => {
-    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+    const cleaned = value
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 6)
     setInvitationCode(cleaned)
     setRequestStatus('idle')
   }
@@ -69,7 +72,8 @@ export function EmployeeOnboarding({
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Únete como Empleado</h1>
         <p className="text-muted-foreground">
-          Para trabajar en un negocio, necesitas un código de invitación proporcionado por el administrador
+          Para trabajar en un negocio, necesitas un código de invitación proporcionado por el
+          administrador
         </p>
       </div>
 
@@ -80,12 +84,14 @@ export function EmployeeOnboarding({
           <AlertDescription>
             {pendingRequests.length > 0 && (
               <p>
-                Tienes {pendingRequests.length} solicitud(es) pendiente(s). El administrador revisará tu solicitud pronto.
+                Tienes {pendingRequests.length} solicitud(es) pendiente(s). El administrador
+                revisará tu solicitud pronto.
               </p>
             )}
             {approvedRequests.length > 0 && (
               <p className="text-green-600 dark:text-green-400 font-medium">
-                 Tienes {approvedRequests.length} solicitud(es) aprobada(s). Recarga la página para ver tu nuevo rol.
+                Tienes {approvedRequests.length} solicitud(es) aprobada(s). Recarga la página para
+                ver tu nuevo rol.
               </p>
             )}
           </AlertDescription>
@@ -105,7 +111,8 @@ export function EmployeeOnboarding({
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertTitle className="text-green-600">¡Solicitud enviada!</AlertTitle>
               <AlertDescription className="text-green-600">
-                Tu solicitud ha sido enviada al administrador. Recibirás una notificación cuando sea revisada.
+                Tu solicitud ha sido enviada al administrador. Recibirás una notificación cuando sea
+                revisada.
               </AlertDescription>
             </Alert>
           )}
@@ -119,7 +126,7 @@ export function EmployeeOnboarding({
                 id="invitation-code"
                 type="text"
                 value={invitationCode}
-                onChange={(e) => handleCodeChange(e.target.value)}
+                onChange={e => handleCodeChange(e.target.value)}
                 placeholder="ABC123"
                 maxLength={6}
                 className="text-center text-2xl font-mono tracking-widest uppercase"
@@ -138,13 +145,18 @@ export function EmployeeOnboarding({
                 id="message"
                 type="text"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={e => setMessage(e.target.value)}
                 placeholder="Ej: Tengo experiencia en..."
                 disabled={isLoading}
               />
             </div>
 
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading || invitationCode.length !== 6}>
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              disabled={isLoading || invitationCode.length !== 6}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -182,9 +194,15 @@ export function EmployeeOnboarding({
               <Camera className="h-4 w-4" />
               <AlertTitle>Escanear QR desde móvil</AlertTitle>
               <AlertDescription>
-                El escaneo de códigos QR está disponible en la aplicación móvil. Por ahora, ingresa el código manualmente.
+                El escaneo de códigos QR está disponible en la aplicación móvil. Por ahora, ingresa
+                el código manualmente.
               </AlertDescription>
-              <Button variant="ghost" size="sm" className="mt-2" onClick={() => setShowScanner(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2"
+                onClick={() => setShowScanner(false)}
+              >
                 {t('common.actions.close')}
               </Button>
             </Alert>
@@ -215,7 +233,7 @@ export function EmployeeOnboarding({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {requests.map((request) => (
+              {requests.map(request => (
                 <div
                   key={request.id}
                   className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"

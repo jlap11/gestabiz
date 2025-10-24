@@ -1,7 +1,7 @@
 // Supabase Edge Function: send-notification-reminders
 // File: supabase/functions/send-notification-reminders/index.ts
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -31,7 +31,7 @@ interface Notification {
   }
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -46,11 +46,13 @@ serve(async (req) => {
     // Get pending notifications that are due to be sent
     const { data: notifications, error: fetchError } = await supabase
       .from('notifications')
-      .select(`
+      .select(
+        `
         *,
         appointment:appointments(title, start_time, client_name, location),
         profile:profiles(email, full_name, notification_preferences)
-      `)
+      `
+      )
       .eq('status', 'pending')
       .lte('scheduled_for', new Date().toISOString())
       .limit(100)
@@ -66,10 +68,10 @@ serve(async (req) => {
     for (const notification of notifications || []) {
       try {
         let success = false
-        
+
         // Check if user has enabled this notification method
         const prefs = notification.profile?.notification_preferences || {}
-        
+
         switch (notification.delivery_method) {
           case 'email':
             if (prefs.email !== false) {
@@ -92,9 +94,9 @@ serve(async (req) => {
         const status = success ? 'sent' : 'failed'
         await supabase
           .from('notifications')
-          .update({ 
+          .update({
             status,
-            sent_at: new Date().toISOString()
+            sent_at: new Date().toISOString(),
           })
           .eq('id', notification.id)
 
@@ -102,49 +104,44 @@ serve(async (req) => {
           id: notification.id,
           type: notification.type,
           delivery_method: notification.delivery_method,
-          status
+          status,
         })
-
       } catch (error) {
         console.error(`Error processing notification ${notification.id}:`, error)
-        
+
         // Mark as failed
-        await supabase
-          .from('notifications')
-          .update({ status: 'failed' })
-          .eq('id', notification.id)
+        await supabase.from('notifications').update({ status: 'failed' }).eq('id', notification.id)
 
         results.push({
           id: notification.id,
           type: notification.type,
           delivery_method: notification.delivery_method,
           status: 'failed',
-          error: error.message
+          error: error.message,
         })
       }
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         processed: results.length,
-        results 
+        results,
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Error in send-notification-reminders function:', error)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
-        success: false 
+        success: false,
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
   }
@@ -154,12 +151,12 @@ async function sendEmailNotification(notification: Notification): Promise<boolea
   try {
     // You can integrate with SendGrid, Resend, or any email service
     // This is a basic example using the Fetch API to send to an email service
-    
+
     const emailData = {
       to: notification.profile?.email,
       subject: notification.title,
       html: generateEmailHTML(notification),
-      text: generateEmailText(notification)
+      text: generateEmailText(notification),
     }
 
     // Example with SendGrid (replace with your preferred email service)
@@ -167,23 +164,25 @@ async function sendEmailNotification(notification: Notification): Promise<boolea
       const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${Deno.env.get('SENDGRID_API_KEY')}`,
+          Authorization: `Bearer ${Deno.env.get('SENDGRID_API_KEY')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          personalizations: [{
-            to: [{ email: emailData.to }],
-            subject: emailData.subject
-          }],
-          from: { 
+          personalizations: [
+            {
+              to: [{ email: emailData.to }],
+              subject: emailData.subject,
+            },
+          ],
+          from: {
             email: Deno.env.get('FROM_EMAIL') || 'noreply@Gestabiz.com',
-            name: 'Gestabiz'
+            name: 'Gestabiz',
           },
           content: [
             { type: 'text/plain', value: emailData.text },
-            { type: 'text/html', value: emailData.html }
-          ]
-        })
+            { type: 'text/html', value: emailData.html },
+          ],
+        }),
       })
 
       return response.ok
@@ -192,7 +191,6 @@ async function sendEmailNotification(notification: Notification): Promise<boolea
     // Fallback: log email content (for development)
     console.log('Email notification:', emailData)
     return true
-
   } catch (error) {
     console.error('Error sending email:', error)
     return false
@@ -203,16 +201,15 @@ async function sendPushNotification(notification: Notification): Promise<boolean
   try {
     // Implement push notification logic here
     // You can use Firebase Cloud Messaging, OneSignal, or similar services
-    
+
     console.log('Push notification:', {
       userId: notification.user_id,
       title: notification.title,
-      body: notification.message
+      body: notification.message,
     })
-    
+
     // For now, just return true (implement actual push notification service)
     return true
-    
   } catch (error) {
     console.error('Error sending push notification:', error)
     return false
@@ -223,15 +220,14 @@ async function sendBrowserNotification(notification: Notification): Promise<bool
   try {
     // Browser notifications are typically handled on the client side
     // This could trigger a real-time event via Supabase realtime
-    
+
     console.log('Browser notification:', {
       userId: notification.user_id,
       title: notification.title,
-      body: notification.message
+      body: notification.message,
     })
-    
+
     return true
-    
   } catch (error) {
     console.error('Error sending browser notification:', error)
     return false
@@ -241,7 +237,7 @@ async function sendBrowserNotification(notification: Notification): Promise<bool
 function generateEmailHTML(notification: Notification): string {
   const appointment = notification.appointment
   const startTime = new Date(appointment?.start_time || '').toLocaleString()
-  
+
   return `
     <!DOCTYPE html>
     <html>
@@ -292,7 +288,7 @@ function generateEmailHTML(notification: Notification): string {
 function generateEmailText(notification: Notification): string {
   const appointment = notification.appointment
   const startTime = new Date(appointment?.start_time || '').toLocaleString()
-  
+
   return `
 ${notification.title}
 

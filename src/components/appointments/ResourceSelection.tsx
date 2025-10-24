@@ -1,4 +1,4 @@
-import { Check, MapPin, Users, DollarSign } from 'lucide-react'
+import { Check, DollarSign, MapPin, Users } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 /**
  * Selector de Recursos para AppointmentWizard
  * Alternativa a EmployeeSelection cuando resource_model='physical_resource'
- * 
+ *
  * Fecha: 21 de Octubre de 2025
  * Parte del sistema de Modelo de Negocio Flexible
  */
@@ -48,11 +48,7 @@ export function ResourceSelection({
   onSelect,
 }: Readonly<ResourceSelectionProps>) {
   const { t } = useLanguage()
-  const { data: resources, isLoading } = useResourcesForService(
-    businessId,
-    serviceId,
-    locationId
-  )
+  const { data: resources, isLoading } = useResourcesForService(businessId, serviceId, locationId)
 
   if (isLoading) {
     return (
@@ -65,9 +61,7 @@ export function ResourceSelection({
   if (!resources?.length) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          No hay recursos disponibles para este servicio.
-        </p>
+        <p className="text-muted-foreground">No hay recursos disponibles para este servicio.</p>
         {locationId && (
           <p className="text-sm text-muted-foreground mt-2">
             Intenta cambiar la ubicación seleccionada.
@@ -79,12 +73,10 @@ export function ResourceSelection({
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground">
-        Selecciona el recurso que deseas reservar
-      </div>
+      <div className="text-sm text-muted-foreground">Selecciona el recurso que deseas reservar</div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {resources.map((resource) => (
+        {resources.map(resource => (
           <ResourceCard
             key={resource.id}
             resource={resource}
@@ -130,9 +122,7 @@ function ResourceCard({ resource, isSelected, onSelect }: Readonly<ResourceCardP
         </div>
 
         {resource.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-            {resource.description}
-          </p>
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{resource.description}</p>
         )}
 
         <div className="space-y-2">
@@ -168,7 +158,7 @@ function ResourceCard({ resource, isSelected, onSelect }: Readonly<ResourceCardP
         {resource.amenities && resource.amenities.length > 0 && (
           <div className="mt-3 pt-3 border-t">
             <div className="flex flex-wrap gap-1">
-              {resource.amenities.slice(0, 3).map((amenity) => (
+              {resource.amenities.slice(0, 3).map(amenity => (
                 <Badge key={amenity} variant="secondary" className="text-xs">
                   {amenity}
                 </Badge>

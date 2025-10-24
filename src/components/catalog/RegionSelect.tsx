@@ -8,18 +8,18 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useRegions } from '@/hooks/useCatalogs';
+} from '@/components/ui/select'
+import { useRegions } from '@/hooks/useCatalogs'
 
 interface RegionSelectProps {
-  countryId?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  error?: string;
-  required?: boolean;
-  className?: string;
+  countryId?: string
+  value?: string
+  onChange?: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  error?: string
+  required?: boolean
+  className?: string
 }
 
 export function RegionSelect({
@@ -32,7 +32,7 @@ export function RegionSelect({
   required = false,
   className = '',
 }: RegionSelectProps) {
-  const { regions, loading } = useRegions(countryId);
+  const { regions, loading } = useRegions(countryId)
 
   if (!countryId) {
     return (
@@ -41,7 +41,7 @@ export function RegionSelect({
           <SelectValue placeholder="Primero seleccione un país" />
         </SelectTrigger>
       </Select>
-    );
+    )
   }
 
   if (loading) {
@@ -49,7 +49,7 @@ export function RegionSelect({
       <div className="flex items-center gap-2 h-10 px-3 border border-border rounded-md bg-muted">
         <span className="text-sm text-muted-foreground">Cargando regiones...</span>
       </div>
-    );
+    )
   }
 
   return (
@@ -80,5 +80,5 @@ export function RegionSelect({
 
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
-  );
+  )
 }

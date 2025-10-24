@@ -1,8 +1,8 @@
 /**
  * MercadoPago Create Preference Edge Function
- * 
+ *
  * Crea una Preference de MercadoPago para Checkout Pro
- * 
+ *
  * Flujo:
  * 1. Recibe businessId, planType, billingCycle, discountCode
  * 2. Consulta datos del negocio en Supabase
@@ -11,12 +11,12 @@
  * 5. Crea Preference en MercadoPago API
  * 6. Guarda payment pendiente en subscription_payments
  * 7. Retorna preference_id e init_point para redirección
- * 
+ *
  * Documentación: https://www.mercadopago.com.ar/developers/es/reference/preferences/_checkout_preferences/post
- * 
+ *
  * Variables requeridas (Supabase Secrets):
  * - MERCADOPAGO_ACCESS_TOKEN
- * 
+ *
  * @author GitHub Copilot
  * @date 2025-10-17
  */
@@ -32,7 +32,7 @@ const PLAN_PRICES = {
   corporativo: { monthly: 0, yearly: 0 }, // Custom pricing
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async req => {
   try {
     // CORS headers
     if (req.method === 'OPTIONS') {
@@ -75,12 +75,15 @@ Deno.serve(async (req) => {
 
     // Apply discount code if provided
     if (discountCode) {
-      const { data: discountData, error: discountError } = await supabase.rpc('apply_discount_code', {
-        p_business_id: businessId,
-        p_code: discountCode,
-        p_plan_type: planType,
-        p_amount: basePrice,
-      })
+      const { data: discountData, error: discountError } = await supabase.rpc(
+        'apply_discount_code',
+        {
+          p_business_id: businessId,
+          p_code: discountCode,
+          p_plan_type: planType,
+          p_amount: basePrice,
+        }
+      )
 
       if (!discountError && discountData?.isValid) {
         discountAmount = discountData.discountAmount
@@ -134,7 +137,7 @@ Deno.serve(async (req) => {
     const mercadoPagoResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(preferencePayload),
@@ -148,24 +151,22 @@ Deno.serve(async (req) => {
     const preferenceData = await mercadoPagoResponse.json()
 
     // Save pending payment in subscription_payments
-    const { error: paymentError } = await supabase
-      .from('subscription_payments')
-      .insert({
-        business_id: businessId,
-        plan_type: planType,
-        billing_cycle: billingCycle,
-        amount: finalPrice,
-        currency: 'COP',
-        status: 'pending',
-        payment_method: 'mercadopago',
-        transaction_id: preferenceData.id,
-        metadata: {
-          preference_id: preferenceData.id,
-          init_point: preferenceData.init_point,
-          discount_code: discountCode,
-          discount_amount: discountAmount,
-        },
-      })
+    const { error: paymentError } = await supabase.from('subscription_payments').insert({
+      business_id: businessId,
+      plan_type: planType,
+      billing_cycle: billingCycle,
+      amount: finalPrice,
+      currency: 'COP',
+      status: 'pending',
+      payment_method: 'mercadopago',
+      transaction_id: preferenceData.id,
+      metadata: {
+        preference_id: preferenceData.id,
+        init_point: preferenceData.init_point,
+        discount_code: discountCode,
+        discount_amount: discountAmount,
+      },
+    })
 
     if (paymentError) {
       console.error('Error saving payment:', paymentError)

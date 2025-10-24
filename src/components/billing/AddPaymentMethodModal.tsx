@@ -1,18 +1,14 @@
 /**
  * AddPaymentMethodModal Component
- * 
+ *
  * Modal para agregar un nuevo método de pago con Stripe Elements
  */
 
-import { useState, useEffect } from 'react'
-import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js'
+import { useEffect, useState } from 'react'
+import { StripeElementsOptions, loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAsync } from '@/hooks/useAsync'
 import {
   Dialog,
   DialogContent,
@@ -37,15 +33,11 @@ interface AddPaymentMethodModalProps {
 }
 
 // Componente interno con acceso a Stripe Elements
-function PaymentForm({ 
-  businessId, 
-  onClose, 
-  onSuccess 
-}: Readonly<AddPaymentMethodModalProps>) {
+function PaymentForm({ businessId, onClose, onSuccess }: Readonly<AddPaymentMethodModalProps>) {
   const { t } = useLanguage()
   const stripe = useStripe()
   const elements = useElements()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitReq = useAsync<void>()
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,15 +47,15 @@ function PaymentForm({
       return
     }
 
-    setIsSubmitting(true)
-    setError(null)
+    await submitReq.run(async () => {
+      setError(null)
 
-    try {
       // Confirmar Setup Intent con Payment Element
       const { error: submitError } = await elements.submit()
       if (submitError) {
-        setError(submitError.message || 'Error al procesar la tarjeta')
-        return
+        const msg = submitError.message || 'Error al procesar la tarjeta'
+        setError(msg)
+        throw new Error(msg)
       }
 
       const { error: confirmError } = await stripe.confirmSetup({
@@ -75,24 +67,21 @@ function PaymentForm({
       })
 
       if (confirmError) {
-        setError(confirmError.message || 'Error al confirmar el método de pago')
-        return
+        const msg = confirmError.message || 'Error al confirmar el método de pago'
+        setError(msg)
+        throw new Error(msg)
       }
 
       // Éxito
       onSuccess()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-    } finally {
-      setIsSubmitting(false)
-    }
+    })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Payment Element de Stripe */}
       <div className="border rounded-lg p-4 bg-white">
-        <PaymentElement 
+        <PaymentElement
           options={{
             layout: 'tabs',
             defaultValues: {
@@ -121,8 +110,8 @@ function PaymentForm({
           <div>
             <p className="font-medium text-blue-900 mb-1">{t('billing.securePayment')}</p>
             <p className="text-blue-800">
-              Tus datos de pago son procesados de forma segura por Stripe.
-              No almacenamos información de tarjetas en nuestros servidores.
+              Tus datos de pago son procesados de forma segura por Stripe. No almacenamos
+              información de tarjetas en nuestros servidores.
             </p>
           </div>
         </div>
@@ -130,19 +119,11 @@ function PaymentForm({
 
       {/* Botones */}
       <DialogFooter>
-        <Button 
-          type="button"
-          variant="outline" 
-          onClick={onClose} 
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={onClose} disabled={submitReq.status === 'pending'}>
           Cancelar
         </Button>
-        <Button 
-          type="submit"
-          disabled={!stripe || isSubmitting}
-        >
-          {isSubmitting ? (
+        <Button type="submit" disabled={!stripe || submitReq.status === 'pending'}>
+          {submitReq.status === 'pending' ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Procesando...
@@ -175,24 +156,23 @@ export function AddPaymentMethodModal({
         }
 
         const supabase = createClient(supabaseUrl, supabaseAnonKey)
-        const { data: { session } } = await supabase.auth.getSession()
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
         if (!session) {
           throw new Error('No autenticado')
         }
 
         // Llamar Edge Function para crear Setup Intent
-        const response = await fetch(
-          `${supabaseUrl}/functions/v1/create-setup-intent`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ businessId }),
-          }
-        )
+        const response = await fetch(`${supabaseUrl}/functions/v1/create-setup-intent`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ businessId }),
+        })
 
         if (!response.ok) {
           throw new Error('Error al crear Setup Intent')
@@ -210,21 +190,23 @@ export function AddPaymentMethodModal({
     createSetupIntent()
   }, [businessId])
 
-  const elementsOptions: StripeElementsOptions = clientSecret ? {
-    clientSecret,
-    appearance: {
-      theme: 'stripe',
-      variables: {
-        colorPrimary: '#0F172A',
-        colorBackground: '#ffffff',
-        colorText: '#1e293b',
-        colorDanger: '#ef4444',
-        fontFamily: 'system-ui, sans-serif',
-        borderRadius: '8px',
-      },
-    },
-    locale: 'es',
-  } : {} as StripeElementsOptions
+  const elementsOptions: StripeElementsOptions = clientSecret
+    ? {
+        clientSecret,
+        appearance: {
+          theme: 'stripe',
+          variables: {
+            colorPrimary: '#0F172A',
+            colorBackground: '#ffffff',
+            colorText: '#1e293b',
+            colorDanger: '#ef4444',
+            fontFamily: 'system-ui, sans-serif',
+            borderRadius: '8px',
+          },
+        },
+        locale: 'es',
+      }
+    : ({} as StripeElementsOptions)
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -251,11 +233,7 @@ export function AddPaymentMethodModal({
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={onClose} 
-              className="mt-4 w-full"
-            >
+            <Button variant="outline" onClick={onClose} className="mt-4 w-full">
               Cerrar
             </Button>
           </div>
@@ -263,14 +241,11 @@ export function AddPaymentMethodModal({
 
         {!isLoading && !error && clientSecret && (
           <Elements stripe={stripePromise} options={elementsOptions}>
-            <PaymentForm
-              businessId={businessId}
-              onClose={onClose}
-              onSuccess={onSuccess}
-            />
+            <PaymentForm businessId={businessId} onClose={onClose} onSuccess={onSuccess} />
           </Elements>
         )}
       </DialogContent>
     </Dialog>
   )
 }
+

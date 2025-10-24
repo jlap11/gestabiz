@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,19 +6,19 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
-import { 
-  ArrowLeft, 
-  Edit, 
-  Briefcase, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  Users, 
-  Eye, 
-  CheckCircle2,
-  XCircle,
+import {
+  ArrowLeft,
+  Briefcase,
   Calendar,
-  Star
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  Edit,
+  Eye,
+  MapPin,
+  Star,
+  Users,
+  XCircle,
 } from 'lucide-react'
 
 interface VacancyDetailProps {
@@ -79,27 +79,27 @@ const STATUS_COLORS: Record<string, string> = {
   open: 'bg-green-500/20 text-green-400 border-green-500/30',
   paused: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   closed: 'bg-muted text-muted-foreground border-border',
-  filled: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+  filled: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
 }
 
 const STATUS_LABELS: Record<string, string> = {
   open: 'Abierta',
   paused: 'Pausada',
   closed: 'Cerrada',
-  filled: 'Cubierta'
+  filled: 'Cubierta',
 }
 
 const POSITION_TYPES: Record<string, string> = {
   full_time: 'Tiempo Completo',
   part_time: 'Medio Tiempo',
   freelance: 'Freelance',
-  temporary: 'Temporal'
+  temporary: 'Temporal',
 }
 
 const EXPERIENCE_LEVELS: Record<string, string> = {
   entry_level: 'Principiante',
   mid_level: 'Intermedio',
-  senior: 'Senior'
+  senior: 'Senior',
 }
 
 const APPLICATION_STATUS_COLORS: Record<string, string> = {
@@ -108,7 +108,7 @@ const APPLICATION_STATUS_COLORS: Record<string, string> = {
   interview: 'bg-primary/20 text-primary',
   accepted: 'bg-green-500/20 text-green-400',
   rejected: 'bg-red-500/20 text-red-400',
-  withdrawn: 'bg-muted text-muted-foreground'
+  withdrawn: 'bg-muted text-muted-foreground',
 }
 
 const APPLICATION_STATUS_LABELS: Record<string, string> = {
@@ -117,15 +117,15 @@ const APPLICATION_STATUS_LABELS: Record<string, string> = {
   interview: 'Entrevista',
   accepted: 'Aceptada',
   rejected: 'Rechazada',
-  withdrawn: 'Retirada'
+  withdrawn: 'Retirada',
 }
 
-export function VacancyDetail({ 
-  vacancyId, 
-  businessId, 
-  onBack, 
-  onEdit, 
-  onViewApplication 
+export function VacancyDetail({
+  vacancyId,
+  businessId,
+  onBack,
+  onEdit,
+  onViewApplication,
 }: Readonly<VacancyDetailProps>) {
   const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
@@ -176,7 +176,7 @@ export function VacancyDetail({
     const formatter = new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     })
 
     if (min && max) {
@@ -190,7 +190,9 @@ export function VacancyDetail({
   }
 
   const getDaysAgo = (date: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+    const days = Math.floor(
+      (new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
+    )
     if (days === 0) return 'Hoy'
     if (days === 1) return 'Ayer'
     return `Hace ${days} días`
@@ -241,9 +243,7 @@ export function VacancyDetail({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Badge className={STATUS_COLORS[vacancy.status]}>
-            {STATUS_LABELS[vacancy.status]}
-          </Badge>
+          <Badge className={STATUS_COLORS[vacancy.status]}>{STATUS_LABELS[vacancy.status]}</Badge>
           <Button onClick={() => onEdit(vacancyId)} className="bg-primary hover:bg-primary/90">
             <Edit className="h-4 w-4 mr-2" />
             Editar
@@ -266,7 +266,9 @@ export function VacancyDetail({
               <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="text-sm text-muted-foreground">Tipo</p>
-                <p className="text-foreground font-medium">{POSITION_TYPES[vacancy.position_type]}</p>
+                <p className="text-foreground font-medium">
+                  {POSITION_TYPES[vacancy.position_type]}
+                </p>
               </div>
             </div>
 
@@ -275,7 +277,9 @@ export function VacancyDetail({
               <div>
                 <p className="text-sm text-muted-foreground">Ubicación</p>
                 <p className="text-foreground font-medium">
-                  {vacancy.locations ? `${vacancy.locations.name}, ${vacancy.locations.city}` : 'Sin ubicación'}
+                  {vacancy.locations
+                    ? `${vacancy.locations.name}, ${vacancy.locations.city}`
+                    : 'Sin ubicación'}
                 </p>
               </div>
             </div>
@@ -294,7 +298,9 @@ export function VacancyDetail({
               <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="text-sm text-muted-foreground">Experiencia</p>
-                <p className="text-foreground font-medium">{EXPERIENCE_LEVELS[vacancy.experience_required]}</p>
+                <p className="text-foreground font-medium">
+                  {EXPERIENCE_LEVELS[vacancy.experience_required]}
+                </p>
               </div>
             </div>
           </div>
@@ -377,7 +383,7 @@ export function VacancyDetail({
             </div>
           ) : (
             <div className="space-y-3">
-              {applications.map((application) => (
+              {applications.map(application => (
                 <button
                   key={application.id}
                   onClick={() => onViewApplication(application.id)}
@@ -388,14 +394,18 @@ export function VacancyDetail({
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={application.profiles?.avatar_url || undefined} />
                         <AvatarFallback className="bg-primary/20 text-primary">
-                          {application.profiles ? getInitials(application.profiles.full_name) : '??'}
+                          {application.profiles
+                            ? getInitials(application.profiles.full_name)
+                            : '??'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <p className="text-foreground font-medium">
                           {application.profiles?.full_name || 'Usuario Desconocido'}
                         </p>
-                        <p className="text-sm text-muted-foreground">{application.profiles?.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {application.profiles?.email}
+                        </p>
                         <p className="text-sm text-muted-foreground/80 mt-1">
                           Aplicó {getDaysAgo(application.created_at)}
                         </p>
@@ -409,7 +419,9 @@ export function VacancyDetail({
                       {application.rating && (
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          <span className="text-foreground text-sm font-medium">{application.rating}/5</span>
+                          <span className="text-foreground text-sm font-medium">
+                            {application.rating}/5
+                          </span>
                         </div>
                       )}
                       {application.interview_scheduled_at && (

@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { X, Cookie } from 'lucide-react'
+import { Cookie, X } from 'lucide-react'
 import { grantAnalyticsConsent, revokeAnalyticsConsent } from '@/hooks/useAnalytics'
 import { initializeGA4, updateGA4Consent } from '@/lib/ga4'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 /**
  * CookieConsent Banner Component
- * 
+ *
  * Banner GDPR-compliant para solicitar consentimiento de cookies analíticas.
  * Se muestra solo si el usuario no ha tomado una decisión previa.
- * 
+ *
  * Features:
  * - Persistencia en localStorage ('ga_consent')
  * - Inicializa GA4 automáticamente al aceptar
@@ -32,13 +32,13 @@ export function CookieConsent() {
   const handleAccept = () => {
     // Otorgar consentimiento
     grantAnalyticsConsent()
-    
+
     // Inicializar GA4
     initializeGA4()
-    
+
     // Actualizar consent mode
     updateGA4Consent(true)
-    
+
     // Ocultar banner
     setShow(false)
   }
@@ -46,10 +46,10 @@ export function CookieConsent() {
   const handleReject = () => {
     // Revocar consentimiento
     revokeAnalyticsConsent()
-    
+
     // Actualizar consent mode (denied)
     updateGA4Consent(false)
-    
+
     // Ocultar banner
     setShow(false)
   }
@@ -62,7 +62,7 @@ export function CookieConsent() {
   if (!show) return null
 
   return (
-    <div 
+    <div
       className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border shadow-2xl z-50 animate-in slide-in-from-bottom duration-300"
       role="dialog"
       aria-labelledby="cookie-consent-title"
@@ -74,14 +74,11 @@ export function CookieConsent() {
           <div className="flex items-start gap-3 flex-1">
             <Cookie className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
             <div className="space-y-1">
-              <h3 
-                id="cookie-consent-title" 
-                className="text-base font-semibold text-foreground"
-              >
+              <h3 id="cookie-consent-title" className="text-base font-semibold text-foreground">
                 {t('cookieConsent.title')}
               </h3>
-              <p 
-                id="cookie-consent-description" 
+              <p
+                id="cookie-consent-description"
                 className="text-sm text-muted-foreground leading-relaxed"
               >
                 {t('cookieConsent.description')}
@@ -99,11 +96,7 @@ export function CookieConsent() {
             >
               {t('cookieConsent.reject')}
             </Button>
-            <Button
-              size="sm"
-              onClick={handleAccept}
-              className="bg-primary hover:bg-primary/90"
-            >
+            <Button size="sm" onClick={handleAccept} className="bg-primary hover:bg-primary/90">
               {t('cookieConsent.accept')}
             </Button>
             <Button

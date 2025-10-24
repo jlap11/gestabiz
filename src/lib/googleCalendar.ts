@@ -1,4 +1,4 @@
-import { GoogleCalendarEvent, CalendarSyncSettings, Appointment } from '@/types'
+import { Appointment, CalendarSyncSettings, GoogleCalendarEvent } from '@/types'
 
 const GOOGLE_OAUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth'
 const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token'
@@ -29,15 +29,17 @@ export class GoogleCalendarService {
 
     const redirectUri = `${window.location.origin}/auth/google/callback`
     const scopes = 'https://www.googleapis.com/auth/calendar'
-    
-    const authUrl = `${GOOGLE_OAUTH_ENDPOINT}?` + new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: scopes,
-      access_type: 'offline',
-      prompt: 'consent'
-    }).toString()
+
+    const authUrl =
+      `${GOOGLE_OAUTH_ENDPOINT}?` +
+      new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: scopes,
+        access_type: 'offline',
+        prompt: 'consent',
+      }).toString()
 
     window.location.href = authUrl
     return authUrl
@@ -56,15 +58,15 @@ export class GoogleCalendarService {
     const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
         code: code,
         grant_type: 'authorization_code',
-        redirect_uri: redirectUri
-      })
+        redirect_uri: redirectUri,
+      }),
     })
 
     if (!response.ok) {
@@ -92,14 +94,14 @@ export class GoogleCalendarService {
     const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: this.refreshToken,
-        grant_type: 'refresh_token'
-      })
+        grant_type: 'refresh_token',
+      }),
     })
 
     if (!response.ok) {
@@ -119,26 +121,30 @@ export class GoogleCalendarService {
 
     const response = await fetch(`${GOOGLE_CALENDAR_API_BASE}/users/me/calendarList`, {
       headers: {
-        'Authorization': `Bearer ${this.accessToken}`
-      }
+        Authorization: `Bearer ${this.accessToken}`,
+      },
     })
 
     if (!response.ok) {
       throw new Error('Failed to fetch calendars')
     }
 
-  const data = await response.json()
-  return (data.items || []) as Array<{ id: string; summary?: string; primary?: boolean }>
+    const data = await response.json()
+    return (data.items || []) as Array<{ id: string; summary?: string; primary?: boolean }>
   }
 
-  async getEvents(calendarId: string, timeMin?: string, timeMax?: string): Promise<GoogleCalendarEvent[]> {
+  async getEvents(
+    calendarId: string,
+    timeMin?: string,
+    timeMax?: string
+  ): Promise<GoogleCalendarEvent[]> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
 
     const params = new URLSearchParams({
       singleEvents: 'true',
-      orderBy: 'startTime'
+      orderBy: 'startTime',
     })
 
     if (timeMin) params.append('timeMin', timeMin)
@@ -148,8 +154,8 @@ export class GoogleCalendarService {
       `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
       {
         headers: {
-          'Authorization': `Bearer ${this.accessToken}`
-        }
+          Authorization: `Bearer ${this.accessToken}`,
+        },
       }
     )
 
@@ -166,41 +172,51 @@ export class GoogleCalendarService {
       throw new Error('Not authenticated')
     }
 
-    const response = await fetch(`${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(event)
-    })
+    const response = await fetch(
+      `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
+      }
+    )
 
     if (!response.ok) {
       throw new Error('Failed to create event')
     }
 
-  return response.json()
+    return response.json()
   }
 
-  async updateEvent(calendarId: string, eventId: string, event: GoogleCalendarEvent): Promise<GoogleCalendarEvent> {
+  async updateEvent(
+    calendarId: string,
+    eventId: string,
+    event: GoogleCalendarEvent
+  ): Promise<GoogleCalendarEvent> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
 
-    const response = await fetch(`${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(event)
-    })
+    const response = await fetch(
+      `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
+      }
+    )
 
     if (!response.ok) {
       throw new Error('Failed to update event')
     }
 
-  return response.json()
+    return response.json()
   }
 
   async deleteEvent(calendarId: string, eventId: string): Promise<void> {
@@ -208,12 +224,15 @@ export class GoogleCalendarService {
       throw new Error('Not authenticated')
     }
 
-    const response = await fetch(`${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`
+    const response = await fetch(
+      `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
       }
-    })
+    )
 
     if (!response.ok) {
       throw new Error('Failed to delete event')
@@ -221,22 +240,25 @@ export class GoogleCalendarService {
   }
 
   // Sync appointments to Google Calendar
-  async syncAppointments(appointments: Appointment[], settings: CalendarSyncSettings): Promise<void> {
+  async syncAppointments(
+    appointments: Appointment[],
+    settings: CalendarSyncSettings
+  ): Promise<void> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
 
-  const { calendar_id, enabled } = settings
+    const { calendar_id, enabled } = settings
 
-  if (!enabled || !calendar_id) {
-  // Calendar sync disabled or no calendar selected
+    if (!enabled || !calendar_id) {
+      // Calendar sync disabled or no calendar selected
       return
     }
 
     for (const appointment of appointments) {
       try {
         const event = this.convertAppointmentToEvent(appointment)
-        
+
         if (appointment.google_calendar_event_id) {
           // Update existing event
           await this.updateEvent(calendar_id, appointment.google_calendar_event_id, event)
@@ -258,18 +280,20 @@ export class GoogleCalendarService {
       description: appointment.description || '',
       start: {
         dateTime: appointment.start_time,
-        timeZone: 'America/New_York'
+        timeZone: 'America/New_York',
       },
       end: {
         dateTime: appointment.end_time,
-        timeZone: 'America/New_York'
+        timeZone: 'America/New_York',
       },
-      attendees: appointment.client_email ? [
-        {
-          email: appointment.client_email,
-          displayName: appointment.client_name
-        }
-      ] : []
+      attendees: appointment.client_email
+        ? [
+            {
+              email: appointment.client_email,
+              displayName: appointment.client_name,
+            },
+          ]
+        : [],
     }
   }
 
@@ -282,30 +306,35 @@ export class GoogleCalendarService {
     this.refreshToken = null
   }
 
-  appointmentToGoogleEvent(appointment: Appointment, timezone: string = 'America/New_York'): GoogleCalendarEvent {
+  appointmentToGoogleEvent(
+    appointment: Appointment,
+    timezone: string = 'America/New_York'
+  ): GoogleCalendarEvent {
     return {
       summary: appointment.title,
       description: appointment.description || '',
       start: {
         dateTime: appointment.start_time,
-        timeZone: timezone
+        timeZone: timezone,
       },
       end: {
         dateTime: appointment.end_time,
-        timeZone: timezone
+        timeZone: timezone,
       },
-      attendees: appointment.client_email ? [
-        {
-          email: appointment.client_email,
-          displayName: appointment.client_name
-        }
-      ] : [],
+      attendees: appointment.client_email
+        ? [
+            {
+              email: appointment.client_email,
+              displayName: appointment.client_name,
+            },
+          ]
+        : [],
       extendedProperties: {
         private: {
           source: 'Gestabiz',
-          appointmentId: appointment.id
-        }
-      }
+          appointmentId: appointment.id,
+        },
+      },
     }
   }
 
@@ -313,7 +342,7 @@ export class GoogleCalendarService {
     return {
       id: crypto.randomUUID(),
       user_id: userId,
-  business_id: userId,
+      business_id: userId,
       title: event.summary || 'Imported Event',
       description: event.description || '',
       start_time: event.start.dateTime || event.start.date + 'T00:00:00',
@@ -323,10 +352,10 @@ export class GoogleCalendarService {
       client_email: event.attendees?.[0]?.email || '',
       client_phone: '',
       location: event.location || '',
-  service_id: undefined,
+      service_id: undefined,
       notes: event.description || '',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     }
   }
 }

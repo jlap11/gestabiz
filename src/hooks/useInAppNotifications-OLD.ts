@@ -1,13 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
-import { trackNotificationEvent, NotificationEvents } from '@/lib/analytics'
+import { NotificationEvents, trackNotificationEvent } from '@/lib/analytics'
 import { playNotificationFeedback } from '@/lib/notificationSound'
-import type { 
-  InAppNotification, 
-  NotificationStatus,
-  InAppNotificationType 
-} from '@/types/types'
+import type { InAppNotification, InAppNotificationType, NotificationStatus } from '@/types/types'
 
 interface UseInAppNotificationsOptions {
   userId: string
@@ -25,7 +21,7 @@ interface UseInAppNotificationsReturn {
   unreadCount: number
   loading: boolean
   error: string | null
-  
+
   // Actions
   markAsRead: (notificationId: string) => Promise<void>
   markAllAsRead: () => Promise<void>
@@ -36,7 +32,7 @@ interface UseInAppNotificationsReturn {
 
 /**
  * Hook para gestionar notificaciones in-app con realtime
- * 
+ *
  * @example
  * ```tsx
  * const { notifications, unreadCount, markAsRead } = useInAppNotifications({
@@ -49,15 +45,15 @@ interface UseInAppNotificationsReturn {
 export function useInAppNotifications(
   options: UseInAppNotificationsOptions
 ): UseInAppNotificationsReturn {
-  const { 
-    userId, 
-    autoFetch = true, 
+  const {
+    userId,
+    autoFetch = true,
     limit = 50,
     status,
     type,
     businessId,
     excludeChatMessages = false,
-    suppressToasts = false 
+    suppressToasts = false,
   } = options
 
   const [notifications, setNotifications] = useState<InAppNotification[]>([])
@@ -68,7 +64,7 @@ export function useInAppNotifications(
   // Ref para mantener el estado actualizado en callbacks de realtime
   const notificationsRef = useRef<InAppNotification[]>([])
   const instanceIdRef = useRef<string>(`inst_${Math.random().toString(36).slice(2, 10)}`)
-  
+
   useEffect(() => {
     notificationsRef.current = notifications
   }, [notifications])
@@ -106,7 +102,7 @@ export function useInAppNotifications(
 
       // Excluir mensajes de chat si se especifica (para campana de notificaciones)
       if (excludeChatMessages) {
-        query = query.neq('type', 'chat_message')  // ✅ FIX: Tipo correcto del enum
+        query = query.neq('type', 'chat_message') // ✅ FIX: Tipo correcto del enum
       }
 
       const { data, error: fetchError } = await query
@@ -119,11 +115,16 @@ export function useInAppNotifications(
       // Contar no leídas
       if (excludeChatMessages) {
         // Usar función RPC que excluye chat_message
-        const { data: countData, error: countError } = await supabase
-          .rpc('get_unread_count_no_chat', { p_user_id: userId })
+        const { data: countData, error: countError } = await supabase.rpc(
+          'get_unread_count_no_chat',
+          { p_user_id: userId }
+        )
 
         if (countError) {
-          console.warn('[useInAppNotifications] ⚠️ Error fetching unread count (no chat):', countError)
+          console.warn(
+            '[useInAppNotifications] ⚠️ Error fetching unread count (no chat):',
+            countError
+          )
           setUnreadCount(0)
         } else {
           console.log('[useInAppNotifications] 📊 Unread count (no chat):', countData)
@@ -140,7 +141,10 @@ export function useInAppNotifications(
           .neq('status', 'archived')
 
         if (countError) {
-          console.warn('[useInAppNotifications] ⚠️ Error fetching unread count by type:', countError)
+          console.warn(
+            '[useInAppNotifications] ⚠️ Error fetching unread count by type:',
+            countError
+          )
           setUnreadCount(0)
         } else {
           console.log(`[useInAppNotifications] 📊 Unread count (type: ${type}):`, count)
@@ -148,8 +152,9 @@ export function useInAppNotifications(
         }
       } else {
         // Función estándar que incluye todo
-        const { data: countData, error: countError } = await supabase
-          .rpc('get_unread_count', { p_user_id: userId })
+        const { data: countData, error: countError } = await supabase.rpc('get_unread_count', {
+          p_user_id: userId,
+        })
 
         if (countError) {
           console.warn('[useInAppNotifications] ⚠️ Error fetching unread count:', countError)
@@ -159,7 +164,6 @@ export function useInAppNotifications(
           setUnreadCount(countData || 0)
         }
       }
-
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar notificaciones'
       setError(message)
@@ -173,9 +177,9 @@ export function useInAppNotifications(
     try {
       const { data, error: updateError } = await supabase
         .from('in_app_notifications')
-        .update({ 
-          status: 'read', 
-          read_at: new Date().toISOString()
+        .update({
+          status: 'read',
+          read_at: new Date().toISOString(),
         })
         .eq('id', notificationId)
         .select()
@@ -185,7 +189,7 @@ export function useInAppNotifications(
           message: updateError.message,
           details: updateError.details,
           hint: updateError.hint,
-          code: updateError.code
+          code: updateError.code,
         })
         throw updateError
       }
@@ -195,19 +199,19 @@ export function useInAppNotifications(
       }
 
       // Actualizar estado local
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId 
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === notificationId
             ? { ...n, status: 'read' as NotificationStatus, read_at: new Date().toISOString() }
             : n
         )
       )
 
       setUnreadCount(prev => Math.max(0, prev - 1))
-      
+
       // Disparar evento global para sincronizar otros componentes (ej: NotificationBell)
       globalThis.dispatchEvent(new CustomEvent('notification-marked-read'))
-      
+
       // Track analytics
       const notification = notificationsRef.current.find(n => n.id === notificationId)
       trackNotificationEvent(NotificationEvents.NOTIFICATION_READ, {
@@ -215,7 +219,6 @@ export function useInAppNotifications(
         notification_type: notification?.type || 'unknown',
         priority: notification?.priority || 0,
       })
-
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al marcar como leída'
       toast.error(message)
@@ -225,34 +228,34 @@ export function useInAppNotifications(
   // Marcar todas como leídas
   const markAllAsRead = useCallback(async () => {
     try {
-      const { data, error: rpcError } = await supabase
-        .rpc('mark_notifications_as_read', { p_user_id: userId })
+      const { data, error: rpcError } = await supabase.rpc('mark_notifications_as_read', {
+        p_user_id: userId,
+      })
 
       if (rpcError) throw rpcError
 
       // Actualizar estado local
-      setNotifications(prev => 
-        prev.map(n => 
-          n.status === 'unread' 
+      setNotifications(prev =>
+        prev.map(n =>
+          n.status === 'unread'
             ? { ...n, status: 'read' as NotificationStatus, read_at: new Date().toISOString() }
             : n
         )
       )
 
       setUnreadCount(0)
-      
+
       // Disparar evento global para sincronizar otros componentes
       globalThis.dispatchEvent(new CustomEvent('notification-marked-read'))
-      
+
       if (data && data > 0) {
         toast.success(`${data} notificación(es) marcada(s) como leída(s)`)
-        
+
         // Track analytics
         trackNotificationEvent(NotificationEvents.ALL_NOTIFICATIONS_READ, {
           count: data,
         })
       }
-
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al marcar todas como leídas'
       toast.error(message)
@@ -260,69 +263,71 @@ export function useInAppNotifications(
   }, [userId])
 
   // Archivar notificación
-  const archive = useCallback(async (notificationId: string) => {
-    try {
-      const { error: updateError } = await supabase
-        .from('in_app_notifications')
-        .update({ 
-          status: 'archived',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', notificationId)
+  const archive = useCallback(
+    async (notificationId: string) => {
+      try {
+        const { error: updateError } = await supabase
+          .from('in_app_notifications')
+          .update({
+            status: 'archived',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', notificationId)
         // Removido .eq('user_id', userId) - solo ID es suficiente
 
-      if (updateError) throw updateError
+        if (updateError) throw updateError
 
-      // Actualizar estado local
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId 
-            ? { ...n, status: 'archived' as NotificationStatus }
-            : n
+        // Actualizar estado local
+        setNotifications(prev =>
+          prev.map(n =>
+            n.id === notificationId ? { ...n, status: 'archived' as NotificationStatus } : n
+          )
         )
-      )
 
-      // Si era no leída, decrementar contador
-      const notification = notifications.find(n => n.id === notificationId)
-      if (notification?.status === 'unread') {
-        setUnreadCount(prev => Math.max(0, prev - 1))
+        // Si era no leída, decrementar contador
+        const notification = notifications.find(n => n.id === notificationId)
+        if (notification?.status === 'unread') {
+          setUnreadCount(prev => Math.max(0, prev - 1))
+        }
+
+        toast.success('Notificación archivada')
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error al archivar'
+        toast.error(message)
       }
-
-      toast.success('Notificación archivada')
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al archivar'
-      toast.error(message)
-    }
-  }, [notifications]) // Removido userId de dependencias
+    },
+    [notifications]
+  ) // Removido userId de dependencias
 
   // Eliminar notificación (hard delete - ya que no existe is_deleted)
-  const deleteNotification = useCallback(async (notificationId: string) => {
-    try {
-      const { error: deleteError } = await supabase
-        .from('in_app_notifications')
-        .delete()
-        .eq('id', notificationId)
+  const deleteNotification = useCallback(
+    async (notificationId: string) => {
+      try {
+        const { error: deleteError } = await supabase
+          .from('in_app_notifications')
+          .delete()
+          .eq('id', notificationId)
         // Removido .eq('user_id', userId) - solo ID es suficiente
 
-      if (deleteError) throw deleteError
+        if (deleteError) throw deleteError
 
-      // Remover del estado local
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
+        // Remover del estado local
+        setNotifications(prev => prev.filter(n => n.id !== notificationId))
 
-      // Si era no leída, decrementar contador
-      const notification = notifications.find(n => n.id === notificationId)
-      if (notification?.status === 'unread') {
-        setUnreadCount(prev => Math.max(0, prev - 1))
+        // Si era no leída, decrementar contador
+        const notification = notifications.find(n => n.id === notificationId)
+        if (notification?.status === 'unread') {
+          setUnreadCount(prev => Math.max(0, prev - 1))
+        }
+
+        toast.success('Notificación eliminada')
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error al eliminar'
+        toast.error(message)
       }
-
-      toast.success('Notificación eliminada')
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al eliminar'
-      toast.error(message)
-    }
-  }, [notifications]) // Removido userId de dependencias
+    },
+    [notifications]
+  ) // Removido userId de dependencias
 
   // Refetch
   const refetch = useCallback(async () => {
@@ -346,28 +351,35 @@ export function useInAppNotifications(
       // 🔥 FIX: Aplicar filtros antes de procesar
       // Si hay filtro de tipo y no coincide, ignorar
       if (type && notification.type !== type) {
-        console.log('[useInAppNotifications] ⏭️ Skipping notification (type mismatch):', notification.type, 'vs', type)
+        console.log(
+          '[useInAppNotifications] ⏭️ Skipping notification (type mismatch):',
+          notification.type,
+          'vs',
+          type
+        )
         return
       }
-      
+
       // Si debe excluir chat y es chat, ignorar
       if (excludeChatMessages && notification.type === 'chat_message') {
-        console.log('[useInAppNotifications] ⏭️ Skipping chat notification (excludeChatMessages=true)')
+        console.log(
+          '[useInAppNotifications] ⏭️ Skipping chat notification (excludeChatMessages=true)'
+        )
         return
       }
-      
+
       // Si hay filtro de businessId y no coincide, ignorar
       if (businessId && notification.business_id !== businessId) {
         console.log('[useInAppNotifications] ⏭️ Skipping notification (businessId mismatch)')
         return
       }
-      
+
       const current = notificationsRef.current
       const exists = current.find(n => n.id === notification.id)
-      
+
       if (exists) {
         // UPDATE: actualizar existente
-        const next = current.map(n => n.id === notification.id ? notification : n)
+        const next = current.map(n => (n.id === notification.id ? notification : n))
         notificationsRef.current = next
         setNotifications(next)
       } else {
@@ -375,7 +387,7 @@ export function useInAppNotifications(
         const next = [notification, ...current].slice(0, limit)
         notificationsRef.current = next
         setNotifications(next)
-        
+
         // Si es nueva y no leída, incrementar contador y mostrar toast
         if (notification.status === 'unread') {
           setUnreadCount(prev => prev + 1)
@@ -390,15 +402,17 @@ export function useInAppNotifications(
             // Toast con acción
             toast.info(notification.title, {
               description: notification.message,
-              action: notification.action_url ? {
-                label: 'Ver',
-                onClick: () => {
-                  // Navegar a la URL
-                  if (notification.action_url) {
-                    window.location.href = notification.action_url
+              action: notification.action_url
+                ? {
+                    label: 'Ver',
+                    onClick: () => {
+                      // Navegar a la URL
+                      if (notification.action_url) {
+                        window.location.href = notification.action_url
+                      }
+                    },
                   }
-                }
-              } : undefined
+                : undefined,
             })
           }
         }
@@ -410,7 +424,7 @@ export function useInAppNotifications(
       const next = current.filter(n => n.id !== notification.id)
       notificationsRef.current = next
       setNotifications(next)
-      
+
       // Si era no leída, decrementar contador
       if (notification.status === 'unread') {
         setUnreadCount(prev => Math.max(0, prev - 1))
@@ -420,7 +434,7 @@ export function useInAppNotifications(
     // Handler de eventos realtime - FIXED: removed from dependency array
     const handleRealtimeEvent = (payload: Record<string, unknown>) => {
       console.log('[useInAppNotifications] 📡 Realtime event:', payload.eventType)
-      
+
       if (payload.eventType === 'INSERT') {
         const newNotification = payload.new as InAppNotification
         console.log('[useInAppNotifications] ➕ New notification:', newNotification.title)
@@ -442,11 +456,14 @@ export function useInAppNotifications(
       type || 'all',
       businessId || 'none',
       limit,
-      instanceIdRef.current
+      instanceIdRef.current,
     ]
     const channelName = `in_app_notifications_${userId}:${variantParts.join(':')}`
 
-    console.log('[useInAppNotifications] 📡 Subscribing to channel (with reconnection):', channelName)
+    console.log(
+      '[useInAppNotifications] 📡 Subscribing to channel (with reconnection):',
+      channelName
+    )
 
     const channelRef = { current: null as any }
     let attempts = 0
@@ -457,7 +474,10 @@ export function useInAppNotifications(
           // If there's an existing channel, remove it first
           supabase.removeChannel(channelRef.current)
         } catch (e) {
-          console.warn('[useInAppNotifications] ⚠️ Error removing existing channel before subscribe', e)
+          console.warn(
+            '[useInAppNotifications] ⚠️ Error removing existing channel before subscribe',
+            e
+          )
         }
       }
 
@@ -471,11 +491,11 @@ export function useInAppNotifications(
             event: '*',
             schema: 'public',
             table: 'in_app_notifications',
-            filter: `user_id=eq.${userId}`
+            filter: `user_id=eq.${userId}`,
           },
           handleRealtimeEvent
         )
-        .subscribe((status) => {
+        .subscribe(status => {
           console.log('[useInAppNotifications] 📡 Channel status:', status)
 
           // If channel reports error or closed, retry with backoff up to 3 times
@@ -515,6 +535,6 @@ export function useInAppNotifications(
     markAllAsRead,
     archive,
     deleteNotification,
-    refetch
+    refetch,
   }
 }

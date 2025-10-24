@@ -58,7 +58,12 @@ export const servicesService = {
     if (updates.currency !== undefined) dbUpdates.currency = updates.currency ?? 'MXN'
     if (updates.category !== undefined) dbUpdates.category = updates.category ?? null
     if (updates.is_active !== undefined) dbUpdates.is_active = updates.is_active
-    const { data, error } = await supabase.from('services').update(dbUpdates).eq('id', id).select().single()
+    const { data, error } = await supabase
+      .from('services')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single()
     if (error) throw error
     return normalizeService(data as Row<'services'>)
   },
@@ -66,5 +71,5 @@ export const servicesService = {
   async remove(id: string): Promise<void> {
     const { error } = await supabase.from('services').delete().eq('id', id)
     if (error) throw error
-  }
+  },
 }

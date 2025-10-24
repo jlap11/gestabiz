@@ -3,8 +3,8 @@
 // Tests para el panel de filtros de jerarquía de empleados
 // ============================================================================
 
-import { render, screen, fireEvent, within } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FiltersPanel } from '../FiltersPanel'
 import type { HierarchyFilters } from '@/types'
 
@@ -132,11 +132,9 @@ describe('FiltersPanel', () => {
       )
 
       // Buscar el botón X dentro del input de búsqueda
-      const searchContainer = screen
-        .getByPlaceholderText('Nombre, email o cargo...')
-        .closest('div')
+      const searchContainer = screen.getByPlaceholderText('Nombre, email o cargo...').closest('div')
       const clearButton = within(searchContainer!).getByRole('button')
-      
+
       fireEvent.click(clearButton)
 
       expect(mockOnFiltersChange).toHaveBeenCalledWith({ searchQuery: '' })

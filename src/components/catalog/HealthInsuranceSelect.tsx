@@ -2,27 +2,27 @@
  * Componente Select para EPS/Health Insurance con búsqueda
  * 28 registros requieren búsqueda
  */
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { useHealthInsurance } from '@/hooks/useCatalogs';
-import { Search } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { useHealthInsurance } from '@/hooks/useCatalogs'
+import { Search } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface HealthInsuranceSelectProps {
-  value?: string;
-  onChange?: (value: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  error?: string;
-  required?: boolean;
-  className?: string;
+  value?: string
+  onChange?: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  error?: string
+  required?: boolean
+  className?: string
 }
 
 export function HealthInsuranceSelect({
@@ -35,37 +35,32 @@ export function HealthInsuranceSelect({
   className = '',
 }: HealthInsuranceSelectProps) {
   const { t } = useLanguage()
-  const { healthInsurance, loading } = useHealthInsurance();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { healthInsurance, loading } = useHealthInsurance()
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Filtrar EPS según búsqueda en tiempo real
   const filteredInsurance = useMemo(() => {
-    if (!searchTerm.trim()) return healthInsurance;
+    if (!searchTerm.trim()) return healthInsurance
 
-    const search = searchTerm.toLowerCase();
+    const search = searchTerm.toLowerCase()
     return healthInsurance.filter(
       insurance =>
         insurance.name.toLowerCase().includes(search) ||
         insurance.abbreviation.toLowerCase().includes(search)
-    );
-  }, [healthInsurance, searchTerm]);
+    )
+  }, [healthInsurance, searchTerm])
 
   if (loading) {
     return (
       <div className="flex items-center gap-2 h-10 px-3 border border-border rounded-md bg-muted">
         <span className="text-sm text-muted-foreground">Cargando EPS...</span>
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-1">
-      <Select
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled}
-        required={required}
-      >
+      <Select value={value} onValueChange={onChange} disabled={disabled} required={required}>
         <SelectTrigger className={className}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -100,5 +95,5 @@ export function HealthInsuranceSelect({
 
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
-  );
+  )
 }

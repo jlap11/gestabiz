@@ -35,7 +35,7 @@ export const WIDTHS = {
 // Colores de estado para gráficos y visualizaciones
 export const STATUS_COLORS = {
   CONFIRMED: '#3b82f6',
-  COMPLETED: '#10b981', 
+  COMPLETED: '#10b981',
   CANCELLED: '#ef4444',
   NO_SHOW: '#6b7280',
   INCOME: '#10b981',

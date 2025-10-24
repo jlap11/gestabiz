@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
-  Calendar,
-  Users,
-  MapPin,
-  Briefcase,
-  TrendingUp,
-  DollarSign,
-  Clock,
-  CheckCircle,
-  XCircle,
   AlertCircle,
+  Briefcase,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  MapPin,
+  TrendingUp,
+  Users,
+  XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -58,18 +58,12 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
       if (apptError) throw apptError
 
       const totalAppointments = appointments?.length || 0
-      const todayAppointments = appointments?.filter(
-        (a) => a.start_time >= todayStart && a.start_time < now
-      ).length || 0
-      const upcomingAppointments = appointments?.filter(
-        (a) => a.start_time > now && a.status !== 'cancelled'
-      ).length || 0
-      const completedAppointments = appointments?.filter(
-        (a) => a.status === 'completed'
-      ).length || 0
-      const cancelledAppointments = appointments?.filter(
-        (a) => a.status === 'cancelled'
-      ).length || 0
+      const todayAppointments =
+        appointments?.filter(a => a.start_time >= todayStart && a.start_time < now).length || 0
+      const upcomingAppointments =
+        appointments?.filter(a => a.start_time > now && a.status !== 'cancelled').length || 0
+      const completedAppointments = appointments?.filter(a => a.status === 'completed').length || 0
+      const cancelledAppointments = appointments?.filter(a => a.status === 'cancelled').length || 0
 
       // Get locations
       const { data: locations, error: locError } = await supabase
@@ -98,18 +92,16 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
       if (empError) throw empError
 
       // Calculate revenue (only completed appointments)
-      const completedThisMonth = appointments?.filter(
-        (a) => a.status === 'completed' && a.start_time >= monthStart
-      ) || []
+      const completedThisMonth =
+        appointments?.filter(a => a.status === 'completed' && a.start_time >= monthStart) || []
 
       const monthlyRevenue = completedThisMonth.reduce((sum, appt) => {
         // Assuming appointment has a service with price
         return sum + (appt.total_price || 0)
       }, 0)
 
-      const averageAppointmentValue = completedAppointments > 0
-        ? monthlyRevenue / completedAppointments
-        : 0
+      const averageAppointmentValue =
+        completedAppointments > 0 ? monthlyRevenue / completedAppointments : 0
 
       setStats({
         totalAppointments,
@@ -225,8 +217,11 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
     <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
       {/* Main Stats Grid - Responsive */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {statCards.map((stat) => (
-          <Card key={stat.title} className="bg-card border-border hover:border-primary/20 transition-colors">
+        {statCards.map(stat => (
+          <Card
+            key={stat.title}
+            className="bg-card border-border hover:border-primary/20 transition-colors"
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
               <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 {stat.title}
@@ -292,8 +287,10 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
                 </h3>
                 <p className="text-sm text-foreground/90">
                   {(() => {
-                    if (stats.totalLocations === 0 && stats.totalServices === 0) return t('admin.overview.brokenConfig.needBoth')
-                    if (stats.totalLocations === 0) return t('admin.overview.brokenConfig.needLocation')
+                    if (stats.totalLocations === 0 && stats.totalServices === 0)
+                      return t('admin.overview.brokenConfig.needBoth')
+                    if (stats.totalLocations === 0)
+                      return t('admin.overview.brokenConfig.needLocation')
                     return t('admin.overview.brokenConfig.needServices')
                   })()}
                 </p>
@@ -329,14 +326,18 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
             <div>
               <p className="text-sm text-muted-foreground">{t('admin.overview.category')}</p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary">{business.category?.name || t('admin.overview.noCategory')}</Badge>
+                <Badge variant="secondary">
+                  {business.category?.name || t('admin.overview.noCategory')}
+                </Badge>
               </div>
             </div>
             {business.subcategories && business.subcategories.length > 0 && (
               <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground mb-2">{t('admin.overview.subcategories')}</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {t('admin.overview.subcategories')}
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {business.subcategories.map((sub) => (
+                  {business.subcategories.map(sub => (
                     <Badge key={sub.id} variant="outline" className="border-border">
                       {sub.subcategory?.name}
                     </Badge>

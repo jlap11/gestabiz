@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Check, X, User, Clock, EnvelopeSimple as Mail, Phone } from '@phosphor-icons/react'
+import { Check, Clock, EnvelopeSimple as Mail, Phone, User, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { User as UserType, Business, EmployeeRequest } from '@/types'
+import { Business, EmployeeRequest, User as UserType } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { format } from 'date-fns'
-import { es, enUS } from 'date-fns/locale'
+import { enUS, es } from 'date-fns/locale'
 
 interface EmployeeRequestsProps {
   business: Readonly<Business>
@@ -25,29 +25,41 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
   // Filter requests for this business
   const businessRequests = employeeRequests.filter(req => req.business_id === business.id)
 
-  const handleRequestAction = async (requestId: string, action: 'approved' | 'rejected', userId: string) => {
+  const handleRequestAction = async (
+    requestId: string,
+    action: 'approved' | 'rejected',
+    userId: string
+  ) => {
     setIsProcessing(requestId)
-    
+
     try {
       // Update request status
-      await setEmployeeRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status: action, reviewed_at: new Date().toISOString(), reviewed_by: user.id }
+      await setEmployeeRequests(prev =>
+        prev.map(req =>
+          req.id === requestId
+            ? {
+                ...req,
+                status: action,
+                reviewed_at: new Date().toISOString(),
+                reviewed_by: user.id,
+              }
             : req
         )
       )
 
       if (action === 'approved') {
         // Update user's business_id and role
-  await setUsers((prev) => {
-          const updated = prev.map(u => 
-            u.id === userId 
-              ? { 
-                  ...u, 
-                  business_id: business.id, 
-      role: 'employee' as const,
-      permissions: ['read_appointments', 'write_appointments'] as UserType['permissions']
+        await setUsers(prev => {
+          const updated = prev.map(u =>
+            u.id === userId
+              ? {
+                  ...u,
+                  business_id: business.id,
+                  role: 'employee' as const,
+                  permissions: [
+                    'read_appointments',
+                    'write_appointments',
+                  ] as UserType['permissions'],
                 }
               : u
           )
@@ -72,11 +84,23 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">{t('employee.requests.status.pending')}</Badge>
+        return (
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+            {t('employee.requests.status.pending')}
+          </Badge>
+        )
       case 'approved':
-        return <Badge variant="outline" className="text-green-600 border-green-600">{t('employee.requests.status.approved')}</Badge>
+        return (
+          <Badge variant="outline" className="text-green-600 border-green-600">
+            {t('employee.requests.status.approved')}
+          </Badge>
+        )
       case 'rejected':
-        return <Badge variant="outline" className="text-red-600 border-red-600">{t('employee.requests.status.rejected')}</Badge>
+        return (
+          <Badge variant="outline" className="text-red-600 border-red-600">
+            {t('employee.requests.status.rejected')}
+          </Badge>
+        )
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -100,12 +124,10 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
               <Clock className="h-5 w-5" />
               {t('employee.requests.pending_title')}
             </CardTitle>
-            <CardDescription>
-              {t('employee.requests.pending_description')}
-            </CardDescription>
+            <CardDescription>{t('employee.requests.pending_description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pendingRequests.map((request) => {
+            {pendingRequests.map(request => {
               const requestUser = getRequestUser(request.user_id)
               if (!requestUser) return null
 
@@ -116,7 +138,11 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
                       <Avatar>
                         <AvatarImage src={requestUser.avatar_url} alt={requestUser.name} />
                         <AvatarFallback>
-                          {requestUser.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {requestUser.name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -181,12 +207,10 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
         <Card>
           <CardHeader>
             <CardTitle>{t('employee.requests.processed_title')}</CardTitle>
-            <CardDescription>
-              {t('employee.requests.processed_description')}
-            </CardDescription>
+            <CardDescription>{t('employee.requests.processed_description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {processedRequests.map((request) => {
+            {processedRequests.map(request => {
               const requestUser = getRequestUser(request.user_id)
               if (!requestUser) return null
 
@@ -197,7 +221,11 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={requestUser.avatar_url} alt={requestUser.name} />
                         <AvatarFallback className="text-xs">
-                          {requestUser.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {requestUser.name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -209,7 +237,8 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
                   </div>
 
                   <div className="text-xs text-muted-foreground">
-                    {t('employee.requests.processed_on')}: {request.reviewed_at ? formatDate(request.reviewed_at) : '-'}
+                    {t('employee.requests.processed_on')}:{' '}
+                    {request.reviewed_at ? formatDate(request.reviewed_at) : '-'}
                   </div>
                 </div>
               )
@@ -223,7 +252,9 @@ export default function EmployeeRequests({ business, user }: Readonly<EmployeeRe
         <Card>
           <CardContent className="text-center py-12">
             <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t('employee.requests.no_requests_title')}</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {t('employee.requests.no_requests_title')}
+            </h3>
             <p className="text-muted-foreground">
               {t('employee.requests.no_requests_description')}
             </p>

@@ -2,15 +2,15 @@
 
 /**
  * Clean Transactional Data Script
- * 
+ *
  * Limpia SOLO data transaccional (generada por usuarios)
  * Preserva negocios, empleados, servicios, ubicaciones y configuraciones
- * 
+ *
  * Uso:
  *   npx ts-node scripts/clean-transactional-data.ts [--force]
  *   o
  *   node scripts/clean-transactional-data.mjs [--force]
- * 
+ *
  * Opciones:
  *   --force    Ejecuta sin confirmación interactiva
  *   --dry-run  Simula limpieza sin ejecutar
@@ -81,9 +81,7 @@ async function getTableStats(): Promise<CleanupStats> {
 
   for (const table of TRANSACTIONAL_TABLES) {
     try {
-      const { count } = await supabase
-        .from(table)
-        .select('*', { count: 'exact', head: true })
+      const { count } = await supabase.from(table).select('*', { count: 'exact', head: true })
 
       stats[table] = count || 0
     } catch {
@@ -99,9 +97,7 @@ async function getRetainedStats(): Promise<CleanupStats> {
 
   for (const table of RETAINED_TABLES) {
     try {
-      const { count } = await supabase
-        .from(table)
-        .select('*', { count: 'exact', head: true })
+      const { count } = await supabase.from(table).select('*', { count: 'exact', head: true })
 
       stats[table] = count || 0
     } catch {
@@ -113,13 +109,13 @@ async function getRetainedStats(): Promise<CleanupStats> {
 }
 
 async function confirmAction(question: string): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     })
 
-    rl.question(question, (answer) => {
+    rl.question(question, answer => {
       rl.close()
       resolve(answer.toLowerCase() === 'yes' || answer.toLowerCase() === 's')
     })
@@ -128,10 +124,7 @@ async function confirmAction(question: string): Promise<boolean> {
 
 async function deleteTableData(table: string): Promise<number> {
   try {
-    const { count } = await supabase
-      .from(table)
-      .delete()
-      .neq('id', 'non-existent-uuid') // delete all rows
+    const { count } = await supabase.from(table).delete().neq('id', 'non-existent-uuid') // delete all rows
 
     return count || 0
   } catch (error) {
@@ -180,7 +173,9 @@ async function cleanTransactionalData(dryRun = false): Promise<void> {
     return
   }
 
-  const confirmed = await confirmAction('\n¿Deseas continuar? (escribe "yes" o "s" para confirmar): ')
+  const confirmed = await confirmAction(
+    '\n¿Deseas continuar? (escribe "yes" o "s" para confirmar): '
+  )
 
   if (!confirmed) {
     console.log('\n❌ Operación cancelada.')

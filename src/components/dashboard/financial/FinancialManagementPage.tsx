@@ -1,50 +1,56 @@
-import React, { useState } from 'react';
-import { DollarSign, TrendingUp, FileText, Download, Building2, MapPin } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
-import { FinancialOverview } from './FinancialOverview';
-import { RevenueChart } from './RevenueChart';
-import { CategoryBreakdown } from './CategoryBreakdown';
-import { TopPerformers } from './TopPerformers';
-import { TransactionList } from '@/components/transactions/TransactionList';
-import { TransactionForm } from '@/components/transactions/TransactionForm';
+import React, { useState } from 'react'
+import { Building2, DollarSign, Download, FileText, MapPin, TrendingUp } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useAuth } from '@/hooks/useAuth'
+import { FinancialOverview } from './FinancialOverview'
+import { RevenueChart } from './RevenueChart'
+import { CategoryBreakdown } from './CategoryBreakdown'
+import { TopPerformers } from './TopPerformers'
+import { TransactionList } from '@/components/transactions/TransactionList'
+import { TransactionForm } from '@/components/transactions/TransactionForm'
 
 interface DateRange {
-  start: string;
-  end: string;
+  start: string
+  end: string
 }
 
 export function FinancialManagementPage() {
-  const { t } = useLanguage();
-  const { user } = useAuth();
-  
+  const { t } = useLanguage()
+  const { user } = useAuth()
+
   // Filters
-  const [selectedBusiness, setSelectedBusiness] = useState<string>('');
-  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [selectedBusiness, setSelectedBusiness] = useState<string>('')
+  const [selectedLocation, setSelectedLocation] = useState<string>('')
   const [dateRange, setDateRange] = useState<DateRange>(() => {
-    const end = new Date();
-    const start = new Date();
-    start.setMonth(end.getMonth() - 1);
+    const end = new Date()
+    const start = new Date()
+    start.setMonth(end.getMonth() - 1)
     return {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
-    };
-  });
+    }
+  })
 
   // Mock businesses and locations (replace with actual data fetching)
   const businesses = [
     { id: '1', name: 'Business 1' },
     { id: '2', name: 'Business 2' },
-  ];
+  ]
 
   const locations = [
     { id: '1', name: 'Location 1' },
     { id: '2', name: 'Location 2' },
-  ];
+  ]
 
   const handleExportData = () => {
     // Export all financial data to CSV/Excel
@@ -53,51 +59,51 @@ export function FinancialManagementPage() {
       revenue: 'Revenue chart data',
       categories: 'Category breakdown',
       performers: 'Top performers stats',
-      transactions: 'Transaction list'
-    };
-    
+      transactions: 'Transaction list',
+    }
+
     // Convert to CSV format and trigger download
     const csvContent = Object.entries(exportData)
       .map(([key, value]) => `${key},${value}`)
-      .join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `financial-report-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+      .join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `financial-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
 
   const handlePrintReport = () => {
-    window.print();
-  };
+    window.print()
+  }
 
   const handleQuickDateRange = (range: 'week' | 'month' | 'quarter' | 'year') => {
-    const end = new Date();
-    const start = new Date();
+    const end = new Date()
+    const start = new Date()
 
     switch (range) {
       case 'week':
-        start.setDate(end.getDate() - 7);
-        break;
+        start.setDate(end.getDate() - 7)
+        break
       case 'month':
-        start.setMonth(end.getMonth() - 1);
-        break;
+        start.setMonth(end.getMonth() - 1)
+        break
       case 'quarter':
-        start.setMonth(end.getMonth() - 3);
-        break;
+        start.setMonth(end.getMonth() - 3)
+        break
       case 'year':
-        start.setFullYear(end.getFullYear() - 1);
-        break;
+        start.setFullYear(end.getFullYear() - 1)
+        break
     }
 
     setDateRange({
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
-    });
-  };
+    })
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -108,9 +114,7 @@ export function FinancialManagementPage() {
             <DollarSign className="h-8 w-8 text-primary" />
             {t('financial.management')}
           </h1>
-          <p className="text-muted-foreground mt-1">
-            {t('financial.managementDescription')}
-          </p>
+          <p className="text-muted-foreground mt-1">{t('financial.managementDescription')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -174,21 +178,19 @@ export function FinancialManagementPage() {
 
           {/* Date Range */}
           <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">
-              {t('financial.dateRange')}
-            </label>
+            <label className="text-sm font-medium mb-2 block">{t('financial.dateRange')}</label>
             <div className="flex gap-2">
               <input
                 type="date"
                 value={dateRange.start}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))}
                 className="flex-1 px-3 py-2 border rounded-md text-sm"
               />
               <span className="flex items-center text-muted-foreground">-</span>
               <input
                 type="date"
                 value={dateRange.end}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))}
                 className="flex-1 px-3 py-2 border rounded-md text-sm"
               />
             </div>
@@ -196,9 +198,7 @@ export function FinancialManagementPage() {
 
           {/* Quick Filters */}
           <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">
-              {t('financial.quickFilters')}
-            </label>
+            <label className="text-sm font-medium mb-2 block">{t('financial.quickFilters')}</label>
             <div className="flex gap-1">
               <Button
                 variant="outline"
@@ -296,10 +296,10 @@ export function FinancialManagementPage() {
               <TransactionForm
                 businessId={selectedBusiness || user?.business_id || ''}
                 locationId={selectedLocation !== 'all' ? selectedLocation : undefined}
-                onSubmit={async (data) => {
+                onSubmit={async data => {
                   // Handle transaction creation
                   // Will trigger TransactionList refresh via realtime subscription
-                  return Promise.resolve();
+                  return Promise.resolve()
                 }}
               />
             </div>
@@ -307,5 +307,5 @@ export function FinancialManagementPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import supabase from '@/lib/supabase';
-import type { Location, Service } from '@/types/types';
+import { useEffect, useState } from 'react'
+import supabase from '@/lib/supabase'
+import type { Location, Service } from '@/types/types'
 
 interface WizardDataCache {
-  locations: Location[];
-  services: Service[];
-  loading: boolean;
-  error: string | null;
+  locations: Location[]
+  services: Service[]
+  loading: boolean
+  error: string | null
 }
 
 /**
@@ -19,7 +19,7 @@ export function useWizardDataCache(businessId: string | null) {
     services: [],
     loading: false,
     error: null,
-  });
+  })
 
   useEffect(() => {
     if (!businessId) {
@@ -28,12 +28,12 @@ export function useWizardDataCache(businessId: string | null) {
         services: [],
         loading: false,
         error: null,
-      });
-      return;
+      })
+      return
     }
 
     const loadAllData = async () => {
-      setCache(prev => ({ ...prev, loading: true, error: null }));
+      setCache(prev => ({ ...prev, loading: true, error: null }))
 
       try {
         // Ejecutar consultas en paralelo para máxima velocidad
@@ -53,31 +53,31 @@ export function useWizardDataCache(businessId: string | null) {
             .eq('business_id', businessId)
             .eq('is_active', true)
             .order('name'),
-        ]);
+        ])
 
         // Verificar errores
-        if (locationsResult.error) throw new Error(`Locations: ${locationsResult.error.message}`);
-        if (servicesResult.error) throw new Error(`Services: ${servicesResult.error.message}`);
+        if (locationsResult.error) throw new Error(`Locations: ${locationsResult.error.message}`)
+        if (servicesResult.error) throw new Error(`Services: ${servicesResult.error.message}`)
 
         setCache({
           locations: (locationsResult.data as Location[]) || [],
           services: (servicesResult.data as Service[]) || [],
           loading: false,
           error: null,
-        });
+        })
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Error al cargar datos';
+        const message = error instanceof Error ? error.message : 'Error al cargar datos'
         setCache({
           locations: [],
           services: [],
           loading: false,
           error: message,
-        });
+        })
       }
-    };
+    }
 
-    loadAllData();
-  }, [businessId]);
+    loadAllData()
+  }, [businessId])
 
-  return cache;
+  return cache
 }

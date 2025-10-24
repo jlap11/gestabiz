@@ -1,16 +1,15 @@
-import { useState } from 'react';
-import { useFavorites, FavoriteBusiness } from '@/hooks/useFavorites';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Building2, Star, MapPin, Heart, Loader2 } from 'lucide-react';
-import BusinessProfile from '@/components/business/BusinessProfile';
+import { useState } from 'react'
+import { FavoriteBusiness, useFavorites } from '@/hooks/useFavorites'
+import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Building2, Heart, Loader2, MapPin, Star } from 'lucide-react'
+import BusinessProfile from '@/components/business/BusinessProfile'
 
 /**
  * FavoritesList - Componente para mostrar y gestionar negocios favoritos
- * 
+ *
  * Características:
  * - Grid responsive de tarjetas de negocios
  * - Click en tarjeta abre BusinessProfile modal
@@ -19,10 +18,10 @@ import BusinessProfile from '@/components/business/BusinessProfile';
  * - Loading states y error handling
  */
 export default function FavoritesList() {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const { favorites, loading, error } = useFavorites(user?.id);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const { user } = useAuth()
+  const { t } = useLanguage()
+  const { favorites, loading, error } = useFavorites(user?.id)
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
 
   // Loading state
   if (loading) {
@@ -31,7 +30,7 @@ export default function FavoritesList() {
         <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
         <p className="text-muted-foreground text-center">{t('favoritesList.loading')}</p>
       </div>
-    );
+    )
   }
 
   // Error state
@@ -43,7 +42,7 @@ export default function FavoritesList() {
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Empty state
@@ -60,17 +59,15 @@ export default function FavoritesList() {
           {t('favoritesList.emptyDescription')}
         </p>
         <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-md">
-          <p className="text-sm text-primary font-medium">
-            {t('favoritesList.tipHeader')}
-          </p>
+          <p className="text-sm text-primary font-medium">{t('favoritesList.tipHeader')}</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Render business card
   const renderBusinessCard = (business: FavoriteBusiness) => (
-    <Card 
+    <Card
       key={business.id}
       className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-primary/30"
       onClick={() => setSelectedBusinessId(business.id)}
@@ -91,9 +88,7 @@ export default function FavoritesList() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-foreground truncate">
-                {business.name}
-              </h4>
+              <h4 className="font-semibold text-foreground truncate">{business.name}</h4>
               {business.description && (
                 <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
                   {business.description}
@@ -111,9 +106,7 @@ export default function FavoritesList() {
               </span>
             </div>
             {business.review_count > 0 && (
-              <span className="text-xs text-muted-foreground">
-                ({business.review_count})
-              </span>
+              <span className="text-xs text-muted-foreground">({business.review_count})</span>
             )}
           </div>
 
@@ -122,21 +115,17 @@ export default function FavoritesList() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">{business.city}</span>
-              {business.address && (
-                <span className="text-xs truncate">• {business.address}</span>
-              )}
+              {business.address && <span className="text-xs truncate">• {business.address}</span>}
             </div>
           )}
-
-          
 
           {/* Botón de acción */}
           <Button
             variant="default"
             className="w-full"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedBusinessId(business.id);
+            onClick={e => {
+              e.stopPropagation()
+              setSelectedBusinessId(business.id)
             }}
           >
             {t('favoritesList.bookButton')}
@@ -144,7 +133,7 @@ export default function FavoritesList() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 
   return (
     <>
@@ -157,7 +146,11 @@ export default function FavoritesList() {
               {t('favoritesList.myFavorites')}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {favorites.length} {favorites.length === 1 ? t('favoritesList.businessMarked') : t('favoritesList.businessesMarked')} {t('favoritesList.tipDescription')}
+              {favorites.length}{' '}
+              {favorites.length === 1
+                ? t('favoritesList.businessMarked')
+                : t('favoritesList.businessesMarked')}{' '}
+              {t('favoritesList.tipDescription')}
             </p>
           </div>
         </div>
@@ -183,5 +176,5 @@ export default function FavoritesList() {
         />
       )}
     </>
-  );
+  )
 }

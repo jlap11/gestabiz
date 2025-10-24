@@ -1,8 +1,8 @@
 /**
  * Logger Utility - Sistema de logging unificado con Sentry + Supabase
- * 
+ *
  * **Dual Logging**: Envía logs a Sentry (cloud) Y Supabase (database) simultáneamente
- * 
+ *
  * **Features**:
  * - 4 niveles: error, warn, info, fatal
  * - Rate limiting (max 100 errores idénticos/hora vía hash)
@@ -10,43 +10,49 @@
  * - Context injection automático (user, session, route)
  * - Stack trace cleaning
  * - GDPR compliance (logs purgados a los 90 días)
- * 
+ *
  * **Usage**:
  * ```ts
  * import { logger } from '@/lib/logger';
- * 
+ *
  * // En hooks
  * logger.error('Failed to load appointments', error, { component: 'useAppointments' });
- * 
+ *
  * // En componentes
  * logger.warn('User not found', { userId: '123' });
- * 
+ *
  * // Fatal (requiere atención inmediata)
  * logger.fatal('Database connection lost', error);
  * ```
  */
 
-import * as Sentry from '@sentry/react';
-import { supabase } from './supabase';
+import * as Sentry from '@sentry/react'
+import { supabase } from './supabase'
 
 // ===== TYPES =====
-type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'fatal';
-type LogSource = 'frontend-web' | 'frontend-mobile' | 'frontend-extension' | 'edge-function' | 'database' | 'cron-job';
+type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'fatal'
+type LogSource =
+  | 'frontend-web'
+  | 'frontend-mobile'
+  | 'frontend-extension'
+  | 'edge-function'
+  | 'database'
+  | 'cron-job'
 
 interface LogContext {
-  component?: string;
-  userId?: string;
-  sessionId?: string;
-  route?: string;
-  [key: string]: unknown;
+  component?: string
+  userId?: string
+  sessionId?: string
+  route?: string
+  [key: string]: unknown
 }
 
 interface LogOptions {
-  level?: LogLevel;
-  source?: LogSource;
-  context?: LogContext;
-  skipSentry?: boolean;
-  skipSupabase?: boolean;
+  level?: LogLevel
+  source?: LogSource
+  context?: LogContext
+  skipSentry?: boolean
+  skipSupabase?: boolean
 }
 
 // ===== CONFIG =====
@@ -55,7 +61,7 @@ const CONFIG = {
   SAMPLE_RATE: Number.parseFloat(import.meta.env.VITE_SENTRY_SAMPLE_RATE || '0.3'),
   SOURCE: 'frontend-web' as LogSource,
   ENVIRONMENT: import.meta.env.PROD ? 'production' : 'development',
-};
+}
 
 // ===== HELPER FUNCTIONS =====
 
@@ -63,8 +69,8 @@ const CONFIG = {
  * Decide si un log debe ser enviado basándose en sampling rate
  */
 function shouldSample(): boolean {
-  if (!CONFIG.IS_PRODUCTION) return true; // Siempre en dev
-  return Math.random() < CONFIG.SAMPLE_RATE;
+  if (!CONFIG.IS_PRODUCTION) return true // Siempre en dev
+  return Math.random() < CONFIG.SAMPLE_RATE
 }
 
 /**
@@ -75,27 +81,27 @@ function getAutoContext(): Partial<LogContext> {
     route: globalThis.location?.pathname,
     sessionId: sessionStorage.getItem('session_id') || undefined,
     // userId se inyecta manualmente en cada log si está disponible
-  };
+  }
 }
 
 /**
  * Genera hash MD5 simplificado (para rate limiting)
  */
 function simpleHash(str: string): string {
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0; // Convert to 32bit integer
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash |= 0 // Convert to 32bit integer
   }
-  return Math.abs(hash).toString(16);
+  return Math.abs(hash).toString(16)
 }
 
 /**
  * Limpia stack trace para Sentry
  */
 function cleanStackTrace(error: Error): string {
-  return error.stack?.split('\n').slice(0, 10).join('\n') || error.message;
+  return error.stack?.split('\n').slice(0, 10).join('\n') || error.message
 }
 
 // ===== CORE LOGGER CLASS =====
@@ -117,43 +123,35 @@ class Logger {
       error,
       context,
       ...options,
-    });
+    })
   }
 
   /**
    * Log de warning (nivel WARNING)
    * Solo va a Supabase, no a Sentry (para no consumir cuota)
    */
-  async warn(
-    message: string,
-    context?: LogContext,
-    options?: LogOptions
-  ): Promise<void> {
+  async warn(message: string, context?: LogContext, options?: LogOptions): Promise<void> {
     return this.log({
       level: 'warning',
       message,
       context,
       skipSentry: true, // Warnings no van a Sentry
       ...options,
-    });
+    })
   }
 
   /**
    * Log de info (nivel INFO)
    * Solo va a Supabase
    */
-  async info(
-    message: string,
-    context?: LogContext,
-    options?: LogOptions
-  ): Promise<void> {
+  async info(message: string, context?: LogContext, options?: LogOptions): Promise<void> {
     return this.log({
       level: 'info',
       message,
       context,
       skipSentry: true, // Info no va a Sentry
       ...options,
-    });
+    })
   }
 
   /**
@@ -173,7 +171,7 @@ class Logger {
       context,
       skipSampling: true, // Fatal siempre se envía
       ...options,
-    });
+    })
   }
 
   /**
@@ -189,26 +187,26 @@ class Logger {
     skipSupabase = false,
     skipSampling = false,
   }: LogOptions & {
-    message: string;
-    error?: Error | unknown;
-    skipSampling?: boolean;
+    message: string
+    error?: Error | unknown
+    skipSampling?: boolean
   }): Promise<void> {
     // Sampling (excepto fatal)
     if (!skipSampling && !shouldSample()) {
-      return;
+      return
     }
 
     // Merge contexts
     const fullContext = {
       ...getAutoContext(),
       ...context,
-    };
+    }
 
     // Stack trace
-    const stackTrace = error instanceof Error ? cleanStackTrace(error) : undefined;
-    
+    const stackTrace = error instanceof Error ? cleanStackTrace(error) : undefined
+
     // Error hash (para rate limiting)
-    const errorHash = simpleHash(`${source}:${message}:${fullContext.component || ''}`);
+    const errorHash = simpleHash(`${source}:${message}:${fullContext.component || ''}`)
 
     // Enviar a Sentry (si corresponde)
     if (!skipSentry && (level === 'error' || level === 'fatal')) {
@@ -220,7 +218,7 @@ class Logger {
             source,
           },
           extra: fullContext,
-        });
+        })
       } else {
         Sentry.captureMessage(message, {
           level: level === 'fatal' ? 'fatal' : 'error',
@@ -229,7 +227,7 @@ class Logger {
             source,
           },
           extra: fullContext,
-        });
+        })
       }
     }
 
@@ -247,37 +245,37 @@ class Logger {
           p_context: fullContext as Record<string, unknown>,
           p_environment: CONFIG.ENVIRONMENT,
           p_error_hash: errorHash,
-        });
+        })
 
         if (rpcError) {
           // Fallback si falla Supabase: solo console en dev
           if (!CONFIG.IS_PRODUCTION) {
             // eslint-disable-next-line no-console
-            console.error('[Logger] Failed to log to Supabase:', rpcError);
+            console.error('[Logger] Failed to log to Supabase:', rpcError)
           }
         }
       } catch (rpcError) {
         // Silencioso en producción para no causar errores secundarios
         if (!CONFIG.IS_PRODUCTION) {
           // eslint-disable-next-line no-console
-          console.error('[Logger] Exception logging to Supabase:', rpcError);
+          console.error('[Logger] Exception logging to Supabase:', rpcError)
         }
       }
     }
 
     // Log to console en development
     if (!CONFIG.IS_PRODUCTION && level) {
-      let logFn = console.info; // eslint-disable-line no-console
+      let logFn = console.info // eslint-disable-line no-console
       if (level === 'fatal' || level === 'error') {
-        logFn = console.error; // eslint-disable-line no-console
+        logFn = console.error // eslint-disable-line no-console
       } else if (level === 'warning') {
-        logFn = console.warn; // eslint-disable-line no-console
+        logFn = console.warn // eslint-disable-line no-console
       }
 
       logFn(`[${level.toUpperCase()}] ${message}`, {
         error,
         context: fullContext,
-      });
+      })
     }
   }
 
@@ -293,13 +291,13 @@ class Logger {
     userAgent,
     metadata = {},
   }: {
-    email: string;
-    status: 'success' | 'failure' | 'blocked';
-    method: 'password' | 'google' | 'magic_link' | 'extension' | 'password_reset';
-    userId?: string;
-    ipAddress?: string;
-    userAgent?: string;
-    metadata?: Record<string, unknown>;
+    email: string
+    status: 'success' | 'failure' | 'blocked'
+    method: 'password' | 'google' | 'magic_link' | 'extension' | 'password_reset'
+    userId?: string
+    ipAddress?: string
+    userAgent?: string
+    metadata?: Record<string, unknown>
   }): Promise<void> {
     try {
       const { error } = await supabase.rpc('log_login_event', {
@@ -310,22 +308,22 @@ class Logger {
         p_ip_address: ipAddress,
         p_user_agent: userAgent || navigator.userAgent,
         p_metadata: metadata,
-      });
+      })
 
       if (error) {
         if (!CONFIG.IS_PRODUCTION) {
           // eslint-disable-next-line no-console
-          console.error('[Logger] Failed to log login:', error);
+          console.error('[Logger] Failed to log login:', error)
         }
       }
     } catch (rpcError) {
       if (!CONFIG.IS_PRODUCTION) {
         // eslint-disable-next-line no-console
-        console.error('[Logger] Exception logging login:', rpcError);
+        console.error('[Logger] Exception logging login:', rpcError)
       }
     }
   }
 }
 
 // ===== SINGLETON EXPORT =====
-export const logger = new Logger();
+export const logger = new Logger()

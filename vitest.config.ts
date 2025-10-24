@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { resolve, dirname } from 'path'
+import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import react from '@vitejs/plugin-react'
 

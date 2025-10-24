@@ -3,8 +3,8 @@
 // Tests para la vista de lista de empleados con ordenamiento y expansión
 // ============================================================================
 
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { EmployeeListView } from '../EmployeeListView'
 import type { EmployeeHierarchy } from '@/types'
 
@@ -143,7 +143,7 @@ describe('EmployeeListView', () => {
       render(<EmployeeListView employees={mockEmployees} />)
 
       const nameButton = screen.getByText('Nombre')
-      
+
       // Primera clic: ordenar ascendente
       fireEvent.click(nameButton)
       let cards = screen.getAllByText(/alice@example.com|bob@example.com|charlie@example.com/)
@@ -204,7 +204,7 @@ describe('EmployeeListView', () => {
       // Buscar el botón de expansión de Alice (que tiene a Bob como subordinado)
       const aliceCard = screen.getByText('Alice Owner').closest('div')
       const expandButton = aliceCard?.querySelector('button')
-      
+
       if (expandButton) {
         fireEvent.click(expandButton)
 
@@ -218,11 +218,11 @@ describe('EmployeeListView', () => {
 
       const aliceCard = screen.getByText('Alice Owner').closest('div')
       const expandButton = aliceCard?.querySelector('button')
-      
+
       if (expandButton) {
         // Expandir
         fireEvent.click(expandButton)
-        
+
         // Colapsar
         fireEvent.click(expandButton)
 
@@ -235,12 +235,7 @@ describe('EmployeeListView', () => {
 
   describe('Callbacks', () => {
     it('debería llamar a onEmployeeSelect al seleccionar empleado', () => {
-      render(
-        <EmployeeListView
-          employees={mockEmployees}
-          onEmployeeSelect={mockOnEmployeeSelect}
-        />
-      )
+      render(<EmployeeListView employees={mockEmployees} onEmployeeSelect={mockOnEmployeeSelect} />)
 
       const aliceCard = screen.getByText('Alice Owner')
       fireEvent.click(aliceCard)
@@ -271,7 +266,7 @@ describe('EmployeeListView', () => {
       render(<EmployeeListView employees={mockEmployees} />)
 
       const names = screen.getAllByText(/Owner|Manager|Staff/)
-      
+
       // Por defecto ordena por nivel: Owner (0) -> Manager (2) -> Staff (4)
       expect(names[0]).toHaveTextContent('Owner')
     })
@@ -281,7 +276,7 @@ describe('EmployeeListView', () => {
 
       // Alice (user-1) tiene 2 subordinados directos
       const aliceCard = screen.getByText('Alice Owner').closest('[data-testid="employee-row"]')
-      
+
       if (aliceCard) {
         const subordinateCount = aliceCard.querySelector('[data-testid="subordinate-count"]')
         if (subordinateCount) {

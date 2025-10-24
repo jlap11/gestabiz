@@ -1,25 +1,25 @@
-import React, { useMemo } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Building2, Check, Loader2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, { useMemo } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { AlertCircle, Building2, Check, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Business {
-  id: string;
-  name: string;
-  description?: string;
-  logo_url?: string;
-  address?: string;
-  city?: string;
-  state?: string;
+  id: string
+  name: string
+  description?: string
+  logo_url?: string
+  address?: string
+  city?: string
+  state?: string
 }
 
 interface EmployeeBusinessSelectionProps {
-  employeeId: string;
-  employeeName: string;
-  selectedBusinessId: string | null;
-  onSelectBusiness: (business: Business) => void;
+  employeeId: string
+  employeeName: string
+  selectedBusinessId: string | null
+  onSelectBusiness: (business: Business) => void
 }
 
 /**
@@ -36,12 +36,12 @@ export function EmployeeBusinessSelection({
   const { businesses, loading, error, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(
     employeeId,
     true // Incluir negocios donde es owner (independiente)
-  );
+  )
 
   // Validación: Si el empleado NO está vinculado a ningún negocio, no puede ser reservado
   const canBeBooked = useMemo(() => {
-    return isEmployeeOfAnyBusiness && businesses.length > 0;
-  }, [isEmployeeOfAnyBusiness, businesses]);
+    return isEmployeeOfAnyBusiness && businesses.length > 0
+  }, [isEmployeeOfAnyBusiness, businesses])
 
   if (loading) {
     return (
@@ -49,7 +49,7 @@ export function EmployeeBusinessSelection({
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-3 text-muted-foreground">Verificando disponibilidad...</span>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -60,7 +60,7 @@ export function EmployeeBusinessSelection({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
-    );
+    )
   }
 
   // Si el profesional no está vinculado a ningún negocio
@@ -72,16 +72,15 @@ export function EmployeeBusinessSelection({
           <AlertDescription>
             <strong>{employeeName}</strong> no está disponible para reservas en este momento.
             <br />
-            Los profesionales deben estar vinculados a un negocio (empresa o independiente) para aceptar citas.
+            Los profesionales deben estar vinculados a un negocio (empresa o independiente) para
+            aceptar citas.
           </AlertDescription>
         </Alert>
         <div className="mt-6 flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Por favor, selecciona otro profesional.
-          </p>
+          <p className="text-sm text-muted-foreground">Por favor, selecciona otro profesional.</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Si solo tiene un negocio, auto-seleccionarlo (no mostrar este paso)
@@ -89,24 +88,20 @@ export function EmployeeBusinessSelection({
   if (businesses.length === 1) {
     // Auto-select el único negocio disponible
     if (selectedBusinessId !== businesses[0].id) {
-      onSelectBusiness(businesses[0]);
+      onSelectBusiness(businesses[0])
     }
-    
+
     return (
       <div className="p-6">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Check className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <p className="text-lg font-medium text-foreground">
-              Reservando con {employeeName}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Negocio: {businesses[0].name}
-            </p>
+            <p className="text-lg font-medium text-foreground">Reservando con {employeeName}</p>
+            <p className="text-sm text-muted-foreground mt-2">Negocio: {businesses[0].name}</p>
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Si tiene múltiples negocios, mostrar selector
@@ -128,16 +123,16 @@ export function EmployeeBusinessSelection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {businesses.map((business) => (
+        {businesses.map(business => (
           <button
             key={business.id}
             onClick={() => onSelectBusiness(business)}
             className={cn(
-              "relative group rounded-xl p-6 text-left transition-all duration-200 border-2",
-              "hover:scale-[1.02] hover:shadow-xl",
+              'relative group rounded-xl p-6 text-left transition-all duration-200 border-2',
+              'hover:scale-[1.02] hover:shadow-xl',
               selectedBusinessId === business.id
-                ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
-                : "bg-muted/50 border-border hover:bg-muted hover:border-border/50"
+                ? 'bg-primary/20 border-primary shadow-lg shadow-primary/20'
+                : 'bg-muted/50 border-border hover:bg-muted hover:border-border/50'
             )}
           >
             {/* Selected indicator */}
@@ -189,10 +184,10 @@ export function EmployeeBusinessSelection({
 
       <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
         <p className="text-sm text-blue-600 dark:text-blue-400">
-          <strong>Nota:</strong> La cita se agendará bajo el negocio seleccionado. 
-          Las políticas de cancelación y confirmación pueden variar según el negocio.
+          <strong>Nota:</strong> La cita se agendará bajo el negocio seleccionado. Las políticas de
+          cancelación y confirmación pueden variar según el negocio.
         </p>
       </div>
     </div>
-  );
+  )
 }

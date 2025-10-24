@@ -1,10 +1,10 @@
-import { UserRole, Permission, RolePermissions } from '@/types'
+import { Permission, RolePermissions, UserRole } from '@/types'
 
 // Define permissions for each role
 export const ROLE_PERMISSIONS: RolePermissions = {
   admin: [
     'read_appointments',
-    'write_appointments', 
+    'write_appointments',
     'delete_appointments',
     'read_clients',
     'write_clients',
@@ -24,7 +24,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     'write_services',
     'delete_services',
     'manage_settings',
-    'send_notifications'
+    'send_notifications',
   ],
   employee: [
     'read_appointments',
@@ -33,11 +33,9 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     'write_clients',
     'read_business',
     'read_services',
-    'send_notifications'
+    'send_notifications',
   ],
-  client: [
-    'read_appointments'
-  ]
+  client: ['read_appointments'],
 }
 
 // Get permissions for a role
@@ -52,15 +50,15 @@ export function hasPermission(role: UserRole, permission: Permission): boolean {
 
 // Check if user has permission (considering custom permissions)
 export function userHasPermission(
-  userRole: UserRole, 
-  userPermissions: Permission[], 
+  userRole: UserRole,
+  userPermissions: Permission[],
   requiredPermission: Permission
 ): boolean {
   // Check role-based permissions first
   if (hasPermission(userRole, requiredPermission)) {
     return true
   }
-  
+
   // Check custom user permissions
   return userPermissions.includes(requiredPermission)
 }
@@ -69,7 +67,7 @@ export function userHasPermission(
 export function getAllPermissions(): Permission[] {
   return [
     'read_appointments',
-    'write_appointments', 
+    'write_appointments',
     'delete_appointments',
     'read_clients',
     'write_clients',
@@ -89,39 +87,39 @@ export function getAllPermissions(): Permission[] {
     'write_services',
     'delete_services',
     'manage_settings',
-    'send_notifications'
+    'send_notifications',
   ]
 }
 
 // Permission descriptions for UI
 export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
-  'read_appointments': 'Ver citas',
-  'write_appointments': 'Crear y editar citas',
-  'delete_appointments': 'Eliminar citas',
-  'read_clients': 'Ver clientes',
-  'write_clients': 'Crear y editar clientes',
-  'delete_clients': 'Eliminar clientes',
-  'read_employees': 'Ver empleados',
-  'write_employees': 'Crear y editar empleados',
-  'delete_employees': 'Eliminar empleados',
-  'read_business': 'Ver información del negocio',
-  'write_business': 'Editar información del negocio',
-  'delete_business': 'Eliminar negocio',
-  'read_reports': 'Ver reportes',
-  'write_reports': 'Crear reportes',
-  'read_locations': 'Ver ubicaciones',
-  'write_locations': 'Crear y editar ubicaciones',
-  'delete_locations': 'Eliminar ubicaciones',
-  'read_services': 'Ver servicios',
-  'write_services': 'Crear y editar servicios',
-  'delete_services': 'Eliminar servicios',
-  'manage_settings': 'Gestionar configuración',
-  'send_notifications': 'Enviar notificaciones'
+  read_appointments: 'Ver citas',
+  write_appointments: 'Crear y editar citas',
+  delete_appointments: 'Eliminar citas',
+  read_clients: 'Ver clientes',
+  write_clients: 'Crear y editar clientes',
+  delete_clients: 'Eliminar clientes',
+  read_employees: 'Ver empleados',
+  write_employees: 'Crear y editar empleados',
+  delete_employees: 'Eliminar empleados',
+  read_business: 'Ver información del negocio',
+  write_business: 'Editar información del negocio',
+  delete_business: 'Eliminar negocio',
+  read_reports: 'Ver reportes',
+  write_reports: 'Crear reportes',
+  read_locations: 'Ver ubicaciones',
+  write_locations: 'Crear y editar ubicaciones',
+  delete_locations: 'Eliminar ubicaciones',
+  read_services: 'Ver servicios',
+  write_services: 'Crear y editar servicios',
+  delete_services: 'Eliminar servicios',
+  manage_settings: 'Gestionar configuración',
+  send_notifications: 'Enviar notificaciones',
 }
 
 // Role descriptions
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   admin: 'Administrador - Acceso completo al sistema',
   employee: 'Empleado - Puede gestionar citas y clientes',
-  client: 'Cliente - Solo puede ver sus propias citas'
+  client: 'Cliente - Solo puede ver sus propias citas',
 }

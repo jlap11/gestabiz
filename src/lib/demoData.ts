@@ -1,4 +1,4 @@
-import { Client, Appointment, Business, Location, Service } from '@/types'
+import { Appointment, Business, Client, Location, Service } from '@/types'
 
 export const demoBusiness: Business = {
   id: 'demo-business',
@@ -23,22 +23,22 @@ export const demoBusiness: Business = {
     thursday: { open: '08:00', close: '17:00', closed: false },
     friday: { open: '08:00', close: '17:00', closed: false },
     saturday: { open: '09:00', close: '13:00', closed: false },
-    sunday: { open: '00:00', close: '00:00', closed: true }
+    sunday: { open: '00:00', close: '00:00', closed: true },
   },
   timezone: 'Europe/Madrid',
   owner_id: 'demo-user',
   settings: {
-  appointment_buffer: 15,
-  advance_booking_days: 30,
-  cancellation_policy: 24,
-  auto_confirm: true,
-  require_deposit: false,
-  deposit_percentage: 0,
-  currency: 'EUR'
+    appointment_buffer: 15,
+    advance_booking_days: 30,
+    cancellation_policy: 24,
+    auto_confirm: true,
+    require_deposit: false,
+    deposit_percentage: 0,
+    currency: 'EUR',
   },
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
-  is_active: true
+  is_active: true,
 }
 
 export const demoLocations: Location[] = [
@@ -62,13 +62,13 @@ export const demoLocations: Location[] = [
       thursday: { open: '08:00', close: '17:00', closed: false },
       friday: { open: '08:00', close: '17:00', closed: false },
       saturday: { open: '09:00', close: '13:00', closed: false },
-      sunday: { open: '00:00', close: '00:00', closed: true }
+      sunday: { open: '00:00', close: '00:00', closed: true },
     },
-  is_active: true,
-  is_main: true,
+    is_active: true,
+    is_main: true,
     created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  created_by: 'demo-user'
+    updated_at: '2024-01-01T00:00:00Z',
+    created_by: 'demo-user',
   },
   {
     id: 'demo-location-2',
@@ -79,8 +79,8 @@ export const demoLocations: Location[] = [
     state: 'Madrid',
     country: 'España',
     postal_code: '28002',
-    latitude: 40.4500,
-    longitude: -3.6900,
+    latitude: 40.45,
+    longitude: -3.69,
     phone: '+1 (555) 000-0001',
     email: 'norte@clinicasonrisas.com',
     business_hours: {
@@ -90,14 +90,14 @@ export const demoLocations: Location[] = [
       thursday: { open: '09:00', close: '18:00', closed: false },
       friday: { open: '09:00', close: '18:00', closed: false },
       saturday: { open: '10:00', close: '14:00', closed: false },
-      sunday: { open: '00:00', close: '00:00', closed: true }
+      sunday: { open: '00:00', close: '00:00', closed: true },
     },
-  is_active: true,
-  is_main: false,
+    is_active: true,
+    is_main: false,
     created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  created_by: 'demo-user'
-  }
+    updated_at: '2024-01-01T00:00:00Z',
+    created_by: 'demo-user',
+  },
 ]
 
 export const demoServices: Service[] = [
@@ -110,10 +110,10 @@ export const demoServices: Service[] = [
     price: 80,
     currency: 'EUR',
     category: 'Preventiva',
-  is_active: true,
+    is_active: true,
     created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  created_by: 'demo-user'
+    updated_at: '2024-01-01T00:00:00Z',
+    created_by: 'demo-user',
   },
   {
     id: 'demo-service-2',
@@ -124,10 +124,10 @@ export const demoServices: Service[] = [
     price: 120,
     currency: 'EUR',
     category: 'Restaurativa',
-  is_active: true,
+    is_active: true,
     created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  created_by: 'demo-user'
+    updated_at: '2024-01-01T00:00:00Z',
+    created_by: 'demo-user',
   },
   {
     id: 'demo-service-3',
@@ -138,10 +138,10 @@ export const demoServices: Service[] = [
     price: 100,
     currency: 'EUR',
     category: 'Cirugía',
-  is_active: true,
+    is_active: true,
     created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  created_by: 'demo-user'
+    updated_at: '2024-01-01T00:00:00Z',
+    created_by: 'demo-user',
   },
   {
     id: 'demo-service-4',
@@ -152,11 +152,11 @@ export const demoServices: Service[] = [
     price: 200,
     currency: 'EUR',
     category: 'Estética',
-  is_active: true,
+    is_active: true,
     created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  created_by: 'demo-user'
-  }
+    updated_at: '2024-01-01T00:00:00Z',
+    created_by: 'demo-user',
+  },
 ]
 
 export const demoClients: Client[] = [
@@ -180,7 +180,7 @@ export const demoClients: Client[] = [
     tags: ['VIP', 'Frecuente'],
     created_at: '2024-01-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
-    created_by: 'demo-user'
+    created_by: 'demo-user',
   },
   {
     id: 'demo-client-2',
@@ -202,7 +202,7 @@ export const demoClients: Client[] = [
     tags: ['Regular'],
     created_at: '2024-01-16T11:30:00Z',
     updated_at: '2024-11-15T14:00:00Z',
-    created_by: 'demo-user'
+    created_by: 'demo-user',
   },
   {
     id: 'demo-client-3',
@@ -224,7 +224,7 @@ export const demoClients: Client[] = [
     tags: ['VIP', 'Leal'],
     created_at: '2024-01-17T09:15:00Z',
     updated_at: '2024-12-05T16:00:00Z',
-    created_by: 'demo-user'
+    created_by: 'demo-user',
   },
   {
     id: 'demo-client-4',
@@ -242,11 +242,11 @@ export const demoClients: Client[] = [
     total_appointments: 3,
     last_appointment: '2024-10-20T11:00:00Z',
     is_recurring: false,
-  status: 'inactive',
+    status: 'inactive',
     tags: ['Nuevo'],
     created_at: '2024-01-18T14:20:00Z',
     updated_at: '2024-10-20T11:00:00Z',
-    created_by: 'demo-user'
+    created_by: 'demo-user',
   },
   {
     id: 'demo-client-5',
@@ -268,8 +268,8 @@ export const demoClients: Client[] = [
     tags: ['VIP', 'Ejecutiva'],
     created_at: '2024-01-19T16:45:00Z',
     updated_at: '2024-12-10T09:00:00Z',
-    created_by: 'demo-user'
-  }
+    created_by: 'demo-user',
+  },
 ]
 
 // Generate appointments for the next 30 days
@@ -288,8 +288,20 @@ export const demoAppointments: Appointment[] = [
     client_email: 'ana.garcia@email.com',
     client_phone: '+1 (555) 123-4567',
     client_whatsapp: '+1 (555) 123-4567',
-    start_time: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 10, 0).toISOString(),
-    end_time: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 11, 0).toISOString(),
+    start_time: new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate(),
+      10,
+      0
+    ).toISOString(),
+    end_time: new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate(),
+      11,
+      0
+    ).toISOString(),
     status: 'scheduled',
     location: 'Sede Principal - Centro',
     notes: 'Cliente frecuente, primera limpieza del año',
@@ -299,7 +311,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-20T08:00:00Z',
     updated_at: '2024-01-20T08:00:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-1',
     clientName: 'Ana García',
@@ -314,7 +326,7 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-20T08:00:00Z',
     priority: 'high',
     tags: ['VIP'],
-    reminderSent: false
+    reminderSent: false,
   },
   {
     id: 'demo-apt-2',
@@ -329,8 +341,20 @@ export const demoAppointments: Appointment[] = [
     client_email: 'carlos.rodriguez@email.com',
     client_phone: '+1 (555) 234-5678',
     client_whatsapp: '+1 (555) 234-5678',
-    start_time: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 14, 30).toISOString(),
-    end_time: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 16, 0).toISOString(),
+    start_time: new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate(),
+      14,
+      30
+    ).toISOString(),
+    end_time: new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate(),
+      16,
+      0
+    ).toISOString(),
     status: 'scheduled',
     location: 'Sede Principal - Centro',
     notes: 'Paciente nervioso, usar anestesia adicional',
@@ -340,7 +364,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-20T08:15:00Z',
     updated_at: '2024-01-20T08:15:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-2',
     clientName: 'Carlos Rodríguez',
@@ -355,7 +379,7 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-20T08:15:00Z',
     priority: 'medium',
     tags: ['Empaste'],
-    reminderSent: false
+    reminderSent: false,
   },
   // Tomorrow's appointments
   {
@@ -371,8 +395,12 @@ export const demoAppointments: Appointment[] = [
     client_email: 'maria.lopez@email.com',
     client_phone: '+1 (555) 345-6789',
     client_whatsapp: '+1 (555) 345-6789',
-    start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T09:00:00.000Z'),
-    end_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T11:00:00.000Z'),
+    start_time: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T09:00:00.000Z'),
+    end_time: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T11:00:00.000Z'),
     status: 'scheduled',
     location: 'Sede Norte',
     notes: 'Cliente VIP, procedimiento estético',
@@ -382,7 +410,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-20T08:30:00Z',
     updated_at: '2024-01-20T08:30:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-3',
     clientName: 'María López',
@@ -397,7 +425,7 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-20T08:30:00Z',
     priority: 'high',
     tags: ['VIP', 'Estética'],
-    reminderSent: false
+    reminderSent: false,
   },
   {
     id: 'demo-apt-4',
@@ -412,8 +440,12 @@ export const demoAppointments: Appointment[] = [
     client_email: 'laura.sanchez@email.com',
     client_phone: '+1 (555) 567-8901',
     client_whatsapp: '+1 (555) 567-8901',
-    start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T16:00:00.000Z'),
-    end_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T17:00:00.000Z'),
+    start_time: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T16:00:00.000Z'),
+    end_time: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T17:00:00.000Z'),
     status: 'scheduled',
     location: 'Sede Principal - Centro',
     notes: 'Cliente ejecutiva, puntual siempre',
@@ -423,7 +455,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-20T08:45:00Z',
     updated_at: '2024-01-20T08:45:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-5',
     clientName: 'Laura Sánchez',
@@ -438,7 +470,7 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-20T08:45:00Z',
     priority: 'medium',
     tags: ['VIP', 'Ejecutiva'],
-    reminderSent: false
+    reminderSent: false,
   },
   // Day after tomorrow
   {
@@ -454,8 +486,12 @@ export const demoAppointments: Appointment[] = [
     client_email: 'juan.martinez@email.com',
     client_phone: '+1 (555) 456-7890',
     client_whatsapp: '+1 (555) 456-7890',
-    start_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T11:00:00.000Z'),
-    end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T11:45:00.000Z'),
+    start_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T11:00:00.000Z'),
+    end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T11:45:00.000Z'),
     status: 'scheduled',
     location: 'Sede Principal - Centro',
     notes: 'Procedimiento quirúrgico, revisar historial',
@@ -465,7 +501,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-20T09:00:00Z',
     updated_at: '2024-01-20T09:00:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-4',
     clientName: 'Juan Martínez',
@@ -480,7 +516,7 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-20T09:00:00Z',
     priority: 'high',
     tags: ['Cirugía'],
-    reminderSent: false
+    reminderSent: false,
   },
   // Completed appointments (last week)
   {
@@ -496,8 +532,12 @@ export const demoAppointments: Appointment[] = [
     client_email: 'carlos.rodriguez@email.com',
     client_phone: '+1 (555) 234-5678',
     client_whatsapp: '+1 (555) 234-5678',
-    start_time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T10:00:00.000Z'),
-    end_time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T11:30:00.000Z'),
+    start_time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T10:00:00.000Z'),
+    end_time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T11:30:00.000Z'),
     status: 'completed',
     location: 'Sede Principal - Centro',
     notes: 'Paciente nuevo, muy satisfecho con el servicio',
@@ -507,7 +547,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-13T08:00:00Z',
     updated_at: '2024-01-20T11:30:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-2',
     clientName: 'Carlos Rodríguez',
@@ -522,7 +562,7 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-20T11:30:00Z',
     priority: 'high',
     tags: ['Primera consulta'],
-    reminderSent: true
+    reminderSent: true,
   },
   // Cancelled appointment
   {
@@ -538,8 +578,12 @@ export const demoAppointments: Appointment[] = [
     client_email: 'juan.martinez@email.com',
     client_phone: '+1 (555) 456-7890',
     client_whatsapp: '+1 (555) 456-7890',
-    start_time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T09:30:00.000Z'),
-    end_time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().replace(/T.*/, 'T11:00:00.000Z'),
+    start_time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T09:30:00.000Z'),
+    end_time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .replace(/T.*/, 'T11:00:00.000Z'),
     status: 'cancelled',
     location: 'Sede Principal - Centro',
     notes: 'Cliente canceló por emergencia, reprogramar',
@@ -550,7 +594,7 @@ export const demoAppointments: Appointment[] = [
     created_at: '2024-01-16T08:00:00Z',
     updated_at: '2024-01-18T08:00:00Z',
     created_by: 'demo-user',
-    
+
     // Legacy fields for backward compatibility
     clientId: 'demo-client-4',
     clientName: 'Juan Martínez',
@@ -565,18 +609,18 @@ export const demoAppointments: Appointment[] = [
     updatedAt: '2024-01-18T08:00:00Z',
     priority: 'medium',
     tags: ['Cancelado'],
-    reminderSent: true
-  }
+    reminderSent: true,
+  },
 ]
 
 export async function loadDemoData() {
   try {
     // Store demo data using the same keys as the application expects
-  localStorage.setItem('demo-business', JSON.stringify(demoBusiness))
-  localStorage.setItem('demo-locations', JSON.stringify(demoLocations))
-  localStorage.setItem('demo-services', JSON.stringify(demoServices))
-  localStorage.setItem('demo-clients', JSON.stringify(demoClients))
-  localStorage.setItem('demo-appointments', JSON.stringify(demoAppointments))
+    localStorage.setItem('demo-business', JSON.stringify(demoBusiness))
+    localStorage.setItem('demo-locations', JSON.stringify(demoLocations))
+    localStorage.setItem('demo-services', JSON.stringify(demoServices))
+    localStorage.setItem('demo-clients', JSON.stringify(demoClients))
+    localStorage.setItem('demo-appointments', JSON.stringify(demoAppointments))
     // Demo data loaded
   } catch {
     // Silent fail in demo mode

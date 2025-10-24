@@ -14,7 +14,7 @@ interface RefreshStatsResponse {
   error?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -30,8 +30,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     })
 
     console.log('🔄 Iniciando refresco de vistas materializadas de ratings...')
@@ -62,18 +62,15 @@ serve(async (req) => {
       timestamp: new Date().toISOString(),
       executionTime,
       businessStatsCount: businessCount || 0,
-      employeeStatsCount: employeeCount || 0
+      employeeStatsCount: employeeCount || 0,
     }
 
     console.log('📊 Resultado:', response)
 
-    return new Response(
-      JSON.stringify(response),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    )
+    return new Response(JSON.stringify(response), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
   } catch (error) {
     const executionTime = Date.now() - startTime
     console.error('❌ Error en Edge Function:', error)
@@ -83,15 +80,12 @@ serve(async (req) => {
       message: 'Error al refrescar vistas materializadas',
       timestamp: new Date().toISOString(),
       executionTime,
-      error: error instanceof Error ? error.message : 'Error desconocido'
+      error: error instanceof Error ? error.message : 'Error desconocido',
     }
 
-    return new Response(
-      JSON.stringify(errorResponse),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
+    return new Response(JSON.stringify(errorResponse), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })

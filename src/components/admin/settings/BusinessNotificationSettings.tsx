@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -8,16 +8,16 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { 
-  Bell, 
-  Clock, 
-  Envelope, 
-  Phone, 
-  WhatsappLogo,
-  ArrowUp,
+import {
   ArrowDown,
+  ArrowUp,
+  Bell,
+  Clock,
+  Envelope,
+  Phone,
+  Plus,
   Trash,
-  Plus
+  WhatsappLogo,
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
@@ -42,11 +42,27 @@ interface BusinessNotificationSettings {
 }
 
 const NOTIFICATION_TYPE_CONFIGS = [
-  { key: 'appointment_reminder', label: 'Recordatorios de citas', description: 'Notificaciones automáticas antes de la cita' },
-  { key: 'appointment_confirmation', label: 'Confirmación de citas', description: 'Al confirmar una nueva cita' },
+  {
+    key: 'appointment_reminder',
+    label: 'Recordatorios de citas',
+    description: 'Notificaciones automáticas antes de la cita',
+  },
+  {
+    key: 'appointment_confirmation',
+    label: 'Confirmación de citas',
+    description: 'Al confirmar una nueva cita',
+  },
   { key: 'appointment_cancellation', label: 'Cancelaciones', description: 'Al cancelar una cita' },
-  { key: 'appointment_rescheduled', label: 'Reagendamientos', description: 'Al reprogramar una cita' },
-  { key: 'employee_request', label: 'Solicitudes de empleados', description: 'Nuevas solicitudes para unirse al negocio' },
+  {
+    key: 'appointment_rescheduled',
+    label: 'Reagendamientos',
+    description: 'Al reprogramar una cita',
+  },
+  {
+    key: 'employee_request',
+    label: 'Solicitudes de empleados',
+    description: 'Nuevas solicitudes para unirse al negocio',
+  },
   { key: 'daily_digest', label: 'Resumen diario', description: 'Resumen de actividades del día' },
 ]
 
@@ -133,27 +149,25 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
 
     try {
       setSaving(true)
-      
-      const { error } = await supabase
-        .from('business_notification_settings')
-        .upsert({
-          business_id: businessId,
-          email_enabled: settings.email_enabled,
-          sms_enabled: settings.sms_enabled,
-          whatsapp_enabled: settings.whatsapp_enabled,
-          channel_priority: settings.channel_priority,
-          reminder_times: settings.reminder_times,
-          notification_types: settings.notification_types,
-          email_from_name: settings.email_from_name,
-          email_from_address: settings.email_from_address,
-          twilio_phone_number: settings.twilio_phone_number,
-          whatsapp_phone_number: settings.whatsapp_phone_number,
-          send_notifications_from: settings.send_notifications_from,
-          send_notifications_until: settings.send_notifications_until,
-          timezone: settings.timezone,
-          use_fallback: settings.use_fallback,
-          max_retry_attempts: settings.max_retry_attempts,
-        })
+
+      const { error } = await supabase.from('business_notification_settings').upsert({
+        business_id: businessId,
+        email_enabled: settings.email_enabled,
+        sms_enabled: settings.sms_enabled,
+        whatsapp_enabled: settings.whatsapp_enabled,
+        channel_priority: settings.channel_priority,
+        reminder_times: settings.reminder_times,
+        notification_types: settings.notification_types,
+        email_from_name: settings.email_from_name,
+        email_from_address: settings.email_from_address,
+        twilio_phone_number: settings.twilio_phone_number,
+        whatsapp_phone_number: settings.whatsapp_phone_number,
+        send_notifications_from: settings.send_notifications_from,
+        send_notifications_until: settings.send_notifications_until,
+        timezone: settings.timezone,
+        use_fallback: settings.use_fallback,
+        max_retry_attempts: settings.max_retry_attempts,
+      })
 
       if (error) throw error
 
@@ -206,7 +220,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
     updateSettings({ reminder_times: newTimes })
   }
 
-  function updateNotificationType(key: string, field: 'enabled' | 'channels', value: boolean | string[]) {
+  function updateNotificationType(
+    key: string,
+    field: 'enabled' | 'channels',
+    value: boolean | string[]
+  ) {
     if (!settings) return
     const newTypes = {
       ...settings.notification_types,
@@ -229,19 +247,27 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
 
   const getChannelIcon = (channel: string) => {
     switch (channel) {
-      case 'email': return <Envelope weight="fill" />
-      case 'sms': return <Phone weight="fill" />
-      case 'whatsapp': return <WhatsappLogo weight="fill" />
-      default: return <Bell weight="fill" />
+      case 'email':
+        return <Envelope weight="fill" />
+      case 'sms':
+        return <Phone weight="fill" />
+      case 'whatsapp':
+        return <WhatsappLogo weight="fill" />
+      default:
+        return <Bell weight="fill" />
     }
   }
 
   const getChannelColor = (channel: string) => {
     switch (channel) {
-      case 'email': return 'text-blue-500'
-      case 'sms': return 'text-green-500'
-      case 'whatsapp': return 'text-emerald-500'
-      default: return 'text-muted-foreground'
+      case 'email':
+        return 'text-blue-500'
+      case 'sms':
+        return 'text-green-500'
+      case 'whatsapp':
+        return 'text-emerald-500'
+      default:
+        return 'text-muted-foreground'
     }
   }
 
@@ -276,11 +302,13 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
                   <Envelope className="h-4 w-4 text-blue-500" />
                   Email
                 </Label>
-                <p className="text-sm text-muted-foreground">Notificaciones por correo electrónico</p>
+                <p className="text-sm text-muted-foreground">
+                  Notificaciones por correo electrónico
+                </p>
               </div>
               <Switch
                 checked={settings.email_enabled}
-                onCheckedChange={(checked) => updateSettings({ email_enabled: checked })}
+                onCheckedChange={checked => updateSettings({ email_enabled: checked })}
               />
             </div>
 
@@ -294,7 +322,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               </div>
               <Switch
                 checked={settings.sms_enabled}
-                onCheckedChange={(checked) => updateSettings({ sms_enabled: checked })}
+                onCheckedChange={checked => updateSettings({ sms_enabled: checked })}
               />
             </div>
 
@@ -308,7 +336,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               </div>
               <Switch
                 checked={settings.whatsapp_enabled}
-                onCheckedChange={(checked) => updateSettings({ whatsapp_enabled: checked })}
+                onCheckedChange={checked => updateSettings({ whatsapp_enabled: checked })}
               />
             </div>
           </div>
@@ -326,7 +354,10 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
         <CardContent>
           <div className="space-y-2">
             {settings.channel_priority.map((channel, index) => (
-              <div key={channel} className="flex items-center justify-between p-3 border border-border rounded-lg bg-background">
+              <div
+                key={channel}
+                className="flex items-center justify-between p-3 border border-border rounded-lg bg-background"
+              >
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-sm text-muted-foreground">#{index + 1}</span>
                   <span className={cn('flex items-center gap-2', getChannelColor(channel))}>
@@ -359,9 +390,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           <div className="mt-4 flex items-center gap-2">
             <Switch
               checked={settings.use_fallback}
-              onCheckedChange={(checked) => updateSettings({ use_fallback: checked })}
+              onCheckedChange={checked => updateSettings({ use_fallback: checked })}
             />
-            <Label className="text-foreground">Usar sistema de respaldo (intentar siguiente canal si falla)</Label>
+            <Label className="text-foreground">
+              Usar sistema de respaldo (intentar siguiente canal si falla)
+            </Label>
           </div>
         </CardContent>
       </Card>
@@ -383,8 +416,8 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               type="number"
               placeholder="Minutos (ej: 1440 para 24h)"
               value={newReminderTime}
-              onChange={(e) => setNewReminderTime(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addReminderTime()}
+              onChange={e => setNewReminderTime(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addReminderTime()}
             />
             <Button onClick={addReminderTime}>
               <Plus className="h-4 w-4 mr-2" />
@@ -393,22 +426,23 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
           </div>
 
           <div className="space-y-2">
-            {settings.reminder_times.sort((a, b) => b - a).map(minutes => (
-              <div key={minutes} className="flex items-center justify-between p-3 border border-border rounded-lg bg-background">
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{formatMinutesToHuman(minutes)} antes</span>
-                  <Badge variant="secondary">{minutes} min</Badge>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeReminderTime(minutes)}
+            {settings.reminder_times
+              .sort((a, b) => b - a)
+              .map(minutes => (
+                <div
+                  key={minutes}
+                  className="flex items-center justify-between p-3 border border-border rounded-lg bg-background"
                 >
-                  <Trash className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{formatMinutesToHuman(minutes)} antes</span>
+                    <Badge variant="secondary">{minutes} min</Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => removeReminderTime(minutes)}>
+                    <Trash className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
             {settings.reminder_times.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No hay recordatorios configurados
@@ -428,7 +462,10 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
         </CardHeader>
         <CardContent className="space-y-4">
           {NOTIFICATION_TYPE_CONFIGS.map(config => {
-              const notifSettings = settings.notification_types[config.key] || { enabled: false, channels: [] }
+            const notifSettings = settings.notification_types[config.key] || {
+              enabled: false,
+              channels: [],
+            }
             return (
               <div key={config.key} className="space-y-3 pb-4 border-b border-border last:border-0">
                 <div className="flex items-center justify-between">
@@ -438,7 +475,9 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
                   </div>
                   <Switch
                     checked={notifSettings.enabled}
-                    onCheckedChange={(checked) => updateNotificationType(config.key, 'enabled', checked)}
+                    onCheckedChange={checked =>
+                      updateNotificationType(config.key, 'enabled', checked)
+                    }
                   />
                 </div>
                 {notifSettings.enabled && (
@@ -493,7 +532,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               <Input
                 type="time"
                 value={settings.send_notifications_from}
-                onChange={(e) => updateSettings({ send_notifications_from: e.target.value })}
+                onChange={e => updateSettings({ send_notifications_from: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -501,7 +540,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               <Input
                 type="time"
                 value={settings.send_notifications_until}
-                onChange={(e) => updateSettings({ send_notifications_until: e.target.value })}
+                onChange={e => updateSettings({ send_notifications_until: e.target.value })}
               />
             </div>
           </div>
@@ -511,10 +550,12 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
             <select
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={settings.timezone}
-              onChange={(e) => updateSettings({ timezone: e.target.value })}
+              onChange={e => updateSettings({ timezone: e.target.value })}
             >
               {TIMEZONES.map(tz => (
-                <option key={tz.value} value={tz.value}>{tz.label}</option>
+                <option key={tz.value} value={tz.value}>
+                  {tz.label}
+                </option>
               ))}
             </select>
           </div>
@@ -535,7 +576,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
             <Input
               placeholder="Mi Negocio"
               value={settings.email_from_name}
-              onChange={(e) => updateSettings({ email_from_name: e.target.value })}
+              onChange={e => updateSettings({ email_from_name: e.target.value })}
             />
           </div>
 
@@ -545,7 +586,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               type="email"
               placeholder="noreply@minegocio.com"
               value={settings.email_from_address}
-              onChange={(e) => updateSettings({ email_from_address: e.target.value })}
+              onChange={e => updateSettings({ email_from_address: e.target.value })}
             />
           </div>
 
@@ -556,7 +597,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
             <Input
               placeholder="+1234567890"
               value={settings.twilio_phone_number}
-              onChange={(e) => updateSettings({ twilio_phone_number: e.target.value })}
+              onChange={e => updateSettings({ twilio_phone_number: e.target.value })}
             />
           </div>
 
@@ -565,7 +606,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
             <Input
               placeholder="+1234567890"
               value={settings.whatsapp_phone_number}
-              onChange={(e) => updateSettings({ whatsapp_phone_number: e.target.value })}
+              onChange={e => updateSettings({ whatsapp_phone_number: e.target.value })}
             />
           </div>
         </CardContent>
@@ -584,7 +625,7 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
               min="1"
               max="5"
               value={settings.max_retry_attempts}
-              onChange={(e) => updateSettings({ max_retry_attempts: parseInt(e.target.value) || 3 })}
+              onChange={e => updateSettings({ max_retry_attempts: parseInt(e.target.value) || 3 })}
             />
             <p className="text-sm text-muted-foreground">
               Número de veces que se reintentará enviar una notificación fallida
@@ -595,15 +636,11 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
 
       {/* Botón de Guardar */}
       <div className="flex justify-end gap-3">
-        <Button 
-          variant="outline" 
-          onClick={loadSettings} 
-          disabled={saving}
-        >
+        <Button variant="outline" onClick={loadSettings} disabled={saving}>
           Descartar cambios
         </Button>
-        <Button 
-          onClick={saveSettings} 
+        <Button
+          onClick={saveSettings}
           disabled={saving}
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >

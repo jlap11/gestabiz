@@ -4,7 +4,18 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { CheckCircle, XCircle, Eye, Mail, Phone, Calendar, DollarSign, MessageSquare, UserCheck, Clock } from 'lucide-react'
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Eye,
+  Mail,
+  MessageSquare,
+  Phone,
+  UserCheck,
+  XCircle,
+} from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -19,38 +30,57 @@ interface ApplicationCardProps {
 }
 
 const statusConfig = {
-  pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-  reviewing: { label: 'En Revisión', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  in_selection_process: { label: 'En Proceso de Selección', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' }, // ⭐ NUEVO
-  accepted: { label: 'Aceptada', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  rejected: { label: 'Rechazada', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  withdrawn: { label: 'Retirada', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' }
+  pending: {
+    label: 'Pendiente',
+    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+  },
+  reviewing: {
+    label: 'En Revisión',
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  },
+  in_selection_process: {
+    label: 'En Proceso de Selección',
+    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  }, // ⭐ NUEVO
+  accepted: {
+    label: 'Aceptada',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  },
+  rejected: {
+    label: 'Rechazada',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  },
+  withdrawn: {
+    label: 'Retirada',
+    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+  },
 }
 
-export function ApplicationCard({ 
-  application, 
-  onAccept, 
-  onReject, 
-  onViewProfile, 
+export function ApplicationCard({
+  application,
+  onAccept,
+  onReject,
+  onViewProfile,
   onChat,
   onStartSelectionProcess,
-  onSelectAsEmployee
+  onSelectAsEmployee,
 }: Readonly<ApplicationCardProps>) {
   const { t } = useLanguage()
   const statusStyle = statusConfig[application.status]
-  
+
   // Validar que created_at sea una fecha válida
   const createdDate = application.created_at ? new Date(application.created_at) : null
   const isValidDate = createdDate && !Number.isNaN(createdDate.getTime())
-  const timeAgo = isValidDate 
+  const timeAgo = isValidDate
     ? formatDistanceToNow(createdDate, { addSuffix: true, locale: es })
     : 'Fecha no disponible'
 
-  const initials = application.applicant?.full_name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || '??'
+  const initials =
+    application.applicant?.full_name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase() || '??'
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -59,8 +89,13 @@ export function ApplicationCard({
           {/* Applicant Info */}
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={application.applicant?.avatar_url} alt={application.applicant?.full_name} />
-              <AvatarFallback className="bg-primary text-primary-foreground">{initials}</AvatarFallback>
+              <AvatarImage
+                src={application.applicant?.avatar_url}
+                alt={application.applicant?.full_name}
+              />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {initials}
+              </AvatarFallback>
             </Avatar>
             <div>
               <h3 className="font-semibold text-lg">{application.applicant?.full_name}</h3>
@@ -79,9 +114,7 @@ export function ApplicationCard({
           </div>
 
           {/* Status Badge */}
-          <Badge className={statusStyle.color}>
-            {statusStyle.label}
-          </Badge>
+          <Badge className={statusStyle.color}>{statusStyle.label}</Badge>
         </div>
 
         {/* Vacancy Info */}
@@ -110,7 +143,7 @@ export function ApplicationCard({
                 {new Intl.NumberFormat('es-CO', {
                   style: 'currency',
                   currency: application.vacancy?.currency || 'COP',
-                  minimumFractionDigits: 0
+                  minimumFractionDigits: 0,
                 }).format(application.expected_salary)}
               </span>
             </div>
@@ -135,9 +168,7 @@ export function ApplicationCard({
         {/* Cover Letter Preview */}
         {application.cover_letter && (
           <div className="mb-4">
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {application.cover_letter}
-            </p>
+            <p className="text-sm text-muted-foreground line-clamp-2">{application.cover_letter}</p>
           </div>
         )}
 
@@ -152,11 +183,7 @@ export function ApplicationCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 pt-4 border-t flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewProfile(application)}
-          >
+          <Button variant="outline" size="sm" onClick={() => onViewProfile(application)}>
             <Eye className="h-4 w-4 mr-2" />
             Ver Perfil
           </Button>
@@ -165,7 +192,9 @@ export function ApplicationCard({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onChat(application.user_id, application.applicant?.full_name || 'Aplicante')}
+              onClick={() =>
+                onChat(application.user_id, application.applicant?.full_name || 'Aplicante')
+              }
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Chatear
@@ -186,11 +215,7 @@ export function ApplicationCard({
                   Iniciar Proceso
                 </Button>
               )}
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onReject(application.id)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => onReject(application.id)}>
                 <XCircle className="h-4 w-4 mr-2" />
                 Rechazar
               </Button>
@@ -210,21 +235,21 @@ export function ApplicationCard({
                   Seleccionar Empleado
                 </Button>
               )}
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onReject(application.id)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => onReject(application.id)}>
                 <XCircle className="h-4 w-4 mr-2" />
                 Rechazar
               </Button>
-              
+
               {/* Badge informativo */}
               {application.selection_started_at && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
                   <Clock className="h-3 w-3" />
                   <span>
-                    Proceso desde {formatDistanceToNow(new Date(application.selection_started_at), { addSuffix: true, locale: es })}
+                    Proceso desde{' '}
+                    {formatDistanceToNow(new Date(application.selection_started_at), {
+                      addSuffix: true,
+                      locale: es,
+                    })}
                   </span>
                 </div>
               )}

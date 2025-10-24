@@ -1,23 +1,23 @@
-import React from 'react';
+import React from 'react'
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
   Area,
   AreaChart,
-} from 'recharts';
-import { ChartDataPoint } from '@/types/accounting.types';
-import { formatCOP } from '@/lib/accounting/colombiaTaxes';
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { ChartDataPoint } from '@/types/accounting.types'
+import { formatCOP } from '@/lib/accounting/colombiaTaxes'
 
 interface MonthlyTrendChartProps {
-  data: ChartDataPoint[];
-  height?: number;
-  showArea?: boolean;
+  data: ChartDataPoint[]
+  height?: number
+  showArea?: boolean
 }
 
 export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
@@ -29,31 +29,22 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-semibold text-foreground mb-2">
-            {payload[0].payload.period}
-          </p>
+          <p className="text-sm font-semibold text-foreground mb-2">{payload[0].payload.period}</p>
           {payload.map((entry: any, index: number) => (
-            <p
-              key={`item-${index}`}
-              className="text-sm"
-              style={{ color: entry.color }}
-            >
+            <p key={`item-${index}`} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {formatCOP(entry.value)}
             </p>
           ))}
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   if (showArea) {
     return (
       <ResponsiveContainer width="100%" height={height}>
-        <AreaChart
-          data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
+        <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <defs>
             <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
@@ -73,7 +64,7 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
           <YAxis
             className="text-muted-foreground"
             tick={{ fill: 'currentColor' }}
-            tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+            tickFormatter={value => `$${(value / 1000000).toFixed(1)}M`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -95,25 +86,18 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
           />
         </AreaChart>
       </ResponsiveContainer>
-    );
+    )
   }
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart
-        data={data}
-        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-      >
+      <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-        <XAxis
-          dataKey="period"
-          className="text-muted-foreground"
-          tick={{ fill: 'currentColor' }}
-        />
+        <XAxis dataKey="period" className="text-muted-foreground" tick={{ fill: 'currentColor' }} />
         <YAxis
           className="text-muted-foreground"
           tick={{ fill: 'currentColor' }}
-          tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+          tickFormatter={value => `$${(value / 1000000).toFixed(1)}M`}
         />
         <Tooltip content={<CustomTooltip />} />
         <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -137,5 +121,5 @@ export const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({
         />
       </LineChart>
     </ResponsiveContainer>
-  );
-};
+  )
+}

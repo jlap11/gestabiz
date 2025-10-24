@@ -2,29 +2,26 @@
 /* eslint-disable no-console */
 /**
  * useMessages Hook - Gestión de Mensajes FASE 2
- * 
+ *
  * Hook para manejar mensajes de una conversación específica:
  * - Fetch con paginación cursor-based
  * - Envío via Edge Function send-message
  * - Editar, eliminar, pin
  * - Realtime subscriptions
  * - Optimistic updates
- * 
+ *
  * @author Gestabiz Team
  * @version 3.0.0
  * @date 2025-10-13
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { trackChatEvent, ChatEvents } from '@/lib/analytics'
+import { ChatEvents, trackChatEvent } from '@/lib/analytics'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type {
-  Message,
-  SendMessagePayload,
-  MessageFilters,
-} from '@/types/types'
+import type { Message, MessageFilters, SendMessagePayload } from '@/types/types'
 import { toast } from 'sonner'
+import { logger } from '../lib/logger'
 
 // ============================================================================
 // INTERFACES
@@ -98,15 +95,12 @@ export function useMessages(
         setError(null)
 
         // Usar función RPC get_messages_paginated
-        const { data, error: rpcError } = await supabase.rpc(
-          'get_messages_paginated',
-          {
-            p_conversation_id: conversationId,
-            p_before_id: filters?.before || null,
-            p_after_id: filters?.after || null,
-            p_limit: filters?.limit || 50,
-          }
-        )
+        const { data, error: rpcError } = await supabase.rpc('get_messages_paginated', {
+          p_conversation_id: conversationId,
+          p_before_id: filters?.before || null,
+          p_after_id: filters?.after || null,
+          p_limit: filters?.limit || 50,
+        })
 
         if (rpcError) throw rpcError
 
@@ -117,7 +111,7 @@ export function useMessages(
         // Filtrar mensajes eliminados si no se solicitan
         const filteredMessages = filters?.include_deleted
           ? messagesData
-          : messagesData.filter((m) => !m.is_deleted)
+          : messagesData.filter(m => !m.is_deleted)
 
         setMessages(filteredMessages)
         setHasMore(filteredMessages.length === (filters?.limit || 50))
@@ -132,7 +126,7 @@ export function useMessages(
           message_count: filteredMessages.length,
         })
       } catch (err: any) {
-        console.error('Error fetching messages:', err)
+        logger.error('Error fetching messages:', { error: err })
         setError(err.message || 'Error al cargar mensajes')
         toast.error('Error al cargar mensajes')
       } finally {
@@ -195,18 +189,15 @@ export function useMessages(
           read_by: [], // Inicializar array vacío
         }
 
-        setMessages((prev) => [...prev, tempMessage])
+        setMessages(prev => [...prev, tempMessage])
 
         // Llamar a Edge Function send-message
-        const { data, error: functionError } = await supabase.functions.invoke(
-          'send-message',
-          {
-            body: {
-              conversation_id: conversationId,
-              ...payload,
-            },
-          }
-        )
+        const { data, error: functionError } = await supabase.functions.invoke('send-message', {
+          body: {
+            conversation_id: conversationId,
+            ...payload,
+          },
+        })
 
         if (functionError) throw functionError
 
@@ -215,12 +206,12 @@ export function useMessages(
         }
 
         // Remover mensaje temporal
-        setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id))
+        setMessages(prev => prev.filter(m => m.id !== tempMessage.id))
 
         // El mensaje real llegará via Realtime
         // Actualizar rate limit info si está disponible
         if (data.rate_limit) {
-          console.log('Rate limit:', data.rate_limit)
+          logger.info('Rate limit:', { rateLimit: data.rate_limit })
         }
 
         // Track analytics
@@ -231,15 +222,13 @@ export function useMessages(
           has_attachment: !!payload.metadata?.file_url || !!payload.metadata?.image_url,
         })
       } catch (err: any) {
-        console.error('Error sending message:', err)
+        logger.error('Error sending message:', { error: err })
         toast.error(err.message || 'Error al enviar mensaje')
 
         // Marcar mensaje temporal como fallido
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id.startsWith('temp-')
-              ? { ...m, delivery_status: 'failed' as const }
-              : m
+        setMessages(prev =>
+          prev.map(m =>
+            m.id.startsWith('temp-') ? { ...m, delivery_status: 'failed' as const } : m
           )
         )
       } finally {
@@ -270,11 +259,9 @@ export function useMessages(
         if (updateError) throw updateError
 
         // Actualizar estado local
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === messageId
-              ? { ...m, body: newBody, edited_at: new Date().toISOString() }
-              : m
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === messageId ? { ...m, body: newBody, edited_at: new Date().toISOString() } : m
           )
         )
 
@@ -286,7 +273,7 @@ export function useMessages(
           conversation_id: conversationId,
         })
       } catch (err: any) {
-        console.error('Error editing message:', err)
+        logger.error('Error editing message:', { error: err })
         toast.error('Error al editar mensaje')
       }
     },
@@ -317,8 +304,8 @@ export function useMessages(
         if (updateError) throw updateError
 
         // Actualizar estado local
-        setMessages((prev) =>
-          prev.map((m) =>
+        setMessages(prev =>
+          prev.map(m =>
             m.id === messageId
               ? {
                   ...m,
@@ -339,7 +326,7 @@ export function useMessages(
           conversation_id: conversationId,
         })
       } catch (err: any) {
-        console.error('Error deleting message:', err)
+        logger.error('Error deleting message:', { error: err })
         toast.error('Error al eliminar mensaje')
       }
     },
@@ -375,13 +362,11 @@ export function useMessages(
         if (updateError) throw updateError
 
         // Actualizar estado local
-        setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? { ...m, ...updateData } : m))
-        )
+        setMessages(prev => prev.map(m => (m.id === messageId ? { ...m, ...updateData } : m)))
 
         toast.success(pin ? 'Mensaje fijado' : 'Mensaje desfijado')
       } catch (err: any) {
-        console.error('Error pinning message:', err)
+        logger.error('Error pinning message:', { error: err })
         toast.error('Error al fijar mensaje')
       }
     },
@@ -414,7 +399,7 @@ export function useMessages(
 
         return (data || []) as MessageWithSender[]
       } catch (err: any) {
-        console.error('Error searching messages:', err)
+        logger.error('Error searching messages:', { error: err })
         toast.error('Error al buscar mensajes')
         return []
       }
@@ -446,7 +431,7 @@ export function useMessages(
           table: 'messages',
           filter: `conversation_id=eq.${conversationId}`,
         },
-        async (payload) => {
+        async payload => {
           // Fetch mensaje completo con sender info
           const { data: messageData } = await supabase
             .from('messages')
@@ -460,9 +445,9 @@ export function useMessages(
             .single()
 
           if (messageData && !messageData.is_deleted) {
-            setMessages((prev) => {
+            setMessages(prev => {
               // Evitar duplicados
-              if (prev.some((m) => m.id === messageData.id)) {
+              if (prev.some(m => m.id === messageData.id)) {
                 return prev
               }
               return [...prev, messageData as MessageWithSender]
@@ -478,11 +463,9 @@ export function useMessages(
           table: 'messages',
           filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === payload.new.id ? { ...m, ...(payload.new as Message) } : m
-            )
+        payload => {
+          setMessages(prev =>
+            prev.map(m => (m.id === payload.new.id ? { ...m, ...(payload.new as Message) } : m))
           )
         }
       )
@@ -494,8 +477,8 @@ export function useMessages(
           table: 'messages',
           filter: `conversation_id=eq.${conversationId}`,
         },
-        (payload) => {
-          setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
+        payload => {
+          setMessages(prev => prev.filter(m => m.id !== payload.old.id))
         }
       )
       .subscribe()

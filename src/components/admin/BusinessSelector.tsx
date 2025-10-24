@@ -25,13 +25,15 @@ export function BusinessSelector({
   className = '',
 }: BusinessSelectorProps) {
   const { t } = useLanguage()
-  const selectedBusiness = businesses.find((b) => b.id === selectedBusinessId)
+  const selectedBusiness = businesses.find(b => b.id === selectedBusinessId)
 
   // Si solo hay un negocio, mostrar info card sin selector
   if (businesses.length === 1) {
     const business = businesses[0]
     return (
-      <div className={`flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-3 ${className}`}>
+      <div
+        className={`flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-3 ${className}`}
+      >
         {business.logo_url ? (
           <img
             src={business.logo_url}
@@ -77,7 +79,9 @@ export function BusinessSelector({
                 <div className="flex flex-col items-start">
                   <span className="font-semibold text-foreground">{selectedBusiness.name}</span>
                   {selectedBusiness.category && (
-                    <span className="text-xs text-muted-foreground">{selectedBusiness.category.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedBusiness.category.name}
+                    </span>
                   )}
                 </div>
               </div>
@@ -88,7 +92,7 @@ export function BusinessSelector({
           <ChevronDown className="h-4 w-4 opacity-50" />
         </SelectTrigger>
         <SelectContent className="bg-card border-border">
-          {businesses.map((business) => (
+          {businesses.map(business => (
             <SelectItem
               key={business.id}
               value={business.id}
@@ -115,7 +119,7 @@ export function BusinessSelector({
                   )}
                   {business.subcategories && business.subcategories.length > 0 && (
                     <div className="flex gap-1 mt-1">
-                      {business.subcategories.slice(0, 3).map((sub) => (
+                      {business.subcategories.slice(0, 3).map(sub => (
                         <span key={sub.id} className="text-xs text-muted-foreground">
                           {sub.subcategory?.name}
                         </span>

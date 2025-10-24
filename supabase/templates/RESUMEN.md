@@ -13,12 +13,14 @@ supabase/templates/
 ## 🎨 Características del Template
 
 ### Diseño Visual
+
 - ✅ **Colores matching**: Primary purple (#a855f7) + gradientes de la app
 - ✅ **Fully responsive**: Desktop + Mobile optimizado
 - ✅ **Iconos modernos**: Emojis para mejor visual
 - ✅ **Professional layout**: Header, CTA, footer con redes sociales
 
 ### Elementos Incluidos
+
 1. **Header con logo** de Gestabiz (emoji 📅)
 2. **Mensaje de bienvenida** personalizado con email del usuario
 3. **Botón CTA principal** ("Confirmar mi Email")
@@ -53,9 +55,9 @@ Sigue la guía completa en `README.md`, básicamente:
 
 El template usa estas variables que Supabase reemplaza automáticamente:
 
-| Variable | Descripción |
-|----------|-------------|
-| `{{ .Email }}` | Email del usuario que se registró |
+| Variable                 | Descripción                         |
+| ------------------------ | ----------------------------------- |
+| `{{ .Email }}`           | Email del usuario que se registró   |
 | `{{ .ConfirmationURL }}` | URL única de confirmación con token |
 
 **IMPORTANTE**: No cambies estas variables, Supabase las reemplaza automáticamente.
@@ -92,6 +94,7 @@ Busca en `email-confirmation.html`:
 ```
 
 Opciones:
+
 - **Emoji diferente**: `📧`, `✉️`, `🎯`, etc.
 - **Imagen**: `<img src="URL" alt="Logo" />`
 
@@ -155,6 +158,7 @@ cd supabase/templates
    - ❌ "Email confirmation"
 
 2. **Añade UTM parameters** para trackear:
+
    ```
    {{ .ConfirmationURL }}?utm_source=email&utm_medium=confirmation
    ```
@@ -169,16 +173,19 @@ cd supabase/templates
 ## 🐛 Troubleshooting
 
 ### El email no llega
+
 - ✅ Verifica "Confirm email" está ON
 - ✅ Revisa spam/junk folder
 - ✅ Verifica SMTP settings en Supabase
 
 ### Estilos rotos
+
 - ✅ Algunos clientes eliminan CSS
 - ✅ Usa inline styles para elementos críticos
 - ✅ Prueba en múltiples clientes
 
 ### Variables no se reemplazan
+
 - ✅ Usa sintaxis exacta: `{{ .Variable }}`
 - ✅ No uses `${Variable}` ni `{Variable}`
 

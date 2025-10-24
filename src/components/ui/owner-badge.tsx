@@ -16,13 +16,7 @@ export function OwnerBadge({ isOwner, variant = 'default', className }: OwnerBad
   if (variant === 'icon-only') {
     return (
       <span title={t('ownerBadge.owner')}>
-        <Crown
-          className={cn(
-            'h-4 w-4 text-yellow-500',
-            'animate-pulse',
-            className
-          )}
-        />
+        <Crown className={cn('h-4 w-4 text-yellow-500', 'animate-pulse', className)} />
       </span>
     )
   }

@@ -4,24 +4,24 @@
  * Calcula ocupación, rating promedio y revenue total por empleado
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 
 // =====================================================
 // TIPOS
 // =====================================================
 
 export interface EmployeeMetrics {
-  occupancy: number | null;
-  rating: number | null;
-  revenue: number | null;
+  occupancy: number | null
+  rating: number | null
+  revenue: number | null
 }
 
 export interface UseEmployeeMetricsOptions {
-  enableOccupancy?: boolean;
-  enableRating?: boolean;
-  enableRevenue?: boolean;
-  staleTime?: number;
+  enableOccupancy?: boolean
+  enableRating?: boolean
+  enableRevenue?: boolean
+  staleTime?: number
 }
 
 // =====================================================
@@ -44,9 +44,9 @@ export function useEmployeeMetrics(
     enableRating = true,
     enableRevenue = true,
     staleTime = 10 * 60 * 1000, // Cache por 10 minutos por defecto
-  } = options;
+  } = options
 
-  const enabled = !!employeeId && !!businessId;
+  const enabled = !!employeeId && !!businessId
 
   // =====================================================
   // QUERY: Ocupación
@@ -60,22 +60,22 @@ export function useEmployeeMetrics(
   } = useQuery({
     queryKey: ['employeeOccupancy', employeeId, businessId],
     queryFn: async () => {
-      if (!employeeId || !businessId) return null;
+      if (!employeeId || !businessId) return null
 
       const { data, error } = await supabase.rpc('calculate_employee_occupancy', {
         p_user_id: employeeId,
         p_business_id: businessId,
-      });
+      })
 
-      if (error) throw new Error(error.message);
-      
+      if (error) throw new Error(error.message)
+
       // La función RPC devuelve un número (porcentaje)
-      return typeof data === 'number' ? data : null;
+      return typeof data === 'number' ? data : null
     },
     enabled: enabled && enableOccupancy,
     staleTime,
     gcTime: staleTime * 2,
-  });
+  })
 
   // =====================================================
   // QUERY: Rating Promedio
@@ -89,22 +89,22 @@ export function useEmployeeMetrics(
   } = useQuery({
     queryKey: ['employeeRating', employeeId, businessId],
     queryFn: async () => {
-      if (!employeeId || !businessId) return null;
+      if (!employeeId || !businessId) return null
 
       const { data, error } = await supabase.rpc('calculate_employee_rating_by_business', {
         p_user_id: employeeId,
         p_business_id: businessId,
-      });
+      })
 
-      if (error) throw new Error(error.message);
-      
+      if (error) throw new Error(error.message)
+
       // La función RPC devuelve un número (rating promedio)
-      return typeof data === 'number' ? data : null;
+      return typeof data === 'number' ? data : null
     },
     enabled: enabled && enableRating,
     staleTime,
     gcTime: staleTime * 2,
-  });
+  })
 
   // =====================================================
   // QUERY: Revenue Total
@@ -118,22 +118,22 @@ export function useEmployeeMetrics(
   } = useQuery({
     queryKey: ['employeeRevenue', employeeId, businessId],
     queryFn: async () => {
-      if (!employeeId || !businessId) return null;
+      if (!employeeId || !businessId) return null
 
       const { data, error } = await supabase.rpc('calculate_employee_revenue', {
         p_user_id: employeeId,
         p_business_id: businessId,
-      });
+      })
 
-      if (error) throw new Error(error.message);
-      
+      if (error) throw new Error(error.message)
+
       // La función RPC devuelve un número (revenue total)
-      return typeof data === 'number' ? data : null;
+      return typeof data === 'number' ? data : null
     },
     enabled: enabled && enableRevenue,
     staleTime,
     gcTime: staleTime * 2,
-  });
+  })
 
   // =====================================================
   // HELPERS
@@ -143,30 +143,30 @@ export function useEmployeeMetrics(
    * Refrescar todas las métricas habilitadas
    */
   const refetchAll = async () => {
-    const promises: Promise<unknown>[] = [];
-    if (enableOccupancy) promises.push(refetchOccupancy());
-    if (enableRating) promises.push(refetchRating());
-    if (enableRevenue) promises.push(refetchRevenue());
-    await Promise.all(promises);
-  };
+    const promises: Promise<unknown>[] = []
+    if (enableOccupancy) promises.push(refetchOccupancy())
+    if (enableRating) promises.push(refetchRating())
+    if (enableRevenue) promises.push(refetchRevenue())
+    await Promise.all(promises)
+  }
 
   /**
    * Verifica si alguna métrica está cargando
    */
-  const isLoading = 
+  const isLoading =
     (enableOccupancy && isLoadingOccupancy) ||
     (enableRating && isLoadingRating) ||
-    (enableRevenue && isLoadingRevenue);
+    (enableRevenue && isLoadingRevenue)
 
   /**
    * Verifica si hay algún error
    */
-  const hasError = !!occupancyError || !!ratingError || !!revenueError;
+  const hasError = !!occupancyError || !!ratingError || !!revenueError
 
   /**
    * Obtiene el primer error disponible
    */
-  const error = occupancyError || ratingError || revenueError || null;
+  const error = occupancyError || ratingError || revenueError || null
 
   /**
    * Obtiene todas las métricas en un objeto
@@ -175,7 +175,7 @@ export function useEmployeeMetrics(
     occupancy: occupancyData ?? null,
     rating: ratingData ?? null,
     revenue: revenueData ?? null,
-  };
+  }
 
   // =====================================================
   // RETURN
@@ -212,7 +212,7 @@ export function useEmployeeMetrics(
     refetchOccupancy,
     refetchRating,
     refetchRevenue,
-  };
+  }
 }
 
-export default useEmployeeMetrics;
+export default useEmployeeMetrics

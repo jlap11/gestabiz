@@ -3,7 +3,7 @@
  * Se guarda en localStorage para persistencia entre sesiones
  */
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const STORAGE_KEY_PREFIX = 'preferred-location-'
 

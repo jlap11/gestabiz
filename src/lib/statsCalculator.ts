@@ -3,14 +3,15 @@ import { Appointment, DashboardStats } from '@/types'
 export function calculateDashboardStats(appointments: Appointment[]): DashboardStats {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const thisWeekStart = new Date(today.getTime() - (today.getDay() * 24 * 60 * 60 * 1000))
+  const thisWeekStart = new Date(today.getTime() - today.getDay() * 24 * 60 * 60 * 1000)
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
   // Basic counts
   const totalAppointments = appointments.length
   const upcomingAppointments = appointments.filter(apt => {
     if (apt.status !== 'scheduled') return false
-    const start = apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
+    const start =
+      apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
     if (!start) return false
     return new Date(start) > now
   }).length
@@ -26,7 +27,8 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
 
   // This week appointments
   const thisWeekAppointments = appointments.filter(apt => {
-    const dateStr = apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
+    const dateStr =
+      apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
     if (!dateStr) return false
     const aptDate = new Date(dateStr)
     return aptDate >= thisWeekStart && aptDate <= now
@@ -34,7 +36,8 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
 
   // This month appointments
   const thisMonthAppointments = appointments.filter(apt => {
-    const dateStr = apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
+    const dateStr =
+      apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
     if (!dateStr) return false
     const aptDate = new Date(dateStr)
     return aptDate >= thisMonthStart && aptDate <= now
@@ -43,7 +46,8 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
   // Average appointments per day (last 30 days)
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
   const lastThirtyDaysAppointments = appointments.filter(apt => {
-    const dateStr = apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
+    const dateStr =
+      apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
     if (!dateStr) return false
     const aptDate = new Date(dateStr)
     return aptDate >= thirtyDaysAgo && aptDate <= now
@@ -51,15 +55,15 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
   const averageAppointmentsPerDay = Math.round((lastThirtyDaysAppointments / 30) * 10) / 10
 
   // Conversion rate (completed vs total)
-  const conversionRate = totalAppointments > 0 
-    ? Math.round((completedAppointments / totalAppointments) * 100) 
-    : 0
+  const conversionRate =
+    totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0
 
   // Popular times analysis
   const timeSlots: { [key: string]: number } = {}
   appointments.forEach(apt => {
     if (apt.status === 'completed') {
-      const start = apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
+      const start =
+        apt.start_time || (apt.date && apt.startTime ? `${apt.date}T${apt.startTime}` : undefined)
       if (!start) return
       const hour = new Date(start).getHours()
       const timeSlot = `${hour}:00`
@@ -75,7 +79,11 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
   // Recent activity (last 7 days)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const recentActivity = appointments
-    .filter(apt => new Date(apt.updated_at || apt.updatedAt || apt.created_at || apt.createdAt || '') >= sevenDaysAgo)
+    .filter(
+      apt =>
+        new Date(apt.updated_at || apt.updatedAt || apt.created_at || apt.createdAt || '') >=
+        sevenDaysAgo
+    )
     .map(apt => {
       let type: 'completed' | 'cancelled' | 'created'
       if (apt.status === 'completed') type = 'completed'
@@ -86,7 +94,12 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
         type,
         appointmentTitle: apt.title,
         clientName: apt.client_name || apt.clientName || '',
-        timestamp: (apt.updated_at || apt.updatedAt || apt.created_at || apt.createdAt || new Date().toISOString())
+        timestamp:
+          apt.updated_at ||
+          apt.updatedAt ||
+          apt.created_at ||
+          apt.createdAt ||
+          new Date().toISOString(),
       }
     })
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -121,6 +134,6 @@ export function calculateDashboardStats(appointments: Appointment[]): DashboardS
     thisMonthAppointments,
     averageAppointmentsPerDay,
     conversionRate,
-    recentActivity
+    recentActivity,
   }
 }

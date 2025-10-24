@@ -35,7 +35,7 @@ interface SendMessageResponse {
   }
 }
 
-serve(async (req) => {
+serve(async req => {
   try {
     // ============================================================================
     // 1. INICIALIZACIÓN
@@ -58,10 +58,10 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser()
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // ============================================================================
@@ -69,10 +69,10 @@ serve(async (req) => {
     // ============================================================================
 
     if (req.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Method not allowed' }),
-        { status: 405, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ success: false, error: 'Method not allowed' }), {
+        status: 405,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     const request: SendMessageRequest = await req.json()
@@ -86,10 +86,10 @@ serve(async (req) => {
     }
 
     if (!request.type) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'type is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ success: false, error: 'type is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Validar que tenga contenido
@@ -226,7 +226,10 @@ serve(async (req) => {
 
       if (replyMessage.conversation_id !== request.conversation_id) {
         return new Response(
-          JSON.stringify({ success: false, error: 'Reply-to message is from different conversation' }),
+          JSON.stringify({
+            success: false,
+            error: 'Reply-to message is from different conversation',
+          }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         )
       }
@@ -253,10 +256,10 @@ serve(async (req) => {
 
     if (insertError || !newMessage) {
       console.error('Error inserting message:', insertError)
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to send message' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ success: false, error: 'Failed to send message' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // ============================================================================
@@ -272,8 +275,8 @@ serve(async (req) => {
 
     if (!membersError && membersToNotify) {
       const notifyPromises = membersToNotify
-        .filter((m) => m.notifications_enabled && !m.muted)
-        .map(async (member) => {
+        .filter(m => m.notifications_enabled && !m.muted)
+        .map(async member => {
           try {
             // Obtener info de la conversación para el título de la notificación
             const { data: conversation } = await supabaseClient
@@ -308,10 +311,10 @@ serve(async (req) => {
                 body: request.body
                   ? request.body.substring(0, 100) + (request.body.length > 100 ? '...' : '')
                   : request.type === 'image'
-                  ? '📷 Imagen'
-                  : request.type === 'file'
-                  ? '📎 Archivo'
-                  : 'Mensaje',
+                    ? '📷 Imagen'
+                    : request.type === 'file'
+                      ? '📎 Archivo'
+                      : 'Mensaje',
                 data: {
                   conversation_id: request.conversation_id,
                   message_id: newMessage.id,
@@ -329,9 +332,7 @@ serve(async (req) => {
         })
 
       // Ejecutar notificaciones en paralelo (sin await para no bloquear)
-      Promise.all(notifyPromises).catch((err) =>
-        console.error('Some notifications failed:', err)
-      )
+      Promise.all(notifyPromises).catch(err => console.error('Some notifications failed:', err))
     }
 
     // ============================================================================

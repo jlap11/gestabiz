@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { EmployeeRequest, EmployeeRequestStatus, User } from '@/types/types'
+import type { EmployeeRequest } from '@/types/types'
 import { toast } from 'sonner'
 import { logger } from '@/lib/logger'
 
@@ -30,7 +30,8 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
     try {
       let query = supabase
         .from('employee_requests')
-        .select(`
+        .select(
+          `
           *,
           business:businesses(
             id,
@@ -51,7 +52,8 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
             name,
             email
           )
-        `)
+        `
+        )
         .order('created_at', { ascending: false })
 
       // Filter by business (for admins)
@@ -83,7 +85,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         operation: 'fetchRequests',
         businessId,
         userId,
-      });
+      })
       setError(err instanceof Error ? err.message : 'Error desconocido')
       toast.error('Error al cargar solicitudes')
     } finally {
@@ -106,7 +108,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
     // ✅ FIX CRÍTICO: NO usar Date.now() - causa canales duplicados infinitos
     // Usar solo IDs estáticos para evitar re-crear el canal en cada render
     const channelName = `employee_requests_${businessId || userId}`
-    
+
     const channel = supabase
       .channel(channelName)
       .on(
@@ -115,7 +117,11 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
           event: '*',
           schema: 'public',
           table: 'employee_requests',
-          filter: businessId ? `business_id=eq.${businessId}` : userId ? `user_id=eq.${userId}` : undefined,
+          filter: businessId
+            ? `business_id=eq.${businessId}`
+            : userId
+              ? `user_id=eq.${userId}`
+              : undefined,
         },
         () => {
           // Realtime change detected - refetch data
@@ -182,14 +188,12 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         }
 
         // 4. Create the request
-        const { error: insertError } = await supabase
-          .from('employee_requests')
-          .insert({
-            business_id: business.id,
-            user_id: userId,
-            invitation_code: invitationCode.toUpperCase(),
-            message: message || null,
-          })
+        const { error: insertError } = await supabase.from('employee_requests').insert({
+          business_id: business.id,
+          user_id: userId,
+          invitation_code: invitationCode.toUpperCase(),
+          message: message || null,
+        })
 
         if (insertError) throw insertError
 
@@ -202,7 +206,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
           component: 'useEmployeeRequests',
           operation: 'createRequest',
           businessId,
-        });
+        })
         setError(err instanceof Error ? err.message : 'Error desconocido')
         toast.error('Error al enviar solicitud')
         return false
@@ -243,7 +247,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
           component: 'useEmployeeRequests',
           operation: 'approveRequest',
           requestId,
-        });
+        })
         setError(err instanceof Error ? err.message : 'Error desconocido')
         toast.error('Error al aprobar solicitud')
         return false
@@ -284,7 +288,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
           component: 'useEmployeeRequests',
           operation: 'rejectRequest',
           requestId,
-        });
+        })
         setError(err instanceof Error ? err.message : 'Error desconocido')
         toast.error('Error al rechazar solicitud')
         return false
@@ -296,7 +300,7 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
   )
 
   // Get pending requests count
-  const pendingCount = requests.filter((r) => r.status === 'pending').length
+  const pendingCount = requests.filter(r => r.status === 'pending').length
 
   return {
     requests,

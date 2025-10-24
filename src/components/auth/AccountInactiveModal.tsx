@@ -81,9 +81,9 @@ export function AccountInactiveModal({
             disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-all"
           >
-          {isLoading ? t('accountInactive.reactivating') : t('accountInactive.reactivate')}
+            {isLoading ? t('accountInactive.reactivating') : t('accountInactive.reactivate')}
           </Button>
-          
+
           <Button
             onClick={handleReject}
             disabled={isLoading}

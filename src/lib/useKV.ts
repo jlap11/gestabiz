@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 
 // Hook de persistencia sencillo basado en localStorage
-export function useKV<T>(key: string, initialValue: T): [T, (updater: T | ((prev: T) => T)) => Promise<T>] {
+export function useKV<T>(
+  key: string,
+  initialValue: T
+): [T, (updater: T | ((prev: T) => T)) => Promise<T>] {
   const [value, setValue] = useState<T>(() => {
     if (typeof window === 'undefined') return initialValue
     try {

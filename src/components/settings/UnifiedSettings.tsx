@@ -3,7 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { User } from '@/types'
@@ -13,17 +19,17 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import UserProfile from './UserProfile'
 import { NotificationSettings } from './NotificationSettings'
-import { 
-  User as UserIcon, 
-  Bell, 
-  Palette, 
-  Globe, 
-  Moon,
-  Sun,
-  Monitor,
+import {
+  Bell,
   Briefcase,
+  Globe,
+  Monitor,
+  Moon,
+  Palette,
+  ShoppingCart,
+  Sun,
   UserCircle,
-  ShoppingCart
+  User as UserIcon,
 } from '@phosphor-icons/react'
 
 interface UnifiedSettingsProps {
@@ -33,16 +39,35 @@ interface UnifiedSettingsProps {
   businessId?: string // Para configuraciones específicas del negocio (admin/employee)
 }
 
-export default function UnifiedSettings({ user, onUserUpdate, currentRole, businessId }: UnifiedSettingsProps) {
+export default function UnifiedSettings({
+  user,
+  onUserUpdate,
+  currentRole,
+  businessId,
+}: UnifiedSettingsProps) {
   const { t, language, setLanguage } = useLanguage()
   const { theme, setTheme } = useTheme()
   const [, setUsers] = useKV<User[]>('users', [])
 
   // Helper para obtener info del tema actual
   const getThemeInfo = () => {
-    if (theme === 'light') return { label: t('settings.themeSection.themes.light.label'), classes: 'bg-yellow-100 text-yellow-600', icon: Sun }
-    if (theme === 'dark') return { label: t('settings.themeSection.themes.dark.label'), classes: 'bg-blue-100 text-blue-600', icon: Moon }
-    return { label: t('settings.themeSection.themes.system.label'), classes: 'bg-primary/10 text-primary', icon: Monitor }
+    if (theme === 'light')
+      return {
+        label: t('settings.themeSection.themes.light.label'),
+        classes: 'bg-yellow-100 text-yellow-600',
+        icon: Sun,
+      }
+    if (theme === 'dark')
+      return {
+        label: t('settings.themeSection.themes.dark.label'),
+        classes: 'bg-blue-100 text-blue-600',
+        icon: Moon,
+      }
+    return {
+      label: t('settings.themeSection.themes.system.label'),
+      classes: 'bg-primary/10 text-primary',
+      icon: Monitor,
+    }
   }
 
   const themeInfo = getThemeInfo()
@@ -53,12 +78,10 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
       const updatedUser = {
         ...user,
         language: newLanguage,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
-      await setUsers(prev => 
-        prev.map(u => u.id === user.id ? updatedUser : u)
-      )
+      await setUsers(prev => prev.map(u => (u.id === user.id ? updatedUser : u)))
 
       setLanguage(newLanguage)
       onUserUpdate(updatedUser)
@@ -73,16 +96,32 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
   const tabs = [
     { value: 'general', label: t('settings.general'), icon: <Palette className="h-4 w-4" /> },
     { value: 'profile', label: t('settings.profile'), icon: <UserIcon className="h-4 w-4" /> },
-    { value: 'notifications', label: t('settings.notifications'), icon: <Bell className="h-4 w-4" /> },
+    {
+      value: 'notifications',
+      label: t('settings.notifications'),
+      icon: <Bell className="h-4 w-4" />,
+    },
   ]
 
   // Pestaña específica por rol
   if (currentRole === 'admin') {
-    tabs.push({ value: 'admin', label: t('businessInfo.title'), icon: <Briefcase className="h-4 w-4" /> })
+    tabs.push({
+      value: 'admin',
+      label: t('businessInfo.title'),
+      icon: <Briefcase className="h-4 w-4" />,
+    })
   } else if (currentRole === 'employee') {
-    tabs.push({ value: 'employee', label: t('settings.employeePrefs.title'), icon: <UserCircle className="h-4 w-4" /> })
+    tabs.push({
+      value: 'employee',
+      label: t('settings.employeePrefs.title'),
+      icon: <UserCircle className="h-4 w-4" />,
+    })
   } else if (currentRole === 'client') {
-    tabs.push({ value: 'client', label: t('settings.clientPreferences'), icon: <ShoppingCart className="h-4 w-4" /> })
+    tabs.push({
+      value: 'client',
+      label: t('settings.clientPreferences'),
+      icon: <ShoppingCart className="h-4 w-4" />,
+    })
   }
 
   return (
@@ -121,48 +160,55 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                   <Sun className="h-4 w-4" />
                   {t('settings.themeSection.themeLabel')}
                 </Label>
-                <p className="text-sm text-muted-foreground mb-3">{t('settings.themeSection.themeDescription')}</p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {t('settings.themeSection.themeDescription')}
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { 
-                      value: 'light', 
-                      label: t('settings.themeSection.themes.light.label'), 
+                    {
+                      value: 'light',
+                      label: t('settings.themeSection.themes.light.label'),
                       icon: <Sun className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.light.description')
+                      description: t('settings.themeSection.themes.light.description'),
                     },
-                    { 
-                      value: 'dark', 
-                      label: t('settings.themeSection.themes.dark.label'), 
+                    {
+                      value: 'dark',
+                      label: t('settings.themeSection.themes.dark.label'),
                       icon: <Moon className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.dark.description')
+                      description: t('settings.themeSection.themes.dark.description'),
                     },
-                    { 
-                      value: 'system', 
-                      label: t('settings.themeSection.themes.system.label'), 
+                    {
+                      value: 'system',
+                      label: t('settings.themeSection.themes.system.label'),
                       icon: <Monitor className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.system.description')
-                    }
-                  ].map((themeOption) => (
+                      description: t('settings.themeSection.themes.system.description'),
+                    },
+                  ].map(themeOption => (
                     <button
                       key={themeOption.value}
                       onClick={() => setTheme(themeOption.value as 'light' | 'dark' | 'system')}
                       className={`
                         flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
-                        ${theme === themeOption.value 
-                          ? 'border-primary bg-primary/5 shadow-sm' 
-                          : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                        ${
+                          theme === themeOption.value
+                            ? 'border-primary bg-primary/5 shadow-sm'
+                            : 'border-border hover:border-primary/50 hover:bg-muted/30'
                         }
                       `}
                     >
-                      <div className={`
+                      <div
+                        className={`
                         p-3 rounded-full
                         ${theme === themeOption.value ? 'bg-primary text-primary-foreground' : 'bg-muted'}
-                      `}>
+                      `}
+                      >
                         {themeOption.icon}
                       </div>
                       <div className="text-center">
                         <p className="font-semibold text-sm">{themeOption.label}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{themeOption.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {themeOption.description}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -172,9 +218,13 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                     <ThemeIcon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{t('settings.themeSection.currentTheme', { theme: themeInfo.label })}</p>
+                    <p className="text-sm font-medium">
+                      {t('settings.themeSection.currentTheme', { theme: themeInfo.label })}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      {theme === 'system' ? t('settings.themeSection.systemThemeNote') : t('settings.themeSection.changeAnytime')}
+                      {theme === 'system'
+                        ? t('settings.themeSection.systemThemeNote')
+                        : t('settings.themeSection.changeAnytime')}
                     </p>
                   </div>
                 </div>
@@ -188,7 +238,9 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                   <Globe className="h-4 w-4" />
                   {t('settings.language')}
                 </Label>
-                <p className="text-sm text-muted-foreground mb-3">{t('settings.languageSection.description')}</p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {t('settings.languageSection.description')}
+                </p>
                 <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full md:w-64">
                     <SelectValue />
@@ -232,9 +284,7 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                   <Briefcase className="h-5 w-5" />
                   Configuraciones del Negocio
                 </CardTitle>
-                <CardDescription>
-                  Administra las configuraciones de tu negocio
-                </CardDescription>
+                <CardDescription>Administra las configuraciones de tu negocio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
@@ -282,7 +332,9 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                 <Separator />
 
                 <div className="space-y-3">
-                  <Label className="text-base font-medium">Horario de atención predeterminado</Label>
+                  <Label className="text-base font-medium">
+                    Horario de atención predeterminado
+                  </Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-sm text-muted-foreground">Apertura</Label>
@@ -293,7 +345,11 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                         <SelectContent>
                           {Array.from({ length: 24 }, (_, i) => {
                             const hour = i.toString().padStart(2, '0')
-                            return <SelectItem key={i} value={`${hour}:00`}>{hour}:00</SelectItem>
+                            return (
+                              <SelectItem key={i} value={`${hour}:00`}>
+                                {hour}:00
+                              </SelectItem>
+                            )
                           })}
                         </SelectContent>
                       </Select>
@@ -307,7 +363,11 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                         <SelectContent>
                           {Array.from({ length: 24 }, (_, i) => {
                             const hour = i.toString().padStart(2, '0')
-                            return <SelectItem key={i} value={`${hour}:00`}>{hour}:00</SelectItem>
+                            return (
+                              <SelectItem key={i} value={`${hour}:00`}>
+                                {hour}:00
+                              </SelectItem>
+                            )
                           })}
                         </SelectContent>
                       </Select>
@@ -332,9 +392,7 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                   <UserCircle className="h-5 w-5" />
                   Preferencias de Empleado
                 </CardTitle>
-                <CardDescription>
-                  Configura tus horarios y disponibilidad laboral
-                </CardDescription>
+                <CardDescription>Configura tus horarios y disponibilidad laboral</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
@@ -377,37 +435,47 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                     Define los días y horarios en los que estás disponible para atender
                   </p>
                   <div className="space-y-2 mt-3">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((day) => (
-                      <div key={day} className="flex items-center gap-4 p-3 border rounded-lg">
-                        <Switch defaultChecked={!day.includes('Domingo')} />
-                        <span className="w-24 font-medium">{day}</span>
-                        <div className="flex gap-2 flex-1">
-                          <Select defaultValue="09:00">
-                            <SelectTrigger className="w-28">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => {
-                                const hour = i.toString().padStart(2, '0')
-                                return <SelectItem key={i} value={`${hour}:00`}>{hour}:00</SelectItem>
-                              })}
-                            </SelectContent>
-                          </Select>
-                          <span className="text-muted-foreground">-</span>
-                          <Select defaultValue="18:00">
-                            <SelectTrigger className="w-28">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => {
-                                const hour = i.toString().padStart(2, '0')
-                                return <SelectItem key={i} value={`${hour}:00`}>{hour}:00</SelectItem>
-                              })}
-                            </SelectContent>
-                          </Select>
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(
+                      day => (
+                        <div key={day} className="flex items-center gap-4 p-3 border rounded-lg">
+                          <Switch defaultChecked={!day.includes('Domingo')} />
+                          <span className="w-24 font-medium">{day}</span>
+                          <div className="flex gap-2 flex-1">
+                            <Select defaultValue="09:00">
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => {
+                                  const hour = i.toString().padStart(2, '0')
+                                  return (
+                                    <SelectItem key={i} value={`${hour}:00`}>
+                                      {hour}:00
+                                    </SelectItem>
+                                  )
+                                })}
+                              </SelectContent>
+                            </Select>
+                            <span className="text-muted-foreground">-</span>
+                            <Select defaultValue="18:00">
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => {
+                                  const hour = i.toString().padStart(2, '0')
+                                  return (
+                                    <SelectItem key={i} value={`${hour}:00`}>
+                                      {hour}:00
+                                    </SelectItem>
+                                  )
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </div>
 
@@ -502,7 +570,8 @@ export default function UnifiedSettings({ user, onUserUpdate, currentRole, busin
                   <Label className="text-base font-medium">Historial de servicios</Label>
                   <div className="p-4 bg-muted/30 rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      Has completado <strong className="text-foreground">0 servicios</strong> hasta ahora
+                      Has completado <strong className="text-foreground">0 servicios</strong> hasta
+                      ahora
                     </p>
                     <Button variant="outline" className="mt-3 w-full">
                       Ver Historial Completo

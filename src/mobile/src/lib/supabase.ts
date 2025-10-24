@@ -23,8 +23,8 @@ export const authService = {
       options: {
         data: {
           full_name: fullName,
-        }
-      }
+        },
+      },
     })
     return { data, error }
   },
@@ -32,7 +32,7 @@ export const authService = {
   async signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     })
     return { data, error }
   },
@@ -43,7 +43,10 @@ export const authService = {
   },
 
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
     return { user, error }
   },
 
@@ -54,7 +57,7 @@ export const authService = {
 
   onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback)
-  }
+  },
 }
 
 // Appointment functions
@@ -65,7 +68,7 @@ export const appointmentService = {
       .select('*')
       .eq('user_id', userId)
       .order('start_time', { ascending: true })
-    
+
     return { data, error }
   },
 
@@ -75,7 +78,7 @@ export const appointmentService = {
       .insert(appointment)
       .select()
       .single()
-    
+
     return { data, error }
   },
 
@@ -86,16 +89,13 @@ export const appointmentService = {
       .eq('id', id)
       .select()
       .single()
-    
+
     return { data, error }
   },
 
   async deleteAppointment(id: string) {
-    const { error } = await supabase
-      .from('appointments')
-      .delete()
-      .eq('id', id)
-    
+    const { error } = await supabase.from('appointments').delete().eq('id', id)
+
     return { error }
   },
 
@@ -108,20 +108,16 @@ export const appointmentService = {
       .gte('start_time', new Date().toISOString())
       .order('start_time', { ascending: true })
       .limit(limit)
-    
+
     return { data, error }
-  }
+  },
 }
 
 // Profile functions
 export const profileService = {
   async getProfile(userId: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
+
     return { data, error }
   },
 
@@ -132,9 +128,9 @@ export const profileService = {
       .eq('id', userId)
       .select()
       .single()
-    
+
     return { data, error }
-  }
+  },
 }
 
 // User settings functions
@@ -145,7 +141,7 @@ export const userSettingsService = {
       .select('*')
       .eq('user_id', userId)
       .single()
-    
+
     return { data, error }
   },
 
@@ -156,19 +152,18 @@ export const userSettingsService = {
       .eq('user_id', userId)
       .select()
       .single()
-    
+
     return { data, error }
-  }
+  },
 }
 
 // Dashboard functions
 export const dashboardService = {
   async getDashboardStats(userId: string) {
-    const { data, error } = await supabase
-      .rpc('get_dashboard_stats')
-    
+    const { data, error } = await supabase.rpc('get_dashboard_stats')
+
     return { data, error }
-  }
+  },
 }
 
 // Real-time subscriptions
@@ -176,18 +171,22 @@ export const subscriptionService = {
   subscribeToAppointments(userId: string, callback: (payload: any) => void) {
     return supabase
       .channel('appointments')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'appointments',
-        filter: `user_id=eq.${userId}`
-      }, callback)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'appointments',
+          filter: `user_id=eq.${userId}`,
+        },
+        callback
+      )
       .subscribe()
   },
 
   unsubscribe(subscription: any) {
     return supabase.removeChannel(subscription)
-  }
+  },
 }
 
 export default supabase

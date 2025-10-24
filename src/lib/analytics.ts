@@ -1,10 +1,10 @@
 /**
  * Analytics Service
- * 
+ *
  * Sistema de tracking de eventos para chat y notificaciones.
  * Soporta múltiples proveedores (Google Analytics, Mixpanel, etc.)
  * y modo dev para debugging.
- * 
+ *
  * Features:
  * - Tracking de eventos con propiedades
  * - Soporte múltiples proveedores
@@ -84,7 +84,7 @@ let config: AnalyticsConfig = { ...defaultConfig }
  */
 export function configureAnalytics(newConfig: Partial<AnalyticsConfig>) {
   config = { ...config, ...newConfig }
-  
+
   if (config.debug) {
     // eslint-disable-next-line no-console
     console.log('[Analytics] Configured:', config)
@@ -99,7 +99,7 @@ function isAnalyticsEnabled(): boolean {
   if (config.respectDNT && navigator.doNotTrack === '1') {
     return false
   }
-  
+
   return config.enabled
 }
 
@@ -129,7 +129,7 @@ export function trackEvent(event: AnalyticsEvent) {
   }
 
   // Enviar a cada proveedor activo
-  config.providers.forEach((provider) => {
+  config.providers.forEach(provider => {
     try {
       switch (provider) {
         case 'google':
@@ -209,7 +209,7 @@ function trackMixpanel(event: AnalyticsEvent) {
   }
 
   const { action, properties } = event
-  
+
   window.mixpanel.track(action, properties)
 }
 
@@ -218,12 +218,7 @@ function trackMixpanel(event: AnalyticsEvent) {
 /**
  * Track timing (performance metrics)
  */
-export function trackTiming(
-  category: string,
-  variable: string,
-  value: number,
-  label?: string
-) {
+export function trackTiming(category: string, variable: string, value: number, label?: string) {
   if (!isAnalyticsEnabled()) {
     return
   }
@@ -246,11 +241,7 @@ export function trackTiming(
 /**
  * Track error
  */
-export function trackError(
-  category: string,
-  message: string,
-  fatal: boolean = false
-) {
+export function trackError(category: string, message: string, fatal: boolean = false) {
   if (!isAnalyticsEnabled()) {
     return
   }
@@ -267,11 +258,7 @@ export function trackError(
 
 declare global {
   interface Window {
-    gtag?: (
-      command: string,
-      targetId: string,
-      config?: Record<string, unknown>
-    ) => void
+    gtag?: (command: string, targetId: string, config?: Record<string, unknown>) => void
     mixpanel?: {
       track: (event: string, properties?: Record<string, unknown>) => void
     }

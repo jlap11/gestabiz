@@ -4,14 +4,8 @@
  * Información: contacto, horarios, servicios, ubicaciones, estadísticas
  */
 
-import { useState } from 'react'
-import { X, Mail, Phone, Calendar, MapPin, Star, TrendingUp, Clock } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Calendar, Clock, Mail, MapPin, Phone, Star, TrendingUp } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -52,17 +46,14 @@ const HIERARCHY_COLORS = {
 // COMPONENTE
 // =====================================================
 
-export function EmployeeProfileModal({
-  employee,
-  isOpen,
-  onClose,
-}: EmployeeProfileModalProps) {
+export function EmployeeProfileModal({ employee, isOpen, onClose }: EmployeeProfileModalProps) {
   const { t } = useLanguage()
 
   if (!employee) return null
 
   const hierarchyLevel = employee.hierarchy_level || 4
-  const hierarchyLabel = HIERARCHY_LABELS[hierarchyLevel as keyof typeof HIERARCHY_LABELS] || 'Desconocido'
+  const hierarchyLabel =
+    HIERARCHY_LABELS[hierarchyLevel as keyof typeof HIERARCHY_LABELS] || 'Desconocido'
   const hierarchyColor = HIERARCHY_COLORS[hierarchyLevel as keyof typeof HIERARCHY_COLORS]
 
   return (
@@ -86,9 +77,7 @@ export function EmployeeProfileModal({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-sm mb-2">Nivel Jerárquico</h3>
-                <Badge className={`${hierarchyColor} text-base px-3 py-1`}>
-                  {hierarchyLabel}
-                </Badge>
+                <Badge className={`${hierarchyColor} text-base px-3 py-1`}>{hierarchyLabel}</Badge>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-blue-600">{hierarchyLevel}</p>
@@ -178,7 +167,9 @@ export function EmployeeProfileModal({
                   <p className="text-xs text-muted-foreground">Calificación</p>
                 </div>
                 <p className="text-2xl font-bold">{(employee.average_rating || 0).toFixed(1)}</p>
-                <p className="text-xs text-muted-foreground">{employee.total_reviews || 0} reseñas</p>
+                <p className="text-xs text-muted-foreground">
+                  {employee.total_reviews || 0} reseñas
+                </p>
               </Card>
             )}
 
@@ -193,7 +184,7 @@ export function EmployeeProfileModal({
                 <div className="w-full bg-secondary rounded-full h-1.5 mt-2">
                   <div
                     className="bg-blue-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${Math.min((employee.occupancy_rate || 0), 100)}%` }}
+                    style={{ width: `${Math.min(employee.occupancy_rate || 0, 100)}%` }}
                   />
                 </div>
               </Card>
@@ -229,8 +220,11 @@ export function EmployeeProfileModal({
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Servicios Ofrecidos</h3>
               <div className="space-y-2">
-                {employee.services_offered.slice(0, 5).map((service) => (
-                  <div key={service.service_id} className="flex items-center justify-between p-2 bg-secondary rounded">
+                {employee.services_offered.slice(0, 5).map(service => (
+                  <div
+                    key={service.service_id}
+                    className="flex items-center justify-between p-2 bg-secondary rounded"
+                  >
                     <Badge variant="secondary" className="text-xs">
                       {service.service_name}
                     </Badge>

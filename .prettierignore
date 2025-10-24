@@ -1,0 +1,12 @@
+node_modules/
+dist/
+supabase/
+src/supabase/
+mobile/
+extension/
+src/browser-extension/
+database/
+docs/
+src/types/supabase.ts
+src/types/supabase.gen.ts
+src/types/supabase.gen.tmp.ts

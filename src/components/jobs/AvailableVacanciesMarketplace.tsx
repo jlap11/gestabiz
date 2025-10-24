@@ -1,137 +1,143 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { CitySelect } from '@/components/catalog/CitySelect';
-import { RegionSelect } from '@/components/catalog/RegionSelect';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { CitySelect } from '@/components/catalog/CitySelect'
+import { RegionSelect } from '@/components/catalog/RegionSelect'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
+  Briefcase,
+  DollarSign,
+  Loader2,
+  MapPin,
   Search,
   SlidersHorizontal,
-  Briefcase,
-  MapPin,
-  DollarSign,
   TrendingUp,
   X,
-  Loader2,
-} from 'lucide-react';
-import { useMatchingVacancies, type VacancyFilters, type MatchingVacancy } from '@/hooks/useMatchingVacancies';
-import { VacancyCard } from './VacancyCard';
-import { ApplicationFormModal } from './ApplicationFormModal';
-import { MyApplicationsModal } from './MyApplicationsModal';
-import { getColombiaId } from '@/hooks/useCatalogs';
+} from 'lucide-react'
+import {
+  type MatchingVacancy,
+  type VacancyFilters,
+  useMatchingVacancies,
+} from '@/hooks/useMatchingVacancies'
+import { VacancyCard } from './VacancyCard'
+import { ApplicationFormModal } from './ApplicationFormModal'
+import { MyApplicationsModal } from './MyApplicationsModal'
+import { getColombiaId } from '@/hooks/useCatalogs'
 
 interface AvailableVacanciesMarketplaceProps {
-  userId: string;
+  userId: string
 }
 
 export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketplaceProps> = ({
   userId,
 }) => {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
   const {
     vacancies,
     loading,
     fetchMatchingVacancies,
     sortVacancies,
     resetFilters: resetHookFilters,
-  } = useMatchingVacancies();
+  } = useMatchingVacancies()
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedVacancy, setSelectedVacancy] = useState<MatchingVacancy | null>(null);
-  const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [showMyApplications, setShowMyApplications] = useState(false);
-  const [viewDetailsVacancy, setViewDetailsVacancy] = useState<MatchingVacancy | null>(null);
-  const [sortBy, setSortBy] = useState<'match_score' | 'salary' | 'published_at' | 'applications_count'>('match_score');
-  
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [selectedVacancy, setSelectedVacancy] = useState<MatchingVacancy | null>(null)
+  const [showApplicationModal, setShowApplicationModal] = useState(false)
+  const [showMyApplications, setShowMyApplications] = useState(false)
+  const [viewDetailsVacancy, setViewDetailsVacancy] = useState<MatchingVacancy | null>(null)
+  const [sortBy, setSortBy] = useState<
+    'match_score' | 'salary' | 'published_at' | 'applications_count'
+  >('match_score')
+
   // Local filters state
-  const [filters, setFilters] = useState<VacancyFilters>({});
+  const [filters, setFilters] = useState<VacancyFilters>({})
 
   // Location cascade state
-  const [colombiaId, setColombiaId] = useState<string | null>(null);
-  const [regionId, setRegionId] = useState<string>('');
-  const [cityId, setCityId] = useState<string>('');
+  const [colombiaId, setColombiaId] = useState<string | null>(null)
+  const [regionId, setRegionId] = useState<string>('')
+  const [cityId, setCityId] = useState<string>('')
 
   // Load Colombia ID on mount
   useEffect(() => {
     const loadColombiaId = async () => {
-      const id = await getColombiaId();
-      setColombiaId(id);
-    };
-    loadColombiaId();
-  }, []);
+      const id = await getColombiaId()
+      setColombiaId(id)
+    }
+    loadColombiaId()
+  }, [])
 
   // Fetch on mount
   useEffect(() => {
-    fetchMatchingVacancies(userId, filters);
-  }, []);
+    fetchMatchingVacancies(userId, filters)
+  }, [])
 
   // Búsqueda en tiempo real
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchMatchingVacancies(userId, { ...filters, city: searchQuery || undefined });
-    }, 300); // Debounce 300ms
+      fetchMatchingVacancies(userId, { ...filters, city: searchQuery || undefined })
+    }, 300) // Debounce 300ms
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Apply filters cuando cambian
   useEffect(() => {
-    fetchMatchingVacancies(userId, filters);
-  }, [filters]);
+    fetchMatchingVacancies(userId, filters)
+  }, [filters])
 
   // Apply sort cuando cambia
   useEffect(() => {
-    sortVacancies(sortBy, 'desc');
-  }, [sortBy]);
+    sortVacancies(sortBy, 'desc')
+  }, [sortBy])
 
   const updateFilters = (newFilters: Partial<VacancyFilters>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
+    setFilters(prev => ({ ...prev, ...newFilters }))
+  }
 
   const resetFilters = () => {
-    setFilters({});
-    setSearchQuery('');
-    setRegionId('');
-    setCityId('');
-    resetHookFilters();
-  };
+    setFilters({})
+    setSearchQuery('')
+    setRegionId('')
+    setCityId('')
+    resetHookFilters()
+  }
 
   const handleApply = (vacancyId: string) => {
-    const vacancy = vacancies.find((v) => v.id === vacancyId);
+    const vacancy = vacancies.find(v => v.id === vacancyId)
     if (vacancy) {
-      setSelectedVacancy(vacancy);
-      setShowApplicationModal(true);
+      setSelectedVacancy(vacancy)
+      setShowApplicationModal(true)
     }
-  };
+  }
 
   const handleViewDetails = (vacancyId: string) => {
-    const vacancy = vacancies.find((v) => v.id === vacancyId);
+    const vacancy = vacancies.find(v => v.id === vacancyId)
     if (vacancy) {
-      setViewDetailsVacancy(vacancy);
+      setViewDetailsVacancy(vacancy)
     }
-  };
+  }
 
   const handleApplicationSuccess = () => {
     // Refrescar la lista después de aplicar
-    window.location.reload();
-  };
+    window.location.reload()
+  }
 
   const activeFiltersCount = Object.entries(filters).filter(
     ([key, value]) => value && key !== 'search'
-  ).length;
+  ).length
 
   const formatSalary = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -139,8 +145,8 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
       currency: 'COP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -160,7 +166,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
             <Input
               placeholder="Buscar por cargo, empresa, ubicación..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -177,11 +183,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
               </Badge>
             )}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowMyApplications(true)}
-            className="gap-2"
-          >
+          <Button variant="outline" onClick={() => setShowMyApplications(true)} className="gap-2">
             <Briefcase className="h-4 w-4" />
             Mis Aplicaciones
           </Button>
@@ -227,9 +229,9 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
               <RegionSelect
                 countryId={colombiaId || ''}
                 value={regionId}
-                onChange={(value) => {
-                  setRegionId(value);
-                  setCityId(''); // Reset city when region changes
+                onChange={value => {
+                  setRegionId(value)
+                  setCityId('') // Reset city when region changes
                 }}
                 disabled={!colombiaId}
                 placeholder={t('common.placeholders.selectDepartment')}
@@ -245,12 +247,14 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
               <CitySelect
                 regionId={regionId}
                 value={cityId}
-                onChange={(value) => {
-                  setCityId(value);
-                  updateFilters({ city: value });
+                onChange={value => {
+                  setCityId(value)
+                  updateFilters({ city: value })
                 }}
                 disabled={!regionId}
-                placeholder={regionId ? "Seleccione una ciudad" : "Primero seleccione un departamento"}
+                placeholder={
+                  regionId ? 'Seleccione una ciudad' : 'Primero seleccione un departamento'
+                }
               />
             </div>
 
@@ -262,7 +266,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
               </Label>
               <Select
                 value={filters.position_type || 'all-types'}
-                onValueChange={(value) =>
+                onValueChange={value =>
                   updateFilters({ position_type: value === 'all-types' ? undefined : value })
                 }
               >
@@ -287,7 +291,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
               </Label>
               <Select
                 value={filters.experience_level || 'all-levels'}
-                onValueChange={(value) =>
+                onValueChange={value =>
                   updateFilters({ experience_level: value === 'all-levels' ? undefined : value })
                 }
               >
@@ -314,7 +318,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 type="number"
                 placeholder="Ej: 2000000"
                 value={filters.min_salary || ''}
-                onChange={(e) =>
+                onChange={e =>
                   updateFilters({ min_salary: e.target.value ? Number(e.target.value) : undefined })
                 }
               />
@@ -330,7 +334,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 type="number"
                 placeholder="Ej: 5000000"
                 value={filters.max_salary || ''}
-                onChange={(e) =>
+                onChange={e =>
                   updateFilters({ max_salary: e.target.value ? Number(e.target.value) : undefined })
                 }
               />
@@ -350,9 +354,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 <Switch
                   id="remote-filter"
                   checked={filters.remote_only || false}
-                  onCheckedChange={(checked) =>
-                    updateFilters({ remote_only: checked === true })
-                  }
+                  onCheckedChange={checked => updateFilters({ remote_only: checked === true })}
                 />
               </div>
             </div>
@@ -367,7 +369,8 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
             <span>Cargando...</span>
           ) : (
             <span>
-              {vacancies.length} {vacancies.length === 1 ? 'vacante encontrada' : 'vacantes encontradas'}
+              {vacancies.length}{' '}
+              {vacancies.length === 1 ? 'vacante encontrada' : 'vacantes encontradas'}
             </span>
           )}
         </div>
@@ -376,10 +379,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
           <Label htmlFor="sort-by" className="text-sm">
             Ordenar por:
           </Label>
-          <Select
-            value={sortBy}
-            onValueChange={(value) => setSortBy(value as typeof sortBy)}
-          >
+          <Select value={sortBy} onValueChange={value => setSortBy(value as typeof sortBy)}>
             <SelectTrigger id="sort-by" className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -413,7 +413,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vacancies.map((vacancy) => (
+          {vacancies.map(vacancy => (
             <VacancyCard
               key={vacancy.id}
               vacancy={vacancy}
@@ -431,8 +431,8 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
         userId={userId}
         isOpen={showApplicationModal}
         onClose={() => {
-          setShowApplicationModal(false);
-          setSelectedVacancy(null);
+          setShowApplicationModal(false)
+          setSelectedVacancy(null)
         }}
         onSuccess={handleApplicationSuccess}
       />
@@ -449,11 +449,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                     {viewDetailsVacancy.description}
                   </CardDescription>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setViewDetailsVacancy(null)}
-                >
+                <Button variant="ghost" size="icon" onClick={() => setViewDetailsVacancy(null)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -462,9 +458,7 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
               {viewDetailsVacancy.requirements && (
                 <div>
                   <h4 className="font-semibold mb-2">Requisitos</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {viewDetailsVacancy.requirements}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{viewDetailsVacancy.requirements}</p>
                 </div>
               )}
               {viewDetailsVacancy.responsibilities && (
@@ -491,11 +485,9 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 <div>
                   <h4 className="font-semibold mb-2">Salario</h4>
                   <p className="text-sm">
-                    {viewDetailsVacancy.salary_min &&
-                      formatSalary(viewDetailsVacancy.salary_min)}
+                    {viewDetailsVacancy.salary_min && formatSalary(viewDetailsVacancy.salary_min)}
                     {viewDetailsVacancy.salary_min && viewDetailsVacancy.salary_max && ' - '}
-                    {viewDetailsVacancy.salary_max &&
-                      formatSalary(viewDetailsVacancy.salary_max)}
+                    {viewDetailsVacancy.salary_max && formatSalary(viewDetailsVacancy.salary_max)}
                   </p>
                 </div>
               )}
@@ -503,8 +495,8 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
                 <Button
                   className="flex-1"
                   onClick={() => {
-                    setViewDetailsVacancy(null);
-                    handleApply(viewDetailsVacancy.id);
+                    setViewDetailsVacancy(null)
+                    handleApply(viewDetailsVacancy.id)
                   }}
                 >
                   Aplicar Ahora
@@ -525,5 +517,5 @@ export const AvailableVacanciesMarketplace: React.FC<AvailableVacanciesMarketpla
         userId={userId}
       />
     </div>
-  );
-};
+  )
+}

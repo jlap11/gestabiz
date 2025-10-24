@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { BusinessCategory } from '@/types/types'
 
@@ -53,7 +53,7 @@ export function useBusinessCategories(): UseBusinessCategoriesReturn {
       // Construir estructura jerárquica
       const mainsWithSubs = mains.map(main => ({
         ...main,
-        subcategories: subs.filter(sub => sub.parent_id === main.id)
+        subcategories: subs.filter(sub => sub.parent_id === main.id),
       }))
 
       setMainCategories(mains)

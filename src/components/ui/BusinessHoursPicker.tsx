@@ -51,7 +51,11 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
   const currentValue = value || DEFAULT_HOURS
   const { t } = useLanguage()
 
-  const handleDayChange = (day: keyof BusinessHours, field: keyof DaySchedule, newValue: string | boolean) => {
+  const handleDayChange = (
+    day: keyof BusinessHours,
+    field: keyof DaySchedule,
+    newValue: string | boolean
+  ) => {
     onChange({
       ...currentValue,
       [day]: {
@@ -65,7 +69,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
     const sourceSchedule = currentValue[sourceDay]
     const newHours: BusinessHours = {} as BusinessHours
 
-    DAYS.forEach((day) => {
+    DAYS.forEach(day => {
       newHours[day.key] = { ...sourceSchedule }
     })
 
@@ -80,7 +84,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
       </div>
 
       <div className="space-y-3">
-        {DAYS.map((day) => {
+        {DAYS.map(day => {
           const schedule = currentValue[day.key]
           const isClosed = schedule.closed
 
@@ -94,7 +98,9 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-medium text-sm">
                   {day.short}
                 </div>
-                <span className="text-sm font-medium text-foreground">{t(`businessHours.days.${day.label}`)}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {t(`businessHours.days.${day.label}`)}
+                </span>
               </div>
 
               {/* Time inputs or "Cerrado" */}
@@ -103,14 +109,14 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                   <Input
                     type="time"
                     value={schedule.open}
-                    onChange={(e) => handleDayChange(day.key, 'open', e.target.value)}
+                    onChange={e => handleDayChange(day.key, 'open', e.target.value)}
                     className="flex-1 sm:w-28 bg-background border-border mb-1"
                   />
                   <span className="text-muted-foreground">-</span>
                   <Input
                     type="time"
                     value={schedule.close}
-                    onChange={(e) => handleDayChange(day.key, 'close', e.target.value)}
+                    onChange={e => handleDayChange(day.key, 'close', e.target.value)}
                     className="flex-1 sm:w-28 bg-background border-border mb-1"
                   />
 
@@ -125,7 +131,9 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                   </button>
                 </div>
               ) : (
-                <div className="flex-1 text-sm text-muted-foreground">{t('businessHours.closed')}</div>
+                <div className="flex-1 text-sm text-muted-foreground">
+                  {t('businessHours.closed')}
+                </div>
               )}
 
               {/* Closed checkbox */}
@@ -133,7 +141,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
                 <Checkbox
                   id={`closed-${day.key}`}
                   checked={isClosed}
-                  onCheckedChange={(checked) => handleDayChange(day.key, 'closed', checked === true)}
+                  onCheckedChange={checked => handleDayChange(day.key, 'closed', checked === true)}
                 />
                 <Label
                   htmlFor={`closed-${day.key}`}
@@ -166,7 +174,7 @@ export function BusinessHoursPicker({ value, onChange, className }: BusinessHour
               })
             }}
             className="px-3 py-1.5 text-xs rounded-md bg-card hover:bg-muted text-foreground border border-border transition-colors"
-            >
+          >
             {t('businessHours.presets.lunFriSat')}
           </button>
           <button

@@ -3,10 +3,23 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Calendar, ArrowClockwise as RefreshCw, Gear as Settings, WarningCircle as AlertCircle, CheckCircle, Clock } from '@phosphor-icons/react'
+import {
+  WarningCircle as AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  ArrowClockwise as RefreshCw,
+  Gear as Settings,
+} from '@phosphor-icons/react'
 import { useGoogleCalendarSync } from '@/hooks/useGoogleCalendarSync'
 import { User } from '@/types'
 import { toast } from 'sonner'
@@ -15,7 +28,9 @@ interface GoogleCalendarIntegrationProps {
   user: User
 }
 
-export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalendarIntegrationProps>) {
+export default function GoogleCalendarIntegration({
+  user,
+}: Readonly<GoogleCalendarIntegrationProps>) {
   const { t } = useLanguage()
   const {
     syncSettings,
@@ -25,7 +40,7 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
     connectGoogleCalendar,
     disconnectGoogleCalendar,
     syncWithGoogleCalendar,
-    updateSyncSettings
+    updateSyncSettings,
   } = useGoogleCalendarSync(user)
 
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -39,7 +54,11 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
   }
 
   const handleDisconnect = async () => {
-    if (window.confirm('Are you sure you want to disconnect Google Calendar? This will stop all automatic syncing.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to disconnect Google Calendar? This will stop all automatic syncing.'
+      )
+    ) {
       await disconnectGoogleCalendar()
     }
   }
@@ -57,7 +76,7 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
     const date = new Date(lastSync)
     const now = new Date()
     const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-    
+
     if (diffMinutes < 1) return 'Just now'
     if (diffMinutes < 60) return `${diffMinutes} minutes ago`
     if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)} hours ago`
@@ -82,7 +101,8 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
           <Alert>
             <AlertCircle size={16} />
             <AlertDescription>
-              Connect your Google Calendar to automatically sync appointments and keep all your schedules in one place.
+              Connect your Google Calendar to automatically sync appointments and keep all your
+              schedules in one place.
             </AlertDescription>
           </Alert>
 
@@ -108,11 +128,7 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
             </ul>
           </div>
 
-          <Button 
-            onClick={handleConnect}
-            disabled={isConnecting}
-            className="w-full"
-          >
+          <Button onClick={handleConnect} disabled={isConnecting} className="w-full">
             {isConnecting ? (
               <>
                 <RefreshCw className="animate-spin" size={16} />
@@ -143,16 +159,10 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
                   Connected
                 </Badge>
               </CardTitle>
-              <CardDescription>
-                Your appointments are synced with Google Calendar
-              </CardDescription>
+              <CardDescription>Your appointments are synced with Google Calendar</CardDescription>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowAdvanced(!showAdvanced)}>
             <Settings size={16} />
             Settings
           </Button>
@@ -167,12 +177,7 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
               <span className="text-sm">Last sync: {formatLastSync(syncSettings?.last_sync)}</span>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSyncNow}
-            disabled={isSyncing}
-          >
+          <Button variant="outline" size="sm" onClick={handleSyncNow} disabled={isSyncing}>
             {isSyncing ? (
               <>
                 <RefreshCw className="animate-spin" size={16} />
@@ -198,18 +203,14 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
             </div>
             <Switch
               checked={syncSettings?.auto_sync || false}
-              onCheckedChange={(checked) => 
-                updateSyncSettings({ auto_sync: checked })
-              }
+              onCheckedChange={checked => updateSyncSettings({ auto_sync: checked })}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">Sync direction</p>
-              <p className="text-sm text-muted-foreground">
-                Choose how appointments are synced
-              </p>
+              <p className="text-sm text-muted-foreground">Choose how appointments are synced</p>
             </div>
             <Select
               value={syncSettings?.sync_direction || 'both'}
@@ -233,7 +234,7 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
         {showAdvanced && (
           <div className="space-y-4 pt-4 border-t">
             <h4 className="font-medium">Advanced Settings</h4>
-            
+
             <div>
               <p className="text-sm font-medium mb-2">Calendar ID</p>
               <code className="text-xs bg-muted p-2 rounded block break-all">
@@ -268,7 +269,9 @@ export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalen
                   <p className="font-medium mb-1">Recent sync errors:</p>
                   <ul className="text-xs space-y-1">
                     {syncSettings.sync_errors.slice(0, 3).map((error, index) => (
-                      <li key={index} className="text-red-600">• {error}</li>
+                      <li key={index} className="text-red-600">
+                        • {error}
+                      </li>
                     ))}
                   </ul>
                 </AlertDescription>

@@ -4,12 +4,12 @@
 // de permisos granulares con matriz de categorías
 // =====================================================
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '@/test-utils/test-utils'
 import { PermissionEditor } from '../PermissionEditor'
-import type { UserPermission, Permission } from '@/types/types'
+import type { Permission, UserPermission } from '@/types/types'
 import * as usePermissionsModule from '@/hooks/usePermissions-v2'
 
 // =====================================================
@@ -26,7 +26,7 @@ vi.mock('sonner', () => ({
 
 // Mock usePermissions hook (solo la función, NO las constantes)
 vi.mock('@/hooks/usePermissions-v2', async () => {
-  const actual = await vi.importActual('@/hooks/usePermissions-v2') as any
+  const actual = (await vi.importActual('@/hooks/usePermissions-v2')) as any
   return {
     ...actual,
     usePermissions: vi.fn(),
@@ -105,9 +105,7 @@ describe('PermissionEditor - Render y Estados', () => {
   })
 
   it('renderiza modal cerrado cuando isOpen es false', () => {
-    renderWithProviders(
-      <PermissionEditor {...defaultProps} isOpen={false} />
-    )
+    renderWithProviders(<PermissionEditor {...defaultProps} isOpen={false} />)
 
     // El Dialog de Radix UI no renderiza nada cuando está cerrado
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -156,16 +154,10 @@ describe('PermissionEditor - Restricción Owner', () => {
 
   it('muestra advertencia cuando el target es el owner', () => {
     renderWithProviders(
-      <PermissionEditor
-        {...defaultProps}
-        targetUserId="owner-123"
-        currentUserId="owner-123"
-      />
+      <PermissionEditor {...defaultProps} targetUserId="owner-123" currentUserId="owner-123" />
     )
 
-    expect(
-      screen.getByText('No se pueden editar permisos del propietario')
-    ).toBeInTheDocument()
+    expect(screen.getByText('No se pueden editar permisos del propietario')).toBeInTheDocument()
     expect(
       screen.getByText(/El propietario del negocio siempre tiene acceso completo/i)
     ).toBeInTheDocument()
@@ -173,11 +165,7 @@ describe('PermissionEditor - Restricción Owner', () => {
 
   it('no muestra botones de acción rápida cuando target es owner', () => {
     renderWithProviders(
-      <PermissionEditor
-        {...defaultProps}
-        targetUserId="owner-123"
-        currentUserId="owner-123"
-      />
+      <PermissionEditor {...defaultProps} targetUserId="owner-123" currentUserId="owner-123" />
     )
 
     expect(screen.queryByText('Seleccionar Todos')).not.toBeInTheDocument()
@@ -186,11 +174,7 @@ describe('PermissionEditor - Restricción Owner', () => {
 
   it('no muestra botón de guardar cuando target es owner', () => {
     renderWithProviders(
-      <PermissionEditor
-        {...defaultProps}
-        targetUserId="owner-123"
-        currentUserId="owner-123"
-      />
+      <PermissionEditor {...defaultProps} targetUserId="owner-123" currentUserId="owner-123" />
     )
 
     expect(screen.queryByRole('button', { name: /Guardar Cambios/i })).not.toBeInTheDocument()
@@ -242,18 +226,18 @@ describe('PermissionEditor - Matriz de Permisos', () => {
     // El Accordion inicia con todos los items abiertos por defaultValue
     // Busca checkboxes usando los textos exactos de PERMISSION_DESCRIPTIONS
     await waitFor(() => {
-      const viewAllCheck = screen.getByRole('checkbox', { name: /Ver todas las citas del negocio/i })
+      const viewAllCheck = screen.getByRole('checkbox', {
+        name: /Ver todas las citas del negocio/i,
+      })
       expect(viewAllCheck).toBeInTheDocument()
     })
-    
+
     const createCheck = screen.getByRole('checkbox', { name: /Crear nuevas citas/i })
     expect(createCheck).toBeInTheDocument()
   })
 
   it('marca permisos existentes como checked', async () => {
-    const currentPermissions = [
-      createMockUserPermission('appointments.view_all'),
-    ]
+    const currentPermissions = [createMockUserPermission('appointments.view_all')]
 
     renderWithProviders(
       <PermissionEditor {...defaultProps} currentPermissions={currentPermissions} />
@@ -262,7 +246,7 @@ describe('PermissionEditor - Matriz de Permisos', () => {
     // NO expandir manualmente - defaultValue ya debería abrir todas
     // Usar findByRole que espera hasta 1 segundo por defecto
     const viewAllCheck = await screen.findByRole(
-      'checkbox', 
+      'checkbox',
       { name: /Ver todas las citas del negocio/i },
       { timeout: 3000 } // Dar más tiempo para animaciones
     )
@@ -485,9 +469,7 @@ describe('PermissionEditor - Submit y Guardado', () => {
       mockUsePermissions({ isOwner: true, revokePermission: revokePermissionMock })
     )
 
-    const currentPermissions = [
-      createMockUserPermission('appointments.view_all'),
-    ]
+    const currentPermissions = [createMockUserPermission('appointments.view_all')]
 
     renderWithProviders(
       <PermissionEditor {...defaultProps} currentPermissions={currentPermissions} />
@@ -521,11 +503,7 @@ describe('PermissionEditor - Submit y Guardado', () => {
     const onCloseMock = vi.fn()
 
     renderWithProviders(
-      <PermissionEditor
-        {...defaultProps}
-        onSuccess={onSuccessMock}
-        onClose={onCloseMock}
-      />
+      <PermissionEditor {...defaultProps} onSuccess={onSuccessMock} onClose={onCloseMock} />
     )
 
     // Selecciona un permiso y guarda
@@ -548,7 +526,7 @@ describe('PermissionEditor - Submit y Guardado', () => {
       mockUsePermissions({
         isOwner: true,
         grantPermission: vi.fn((_, callbacks) => {
-          return new Promise((resolve) => {
+          return new Promise(resolve => {
             resolveGrant = () => {
               callbacks?.onSuccess?.()
               resolve()
@@ -591,9 +569,7 @@ describe('PermissionEditor - Cancelación', () => {
   it('llama a onClose cuando se hace click en Cancelar', async () => {
     const onCloseMock = vi.fn()
 
-    renderWithProviders(
-      <PermissionEditor {...defaultProps} onClose={onCloseMock} />
-    )
+    renderWithProviders(<PermissionEditor {...defaultProps} onClose={onCloseMock} />)
 
     const cancelBtn = screen.getByRole('button', { name: /Cancelar/i })
     await userEvent.click(cancelBtn)
@@ -602,9 +578,7 @@ describe('PermissionEditor - Cancelación', () => {
   })
 
   it('resetea cambios pendientes al cancelar', async () => {
-    const currentPermissions = [
-      createMockUserPermission('read_appointments'),
-    ]
+    const currentPermissions = [createMockUserPermission('read_appointments')]
 
     renderWithProviders(
       <PermissionEditor {...defaultProps} currentPermissions={currentPermissions} />

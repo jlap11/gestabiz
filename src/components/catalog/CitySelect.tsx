@@ -2,28 +2,28 @@
  * Componente Select para Ciudades con búsqueda integrada
  * 1,120 ciudades requieren búsqueda en tiempo real
  */
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { useCities } from '@/hooks/useCatalogs';
-import { Search } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { useCities } from '@/hooks/useCatalogs'
+import { Search } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface CitySelectProps {
-  regionId?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  error?: string;
-  required?: boolean;
-  className?: string;
+  regionId?: string
+  value?: string
+  onChange?: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  error?: string
+  required?: boolean
+  className?: string
 }
 
 export function CitySelect({
@@ -37,16 +37,16 @@ export function CitySelect({
   className = '',
 }: CitySelectProps) {
   const { t } = useLanguage()
-  const { cities, loading } = useCities(regionId);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { cities, loading } = useCities(regionId)
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Filtrar ciudades según búsqueda en tiempo real
   const filteredCities = useMemo(() => {
-    if (!searchTerm.trim()) return cities;
+    if (!searchTerm.trim()) return cities
 
-    const search = searchTerm.toLowerCase();
-    return cities.filter(city => city.name.toLowerCase().includes(search));
-  }, [cities, searchTerm]);
+    const search = searchTerm.toLowerCase()
+    return cities.filter(city => city.name.toLowerCase().includes(search))
+  }, [cities, searchTerm])
 
   if (!regionId) {
     return (
@@ -55,7 +55,7 @@ export function CitySelect({
           <SelectValue placeholder={t('common.placeholders.selectDepartmentFirst')} />
         </SelectTrigger>
       </Select>
-    );
+    )
   }
 
   if (loading) {
@@ -63,7 +63,7 @@ export function CitySelect({
       <div className="flex items-center gap-2 h-10 px-3 border border-border rounded-md bg-muted">
         <span className="text-sm text-muted-foreground">Cargando ciudades...</span>
       </div>
-    );
+    )
   }
 
   return (
@@ -108,5 +108,5 @@ export function CitySelect({
 
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
-  );
+  )
 }

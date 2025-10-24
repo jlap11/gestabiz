@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { 
-  ArrowUpDown, 
-  MapPin, 
-  Star, 
-  Calendar,
-  Building2,
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  ArrowUpDown,
   Briefcase,
-  User,
-  Tag,
+  Building2,
+  Loader2,
+  MapPin,
   SlidersHorizontal,
+  Star,
+  Tag,
+  User,
   X,
-  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -23,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import type { SearchType } from './SearchBar'
 
@@ -63,49 +61,47 @@ interface SearchResultItem {
 
 type SortOption = 'relevance' | 'distance' | 'rating' | 'newest' | 'oldest' | 'balanced'
 
-export const SearchResults = React.memo(function SearchResults({ 
-  searchTerm, 
-  searchType, 
+export const SearchResults = React.memo(function SearchResults({
+  searchTerm,
+  searchType,
   userLocation,
   onResultClick,
-  onClose 
+  onClose,
 }: Readonly<SearchResultsProps>) {
   const { t } = useLanguage()
   const [results, setResults] = useState<SearchResultItem[]>([])
   const [loading, setLoading] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('balanced')
   const [showFilters, setShowFilters] = useState(false)
-  
+
   const sortOptions = [
     { value: 'relevance' as SortOption, label: t('search.sorting.relevance') },
     { value: 'balanced' as SortOption, label: t('search.sorting.balanced') },
     { value: 'distance' as SortOption, label: t('search.sorting.distance') },
     { value: 'rating' as SortOption, label: t('search.sorting.rating') },
     { value: 'newest' as SortOption, label: t('search.sorting.newest') },
-    { value: 'oldest' as SortOption, label: t('search.sorting.oldest') }
+    { value: 'oldest' as SortOption, label: t('search.sorting.oldest') },
   ]
 
   // Calculate distance between two points (Haversine formula)
-  const calculateDistance = useCallback((
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371 // Radius of Earth in kilometers
-    const dLat = (lat2 - lat1) * (Math.PI / 180)
-    const dLon = (lon2 - lon1) * (Math.PI / 180)
-    
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2)
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c // Distance in km
-  }, [])
+  const calculateDistance = useCallback(
+    (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+      const R = 6371 // Radius of Earth in kilometers
+      const dLat = (lat2 - lat1) * (Math.PI / 180)
+      const dLon = (lon2 - lon1) * (Math.PI / 180)
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) *
+          Math.cos(lat2 * (Math.PI / 180)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2)
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      return R * c // Distance in km
+    },
+    []
+  )
 
   // Fetch results
   useEffect(() => {
@@ -120,17 +116,19 @@ export const SearchResults = React.memo(function SearchResults({
             const { data: servicesData, error } = await supabase.rpc('search_services', {
               search_query: searchTerm,
               limit_count: 50,
-              offset_count: 0
+              offset_count: 0,
             })
 
             if (error) throw error
 
             // Fetch business info and locations
-            const businessIds = [...new Set(servicesData?.map((s: any) => s.business_id).filter(Boolean))] || []
-            
+            const businessIds =
+              [...new Set(servicesData?.map((s: any) => s.business_id).filter(Boolean))] || []
+
             const { data: businessesData } = await supabase
               .from('businesses')
-              .select(`
+              .select(
+                `
                 id,
                 name,
                 locations (
@@ -139,7 +137,8 @@ export const SearchResults = React.memo(function SearchResults({
                   latitude,
                   longitude
                 )
-              `)
+              `
+              )
               .in('id', businessIds)
 
             const businessesMap = (businessesData || []).reduce((acc: any, business: any) => {
@@ -150,34 +149,39 @@ export const SearchResults = React.memo(function SearchResults({
             data = (servicesData || []).map((service: any) => {
               const business = businessesMap[service.business_id]
               const location = business?.locations?.[0]
-              const distance = userLocation && location?.latitude && location?.longitude
-                ? calculateDistance(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    location.latitude,
-                    location.longitude
-                  )
-                : undefined
+              const distance =
+                userLocation && location?.latitude && location?.longitude
+                  ? calculateDistance(
+                      userLocation.latitude,
+                      userLocation.longitude,
+                      location.latitude,
+                      location.longitude
+                    )
+                  : undefined
 
               return {
                 id: service.id,
                 name: service.name,
                 type: 'services' as SearchType,
                 description: service.description,
-                business: business ? {
-                  id: business.id,
-                  name: business.name
-                } : undefined,
+                business: business
+                  ? {
+                      id: business.id,
+                      name: business.name,
+                    }
+                  : undefined,
                 price: service.price,
                 currency: service.currency,
                 distance,
-                location: location ? {
-                  address: location.address,
-                  city: location.city,
-                  latitude: location.latitude,
-                  longitude: location.longitude
-                } : undefined,
-                createdAt: service.created_at
+                location: location
+                  ? {
+                      address: location.address,
+                      city: location.city,
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                    }
+                  : undefined,
+                createdAt: service.created_at,
               }
             })
             break
@@ -188,7 +192,7 @@ export const SearchResults = React.memo(function SearchResults({
             const { data: businessesData, error } = await supabase.rpc('search_businesses', {
               search_query: searchTerm,
               limit_count: 50,
-              offset_count: 0
+              offset_count: 0,
             })
 
             if (error) throw error
@@ -222,14 +226,15 @@ export const SearchResults = React.memo(function SearchResults({
 
             data = (businessesData || []).map((business: any) => {
               const location = locationsByBusiness[business.id]
-              const distance = userLocation && location?.latitude && location?.longitude
-                ? calculateDistance(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    location.latitude,
-                    location.longitude
-                  )
-                : undefined
+              const distance =
+                userLocation && location?.latitude && location?.longitude
+                  ? calculateDistance(
+                      userLocation.latitude,
+                      userLocation.longitude,
+                      location.latitude,
+                      location.longitude
+                    )
+                  : undefined
 
               return {
                 id: business.id,
@@ -241,13 +246,15 @@ export const SearchResults = React.memo(function SearchResults({
                 rating: business.average_rating || undefined,
                 reviewCount: business.review_count || 0,
                 distance,
-                location: location ? {
-                  address: location.address,
-                  city: location.city,
-                  latitude: location.latitude,
-                  longitude: location.longitude
-                } : undefined,
-                createdAt: business.created_at
+                location: location
+                  ? {
+                      address: location.address,
+                      city: location.city,
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                    }
+                  : undefined,
+                createdAt: business.created_at,
               }
             })
             break
@@ -256,12 +263,14 @@ export const SearchResults = React.memo(function SearchResults({
           case 'categories': {
             const { data: categoriesData, error } = await supabase
               .from('business_categories')
-              .select(`
+              .select(
+                `
                 id,
                 name,
                 description,
                 created_at
-              `)
+              `
+              )
               .ilike('name', `%${searchTerm}%`)
               .eq('is_active', true)
               .limit(50)
@@ -273,7 +282,7 @@ export const SearchResults = React.memo(function SearchResults({
               name: category.name,
               type: 'categories' as SearchType,
               description: category.description,
-              createdAt: category.created_at
+              createdAt: category.created_at,
             }))
             break
           }
@@ -283,17 +292,18 @@ export const SearchResults = React.memo(function SearchResults({
             const { data: usersData, error } = await supabase.rpc('search_professionals', {
               search_query: searchTerm,
               limit_count: 50,
-              offset_count: 0
+              offset_count: 0,
             })
 
             if (error) throw error
 
             // Fetch business info for each professional
             const userIds = usersData?.map((u: any) => u.id) || []
-            
+
             const { data: employeesData } = await supabase
               .from('business_employees')
-              .select(`
+              .select(
+                `
                 employee_id,
                 business:businesses!business_employees_business_id_fkey (
                   id,
@@ -305,7 +315,8 @@ export const SearchResults = React.memo(function SearchResults({
                     longitude
                   )
                 )
-              `)
+              `
+              )
               .in('employee_id', userIds)
 
             const businessesByEmployee = (employeesData || []).reduce((acc: any, emp: any) => {
@@ -318,14 +329,15 @@ export const SearchResults = React.memo(function SearchResults({
             data = (usersData || []).map((user: any) => {
               const business = businessesByEmployee[user.id]
               const businessLocation = business?.locations?.[0]
-              const distance = userLocation && businessLocation?.latitude && businessLocation?.longitude
-                ? calculateDistance(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    businessLocation.latitude,
-                    businessLocation.longitude
-                  )
-                : undefined
+              const distance =
+                userLocation && businessLocation?.latitude && businessLocation?.longitude
+                  ? calculateDistance(
+                      userLocation.latitude,
+                      userLocation.longitude,
+                      businessLocation.latitude,
+                      businessLocation.longitude
+                    )
+                  : undefined
 
               return {
                 id: user.id,
@@ -335,17 +347,21 @@ export const SearchResults = React.memo(function SearchResults({
                 rating: user.average_rating || undefined,
                 reviewCount: user.review_count || 0,
                 distance,
-                business: business ? {
-                  id: business.id,
-                  name: business.name
-                } : undefined,
-                location: businessLocation ? {
-                  address: businessLocation.address,
-                  city: businessLocation.city,
-                  latitude: businessLocation.latitude,
-                  longitude: businessLocation.longitude
-                } : undefined,
-                createdAt: user.created_at
+                business: business
+                  ? {
+                      id: business.id,
+                      name: business.name,
+                    }
+                  : undefined,
+                location: businessLocation
+                  ? {
+                      address: businessLocation.address,
+                      city: businessLocation.city,
+                      latitude: businessLocation.latitude,
+                      longitude: businessLocation.longitude,
+                    }
+                  : undefined,
+                createdAt: user.created_at,
               }
             })
             break
@@ -406,21 +422,15 @@ export const SearchResults = React.memo(function SearchResults({
         // Balanced score: 60% rating + 40% proximity
         sorted.sort((a, b) => {
           const maxDistance = Math.max(...results.map(r => r.distance || 0).filter(d => d > 0))
-          
-          const scoreA = (
+
+          const scoreA =
             ((a.rating || 0) / 5.0) * 0.6 +
-            (a.distance !== undefined && maxDistance > 0 
-              ? (1 - (a.distance / maxDistance)) * 0.4 
-              : 0)
-          )
-          
-          const scoreB = (
+            (a.distance !== undefined && maxDistance > 0 ? (1 - a.distance / maxDistance) * 0.4 : 0)
+
+          const scoreB =
             ((b.rating || 0) / 5.0) * 0.6 +
-            (b.distance !== undefined && maxDistance > 0 
-              ? (1 - (b.distance / maxDistance)) * 0.4 
-              : 0)
-          )
-          
+            (b.distance !== undefined && maxDistance > 0 ? (1 - b.distance / maxDistance) * 0.4 : 0)
+
           return scoreB - scoreA
         })
         break
@@ -437,21 +447,31 @@ export const SearchResults = React.memo(function SearchResults({
 
   const getTypeIcon = (type: SearchType) => {
     switch (type) {
-      case 'services': return Briefcase
-      case 'businesses': return Building2
-      case 'categories': return Tag
-      case 'users': return User
-      default: return Building2
+      case 'services':
+        return Briefcase
+      case 'businesses':
+        return Building2
+      case 'categories':
+        return Tag
+      case 'users':
+        return User
+      default:
+        return Building2
     }
   }
 
   const getTypeLabel = (type: SearchType) => {
     switch (type) {
-      case 'services': return t('search.resultsPage.typeLabels.service')
-      case 'businesses': return t('search.resultsPage.typeLabels.business')
-      case 'categories': return t('search.resultsPage.typeLabels.category')
-      case 'users': return t('search.resultsPage.typeLabels.user')
-      default: return type
+      case 'services':
+        return t('search.resultsPage.typeLabels.service')
+      case 'businesses':
+        return t('search.resultsPage.typeLabels.business')
+      case 'categories':
+        return t('search.resultsPage.typeLabels.category')
+      case 'users':
+        return t('search.resultsPage.typeLabels.user')
+      default:
+        return type
     }
   }
 
@@ -461,7 +481,9 @@ export const SearchResults = React.memo(function SearchResults({
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-            <p className="text-lg font-medium text-foreground">{t('search.resultsPage.searching')}</p>
+            <p className="text-lg font-medium text-foreground">
+              {t('search.resultsPage.searching')}
+            </p>
             <p className="text-sm text-muted-foreground mt-2">
               "{searchTerm}" {t('search.resultsPage.in')} {getTypeLabel(searchType)}s
             </p>
@@ -482,8 +504,17 @@ export const SearchResults = React.memo(function SearchResults({
                 {t('search.resultsPage.title')}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                <span className="font-semibold">{sortedResults.length}</span> {t(sortedResults.length === 1 ? 'search.resultsPage.resultsFor' : 'search.resultsPage.resultsForPlural')} "<span className="font-semibold text-foreground truncate inline-block max-w-[150px] sm:max-w-none align-bottom">{searchTerm}</span>" {t('search.resultsPage.in')}{' '}
-                {getTypeLabel(searchType)}s
+                <span className="font-semibold">{sortedResults.length}</span>{' '}
+                {t(
+                  sortedResults.length === 1
+                    ? 'search.resultsPage.resultsFor'
+                    : 'search.resultsPage.resultsForPlural'
+                )}{' '}
+                "
+                <span className="font-semibold text-foreground truncate inline-block max-w-[150px] sm:max-w-none align-bottom">
+                  {searchTerm}
+                </span>
+                " {t('search.resultsPage.in')} {getTypeLabel(searchType)}s
               </p>
             </div>
             <Button
@@ -498,13 +529,13 @@ export const SearchResults = React.memo(function SearchResults({
 
           {/* Toolbar - Mobile Optimized */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
               <SelectTrigger className="w-full sm:w-[280px] min-h-[44px]">
                 <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
                 <SelectValue placeholder={t('common.placeholders.sortBy')} />
               </SelectTrigger>
               <SelectContent>
-                {sortOptions.map((option) => (
+                {sortOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -520,7 +551,11 @@ export const SearchResults = React.memo(function SearchResults({
               <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">{t('search.filters.filters')}</span>
               <span className="sm:hidden">{t('search.filters.filter')}</span>
-              {showFilters && <Badge variant="secondary" className="ml-2 text-[10px]">{t('search.filters.active')}</Badge>}
+              {showFilters && (
+                <Badge variant="secondary" className="ml-2 text-[10px]">
+                  {t('search.filters.active')}
+                </Badge>
+              )}
             </Button>
 
             {!userLocation && (
@@ -537,8 +572,8 @@ export const SearchResults = React.memo(function SearchResults({
             <Card>
               <CardContent className="py-12 sm:py-16 px-4 text-center">
                 <div className="mb-3 sm:mb-4">
-                  {React.createElement(getTypeIcon(searchType), { 
-                    className: "h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-50" 
+                  {React.createElement(getTypeIcon(searchType), {
+                    className: 'h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-50',
                   })}
                 </div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
@@ -551,10 +586,10 @@ export const SearchResults = React.memo(function SearchResults({
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {sortedResults.map((result) => {
+              {sortedResults.map(result => {
                 const TypeIcon = getTypeIcon(result.type)
                 return (
-                  <Card 
+                  <Card
                     key={result.id}
                     className="hover:shadow-lg transition-all cursor-pointer group"
                     onClick={() => onResultClick(result)}
@@ -563,8 +598,8 @@ export const SearchResults = React.memo(function SearchResults({
                       {/* Image or Icon - Mobile Optimized */}
                       {result.imageUrl ? (
                         <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden mb-3 sm:mb-4 bg-muted">
-                          <img 
-                            src={result.imageUrl} 
+                          <img
+                            src={result.imageUrl}
                             alt={result.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
@@ -613,7 +648,13 @@ export const SearchResults = React.memo(function SearchResults({
                             </div>
                             {result.reviewCount !== undefined && result.reviewCount > 0 && (
                               <span className="text-xs sm:text-sm text-muted-foreground">
-                                ({result.reviewCount} {t(result.reviewCount === 1 ? 'reviews.review' : 'reviews.reviewsPlural')})
+                                ({result.reviewCount}{' '}
+                                {t(
+                                  result.reviewCount === 1
+                                    ? 'reviews.review'
+                                    : 'reviews.reviewsPlural'
+                                )}
+                                )
                               </span>
                             )}
                           </div>
@@ -638,7 +679,12 @@ export const SearchResults = React.memo(function SearchResults({
                         {result.price !== undefined && (
                           <div className="pt-2 border-t border-border">
                             <span className="text-base sm:text-lg font-bold text-primary">
-                              ${result.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
+                              $
+                              {result.price.toLocaleString('es-CO', {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              })}{' '}
+                              COP
                             </span>
                           </div>
                         )}

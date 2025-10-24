@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react'
-import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+import { Maximize2, ZoomIn, ZoomOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { HierarchyNode } from './HierarchyNode'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -35,7 +35,8 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
   const { t } = useLanguage()
   const [zoom, setZoom] = useState(100)
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set())
-  const getEmployeeId = (employee: EmployeeHierarchy): string | undefined => employee.user_id ?? employee.employee_id
+  const getEmployeeId = (employee: EmployeeHierarchy): string | undefined =>
+    employee.user_id ?? employee.employee_id
 
   // =====================================================
   // TREE BUILDER
@@ -120,7 +121,10 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
     const nodeId = getEmployeeId(node.employee)
 
     return (
-      <div key={nodeId ?? node.employee.email ?? node.employee.full_name} className="flex flex-col items-center">
+      <div
+        key={nodeId ?? node.employee.email ?? node.employee.full_name}
+        className="flex flex-col items-center"
+      >
         {/* NODO */}
         <HierarchyNode
           employee={node.employee}
@@ -131,15 +135,18 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
         />
 
         {/* CONECTOR VERTICAL */}
-        {hasChildren && node.isExpanded && (
-          <div className="w-0.5 h-8 bg-border" />
-        )}
+        {hasChildren && node.isExpanded && <div className="w-0.5 h-8 bg-border" />}
 
         {/* HIJOS */}
         {hasChildren && node.isExpanded && (
           <div className="flex items-start gap-8">
             {node.children.map(child => (
-              <div key={getEmployeeId(child.employee) ?? child.employee.email ?? child.employee.full_name} className="relative">
+              <div
+                key={
+                  getEmployeeId(child.employee) ?? child.employee.email ?? child.employee.full_name
+                }
+                className="relative"
+              >
                 {/* CONECTOR HORIZONTAL (para múltiples hijos) */}
                 {node.children.length > 1 && (
                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-8 bg-border" />
@@ -188,30 +195,17 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
         >
           <ZoomIn className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleResetZoom}
-          className="h-8 w-8 p-0"
-        >
+        <Button variant="ghost" size="sm" onClick={handleResetZoom} className="h-8 w-8 p-0">
           <Maximize2 className="h-4 w-4" />
         </Button>
       </div>
 
       {/* EXPAND/COLLAPSE CONTROLS */}
       <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExpandAll}
-        >
+        <Button variant="outline" size="sm" onClick={handleExpandAll}>
           Expandir todo
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCollapseAll}
-        >
+        <Button variant="outline" size="sm" onClick={handleCollapseAll}>
           Colapsar todo
         </Button>
       </div>

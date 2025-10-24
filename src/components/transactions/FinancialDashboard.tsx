@@ -1,102 +1,99 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
   Calendar,
   CreditCard,
-  ArrowUpRight,
-  ArrowDownRight,
-  PieChart,
-  BarChart3,
+  DollarSign,
   LineChart,
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+  PieChart,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTransactions } from '@/hooks/useTransactions';
-import { useChartData } from '@/hooks/useChartData';
-import type { TransactionFilters } from '@/types/types';
-import { cn } from '@/lib/utils';
-import { IncomeVsExpenseChart } from '@/components/accounting/IncomeVsExpenseChart';
-import { CategoryPieChart } from '@/components/accounting/CategoryPieChart';
-import { MonthlyTrendChart } from '@/components/accounting/MonthlyTrendChart';
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useTransactions } from '@/hooks/useTransactions'
+import type { TransactionFilters } from '@/types/types'
+import { cn } from '@/lib/utils'
+import { IncomeVsExpenseChart } from '@/components/accounting/IncomeVsExpenseChart'
+import { CategoryPieChart } from '@/components/accounting/CategoryPieChart'
+import { MonthlyTrendChart } from '@/components/accounting/MonthlyTrendChart'
 
 interface FinancialDashboardProps {
-  businessId: string;
-  locationId?: string;
+  businessId: string
+  locationId?: string
 }
 
-export function FinancialDashboard({
-  businessId,
-  locationId,
-}: FinancialDashboardProps) {
-  const { t, language } = useLanguage();
-  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
+export function FinancialDashboard({ businessId, locationId }: FinancialDashboardProps) {
+  const { t, language } = useLanguage()
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month')
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
       style: 'currency',
       currency,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   // Calculate date range based on period
   const getDateRange = () => {
-    const end = new Date();
-    const start = new Date();
-    
+    const end = new Date()
+    const start = new Date()
+
     switch (period) {
       case 'week':
-        start.setDate(start.getDate() - 7);
-        break;
+        start.setDate(start.getDate() - 7)
+        break
       case 'month':
-        start.setMonth(start.getMonth() - 1);
-        break;
+        start.setMonth(start.getMonth() - 1)
+        break
       case 'year':
-        start.setFullYear(start.getFullYear() - 1);
-        break;
+        start.setFullYear(start.getFullYear() - 1)
+        break
     }
-    
+
     return {
       start: start.toISOString(),
       end: end.toISOString(),
-    };
-  };
+    }
+  }
 
   const [filters, setFilters] = useState<TransactionFilters>({
     business_id: businessId,
     location_id: locationId,
     date_range: getDateRange(),
-  });
+  })
 
-  const { summary, loading, refetch } = useTransactions(filters);
+  const { summary, loading, refetch } = useTransactions(filters)
 
   // Update filters when period changes
   useEffect(() => {
-    const range = getDateRange();
+    const range = getDateRange()
     setFilters(prev => ({
       ...prev,
       date_range: range,
-    }));
+    }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period])
 
   useEffect(() => {
-    refetch();
-  }, [filters, refetch]);
+    refetch()
+  }, [filters, refetch])
 
-  const profitMargin = summary.total_income > 0
-    ? ((summary.net_profit / summary.total_income) * 100).toFixed(1)
-    : '0.0';
+  const profitMargin =
+    summary.total_income > 0
+      ? ((summary.net_profit / summary.total_income) * 100).toFixed(1)
+      : '0.0'
 
   return (
     <div className="space-y-6">
@@ -108,7 +105,7 @@ export function FinancialDashboard({
             {t('financial.dashboardDescription')}
           </p>
         </div>
-        <Select value={period} onValueChange={(value) => setPeriod(value as typeof period)}>
+        <Select value={period} onValueChange={value => setPeriod(value as typeof period)}>
           <SelectTrigger className="w-40">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue />
@@ -207,9 +204,7 @@ export function FinancialDashboard({
             {loading ? (
               <div className="h-8 bg-muted animate-pulse rounded" />
             ) : (
-              <p className="text-2xl font-bold text-blue-600">
-                {profitMargin}%
-              </p>
+              <p className="text-2xl font-bold text-blue-600">{profitMargin}%</p>
             )}
           </div>
         </Card>
@@ -220,16 +215,12 @@ export function FinancialDashboard({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold mb-1">{t('financial.totalTransactions')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t('financial.transactionsInPeriod')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('financial.transactionsInPeriod')}</p>
           </div>
           {loading ? (
             <div className="h-12 w-24 bg-muted animate-pulse rounded" />
           ) : (
-            <div className="text-4xl font-bold text-primary">
-              {summary.transaction_count}
-            </div>
+            <div className="text-4xl font-bold text-primary">{summary.transaction_count}</div>
           )}
         </div>
       </Card>
@@ -271,26 +262,17 @@ export function FinancialDashboard({
         </TabsList>
 
         <TabsContent value="income-expense" className="space-y-4">
-          <IncomeVsExpenseChart
-            businessId={businessId}
-            filters={filters}
-          />
+          <IncomeVsExpenseChart businessId={businessId} filters={filters} />
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-4">
-          <CategoryPieChart
-            businessId={businessId}
-            filters={filters}
-          />
+          <CategoryPieChart businessId={businessId} filters={filters} />
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4">
-          <MonthlyTrendChart
-            businessId={businessId}
-            filters={filters}
-          />
+          <MonthlyTrendChart businessId={businessId} filters={filters} />
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

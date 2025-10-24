@@ -5,13 +5,24 @@ import { useUserRoles } from '@/hooks/useUserRoles'
 import { useAdminBusinesses } from '@/hooks/useAdminBusinesses'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
 import { SuspenseFallback } from '@/components/ui/loading-spinner'
+import { toast } from 'sonner'
 
 // Lazy load components for better performance
-const EmployeeOnboarding = React.lazy(() => import('@/components/employee/EmployeeOnboarding').then(m => ({ default: m.EmployeeOnboarding })))
-const AdminOnboarding = React.lazy(() => import('@/components/admin/AdminOnboarding').then(m => ({ default: m.AdminOnboarding })))
-const AdminDashboard = React.lazy(() => import('@/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
-const EmployeeDashboard = React.lazy(() => import('@/components/employee/EmployeeDashboard').then(m => ({ default: m.EmployeeDashboard })))
-const ClientDashboard = React.lazy(() => import('@/components/client/ClientDashboard').then(m => ({ default: m.ClientDashboard })))
+const EmployeeOnboarding = React.lazy(() =>
+  import('@/components/employee/EmployeeOnboarding').then(m => ({ default: m.EmployeeOnboarding }))
+)
+const AdminOnboarding = React.lazy(() =>
+  import('@/components/admin/AdminOnboarding').then(m => ({ default: m.AdminOnboarding }))
+)
+const AdminDashboard = React.lazy(() =>
+  import('@/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard }))
+)
+const EmployeeDashboard = React.lazy(() =>
+  import('@/components/employee/EmployeeDashboard').then(m => ({ default: m.EmployeeDashboard }))
+)
+const ClientDashboard = React.lazy(() =>
+  import('@/components/client/ClientDashboard').then(m => ({ default: m.ClientDashboard }))
+)
 
 interface MainAppProps {
   onLogout: () => void
@@ -28,29 +39,25 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
     locationId?: string
     employeeId?: string
   } | null>(null)
-  
+
   // Manage user roles and active role switching
   const { roles, activeRole, activeBusiness, switchRole } = useUserRoles(user)
-  
+
   // Fetch admin businesses if user is admin
-  const { businesses, isLoading: isLoadingBusinesses, refetch: refetchBusinesses } = useAdminBusinesses(
-    activeRole === 'admin' ? user?.id : undefined
-  )
+  const {
+    businesses,
+    isLoading: isLoadingBusinesses,
+    refetch: refetchBusinesses,
+  } = useAdminBusinesses(activeRole === 'admin' ? user?.id : undefined)
 
   // Fetch employee businesses (for all users to check if they have employments)
-  const { businesses: employeeBusinesses, loading: isLoadingEmployeeBusinesses } = useEmployeeBusinesses(
-    user?.id,
-    true // Include businesses where user is owner
-  )
+  const { businesses: employeeBusinesses, loading: isLoadingEmployeeBusinesses } =
+    useEmployeeBusinesses(
+      user?.id,
+      true // Include businesses where user is owner
+    )
 
-  // DEBUG: Log employee businesses
-  React.useEffect(() => {
-    console.log('🔍 DEBUG MainApp - employeeBusinesses:', employeeBusinesses)
-    console.log('🔍 DEBUG MainApp - isLoadingEmployeeBusinesses:', isLoadingEmployeeBusinesses)
-    console.log('🔍 DEBUG MainApp - activeRole:', activeRole)
-    console.log('🔍 DEBUG MainApp - needsEmployeeOnboarding:', activeRole === 'employee' && employeeBusinesses.length === 0 && !isLoadingEmployeeBusinesses)
-  }, [employeeBusinesses, isLoadingEmployeeBusinesses, activeRole])
-  
+
   // Extract booking context from URL params (from public profile redirect)
   React.useEffect(() => {
     const businessId = searchParams.get('businessId')
@@ -63,7 +70,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
         businessId: businessId || undefined,
         serviceId: serviceId || undefined,
         locationId: locationId || undefined,
-        employeeId: employeeId || undefined
+        employeeId: employeeId || undefined,
       })
 
       // Clear params from URL after extracting
@@ -81,28 +88,36 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
       }
     }
   }, [activeRole, businesses, activeBusiness, selectedBusinessId, isCreatingNewBusiness])
-  
+
   // Si no hay usuario autenticado, no renderizar nada (el App.tsx maneja esto)
   if (!user) {
     return null
   }
 
   const handleLogout = async () => {
-    await signOut()
-    if (onLogout) onLogout()
+    try {
+      await signOut()
+      if (onLogout) onLogout()
+    } catch (err) {
+      toast.error('No se pudo cerrar sesión. Intenta de nuevo.')
+    }
   }
 
   const handleBusinessCreated = async () => {
-    // Refresh businesses list after creation
-    await refetchBusinesses()
-    // Reset creation mode to allow auto-selection of the new business
-    setIsCreatingNewBusiness(false)
-    // Auto-select the new business (will be first in list after refetch)
+    try {
+      await refetchBusinesses()
+      setIsCreatingNewBusiness(false)
+    } catch (err) {
+      toast.error('Error al actualizar negocios después de crear uno.')
+    }
   }
 
   const handleBusinessUpdate = async () => {
-    // Refresh businesses list after update
-    await refetchBusinesses()
+    try {
+      await refetchBusinesses()
+    } catch (err) {
+      toast.error('Error al refrescar negocios después de actualizar.')
+    }
   }
 
   const handleCreateNewBusiness = () => {
@@ -114,14 +129,13 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   // Check if employee needs onboarding: NO businesses linked AND not loading
   // NOTE: Changed logic - show dashboard always, handle onboarding inside MyEmployments
   const needsEmployeeOnboarding = false // Disabled - employees always see dashboard
-  
+
   // Get selected business for AdminDashboard
-  const selectedBusiness = businesses.find((b) => b.id === selectedBusinessId)
-  
+  const selectedBusiness = businesses.find(b => b.id === selectedBusinessId)
+
   // Admin needs onboarding if: no businesses OR no business selected (creating new)
-  const needsAdminOnboarding = activeRole === 'admin' && 
-                                (businesses.length === 0 || !selectedBusiness) && 
-                                !isLoadingBusinesses
+  const needsAdminOnboarding =
+    activeRole === 'admin' && (businesses.length === 0 || !selectedBusiness) && !isLoadingBusinesses
 
   const renderCurrentView = () => {
     // Show onboarding screens if needed (within layout)
@@ -205,11 +219,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   }
 
   // All roles now use UnifiedLayout via their respective dashboards
-  return (
-    <Suspense fallback={<SuspenseFallback />}>
-      {renderCurrentView()}
-    </Suspense>
-  )
+  return <Suspense fallback={<SuspenseFallback />}>{renderCurrentView()}</Suspense>
 }
 
 export default MainApp

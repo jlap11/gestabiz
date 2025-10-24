@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -16,7 +16,7 @@ interface PushNotificationRequest {
   push_tokens?: string[]
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -27,7 +27,8 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { user_id, title, body, data, badge, sound, push_tokens }: PushNotificationRequest = await req.json()
+    const { user_id, title, body, data, badge, sound, push_tokens }: PushNotificationRequest =
+      await req.json()
 
     if (!user_id || !title || !body) {
       return new Response(
@@ -46,10 +47,10 @@ serve(async (req) => {
         .single()
 
       if (userError || !userData?.push_tokens) {
-        return new Response(
-          JSON.stringify({ error: 'No push tokens found for user' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return new Response(JSON.stringify({ error: 'No push tokens found for user' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
 
       tokensToUse = userData.push_tokens
@@ -64,14 +65,14 @@ serve(async (req) => {
       badge: badge || 0,
       sound: sound || 'default',
       priority: 'high',
-      channelId: 'appointments'
+      channelId: 'appointments',
     }
 
     // Send push notification via Expo Push API
     const expoResponse = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Accept-encoding': 'gzip, deflate',
         'Content-Type': 'application/json',
       },
@@ -86,26 +87,22 @@ serve(async (req) => {
     const result = await expoResponse.json()
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Push notification sent successfully',
-        expo_response: result
+        expo_response: result,
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Error sending push notification:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })
 

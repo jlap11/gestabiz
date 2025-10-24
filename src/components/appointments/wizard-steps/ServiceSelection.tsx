@@ -1,18 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { Service } from '@/types/types';
-import supabase from '@/lib/supabase';
+import React, { useCallback, useEffect, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { Service } from '@/types/types'
+import supabase from '@/lib/supabase'
 
 interface ServiceSelectionProps {
-  readonly businessId: string;
-  readonly selectedServiceId: string | null;
-  readonly onSelectService: (service: Service) => void;
-  readonly preloadedServices?: Service[]; // Datos pre-cargados
-  readonly isPreselected?: boolean; // Nueva prop para indicar si fue preseleccionado desde perfil público
+  readonly businessId: string
+  readonly selectedServiceId: string | null
+  readonly onSelectService: (service: Service) => void
+  readonly preloadedServices?: Service[] // Datos pre-cargados
+  readonly isPreselected?: boolean // Nueva prop para indicar si fue preseleccionado desde perfil público
 }
 
 export function ServiceSelection({
@@ -23,63 +23,63 @@ export function ServiceSelection({
   isPreselected = false,
 }: Readonly<ServiceSelectionProps>) {
   const { t } = useLanguage()
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(!preloadedServices);
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(!preloadedServices)
 
   const loadServices = useCallback(async () => {
     // Si ya tenemos datos pre-cargados, usarlos (MÁS RÁPIDO)
     if (preloadedServices) {
-      setServices(preloadedServices);
-      setLoading(false);
-      return;
+      setServices(preloadedServices)
+      setLoading(false)
+      return
     }
 
     // Si no, hacer la consulta tradicional
-    setLoading(true);
+    setLoading(true)
     try {
       const { data, error } = await supabase
         .from('services')
         .select('*')
         .eq('business_id', businessId)
-        .eq('is_active', true);
+        .eq('is_active', true)
 
-      if (error) throw error;
-      setServices((data as Service[]) || []);
+      if (error) throw error
+      setServices((data as Service[]) || [])
     } catch {
-      setServices([]);
+      setServices([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [businessId, preloadedServices]);
+  }, [businessId, preloadedServices])
 
   useEffect(() => {
-    loadServices();
-  }, [loadServices]);
+    loadServices()
+  }, [loadServices])
 
   // Imágenes placeholder por tipo de servicio
   const getServiceImage = (serviceName: string): string => {
-    const name = serviceName.toLowerCase();
+    const name = serviceName.toLowerCase()
     if (name.includes('hair') || name.includes('corte') || name.includes('cabello')) {
-      return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=400&fit=crop';
+      return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=400&fit=crop'
     }
     if (name.includes('manicure') || name.includes('nail') || name.includes('uña')) {
-      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=400&fit=crop';
+      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=400&fit=crop'
     }
     if (name.includes('massage') || name.includes('masaje')) {
-      return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=400&fit=crop';
+      return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=400&fit=crop'
     }
     if (name.includes('facial') || name.includes('cara')) {
-      return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=400&fit=crop';
+      return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=400&fit=crop'
     }
     if (name.includes('color') || name.includes('tinte')) {
-      return 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&h=400&fit=crop';
+      return 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&h=400&fit=crop'
     }
     if (name.includes('style') || name.includes('peinado')) {
-      return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=400&fit=crop';
+      return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=400&fit=crop'
     }
     // Default
-    return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop';
-  };
+    return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop'
+  }
 
   if (loading) {
     return (
@@ -89,32 +89,28 @@ export function ServiceSelection({
           <p className="text-[#94a3b8]">Loading services...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="p-6">
-      <h3 className="text-xl font-semibold text-foreground mb-6">
-        Select a Service
-      </h3>
+      <h3 className="text-xl font-semibold text-foreground mb-6">Select a Service</h3>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {services.map((service) => {
-          const isSelected = selectedServiceId === service.id;
-          const wasPreselected = isPreselected && isSelected;
+        {services.map(service => {
+          const isSelected = selectedServiceId === service.id
+          const wasPreselected = isPreselected && isSelected
 
           return (
             <Card
               key={service.id}
               onClick={() => onSelectService(service)}
               className={cn(
-                "relative bg-card border-2 rounded-xl overflow-hidden",
-                "cursor-pointer transition-all duration-200",
-                "hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20",
-                isSelected
-                  ? "border-primary bg-primary/10"
-                  : "border-border",
-                wasPreselected && "ring-2 ring-green-500/50"
+                'relative bg-card border-2 rounded-xl overflow-hidden',
+                'cursor-pointer transition-all duration-200',
+                'hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20',
+                isSelected ? 'border-primary bg-primary/10' : 'border-border',
+                wasPreselected && 'ring-2 ring-green-500/50'
               )}
             >
               {/* Badge de preselección */}
@@ -139,9 +135,9 @@ export function ServiceSelection({
                 {isSelected && (
                   <div
                     className={cn(
-                      "absolute top-3 right-3 w-8 h-8 bg-primary rounded-full",
-                      "flex items-center justify-center",
-                      "animate-in zoom-in duration-200"
+                      'absolute top-3 right-3 w-8 h-8 bg-primary rounded-full',
+                      'flex items-center justify-center',
+                      'animate-in zoom-in duration-200'
                     )}
                   >
                     <Check className="w-5 h-5 text-primary-foreground" />
@@ -151,15 +147,11 @@ export function ServiceSelection({
 
               {/* Label debajo de la imagen */}
               <div className="p-3 text-center bg-muted/50">
-                <h3 className="text-base font-semibold text-foreground truncate">
-                  {service.name}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {service.duration} min
-                </p>
+                <h3 className="text-base font-semibold text-foreground truncate">{service.name}</h3>
+                <p className="text-xs text-muted-foreground mt-1">{service.duration} min</p>
               </div>
             </Card>
-          );
+          )
         })}
       </div>
 
@@ -169,5 +161,5 @@ export function ServiceSelection({
         </div>
       )}
     </div>
-  );
+  )
 }

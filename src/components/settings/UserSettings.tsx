@@ -2,7 +2,13 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { User } from '@/types'
@@ -12,15 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import UserProfile from './UserProfile'
 import { NotificationSettings } from './NotificationSettings'
-import { 
-  User as UserIcon, 
-  Bell, 
-  Palette, 
-  Globe, 
-  Moon,
-  Sun,
-  Monitor
-} from '@phosphor-icons/react'
+import { Bell, Globe, Monitor, Moon, Palette, Sun, User as UserIcon } from '@phosphor-icons/react'
 
 interface UserSettingsComponentProps {
   user: User
@@ -37,12 +35,10 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
       const updatedUser = {
         ...user,
         language: newLanguage,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
-      await setUsers(prev => 
-        prev.map(u => u.id === user.id ? updatedUser : u)
-      )
+      await setUsers(prev => prev.map(u => (u.id === user.id ? updatedUser : u)))
 
       setLanguage(newLanguage)
       onUserUpdate(updatedUser)
@@ -60,9 +56,7 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h2>
-          <p className="text-muted-foreground">
-            Manage your account settings and preferences
-          </p>
+          <p className="text-muted-foreground">Manage your account settings and preferences</p>
         </div>
       </div>
 
@@ -93,9 +87,7 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
                 <Palette className="h-5 w-5" />
                 {t('settings.appearance')}
               </CardTitle>
-              <CardDescription>
-                Customize the appearance of the application
-              </CardDescription>
+              <CardDescription>Customize the appearance of the application</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Theme Selection */}
@@ -103,10 +95,22 @@ export default function UserSettingsComponent({ user, onUserUpdate }: UserSettin
                 <Label className="text-base font-medium">{t('settings.theme')}</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { value: 'light', label: t('settings.light'), icon: <Sun className="h-4 w-4" /> },
-                    { value: 'dark', label: t('settings.dark'), icon: <Moon className="h-4 w-4" /> },
-                    { value: 'system', label: t('settings.system'), icon: <Monitor className="h-4 w-4" /> }
-                  ].map((themeOption) => (
+                    {
+                      value: 'light',
+                      label: t('settings.light'),
+                      icon: <Sun className="h-4 w-4" />,
+                    },
+                    {
+                      value: 'dark',
+                      label: t('settings.dark'),
+                      icon: <Moon className="h-4 w-4" />,
+                    },
+                    {
+                      value: 'system',
+                      label: t('settings.system'),
+                      icon: <Monitor className="h-4 w-4" />,
+                    },
+                  ].map(themeOption => (
                     <Button
                       key={themeOption.value}
                       variant={theme === themeOption.value ? 'default' : 'outline'}

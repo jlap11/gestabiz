@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { resourcesService } from '@/lib/services/resources'
 import type { BusinessResource } from '@/types/types'
 import { toast } from 'sonner'
@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 /**
  * Hook para gestionar recursos físicos de negocios
  * (habitaciones, mesas, canchas, equipos, etc.)
- * 
+ *
  * Fecha: 21 de Octubre de 2025
  * Parte del sistema de Modelo de Negocio Flexible
  */
@@ -17,20 +17,15 @@ import { toast } from 'sonner'
 
 export const resourcesKeys = {
   all: ['business-resources'] as const,
-  byBusiness: (businessId: string) => 
-    [...resourcesKeys.all, 'business', businessId] as const,
-  byLocation: (locationId: string) => 
-    [...resourcesKeys.all, 'location', locationId] as const,
-  byType: (businessId: string, type: string) => 
+  byBusiness: (businessId: string) => [...resourcesKeys.all, 'business', businessId] as const,
+  byLocation: (locationId: string) => [...resourcesKeys.all, 'location', locationId] as const,
+  byType: (businessId: string, type: string) =>
     [...resourcesKeys.all, 'business', businessId, 'type', type] as const,
-  detail: (resourceId: string) => 
-    [...resourcesKeys.all, 'detail', resourceId] as const,
-  availability: (resourceId: string, startDate: string, endDate: string) => 
+  detail: (resourceId: string) => [...resourcesKeys.all, 'detail', resourceId] as const,
+  availability: (resourceId: string, startDate: string, endDate: string) =>
     [...resourcesKeys.all, 'availability', resourceId, startDate, endDate] as const,
-  services: (resourceId: string) => 
-    [...resourcesKeys.all, 'services', resourceId] as const,
-  stats: (resourceId: string) => 
-    [...resourcesKeys.all, 'stats', resourceId] as const,
+  services: (resourceId: string) => [...resourcesKeys.all, 'services', resourceId] as const,
+  stats: (resourceId: string) => [...resourcesKeys.all, 'stats', resourceId] as const,
   forService: (businessId: string, serviceId: string, locationId?: string) =>
     [...resourcesKeys.all, 'for-service', businessId, serviceId, locationId || 'all'] as const,
 }
@@ -90,14 +85,10 @@ export function useResourceDetail(resourceId: string) {
 /**
  * Obtener disponibilidad de un recurso
  */
-export function useResourceAvailability(
-  resourceId: string,
-  startDate: Date,
-  endDate: Date
-) {
+export function useResourceAvailability(resourceId: string, startDate: Date, endDate: Date) {
   const startStr = startDate.toISOString()
   const endStr = endDate.toISOString()
-  
+
   return useQuery({
     queryKey: resourcesKeys.availability(resourceId, startStr, endStr),
     queryFn: () => resourcesService.getAvailability(resourceId, startDate, endDate),
@@ -133,11 +124,7 @@ export function useResourceStats(resourceId: string) {
 /**
  * Obtener recursos disponibles para un servicio
  */
-export function useResourcesForService(
-  businessId: string,
-  serviceId: string,
-  locationId?: string
-) {
+export function useResourcesForService(businessId: string, serviceId: string, locationId?: string) {
   return useQuery({
     queryKey: resourcesKeys.forService(businessId, serviceId, locationId),
     queryFn: () => resourcesService.getAvailableForService(businessId, serviceId, locationId),
@@ -155,18 +142,20 @@ export function useResourcesForService(
  */
 export function useCreateResource() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (resource: Omit<BusinessResource, 'id' | 'created_at' | 'updated_at'>) =>
       resourcesService.create(resource),
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: resourcesKeys.byBusiness(data.business_id) })
       if (data.location_id) {
         queryClient.invalidateQueries({ queryKey: resourcesKeys.byLocation(data.location_id) })
       }
-      queryClient.invalidateQueries({ queryKey: resourcesKeys.byType(data.business_id, data.resource_type) })
-      
+      queryClient.invalidateQueries({
+        queryKey: resourcesKeys.byType(data.business_id, data.resource_type),
+      })
+
       toast.success('Recurso creado exitosamente')
     },
     onError: (error: Error) => {
@@ -180,21 +169,26 @@ export function useCreateResource() {
  */
 export function useUpdateResource() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ resourceId, updates }: { 
+    mutationFn: ({
+      resourceId,
+      updates,
+    }: {
       resourceId: string
-      updates: Partial<BusinessResource> 
+      updates: Partial<BusinessResource>
     }) => resourcesService.update(resourceId, updates),
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: resourcesKeys.detail(data.id) })
       queryClient.invalidateQueries({ queryKey: resourcesKeys.byBusiness(data.business_id) })
       if (data.location_id) {
         queryClient.invalidateQueries({ queryKey: resourcesKeys.byLocation(data.location_id) })
       }
-      queryClient.invalidateQueries({ queryKey: resourcesKeys.byType(data.business_id, data.resource_type) })
-      
+      queryClient.invalidateQueries({
+        queryKey: resourcesKeys.byType(data.business_id, data.resource_type),
+      })
+
       toast.success('Recurso actualizado exitosamente')
     },
     onError: (error: Error) => {
@@ -208,13 +202,13 @@ export function useUpdateResource() {
  */
 export function useDeleteResource() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: (resourceId: string) => resourcesService.delete(resourceId),
     onSuccess: (_data, resourceId) => {
       // Invalidar todas las queries de recursos (no sabemos el businessId aquí)
       queryClient.invalidateQueries({ queryKey: resourcesKeys.all })
-      
+
       toast.success('Recurso desactivado exitosamente')
     },
     onError: (error: Error) => {
@@ -228,12 +222,12 @@ export function useDeleteResource() {
  */
 export function useAssignServices() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ 
-      resourceId, 
-      serviceIds, 
-      customPrices 
+    mutationFn: ({
+      resourceId,
+      serviceIds,
+      customPrices,
     }: {
       resourceId: string
       serviceIds: string[]
@@ -243,7 +237,7 @@ export function useAssignServices() {
       // Invalidar queries de servicios del recurso
       queryClient.invalidateQueries({ queryKey: resourcesKeys.services(resourceId) })
       queryClient.invalidateQueries({ queryKey: resourcesKeys.detail(resourceId) })
-      
+
       toast.success('Servicios asignados exitosamente')
     },
     onError: (error: Error) => {
@@ -257,13 +251,13 @@ export function useAssignServices() {
  */
 export function useRefreshResourceAvailability() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: () => resourcesService.refreshAvailability(),
     onSuccess: () => {
       // Invalidar todas las queries de disponibilidad
       queryClient.invalidateQueries({ queryKey: resourcesKeys.all })
-      
+
       toast.success('Disponibilidad actualizada')
     },
     onError: (error: Error) => {

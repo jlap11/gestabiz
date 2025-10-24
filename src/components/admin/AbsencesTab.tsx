@@ -1,42 +1,47 @@
 /**
  * Component: AbsencesTab
- * 
+ *
  * Tab de ausencias en AdminDashboard para gestionar solicitudes de ausencias.
  * Muestra todas las solicitudes pendientes y aprobadas/rechazadas.
  */
 
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AbsenceApprovalCard } from '@/components/absences/AbsenceApprovalCard';
-import { useAbsenceApprovals } from '@/hooks/useAbsenceApprovals';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Loader2 } from 'lucide-react';
+import React from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AbsenceApprovalCard } from '@/components/absences/AbsenceApprovalCard'
+import { useAbsenceApprovals } from '@/hooks/useAbsenceApprovals'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Loader2 } from 'lucide-react'
 
 interface AbsencesTabProps {
-  businessId: string;
+  businessId: string
 }
 
 export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
-  const { t } = useLanguage();
-  const { pendingAbsences, approvedAbsences, rejectedAbsences, loading, approveAbsence, rejectAbsence } = useAbsenceApprovals(businessId);
+  const { t } = useLanguage()
+  const {
+    pendingAbsences,
+    approvedAbsences,
+    rejectedAbsences,
+    loading,
+    approveAbsence,
+    rejectAbsence,
+  } = useAbsenceApprovals(businessId)
 
-  const historyAbsences = [...approvedAbsences, ...rejectedAbsences];
+  const historyAbsences = [...approvedAbsences, ...rejectedAbsences]
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">{t('absences.management.title')}</h2>
-        <p className="text-muted-foreground mt-1">
-          {t('absences.management.subtitle')}
-        </p>
+        <p className="text-muted-foreground mt-1">{t('absences.management.subtitle')}</p>
       </div>
 
       <Tabs defaultValue="pending" className="w-full">
@@ -56,15 +61,15 @@ export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {pendingAbsences.map((absence) => (
+              {pendingAbsences.map(absence => (
                 <AbsenceApprovalCard
                   key={absence.id}
                   absence={absence}
                   onApprove={async (id, notes) => {
-                    await approveAbsence(id, notes);
+                    await approveAbsence(id, notes)
                   }}
                   onReject={async (id, notes) => {
-                    await rejectAbsence(id, notes);
+                    await rejectAbsence(id, notes)
                   }}
                 />
               ))}
@@ -79,7 +84,7 @@ export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {historyAbsences.map((absence) => (
+              {historyAbsences.map(absence => (
                 <AbsenceApprovalCard
                   key={absence.id}
                   absence={absence}
@@ -97,5 +102,5 @@ export function AbsencesTab({ businessId }: Readonly<AbsencesTabProps>) {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

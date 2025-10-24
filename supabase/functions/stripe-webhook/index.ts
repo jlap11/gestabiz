@@ -20,9 +20,9 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
 
-serve(async (req) => {
+serve(async req => {
   const signature = req.headers.get('stripe-signature')
-  
+
   if (!signature) {
     return new Response('Missing stripe-signature header', { status: 400 })
   }
@@ -30,7 +30,7 @@ serve(async (req) => {
   try {
     const body = await req.text()
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    
+
     console.log(`[Stripe Webhook] Received event: ${event.type}`)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -110,15 +110,15 @@ serve(async (req) => {
     })
   } catch (err) {
     console.error('[Stripe Webhook] Error:', err)
-    
+
     // Capture error to Sentry
     captureEdgeFunctionError(err as Error, {
       functionName: 'stripe-webhook',
-      operation: 'handleWebhook'
+      operation: 'handleWebhook',
     })
-    
+
     await flushSentry()
-    
+
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -130,7 +130,7 @@ serve(async (req) => {
 
 async function handleCustomerCreated(supabase: any, customer: Stripe.Customer) {
   console.log(`[Customer] Created: ${customer.id}`)
-  
+
   // Buscar business_id en metadata
   const businessId = customer.metadata?.business_id
   if (!businessId) {
@@ -156,14 +156,14 @@ async function handleCustomerUpdated(supabase: any, customer: Stripe.Customer) {
 
 async function handleCustomerDeleted(supabase: any, customer: Stripe.Customer) {
   console.log(`[Customer] Deleted: ${customer.id}`)
-  
+
   // Marcar suscripción como cancelada
   const { error } = await supabase
     .from('business_plans')
-    .update({ 
+    .update({
       status: 'canceled',
       stripe_customer_id: null,
-      canceled_at: new Date().toISOString()
+      canceled_at: new Date().toISOString(),
     })
     .eq('stripe_customer_id', customer.id)
 
@@ -174,7 +174,10 @@ async function handleCustomerDeleted(supabase: any, customer: Stripe.Customer) {
 
 // ========== HANDLERS DE SUBSCRIPTION ==========
 
-async function handleSubscriptionCreatedOrUpdated(supabase: any, subscription: Stripe.Subscription) {
+async function handleSubscriptionCreatedOrUpdated(
+  supabase: any,
+  subscription: Stripe.Subscription
+) {
   console.log(`[Subscription] Created/Updated: ${subscription.id}`)
 
   const businessId = subscription.metadata?.business_id
@@ -185,34 +188,40 @@ async function handleSubscriptionCreatedOrUpdated(supabase: any, subscription: S
 
   // Mapear status de Stripe a nuestro status
   const statusMap: Record<string, string> = {
-    'active': 'active',
-    'trialing': 'trialing',
-    'past_due': 'past_due',
-    'canceled': 'canceled',
-    'unpaid': 'suspended',
-    'incomplete': 'inactive',
-    'incomplete_expired': 'expired',
-    'paused': 'paused',
+    active: 'active',
+    trialing: 'trialing',
+    past_due: 'past_due',
+    canceled: 'canceled',
+    unpaid: 'suspended',
+    incomplete: 'inactive',
+    incomplete_expired: 'expired',
+    paused: 'paused',
   }
 
   const planType = subscription.items.data[0]?.price?.metadata?.plan_type || 'inicio'
 
   // Actualizar business_plans
-  const { error: planError } = await supabase
-    .from('business_plans')
-    .upsert({
+  const { error: planError } = await supabase.from('business_plans').upsert(
+    {
       business_id: businessId,
       plan_type: planType,
       status: statusMap[subscription.status] || 'inactive',
       stripe_subscription_id: subscription.id,
       stripe_customer_id: subscription.customer as string,
       stripe_price_id: subscription.items.data[0]?.price?.id,
-      billing_cycle: subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'yearly' : 'monthly',
+      billing_cycle:
+        subscription.items.data[0]?.price?.recurring?.interval === 'year' ? 'yearly' : 'monthly',
       start_date: new Date(subscription.start_date * 1000).toISOString(),
-      end_date: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
-      trial_ends_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+      end_date: subscription.current_period_end
+        ? new Date(subscription.current_period_end * 1000).toISOString()
+        : null,
+      trial_ends_at: subscription.trial_end
+        ? new Date(subscription.trial_end * 1000).toISOString()
+        : null,
       auto_renew: !subscription.cancel_at_period_end,
-    }, { onConflict: 'business_id' })
+    },
+    { onConflict: 'business_id' }
+  )
 
   if (planError) {
     console.error('[Subscription] Error updating business_plans:', planError)
@@ -222,14 +231,21 @@ async function handleSubscriptionCreatedOrUpdated(supabase: any, subscription: S
   // Registrar evento
   await supabase.from('subscription_events').insert({
     business_id: businessId,
-    plan_id: (await supabase.from('business_plans').select('id').eq('business_id', businessId).single()).data?.id,
-    event_type: subscription.status === 'active' ? 'activated' : subscription.status === 'canceled' ? 'canceled' : 'renewed',
+    plan_id: (
+      await supabase.from('business_plans').select('id').eq('business_id', businessId).single()
+    ).data?.id,
+    event_type:
+      subscription.status === 'active'
+        ? 'activated'
+        : subscription.status === 'canceled'
+          ? 'canceled'
+          : 'renewed',
     triggered_by: 'stripe_webhook',
     metadata: {
       subscription_id: subscription.id,
       status: subscription.status,
       current_period_end: subscription.current_period_end,
-    }
+    },
   })
 }
 
@@ -239,10 +255,10 @@ async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Sub
   // Actualizar business_plans
   const { error } = await supabase
     .from('business_plans')
-    .update({ 
+    .update({
       status: 'canceled',
       canceled_at: new Date().toISOString(),
-      end_date: new Date(subscription.ended_at! * 1000).toISOString()
+      end_date: new Date(subscription.ended_at! * 1000).toISOString(),
     })
     .eq('stripe_subscription_id', subscription.id)
 
@@ -259,7 +275,7 @@ async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Sub
       event_type: 'canceled',
       triggered_by: 'stripe_webhook',
       reason: subscription.cancellation_details?.reason || 'unknown',
-      metadata: { subscription_id: subscription.id }
+      metadata: { subscription_id: subscription.id },
     })
   }
 }
@@ -278,11 +294,9 @@ async function handleTrialWillEnd(supabase: any, subscription: Stripe.Subscripti
     metadata: {
       subscription_id: subscription.id,
       trial_end: subscription.trial_end,
-      days_left: Math.ceil((subscription.trial_end! * 1000 - Date.now()) / (1000 * 60 * 60 * 24))
-    }
+      days_left: Math.ceil((subscription.trial_end! * 1000 - Date.now()) / (1000 * 60 * 60 * 24)),
+    },
   })
-
-  
 }
 
 // ========== HANDLERS DE PAYMENT INTENT ==========
@@ -304,7 +318,7 @@ async function handlePaymentIntentSucceeded(supabase: any, paymentIntent: Stripe
     metadata: {
       payment_method: paymentIntent.payment_method,
       receipt_email: paymentIntent.receipt_email,
-    }
+    },
   })
 }
 
@@ -325,7 +339,7 @@ async function handlePaymentIntentFailed(supabase: any, paymentIntent: Stripe.Pa
     failure_reason: paymentIntent.last_payment_error?.message,
     metadata: {
       payment_method: paymentIntent.payment_method,
-    }
+    },
   })
 
   // Registrar evento
@@ -337,7 +351,7 @@ async function handlePaymentIntentFailed(supabase: any, paymentIntent: Stripe.Pa
       payment_intent_id: paymentIntent.id,
       error_code: paymentIntent.last_payment_error?.code,
       error_message: paymentIntent.last_payment_error?.message,
-    }
+    },
   })
 }
 
@@ -346,23 +360,27 @@ async function handlePaymentIntentFailed(supabase: any, paymentIntent: Stripe.Pa
 async function handleInvoicePaymentSucceeded(supabase: any, invoice: Stripe.Invoice) {
   console.log(`[Invoice] Payment succeeded: ${invoice.id}`)
 
-  const businessId = invoice.metadata?.business_id || invoice.subscription_details?.metadata?.business_id
+  const businessId =
+    invoice.metadata?.business_id || invoice.subscription_details?.metadata?.business_id
   if (!businessId) return
 
   // Actualizar o crear registro de pago
-  await supabase.from('subscription_payments').upsert({
-    business_id: businessId,
-    stripe_invoice_id: invoice.id,
-    stripe_payment_intent_id: invoice.payment_intent as string,
-    amount: invoice.amount_paid / 100,
-    currency: invoice.currency.toUpperCase(),
-    status: 'completed',
-    paid_at: new Date(invoice.status_transitions.paid_at! * 1000).toISOString(),
-    metadata: {
-      invoice_pdf: invoice.invoice_pdf,
-      hosted_invoice_url: invoice.hosted_invoice_url,
-    }
-  }, { onConflict: 'stripe_invoice_id' })
+  await supabase.from('subscription_payments').upsert(
+    {
+      business_id: businessId,
+      stripe_invoice_id: invoice.id,
+      stripe_payment_intent_id: invoice.payment_intent as string,
+      amount: invoice.amount_paid / 100,
+      currency: invoice.currency.toUpperCase(),
+      status: 'completed',
+      paid_at: new Date(invoice.status_transitions.paid_at! * 1000).toISOString(),
+      metadata: {
+        invoice_pdf: invoice.invoice_pdf,
+        hosted_invoice_url: invoice.hosted_invoice_url,
+      },
+    },
+    { onConflict: 'stripe_invoice_id' }
+  )
 
   // Registrar evento
   await supabase.from('subscription_events').insert({
@@ -372,7 +390,7 @@ async function handleInvoicePaymentSucceeded(supabase: any, invoice: Stripe.Invo
     metadata: {
       invoice_id: invoice.id,
       amount: invoice.amount_paid / 100,
-    }
+    },
   })
 }
 
@@ -383,18 +401,21 @@ async function handleInvoicePaymentFailed(supabase: any, invoice: Stripe.Invoice
   if (!businessId) return
 
   // Actualizar pago
-  await supabase.from('subscription_payments').upsert({
-    business_id: businessId,
-    stripe_invoice_id: invoice.id,
-    amount: invoice.amount_due / 100,
-    currency: invoice.currency.toUpperCase(),
-    status: 'failed',
-    failure_reason: 'Invoice payment failed',
-    metadata: {
-      attempt_count: invoice.attempt_count,
-      next_payment_attempt: invoice.next_payment_attempt,
-    }
-  }, { onConflict: 'stripe_invoice_id' })
+  await supabase.from('subscription_payments').upsert(
+    {
+      business_id: businessId,
+      stripe_invoice_id: invoice.id,
+      amount: invoice.amount_due / 100,
+      currency: invoice.currency.toUpperCase(),
+      status: 'failed',
+      failure_reason: 'Invoice payment failed',
+      metadata: {
+        attempt_count: invoice.attempt_count,
+        next_payment_attempt: invoice.next_payment_attempt,
+      },
+    },
+    { onConflict: 'stripe_invoice_id' }
+  )
 
   // Registrar evento
   await supabase.from('subscription_events').insert({
@@ -404,7 +425,7 @@ async function handleInvoicePaymentFailed(supabase: any, invoice: Stripe.Invoice
     metadata: {
       invoice_id: invoice.id,
       attempt_count: invoice.attempt_count,
-    }
+    },
   })
 }
 
@@ -423,10 +444,8 @@ async function handleInvoiceUpcoming(supabase: any, invoice: Stripe.Invoice) {
       invoice_id: invoice.id,
       amount: invoice.amount_due / 100,
       due_date: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
-    }
+    },
   })
-
-  
 }
 
 // ========== HANDLERS DE PAYMENT METHOD ==========
@@ -442,7 +461,7 @@ async function handlePaymentMethodAttached(supabase: any, paymentMethod: Stripe.
   // Buscar customer en Stripe para obtener business_id
   const customer = await stripe.customers.retrieve(paymentMethod.customer as string)
   const businessId = (customer as Stripe.Customer).metadata?.business_id
-  
+
   if (!businessId) return
 
   // Guardar método de pago
@@ -470,7 +489,7 @@ async function handlePaymentMethodAttached(supabase: any, paymentMethod: Stripe.
     new_value: {
       brand: paymentMethod.card?.brand,
       last4: paymentMethod.card?.last4,
-    }
+    },
   })
 }
 
@@ -526,7 +545,7 @@ async function handleSetupIntentSucceeded(supabase: any, setupIntent: Stripe.Set
       new_value: {
         payment_method: setupIntent.payment_method,
         customer: setupIntent.customer,
-      }
+      },
     })
 
     // Registrar evento de suscripción
@@ -537,7 +556,7 @@ async function handleSetupIntentSucceeded(supabase: any, setupIntent: Stripe.Set
       metadata: {
         setup_intent_id: setupIntent.id,
         payment_method_id: setupIntent.payment_method,
-      }
+      },
     })
   }
 

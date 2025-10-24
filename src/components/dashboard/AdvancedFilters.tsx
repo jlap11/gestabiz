@@ -22,38 +22,36 @@ interface AdvancedFiltersProps {
   onClearFilters: () => void
 }
 
-export default function AdvancedFilters({ 
-  filter, 
-  onFilterChange, 
-  clients, 
+export default function AdvancedFilters({
+  filter,
+  onFilterChange,
+  clients,
   availableTags,
-  onClearFilters 
+  onClearFilters,
 }: AdvancedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
     from: filter.dateRange ? new Date(filter.dateRange.start) : undefined,
-    to: filter.dateRange ? new Date(filter.dateRange.end) : undefined
+    to: filter.dateRange ? new Date(filter.dateRange.end) : undefined,
   })
 
   const statusOptions = [
     { value: 'scheduled', label: 'Programada', color: 'bg-blue-500' },
     { value: 'completed', label: 'Completada', color: 'bg-green-500' },
     { value: 'cancelled', label: 'Cancelada', color: 'bg-red-500' },
-    { value: 'no_show', label: 'No se presentó', color: 'bg-gray-500' }
+    { value: 'no_show', label: 'No se presentó', color: 'bg-gray-500' },
   ]
 
   const priorityOptions = [
     { value: 'high', label: 'Alta', color: 'bg-red-500' },
     { value: 'medium', label: 'Media', color: 'bg-yellow-500' },
-    { value: 'low', label: 'Baja', color: 'bg-blue-500' }
+    { value: 'low', label: 'Baja', color: 'bg-blue-500' },
   ]
 
   const handleStatusChange = (status: string, checked: boolean) => {
     const currentStatus = filter.status || []
-    const newStatus = checked 
-      ? [...currentStatus, status]
-      : currentStatus.filter(s => s !== status)
-    
+    const newStatus = checked ? [...currentStatus, status] : currentStatus.filter(s => s !== status)
+
     onFilterChange({ ...filter, status: newStatus.length > 0 ? newStatus : undefined })
   }
 
@@ -62,16 +60,14 @@ export default function AdvancedFilters({
     const newClients = checked
       ? [...currentClients, clientId]
       : currentClients.filter(c => c !== clientId)
-    
+
     onFilterChange({ ...filter, clients: newClients.length > 0 ? newClients : undefined })
   }
 
   const handleTagChange = (tag: string, checked: boolean) => {
     const currentTags = filter.tags || []
-    const newTags = checked
-      ? [...currentTags, tag]
-      : currentTags.filter(t => t !== tag)
-    
+    const newTags = checked ? [...currentTags, tag] : currentTags.filter(t => t !== tag)
+
     onFilterChange({ ...filter, tags: newTags.length > 0 ? newTags : undefined })
   }
 
@@ -80,7 +76,7 @@ export default function AdvancedFilters({
     const newPriorities = checked
       ? [...currentPriorities, priority]
       : currentPriorities.filter(p => p !== priority)
-    
+
     onFilterChange({ ...filter, priority: newPriorities.length > 0 ? newPriorities : undefined })
   }
 
@@ -90,8 +86,8 @@ export default function AdvancedFilters({
         ...filter,
         dateRange: {
           start: format(dateRange.from, 'yyyy-MM-dd'),
-          end: format(dateRange.to, 'yyyy-MM-dd')
-        }
+          end: format(dateRange.to, 'yyyy-MM-dd'),
+        },
       })
     } else {
       onFilterChange({ ...filter, dateRange: undefined })
@@ -119,7 +115,7 @@ export default function AdvancedFilters({
         <Input
           placeholder="Buscar por título, cliente, descripción..."
           value={filter.search || ''}
-          onChange={(e) => onFilterChange({ ...filter, search: e.target.value || undefined })}
+          onChange={e => onFilterChange({ ...filter, search: e.target.value || undefined })}
           className="pl-10"
         />
       </div>
@@ -143,9 +139,9 @@ export default function AdvancedFilters({
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Filtros Avanzados</h3>
                 {hasActiveFilters && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={onClearFilters}
                     className="text-muted-foreground hover:text-foreground"
                   >
@@ -162,7 +158,7 @@ export default function AdvancedFilters({
                     id="dateFrom"
                     label="Desde"
                     value={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                    onChange={(value) => {
+                    onChange={value => {
                       const newDate = value ? new Date(value) : undefined
                       setDateRange(prev => ({ ...prev, from: newDate }))
                       if (newDate && dateRange.to) {
@@ -174,7 +170,7 @@ export default function AdvancedFilters({
                     id="dateTo"
                     label="Hasta"
                     value={dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                    onChange={(value) => {
+                    onChange={value => {
                       const newDate = value ? new Date(value) : undefined
                       setDateRange(prev => ({ ...prev, to: newDate }))
                       if (dateRange.from && newDate) {
@@ -192,12 +188,12 @@ export default function AdvancedFilters({
               <div className="space-y-3">
                 <Label>Estado de la Cita</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  {statusOptions.map((status) => (
+                  {statusOptions.map(status => (
                     <div key={status.value} className="flex items-center space-x-2">
                       <Checkbox
                         id={`status-${status.value}`}
                         checked={filter.status?.includes(status.value) || false}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={checked =>
                           handleStatusChange(status.value, checked as boolean)
                         }
                       />
@@ -219,12 +215,12 @@ export default function AdvancedFilters({
               <div className="space-y-3">
                 <Label>Prioridad</Label>
                 <div className="flex flex-wrap gap-2">
-                  {priorityOptions.map((priority) => (
+                  {priorityOptions.map(priority => (
                     <div key={priority.value} className="flex items-center space-x-2">
                       <Checkbox
                         id={`priority-${priority.value}`}
                         checked={filter.priority?.includes(priority.value) || false}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={checked =>
                           handlePriorityChange(priority.value, checked as boolean)
                         }
                       />
@@ -248,12 +244,12 @@ export default function AdvancedFilters({
                   <div className="space-y-3">
                     <Label>Clientes</Label>
                     <div className="max-h-32 overflow-y-auto space-y-2">
-                      {clients.slice(0, 10).map((client) => (
+                      {clients.slice(0, 10).map(client => (
                         <div key={client.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={`client-${client.id}`}
                             checked={filter.clients?.includes(client.id) || false}
-                            onCheckedChange={(checked) => 
+                            onCheckedChange={checked =>
                               handleClientChange(client.id, checked as boolean)
                             }
                           />
@@ -276,10 +272,10 @@ export default function AdvancedFilters({
                 <div className="space-y-3">
                   <Label>Etiquetas</Label>
                   <div className="flex flex-wrap gap-2">
-                    {availableTags.map((tag) => (
+                    {availableTags.map(tag => (
                       <Badge
                         key={tag}
-                        variant={filter.tags?.includes(tag) ? "default" : "outline"}
+                        variant={filter.tags?.includes(tag) ? 'default' : 'outline'}
                         className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
                         onClick={() => handleTagChange(tag, !filter.tags?.includes(tag))}
                       >
@@ -307,8 +303,8 @@ export default function AdvancedFilters({
           {filter.search && (
             <Badge variant="secondary" className="gap-1">
               Búsqueda: "{filter.search}"
-              <X 
-                className="h-3 w-3 cursor-pointer" 
+              <X
+                className="h-3 w-3 cursor-pointer"
                 onClick={() => onFilterChange({ ...filter, search: undefined })}
               />
             </Badge>
@@ -316,17 +312,18 @@ export default function AdvancedFilters({
           {filter.status?.map(status => (
             <Badge key={status} variant="secondary" className="gap-1">
               {statusOptions.find(s => s.value === status)?.label}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
+              <X
+                className="h-3 w-3 cursor-pointer"
                 onClick={() => handleStatusChange(status, false)}
               />
             </Badge>
           ))}
           {filter.dateRange && (
             <Badge variant="secondary" className="gap-1">
-              {format(new Date(filter.dateRange.start), "dd/MM", { locale: es })} - {format(new Date(filter.dateRange.end), "dd/MM", { locale: es })}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
+              {format(new Date(filter.dateRange.start), 'dd/MM', { locale: es })} -{' '}
+              {format(new Date(filter.dateRange.end), 'dd/MM', { locale: es })}
+              <X
+                className="h-3 w-3 cursor-pointer"
                 onClick={() => onFilterChange({ ...filter, dateRange: undefined })}
               />
             </Badge>
@@ -334,8 +331,8 @@ export default function AdvancedFilters({
           {filter.priority?.map(priority => (
             <Badge key={priority} variant="secondary" className="gap-1">
               Prioridad {priorityOptions.find(p => p.value === priority)?.label}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
+              <X
+                className="h-3 w-3 cursor-pointer"
                 onClick={() => handlePriorityChange(priority, false)}
               />
             </Badge>

@@ -62,7 +62,7 @@ describe('Matching Score Calculation Algorithm', () => {
     })
 
     // Create 3 vacancies with different match levels
-    
+
     // HIGH MATCH: Perfect alignment with user profile
     const { data: highMatch } = await supabase
       .from('job_vacancies')
@@ -281,10 +281,7 @@ describe('Matching Score Calculation Algorithm', () => {
 
   it('should only return open vacancies', async () => {
     // Close one vacancy
-    await supabase
-      .from('job_vacancies')
-      .update({ status: 'closed' })
-      .eq('id', testVacancies.low)
+    await supabase.from('job_vacancies').update({ status: 'closed' }).eq('id', testVacancies.low)
 
     const { data } = await supabase.rpc('get_matching_vacancies', {
       p_user_id: testUserId,
@@ -295,9 +292,6 @@ describe('Matching Score Calculation Algorithm', () => {
     expect(closedVacancy).toBeUndefined()
 
     // Reopen for cleanup
-    await supabase
-      .from('job_vacancies')
-      .update({ status: 'open' })
-      .eq('id', testVacancies.low)
+    await supabase.from('job_vacancies').update({ status: 'open' }).eq('id', testVacancies.low)
   })
 })

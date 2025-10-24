@@ -4,7 +4,13 @@ import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Bell, Clock, EnvelopeSimple as Mail, Calendar, Gear as Settings } from '@phosphor-icons/react'
+import {
+  Bell,
+  Calendar,
+  Clock,
+  EnvelopeSimple as Mail,
+  Gear as Settings,
+} from '@phosphor-icons/react'
 import { useNotifications } from '@/hooks/useNotifications'
 import { toast } from 'sonner'
 
@@ -19,14 +25,14 @@ export default function NotificationSettings() {
     { value: 120, label: '2 horas antes' },
     { value: 1440, label: '1 día antes' },
     { value: 2880, label: '2 días antes' },
-    { value: 10080, label: '1 semana antes' }
+    { value: 10080, label: '1 semana antes' },
   ]
 
   const handleReminderTimeToggle = (minutes: number) => {
     const newTimes = selectedTimes.includes(minutes)
       ? selectedTimes.filter(t => t !== minutes)
       : [...selectedTimes, minutes]
-    
+
     setSelectedTimes(newTimes)
     updateSettings({ reminderTiming: newTimes })
   }
@@ -34,7 +40,7 @@ export default function NotificationSettings() {
   const handleTestNotification = () => {
     toast.success('Notificación de prueba', {
       description: 'Esta es una notificación de prueba para verificar que funcionen correctamente.',
-      icon: <Bell className="h-4 w-4" />
+      icon: <Bell className="h-4 w-4" />,
     })
   }
 
@@ -61,7 +67,7 @@ export default function NotificationSettings() {
             </div>
             <Switch
               checked={settings.emailReminders}
-              onCheckedChange={(checked) => updateSettings({ emailReminders: checked })}
+              onCheckedChange={checked => updateSettings({ emailReminders: checked })}
             />
           </CardHeader>
         </Card>
@@ -79,10 +85,10 @@ export default function NotificationSettings() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {reminderOptions.map((option) => (
+              {reminderOptions.map(option => (
                 <Badge
                   key={option.value}
-                  variant={selectedTimes.includes(option.value) ? "default" : "outline"}
+                  variant={selectedTimes.includes(option.value) ? 'default' : 'outline'}
                   className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
                   onClick={() => handleReminderTimeToggle(option.value)}
                 >
@@ -105,12 +111,14 @@ export default function NotificationSettings() {
               <Calendar className="h-5 w-5 text-primary" />
               <div>
                 <CardTitle className="text-lg">Resumen Diario</CardTitle>
-                <CardDescription>Recibe un resumen de tus citas del día cada mañana</CardDescription>
+                <CardDescription>
+                  Recibe un resumen de tus citas del día cada mañana
+                </CardDescription>
               </div>
             </div>
             <Switch
               checked={settings.dailyDigest}
-              onCheckedChange={(checked) => updateSettings({ dailyDigest: checked })}
+              onCheckedChange={checked => updateSettings({ dailyDigest: checked })}
             />
           </CardHeader>
         </Card>
@@ -127,7 +135,7 @@ export default function NotificationSettings() {
             </div>
             <Switch
               checked={settings.weeklyReport}
-              onCheckedChange={(checked) => updateSettings({ weeklyReport: checked })}
+              onCheckedChange={checked => updateSettings({ weeklyReport: checked })}
             />
           </CardHeader>
         </Card>
@@ -158,8 +166,8 @@ export default function NotificationSettings() {
           <CardContent className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm">Recordatorios por email:</span>
-              <Badge variant={settings.emailReminders ? "default" : "secondary"}>
-                {settings.emailReminders ? "Activado" : "Desactivado"}
+              <Badge variant={settings.emailReminders ? 'default' : 'secondary'}>
+                {settings.emailReminders ? 'Activado' : 'Desactivado'}
               </Badge>
             </div>
             <div className="flex justify-between">
@@ -170,14 +178,14 @@ export default function NotificationSettings() {
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Resumen diario:</span>
-              <Badge variant={settings.dailyDigest ? "default" : "secondary"}>
-                {settings.dailyDigest ? "Activado" : "Desactivado"}
+              <Badge variant={settings.dailyDigest ? 'default' : 'secondary'}>
+                {settings.dailyDigest ? 'Activado' : 'Desactivado'}
               </Badge>
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Reporte semanal:</span>
-              <Badge variant={settings.weeklyReport ? "default" : "secondary"}>
-                {settings.weeklyReport ? "Activado" : "Desactivado"}
+              <Badge variant={settings.weeklyReport ? 'default' : 'secondary'}>
+                {settings.weeklyReport ? 'Activado' : 'Desactivado'}
               </Badge>
             </div>
           </CardContent>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { CreateTestUsers } from '@/components/admin/CreateTestUsers';
+import React from 'react'
+import { CreateTestUsers } from '@/components/admin/CreateTestUsers'
 
 export function AdminTestDataPage() {
   return (
@@ -12,10 +12,10 @@ export function AdminTestDataPage() {
       </div>
 
       <CreateTestUsers />
-      
+
       <div className="text-center text-sm text-muted-foreground">
         <p>💡 Tip: Después de crear usuarios, podrás crear negocios y asignar empleados</p>
       </div>
     </div>
-  );
+  )
 }

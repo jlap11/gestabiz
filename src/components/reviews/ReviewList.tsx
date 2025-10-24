@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Star, Filter, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react'
+import { Filter, Search, Star } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ReviewCard } from './ReviewCard';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useReviews } from '@/hooks/useReviews';
-import type { ReviewFilters } from '@/types/types';
-import { cn } from '@/lib/utils';
-import supabase from '@/lib/supabase';
+} from '@/components/ui/select'
+import { ReviewCard } from './ReviewCard'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useReviews } from '@/hooks/useReviews'
+import type { ReviewFilters } from '@/types/types'
+import { cn } from '@/lib/utils'
+import supabase from '@/lib/supabase'
 
 interface ReviewListProps {
-  businessId: string;
-  employeeId?: string; // Filter by specific employee
-  canModerate?: boolean; // Admin/owner can moderate
-  canRespond?: boolean; // Admin/owner can respond
+  businessId: string
+  employeeId?: string // Filter by specific employee
+  canModerate?: boolean // Admin/owner can moderate
+  canRespond?: boolean // Admin/owner can respond
 }
 
 export function ReviewList({
@@ -30,13 +30,13 @@ export function ReviewList({
   canModerate = false,
   canRespond = false,
 }: ReviewListProps) {
-  const { t } = useLanguage();
-  
+  const { t } = useLanguage()
+
   const [filters, setFilters] = useState<ReviewFilters>({
     business_id: businessId,
     employee_id: employeeId,
     rating: [],
-  });
+  })
 
   const {
     reviews,
@@ -46,64 +46,63 @@ export function ReviewList({
     toggleReviewVisibility,
     deleteReview,
     refetch,
-  } = useReviews(filters);
+  } = useReviews(filters)
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRating, setSelectedRating] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedRating, setSelectedRating] = useState<string>('all')
 
   useEffect(() => {
-    refetch();
-  }, [filters, refetch]);
+    refetch()
+  }, [filters, refetch])
 
   const handleRatingFilter = (value: string) => {
-    setSelectedRating(value);
+    setSelectedRating(value)
     if (value === 'all') {
-      setFilters(prev => ({ ...prev, rating: [] }));
+      setFilters(prev => ({ ...prev, rating: [] }))
     } else {
-      const ratingValue = parseInt(value) as 1 | 2 | 3 | 4 | 5;
-      setFilters(prev => ({ ...prev, rating: [ratingValue] }));
+      const ratingValue = parseInt(value) as 1 | 2 | 3 | 4 | 5
+      setFilters(prev => ({ ...prev, rating: [ratingValue] }))
     }
-  };
+  }
 
   const filteredReviews = reviews.filter(review => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
+    if (!searchTerm) return true
+    const search = searchTerm.toLowerCase()
     return (
       review.comment?.toLowerCase().includes(search) ||
       review.client_name?.toLowerCase().includes(search) ||
       review.employee_name?.toLowerCase().includes(search)
-    );
-  });
+    )
+  })
 
   const renderStars = (rating: number) => {
     return (
       <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map(star => (
           <Star
             key={star}
             className={cn(
               'h-4 w-4',
-              star <= rating
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'text-muted-foreground'
+              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
             )}
           />
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   const renderRatingDistribution = () => {
-    if (!stats?.rating_distribution) return null;
+    if (!stats?.rating_distribution) return null
 
-    const total = Object.values(stats.rating_distribution).reduce((a, b) => a + b, 0);
-    if (total === 0) return null;
+    const total = Object.values(stats.rating_distribution).reduce((a, b) => a + b, 0)
+    if (total === 0) return null
 
     return (
       <div className="space-y-2">
-        {[5, 4, 3, 2, 1].map((rating) => {
-          const count = stats.rating_distribution[rating as keyof typeof stats.rating_distribution] || 0;
-          const percentage = (count / total) * 100;
+        {[5, 4, 3, 2, 1].map(rating => {
+          const count =
+            stats.rating_distribution[rating as keyof typeof stats.rating_distribution] || 0
+          const percentage = (count / total) * 100
           return (
             <div key={rating} className="flex items-center gap-3">
               <span className="text-sm w-12 flex items-center gap-1">
@@ -119,11 +118,11 @@ export function ReviewList({
                 {count} ({Math.round(percentage)}%)
               </span>
             </div>
-          );
+          )
         })}
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -138,7 +137,7 @@ export function ReviewList({
               </h3>
               <div className="flex items-end gap-3">
                 <div className="text-5xl font-bold">{stats.average_rating.toFixed(1)}</div>
-                  <div className="pb-2">
+                <div className="pb-2">
                   {renderStars(Math.round(stats.average_rating))}
                   <p className="text-sm text-muted-foreground mt-1">
                     {t('reviews.basedOn', { count: stats.total.toString() })}
@@ -167,7 +166,7 @@ export function ReviewList({
             <Input
               placeholder={t('reviews.searchPlaceholder')}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -193,9 +192,7 @@ export function ReviewList({
       {/* Reviews List */}
       <div className="space-y-4">
         {loading && (
-          <Card className="p-8 text-center text-muted-foreground">
-            {t('common.loading')}...
-          </Card>
+          <Card className="p-8 text-center text-muted-foreground">{t('common.loading')}...</Card>
         )}
 
         {!loading && filteredReviews.length === 0 && (
@@ -206,22 +203,25 @@ export function ReviewList({
           </Card>
         )}
 
-        {!loading && filteredReviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            canRespond={canRespond}
-            canModerate={canModerate}
-            onRespond={async (reviewId: string, response: string) => {
-              // Get current user ID from Supabase auth
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) throw new Error('Usuario no autenticado');
-              await respondToReview(reviewId, response, user.id);
-            }}
-            onToggleVisibility={toggleReviewVisibility}
-            onDelete={deleteReview}
-          />
-        ))}
+        {!loading &&
+          filteredReviews.map(review => (
+            <ReviewCard
+              key={review.id}
+              review={review}
+              canRespond={canRespond}
+              canModerate={canModerate}
+              onRespond={async (reviewId: string, response: string) => {
+                // Get current user ID from Supabase auth
+                const {
+                  data: { user },
+                } = await supabase.auth.getUser()
+                if (!user) throw new Error('Usuario no autenticado')
+                await respondToReview(reviewId, response, user.id)
+              }}
+              onToggleVisibility={toggleReviewVisibility}
+              onDelete={deleteReview}
+            />
+          ))}
       </div>
 
       {/* Load More (if implementing pagination) */}
@@ -233,5 +233,5 @@ export function ReviewList({
         </div>
       )}
     </div>
-  );
+  )
 }

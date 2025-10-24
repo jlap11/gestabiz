@@ -1,8 +1,8 @@
 /**
  * Script para generar sitemap.xml dinámicamente con todos los perfiles públicos
- * 
+ *
  * Ejecutar: npm run generate-sitemap
- * 
+ *
  * Genera sitemap.xml en public/ con URLs de:
  * - Landing page
  * - Todos los perfiles públicos de negocios (is_public = true)
@@ -52,10 +52,10 @@ async function generateSitemap() {
 
     // Generar XML
     const today = new Date().toISOString().split('T')[0]
-    
+
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    
+
     // Landing Page
     xml += '  <url>\n'
     xml += `    <loc>${SITE_URL}/</loc>\n`
@@ -63,13 +63,13 @@ async function generateSitemap() {
     xml += '    <changefreq>weekly</changefreq>\n'
     xml += '    <priority>1.0</priority>\n'
     xml += '  </url>\n'
-    
+
     // Perfiles de negocios
     for (const business of businesses) {
-      const lastmod = business.updated_at 
-        ? new Date(business.updated_at).toISOString().split('T')[0] 
+      const lastmod = business.updated_at
+        ? new Date(business.updated_at).toISOString().split('T')[0]
         : today
-      
+
       xml += '  <url>\n'
       xml += `    <loc>${SITE_URL}/negocio/${business.slug}</loc>\n`
       xml += `    <lastmod>${lastmod}</lastmod>\n`
@@ -77,19 +77,18 @@ async function generateSitemap() {
       xml += '    <priority>0.8</priority>\n'
       xml += '  </url>\n'
     }
-    
+
     xml += '</urlset>\n'
 
     // Escribir archivo
     const publicDir = path.join(process.cwd(), 'public')
     const sitemapPath = path.join(publicDir, 'sitemap.xml')
-    
+
     fs.writeFileSync(sitemapPath, xml, 'utf-8')
-    
+
     console.log(`✅ Sitemap generado exitosamente: ${sitemapPath}`)
     console.log(`📊 Total URLs: ${businesses.length + 1}`)
     console.log(`🌐 Ver en: ${SITE_URL}/sitemap.xml`)
-
   } catch (error) {
     console.error('❌ Error generando sitemap:', error)
     process.exit(1)

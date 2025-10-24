@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react'
-import { ValidationSchema, FormValidationResult } from '@/lib/validation'
+import { useCallback, useMemo, useState } from 'react'
+import { FormValidationResult, ValidationSchema } from '@/lib/validation'
 
 interface UseFormOptions<T> {
   initialValues: T
@@ -38,7 +38,7 @@ export function useForm<T extends Record<string, unknown>>({
   validationSchema,
   onSubmit,
   validateOnChange = false,
-  validateOnBlur = true
+  validateOnBlur = true,
 }: UseFormOptions<T>): UseFormReturn<T> {
   const [values, setValuesState] = useState<T>(initialValues)
   const [errors, setErrorsState] = useState<Record<string, string>>({})
@@ -55,28 +55,31 @@ export function useForm<T extends Record<string, unknown>>({
   }, [values, initialValues])
 
   // Validation helpers
-  const validateSingleField = useCallback((name: keyof T): boolean => {
-    if (!validationSchema) return true
+  const validateSingleField = useCallback(
+    (name: keyof T): boolean => {
+      if (!validationSchema) return true
 
-    const fieldValue = values[name]
-    const fieldData = { [name]: fieldValue }
-    const result: FormValidationResult = validationSchema.validate(fieldData)
-    
-    if (result.errors[name as string]) {
-      setErrorsState(prev => ({
-        ...prev,
-        [name]: result.errors[name as string]
-      }))
-      return false
-    } else {
-      setErrorsState(prev => {
-        const newErrors = { ...prev }
-        delete newErrors[name as string]
-        return newErrors
-      })
-      return true
-    }
-  }, [values, validationSchema])
+      const fieldValue = values[name]
+      const fieldData = { [name]: fieldValue }
+      const result: FormValidationResult = validationSchema.validate(fieldData)
+
+      if (result.errors[name as string]) {
+        setErrorsState(prev => ({
+          ...prev,
+          [name]: result.errors[name as string],
+        }))
+        return false
+      } else {
+        setErrorsState(prev => {
+          const newErrors = { ...prev }
+          delete newErrors[name as string]
+          return newErrors
+        })
+        return true
+      }
+    },
+    [values, validationSchema]
+  )
 
   const validateAllFields = useCallback((): boolean => {
     if (!validationSchema) return true
@@ -87,29 +90,32 @@ export function useForm<T extends Record<string, unknown>>({
   }, [values, validationSchema])
 
   // Field setters
-  const setValue = useCallback(<K extends keyof T>(name: K, value: T[K]) => {
-    setValuesState(prev => ({
-      ...prev,
-      [name]: value
-    }))
+  const setValue = useCallback(
+    <K extends keyof T>(name: K, value: T[K]) => {
+      setValuesState(prev => ({
+        ...prev,
+        [name]: value,
+      }))
 
-    if (validateOnChange) {
-      // Validate after setting the value
-      setTimeout(() => validateSingleField(name), 0)
-    }
-  }, [validateOnChange, validateSingleField])
+      if (validateOnChange) {
+        // Validate after setting the value
+        setTimeout(() => validateSingleField(name), 0)
+      }
+    },
+    [validateOnChange, validateSingleField]
+  )
 
   const setValues = useCallback((newValues: Partial<T>) => {
     setValuesState(prev => ({
       ...prev,
-      ...newValues
+      ...newValues,
     }))
   }, [])
 
   const setError = useCallback((name: keyof T, error: string) => {
     setErrorsState(prev => ({
       ...prev,
-      [name]: error
+      [name]: error,
     }))
   }, [])
 
@@ -132,55 +138,71 @@ export function useForm<T extends Record<string, unknown>>({
   const setTouched = useCallback((name: keyof T, isTouched = true) => {
     setTouchedState(prev => ({
       ...prev,
-      [name]: isTouched
+      [name]: isTouched,
     }))
   }, [])
 
-  const setFieldTouched = useCallback((name: keyof T) => {
-    setTouched(name, true)
-    if (validateOnBlur) {
-      validateSingleField(name)
-    }
-  }, [setTouched, validateOnBlur, validateSingleField])
+  const setFieldTouched = useCallback(
+    (name: keyof T) => {
+      setTouched(name, true)
+      if (validateOnBlur) {
+        validateSingleField(name)
+      }
+    },
+    [setTouched, validateOnBlur, validateSingleField]
+  )
 
   // Event handlers
-  const handleChange = useCallback(<K extends keyof T>(name: K) => (value: T[K]) => {
-    setValue(name, value)
-  }, [setValue])
+  const handleChange = useCallback(
+    <K extends keyof T>(name: K) =>
+      (value: T[K]) => {
+        setValue(name, value)
+      },
+    [setValue]
+  )
 
-  const handleBlur = useCallback((name: keyof T) => () => {
-    setFieldTouched(name)
-  }, [setFieldTouched])
+  const handleBlur = useCallback(
+    (name: keyof T) => () => {
+      setFieldTouched(name)
+    },
+    [setFieldTouched]
+  )
 
-  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
-    e?.preventDefault()
-    
-    if (isSubmitting) return
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault()
 
-    // Mark all fields as touched
-    const allTouched = Object.keys(values).reduce((acc, key) => {
-      acc[key] = true
-      return acc
-    }, {} as Record<string, boolean>)
-    setTouchedState(allTouched)
+      if (isSubmitting) return
 
-    // Validate all fields
-    const isFormValid = validateAllFields()
+      // Mark all fields as touched
+      const allTouched = Object.keys(values).reduce(
+        (acc, key) => {
+          acc[key] = true
+          return acc
+        },
+        {} as Record<string, boolean>
+      )
+      setTouchedState(allTouched)
 
-    if (!isFormValid || !onSubmit) return
+      // Validate all fields
+      const isFormValid = validateAllFields()
 
-    try {
-      setIsSubmitting(true)
-      await onSubmit(values)
-    } catch (error) {
-      // Handle submission error
-      if (error instanceof Error) {
-        setError('submit' as keyof T, error.message)
+      if (!isFormValid || !onSubmit) return
+
+      try {
+        setIsSubmitting(true)
+        await onSubmit(values)
+      } catch (error) {
+        // Handle submission error
+        if (error instanceof Error) {
+          setError('submit' as keyof T, error.message)
+        }
+      } finally {
+        setIsSubmitting(false)
       }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }, [values, isSubmitting, validateAllFields, onSubmit, setError])
+    },
+    [values, isSubmitting, validateAllFields, onSubmit, setError]
+  )
 
   // Reset functions
   const reset = useCallback(() => {
@@ -190,11 +212,14 @@ export function useForm<T extends Record<string, unknown>>({
     setIsSubmitting(false)
   }, [initialValues])
 
-  const resetField = useCallback((name: keyof T) => {
-    setValue(name, initialValues[name])
-    clearError(name)
-    setTouched(name, false)
-  }, [initialValues, setValue, clearError, setTouched])
+  const resetField = useCallback(
+    (name: keyof T) => {
+      setValue(name, initialValues[name])
+      clearError(name)
+      setTouched(name, false)
+    },
+    [initialValues, setValue, clearError, setTouched]
+  )
 
   return {
     values,
@@ -217,7 +242,7 @@ export function useForm<T extends Record<string, unknown>>({
     handleBlur,
     handleSubmit,
     reset,
-    resetField
+    resetField,
   }
 }
 
@@ -242,11 +267,14 @@ export function useFieldValidation<T>(
     validate()
   }, [validate])
 
-  const onChange = useCallback((newValue: T) => {
-    if (touched) {
-      validate()
-    }
-  }, [touched, validate])
+  const onChange = useCallback(
+    (newValue: T) => {
+      if (touched) {
+        validate()
+      }
+    },
+    [touched, validate]
+  )
 
   return {
     error,
@@ -254,6 +282,6 @@ export function useFieldValidation<T>(
     validate,
     onBlur,
     onChange,
-    isValid: !error
+    isValid: !error,
   }
 }

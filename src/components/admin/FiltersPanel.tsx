@@ -5,7 +5,7 @@
  * Phase 3 - UI Components
  */
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
@@ -42,7 +42,12 @@ interface RangeFilter {
 // COMPONENTE
 // =====================================================
 
-export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: Readonly<FiltersPanelProps>) {
+export function FiltersPanel({
+  businessId,
+  filters,
+  onFiltersChange,
+  onClear,
+}: Readonly<FiltersPanelProps>) {
   const { t } = useLanguage()
   // Estados locales para rangos
   const [occupancyRange, setOccupancyRange] = useState<RangeFilter>({ min: 0, max: 100 })
@@ -53,7 +58,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
   useEffect(() => {
     async function loadLocations() {
       if (!businessId) return
-      
+
       const { data, error } = await supabase
         .from('locations')
         .select('id, name')
@@ -65,7 +70,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
         setLocations(data)
       }
     }
-    
+
     loadLocations()
   }, [businessId])
 
@@ -117,12 +122,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Filtros</h3>
         {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClearAll}
-            className="h-8 gap-1"
-          >
+          <Button variant="ghost" size="sm" onClick={handleClearAll} className="h-8 gap-1">
             <X className="h-3 w-3" />
             Limpiar todo
           </Button>
@@ -155,10 +155,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
       {/* FILTRO POR SEDE */}
       <div className="space-y-2">
         <Label htmlFor="location">Sede</Label>
-        <Select
-          value={filters.location_id || 'all'}
-          onValueChange={handleLocationChange}
-        >
+        <Select value={filters.location_id || 'all'} onValueChange={handleLocationChange}>
           <SelectTrigger id="location">
             <SelectValue placeholder="Todas las sedes" />
           </SelectTrigger>
@@ -197,10 +194,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
       {/* TIPO DE EMPLEADO */}
       <div className="space-y-2">
         <Label htmlFor="employee-type">Tipo de Empleado</Label>
-        <Select
-          value={filters.employeeType || 'all'}
-          onValueChange={handleEmployeeTypeChange}
-        >
+        <Select value={filters.employeeType || 'all'} onValueChange={handleEmployeeTypeChange}>
           <SelectTrigger id="employee-type">
             <SelectValue placeholder="Todos los tipos" />
           </SelectTrigger>
@@ -217,10 +211,7 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
       {/* DEPARTAMENTO */}
       <div className="space-y-2">
         <Label htmlFor="department">Departamento</Label>
-        <Select
-          value={filters.departmentId || 'all'}
-          onValueChange={handleDepartmentChange}
-        >
+        <Select value={filters.departmentId || 'all'} onValueChange={handleDepartmentChange}>
           <SelectTrigger id="department">
             <SelectValue placeholder="Todos los departamentos" />
           </SelectTrigger>
@@ -304,7 +295,9 @@ export function FiltersPanel({ businessId, filters, onFiltersChange, onClear }: 
             {filters.location_id && (
               <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
                 <span className="font-medium">Sede:</span>
-                <span>{locations.find(l => l.id === filters.location_id)?.name || filters.location_id}</span>
+                <span>
+                  {locations.find(l => l.id === filters.location_id)?.name || filters.location_id}
+                </span>
                 <button onClick={() => handleLocationChange('all')}>
                   <X className="h-3 w-3" />
                 </button>

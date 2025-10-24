@@ -13,7 +13,7 @@ interface EmailRequest {
   text?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -34,23 +34,23 @@ serve(async (req) => {
 
     // In a real implementation, you would use a service like SendGrid, Resend, or similar
     // For this example, we'll simulate sending the email
-    
+
     // Example with SendGrid (you would need to add the SendGrid API key)
     const sendGridApiKey = Deno.env.get('SENDGRID_API_KEY')
-    
+
     if (!sendGridApiKey) {
       console.log('SendGrid API key not configured. Email simulation only.')
       console.log(`Would send email to: ${to}`)
       console.log(`Subject: ${subject}`)
       console.log(`Content: ${text || html}`)
-      
+
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'Email simulated successfully',
-          details: { to, subject }
+          details: { to, subject },
         }),
-        { 
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         }
@@ -59,30 +59,36 @@ serve(async (req) => {
 
     // Send email using SendGrid
     const emailData = {
-      personalizations: [{
-        to: [{ email: to }],
-        subject: subject
-      }],
-      from: { 
+      personalizations: [
+        {
+          to: [{ email: to }],
+          subject: subject,
+        },
+      ],
+      from: {
         email: Deno.env.get('FROM_EMAIL') || 'noreply@Gestabiz.com',
-        name: 'Gestabiz'
+        name: 'Gestabiz',
       },
       content: [
         {
           type: 'text/html',
-          value: html
+          value: html,
         },
-        ...(text ? [{
-          type: 'text/plain',
-          value: text
-        }] : [])
-      ]
+        ...(text
+          ? [
+              {
+                type: 'text/plain',
+                value: text,
+              },
+            ]
+          : []),
+      ],
     }
 
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${sendGridApiKey}`,
+        Authorization: `Bearer ${sendGridApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(emailData),
@@ -94,25 +100,24 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Email sent successfully' 
+      JSON.stringify({
+        success: true,
+        message: 'Email sent successfully',
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error sending email:', error)
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       }

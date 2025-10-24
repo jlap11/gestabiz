@@ -1,9 +1,9 @@
-import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react-swc";
-import { defineConfig } from "vite";
-import { sentryVitePlugin } from "@sentry/vite-plugin";
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from 'vite'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
-import { resolve, dirname } from 'path'
+import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 // import.meta.dirname no existe en Vite/TS; derivamos desde import.meta.url
@@ -12,7 +12,7 @@ const projectRoot = dirname(fileURLToPath(import.meta.url))
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(), 
+    react(),
     tailwindcss(),
     // Sentry Vite Plugin - solo en producción con auth token
     sentryVitePlugin({
@@ -28,10 +28,10 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(projectRoot, 'src')
-    }
+      '@': resolve(projectRoot, 'src'),
+    },
   },
   build: {
     sourcemap: true, // Generar source maps para Sentry
   },
-});
+})

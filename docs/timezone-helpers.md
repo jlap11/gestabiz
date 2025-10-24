@@ -18,7 +18,12 @@ Este proyecto centraliza la lógica de zona horaria en `src/lib/utils.ts` para a
 ## Ejemplos
 
 ```ts
-import { DEFAULT_TIME_ZONE, extractTimeZoneParts, getTimeZoneParts, getDayOfWeekInTZ } from '@/lib/utils'
+import {
+  DEFAULT_TIME_ZONE,
+  extractTimeZoneParts,
+  getTimeZoneParts,
+  getDayOfWeekInTZ,
+} from '@/lib/utils'
 
 // Hora actual en Colombia
 const now = new Date()

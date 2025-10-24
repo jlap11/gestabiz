@@ -1,22 +1,28 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
-import { 
-  Briefcase, 
-  MapPin, 
-  DollarSign, 
-  Calendar, 
-  Star,
-  Search,
-  Filter,
+import {
+  Briefcase,
+  Building2,
+  Calendar,
   Clock,
-  Building2
+  DollarSign,
+  Filter,
+  MapPin,
+  Search,
+  Star,
 } from 'lucide-react'
 
 interface ApplicationListProps {
@@ -64,7 +70,7 @@ const APPLICATION_STATUS_COLORS: Record<string, string> = {
   interview: 'bg-primary/20 text-primary border-primary/30',
   accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
-  withdrawn: 'bg-muted text-muted-foreground border-border'
+  withdrawn: 'bg-muted text-muted-foreground border-border',
 }
 
 const APPLICATION_STATUS_LABELS: Record<string, string> = {
@@ -73,20 +79,20 @@ const APPLICATION_STATUS_LABELS: Record<string, string> = {
   interview: 'Entrevista',
   accepted: 'Aceptada',
   rejected: 'Rechazada',
-  withdrawn: 'Retirada'
+  withdrawn: 'Retirada',
 }
 
 const POSITION_TYPES: Record<string, string> = {
   full_time: 'Tiempo Completo',
   part_time: 'Medio Tiempo',
   freelance: 'Freelance',
-  temporary: 'Temporal'
+  temporary: 'Temporal',
 }
 
 const EXPERIENCE_LEVELS: Record<string, string> = {
   entry_level: 'Principiante',
   mid_level: 'Intermedio',
-  senior: 'Senior'
+  senior: 'Senior',
 }
 
 export function ApplicationList({ userId, onViewApplication }: Readonly<ApplicationListProps>) {
@@ -94,7 +100,7 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
   const [loading, setLoading] = useState(true)
   const [applications, setApplications] = useState<JobApplicationWithVacancy[]>([])
   const [filteredApplications, setFilteredApplications] = useState<JobApplicationWithVacancy[]>([])
-  
+
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -104,7 +110,8 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
 
       const { data, error } = await supabase
         .from('job_applications')
-        .select(`
+        .select(
+          `
           *,
           job_vacancies (
             id,
@@ -121,7 +128,8 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
             locations (name, city),
             businesses (name, logo_url)
           )
-        `)
+        `
+        )
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
@@ -167,7 +175,7 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
     const formatter = new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     })
 
     if (min && max) {
@@ -181,7 +189,9 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
   }
 
   const getDaysAgo = (date: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+    const days = Math.floor(
+      (new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
+    )
     if (days === 0) return 'Hoy'
     if (days === 1) return 'Ayer'
     return `Hace ${days} días`
@@ -196,10 +206,10 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
     }
     if (app.status === 'interview' && app.interview_scheduled_at) {
       const interviewDate = new Date(app.interview_scheduled_at)
-      return `Entrevista programada: ${interviewDate.toLocaleDateString('es-CO', { 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric' 
+      return `Entrevista programada: ${interviewDate.toLocaleDateString('es-CO', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
       })}`
     }
     if (app.status === 'reviewing') {
@@ -235,7 +245,8 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
           <div>
             <h2 className="text-2xl font-bold text-foreground">Mis Aplicaciones</h2>
             <p className="text-muted-foreground text-sm">
-              {filteredApplications.length} {filteredApplications.length === 1 ? 'aplicación' : 'aplicaciones'}
+              {filteredApplications.length}{' '}
+              {filteredApplications.length === 1 ? 'aplicación' : 'aplicaciones'}
               {statusFilter !== 'all' && ` (filtradas)`}
             </p>
           </div>
@@ -271,7 +282,7 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Buscar por puesto o empresa..."
                 className="pl-10 bg-background border-border text-foreground"
               />
@@ -287,13 +298,14 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
             <div className="text-center">
               <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                {applications.length === 0 ? 'No tienes aplicaciones' : 'No se encontraron resultados'}
+                {applications.length === 0
+                  ? 'No tienes aplicaciones'
+                  : 'No se encontraron resultados'}
               </h3>
               <p className="text-muted-foreground">
-                {applications.length === 0 
+                {applications.length === 0
                   ? 'Comienza a aplicar a vacantes para verlas aquí'
-                  : 'Intenta ajustar los filtros de búsqueda'
-                }
+                  : 'Intenta ajustar los filtros de búsqueda'}
               </p>
               {statusFilter !== 'all' || searchQuery.trim() !== '' ? (
                 <Button
@@ -312,7 +324,7 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredApplications.map((application) => (
+          {filteredApplications.map(application => (
             <Card
               key={application.id}
               className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
@@ -374,7 +386,7 @@ export function ApplicationList({ userId, onViewApplication }: Readonly<Applicat
                       <div>
                         <p className="text-xs text-muted-foreground">Ubicación</p>
                         <p className="text-sm text-foreground font-medium">
-                          {application.job_vacancies.locations 
+                          {application.job_vacancies.locations
                             ? application.job_vacancies.locations.city
                             : 'Sin ubicación'}
                         </p>

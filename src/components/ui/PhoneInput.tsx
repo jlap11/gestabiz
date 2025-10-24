@@ -1,4 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 
 // Country codes with flags
@@ -46,22 +52,22 @@ export function PhoneInput({
   // Extract number part (remove prefix if present)
   const getNumberPart = () => {
     if (!value) return ''
-    
+
     // Remove all non-digits
     const digitsOnly = value.replace(/\D/g, '')
-    
+
     // Remove prefix digits if present
     const prefixDigits = prefix.replace(/\D/g, '')
     if (digitsOnly.startsWith(prefixDigits)) {
       return digitsOnly.slice(prefixDigits.length)
     }
-    
+
     return digitsOnly
   }
 
   const handlePrefixChange = (newPrefix: string) => {
     onPrefixChange?.(newPrefix)
-    
+
     // Update full value with new prefix
     const numberPart = getNumberPart()
     if (numberPart) {
@@ -72,7 +78,7 @@ export function PhoneInput({
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow digits
     const digitsOnly = e.target.value.replace(/\D/g, '')
-    
+
     // Update full value
     if (digitsOnly) {
       onChange(`${prefix} ${digitsOnly}`)
@@ -98,7 +104,7 @@ export function PhoneInput({
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">
-          {COUNTRY_CODES.map((country) => (
+          {COUNTRY_CODES.map(country => (
             <SelectItem key={country.country} value={country.code}>
               <div className="flex items-center gap-2">
                 <span className="text-lg">{country.flag}</span>

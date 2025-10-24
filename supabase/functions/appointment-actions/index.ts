@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -28,13 +28,15 @@ serve(async (req) => {
     // Get appointment details
     const { data: appointment, error: fetchError } = await supabaseClient
       .from('appointments')
-      .select(`
+      .select(
+        `
         *,
         service:services(name),
         client:profiles!appointments_client_id_fkey(full_name, email, phone),
         employee:profiles!appointments_employee_id_fkey(full_name),
         business:businesses(name, phone)
-      `)
+      `
+      )
       .eq('id', appointmentId)
       .single()
 
@@ -54,10 +56,10 @@ serve(async (req) => {
         break
 
       case 'cancel':
-        updateData = { 
+        updateData = {
           status: 'cancelled',
           cancelled_at: new Date().toISOString(),
-          cancel_reason: reason || 'Cancelado por el negocio'
+          cancel_reason: reason || 'Cancelado por el negocio',
         }
         notificationTitle = 'Cita Cancelada'
         notificationMessage = `Tu cita para ${appointment.service?.name || 'el servicio'} ha sido cancelada.${reason ? ` Motivo: ${reason}` : ''}`
@@ -90,15 +92,13 @@ serve(async (req) => {
     }
 
     // Create notification for client
-    const { error: notificationError } = await supabaseClient
-      .from('notifications')
-      .insert({
-        user_id: appointment.client_id,
-        type: action === 'confirm' ? 'appointment_confirmed' : 'appointment_cancelled',
-        title: notificationTitle,
-        message: notificationMessage,
-        appointment_id: appointmentId
-      })
+    const { error: notificationError } = await supabaseClient.from('notifications').insert({
+      user_id: appointment.client_id,
+      type: action === 'confirm' ? 'appointment_confirmed' : 'appointment_cancelled',
+      title: notificationTitle,
+      message: notificationMessage,
+      appointment_id: appointmentId,
+    })
 
     if (notificationError) {
       console.error('Error creating notification:', notificationError)
@@ -110,7 +110,7 @@ serve(async (req) => {
       await sendWhatsAppMessage({
         phone: appointment.client.phone,
         message: createWhatsAppMessage(action, appointment),
-        appointmentId
+        appointmentId,
       })
     }
 
@@ -124,8 +124,8 @@ serve(async (req) => {
           serviceName: appointment.service?.name || 'Servicio',
           businessName: appointment.business?.name || 'Negocio',
           startTime: appointment.start_time,
-          endTime: appointment.end_time
-        }
+          endTime: appointment.end_time,
+        },
       })
     }
 
@@ -133,22 +133,19 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: `Appointment ${action}ed successfully`,
-        appointmentId
+        appointmentId,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-      },
+      }
     )
   } catch (error) {
     console.error('Error in appointment-actions function:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      },
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })
 
@@ -158,11 +155,11 @@ function createWhatsAppMessage(action: string, appointment: any): string {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
   const timeStr = startDate.toLocaleTimeString('es-MX', {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 
   const businessName = appointment.business?.name || 'Nuestro negocio'
@@ -188,11 +185,11 @@ async function sendWhatsAppMessage(params: {
   try {
     // You can integrate with WhatsApp Business API or services like Twilio, ChatAPI, etc.
     // For demo purposes, we'll just log the message
-    
+
     console.log(`WHATSAPP TO: ${params.phone}`)
     console.log(`MESSAGE: ${params.message}`)
     console.log(`APPOINTMENT ID: ${params.appointmentId}`)
-    
+
     // Example integration with Twilio WhatsApp API:
     /*
     const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
@@ -226,7 +223,7 @@ async function sendWhatsAppMessage(params: {
       }
     }
     */
-    
+
     console.log('WhatsApp service not configured, message logged instead')
     return true // Return true for development
   } catch (error) {
@@ -251,7 +248,7 @@ async function sendEmailNotification(params: {
     console.log(`EMAIL TO: ${params.to}`)
     console.log(`SUBJECT: ${params.subject}`)
     console.log(`MESSAGE: ${params.message}`)
-    
+
     return true
   } catch (error) {
     console.error('Error sending email:', error)

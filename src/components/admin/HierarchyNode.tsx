@@ -106,11 +106,7 @@ export function HierarchyNode({
           }}
           className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-background border-2 p-1 hover:bg-accent z-10"
         >
-          {isExpanded ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
+          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
       )}
 

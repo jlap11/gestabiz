@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders })
   }
@@ -26,11 +26,13 @@ serve(async (req) => {
     // Get appointment details
     const { data: appointment, error: appointmentError } = await supabaseClient
       .from('appointments')
-      .select(`
+      .select(
+        `
         *,
         clients (name, email, phone),
         users (email, name)
-      `)
+      `
+      )
       .eq('id', appointmentId)
       .single()
 
@@ -59,16 +61,14 @@ serve(async (req) => {
       if (reminderDateTime > new Date()) {
         // Email reminder
         if (settings?.email_reminders !== false) {
-          const { error: emailError } = await supabaseClient
-            .from('notification_queue')
-            .insert({
-              user_id: appointment.user_id,
-              appointment_id: appointmentId,
-              type: 'reminder',
-              method: 'email',
-              scheduled_for: reminderDateTime.toISOString(),
-              status: 'pending'
-            })
+          const { error: emailError } = await supabaseClient.from('notification_queue').insert({
+            user_id: appointment.user_id,
+            appointment_id: appointmentId,
+            type: 'reminder',
+            method: 'email',
+            scheduled_for: reminderDateTime.toISOString(),
+            status: 'pending',
+          })
 
           if (emailError) {
             console.error('Error scheduling email reminder:', emailError)
@@ -77,23 +77,21 @@ serve(async (req) => {
               type: 'reminder',
               method: 'email',
               scheduled_for: reminderDateTime.toISOString(),
-              minutes_before: minutes
+              minutes_before: minutes,
             })
           }
         }
 
         // SMS reminder (if enabled and phone number available)
         if (settings?.sms_reminders && appointment.clients.phone) {
-          const { error: smsError } = await supabaseClient
-            .from('notification_queue')
-            .insert({
-              user_id: appointment.user_id,
-              appointment_id: appointmentId,
-              type: 'reminder',
-              method: 'sms',
-              scheduled_for: reminderDateTime.toISOString(),
-              status: 'pending'
-            })
+          const { error: smsError } = await supabaseClient.from('notification_queue').insert({
+            user_id: appointment.user_id,
+            appointment_id: appointmentId,
+            type: 'reminder',
+            method: 'sms',
+            scheduled_for: reminderDateTime.toISOString(),
+            status: 'pending',
+          })
 
           if (smsError) {
             console.error('Error scheduling SMS reminder:', smsError)
@@ -102,7 +100,7 @@ serve(async (req) => {
               type: 'reminder',
               method: 'sms',
               scheduled_for: reminderDateTime.toISOString(),
-              minutes_before: minutes
+              minutes_before: minutes,
             })
           }
         }
@@ -111,22 +109,20 @@ serve(async (req) => {
 
     // Schedule confirmation notification (if enabled)
     if (settings?.appointment_confirmations !== false) {
-      const { error: confirmationError } = await supabaseClient
-        .from('notification_queue')
-        .insert({
-          user_id: appointment.user_id,
-          appointment_id: appointmentId,
-          type: 'confirmation',
-          method: 'email',
-          scheduled_for: new Date().toISOString(), // Send immediately
-          status: 'pending'
-        })
+      const { error: confirmationError } = await supabaseClient.from('notification_queue').insert({
+        user_id: appointment.user_id,
+        appointment_id: appointmentId,
+        type: 'confirmation',
+        method: 'email',
+        scheduled_for: new Date().toISOString(), // Send immediately
+        status: 'pending',
+      })
 
       if (!confirmationError) {
         results.push({
           type: 'confirmation',
           method: 'email',
-          scheduled_for: new Date().toISOString()
+          scheduled_for: new Date().toISOString(),
         })
       }
     }
@@ -136,25 +132,24 @@ serve(async (req) => {
         success: true,
         appointmentId,
         scheduledNotifications: results.length,
-        notifications: results
+        notifications: results,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error in schedule-reminders function:', error)
-    
+
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 500,
       }
     )
   }

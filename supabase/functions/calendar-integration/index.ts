@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -12,7 +12,7 @@ interface CalendarSyncRequest {
   userId?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -57,9 +57,9 @@ serve(async (req) => {
     // Update last sync time
     await supabase
       .from('calendar_sync_settings')
-      .update({ 
+      .update({
         last_sync: new Date().toISOString(),
-        sync_errors: syncResult.errors 
+        sync_errors: syncResult.errors,
       })
       .eq('id', syncSettings.id)
 
@@ -67,20 +67,19 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Calendar sync completed',
-        result: syncResult
+        result: syncResult,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error syncing calendar:', error)
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,8 +94,9 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
 
   try {
     // Get user's appointments from the last sync
-    const lastSyncDate = syncSettings.last_sync || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    
+    const lastSyncDate =
+      syncSettings.last_sync || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
     const { data: appointments, error: appointmentsError } = await supabase
       .from('appointments')
       .select('*')
@@ -116,20 +116,20 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
             description: appointment.description || appointment.notes,
             start: {
               dateTime: appointment.start_time,
-              timeZone: 'UTC'
+              timeZone: 'UTC',
             },
             end: {
               dateTime: appointment.end_time,
-              timeZone: 'UTC'
+              timeZone: 'UTC',
             },
             location: appointment.location,
             attendees: appointment.client_email ? [{ email: appointment.client_email }] : [],
             extendedProperties: {
               private: {
                 appointmentId: appointment.id,
-                source: 'Gestabiz'
-              }
-            }
+                source: 'Gestabiz',
+              },
+            },
           }
 
           // Create or update event in Google Calendar
@@ -138,7 +138,7 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
             {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${syncSettings.access_token}`,
+                Authorization: `Bearer ${syncSettings.access_token}`,
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify(googleEvent),
@@ -152,7 +152,9 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
             result.errors.push(`Export failed for appointment ${appointment.id}: ${error}`)
           }
         } catch (exportError) {
-          result.errors.push(`Export error for appointment ${appointment.id}: ${exportError.message}`)
+          result.errors.push(
+            `Export error for appointment ${appointment.id}: ${exportError.message}`
+          )
         }
       }
     }
@@ -163,14 +165,14 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?updatedMin=${lastSyncDate}`,
         {
           headers: {
-            'Authorization': `Bearer ${syncSettings.access_token}`,
+            Authorization: `Bearer ${syncSettings.access_token}`,
           },
         }
       )
 
       if (googleResponse.ok) {
         const googleData = await googleResponse.json()
-        
+
         for (const event of googleData.items || []) {
           // Skip events that originated from our app
           if (event.extendedProperties?.private?.source === 'Gestabiz') {
@@ -190,7 +192,7 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
               client_name: event.attendees?.[0]?.displayName || 'Imported Client',
               client_email: event.attendees?.[0]?.email,
               status: 'scheduled',
-              created_by: syncSettings.user_id
+              created_by: syncSettings.user_id,
             }
 
             const { error: insertError } = await supabase
@@ -208,7 +210,6 @@ async function syncWithGoogleCalendar(supabase: any, syncSettings: any, calendar
         }
       }
     }
-
   } catch (syncError) {
     result.errors.push(`Google Calendar sync error: ${syncError.message}`)
   }

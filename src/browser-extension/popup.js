@@ -16,7 +16,7 @@ class AppointmentPopup {
   async init() {
     // Initialize Supabase client (you'll need to include the Supabase JS library)
     // For now, we'll use fetch API directly
-    
+
     await this.loadUserSession()
     this.setupEventListeners()
     await this.loadAppointments()
@@ -50,9 +50,9 @@ class AppointmentPopup {
       'open-app-link',
       'new-appointment-btn',
       'view-all-btn',
-      'create-first-btn'
+      'create-first-btn',
     ]
-    
+
     openAppBtns.forEach(btnId => {
       const btn = document.getElementById(btnId)
       if (btn) {
@@ -76,12 +76,15 @@ class AppointmentPopup {
 
     try {
       // Call Supabase function to get upcoming appointments
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-appointments?user_id=${this.user.id}`, {
-        headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `${SUPABASE_URL}/functions/v1/sync-appointments?user_id=${this.user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
         }
-      })
+      )
 
       if (!response.ok) {
         throw new Error('Failed to fetch appointments')
@@ -89,14 +92,13 @@ class AppointmentPopup {
 
       const data = await response.json()
       this.appointments = data.appointments || []
-      
+
       if (this.appointments.length === 0) {
         this.showEmptyState()
       } else {
         this.renderAppointments()
         this.showMainContent()
       }
-
     } catch (error) {
       console.error('Error loading appointments:', error)
       this.showError('Failed to load appointments')
@@ -113,16 +115,16 @@ class AppointmentPopup {
 
     // Calculate stats
     const today = new Date().toDateString()
-    const todayAppointments = this.appointments.filter(apt => 
-      new Date(apt.start_time).toDateString() === today
+    const todayAppointments = this.appointments.filter(
+      apt => new Date(apt.start_time).toDateString() === today
     )
-    
+
     todayCount.textContent = todayAppointments.length
     upcomingCount.textContent = this.appointments.length
 
     // Render up to 3 appointments
     const displayAppointments = this.appointments.slice(0, 3)
-    
+
     displayAppointments.forEach(appointment => {
       const appointmentElement = this.createAppointmentElement(appointment)
       appointmentsList.appendChild(appointmentElement)
@@ -133,8 +135,8 @@ class AppointmentPopup {
     const div = document.createElement('div')
     div.className = 'appointment-item'
     div.addEventListener('click', () => {
-      chrome.tabs.create({ 
-        url: `${APP_URL}/appointments/${appointment.id}` 
+      chrome.tabs.create({
+        url: `${APP_URL}/appointments/${appointment.id}`,
       })
       window.close()
     })
@@ -181,7 +183,7 @@ class AppointmentPopup {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }
     return date.toLocaleDateString('en-US', options)
   }
@@ -220,13 +222,8 @@ class AppointmentPopup {
   }
 
   hideAllSections() {
-    const sections = [
-      'loading-section',
-      'main-content',
-      'auth-section',
-      'empty-state'
-    ]
-    
+    const sections = ['loading-section', 'main-content', 'auth-section', 'empty-state']
+
     sections.forEach(sectionId => {
       document.getElementById(sectionId).classList.add('hidden')
     })

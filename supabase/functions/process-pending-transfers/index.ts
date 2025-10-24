@@ -8,21 +8,21 @@ const corsHeaders = {
 
 /**
  * Edge Function: process-pending-transfers
- * 
+ *
  * Propósito: Procesar traslados pendientes cuya fecha efectiva ya pasó.
  *            Esta función debe ejecutarse como CRON job cada hora.
- * 
+ *
  * Acciones:
  *   1. Buscar traslados pendientes con transfer_effective_date <= NOW()
  *   2. Actualizar location_id a la nueva sede
  *   3. Cambiar transfer_status a 'completed'
  *   4. Limpiar campos de transición
  *   5. Notificar al empleado
- * 
+ *
  * CRON: 0 * * * * (cada hora en punto)
  */
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -41,7 +41,8 @@ serve(async (req) => {
     // 1. Buscar traslados pendientes cuya fecha efectiva ya pasó
     const { data: pendingTransfers, error: fetchError } = await supabase
       .from('business_employees')
-      .select(`
+      .select(
+        `
         id,
         employee_id,
         business_id,
@@ -50,7 +51,8 @@ serve(async (req) => {
         transfer_to_location_id,
         transfer_effective_date,
         locations!business_employees_transfer_to_location_id_fkey (name)
-      `)
+      `
+      )
       .eq('transfer_status', 'pending')
       .lte('transfer_effective_date', now)
 
@@ -112,21 +114,19 @@ serve(async (req) => {
         // 3. Notificar al empleado
         const newLocationName = transfer.locations?.name || 'Nueva sede'
 
-        const { error: notifError } = await supabase
-          .from('in_app_notifications')
-          .insert({
-            user_id: transfer.employee_id,
-            type: 'transfer_completed',
-            title: 'Traslado completado',
-            message: `Tu traslado a ${newLocationName} se ha completado exitosamente. Ya estás operativo en tu nueva sede.`,
-            data: {
-              business_employee_id: transfer.id,
-              new_location_id: transfer.transfer_to_location_id,
-              new_location_name: newLocationName,
-              completed_at: now,
-            },
-            read: false,
-          })
+        const { error: notifError } = await supabase.from('in_app_notifications').insert({
+          user_id: transfer.employee_id,
+          type: 'transfer_completed',
+          title: 'Traslado completado',
+          message: `Tu traslado a ${newLocationName} se ha completado exitosamente. Ya estás operativo en tu nueva sede.`,
+          data: {
+            business_employee_id: transfer.id,
+            new_location_id: transfer.transfer_to_location_id,
+            new_location_name: newLocationName,
+            completed_at: now,
+          },
+          read: false,
+        })
 
         if (notifError) {
           console.error(`⚠️ Error al enviar notificación a ${transfer.employee_id}:`, notifError)
@@ -141,7 +141,9 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Proceso completado: ${processedCount}/${pendingTransfers.length} traslados procesados`)
+    console.log(
+      `✅ Proceso completado: ${processedCount}/${pendingTransfers.length} traslados procesados`
+    )
 
     if (errors.length > 0) {
       console.error('⚠️ Errores encontrados:', errors)
@@ -161,12 +163,9 @@ serve(async (req) => {
     )
   } catch (error) {
     console.error('❌ Error en process-pending-transfers:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

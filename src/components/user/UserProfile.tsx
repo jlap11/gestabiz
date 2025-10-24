@@ -1,127 +1,130 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, Star, Calendar, Briefcase, MapPin, Award, Clock, Building2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/hooks/useAuth';
-import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
-import { ReviewForm } from '@/components/reviews/ReviewForm';
-import { ReviewList } from '@/components/reviews/ReviewList';
-import { useReviews } from '@/hooks/useReviews';
-import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
-
+import { useCallback, useEffect, useState } from 'react'
+import { Award, Briefcase, Building2, Calendar, Clock, MapPin, Star, X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { useAuth } from '@/hooks/useAuth'
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
+import { ReviewForm } from '@/components/reviews/ReviewForm'
+import { ReviewList } from '@/components/reviews/ReviewList'
+import { useReviews } from '@/hooks/useReviews'
+import { toast } from 'sonner'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface UserProfileProps {
-  userId: string;
-  onClose: () => void;
-  onBookAppointment?: (serviceId?: string, businessId?: string) => void;
+  userId: string
+  onClose: () => void
+  onBookAppointment?: (serviceId?: string, businessId?: string) => void
   userLocation?: {
-    latitude: number;
-    longitude: number;
-  };
+    latitude: number
+    longitude: number
+  }
 }
 
 interface UserData {
-  id: string;
-  full_name: string;
-  email: string;
-  phone?: string;
-  avatar_url?: string;
-  bio?: string;
-  rating: number;
-  reviewCount: number;
-  totalAppointments: number;
+  id: string
+  full_name: string
+  email: string
+  phone?: string
+  avatar_url?: string
+  bio?: string
+  rating: number
+  reviewCount: number
+  totalAppointments: number
   services: Array<{
-    id: string;
-    name: string;
-    description: string;
-    duration: number;
-    price: number;
-    category?: string;
-    business_id: string;
+    id: string
+    name: string
+    description: string
+    duration: number
+    price: number
+    category?: string
+    business_id: string
     business?: {
-      id: string;
-      name: string;
-      logo_url?: string;
-    };
-  }>;
+      id: string
+      name: string
+      logo_url?: string
+    }
+  }>
   businesses: Array<{
-    id: string;
-    name: string;
-    logo_url?: string;
-    address?: string;
-    city?: string;
-    state?: string;
-  }>;
+    id: string
+    name: string
+    logo_url?: string
+    address?: string
+    city?: string
+    state?: string
+  }>
   reviews: Array<{
-    id: string;
-    rating: number;
-    comment: string;
-    created_at: string;
+    id: string
+    rating: number
+    comment: string
+    created_at: string
     business?: {
-      name: string;
-    };
-  }>;
+      name: string
+    }
+  }>
   expertise: Array<{
-    category: string;
-    years: number;
-    level: number;
-  }>;
+    category: string
+    years: number
+    level: number
+  }>
 }
 
-export default function UserProfile({ 
-  userId, 
-  onClose, 
+export default function UserProfile({
+  userId,
+  onClose,
   onBookAppointment,
-  userLocation 
+  userLocation,
 }: UserProfileProps) {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('services');
-  const [canReview, setCanReview] = useState(false);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [eligibleAppointmentId, setEligibleAppointmentId] = useState<string | null>(null);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const { user } = useAuth()
+  const { t } = useLanguage()
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('services')
+  const [canReview, setCanReview] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [eligibleAppointmentId, setEligibleAppointmentId] = useState<string | null>(null)
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
 
   // Obtener negocios del profesional
-  const { businesses: employeeBusinesses, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(userId, true);
-  
+  const { businesses: employeeBusinesses, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(
+    userId,
+    true
+  )
+
   // Hook de reviews (con businessId dinámico)
-  const { createReview, refetch: refetchReviews } = useReviews({ 
+  const { createReview, refetch: refetchReviews } = useReviews({
     employee_id: userId,
-    business_id: selectedBusinessId || undefined
-  });
+    business_id: selectedBusinessId || undefined,
+  })
 
   const formatCurrency = (amount: number, currency: string = 'MXN') => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   const fetchUserData = useCallback(async () => {
     try {
-      setLoading(true);
+      setLoading(true)
 
       // Fetch user basic info
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, full_name, email, phone, avatar_url, bio')
         .eq('id', userId)
-        .single();
+        .single()
 
-      if (profileError) throw profileError;
+      if (profileError) throw profileError
 
       // Fetch services offered by this employee
       const { data: servicesData } = await supabase
         .from('employee_services')
-        .select(`
+        .select(
+          `
           service_id,
           expertise_level,
           services:service_id (
@@ -138,14 +141,16 @@ export default function UserProfile({
               logo_url
             )
           )
-        `)
+        `
+        )
         .eq('employee_id', userId)
-        .eq('is_active', true);
+        .eq('is_active', true)
 
       // Fetch reviews about this professional
       const { data: reviewsData } = await supabase
         .from('reviews')
-        .select(`
+        .select(
+          `
           id,
           rating,
           comment,
@@ -154,51 +159,61 @@ export default function UserProfile({
           businesses:business_id (
             name
           )
-        `)
+        `
+        )
         .eq('employee_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(10)
 
       // Calculate stats
-      const rating = reviewsData && reviewsData.length > 0
-        ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length
-        : 0;
+      const rating =
+        reviewsData && reviewsData.length > 0
+          ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length
+          : 0
 
       // Fetch total completed appointments
       const { count: appointmentsCount } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true })
         .eq('employee_id', userId)
-        .eq('status', 'completed');
+        .eq('status', 'completed')
 
       // Map services data
-      const services = (servicesData || []).map(item => {
-        const service = Array.isArray(item.services) ? item.services[0] : item.services;
-        const business = service?.businesses 
-          ? (Array.isArray(service.businesses) ? service.businesses[0] : service.businesses)
-          : null;
+      const services = (servicesData || [])
+        .map(item => {
+          const service = Array.isArray(item.services) ? item.services[0] : item.services
+          const business = service?.businesses
+            ? Array.isArray(service.businesses)
+              ? service.businesses[0]
+              : service.businesses
+            : null
 
-        return {
-          id: service?.id || '',
-          name: service?.name || '',
-          description: service?.description || '',
-          duration: service?.duration_minutes || 60,
-          price: service?.price || 0,
-          category: service?.category || '',
-          business_id: service?.business_id || '',
-          business: business ? {
-            id: business.id,
-            name: business.name,
-            logo_url: business.logo_url,
-          } : undefined,
-        };
-      }).filter(s => s.id);
+          return {
+            id: service?.id || '',
+            name: service?.name || '',
+            description: service?.description || '',
+            duration: service?.duration_minutes || 60,
+            price: service?.price || 0,
+            category: service?.category || '',
+            business_id: service?.business_id || '',
+            business: business
+              ? {
+                  id: business.id,
+                  name: business.name,
+                  logo_url: business.logo_url,
+                }
+              : undefined,
+          }
+        })
+        .filter(s => s.id)
 
       // Map reviews
       const reviews = (reviewsData || []).map(review => {
         const business = review.businesses
-          ? (Array.isArray(review.businesses) ? review.businesses[0] : review.businesses)
-          : null;
+          ? Array.isArray(review.businesses)
+            ? review.businesses[0]
+            : review.businesses
+          : null
 
         return {
           id: review.id,
@@ -206,8 +221,8 @@ export default function UserProfile({
           comment: review.comment,
           created_at: review.created_at,
           business: business ? { name: business.name } : undefined,
-        };
-      });
+        }
+      })
 
       setUserData({
         ...profileData,
@@ -217,19 +232,19 @@ export default function UserProfile({
         services,
         businesses: employeeBusinesses,
         reviews,
-        expertise: [], 
-      });
+        expertise: [],
+      })
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error fetching user data:', error.message);
+        console.error('Error fetching user data:', error.message)
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [userId, employeeBusinesses]);
+  }, [userId, employeeBusinesses])
 
   const checkReviewEligibility = useCallback(async () => {
-    if (!user) return;
+    if (!user) return
 
     try {
       // Buscar citas completadas con este empleado que no tengan review
@@ -240,47 +255,50 @@ export default function UserProfile({
         .eq('employee_id', userId)
         .eq('status', 'completed')
         .order('end_time', { ascending: false })
-        .limit(10);
+        .limit(10)
 
-      if (appointmentsError) throw appointmentsError;
+      if (appointmentsError) throw appointmentsError
 
       if (appointmentsData && appointmentsData.length > 0) {
         // Verificar cuáles no tienen review
         const { data: reviewsData, error: reviewsError } = await supabase
           .from('reviews')
           .select('appointment_id')
-          .in('appointment_id', appointmentsData.map(a => a.id));
+          .in(
+            'appointment_id',
+            appointmentsData.map(a => a.id)
+          )
 
-        if (reviewsError) throw reviewsError;
+        if (reviewsError) throw reviewsError
 
-        const reviewedIds = new Set(reviewsData?.map(r => r.appointment_id) || []);
-        const unreviewed = appointmentsData.find(a => !reviewedIds.has(a.id));
+        const reviewedIds = new Set(reviewsData?.map(r => r.appointment_id) || [])
+        const unreviewed = appointmentsData.find(a => !reviewedIds.has(a.id))
 
         if (unreviewed) {
-          setCanReview(true);
-          setEligibleAppointmentId(unreviewed.id);
-          setSelectedBusinessId(unreviewed.business_id);
+          setCanReview(true)
+          setEligibleAppointmentId(unreviewed.id)
+          setSelectedBusinessId(unreviewed.business_id)
         } else {
-          setCanReview(false);
-          setEligibleAppointmentId(null);
-          setSelectedBusinessId(null);
+          setCanReview(false)
+          setEligibleAppointmentId(null)
+          setSelectedBusinessId(null)
         }
       } else {
-        setCanReview(false);
-        setEligibleAppointmentId(null);
-        setSelectedBusinessId(null);
+        setCanReview(false)
+        setEligibleAppointmentId(null)
+        setSelectedBusinessId(null)
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error checking review eligibility:', error.message);
+        console.error('Error checking review eligibility:', error.message)
       }
     }
-  }, [user, userId]);
+  }, [user, userId])
 
   const handleSubmitReview = async (rating: number, comment: string) => {
     if (!user || !eligibleAppointmentId || !selectedBusinessId) {
-      toast.error(t('userProfile.errors.submitReviewError'));
-      return;
+      toast.error(t('userProfile.errors.submitReviewError'))
+      return
     }
 
     try {
@@ -291,33 +309,33 @@ export default function UserProfile({
         userId, // employeeId for professional reviews
         rating as 1 | 2 | 3 | 4 | 5,
         comment || undefined
-      );
-      
-      setShowReviewForm(false);
-      setCanReview(false);
-      setEligibleAppointmentId(null);
-      refetchReviews();
-      
+      )
+
+      setShowReviewForm(false)
+      setCanReview(false)
+      setEligibleAppointmentId(null)
+      refetchReviews()
+
       // Refresh user data to update review count and rating
-      fetchUserData();
+      fetchUserData()
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error('Error submitting review:', error)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchUserData();
+    fetchUserData()
     if (user) {
-      checkReviewEligibility();
+      checkReviewEligibility()
     }
-  }, [fetchUserData, checkReviewEligibility, user]);
+  }, [fetchUserData, checkReviewEligibility, user])
 
   const formatDuration = (minutes: number): string => {
-    if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-  };
+    if (minutes < 60) return `${minutes} min`
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`
+  }
 
   if (loading) {
     return (
@@ -328,7 +346,7 @@ export default function UserProfile({
           </div>
         </Card>
       </div>
-    );
+    )
   }
 
   if (!userData) {
@@ -337,11 +355,13 @@ export default function UserProfile({
         <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
           <div className="p-8 text-center">
             <p className="text-muted-foreground">{t('userProfile.errors.loadError')}</p>
-            <Button onClick={onClose} className="mt-4">{t('userProfile.actions.close')}</Button>
+            <Button onClick={onClose} className="mt-4">
+              {t('userProfile.actions.close')}
+            </Button>
           </div>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
@@ -361,8 +381,8 @@ export default function UserProfile({
           <div className="flex items-center gap-6">
             {/* Avatar */}
             {userData.avatar_url ? (
-              <img 
-                src={userData.avatar_url} 
+              <img
+                src={userData.avatar_url}
                 alt={userData.full_name}
                 className="w-24 h-24 rounded-full border-4 border-background object-cover"
               />
@@ -377,11 +397,13 @@ export default function UserProfile({
             {/* Name and Stats */}
             <div className="flex-1">
               <h2 className="text-3xl font-bold text-foreground mb-2">{userData.full_name}</h2>
-              
+
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-1">
                   <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold text-foreground">{userData.rating.toFixed(1)}</span>
+                  <span className="font-semibold text-foreground">
+                    {userData.rating.toFixed(1)}
+                  </span>
                   <span className="text-muted-foreground text-sm">({userData.reviewCount})</span>
                 </div>
                 <Badge variant="secondary" className="flex items-center gap-1">
@@ -397,9 +419,7 @@ export default function UserProfile({
               </div>
 
               {userData.bio && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {userData.bio}
-                </p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{userData.bio}</p>
               )}
             </div>
           </div>
@@ -423,7 +443,7 @@ export default function UserProfile({
                 </p>
               ) : (
                 <div className="grid gap-4">
-                  {userData.services.map((service) => (
+                  {userData.services.map(service => (
                     <Card key={service.id} className="p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
@@ -476,19 +496,21 @@ export default function UserProfile({
             <TabsContent value="experience" className="space-y-6 mt-6">
               {/* Businesses */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">{t('userProfile.experience.businessesTitle')}</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  {t('userProfile.experience.businessesTitle')}
+                </h3>
                 {userData.businesses.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
                     {t('userProfile.experience.independentProfessional')}
                   </p>
                 ) : (
                   <div className="grid gap-3">
-                    {userData.businesses.map((business) => (
+                    {userData.businesses.map(business => (
                       <Card key={business.id} className="p-4">
                         <div className="flex items-center gap-4">
                           {business.logo_url ? (
-                            <img 
-                              src={business.logo_url} 
+                            <img
+                              src={business.logo_url}
                               alt={business.name}
                               className="w-12 h-12 rounded-lg object-cover"
                             />
@@ -519,29 +541,39 @@ export default function UserProfile({
               {/* Bio */}
               {userData.bio && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">{t('userProfile.experience.aboutMe')}</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {t('userProfile.experience.aboutMe')}
+                  </h3>
                   <p className="text-muted-foreground whitespace-pre-wrap">{userData.bio}</p>
                 </div>
               )}
 
               {/* Stats */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">{t('userProfile.experience.statistics')}</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  {t('userProfile.experience.statistics')}
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <Card className="p-4 text-center">
                     <Award className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="text-2xl font-bold">{userData.totalAppointments}</p>
-                    <p className="text-xs text-muted-foreground">{t('userProfile.experience.stats.completedAppointments')}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('userProfile.experience.stats.completedAppointments')}
+                    </p>
                   </Card>
                   <Card className="p-4 text-center">
                     <Star className="h-8 w-8 mx-auto mb-2 text-yellow-400 fill-yellow-400" />
                     <p className="text-2xl font-bold">{userData.rating.toFixed(1)}</p>
-                    <p className="text-xs text-muted-foreground">{t('userProfile.experience.stats.rating')}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('userProfile.experience.stats.rating')}
+                    </p>
                   </Card>
                   <Card className="p-4 text-center">
                     <Briefcase className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="text-2xl font-bold">{userData.services.length}</p>
-                    <p className="text-xs text-muted-foreground">{t('userProfile.experience.stats.services')}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('userProfile.experience.stats.services')}
+                    </p>
                   </Card>
                 </div>
               </div>
@@ -565,19 +597,15 @@ export default function UserProfile({
               {/* Botón para mostrar formulario */}
               {canReview && !showReviewForm && (
                 <div className="mb-6">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowReviewForm(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setShowReviewForm(true)}>
                     {t('userProfile.reviews.leaveReview')}
                   </Button>
                 </div>
               )}
 
               {/* Lista de reseñas del profesional */}
-              <ReviewList 
-                businessId={selectedBusinessId || employeeBusinesses[0]?.id || ''} 
+              <ReviewList
+                businessId={selectedBusinessId || employeeBusinesses[0]?.id || ''}
                 employeeId={userId}
               />
             </TabsContent>
@@ -586,17 +614,16 @@ export default function UserProfile({
 
         {/* Footer sticky con botón principal */}
         <div className="border-t border-border p-4 bg-background">
-          <Button 
+          <Button
             onClick={() => onBookAppointment?.()}
             className="w-full"
             size="lg"
             disabled={!isEmployeeOfAnyBusiness}
           >
             <Calendar className="h-5 w-5 mr-2" />
-            {isEmployeeOfAnyBusiness 
+            {isEmployeeOfAnyBusiness
               ? t('userProfile.footer.scheduleWith', { name: userData.full_name })
-              : t('userProfile.footer.notAvailable')
-            }
+              : t('userProfile.footer.notAvailable')}
           </Button>
           {!isEmployeeOfAnyBusiness && (
             <p className="text-xs text-center text-muted-foreground mt-2">
@@ -606,5 +633,5 @@ export default function UserProfile({
         </div>
       </Card>
     </div>
-  );
+  )
 }

@@ -1,61 +1,61 @@
-import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import type { ChatTypingUser } from '@/hooks/useChat';
+import React from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import type { ChatTypingUser } from '@/hooks/useChat'
 
 interface TypingIndicatorProps {
-  typingUsers: ChatTypingUser[];
+  typingUsers: ChatTypingUser[]
 }
 
 /**
  * TypingIndicator Component
- * 
+ *
  * Muestra un indicador animado cuando otros usuarios están escribiendo.
  * Maneja singular/plural y muestra hasta 3 nombres.
  */
 export function TypingIndicator({ typingUsers }: Readonly<TypingIndicatorProps>) {
   const { t } = useLanguage()
   if (typingUsers.length === 0) {
-    return null;
+    return null
   }
 
   // Obtener nombres de usuarios
   const names = typingUsers
     .map(u => u.user?.full_name || u.user?.email?.split('@')[0] || 'Usuario')
-    .filter(Boolean);
+    .filter(Boolean)
 
   // Formatear texto según cantidad
-  let text = '';
+  let text = ''
   if (names.length === 1) {
-    text = `${names[0]} está escribiendo`;
+    text = `${names[0]} está escribiendo`
   } else if (names.length === 2) {
-    text = `${names[0]} y ${names[1]} están escribiendo`;
+    text = `${names[0]} y ${names[1]} están escribiendo`
   } else if (names.length === 3) {
-    text = `${names[0]}, ${names[1]} y ${names[2]} están escribiendo`;
+    text = `${names[0]}, ${names[1]} y ${names[2]} están escribiendo`
   } else {
-    text = `${names[0]}, ${names[1]} y ${names.length - 2} más están escribiendo`;
+    text = `${names[0]}, ${names[1]} y ${names.length - 2} más están escribiendo`
   }
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 text-muted-foreground text-sm">
-      <span>{text}</span>
+    <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-muted-foreground text-xs sm:text-sm" role="status" aria-live="polite">
+      <span className="truncate">{text}</span>
       <TypingAnimation />
     </div>
-  );
+  )
 }
 
 /**
  * TypingAnimation Component
- * 
+ *
  * Animación de 3 puntos que aparecen secuencialmente
  */
 function TypingAnimation() {
   return (
     <div className="flex gap-1">
-      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing-dot animation-delay-0" />
-      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing-dot animation-delay-150" />
-      <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-typing-dot animation-delay-300" />
+      <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full animate-typing-dot animation-delay-0" />
+      <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full animate-typing-dot animation-delay-150" />
+      <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full animate-typing-dot animation-delay-300" />
     </div>
-  );
+  )
 }
 
 // Agregar estas clases CSS a index.css o globals.css:
@@ -87,3 +87,4 @@ function TypingAnimation() {
   animation-delay: 300ms;
 }
 */
+

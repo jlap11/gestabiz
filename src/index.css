@@ -1,26 +1,41 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @layer base {
   * {
     @apply border-border;
   }
-  
+
   body {
-    font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-family:
+      var(--font-sans),
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      'Noto Sans',
+      sans-serif,
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      'Noto Color Emoji';
   }
 
   /* Cursor pointer para elementos clickeables */
   button,
   a,
-  [role="button"],
-  [type="button"],
-  [type="submit"],
-  [type="reset"],
+  [role='button'],
+  [type='button'],
+  [type='submit'],
+  [type='reset'],
   select,
   label[for],
-  input[type="checkbox"],
-  input[type="radio"],
+  input[type='checkbox'],
+  input[type='radio'],
   [onclick],
   .cursor-pointer {
     cursor: pointer;
@@ -42,14 +57,14 @@
   }
 
   /* Ensure toasts respect theme */
-  :is([data-theme="dark"]) .toaster {
-    --normal-bg: oklch(0.08 0.020 270);
+  :is([data-theme='dark']) .toaster {
+    --normal-bg: oklch(0.08 0.02 270);
     --normal-text: oklch(0.95 0.005 270);
-    --normal-border: oklch(0.20 0.010 270);
+    --normal-border: oklch(0.2 0.01 270);
   }
 
-  :is([data-theme="light"]) .toaster {
-    --normal-bg: oklch(1.00 0 0);
+  :is([data-theme='light']) .toaster {
+    --normal-bg: oklch(1 0 0);
     --normal-text: oklch(0.12 0.02 270);
     --normal-border: oklch(0.85 0.02 270);
   }
@@ -63,9 +78,9 @@
   /* Card colors */
   --card: oklch(0.98 0.003 270);
   --card-foreground: oklch(0.12 0.02 270);
-  
+
   /* Popover colors */
-  --popover: oklch(1.00 0 0);
+  --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.12 0.02 270);
 
   /* Primary action colors - Violeta Vibrante #6820F7 */
@@ -73,15 +88,15 @@
   --primary-foreground: oklch(0.98 0.003 270);
 
   /* Secondary action colors - Turquoise/Cyan */
-  --secondary: oklch(0.70 0.15 195);
+  --secondary: oklch(0.7 0.15 195);
   --secondary-foreground: oklch(0.98 0.003 270);
 
   /* Muted colors */
   --muted: oklch(0.92 0.01 270);
-  --muted-foreground: oklch(0.40 0.02 270);
+  --muted-foreground: oklch(0.4 0.02 270);
 
   /* Accent colors - Warm Orange */
-  --accent: oklch(0.70 0.22 180);
+  --accent: oklch(0.7 0.22 180);
   --accent-foreground: oklch(0.12 0.02 270);
 
   /* Destructive colors */
@@ -96,16 +111,16 @@
   /* Border radius */
   --radius: 0.25rem;
   --chart-1: oklch(0.55 0.28 285);
-  --chart-2: oklch(0.70 0.22 180);
+  --chart-2: oklch(0.7 0.22 180);
   --chart-3: oklch(0.55 0.28 60);
-  --chart-4: oklch(0.65 0.20 240);
+  --chart-4: oklch(0.65 0.2 240);
   --chart-5: oklch(0.75 0.15 360);
   --sidebar: oklch(0.94 0.005 270);
   --sidebar-foreground: oklch(0.12 0.02 270);
   --sidebar-primary: oklch(0.55 0.28 285);
   --sidebar-primary-foreground: oklch(0.98 0.003 270);
   --sidebar-accent: oklch(0.88 0.08 280);
-  --sidebar-accent-foreground: oklch(0.20 0.03 270);
+  --sidebar-accent-foreground: oklch(0.2 0.03 270);
   --sidebar-border: oklch(0.85 0.02 270);
   --sidebar-ring: oklch(0.55 0.28 285);
   --shadow-color: oklch(0.55 0.28 285);
@@ -114,64 +129,64 @@
   --shadow-spread: 0px;
   --shadow-offset-x: 2px;
   --shadow-offset-y: 6px;
-  --font-sans: "Outfit";
-  --font-serif: "Cormorant";
-  --font-mono: "Fira Code";
+  --font-sans: 'Outfit';
+  --font-serif: 'Cormorant';
+  --font-mono: 'Fira Code';
 
   /* Sonner toast colors - light theme */
-  --normal-bg: oklch(1.00 0 0);
+  --normal-bg: oklch(1 0 0);
   --normal-text: oklch(0.12 0.02 270);
   --normal-border: oklch(0.85 0.02 270);
 }
 
 /* Dark theme colors */
-[data-theme="dark"] {
-  --background: oklch(0.10 0.015 270);
+[data-theme='dark'] {
+  --background: oklch(0.1 0.015 270);
   --foreground: oklch(0.95 0.005 270);
 
-  --card: oklch(0.12 0.020 270);
+  --card: oklch(0.12 0.02 270);
   --card-foreground: oklch(0.95 0.005 270);
 
-  --popover: oklch(0.08 0.020 270);
+  --popover: oklch(0.08 0.02 270);
   --popover-foreground: oklch(0.95 0.005 270);
 
   --primary: oklch(0.55 0.28 285);
   --primary-foreground: oklch(0.98 0.003 270);
 
   --secondary: oklch(0.65 0.18 195);
-  --secondary-foreground: oklch(0.08 0.020 270);
+  --secondary-foreground: oklch(0.08 0.02 270);
 
   --muted: oklch(0.16 0.02 270);
   --muted-foreground: oklch(0.65 0.01 270);
 
   --accent: oklch(0.75 0.25 180);
-  --accent-foreground: oklch(0.08 0.020 270);
+  --accent-foreground: oklch(0.08 0.02 270);
 
-  --destructive: oklch(0.70 0.30 15);
+  --destructive: oklch(0.7 0.3 15);
   --destructive-foreground: oklch(0.95 0.005 270);
 
   --border: oklch(0.22 0.03 270);
   --input: oklch(0.22 0.03 270);
-  --ring: oklch(0.65 0.30 320);
+  --ring: oklch(0.65 0.3 320);
 
-  --chart-1: oklch(0.65 0.30 320);
+  --chart-1: oklch(0.65 0.3 320);
   --chart-2: oklch(0.75 0.25 180);
-  --chart-3: oklch(0.60 0.30 60);
-  --chart-4: oklch(0.70 0.25 240);
-  --chart-5: oklch(0.80 0.20 360);
+  --chart-3: oklch(0.6 0.3 60);
+  --chart-4: oklch(0.7 0.25 240);
+  --chart-5: oklch(0.8 0.2 360);
   --sidebar: oklch(0.14 0.015 270);
   --sidebar-foreground: oklch(0.95 0.005 270);
-  --sidebar-primary: oklch(0.65 0.30 320);
-  --sidebar-primary-foreground: oklch(0.08 0.020 270);
-  --sidebar-accent: oklch(0.20 0.05 280);
-  --sidebar-accent-foreground: oklch(0.90 0.01 270);
+  --sidebar-primary: oklch(0.65 0.3 320);
+  --sidebar-primary-foreground: oklch(0.08 0.02 270);
+  --sidebar-accent: oklch(0.2 0.05 280);
+  --sidebar-accent-foreground: oklch(0.9 0.01 270);
   --sidebar-border: oklch(0.22 0.03 270);
-  --sidebar-ring: oklch(0.65 0.30 320);
+  --sidebar-ring: oklch(0.65 0.3 320);
 
   /* Sonner toast colors - dark theme */
-  --normal-bg: oklch(0.08 0.020 270);
+  --normal-bg: oklch(0.08 0.02 270);
   --normal-text: oklch(0.95 0.005 270);
-  --normal-border: oklch(0.20 0.010 270);
+  --normal-border: oklch(0.2 0.01 270);
 }
 
 @theme {
@@ -210,7 +225,9 @@
 @layer utilities {
   /* Animación para typing indicator dots */
   @keyframes typing-dot {
-    0%, 60%, 100% {
+    0%,
+    60%,
+    100% {
       opacity: 0.3;
       transform: translateY(0);
     }

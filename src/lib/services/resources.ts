@@ -4,7 +4,7 @@ import type { BusinessResource, ResourceService } from '@/types/types'
 /**
  * Servicio para gestionar recursos físicos de negocios
  * (habitaciones, mesas, canchas, equipos, etc.)
- * 
+ *
  * Fecha: 21 de Octubre de 2025
  * Parte del sistema de Modelo de Negocio Flexible
  */
@@ -20,14 +20,16 @@ export const resourcesService = {
   async getByBusinessId(businessId: string): Promise<BusinessResource[]> {
     const { data, error } = await supabase
       .from('business_resources')
-      .select(`
+      .select(
+        `
         *,
         location:locations(id, name, address, city)
-      `)
+      `
+      )
       .eq('business_id', businessId)
       .eq('is_active', true)
       .order('name')
-    
+
     if (error) throw error
     return (data || []) as BusinessResource[]
   },
@@ -42,7 +44,7 @@ export const resourcesService = {
       .eq('location_id', locationId)
       .eq('is_active', true)
       .order('name')
-    
+
     if (error) throw error
     return (data || []) as BusinessResource[]
   },
@@ -50,10 +52,7 @@ export const resourcesService = {
   /**
    * Obtener recursos por tipo
    */
-  async getByType(
-    businessId: string, 
-    resourceType: string
-  ): Promise<BusinessResource[]> {
+  async getByType(businessId: string, resourceType: string): Promise<BusinessResource[]> {
     const { data, error } = await supabase
       .from('business_resources')
       .select('*')
@@ -61,7 +60,7 @@ export const resourcesService = {
       .eq('resource_type', resourceType)
       .eq('is_active', true)
       .order('name')
-    
+
     if (error) throw error
     return (data || []) as BusinessResource[]
   },
@@ -72,16 +71,18 @@ export const resourcesService = {
   async getById(resourceId: string): Promise<BusinessResource> {
     const { data, error } = await supabase
       .from('business_resources')
-      .select(`
+      .select(
+        `
         *,
         location:locations(id, name, address, city),
         services:resource_services(
           service:services(*)
         )
-      `)
+      `
+      )
       .eq('id', resourceId)
       .single()
-    
+
     if (error) throw error
     return data as BusinessResource
   },
@@ -97,7 +98,7 @@ export const resourcesService = {
       .insert(resource)
       .select()
       .single()
-    
+
     if (error) throw error
     return data as BusinessResource
   },
@@ -105,17 +106,14 @@ export const resourcesService = {
   /**
    * Actualizar un recurso
    */
-  async update(
-    resourceId: string,
-    updates: Partial<BusinessResource>
-  ): Promise<BusinessResource> {
+  async update(resourceId: string, updates: Partial<BusinessResource>): Promise<BusinessResource> {
     const { data, error } = await supabase
       .from('business_resources')
       .update(updates)
       .eq('id', resourceId)
       .select()
       .single()
-    
+
     if (error) throw error
     return data as BusinessResource
   },
@@ -128,7 +126,7 @@ export const resourcesService = {
       .from('business_resources')
       .update({ is_active: false })
       .eq('id', resourceId)
-    
+
     if (error) throw error
   },
 
@@ -137,11 +135,8 @@ export const resourcesService = {
    * ⚠️ PELIGRO: Esto eliminará TODOS los datos relacionados
    */
   async deletePermanently(resourceId: string): Promise<void> {
-    const { error } = await supabase
-      .from('business_resources')
-      .delete()
-      .eq('id', resourceId)
-    
+    const { error } = await supabase.from('business_resources').delete().eq('id', resourceId)
+
     if (error) throw error
   },
 
@@ -161,7 +156,7 @@ export const resourcesService = {
       .gte('start_time', startDate.toISOString())
       .lte('start_time', endDate.toISOString())
       .order('start_time')
-    
+
     if (error) throw error
     return data || []
   },
@@ -181,7 +176,7 @@ export const resourcesService = {
       p_end_time: endTime.toISOString(),
       p_exclude_appointment_id: excludeAppointmentId || null,
     })
-    
+
     if (error) throw error
     return data as boolean
   },
@@ -195,11 +190,8 @@ export const resourcesService = {
     customPrices?: Record<string, number>
   ): Promise<void> {
     // Eliminar asignaciones existentes
-    await supabase
-      .from('resource_services')
-      .delete()
-      .eq('resource_id', resourceId)
-    
+    await supabase.from('resource_services').delete().eq('resource_id', resourceId)
+
     // Crear nuevas asignaciones
     const records = serviceIds.map(serviceId => ({
       resource_id: resourceId,
@@ -207,11 +199,9 @@ export const resourcesService = {
       custom_price: customPrices?.[serviceId] || null,
       is_active: true,
     }))
-    
-    const { error } = await supabase
-      .from('resource_services')
-      .insert(records)
-    
+
+    const { error } = await supabase.from('resource_services').insert(records)
+
     if (error) throw error
   },
 
@@ -221,13 +211,15 @@ export const resourcesService = {
   async getServices(resourceId: string): Promise<ResourceService[]> {
     const { data, error } = await supabase
       .from('resource_services')
-      .select(`
+      .select(
+        `
         *,
         service:services(*)
-      `)
+      `
+      )
       .eq('resource_id', resourceId)
       .eq('is_active', true)
-    
+
     if (error) throw error
     return (data || []) as ResourceService[]
   },
@@ -245,15 +237,17 @@ export const resourcesService = {
     const { data, error } = await supabase.rpc('get_resource_stats', {
       p_resource_id: resourceId,
     })
-    
+
     if (error) throw error
-    return data || {
-      total_bookings: 0,
-      upcoming_bookings: 0,
-      completed_bookings: 0,
-      revenue_total: 0,
-      revenue_this_month: 0,
-    }
+    return (
+      data || {
+        total_bookings: 0,
+        upcoming_bookings: 0,
+        completed_bookings: 0,
+        revenue_total: 0,
+        revenue_this_month: 0,
+      }
+    )
   },
 
   /**
@@ -266,26 +260,28 @@ export const resourcesService = {
   ): Promise<BusinessResource[]> {
     const query = supabase
       .from('resource_services')
-      .select(`
+      .select(
+        `
         resource:business_resources(*)
-      `)
+      `
+      )
       .eq('service_id', serviceId)
       .eq('is_active', true)
-    
+
     const { data, error } = await query
-    
+
     if (error) throw error
-    
+
     // Type assertion con unknown para evitar error de conversión
     type ResourceServiceRow = { resource: BusinessResource }
     const resources = ((data || []) as unknown as ResourceServiceRow[])
       .map(rs => rs.resource)
       .filter((r): r is BusinessResource => !!r?.is_active && r.business_id === businessId)
-    
+
     if (locationId) {
       return resources.filter(r => r.location_id === locationId)
     }
-    
+
     return resources
   },
 

@@ -1,35 +1,35 @@
-import React, { useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import React, { useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '@/components/ui/dialog'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
+  AlertCircle,
   Briefcase,
   Calendar,
-  DollarSign,
-  FileText,
-  Download,
-  Clock,
   CheckCircle,
+  Clock,
+  DollarSign,
+  Download,
+  FileText,
   XCircle,
-  AlertCircle,
-} from 'lucide-react';
-import { useJobApplications, type JobApplication } from '@/hooks/useJobApplications';
-import { formatCurrency } from '@/lib/utils';
-import { supabase } from '@/lib/supabase';
+} from 'lucide-react'
+import { type JobApplication, useJobApplications } from '@/hooks/useJobApplications'
+import { formatCurrency } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 interface MyApplicationsModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  userId: string;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  userId: string
 }
 
 const STATUS_CONFIG = {
@@ -58,16 +58,16 @@ const STATUS_CONFIG = {
     icon: XCircle,
     color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
   },
-};
+}
 
 export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
   open,
   onOpenChange,
   userId,
 }) => {
-  const { t } = useLanguage();
-  const { applications, loading } = useJobApplications({ userId });
-  const [activeTab, setActiveTab] = useState<JobApplication['status'] | 'all'>('all');
+  const { t } = useLanguage()
+  const { applications, loading } = useJobApplications({ userId })
+  const [activeTab, setActiveTab] = useState<JobApplication['status'] | 'all'>('all')
 
   const statusCounts = {
     all: applications.length,
@@ -76,31 +76,28 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
     accepted: applications.filter(a => a.status === 'accepted').length,
     rejected: applications.filter(a => a.status === 'rejected').length,
     withdrawn: applications.filter(a => a.status === 'withdrawn').length,
-  };
+  }
 
   const handleDownloadCV = async (cvUrl: string | undefined) => {
-    if (!cvUrl) return;
-    
+    if (!cvUrl) return
+
     try {
-      const { data, error } = await supabase
-        .storage
-        .from('cvs')
-        .download(cvUrl);
-      
-      if (error) throw error;
-      
-      const url = URL.createObjectURL(data);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = cvUrl.split('/').pop() || 'cv.pdf';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      const { data, error } = await supabase.storage.from('cvs').download(cvUrl)
+
+      if (error) throw error
+
+      const url = URL.createObjectURL(data)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = cvUrl.split('/').pop() || 'cv.pdf'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
     } catch (err) {
       // Error handling
     }
-  };
+  }
 
   const tabsData: Array<{ key: JobApplication['status'] | 'all'; label: string; count: number }> = [
     { key: 'all', label: 'Todas', count: statusCounts.all },
@@ -109,7 +106,7 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
     { key: 'accepted', label: 'Aceptadas', count: statusCounts.accepted },
     { key: 'rejected', label: 'Rechazadas', count: statusCounts.rejected },
     { key: 'withdrawn', label: 'Retiradas', count: statusCounts.withdrawn },
-  ];
+  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,36 +118,26 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="all" className="w-full" onValueChange={(v) => setActiveTab(v as JobApplication['status'] | 'all')}>
+        <Tabs
+          defaultValue="all"
+          className="w-full"
+          onValueChange={v => setActiveTab(v as JobApplication['status'] | 'all')}
+        >
           <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="all">
-              Todas ({statusCounts.all})
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pendientes ({statusCounts.pending})
-            </TabsTrigger>
-            <TabsTrigger value="reviewing">
-              En revisión ({statusCounts.reviewing})
-            </TabsTrigger>
-            <TabsTrigger value="accepted">
-              Aceptadas ({statusCounts.accepted})
-            </TabsTrigger>
-            <TabsTrigger value="rejected">
-              Rechazadas ({statusCounts.rejected})
-            </TabsTrigger>
-            <TabsTrigger value="withdrawn">
-              Retiradas ({statusCounts.withdrawn})
-            </TabsTrigger>
+            <TabsTrigger value="all">Todas ({statusCounts.all})</TabsTrigger>
+            <TabsTrigger value="pending">Pendientes ({statusCounts.pending})</TabsTrigger>
+            <TabsTrigger value="reviewing">En revisión ({statusCounts.reviewing})</TabsTrigger>
+            <TabsTrigger value="accepted">Aceptadas ({statusCounts.accepted})</TabsTrigger>
+            <TabsTrigger value="rejected">Rechazadas ({statusCounts.rejected})</TabsTrigger>
+            <TabsTrigger value="withdrawn">Retiradas ({statusCounts.withdrawn})</TabsTrigger>
           </TabsList>
 
-          {['all', 'pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'].map((tabKey) => {
-            const tabApplications = tabKey === 'all'
-              ? applications
-              : applications.filter(a => a.status === tabKey);
+          {['all', 'pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'].map(tabKey => {
+            const tabApplications =
+              tabKey === 'all' ? applications : applications.filter(a => a.status === tabKey)
 
-            const emptyMessage = tabKey === 'all' 
-              ? 'No hay aplicaciones' 
-              : 'No hay aplicaciones en este estado';
+            const emptyMessage =
+              tabKey === 'all' ? 'No hay aplicaciones' : 'No hay aplicaciones en este estado'
 
             return (
               <TabsContent key={tabKey} value={tabKey} className="space-y-4">
@@ -160,42 +147,36 @@ export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({
                   </div>
                 ) : null}
                 {!loading && tabApplications.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {emptyMessage}
-                  </div>
+                  <div className="text-center py-8 text-muted-foreground">{emptyMessage}</div>
                 ) : null}
-                {!loading && tabApplications.length > 0 ? (
-                  tabApplications.map((application) => (
-                    <ApplicationCard
-                      key={application.id}
-                      application={application}
-                      onDownloadCV={handleDownloadCV}
-                      t={t}
-                    />
-                  ))
-                ) : null}
+                {!loading && tabApplications.length > 0
+                  ? tabApplications.map(application => (
+                      <ApplicationCard
+                        key={application.id}
+                        application={application}
+                        onDownloadCV={handleDownloadCV}
+                        t={t}
+                      />
+                    ))
+                  : null}
               </TabsContent>
-            );
+            )
           })}
         </Tabs>
       </DialogContent>
     </Dialog>
-  );
-};
-
-interface ApplicationCardProps {
-  application: JobApplication;
-  onDownloadCV: (cvUrl: string | undefined) => void;
-  t: (key: string) => string;
+  )
 }
 
-const ApplicationCard: React.FC<ApplicationCardProps> = ({
-  application,
-  onDownloadCV,
-  t,
-}) => {
-  const statusConfig = STATUS_CONFIG[application.status];
-  const StatusIcon = statusConfig.icon;
+interface ApplicationCardProps {
+  application: JobApplication
+  onDownloadCV: (cvUrl: string | undefined) => void
+  t: (key: string) => string
+}
+
+const ApplicationCard: React.FC<ApplicationCardProps> = ({ application, onDownloadCV, t }) => {
+  const statusConfig = STATUS_CONFIG[application.status]
+  const StatusIcon = statusConfig.icon
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
@@ -212,9 +193,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <StatusIcon className={`h-5 w-5`} />
-            <Badge className={statusConfig.color}>
-              {statusConfig.label}
-            </Badge>
+            <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
           </div>
         </div>
       </CardHeader>
@@ -228,7 +207,8 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
               <div>
                 <p className="text-xs text-muted-foreground">Salario ofrecido</p>
                 <p className="text-sm font-semibold">
-                  {formatCurrency(application.vacancy.salary_min, 'COP')} - {formatCurrency(application.vacancy.salary_max || 0, 'COP')}
+                  {formatCurrency(application.vacancy.salary_min, 'COP')} -{' '}
+                  {formatCurrency(application.vacancy.salary_max || 0, 'COP')}
                 </p>
               </div>
             </div>
@@ -280,7 +260,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         {/* Carta de presentación */}
         {application.cover_letter && (
           <div className="bg-muted p-3 rounded-md">
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Carta de presentación</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-1">
+              Carta de presentación
+            </p>
             <p className="text-sm line-clamp-2">{application.cover_letter}</p>
           </div>
         )}
@@ -306,13 +288,9 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
               Descargar CV
             </Button>
           )}
-          
+
           {application.cover_letter && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" className="gap-2">
               <FileText className="h-4 w-4" />
               Ver carta
             </Button>
@@ -320,5 +298,5 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

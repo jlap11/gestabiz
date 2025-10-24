@@ -1,14 +1,20 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { X, Save, Briefcase } from 'lucide-react'
+import { Briefcase, Save, X } from 'lucide-react'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -25,7 +31,12 @@ interface Location {
   city: string
 }
 
-export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Readonly<CreateVacancyProps>) {
+export function CreateVacancy({
+  businessId,
+  vacancyId,
+  onClose,
+  onSuccess,
+}: Readonly<CreateVacancyProps>) {
   const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(!!vacancyId)
@@ -46,7 +57,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
     commission_based: false,
     location_id: '',
     remote_allowed: false,
-    status: 'open'
+    status: 'open',
   })
 
   // Pre-select preferred location when creating new vacancy
@@ -100,7 +111,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
           commission_based: data.commission_based || false,
           location_id: data.location_id || '',
           remote_allowed: data.remote_allowed,
-          status: data.status
+          status: data.status,
         })
       }
     } catch {
@@ -122,7 +133,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
     // Remover todo excepto dígitos
     const numbers = value.replace(/\D/g, '')
     if (!numbers) return ''
-    
+
     // Formatear con puntos como separador de miles
     return Number(numbers).toLocaleString('es-CO')
   }
@@ -171,7 +182,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
         location_id: formData.location_id || null,
         remote_allowed: formData.remote_allowed,
         status: formData.status,
-        published_at: formData.status === 'open' ? new Date().toISOString() : null
+        published_at: formData.status === 'open' ? new Date().toISOString() : null,
       }
 
       if (vacancyId) {
@@ -188,9 +199,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
         toast.success('Vacante actualizada exitosamente')
       } else {
         // Crear
-        const { error } = await supabase
-          .from('job_vacancies')
-          .insert([vacancyData])
+        const { error } = await supabase.from('job_vacancies').insert([vacancyData])
 
         if (error) {
           console.error('Error creando vacante:', error)
@@ -204,7 +213,11 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
     } catch (error: unknown) {
       console.error('Error completo:', error)
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      toast.error(vacancyId ? `${t('common.messages.updateError')}: ${errorMessage}` : `${t('common.messages.createError')}: ${errorMessage}`)
+      toast.error(
+        vacancyId
+          ? `${t('common.messages.updateError')}: ${errorMessage}`
+          : `${t('common.messages.createError')}: ${errorMessage}`
+      )
     } finally {
       setLoading(false)
     }
@@ -236,7 +249,9 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               {vacancyId ? 'Editar Vacante' : 'Nueva Vacante'}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {vacancyId ? 'Actualiza la información de la vacante' : 'Completa la información de la nueva vacante'}
+              {vacancyId
+                ? 'Actualiza la información de la vacante'
+                : 'Completa la información de la nueva vacante'}
             </p>
           </div>
         </div>
@@ -260,7 +275,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Label className="text-foreground">Título del Puesto *</Label>
               <Input
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
                 placeholder={t('common.placeholders.jobTitle')}
                 className="bg-background border-border text-foreground"
                 required
@@ -271,7 +286,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Label className="text-foreground">Descripción *</Label>
               <Textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
                 placeholder={t('common.placeholders.jobDescription')}
                 rows={4}
                 className="bg-background border-border text-foreground"
@@ -282,9 +297,9 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-foreground">Tipo de Posición</Label>
-                <Select 
-                  value={formData.position_type} 
-                  onValueChange={(value) => setFormData({ ...formData, position_type: value })}
+                <Select
+                  value={formData.position_type}
+                  onValueChange={value => setFormData({ ...formData, position_type: value })}
                 >
                   <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue />
@@ -300,9 +315,9 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
 
               <div>
                 <Label className="text-foreground">Experiencia Requerida</Label>
-                <Select 
-                  value={formData.experience_required} 
-                  onValueChange={(value) => setFormData({ ...formData, experience_required: value })}
+                <Select
+                  value={formData.experience_required}
+                  onValueChange={value => setFormData({ ...formData, experience_required: value })}
                 >
                   <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue />
@@ -331,7 +346,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Label className="text-foreground">Requisitos</Label>
               <Textarea
                 value={formData.requirements}
-                onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                onChange={e => setFormData({ ...formData, requirements: e.target.value })}
                 placeholder={t('common.placeholders.jobRequirements')}
                 rows={3}
                 className="bg-background border-border text-foreground"
@@ -342,7 +357,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Label className="text-foreground">Responsabilidades</Label>
               <Textarea
                 value={formData.responsibilities}
-                onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
+                onChange={e => setFormData({ ...formData, responsibilities: e.target.value })}
                 placeholder={t('common.placeholders.jobResponsibilities')}
                 rows={3}
                 className="bg-background border-border text-foreground"
@@ -353,7 +368,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <Label className="text-foreground">Beneficios</Label>
               <Textarea
                 value={formData.benefits}
-                onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
+                onChange={e => setFormData({ ...formData, benefits: e.target.value })}
                 placeholder={t('common.placeholders.jobBenefits')}
                 rows={3}
                 className="bg-background border-border text-foreground"
@@ -375,11 +390,13 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <div>
                 <Label className="text-foreground">Salario Mínimo</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     type="text"
                     value={formData.salary_min}
-                    onChange={(e) => handleSalaryChange('salary_min', e.target.value)}
+                    onChange={e => handleSalaryChange('salary_min', e.target.value)}
                     placeholder="0"
                     className="bg-background border-border text-foreground pl-8"
                   />
@@ -389,11 +406,13 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
               <div>
                 <Label className="text-foreground">Salario Máximo</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     type="text"
                     value={formData.salary_max}
-                    onChange={(e) => handleSalaryChange('salary_max', e.target.value)}
+                    onChange={e => handleSalaryChange('salary_max', e.target.value)}
                     placeholder="0"
                     className="bg-background border-border text-foreground pl-8"
                   />
@@ -402,9 +421,9 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
 
               <div>
                 <Label className="text-foreground">Moneda</Label>
-                <Select 
-                  value={formData.currency} 
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                <Select
+                  value={formData.currency}
+                  onValueChange={value => setFormData({ ...formData, currency: value })}
                 >
                   <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue />
@@ -423,26 +442,30 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
             <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
               <div>
                 <Label className="text-foreground">Aplican Comisiones</Label>
-                <p className="text-sm text-muted-foreground">El empleado recibirá comisiones además del salario base</p>
+                <p className="text-sm text-muted-foreground">
+                  El empleado recibirá comisiones además del salario base
+                </p>
               </div>
               <Switch
                 checked={formData.commission_based}
-                onCheckedChange={(checked) => setFormData({ ...formData, commission_based: checked })}
+                onCheckedChange={checked => setFormData({ ...formData, commission_based: checked })}
               />
             </div>
 
             <div>
               <Label className="text-foreground">Ubicación</Label>
-              <Select 
-                value={formData.location_id || 'no-location'} 
-                onValueChange={(value) => setFormData({ ...formData, location_id: value === 'no-location' ? '' : value })}
+              <Select
+                value={formData.location_id || 'no-location'}
+                onValueChange={value =>
+                  setFormData({ ...formData, location_id: value === 'no-location' ? '' : value })
+                }
               >
                 <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue placeholder={t('common.placeholders.selectLocation')} />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="no-location">Sin ubicación específica</SelectItem>
-                  {locations.map((location) => (
+                  {locations.map(location => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name} - {location.city}
                     </SelectItem>
@@ -454,11 +477,13 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
             <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
               <div>
                 <Label className="text-foreground">Trabajo Remoto Disponible</Label>
-                <p className="text-sm text-muted-foreground">Permite que el empleado trabaje desde casa</p>
+                <p className="text-sm text-muted-foreground">
+                  Permite que el empleado trabaje desde casa
+                </p>
               </div>
               <Switch
                 checked={formData.remote_allowed}
-                onCheckedChange={(checked) => setFormData({ ...formData, remote_allowed: checked })}
+                onCheckedChange={checked => setFormData({ ...formData, remote_allowed: checked })}
               />
             </div>
           </CardContent>
@@ -475,16 +500,18 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
           <CardContent>
             <div>
               <Label className="text-foreground">Estado</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              <Select
+                value={formData.status}
+                onValueChange={value => setFormData({ ...formData, status: value })}
               >
                 <SelectTrigger className="bg-background border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="open">Abierta (Visible y aceptando aplicaciones)</SelectItem>
-                  <SelectItem value="paused">Pausada (Visible pero no acepta aplicaciones)</SelectItem>
+                  <SelectItem value="paused">
+                    Pausada (Visible pero no acepta aplicaciones)
+                  </SelectItem>
                   <SelectItem value="closed">Cerrada (No visible)</SelectItem>
                 </SelectContent>
               </Select>
@@ -494,19 +521,10 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
 
         {/* Botones */}
         <div className="flex items-center justify-end gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="border-border"
-          >
+          <Button type="button" variant="outline" onClick={onClose} className="border-border">
             {t('common.actions.cancel')}
           </Button>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="bg-primary hover:bg-primary/90"
-          >
+          <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90">
             <Save className="h-4 w-4 mr-2" />
             {(() => {
               if (loading) return t('common.actions.saving')

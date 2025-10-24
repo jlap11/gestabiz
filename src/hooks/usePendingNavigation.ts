@@ -5,6 +5,7 @@
  */
 
 import { useEffect } from 'react'
+import { logger } from '../lib/logger'
 
 interface PendingNavigation {
   page: string
@@ -23,30 +24,30 @@ export function usePendingNavigation(
 ) {
   useEffect(() => {
     const pendingNav = sessionStorage.getItem('pending-navigation')
-    
+
     if (pendingNav) {
       try {
         const navigation: PendingNavigation = JSON.parse(pendingNav)
         const age = Date.now() - navigation.timestamp
-        
+
         // Solo ejecutar si no es muy antigua (evitar navegaciones obsoletas)
         if (age < maxAge) {
-          // eslint-disable-next-line no-console
-          console.log(`✅ Processing pending navigation to: ${navigation.page}`, navigation.context)
-          
+           
+          logger.info(`✅ Processing pending navigation to: ${navigation.page}`, { context: navigation.context })
+
           // Ejecutar navegación
           onNavigate(navigation.page, navigation.context)
-          
+
           // Limpiar navegación pendiente
           sessionStorage.removeItem('pending-navigation')
         } else {
-          // eslint-disable-next-line no-console
-          console.warn(`⚠️ Pending navigation too old (${age}ms), discarding`)
+           
+          logger.warn(`⚠️ Pending navigation too old (${age}ms), discarding`)
           sessionStorage.removeItem('pending-navigation')
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error processing pending navigation:', error)
+         
+        logger.error('Error processing pending navigation:', { error })
         sessionStorage.removeItem('pending-navigation')
       }
     }
@@ -74,10 +75,11 @@ export function hasPendingNavigation(): boolean {
 export function getPendingNavigation(): PendingNavigation | null {
   const pending = sessionStorage.getItem('pending-navigation')
   if (!pending) return null
-  
+
   try {
     return JSON.parse(pending)
   } catch {
     return null
   }
 }
+

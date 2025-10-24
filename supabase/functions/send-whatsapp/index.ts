@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +11,7 @@ interface WhatsAppRequest {
   appointmentData?: any
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -23,17 +23,17 @@ serve(async (req) => {
     // WhatsApp Business API configuration
     const whatsappToken = Deno.env.get('WHATSAPP_ACCESS_TOKEN')
     const whatsappPhoneNumberId = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID')
-    
+
     if (!whatsappToken || !whatsappPhoneNumberId) {
       throw new Error('WhatsApp API not configured')
     }
 
     // Clean phone number (remove any non-digits except +)
     const cleanedPhone = to.replace(/[^\d+]/g, '')
-    
+
     // Build WhatsApp message
     let whatsappMessage = message
-    
+
     if (appointmentData) {
       whatsappMessage = `
 🗓️ *Recordatorio de Cita*
@@ -61,7 +61,7 @@ Si necesitas cancelar o reprogramar, por favor responde a este mensaje.
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${whatsappToken}`,
+          Authorization: `Bearer ${whatsappToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -69,8 +69,8 @@ Si necesitas cancelar o reprogramar, por favor responde a este mensaje.
           to: cleanedPhone,
           type: 'text',
           text: {
-            body: whatsappMessage
-          }
+            body: whatsappMessage,
+          },
         }),
       }
     )
@@ -86,29 +86,28 @@ Si necesitas cancelar o reprogramar, por favor responde a este mensaje.
       JSON.stringify({
         success: true,
         message: 'WhatsApp message sent successfully',
-        messageId: whatsappResult.messages?.[0]?.id
+        messageId: whatsappResult.messages?.[0]?.id,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error sending WhatsApp message:', error)
-    
+
     // Fallback: Log the attempt for manual follow-up
     console.log('WhatsApp message that failed to send:', {
       to: req.json().then(data => data.to),
       message: req.json().then(data => data.message),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
 
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message,
-        fallback: 'Message logged for manual follow-up'
+        fallback: 'Message logged for manual follow-up',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

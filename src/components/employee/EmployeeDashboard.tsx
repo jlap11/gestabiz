@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react'
-import { Calendar, Clock, Briefcase, Search, CalendarOff } from 'lucide-react'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
+import { Briefcase, Calendar, CalendarOff, Clock, Search } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { MyEmployments } from '@/components/employee/MyEmploymentsEnhanced'
@@ -11,26 +11,30 @@ import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { UserRole, User } from '@/types/types'
+import type { User, UserRole } from '@/types/types'
 import EmployeeAppointmentsCalendar from '@/components/employee/EmployeeAppointmentsCalendar'
 
 // Lazy load components that are not critical on initial render
-const AvailableVacanciesMarketplace = lazy(() => 
-  import('@/components/jobs/AvailableVacanciesMarketplace').then(m => ({ default: m.AvailableVacanciesMarketplace }))
-);
-const VacationDaysWidget = lazy(() => 
+const AvailableVacanciesMarketplace = lazy(() =>
+  import('@/components/jobs/AvailableVacanciesMarketplace').then(m => ({
+    default: m.AvailableVacanciesMarketplace,
+  }))
+)
+const VacationDaysWidget = lazy(() =>
   import('@/components/absences/VacationDaysWidget').then(m => ({ default: m.VacationDaysWidget }))
-);
-const AbsenceRequestModal = lazy(() => 
-  import('@/components/absences/AbsenceRequestModal').then(m => ({ default: m.AbsenceRequestModal }))
-);
+)
+const AbsenceRequestModal = lazy(() =>
+  import('@/components/absences/AbsenceRequestModal').then(m => ({
+    default: m.AbsenceRequestModal,
+  }))
+)
 
 interface EmployeeDashboardProps {
   currentRole: UserRole
@@ -41,27 +45,31 @@ interface EmployeeDashboardProps {
   businessId?: string // ID del negocio actual para configuraciones de empleado
 }
 
-export function EmployeeDashboard({ 
+export function EmployeeDashboard({
   currentRole,
   availableRoles,
   onRoleChange,
   onLogout,
   user,
-  businessId
+  businessId,
 }: Readonly<EmployeeDashboardProps>) {
   const [activePage, setActivePage] = useState('employments')
   const [currentUser, setCurrentUser] = useState(user)
   const [showAbsenceModal, setShowAbsenceModal] = useState(false)
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
-  
+
   // Obtener todos los negocios donde el empleado trabaja
-  const { businesses: employeeBusinesses, loading: loadingBusinesses } = useEmployeeBusinesses(user?.id)
+  const { businesses: employeeBusinesses, loading: loadingBusinesses } = useEmployeeBusinesses(
+    user?.id
+  )
   const { t } = useLanguage()
-  
+
   // Hook de ausencias para el widget y el modal
   // Usa el negocio seleccionado, o el primero si hay múltiples, o el que viene por props
   const effectiveBusinessId = selectedBusinessId || businessId || employeeBusinesses[0]?.id
-  const { vacationBalance, refresh: refreshAbsences } = useEmployeeAbsences(effectiveBusinessId || '')
+  const { vacationBalance, refresh: refreshAbsences } = useEmployeeAbsences(
+    effectiveBusinessId || ''
+  )
 
   // Sincronizar selectedBusinessId cuando cambia businessId (desde MainApp)
   useEffect(() => {
@@ -110,28 +118,28 @@ export function EmployeeDashboard({
     {
       id: 'employments',
       label: t('employeeDashboard.sidebar.myEmployments'),
-      icon: <Briefcase className="h-5 w-5" />
+      icon: <Briefcase className="h-5 w-5" />,
     },
     {
       id: 'vacancies',
       label: t('employeeDashboard.sidebar.searchVacancies'),
-      icon: <Search className="h-5 w-5" />
+      icon: <Search className="h-5 w-5" />,
     },
     {
       id: 'absences',
       label: t('employeeDashboard.sidebar.myAbsences'),
-      icon: <CalendarOff className="h-5 w-5" />
+      icon: <CalendarOff className="h-5 w-5" />,
     },
     {
       id: 'appointments',
       label: t('employeeDashboard.sidebar.myAppointments'),
-      icon: <Calendar className="h-5 w-5" />
+      icon: <Calendar className="h-5 w-5" />,
     },
     {
       id: 'schedule',
       label: t('employeeDashboard.sidebar.schedule'),
-      icon: <Clock className="h-5 w-5" />
-    }
+      icon: <Clock className="h-5 w-5" />,
+    },
   ]
 
   const handleJoinBusiness = () => {
@@ -161,7 +169,13 @@ export function EmployeeDashboard({
       case 'vacancies':
         return (
           <div className="p-6">
-            <Suspense fallback={<div className="flex items-center justify-center h-96"><LoadingSpinner /></div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center h-96">
+                  <LoadingSpinner />
+                </div>
+              }
+            >
               <AvailableVacanciesMarketplace userId={currentUser.id} />
             </Suspense>
           </div>
@@ -173,7 +187,10 @@ export function EmployeeDashboard({
             {employeeBusinesses.length > 1 && (
               <div className="flex items-end gap-4">
                 <div className="flex-1 max-w-xs">
-                  <label htmlFor="business-select" className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <label
+                    htmlFor="business-select"
+                    className="text-sm font-medium text-muted-foreground mb-2 block"
+                  >
                     Seleccionar Negocio
                   </label>
                   <Select value={selectedBusinessId || ''} onValueChange={setSelectedBusinessId}>
@@ -181,7 +198,7 @@ export function EmployeeDashboard({
                       <SelectValue placeholder="Elige un negocio..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {employeeBusinesses.map((business) => (
+                      {employeeBusinesses.map(business => (
                         <SelectItem key={business.id} value={business.id}>
                           {business.name}
                         </SelectItem>
@@ -191,23 +208,20 @@ export function EmployeeDashboard({
                 </div>
               </div>
             )}
-            
+
             {/* Widget de vacaciones y botón de solicitud */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <VacationDaysWidget balance={vacationBalance} />
               </div>
               <div className="flex-shrink-0">
-                <Button
-                  onClick={() => setShowAbsenceModal(true)}
-                  className="w-full sm:w-auto"
-                >
+                <Button onClick={() => setShowAbsenceModal(true)} className="w-full sm:w-auto">
                   <Calendar className="h-4 w-4 mr-2" />
                   Solicitar Ausencia
                 </Button>
               </div>
             </div>
-            
+
             {/* Lista de ausencias */}
             <EmployeeAbsencesTab businessId={effectiveBusinessId} />
           </div>
@@ -258,15 +272,19 @@ export function EmployeeDashboard({
       sidebarItems={sidebarItems}
       activePage={activePage}
       onPageChange={handlePageChange}
-      user={currentUser ? {
-        id: currentUser.id,
-        name: currentUser.name,
-        email: currentUser.email,
-        avatar: currentUser.avatar_url
-      } : undefined}
+      user={
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              email: currentUser.email,
+              avatar: currentUser.avatar_url,
+            }
+          : undefined
+      }
     >
       {renderContent()}
-      
+
       {/* Modal de solicitud de ausencia */}
       {effectiveBusinessId && (
         <AbsenceRequestModal

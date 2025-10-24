@@ -1,84 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import React, { useEffect, useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useBusinessTaxConfig } from '@/hooks/useBusinessTaxConfig';
-import { COLOMBIAN_CITIES_ICA, RETENTION_CONFIGS } from '@/lib/accounting/colombiaTaxes';
-import { Settings, DollarSign, FileText, AlertCircle, Save, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useBusinessTaxConfig } from '@/hooks/useBusinessTaxConfig'
+import { COLOMBIAN_CITIES_ICA, RETENTION_CONFIGS } from '@/lib/accounting/colombiaTaxes'
+import { AlertCircle, DollarSign, FileText, RefreshCw, Save, Settings } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface TaxConfigurationProps {
-  businessId: string;
+  businessId: string
 }
 
 export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
-  const { t } = useLanguage();
-  const { config: taxConfig, loading, updateConfig, refetch } = useBusinessTaxConfig(businessId);
+  const { t } = useLanguage()
+  const { config: taxConfig, loading, updateConfig, refetch } = useBusinessTaxConfig(businessId)
 
   // Estados del formulario
-  const [taxRegime, setTaxRegime] = useState<'simple' | 'common' | 'special'>('common');
-  const [cityCode, setCityCode] = useState('');
-  const [ivaEnabled, setIvaEnabled] = useState(true);
-  const [ivaRate, setIvaRate] = useState(19);
-  const [icaEnabled, setIcaEnabled] = useState(true);
-  const [icaRate, setIcaRate] = useState(0);
-  const [retentionEnabled, setRetentionEnabled] = useState(false);
-  const [retentionType, setRetentionType] = useState('');
-  const [retentionRate, setRetentionRate] = useState(0);
-  const [taxIdNumber, setTaxIdNumber] = useState('');
-  const [hasConfig, setHasConfig] = useState(false);
+  const [taxRegime, setTaxRegime] = useState<'simple' | 'common' | 'special'>('common')
+  const [cityCode, setCityCode] = useState('')
+  const [ivaEnabled, setIvaEnabled] = useState(true)
+  const [ivaRate, setIvaRate] = useState(19)
+  const [icaEnabled, setIcaEnabled] = useState(true)
+  const [icaRate, setIcaRate] = useState(0)
+  const [retentionEnabled, setRetentionEnabled] = useState(false)
+  const [retentionType, setRetentionType] = useState('')
+  const [retentionRate, setRetentionRate] = useState(0)
+  const [taxIdNumber, setTaxIdNumber] = useState('')
+  const [hasConfig, setHasConfig] = useState(false)
 
   // Cargar configuración existente
   useEffect(() => {
     if (taxConfig) {
-      setHasConfig(true);
-      setTaxRegime(taxConfig.tax_regime);
-      setCityCode(''); // No hay city_dane_code en el nuevo esquema
-      setIvaEnabled(taxConfig.is_iva_responsible);
-      setIvaRate(taxConfig.default_iva_rate);
-      setIcaEnabled(taxConfig.is_ica_responsible);
-      setIcaRate(taxConfig.ica_rate);
-      setRetentionEnabled(taxConfig.is_retention_agent);
-      setRetentionType(''); // No hay retention_type en el nuevo esquema
-      setRetentionRate(taxConfig.retention_rate);
-      setTaxIdNumber(taxConfig.dian_code || '');
+      setHasConfig(true)
+      setTaxRegime(taxConfig.tax_regime)
+      setCityCode('') // No hay city_dane_code en el nuevo esquema
+      setIvaEnabled(taxConfig.is_iva_responsible)
+      setIvaRate(taxConfig.default_iva_rate)
+      setIcaEnabled(taxConfig.is_ica_responsible)
+      setIcaRate(taxConfig.ica_rate)
+      setRetentionEnabled(taxConfig.is_retention_agent)
+      setRetentionType('') // No hay retention_type en el nuevo esquema
+      setRetentionRate(taxConfig.retention_rate)
+      setTaxIdNumber(taxConfig.dian_code || '')
     }
-  }, [taxConfig]);
+  }, [taxConfig])
 
   // Actualizar ICA rate cuando cambia la ciudad
   useEffect(() => {
     if (cityCode) {
-      const city = COLOMBIAN_CITIES_ICA.find(c => c.dane_code === cityCode);
+      const city = COLOMBIAN_CITIES_ICA.find(c => c.dane_code === cityCode)
       if (city) {
-        setIcaRate(city.ica_rate);
+        setIcaRate(city.ica_rate)
       }
     }
-  }, [cityCode]);
+  }, [cityCode])
 
   // Actualizar retention rate cuando cambia el tipo
   useEffect(() => {
     if (retentionType) {
-      const config = RETENTION_CONFIGS.find(r => r.activity_code === retentionType);
+      const config = RETENTION_CONFIGS.find(r => r.activity_code === retentionType)
       if (config) {
-        setRetentionRate(config.retention_rate);
+        setRetentionRate(config.retention_rate)
       }
     }
-  }, [retentionType]);
+  }, [retentionType])
 
   const handleSave = async () => {
-    const toastId = toast.loading(t('common.messages.saving'));
+    const toastId = toast.loading(t('common.messages.saving'))
     try {
       const configData = {
         business_id: businessId,
@@ -90,33 +90,36 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
         is_retention_agent: retentionEnabled,
         retention_rate: retentionRate,
         dian_code: taxIdNumber || undefined,
-      };
+      }
 
-      await updateConfig(configData);
-      setHasConfig(true);
-      toast.success(t('common.messages.saveSuccess'), { id: toastId });
+      await updateConfig(configData)
+      setHasConfig(true)
+      toast.success(t('common.messages.saveSuccess'), { id: toastId })
     } catch (error) {
-      toast.error(t('common.messages.saveError') + `: ${error instanceof Error ? error.message : 'Error'}`, { id: toastId });
-      throw error;
+      toast.error(
+        t('common.messages.saveError') + `: ${error instanceof Error ? error.message : 'Error'}`,
+        { id: toastId }
+      )
+      throw error
     }
-  };
+  }
 
   const handleReset = () => {
-    refetch();
+    refetch()
     if (taxConfig) {
-      setTaxRegime(taxConfig.tax_regime);
-      setCityCode(''); // No hay city_dane_code en el nuevo esquema
-      setIvaEnabled(taxConfig.is_iva_responsible);
-      setIvaRate(taxConfig.default_iva_rate);
-      setIcaEnabled(taxConfig.is_ica_responsible);
-      setIcaRate(taxConfig.ica_rate);
-      setRetentionEnabled(taxConfig.is_retention_agent);
-      setRetentionType(''); // No hay retention_type en el nuevo esquema
-      setRetentionRate(taxConfig.retention_rate);
-      setTaxIdNumber(taxConfig.dian_code || '');
+      setTaxRegime(taxConfig.tax_regime)
+      setCityCode('') // No hay city_dane_code en el nuevo esquema
+      setIvaEnabled(taxConfig.is_iva_responsible)
+      setIvaRate(taxConfig.default_iva_rate)
+      setIcaEnabled(taxConfig.is_ica_responsible)
+      setIcaRate(taxConfig.ica_rate)
+      setRetentionEnabled(taxConfig.is_retention_agent)
+      setRetentionType('') // No hay retention_type en el nuevo esquema
+      setRetentionRate(taxConfig.retention_rate)
+      setTaxIdNumber(taxConfig.dian_code || '')
     }
-    toast.success(t('taxConfiguration.resetSuccess'));
-  };
+    toast.success(t('taxConfiguration.resetSuccess'))
+  }
 
   return (
     <div className="space-y-6">
@@ -127,12 +130,15 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
             <Settings className="h-6 w-6" />
             {t('taxConfiguration.title')}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('taxConfiguration.subtitle')}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t('taxConfiguration.subtitle')}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleReset} disabled={loading || !hasConfig}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            disabled={loading || !hasConfig}
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
             {t('common.actions.reset')}
           </Button>
@@ -188,13 +194,17 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Régimen Tributario */}
               <div className="space-y-2">
                 <Label htmlFor="tax-regime">{t('taxConfiguration.general.taxRegime')}</Label>
-                <Select value={taxRegime} onValueChange={(v) => setTaxRegime(v as typeof taxRegime)}>
+                <Select value={taxRegime} onValueChange={v => setTaxRegime(v as typeof taxRegime)}>
                   <SelectTrigger id="tax-regime">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="common">{t('taxConfiguration.general.regimes.common')}</SelectItem>
-                    <SelectItem value="simple">{t('taxConfiguration.general.regimes.simple')}</SelectItem>
+                    <SelectItem value="common">
+                      {t('taxConfiguration.general.regimes.common')}
+                    </SelectItem>
+                    <SelectItem value="simple">
+                      {t('taxConfiguration.general.regimes.simple')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
@@ -209,7 +219,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                   id="tax-id"
                   type="text"
                   value={taxIdNumber}
-                  onChange={(e) => setTaxIdNumber(e.target.value)}
+                  onChange={e => setTaxIdNumber(e.target.value)}
                   placeholder={t('taxConfiguration.general.taxIdPlaceholder')}
                   className="bg-background"
                 />
@@ -226,7 +236,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                     <SelectValue placeholder={t('common.placeholders.selectCity')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {COLOMBIAN_CITIES_ICA.map((city) => (
+                    {COLOMBIAN_CITIES_ICA.map(city => (
                       <SelectItem key={city.dane_code} value={city.dane_code}>
                         {city.city} - {(city.ica_rate * 100).toFixed(3)}%
                       </SelectItem>
@@ -265,7 +275,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {ivaEnabled && taxRegime === 'common' && (
                 <div className="space-y-2">
                   <Label htmlFor="iva-rate">{t('taxConfiguration.iva.rate')}</Label>
-                  <Select value={ivaRate.toString()} onValueChange={(v) => setIvaRate(Number(v))}>
+                  <Select value={ivaRate.toString()} onValueChange={v => setIvaRate(Number(v))}>
                     <SelectTrigger id="iva-rate">
                       <SelectValue />
                     </SelectTrigger>
@@ -303,11 +313,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
                     {t('taxConfiguration.ica.description')}
                   </p>
                 </div>
-                <Switch
-                  id="ica-enabled"
-                  checked={icaEnabled}
-                  onCheckedChange={setIcaEnabled}
-                />
+                <Switch id="ica-enabled" checked={icaEnabled} onCheckedChange={setIcaEnabled} />
               </div>
 
               {/* Tasa de ICA (calculada automáticamente) */}
@@ -355,7 +361,9 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {/* Habilitar Retención */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="retention-enabled">{t('taxConfiguration.retention.enable')}</Label>
+                  <Label htmlFor="retention-enabled">
+                    {t('taxConfiguration.retention.enable')}
+                  </Label>
                   <p className="text-xs text-muted-foreground">
                     {t('taxConfiguration.retention.description')}
                   </p>
@@ -371,13 +379,15 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
               {retentionEnabled && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="retention-type">{t('taxConfiguration.retention.activityType')}</Label>
+                    <Label htmlFor="retention-type">
+                      {t('taxConfiguration.retention.activityType')}
+                    </Label>
                     <Select value={retentionType} onValueChange={setRetentionType}>
                       <SelectTrigger id="retention-type">
                         <SelectValue placeholder={t('common.placeholders.selectActivityType')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {RETENTION_CONFIGS.map((config) => (
+                        {RETENTION_CONFIGS.map(config => (
                           <SelectItem key={config.activity_code} value={config.activity_code}>
                             {config.description} - {(config.retention_rate * 100).toFixed(1)}%
                           </SelectItem>
@@ -417,15 +427,17 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
 
       {/* Resumen de configuración */}
       <Card className="p-6 bg-card">
-        <h3 className="text-lg font-semibold mb-4 text-foreground">{t('taxConfiguration.summary.title')}</h3>
+        <h3 className="text-lg font-semibold mb-4 text-foreground">
+          {t('taxConfiguration.summary.title')}
+        </h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('taxConfiguration.summary.regime')}</span>
               <span className="font-medium text-foreground">
-                {taxRegime === 'common' 
-                  ? t('taxConfiguration.general.regimes.common') 
-                  : taxRegime === 'simple' 
+                {taxRegime === 'common'
+                  ? t('taxConfiguration.general.regimes.common')
+                  : taxRegime === 'simple'
                     ? t('taxConfiguration.general.regimes.simple')
                     : t('taxConfiguration.general.regimes.special')}
               </span>
@@ -439,41 +451,55 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('taxConfiguration.summary.city')}</span>
               <span className="font-medium text-foreground">
-                {cityCode ? COLOMBIAN_CITIES_ICA.find(c => c.dane_code === cityCode)?.city : t('taxConfiguration.summary.notSelected')}
+                {cityCode
+                  ? COLOMBIAN_CITIES_ICA.find(c => c.dane_code === cityCode)?.city
+                  : t('taxConfiguration.summary.notSelected')}
               </span>
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('taxConfiguration.tabs.iva')}:</span>
-              <span className={cn(
-                "font-medium",
-                ivaEnabled && taxRegime === 'common' ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-              )}>
-                {ivaEnabled && taxRegime === 'common' 
-                  ? `${t('taxConfiguration.summary.active')} (${ivaRate}%)` 
+              <span
+                className={cn(
+                  'font-medium',
+                  ivaEnabled && taxRegime === 'common'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                )}
+              >
+                {ivaEnabled && taxRegime === 'common'
+                  ? `${t('taxConfiguration.summary.active')} (${ivaRate}%)`
                   : t('taxConfiguration.summary.inactive')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('taxConfiguration.tabs.ica')}:</span>
-              <span className={cn(
-                "font-medium",
-                icaEnabled ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-              )}>
-                {icaEnabled 
-                  ? `${t('taxConfiguration.summary.active')} (${(icaRate * 100).toFixed(3)}%)` 
+              <span
+                className={cn(
+                  'font-medium',
+                  icaEnabled
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                )}
+              >
+                {icaEnabled
+                  ? `${t('taxConfiguration.summary.active')} (${(icaRate * 100).toFixed(3)}%)`
                   : t('taxConfiguration.summary.inactive')}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('taxConfiguration.tabs.retention')}:</span>
-              <span className={cn(
-                "font-medium",
-                retentionEnabled ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-              )}>
-                {retentionEnabled 
-                  ? `${t('taxConfiguration.summary.active')} (${(retentionRate * 100).toFixed(1)}%)` 
+              <span
+                className={cn(
+                  'font-medium',
+                  retentionEnabled
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                )}
+              >
+                {retentionEnabled
+                  ? `${t('taxConfiguration.summary.active')} (${(retentionRate * 100).toFixed(1)}%)`
                   : t('taxConfiguration.summary.inactive')}
               </span>
             </div>
@@ -481,5 +507,5 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
         </div>
       </Card>
     </div>
-  );
+  )
 }

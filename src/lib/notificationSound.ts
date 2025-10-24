@@ -20,7 +20,8 @@ function getAudioContext(): AudioContext {
   }
 
   const ctxGlobal = globalThis as AudioContextGlobal
-  const AudioContextClass: AudioContextConstructor | undefined = ctxGlobal.AudioContext ?? ctxGlobal.webkitAudioContext
+  const AudioContextClass: AudioContextConstructor | undefined =
+    ctxGlobal.AudioContext ?? ctxGlobal.webkitAudioContext
   if (!AudioContextClass) {
     throw new Error('AudioContext not supported')
   }
@@ -39,14 +40,14 @@ type NotificationTone = 'message' | 'alert' | 'success' | 'chat-active'
 export function playNotificationSound(type: NotificationTone = 'message'): void {
   try {
     const context = getAudioContext()
-    
+
     // Crear oscilador para generar el tono
     const oscillator = context.createOscillator()
     const gainNode = context.createGain()
-    
+
     // Configurar tipo de onda y frecuencia según el tipo de notificación
     oscillator.type = 'sine'
-    
+
     switch (type) {
       case 'message':
         // ✨ Tono tipo "ding" para mensajes de chat (Mi - Sol - Do alto)
@@ -72,20 +73,19 @@ export function playNotificationSound(type: NotificationTone = 'message'): void 
         oscillator.frequency.setValueAtTime(880, context.currentTime + 0.1) // La5
         break
     }
-    
+
     // Conectar nodos
     oscillator.connect(gainNode)
     gainNode.connect(context.destination)
-    
+
     // Configurar envolvente de volumen (fade in/out suave)
     gainNode.gain.setValueAtTime(0, context.currentTime)
     gainNode.gain.linearRampToValueAtTime(0.3, context.currentTime + 0.01) // Fade in rápido
     gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.2) // Fade out
-    
+
     // Reproducir sonido
     oscillator.start(context.currentTime)
     oscillator.stop(context.currentTime + 0.2)
-    
   } catch {
     // Silenciar errores de audio (no queremos romper la app si no hay audio)
   }

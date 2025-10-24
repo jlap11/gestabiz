@@ -1,4 +1,4 @@
-import type { Business, Location, Service, Appointment, UserSettings } from '@/types'
+import type { Appointment, Business, Location, Service, UserSettings } from '@/types'
 import type { Row } from '@/lib/supabaseTyped'
 
 export function normalizeService(row: Row<'services'>): Service {
@@ -91,13 +91,21 @@ export function normalizeBusiness(row: Row<'businesses'>): Business {
 export function normalizeAppointmentStatus(s: string): Appointment['status'] {
   if (s === 'pending') return 'scheduled'
   const allowed: Appointment['status'][] = [
-    'scheduled','confirmed','in_progress','completed','cancelled','no_show','rescheduled'
+    'scheduled',
+    'confirmed',
+    'in_progress',
+    'completed',
+    'cancelled',
+    'no_show',
+    'rescheduled',
   ]
   return (allowed as string[]).includes(s) ? (s as Appointment['status']) : 'scheduled'
 }
 
 // Mapear estado de dominio -> enum de DB
-export function toDbAppointmentStatus(s: Appointment['status']): 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' {
+export function toDbAppointmentStatus(
+  s: Appointment['status']
+): 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' {
   switch (s) {
     case 'scheduled':
       return 'pending'
@@ -165,12 +173,14 @@ const asNumber = (v: unknown, fallback = 0): number => {
   const n = Number(v)
   return Number.isFinite(n) ? n : fallback
 }
-const asBoolean = (v: unknown, fallback = false): boolean => (typeof v === 'boolean' ? v : Boolean(v ?? fallback))
-const asNumberArray = (v: unknown, fallback: number[] = []): number[] => (
+const asBoolean = (v: unknown, fallback = false): boolean =>
+  typeof v === 'boolean' ? v : Boolean(v ?? fallback)
+const asNumberArray = (v: unknown, fallback: number[] = []): number[] =>
   Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number') : fallback
-)
-const isTheme = (v: unknown): v is UserSettings['theme'] => v === 'light' || v === 'dark' || v === 'system'
-const isDateFormat = (v: unknown): v is UserSettings['date_format'] => v === 'DD/MM/YYYY' || v === 'MM/DD/YYYY' || v === 'YYYY-MM-DD'
+const isTheme = (v: unknown): v is UserSettings['theme'] =>
+  v === 'light' || v === 'dark' || v === 'system'
+const isDateFormat = (v: unknown): v is UserSettings['date_format'] =>
+  v === 'DD/MM/YYYY' || v === 'MM/DD/YYYY' || v === 'YYYY-MM-DD'
 const isTimeFormat = (v: unknown): v is UserSettings['time_format'] => v === '12h' || v === '24h'
 const isLanguage = (v: unknown): v is UserSettings['language'] => v === 'es' || v === 'en'
 
@@ -190,7 +200,7 @@ export function normalizeUserSettings(row: AnyRecord | null | undefined): UserSe
     business_hours: {
       start: asString(business_hours?.start, '09:00'),
       end: asString(business_hours?.end, '18:00'),
-      days: asNumberArray(business_hours?.days, [1,2,3,4,5]),
+      days: asNumberArray(business_hours?.days, [1, 2, 3, 4, 5]),
     },
     auto_reminders: asBoolean(row?.auto_reminders, true),
     reminder_times: asNumberArray(row?.reminder_times, [1440, 60, 15]),
@@ -204,11 +214,14 @@ export function normalizeUserSettings(row: AnyRecord | null | undefined): UserSe
     },
     whatsapp_notifications: {
       appointment_reminders: asBoolean(whatsapp_notifications?.appointment_reminders, false),
-      appointment_confirmations: asBoolean(whatsapp_notifications?.appointment_confirmations, false),
+      appointment_confirmations: asBoolean(
+        whatsapp_notifications?.appointment_confirmations,
+        false
+      ),
       follow_ups: asBoolean(whatsapp_notifications?.follow_ups, false),
     },
-  date_format: isDateFormat(row?.date_format) ? row?.date_format : 'DD/MM/YYYY',
-  time_format: isTimeFormat(row?.time_format) ? row?.time_format : '24h',
+    date_format: isDateFormat(row?.date_format) ? row?.date_format : 'DD/MM/YYYY',
+    time_format: isTimeFormat(row?.time_format) ? row?.time_format : '24h',
     created_at: asString(row?.created_at, new Date().toISOString()),
     updated_at: asString(row?.updated_at, new Date().toISOString()),
   }

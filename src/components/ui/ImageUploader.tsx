@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useRef } from 'react'
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
+import React, { useCallback, useRef, useState } from 'react'
+import { Image as ImageIcon, Loader2, Upload, X } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { useFileUpload, type StorageBucket } from '@/hooks/useFileUpload'
+import { type StorageBucket, useFileUpload } from '@/hooks/useFileUpload'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ImageUploaderProps {
   bucket: StorageBucket
@@ -56,6 +57,7 @@ export function ImageUploader({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { uploadFile, deleteFile, isUploading } = useFileUpload(bucket)
+  const { t } = useLanguage()
 
   // Handle file selection
   const handleFiles = useCallback(
@@ -66,23 +68,23 @@ export function ImageUploader({
       const remainingSlots = maxFiles - previews.length
 
       if (fileArray.length > remainingSlots) {
-        onUploadError?.(`Solo puedes subir ${remainingSlots} imagen(es) más`)
+        onUploadError?.(t('imageUploader.errors.maxFiles', { remaining: remainingSlots }))
         return
       }
 
       // DELAYED UPLOAD MODE: Just create preview and call callback
       if (delayedUpload) {
         const file = fileArray[0] // Only handle single file in delayed mode
-        
+
         // Validate file size
         if (file.size > maxSizeMB * 1024 * 1024) {
-          onUploadError?.(`El archivo es muy grande. Máximo ${maxSizeMB}MB`)
+          onUploadError?.(t('imageUploader.errors.maxSize', { maxSizeMB }))
           return
         }
 
         // Create preview with FileReader
         const reader = new FileReader()
-        reader.onload = (e) => {
+        reader.onload = e => {
           const preview: ImagePreview = {
             id: `preview-${Date.now()}`,
             file,
@@ -102,7 +104,7 @@ export function ImageUploader({
 
       // IMMEDIATE UPLOAD MODE: Original behavior
       // Create previews
-      const newPreviews: ImagePreview[] = fileArray.map((file) => ({
+      const newPreviews: ImagePreview[] = fileArray.map(file => ({
         id: `preview-${Date.now()}-${Math.random()}`,
         file,
         url: URL.createObjectURL(file),
@@ -111,7 +113,7 @@ export function ImageUploader({
         progress: 0,
       }))
 
-      setPreviews((prev) => [...prev, ...newPreviews])
+      setPreviews(prev => [...prev, ...newPreviews])
 
       // Upload files
       const uploadedUrls: string[] = []
@@ -121,17 +123,15 @@ export function ImageUploader({
 
         const result = await uploadFile(preview.file, folderPath, undefined, {
           maxSizeMB,
-          onProgress: (progress) => {
-            setPreviews((prev) =>
-              prev.map((p) => (p.id === preview.id ? { ...p, progress } : p))
-            )
+          onProgress: progress => {
+            setPreviews(prev => prev.map(p => (p.id === preview.id ? { ...p, progress } : p)))
           },
         })
 
         if (result.success && result.url) {
           uploadedUrls.push(result.url)
-          setPreviews((prev) =>
-            prev.map((p) =>
+          setPreviews(prev =>
+            prev.map(p =>
               p.id === preview.id
                 ? { ...p, url: result.url!, isUploading: false, progress: 100 }
                 : p
@@ -139,8 +139,8 @@ export function ImageUploader({
           )
         } else {
           // Remove failed upload
-          setPreviews((prev) => prev.filter((p) => p.id !== preview.id))
-          onUploadError?.(result.error || 'Error al subir imagen')
+          setPreviews(prev => prev.filter(p => p.id !== preview.id))
+          onUploadError?.(result.error || t('imageUploader.errors.uploadError'))
         }
       }
 
@@ -148,7 +148,18 @@ export function ImageUploader({
         onUploadComplete?.(uploadedUrls)
       }
     },
-    [previews.length, maxFiles, uploadFile, folderPath, maxSizeMB, onUploadComplete, onUploadError, delayedUpload, onFileSelected]
+    [
+      previews.length,
+      maxFiles,
+      uploadFile,
+      folderPath,
+      maxSizeMB,
+      onUploadComplete,
+      onUploadError,
+      delayedUpload,
+      onFileSelected,
+      t,
+    ]
   )
 
   // Handle drag and drop
@@ -196,16 +207,16 @@ export function ImageUploader({
       if (preview.isExisting) {
         // Extract path from URL
         const urlParts = preview.url.split('/')
-        const pathIndex = urlParts.findIndex((part) => part === bucket)
+        const pathIndex = urlParts.findIndex(part => part === bucket)
         const path = urlParts.slice(pathIndex + 1).join('/')
 
         const success = await deleteFile(path)
         if (success) {
-          setPreviews((prev) => prev.filter((p) => p.id !== preview.id))
+          setPreviews(prev => prev.filter(p => p.id !== preview.id))
         }
       } else {
         // Just remove from preview
-        setPreviews((prev) => prev.filter((p) => p.id !== preview.id))
+        setPreviews(prev => prev.filter(p => p.id !== preview.id))
       }
     },
     [bucket, deleteFile]
@@ -221,8 +232,12 @@ export function ImageUploader({
         onDrop={handleDrop}
         className={cn(
           'relative rounded-lg border-2 border-dashed p-8 text-center transition-colors cursor-pointer',
-          isDragging ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/20' : 'border-gray-300 dark:border-gray-700',
-          disabled || isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:border-violet-400 hover:bg-gray-50 dark:hover:bg-gray-900/50'
+          isDragging
+            ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/20'
+            : 'border-gray-300 dark:border-gray-700',
+          disabled || isUploading
+            ? 'opacity-50 cursor-not-allowed'
+            : 'hover:border-violet-400 hover:bg-gray-50 dark:hover:bg-gray-900/50'
         )}
       >
         <input
@@ -244,13 +259,15 @@ export function ImageUploader({
 
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
-              {isUploading ? 'Subiendo...' : 'Click para seleccionar o arrastra imágenes aquí'}
+              {isUploading
+                ? t('imageUploader.dropzone.uploading')
+                : t('imageUploader.dropzone.placeholder')}
             </p>
             <p className="text-xs text-muted-foreground">
-              PNG, JPG, WEBP hasta {maxSizeMB}MB • Máximo {maxFiles} imagen(es)
+              {t('imageUploader.dropzone.info', { maxSizeMB, maxFiles })}
             </p>
             <p className="text-xs text-muted-foreground">
-              {previews.length}/{maxFiles} imagen(es) cargada(s)
+              {t('imageUploader.preview.count', { count: previews.length, max: maxFiles })}
             </p>
           </div>
         </div>
@@ -259,18 +276,14 @@ export function ImageUploader({
       {/* Preview grid */}
       {showPreview && previews.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {previews.map((preview) => (
+          {previews.map(preview => (
             <div
               key={preview.id}
               className="relative group rounded-lg overflow-hidden border border-border bg-muted aspect-square"
             >
               {/* Image */}
               {preview.url ? (
-                <img
-                  src={preview.url}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
+                <img src={preview.url} alt="Preview" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon className="h-12 w-12 text-muted-foreground" />
@@ -291,7 +304,7 @@ export function ImageUploader({
                 <button
                   onClick={() => handleRemove(preview)}
                   className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                  title="Eliminar imagen"
+                  title={t('imageUploader.removeImage')}
                 >
                   <X className="h-4 w-4" />
                 </button>

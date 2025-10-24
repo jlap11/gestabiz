@@ -5,24 +5,29 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
- 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Users, 
-  Trash, 
-  Check,
-  X,
-  UserCheck,
-  Shield,
-  Phone
-} from '@phosphor-icons/react'
+import { Check, Phone, Shield, Trash, UserCheck, Users, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { User, Permission } from '@/types'
+import { Permission, User } from '@/types'
 
 interface EmployeeRequest {
   id: string
@@ -46,7 +51,10 @@ interface EmployeeManagementProps {
 export default function EmployeeManagement({ user }: Readonly<EmployeeManagementProps>) {
   const { t } = useLanguage()
   const [users] = useKV<User[]>('users', [])
-  const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>(`employee-requests-${user.business_id || user.id}`, [])
+  const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>(
+    `employee-requests-${user.business_id || user.id}`,
+    []
+  )
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('requests')
   const [rejectionReason, setRejectionReason] = useState('')
@@ -54,10 +62,8 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
   const [selectedRequest, setSelectedRequest] = useState<EmployeeRequest | null>(null)
 
   // Get business employees (approved users)
-  const businessEmployees = users.filter(u => 
-    u.business_id === (user.business_id || user.id) && 
-    u.role === 'employee' && 
-    u.is_active
+  const businessEmployees = users.filter(
+    u => u.business_id === (user.business_id || user.id) && u.role === 'employee' && u.is_active
   )
 
   // Get pending requests
@@ -73,29 +79,31 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
             business_id: user.business_id || user.id,
             role: 'employee' as const,
             permissions: [
-              'read_appointments', 'write_appointments',
-              'read_clients', 'write_clients'
+              'read_appointments',
+              'write_appointments',
+              'read_clients',
+              'write_clients',
             ] as Permission[],
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }
         }
         return u
       })
 
       // Update the request status
-      const updatedRequests = employeeRequests.map(req => 
-        req.id === request.id 
-          ? { 
-              ...req, 
+      const updatedRequests = employeeRequests.map(req =>
+        req.id === request.id
+          ? {
+              ...req,
               status: 'approved' as const,
               reviewed_by: user.id,
-              reviewed_at: new Date().toISOString()
+              reviewed_at: new Date().toISOString(),
             }
           : req
       )
 
-  localStorage.setItem('users', JSON.stringify(updatedUsers))
-  setEmployeeRequests(updatedRequests)
+      localStorage.setItem('users', JSON.stringify(updatedUsers))
+      setEmployeeRequests(updatedRequests)
 
       toast.success(t('employee.approvalSuccess'))
     } catch (error) {
@@ -106,14 +114,14 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
 
   const handleRejectEmployee = async (request: EmployeeRequest, reason?: string) => {
     try {
-      const updatedRequests = employeeRequests.map(req => 
-        req.id === request.id 
-          ? { 
-              ...req, 
+      const updatedRequests = employeeRequests.map(req =>
+        req.id === request.id
+          ? {
+              ...req,
               status: 'rejected' as const,
               reviewed_by: user.id,
               reviewed_at: new Date().toISOString(),
-              rejection_reason: reason
+              rejection_reason: reason,
             }
           : req
       )
@@ -138,13 +146,13 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
             business_id: undefined,
             role: 'client' as const,
             permissions: ['read_appointments', 'write_appointments'] as Permission[],
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }
         }
         return u
       })
 
-  localStorage.setItem('users', JSON.stringify(updatedUsers))
+      localStorage.setItem('users', JSON.stringify(updatedUsers))
       toast.success(t('employee.removeSuccess'))
     } catch (error) {
       toast.error(t('employee.removeError'))
@@ -153,21 +161,28 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
   }
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString()
   }
 
-  const filteredEmployees = businessEmployees.filter(employee =>
-    (employee.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEmployees = businessEmployees.filter(
+    employee =>
+      (employee.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const filteredRequests = pendingRequests.filter(request =>
-    request.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.user_email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRequests = pendingRequests.filter(
+    request =>
+      request.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.user_email.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
@@ -178,9 +193,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
             <Shield className="w-5 h-5" />
             {t('employee.title')}
           </CardTitle>
-          <CardDescription>
-            {t('employee.description')}
-          </CardDescription>
+          <CardDescription>{t('employee.description')}</CardDescription>
         </CardHeader>
       </Card>
 
@@ -188,7 +201,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <UserCheck className="w-4 h-4" />
-            {t('employee.requests')} 
+            {t('employee.requests')}
             {pendingRequests.length > 0 && (
               <Badge variant="destructive" className="ml-1">
                 {pendingRequests.length}
@@ -205,9 +218,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
           <Card>
             <CardHeader>
               <CardTitle>{t('employee.pendingRequests')}</CardTitle>
-              <CardDescription>
-                {t('employee.pendingRequestsDescription')}
-              </CardDescription>
+              <CardDescription>{t('employee.pendingRequestsDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               {pendingRequests.length === 0 ? (
@@ -217,14 +228,15 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredRequests.map((request) => (
-                    <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {filteredRequests.map(request => (
+                    <div
+                      key={request.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex items-center gap-4">
                         <Avatar>
                           <AvatarImage src={request.user_avatar} alt={request.user_name} />
-                          <AvatarFallback>
-                            {getInitials(request.user_name)}
-                          </AvatarFallback>
+                          <AvatarFallback>{getInitials(request.user_name)}</AvatarFallback>
                         </Avatar>
                         <div>
                           <h4 className="font-medium">{request.user_name}</h4>
@@ -278,15 +290,13 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>{t('employee.currentEmployees')}</CardTitle>
-                  <CardDescription>
-                    {t('employee.currentEmployeesDescription')}
-                  </CardDescription>
+                  <CardDescription>{t('employee.currentEmployeesDescription')}</CardDescription>
                 </div>
                 <div className="w-64">
                   <Input
                     placeholder={t('action.search')}
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
@@ -309,21 +319,17 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredEmployees.map((employee) => (
+                    {filteredEmployees.map(employee => (
                       <TableRow key={employee.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar>
                               <AvatarImage src={employee.avatar_url} alt={employee.name} />
-                              <AvatarFallback>
-                                {getInitials(employee.name)}
-                              </AvatarFallback>
+                              <AvatarFallback>{getInitials(employee.name)}</AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="font-medium">{employee.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {t('role.employee')}
-                              </p>
+                              <p className="text-sm text-muted-foreground">{t('role.employee')}</p>
                             </div>
                           </div>
                         </TableCell>
@@ -341,11 +347,9 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                             )}
                           </div>
                         </TableCell>
+                        <TableCell>{formatDate(employee.created_at)}</TableCell>
                         <TableCell>
-                          {formatDate(employee.created_at)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={employee.is_active ? "default" : "secondary"}>
+                          <Badge variant={employee.is_active ? 'default' : 'secondary'}>
                             {employee.is_active ? t('employee.active') : t('employee.inactive')}
                           </Badge>
                         </TableCell>
@@ -375,9 +379,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('employee.rejectRequest')}</DialogTitle>
-            <DialogDescription>
-              {t('employee.rejectDescription')}
-            </DialogDescription>
+            <DialogDescription>{t('employee.rejectDescription')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -385,7 +387,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
               <Textarea
                 id="rejection-reason"
                 value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
+                onChange={e => setRejectionReason(e.target.value)}
                 placeholder={t('employee.rejectionReasonPlaceholder')}
                 rows={3}
               />
@@ -403,7 +405,9 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                 {t('action.cancel')}
               </Button>
               <Button
-                onClick={() => selectedRequest && handleRejectEmployee(selectedRequest, rejectionReason)}
+                onClick={() =>
+                  selectedRequest && handleRejectEmployee(selectedRequest, rejectionReason)
+                }
                 className="flex-1 bg-red-600 hover:bg-red-700"
               >
                 {t('employee.reject')}

@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { AlertCircle, RefreshCw, Home } from 'lucide-react'
+import { AlertCircle, Home, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -39,25 +39,22 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ error, errorInfo })
-    
+
     const { componentName, onError } = this.props
-    
+
     // Log estructurado para debugging
     const prefix = componentName ? `[ErrorBoundary - ${componentName}]` : '[ErrorBoundary]'
     // eslint-disable-next-line no-console
-    console.error(
-      prefix,
-      {
-        error,
-        errorInfo,
-        errorId: this.state.errorId,
-        timestamp: new Date().toISOString()
-      }
-    )
-    
+    console.error(prefix, {
+      error,
+      errorInfo,
+      errorId: this.state.errorId,
+      timestamp: new Date().toISOString(),
+    })
+
     // Call optional error handler
     onError?.(error, errorInfo)
-    
+
     // En producción, enviar a servicio de tracking (Sentry, LogRocket, etc.)
     if (import.meta.env.PROD) {
       this.logErrorToService(error, errorInfo)
@@ -77,9 +74,9 @@ export class ErrorBoundary extends Component<Props, State> {
       errorId: this.state.errorId,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
-      url: window.location.href
+      url: window.location.href,
     }
-    
+
     // eslint-disable-next-line no-console
     console.log('[ErrorBoundary] Would send to tracking service:', errorData)
   }
@@ -107,7 +104,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
               <CardTitle className="text-xl">Oops! Algo salió mal</CardTitle>
               <CardDescription>
-                Ocurrió un error inesperado. Por favor intenta actualizar la página o contacta soporte si el problema persiste.
+                Ocurrió un error inesperado. Por favor intenta actualizar la página o contacta
+                soporte si el problema persiste.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -128,17 +126,17 @@ export class ErrorBoundary extends Component<Props, State> {
                 </p>
               )}
               <div className="flex flex-col sm:flex-row gap-2">
-                <Button 
-                  onClick={this.handleReset} 
-                  variant="outline" 
+                <Button
+                  onClick={this.handleReset}
+                  variant="outline"
                   className="flex-1"
                   aria-label="Intentar recuperar la aplicación"
                 >
                   <Home className="h-4 w-4 mr-2" />
                   Intentar de nuevo
                 </Button>
-                <Button 
-                  onClick={this.handleReload} 
+                <Button
+                  onClick={this.handleReload}
                   className="flex-1"
                   aria-label="Recargar la página completa"
                 >

@@ -1,12 +1,12 @@
 /**
  * Accessibility Utilities - ARIA labels, roles, keyboard shortcuts
- * 
+ *
  * Utilidades para mejorar la accesibilidad de la aplicación:
  * - ARIA attributes helpers
  * - Keyboard event handlers
  * - Focus management
  * - Screen reader announcements
- * 
+ *
  * @author Gestabiz Team
  * @version 1.0.0
  * @date 2025-10-13
@@ -26,48 +26,45 @@ export const KEYBOARD_SHORTCUTS = {
   ARROW_DOWN: 'ArrowDown',
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
-  
+
   // Editing
   BACKSPACE: 'Backspace',
   DELETE: 'Delete',
-  
+
   // Modifiers
   CTRL_ENTER: 'ctrl+enter',
   SHIFT_TAB: 'shift+tab',
   CMD_K: 'cmd+k',
   CTRL_K: 'ctrl+k',
-} as const;
+} as const
 
 /**
  * Check if keyboard event matches a shortcut
  */
-export function isShortcut(
-  event: KeyboardEvent | React.KeyboardEvent,
-  shortcut: string
-): boolean {
-  const key = event.key;
-  const ctrl = event.ctrlKey || event.metaKey;
-  const shift = event.shiftKey;
-  const alt = event.altKey;
+export function isShortcut(event: KeyboardEvent | React.KeyboardEvent, shortcut: string): boolean {
+  const key = event.key
+  const ctrl = event.ctrlKey || event.metaKey
+  const shift = event.shiftKey
+  const alt = event.altKey
 
   switch (shortcut) {
     case KEYBOARD_SHORTCUTS.ESCAPE:
-      return key === 'Escape';
+      return key === 'Escape'
     case KEYBOARD_SHORTCUTS.ENTER:
-      return key === 'Enter' && !ctrl && !shift;
+      return key === 'Enter' && !ctrl && !shift
     case KEYBOARD_SHORTCUTS.TAB:
-      return key === 'Tab' && !shift;
+      return key === 'Tab' && !shift
     case KEYBOARD_SHORTCUTS.SHIFT_TAB:
-      return key === 'Tab' && shift;
+      return key === 'Tab' && shift
     case KEYBOARD_SHORTCUTS.SPACE:
-      return key === ' ';
+      return key === ' '
     case KEYBOARD_SHORTCUTS.CTRL_ENTER:
-      return key === 'Enter' && ctrl;
+      return key === 'Enter' && ctrl
     case KEYBOARD_SHORTCUTS.CMD_K:
     case KEYBOARD_SHORTCUTS.CTRL_K:
-      return key === 'k' && ctrl;
+      return key === 'k' && ctrl
     default:
-      return false;
+      return false
   }
 }
 
@@ -185,7 +182,7 @@ export const aria = {
     'aria-expanded': expanded,
     ...(controls && { 'aria-controls': controls }),
   }),
-};
+}
 
 // ============================================================================
 // FOCUS MANAGEMENT
@@ -197,38 +194,38 @@ export const aria = {
 export function trapFocus(element: HTMLElement): () => void {
   const focusableElements = element.querySelectorAll<HTMLElement>(
     'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  );
+  )
 
-  const firstElement = focusableElements[0];
-  const lastElement = focusableElements[focusableElements.length - 1];
+  const firstElement = focusableElements[0]
+  const lastElement = focusableElements[focusableElements.length - 1]
 
   const handleTab = (e: KeyboardEvent) => {
-    if (e.key !== 'Tab') return;
+    if (e.key !== 'Tab') return
 
     if (e.shiftKey) {
       // Shift + Tab
       if (document.activeElement === firstElement) {
-        e.preventDefault();
-        lastElement?.focus();
+        e.preventDefault()
+        lastElement?.focus()
       }
     } else {
       // Tab
       if (document.activeElement === lastElement) {
-        e.preventDefault();
-        firstElement?.focus();
+        e.preventDefault()
+        firstElement?.focus()
       }
     }
-  };
+  }
 
-  element.addEventListener('keydown', handleTab);
+  element.addEventListener('keydown', handleTab)
 
   // Focus first element
-  firstElement?.focus();
+  firstElement?.focus()
 
   // Cleanup
   return () => {
-    element.removeEventListener('keydown', handleTab);
-  };
+    element.removeEventListener('keydown', handleTab)
+  }
 }
 
 /**
@@ -237,31 +234,28 @@ export function trapFocus(element: HTMLElement): () => void {
 export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   const elements = container.querySelectorAll<HTMLElement>(
     'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  );
-  return Array.from(elements);
+  )
+  return Array.from(elements)
 }
 
 /**
  * Move focus to next/previous focusable element
  */
-export function moveFocus(
-  container: HTMLElement,
-  direction: 'next' | 'previous'
-): void {
-  const elements = getFocusableElements(container);
-  const currentIndex = elements.indexOf(document.activeElement as HTMLElement);
+export function moveFocus(container: HTMLElement, direction: 'next' | 'previous'): void {
+  const elements = getFocusableElements(container)
+  const currentIndex = elements.indexOf(document.activeElement as HTMLElement)
 
   if (currentIndex === -1) {
-    elements[0]?.focus();
-    return;
+    elements[0]?.focus()
+    return
   }
 
   const nextIndex =
     direction === 'next'
       ? (currentIndex + 1) % elements.length
-      : (currentIndex - 1 + elements.length) % elements.length;
+      : (currentIndex - 1 + elements.length) % elements.length
 
-  elements[nextIndex]?.focus();
+  elements[nextIndex]?.focus()
 }
 
 // ============================================================================
@@ -271,55 +265,49 @@ export function moveFocus(
 /**
  * Create a live region for screen reader announcements
  */
-let liveRegion: HTMLDivElement | null = null;
+let liveRegion: HTMLDivElement | null = null
 
 function getLiveRegion(): HTMLDivElement {
   if (!liveRegion) {
-    liveRegion = document.createElement('div');
-    liveRegion.setAttribute('role', 'status');
-    liveRegion.setAttribute('aria-live', 'polite');
-    liveRegion.setAttribute('aria-atomic', 'true');
-    liveRegion.style.position = 'absolute';
-    liveRegion.style.left = '-10000px';
-    liveRegion.style.width = '1px';
-    liveRegion.style.height = '1px';
-    liveRegion.style.overflow = 'hidden';
-    document.body.appendChild(liveRegion);
+    liveRegion = document.createElement('div')
+    liveRegion.setAttribute('role', 'status')
+    liveRegion.setAttribute('aria-live', 'polite')
+    liveRegion.setAttribute('aria-atomic', 'true')
+    liveRegion.style.position = 'absolute'
+    liveRegion.style.left = '-10000px'
+    liveRegion.style.width = '1px'
+    liveRegion.style.height = '1px'
+    liveRegion.style.overflow = 'hidden'
+    document.body.appendChild(liveRegion)
   }
-  return liveRegion;
+  return liveRegion
 }
 
 /**
  * Announce a message to screen readers
  */
-export function announce(
-  message: string,
-  priority: 'polite' | 'assertive' = 'polite'
-): void {
-  const region = getLiveRegion();
-  region.setAttribute('aria-live', priority);
-  
+export function announce(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
+  const region = getLiveRegion()
+  region.setAttribute('aria-live', priority)
+
   // Clear previous message
-  region.textContent = '';
-  
+  region.textContent = ''
+
   // Announce new message after short delay (allows screen reader to register change)
   setTimeout(() => {
-    region.textContent = message;
-  }, 100);
+    region.textContent = message
+  }, 100)
 }
 
 /**
  * Announce multiple messages in sequence
  */
-export function announceSequence(
-  messages: string[],
-  delay = 1000
-): void {
+export function announceSequence(messages: string[], delay = 1000): void {
   messages.forEach((message, index) => {
     setTimeout(() => {
-      announce(message);
-    }, index * delay);
-  });
+      announce(message)
+    }, index * delay)
+  })
 }
 
 // ============================================================================
@@ -336,49 +324,49 @@ export function hasAccessibleName(element: HTMLElement): boolean {
     element.getAttribute('title') ||
     (element as HTMLInputElement).placeholder ||
     element.textContent?.trim()
-  );
+  )
 }
 
 /**
  * Check if button has accessible label
  */
 export function validateButton(button: HTMLElement): string[] {
-  const errors: string[] = [];
+  const errors: string[] = []
 
   if (!hasAccessibleName(button)) {
-    errors.push('Button missing accessible name (aria-label, aria-labelledby, or text content)');
+    errors.push('Button missing accessible name (aria-label, aria-labelledby, or text content)')
   }
 
   if (button.getAttribute('role') === 'button' && !button.hasAttribute('tabindex')) {
-    errors.push('Custom button missing tabindex');
+    errors.push('Custom button missing tabindex')
   }
 
-  return errors;
+  return errors
 }
 
 /**
  * Check if form input has label
  */
 export function validateInput(input: HTMLInputElement): string[] {
-  const errors: string[] = [];
+  const errors: string[] = []
 
-  const label = document.querySelector(`label[for="${input.id}"]`);
-  const ariaLabel = input.getAttribute('aria-label');
-  const ariaLabelledby = input.getAttribute('aria-labelledby');
+  const label = document.querySelector(`label[for="${input.id}"]`)
+  const ariaLabel = input.getAttribute('aria-label')
+  const ariaLabelledby = input.getAttribute('aria-labelledby')
 
   if (!label && !ariaLabel && !ariaLabelledby) {
-    errors.push('Input missing label (label[for], aria-label, or aria-labelledby)');
+    errors.push('Input missing label (label[for], aria-label, or aria-labelledby)')
   }
 
   if (input.hasAttribute('required') && !input.hasAttribute('aria-required')) {
-    errors.push('Required input missing aria-required');
+    errors.push('Required input missing aria-required')
   }
 
   if (input.hasAttribute('disabled') && !input.hasAttribute('aria-disabled')) {
-    errors.push('Disabled input missing aria-disabled');
+    errors.push('Disabled input missing aria-disabled')
   }
 
-  return errors;
+  return errors
 }
 
 // ============================================================================
@@ -396,26 +384,26 @@ export function handleListKeyboard(
 ): void {
   switch (event.key) {
     case 'ArrowDown':
-      event.preventDefault();
-      onSelect((currentIndex + 1) % items.length);
-      break;
+      event.preventDefault()
+      onSelect((currentIndex + 1) % items.length)
+      break
     case 'ArrowUp':
-      event.preventDefault();
-      onSelect((currentIndex - 1 + items.length) % items.length);
-      break;
+      event.preventDefault()
+      onSelect((currentIndex - 1 + items.length) % items.length)
+      break
     case 'Home':
-      event.preventDefault();
-      onSelect(0);
-      break;
+      event.preventDefault()
+      onSelect(0)
+      break
     case 'End':
-      event.preventDefault();
-      onSelect(items.length - 1);
-      break;
+      event.preventDefault()
+      onSelect(items.length - 1)
+      break
     case 'Enter':
     case ' ':
-      event.preventDefault();
-      items[currentIndex]?.click();
-      break;
+      event.preventDefault()
+      items[currentIndex]?.click()
+      break
   }
 }
 
@@ -427,8 +415,8 @@ export function handleEscapeKey(
   onClose: () => void
 ): void {
   if (event.key === 'Escape') {
-    event.preventDefault();
-    onClose();
+    event.preventDefault()
+    onClose()
   }
 }
 
@@ -440,29 +428,29 @@ export function handleEscapeKey(
  * Check if user prefers reduced motion
  */
 export function prefersReducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 /**
  * Get appropriate animation duration based on user preference
  */
 export function getAnimationDuration(normalDuration: number): number {
-  return prefersReducedMotion() ? 0 : normalDuration;
+  return prefersReducedMotion() ? 0 : normalDuration
 }
 
 // ============================================================================
 // EXPORTS
 // ============================================================================
 
-export type AriaRole = 
-  | 'button' 
-  | 'link' 
-  | 'dialog' 
-  | 'listbox' 
-  | 'option' 
-  | 'tab' 
-  | 'tabpanel' 
-  | 'alert' 
-  | 'status';
+export type AriaRole =
+  | 'button'
+  | 'link'
+  | 'dialog'
+  | 'listbox'
+  | 'option'
+  | 'tab'
+  | 'tabpanel'
+  | 'alert'
+  | 'status'
 
-export type LivePriority = 'polite' | 'assertive';
+export type LivePriority = 'polite' | 'assertive'

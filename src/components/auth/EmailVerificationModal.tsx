@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Mail, RefreshCw, CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Mail, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -10,7 +10,10 @@ interface EmailVerificationModalProps {
   onVerified: () => void
 }
 
-export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVerificationModalProps>) {
+export function EmailVerificationModal({
+  email,
+  onVerified,
+}: Readonly<EmailVerificationModalProps>) {
   const { t } = useLanguage()
   const [isResending, setIsResending] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
@@ -41,7 +44,10 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
     setIsChecking(true)
     try {
       // Refresh the session to get updated user data
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser()
 
       if (error) {
         toast.error(t('emailVerification.checkError') + ' ' + error.message)
@@ -62,7 +68,7 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop difuminado */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-md" />
-      
+
       {/* Modal */}
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="bg-card rounded-2xl p-8 shadow-2xl border border-border">
@@ -85,9 +91,7 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
 
           {/* Email */}
           <div className="bg-muted rounded-lg p-3 mb-6">
-            <p className="text-center font-medium text-foreground break-all">
-              {email}
-            </p>
+            <p className="text-center font-medium text-foreground break-all">{email}</p>
           </div>
 
           {/* Instructions */}
@@ -140,7 +144,9 @@ export function EmailVerificationModal({ email, onVerified }: Readonly<EmailVeri
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  {resentCount > 0 ? `${t('emailVerification.resend')} (${resentCount}/3)` : t('emailVerification.resend')}
+                  {resentCount > 0
+                    ? `${t('emailVerification.resend')} (${resentCount}/3)`
+                    : t('emailVerification.resend')}
                 </>
               )}
             </Button>

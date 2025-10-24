@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { logger } from '@/lib/logger'
@@ -89,7 +89,7 @@ export function useJobVacancies(businessId?: string) {
         component: 'useJobVacancies',
         operation: 'fetchVacancies',
         businessId,
-      });
+      })
       setError(err.message)
       toast.error('Error al cargar vacantes')
     } finally {
@@ -152,7 +152,7 @@ export function useJobVacancies(businessId?: string) {
       if (insertError) throw insertError
 
       toast.success('Vacante creada exitosamente')
-      
+
       // Refrescar lista
       await fetchVacancies()
 
@@ -164,7 +164,7 @@ export function useJobVacancies(businessId?: string) {
         operation: 'createVacancy',
         businessId: input.business_id,
         title: input.title,
-      });
+      })
       toast.error(err.message || 'Error al crear vacante')
       return null
     }
@@ -200,7 +200,7 @@ export function useJobVacancies(businessId?: string) {
         component: 'useJobVacancies',
         operation: 'updateVacancy',
         vacancyId,
-      });
+      })
       toast.error(err.message || 'Error al actualizar vacante')
       return false
     }
@@ -236,7 +236,7 @@ export function useJobVacancies(businessId?: string) {
         component: 'useJobVacancies',
         operation: 'deleteVacancy',
         vacancyId,
-      });
+      })
       toast.error(err.message || 'Error al eliminar vacante')
       return false
     }
@@ -246,9 +246,9 @@ export function useJobVacancies(businessId?: string) {
     try {
       const { error: updateError } = await supabase
         .from('job_vacancies')
-        .update({ 
+        .update({
           status: 'closed',
-          filled_at: new Date().toISOString()
+          filled_at: new Date().toISOString(),
         })
         .eq('id', vacancyId)
 
@@ -264,7 +264,7 @@ export function useJobVacancies(businessId?: string) {
         component: 'useJobVacancies',
         operation: 'closeVacancy',
         vacancyId,
-      });
+      })
       toast.error(err.message || 'Error al cerrar vacante')
       return false
     }
@@ -279,7 +279,7 @@ export function useJobVacancies(businessId?: string) {
         component: 'useJobVacancies',
         operation: 'incrementViews',
         vacancyId,
-      });
+      })
     }
   }
 

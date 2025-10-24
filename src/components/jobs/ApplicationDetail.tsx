@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,25 +6,31 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
-import { 
-  ArrowLeft, 
-  Briefcase, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
+import {
+  ArrowLeft,
+  Briefcase,
   Calendar,
-  Mail,
-  Phone,
-  Star,
   CheckCircle2,
-  XCircle,
-  Save,
-  MessageSquare,
+  Clock,
+  DollarSign,
   Download,
-  FileText
+  FileText,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Save,
+  Star,
+  XCircle,
 } from 'lucide-react'
 
 interface ApplicationDetailProps {
@@ -86,7 +92,7 @@ const APPLICATION_STATUS_COLORS: Record<string, string> = {
   interview: 'bg-primary/20 text-primary border-primary/30',
   accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
-  withdrawn: 'bg-muted text-muted-foreground border-border'
+  withdrawn: 'bg-muted text-muted-foreground border-border',
 }
 
 const APPLICATION_STATUS_LABELS: Record<string, string> = {
@@ -95,27 +101,27 @@ const APPLICATION_STATUS_LABELS: Record<string, string> = {
   interview: 'Entrevista',
   accepted: 'Aceptada',
   rejected: 'Rechazada',
-  withdrawn: 'Retirada'
+  withdrawn: 'Retirada',
 }
 
 const POSITION_TYPES: Record<string, string> = {
   full_time: 'Tiempo Completo',
   part_time: 'Medio Tiempo',
   freelance: 'Freelance',
-  temporary: 'Temporal'
+  temporary: 'Temporal',
 }
 
 const EXPERIENCE_LEVELS: Record<string, string> = {
   entry_level: 'Principiante',
   mid_level: 'Intermedio',
-  senior: 'Senior'
+  senior: 'Senior',
 }
 
-export function ApplicationDetail({ 
-  applicationId, 
-  isAdmin = false, 
-  onBack, 
-  onUpdate 
+export function ApplicationDetail({
+  applicationId,
+  isAdmin = false,
+  onBack,
+  onUpdate,
 }: Readonly<ApplicationDetailProps>) {
   const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
@@ -138,10 +144,8 @@ export function ApplicationDetail({
 
     try {
       setDownloadingCV(true)
-      
-      const { data, error } = await supabase.storage
-        .from('cvs')
-        .download(application.cv_url)
+
+      const { data, error } = await supabase.storage.from('cvs').download(application.cv_url)
 
       if (error) throw error
 
@@ -149,11 +153,11 @@ export function ApplicationDetail({
       const url = URL.createObjectURL(data)
       const a = document.createElement('a')
       a.href = url
-      
+
       // Extract filename from path (format: user_id/vacancy_id_timestamp.ext)
       const fileName = application.cv_url.split('/').pop() || 'cv.pdf'
       a.download = `cv_${application.profiles?.full_name?.replace(/\s+/g, '_')}_${fileName}`
-      
+
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -174,7 +178,8 @@ export function ApplicationDetail({
 
       const { data, error } = await supabase
         .from('job_applications')
-        .select(`
+        .select(
+          `
           *,
           profiles (full_name, email, phone, avatar_url),
           job_vacancies (
@@ -191,7 +196,8 @@ export function ApplicationDetail({
             locations (name, city),
             businesses (name, logo_url)
           )
-        `)
+        `
+        )
         .eq('id', applicationId)
         .single()
 
@@ -202,7 +208,11 @@ export function ApplicationDetail({
       setNewRating(data.rating)
       setNewAdminNotes(data.admin_notes || '')
       setNewDecisionNotes(data.decision_notes || '')
-      setNewInterviewDate(data.interview_scheduled_at ? new Date(data.interview_scheduled_at).toISOString().slice(0, 16) : '')
+      setNewInterviewDate(
+        data.interview_scheduled_at
+          ? new Date(data.interview_scheduled_at).toISOString().slice(0, 16)
+          : ''
+      )
     } catch {
       toast.error(t('admin.jobApplications.loadError'))
       onBack()
@@ -226,12 +236,14 @@ export function ApplicationDetail({
         rating: newRating,
         admin_notes: newAdminNotes.trim() || null,
         decision_notes: newDecisionNotes.trim() || null,
-        interview_scheduled_at: newInterviewDate || null
+        interview_scheduled_at: newInterviewDate || null,
       }
 
       // Marcar como revisada si cambia de pending
       if (application.status === 'pending' && newStatus !== 'pending') {
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
         updates.reviewed_at = new Date().toISOString()
         updates.reviewed_by = user?.id || null
       }
@@ -263,7 +275,7 @@ export function ApplicationDetail({
     const formatter = new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     })
 
     if (min && max) {
@@ -277,7 +289,9 @@ export function ApplicationDetail({
   }
 
   const getDaysAgo = (date: string) => {
-    const days = Math.floor((new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+    const days = Math.floor(
+      (new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
+    )
     if (days === 0) return 'Hoy'
     if (days === 1) return 'Ayer'
     return `Hace ${days} días`
@@ -310,9 +324,7 @@ export function ApplicationDetail({
         >
           <Star
             className={`h-6 w-6 ${
-              i <= currentRating
-                ? 'text-yellow-500 fill-yellow-500'
-                : 'text-muted-foreground'
+              i <= currentRating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
             }`}
           />
         </button>
@@ -478,11 +490,12 @@ export function ApplicationDetail({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {application.cv_url.split('/').pop()?.split('_').slice(-1)[0] || 'curriculum.pdf'}
+                        {application.cv_url.split('/').pop()?.split('_').slice(-1)[0] ||
+                          'curriculum.pdf'}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {application.cv_url.endsWith('.pdf') ? 'PDF' : 'DOCX'} • 
-                        Cargado {getDaysAgo(application.created_at)}
+                        {application.cv_url.endsWith('.pdf') ? 'PDF' : 'DOCX'} • Cargado{' '}
+                        {getDaysAgo(application.created_at)}
                       </p>
                     </div>
                   </div>
@@ -521,12 +534,14 @@ export function ApplicationDetail({
               <CardContent className="space-y-3">
                 {application.available_from && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">{t('jobsUI.availableFrom')}:</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {t('jobsUI.availableFrom')}:
+                    </p>
                     <p className="text-foreground font-medium">
                       {new Date(application.available_from).toLocaleDateString('es-CO', {
                         day: 'numeric',
                         month: 'long',
-                        year: 'numeric'
+                        year: 'numeric',
                       })}
                     </p>
                   </div>
@@ -606,7 +621,9 @@ export function ApplicationDetail({
 
                       {application.interview_scheduled_at && (
                         <div>
-                          <Label className="text-foreground">{t('jobsUI.scheduledInterview')}</Label>
+                          <Label className="text-foreground">
+                            {t('jobsUI.scheduledInterview')}
+                          </Label>
                           <p className="text-foreground/90 mt-1">
                             {new Date(application.interview_scheduled_at).toLocaleString('es-CO')}
                           </p>
@@ -680,7 +697,7 @@ export function ApplicationDetail({
                         <input
                           type="datetime-local"
                           value={newInterviewDate}
-                          onChange={(e) => setNewInterviewDate(e.target.value)}
+                          onChange={e => setNewInterviewDate(e.target.value)}
                           className="w-full mt-2 px-3 py-2 bg-background border border-border rounded-md text-foreground"
                         />
                       </div>
@@ -689,7 +706,7 @@ export function ApplicationDetail({
                         <Label className="text-foreground">Notas de Decisión</Label>
                         <Textarea
                           value={newDecisionNotes}
-                          onChange={(e) => setNewDecisionNotes(e.target.value)}
+                          onChange={e => setNewDecisionNotes(e.target.value)}
                           placeholder="Razón de la decisión..."
                           rows={3}
                           className="bg-background border-border text-foreground mt-2"
@@ -700,7 +717,7 @@ export function ApplicationDetail({
                         <Label className="text-foreground">{t('jobsUI.administrativeNotes')}</Label>
                         <Textarea
                           value={newAdminNotes}
-                          onChange={(e) => setNewAdminNotes(e.target.value)}
+                          onChange={e => setNewAdminNotes(e.target.value)}
                           placeholder="Notas internas..."
                           rows={3}
                           className="bg-background border-border text-foreground mt-2"
@@ -717,7 +734,13 @@ export function ApplicationDetail({
                           setNewRating(application.rating)
                           setNewAdminNotes(application.admin_notes || '')
                           setNewDecisionNotes(application.decision_notes || '')
-                          setNewInterviewDate(application.interview_scheduled_at ? new Date(application.interview_scheduled_at).toISOString().slice(0, 16) : '')
+                          setNewInterviewDate(
+                            application.interview_scheduled_at
+                              ? new Date(application.interview_scheduled_at)
+                                  .toISOString()
+                                  .slice(0, 16)
+                              : ''
+                          )
                         }}
                         className="flex-1 border-border"
                       >
@@ -757,7 +780,9 @@ export function ApplicationDetail({
                 <CardTitle className="text-foreground">Notas de Decisión</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground/90 whitespace-pre-wrap">{application.decision_notes}</p>
+                <p className="text-foreground/90 whitespace-pre-wrap">
+                  {application.decision_notes}
+                </p>
               </CardContent>
             </Card>
           )}

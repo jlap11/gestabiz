@@ -3,7 +3,7 @@
 // Dialog para asignar/modificar roles de usuarios
 // =====================================================
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { usePermissions } from '@/hooks/usePermissions-v2'
-import { UserCheck, Shield, Crown, Wrench, AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Crown, Loader2, Shield, UserCheck, Wrench } from 'lucide-react'
 import { toast } from 'sonner'
 import type { BusinessRole } from '@/types/types'
 
@@ -115,7 +115,7 @@ export function RoleAssignment({
                   onClose()
                   setIsSubmitting(false)
                 },
-                onError: (error) => {
+                onError: error => {
                   toast.error(t('admin.roleActions.modifyError'), {
                     description: error.message || 'Por favor intenta de nuevo',
                   })
@@ -124,7 +124,7 @@ export function RoleAssignment({
               }
             )
           },
-          onError: (error) => {
+          onError: error => {
             toast.error(t('admin.roleActions.revokeError'), {
               description: error.message || 'Por favor intenta de nuevo',
             })
@@ -150,7 +150,7 @@ export function RoleAssignment({
             onClose()
             setIsSubmitting(false)
           },
-          onError: (error) => {
+          onError: error => {
             toast.error(t('admin.roleActions.assignError'), {
               description: error.message || 'Por favor intenta de nuevo',
             })
@@ -170,7 +170,7 @@ export function RoleAssignment({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+    <Dialog open={isOpen} onOpenChange={open => !open && handleCancel()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -189,8 +189,8 @@ export function RoleAssignment({
           <Alert variant="destructive" className="my-4">
             <Crown className="h-4 w-4" />
             <AlertDescription>
-              No puedes modificar el rol del propietario del negocio. El propietario
-              siempre tiene acceso completo a todas las funcionalidades.
+              No puedes modificar el rol del propietario del negocio. El propietario siempre tiene
+              acceso completo a todas las funcionalidades.
             </AlertDescription>
           </Alert>
         )}
@@ -200,8 +200,8 @@ export function RoleAssignment({
           <Alert className="my-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              No tienes permisos para modificar roles de usuario. Solo el propietario
-              o administradores con permisos pueden realizar esta acción.
+              No tienes permisos para modificar roles de usuario. Solo el propietario o
+              administradores con permisos pueden realizar esta acción.
             </AlertDescription>
           </Alert>
         )}
@@ -228,7 +228,7 @@ export function RoleAssignment({
             {/* Selección de rol */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Rol del usuario</Label>
-              <RadioGroup value={selectedRole} onValueChange={(v) => setSelectedRole(v as RoleType)}>
+              <RadioGroup value={selectedRole} onValueChange={v => setSelectedRole(v as RoleType)}>
                 <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="admin" id="role-admin" className="mt-1" />
                   <Label htmlFor="role-admin" className="flex-1 cursor-pointer">
@@ -237,8 +237,8 @@ export function RoleAssignment({
                       <span className="font-semibold">Administrador</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Acceso a gestión del negocio, empleados, citas y configuración.
-                      Los permisos específicos se configuran después.
+                      Acceso a gestión del negocio, empleados, citas y configuración. Los permisos
+                      específicos se configuran después.
                     </p>
                   </Label>
                 </div>
@@ -262,9 +262,9 @@ export function RoleAssignment({
             {selectedRole === 'employee' && (
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Tipo de empleado</Label>
-                <RadioGroup 
-                  value={employeeType} 
-                  onValueChange={(v) => setEmployeeType(v as EmployeeType)}
+                <RadioGroup
+                  value={employeeType}
+                  onValueChange={v => setEmployeeType(v as EmployeeType)}
                 >
                   <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value="service_provider" id="type-provider" className="mt-1" />
@@ -304,7 +304,7 @@ export function RoleAssignment({
                 id="notes"
                 placeholder="Razón del cambio de rol o información adicional..."
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={e => setNotes(e.target.value)}
                 rows={3}
                 className="resize-none"
               />

@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useKV } from '@/lib/useKV'
 import { toast } from 'sonner'
 import { googleCalendarService } from '@/lib/googleCalendar'
-import { CalendarSyncSettings, Appointment, User } from '@/types'
+import { Appointment, CalendarSyncSettings, User } from '@/types'
 
 export function useGoogleCalendarSync(user: User | null) {
   const [syncSettings, setSyncSettings] = useKV<CalendarSyncSettings | null>(
@@ -25,7 +25,7 @@ export function useGoogleCalendarSync(user: User | null) {
     setIsConnecting(true)
     try {
       const accessToken = await googleCalendarService.authenticate()
-      
+
       // Get user's calendars to let them choose which one to sync
       const calendars = await googleCalendarService.getCalendars()
       const primaryCalendar = calendars.find(cal => cal.primary) || calendars[0]
@@ -46,22 +46,21 @@ export function useGoogleCalendarSync(user: User | null) {
         auto_sync: true,
         last_sync: new Date().toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       setSyncSettings(newSyncSettings)
       toast.success('Google Calendar connected successfully!')
-      
+
       // Perform initial sync
       await syncWithGoogleCalendar()
-      
     } catch (error) {
       toast.error('Failed to connect Google Calendar')
       throw error
     } finally {
       setIsConnecting(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, setSyncSettings])
 
   const disconnectGoogleCalendar = useCallback(async () => {
@@ -91,7 +90,7 @@ export function useGoogleCalendarSync(user: User | null) {
       setSyncSettings({
         ...syncSettings,
         last_sync: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
 
       toast.success('Calendar sync completed')
@@ -101,22 +100,22 @@ export function useGoogleCalendarSync(user: User | null) {
     } finally {
       setIsSyncing(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, syncSettings, setSyncSettings])
 
   const exportAppointmentsToGoogle = useCallback(async () => {
     if (!syncSettings) return
 
     const results = await Promise.allSettled(
-      appointments.map(async (appointment) => {
+      appointments.map(async appointment => {
         const existingEvents = await googleCalendarService.getEvents(
           syncSettings.calendar_id,
           appointment.start_time,
           appointment.end_time
         )
 
-        const existingEvent = existingEvents.find(event => 
-          event.extendedProperties?.private?.appointmentId === appointment.id
+        const existingEvent = existingEvents.find(
+          event => event.extendedProperties?.private?.appointmentId === appointment.id
         )
 
         const googleEvent = googleCalendarService.appointmentToGoogleEvent(
@@ -164,10 +163,11 @@ export function useGoogleCalendarSync(user: User | null) {
       }
 
       // Check if we already have this event as an appointment
-      const existingAppointment = appointments.find(apt => 
-        apt.start_time === event.start.dateTime &&
-        apt.end_time === event.end.dateTime &&
-        apt.title === event.summary
+      const existingAppointment = appointments.find(
+        apt =>
+          apt.start_time === event.start.dateTime &&
+          apt.end_time === event.end.dateTime &&
+          apt.title === event.summary
       )
 
       if (!existingAppointment) {
@@ -182,87 +182,96 @@ export function useGoogleCalendarSync(user: User | null) {
     }
   }, [syncSettings, user, appointments, setAppointments])
 
-  const updateSyncSettings = useCallback((updates: Partial<CalendarSyncSettings>) => {
-    if (!syncSettings) return
+  const updateSyncSettings = useCallback(
+    (updates: Partial<CalendarSyncSettings>) => {
+      if (!syncSettings) return
 
-    setSyncSettings({
-      ...syncSettings,
-      ...updates,
-      updated_at: new Date().toISOString()
-    })
-  }, [syncSettings, setSyncSettings])
+      setSyncSettings({
+        ...syncSettings,
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+    },
+    [syncSettings, setSyncSettings]
+  )
 
-  const syncSingleAppointment = useCallback(async (appointment: Appointment) => {
-    if (!syncSettings?.enabled) {
-      return
-    }
+  const syncSingleAppointment = useCallback(
+    async (appointment: Appointment) => {
+      if (!syncSettings?.enabled) {
+        return
+      }
 
-    try {
-      googleCalendarService.setAccessToken(syncSettings.access_token)
-      
-      const googleEvent = googleCalendarService.appointmentToGoogleEvent(
-        appointment,
-        user?.timezone || 'America/New_York'
-      )
+      try {
+        googleCalendarService.setAccessToken(syncSettings.access_token)
 
-      // Check if event already exists in Google Calendar
-      const existingEvents = await googleCalendarService.getEvents(
-        syncSettings.calendar_id,
-        appointment.start_time,
-        appointment.end_time
-      )
-
-      const existingEvent = existingEvents.find(event => 
-        event.extendedProperties?.private?.appointmentId === appointment.id
-      )
-
-      if (existingEvent) {
-        await googleCalendarService.updateEvent(
-          syncSettings.calendar_id,
-          existingEvent.id!,
-          googleEvent
+        const googleEvent = googleCalendarService.appointmentToGoogleEvent(
+          appointment,
+          user?.timezone || 'America/New_York'
         )
-      } else {
-        await googleCalendarService.createEvent(syncSettings.calendar_id, googleEvent)
+
+        // Check if event already exists in Google Calendar
+        const existingEvents = await googleCalendarService.getEvents(
+          syncSettings.calendar_id,
+          appointment.start_time,
+          appointment.end_time
+        )
+
+        const existingEvent = existingEvents.find(
+          event => event.extendedProperties?.private?.appointmentId === appointment.id
+        )
+
+        if (existingEvent) {
+          await googleCalendarService.updateEvent(
+            syncSettings.calendar_id,
+            existingEvent.id!,
+            googleEvent
+          )
+        } else {
+          await googleCalendarService.createEvent(syncSettings.calendar_id, googleEvent)
+        }
+
+        toast.success('Appointment synced to Google Calendar')
+      } catch (error) {
+        toast.error('Failed to sync appointment to Google Calendar')
+        // rethrow so caller may handle (e.g., show non-blocking notice)
+        throw error
+      }
+    },
+    [syncSettings, user]
+  )
+
+  const deleteSyncedAppointment = useCallback(
+    async (appointment: Appointment) => {
+      if (!syncSettings?.enabled) {
+        return
       }
 
-      toast.success('Appointment synced to Google Calendar')
-    } catch (error) {
-      toast.error('Failed to sync appointment to Google Calendar')
-      // rethrow so caller may handle (e.g., show non-blocking notice)
-      throw error
-    }
-  }, [syncSettings, user])
+      try {
+        googleCalendarService.setAccessToken(syncSettings.access_token)
 
-  const deleteSyncedAppointment = useCallback(async (appointment: Appointment) => {
-    if (!syncSettings?.enabled) {
-      return
-    }
+        // Find the Google Calendar event
+        const existingEvents = await googleCalendarService.getEvents(
+          syncSettings.calendar_id,
+          appointment.start_time,
+          appointment.end_time
+        )
 
-    try {
-      googleCalendarService.setAccessToken(syncSettings.access_token)
-      
-      // Find the Google Calendar event
-      const existingEvents = await googleCalendarService.getEvents(
-        syncSettings.calendar_id,
-        appointment.start_time,
-        appointment.end_time
-      )
+        const existingEvent = existingEvents.find(
+          event => event.extendedProperties?.private?.appointmentId === appointment.id
+        )
 
-      const existingEvent = existingEvents.find(event => 
-        event.extendedProperties?.private?.appointmentId === appointment.id
-      )
-
-      if (existingEvent) {
-        await googleCalendarService.deleteEvent(syncSettings.calendar_id, existingEvent.id!)
-        toast.success('Appointment removed from Google Calendar')
+        if (existingEvent) {
+          await googleCalendarService.deleteEvent(syncSettings.calendar_id, existingEvent.id!)
+          toast.success('Appointment removed from Google Calendar')
+        }
+      } catch (error) {
+        toast.error('Failed to remove appointment from Google Calendar')
+        // rethrow for upstream handling/telemetry
+        throw error
       }
-    } catch (error) {
-      toast.error('Failed to remove appointment from Google Calendar')
-      // rethrow for upstream handling/telemetry
-      throw error
-    }
-  }, [syncSettings])
+    },
+    [syncSettings]
+  )
 
   return {
     syncSettings,
@@ -274,6 +283,6 @@ export function useGoogleCalendarSync(user: User | null) {
     syncWithGoogleCalendar,
     updateSyncSettings,
     syncSingleAppointment,
-    deleteSyncedAppointment
+    deleteSyncedAppointment,
   }
 }

@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ interface EmailRequest {
   appointmentData?: any
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -30,7 +30,7 @@ serve(async (req) => {
 
     // Email service configuration (using Resend as example)
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    
+
     if (!resendApiKey) {
       throw new Error('Email service not configured')
     }
@@ -108,7 +108,7 @@ serve(async (req) => {
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -129,16 +129,14 @@ serve(async (req) => {
 
     // Log the email sending in database (optional)
     try {
-      await supabase
-        .from('email_logs')
-        .insert({
-          recipient: to,
-          subject: emailSubject,
-          template_used: template,
-          status: 'sent',
-          external_id: emailResult.id,
-          sent_at: new Date().toISOString()
-        })
+      await supabase.from('email_logs').insert({
+        recipient: to,
+        subject: emailSubject,
+        template_used: template,
+        status: 'sent',
+        external_id: emailResult.id,
+        sent_at: new Date().toISOString(),
+      })
     } catch (logError) {
       console.warn('Failed to log email:', logError)
     }
@@ -147,20 +145,19 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Email sent successfully',
-        id: emailResult.id
+        id: emailResult.id,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error sending email:', error)
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -6,7 +6,7 @@ export interface UserRoleAssignment {
   id: string
   user_id: string
   role: UserRole
-  business_id: string | null  // null for client role, required for admin/employee
+  business_id: string | null // null for client role, required for admin/employee
   business_name?: string
   is_active: boolean
   created_at: string
@@ -24,48 +24,48 @@ export type EmployeeType = 'service_provider' | 'support_staff'
 // =====================================================
 
 // Tipos de modelo de recurso para negocios
-export type ResourceModel = 
-  | 'professional'       // Modelo actual (empleados/profesionales)
-  | 'physical_resource'  // Recursos físicos (habitaciones, mesas, canchas)
-  | 'hybrid'             // Ambos (profesional + recurso)
-  | 'group_class'        // Clases grupales con capacidad múltiple
+export type ResourceModel =
+  | 'professional' // Modelo actual (empleados/profesionales)
+  | 'physical_resource' // Recursos físicos (habitaciones, mesas, canchas)
+  | 'hybrid' // Ambos (profesional + recurso)
+  | 'group_class' // Clases grupales con capacidad múltiple
 
 // Tipos de recursos físicos
-export type PhysicalResourceType = 
-  | 'room'          // Habitaciones (hoteles, hostales)
-  | 'table'         // Mesas (restaurantes, cafés)
-  | 'court'         // Canchas (deportes: fútbol, tenis, paddle)
-  | 'studio'        // Estudios (grabación, fotografía)
-  | 'meeting_room'  // Salas de reuniones
-  | 'desk'          // Escritorios (coworking)
-  | 'equipment'     // Equipos (cámaras, instrumentos)
-  | 'vehicle'       // Vehículos (autos, bicicletas)
-  | 'space'         // Espacios genéricos
-  | 'lane'          // Pistas (bowling, natación)
-  | 'field'         // Campos (golf, paintball)
-  | 'station'       // Estaciones (computadoras, laboratorio)
-  | 'parking_spot'  // Espacios de parqueadero
-  | 'bed'           // Camas (hospital, hostel)
-  | 'other'         // Otros recursos
+export type PhysicalResourceType =
+  | 'room' // Habitaciones (hoteles, hostales)
+  | 'table' // Mesas (restaurantes, cafés)
+  | 'court' // Canchas (deportes: fútbol, tenis, paddle)
+  | 'studio' // Estudios (grabación, fotografía)
+  | 'meeting_room' // Salas de reuniones
+  | 'desk' // Escritorios (coworking)
+  | 'equipment' // Equipos (cámaras, instrumentos)
+  | 'vehicle' // Vehículos (autos, bicicletas)
+  | 'space' // Espacios genéricos
+  | 'lane' // Pistas (bowling, natación)
+  | 'field' // Campos (golf, paintball)
+  | 'station' // Estaciones (computadoras, laboratorio)
+  | 'parking_spot' // Espacios de parqueadero
+  | 'bed' // Camas (hospital, hostel)
+  | 'other' // Otros recursos
 
 // Interface para recursos físicos de negocios
 export interface BusinessResource {
   id: string
   created_at: string
   updated_at: string
-  
+
   // Relaciones
   business_id: string
   location_id?: string
-  
+
   // Información del recurso
   name: string
   resource_type: PhysicalResourceType
   description?: string
-  
+
   // Capacidad
   capacity?: number
-  
+
   // Disponibilidad
   is_active: boolean
   available_hours?: {
@@ -77,17 +77,17 @@ export interface BusinessResource {
     saturday: { open: string; close: string; closed: boolean }
     sunday: { open: string; close: string; closed: boolean }
   }
-  
+
   // Metadata
   image_url?: string
   amenities?: string[]
   price_per_hour?: number
   price_per_day?: number
   currency?: string
-  
+
   // Para clases grupales
   max_simultaneous_bookings?: number
-  
+
   // Computed properties (frontend only - poblados con JOINs)
   location?: Location
   services?: Service[]
@@ -104,7 +104,7 @@ export interface ResourceService {
   service_id: string
   custom_price?: number
   is_active: boolean
-  
+
   // Computed properties (frontend only)
   resource?: BusinessResource
   service?: Service
@@ -159,7 +159,19 @@ export interface PermissionAuditLog {
   id: string
   business_id: string
   user_id: string
-  action: 'grant' | 'revoke' | 'modify' | 'assign_role' | 'remove_role' | 'role.assign' | 'role.revoke' | 'permission.grant' | 'permission.revoke' | 'template.apply' | 'template.create' | 'template.delete'
+  action:
+    | 'grant'
+    | 'revoke'
+    | 'modify'
+    | 'assign_role'
+    | 'remove_role'
+    | 'role.assign'
+    | 'role.revoke'
+    | 'permission.grant'
+    | 'permission.revoke'
+    | 'template.apply'
+    | 'template.create'
+    | 'template.delete'
   permission?: string
   old_value?: string
   new_value?: string
@@ -185,28 +197,28 @@ export interface PermissionAuditLog {
 }
 
 // Permisos granulares disponibles (55 permisos)
-export type Permission = 
+export type Permission =
   // Business Management (5)
   | 'business.view'
   | 'business.edit'
   | 'business.delete'
   | 'business.settings'
   | 'business.categories'
-  
+
   // Locations (5)
   | 'locations.view'
   | 'locations.create'
   | 'locations.edit'
   | 'locations.delete'
   | 'locations.assign_employees'
-  
+
   // Services (5)
   | 'services.view'
   | 'services.create'
   | 'services.edit'
   | 'services.delete'
   | 'services.prices'
-  
+
   // Employees (8)
   | 'employees.view'
   | 'employees.create'
@@ -216,7 +228,7 @@ export type Permission =
   | 'employees.view_payroll'
   | 'employees.manage_payroll'
   | 'employees.set_schedules'
-  
+
   // Appointments (7)
   | 'appointments.view_all'
   | 'appointments.view_own'
@@ -225,7 +237,7 @@ export type Permission =
   | 'appointments.delete'
   | 'appointments.assign'
   | 'appointments.confirm'
-  
+
   // Clients (7)
   | 'clients.view'
   | 'clients.create'
@@ -234,7 +246,7 @@ export type Permission =
   | 'clients.export'
   | 'clients.communication'
   | 'clients.history'
-  
+
   // Accounting (9)
   | 'accounting.view'
   | 'accounting.tax_config'
@@ -245,49 +257,49 @@ export type Permission =
   | 'accounting.payroll.create'
   | 'accounting.payroll.config'
   | 'accounting.export'
-  
+
   // Reports (4)
   | 'reports.view_financial'
   | 'reports.view_operations'
   | 'reports.export'
   | 'reports.analytics'
-  
+
   // Permissions Management (5)
   | 'permissions.view'
   | 'permissions.assign_admin'
   | 'permissions.assign_employee'
   | 'permissions.modify'
   | 'permissions.revoke'
-  
+
   // Notifications (2)
   | 'notifications.send'
   | 'notifications.bulk'
-  
+
   // Settings (3)
   | 'settings.view'
   | 'settings.edit_own'
   | 'settings.edit_business'
-  
+
   // Legacy permissions (backward compatibility)
-  | 'read_appointments' 
-  | 'write_appointments' 
+  | 'read_appointments'
+  | 'write_appointments'
   | 'delete_appointments'
-  | 'read_clients' 
-  | 'write_clients' 
+  | 'read_clients'
+  | 'write_clients'
   | 'delete_clients'
-  | 'read_employees' 
-  | 'write_employees' 
+  | 'read_employees'
+  | 'write_employees'
   | 'delete_employees'
-  | 'read_business' 
-  | 'write_business' 
+  | 'read_business'
+  | 'write_business'
   | 'delete_business'
-  | 'read_reports' 
+  | 'read_reports'
   | 'write_reports'
-  | 'read_locations' 
-  | 'write_locations' 
+  | 'read_locations'
+  | 'write_locations'
   | 'delete_locations'
-  | 'read_services' 
-  | 'write_services' 
+  | 'read_services'
+  | 'write_services'
   | 'delete_services'
   | 'manage_settings'
   | 'send_notifications'
@@ -300,22 +312,23 @@ export interface User {
   username?: string
   avatar_url?: string
   timezone?: string
-  
+
   // Multi-role support
-  roles: UserRoleAssignment[]  // All roles assigned to this user
-  activeRole: UserRole  // Currently selected role
-  activeBusiness?: {  // Business context when in admin/employee role
+  roles: UserRoleAssignment[] // All roles assigned to this user
+  activeRole: UserRole // Currently selected role
+  activeBusiness?: {
+    // Business context when in admin/employee role
     id: string
     name: string
   }
-  
+
   // Legacy single role (deprecated, kept for backward compatibility)
   /** @deprecated Use activeRole instead */
   role: UserRole
-  
+
   /** @deprecated Use activeBusiness.id instead */
   business_id?: string
-  
+
   location_id?: string
   phone?: string
   language: 'es' | 'en'
@@ -334,9 +347,9 @@ export interface User {
   created_at: string
   updated_at?: string
   is_active?: boolean
-  deactivated_at?: string  // Timestamp when account was deactivated
+  deactivated_at?: string // Timestamp when account was deactivated
   last_login?: string
-  accountInactive?: boolean  // Flag indicating account needs reactivation
+  accountInactive?: boolean // Flag indicating account needs reactivation
 }
 
 // Legacy interface for backward compatibility
@@ -350,17 +363,17 @@ export interface UserLegacy {
 }
 
 // Business category types (DEPRECATED - usar BusinessCategory interface)
-export type BusinessCategoryEnum = 
-  | 'health'        // Salud (médicos, dentistas, fisioterapia)
-  | 'beauty'        // Belleza (peluquerías, spas, estética)
-  | 'fitness'       // Fitness (gimnasios, yoga, entrenadores)
-  | 'education'     // Educación (tutorías, cursos, academias)
-  | 'consulting'    // Consultoría (coaches, asesores)
-  | 'professional'  // Servicios profesionales (abogados, contadores)
-  | 'maintenance'   // Mantenimiento (mecánicos, técnicos)
-  | 'food'          // Alimentos (restaurantes, chefs)
+export type BusinessCategoryEnum =
+  | 'health' // Salud (médicos, dentistas, fisioterapia)
+  | 'beauty' // Belleza (peluquerías, spas, estética)
+  | 'fitness' // Fitness (gimnasios, yoga, entrenadores)
+  | 'education' // Educación (tutorías, cursos, academias)
+  | 'consulting' // Consultoría (coaches, asesores)
+  | 'professional' // Servicios profesionales (abogados, contadores)
+  | 'maintenance' // Mantenimiento (mecánicos, técnicos)
+  | 'food' // Alimentos (restaurantes, chefs)
   | 'entertainment' // Entretenimiento (fotografía, eventos)
-  | 'other'         // Otros
+  | 'other' // Otros
 
 // Legal entity type
 export type LegalEntityType = 'company' | 'individual'
@@ -442,25 +455,25 @@ export interface Business {
   created_at: string
   updated_at: string
   is_active?: boolean
-  
+
   // Public profile fields for SEO and discoverability
-  slug?: string                    // URL-friendly unique identifier (e.g., 'salon-belleza-medellin')
-  meta_title?: string              // Custom SEO title (max 60 chars)
-  meta_description?: string        // Custom SEO description (max 160 chars)
-  meta_keywords?: string[]         // SEO keywords array
-  og_image_url?: string            // Open Graph image URL for social sharing
-  is_public?: boolean              // If false, business won't appear in public profiles
-  
+  slug?: string // URL-friendly unique identifier (e.g., 'salon-belleza-medellin')
+  meta_title?: string // Custom SEO title (max 60 chars)
+  meta_description?: string // Custom SEO description (max 160 chars)
+  meta_keywords?: string[] // SEO keywords array
+  og_image_url?: string // Open Graph image URL for social sharing
+  is_public?: boolean // If false, business won't appear in public profiles
+
   // Computed fields for public profiles (from joins)
-  average_rating?: number          // From business_ratings_stats view
-  review_count?: number            // From business_ratings_stats view
-  location_count?: number          // Count of active locations
-  service_count?: number           // Count of active services
-  
+  average_rating?: number // From business_ratings_stats view
+  review_count?: number // From business_ratings_stats view
+  location_count?: number // Count of active locations
+  service_count?: number // Count of active services
+
   // NUEVO: Modelo de Negocio Flexible (21/10/2025)
-  resource_model: ResourceModel    // Tipo de recurso que ofrece el negocio
-  resources?: BusinessResource[]   // Recursos físicos disponibles (computed)
-  resource_count?: number          // Cantidad de recursos activos (computed)
+  resource_model: ResourceModel // Tipo de recurso que ofrece el negocio
+  resources?: BusinessResource[] // Recursos físicos disponibles (computed)
+  resource_count?: number // Cantidad de recursos activos (computed)
 }
 
 // Business locations (branches/offices)
@@ -577,7 +590,14 @@ export interface Appointment {
   client_whatsapp?: string
   start_time: string
   end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status:
+    | 'scheduled'
+    | 'confirmed'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled'
+    | 'no_show'
+    | 'rescheduled'
   location?: string
   site_name?: string
   notes?: string
@@ -590,19 +610,19 @@ export interface Appointment {
   cancelled_reason?: string
   rescheduled_from?: string
   google_calendar_event_id?: string
-  
+
   // NUEVO: Modelo de Negocio Flexible (21/10/2025)
-  resource_id?: string              // ID del recurso físico asignado
-  resource?: BusinessResource       // Recurso poblado con JOIN
-  
+  resource_id?: string // ID del recurso físico asignado
+  resource?: BusinessResource // Recurso poblado con JOIN
+
   // Para clases grupales
-  capacity_used?: number            // Cupos tomados
+  capacity_used?: number // Cupos tomados
   participants?: Array<{
     client_id: string
     client_name: string
     client_email?: string
   }>
-  
+
   // Legacy fields for backward compatibility
   clientId?: string
   clientName?: string
@@ -707,7 +727,7 @@ export interface DashboardStats {
   client_retention_rate: number
   popular_services: Array<{ service: string; count: number; revenue: number }>
   popular_times: Array<{ time: string; count: number }>
-  employee_performance: Array<{ 
+  employee_performance: Array<{
     employee_id: string
     employee_name: string
     total_appointments: number
@@ -721,7 +741,7 @@ export interface DashboardStats {
     total_appointments: number
     revenue: number
   }>
-  
+
   // Legacy fields for backward compatibility
   totalAppointments?: number
   upcomingAppointments?: number
@@ -962,7 +982,13 @@ export interface ReportFilters {
 export interface NotificationTemplate {
   id: string
   business_id: string
-  type: 'reminder_24h' | 'reminder_1h' | 'reminder_15m' | 'confirmation' | 'cancellation' | 'follow_up'
+  type:
+    | 'reminder_24h'
+    | 'reminder_1h'
+    | 'reminder_15m'
+    | 'confirmation'
+    | 'cancellation'
+    | 'follow_up'
   channel: 'email' | 'whatsapp' | 'sms' | 'push'
   subject?: string
   message: string
@@ -1017,9 +1043,9 @@ export interface BusinessPlan {
 // ============================================================================
 
 // Transaction types and categories
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = 'income' | 'expense'
 
-export type TransactionCategory = 
+export type TransactionCategory =
   // Income categories
   | 'appointment_payment'
   | 'product_sale'
@@ -1039,215 +1065,215 @@ export type TransactionCategory =
   | 'insurance'
   | 'equipment'
   | 'training'
-  | 'other_expense';
+  | 'other_expense'
 
 // Location Services - Servicios disponibles en cada sede
 export interface LocationService {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  location_id: string;
-  service_id: string;
-  is_active: boolean;
-  notes?: string;
+  id: string
+  created_at: string
+  updated_at: string
+  location_id: string
+  service_id: string
+  is_active: boolean
+  notes?: string
   // Populated fields
-  service?: Service;
-  location?: Location;
+  service?: Service
+  location?: Location
 }
 
 // Employee Services - Servicios que ofrece cada empleado
 export interface EmployeeService {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  employee_id: string;
-  service_id: string;
-  business_id: string;
-  location_id: string;
-  expertise_level: 1 | 2 | 3 | 4 | 5; // 1=Principiante, 5=Experto
-  is_active: boolean;
-  commission_percentage?: number;
-  notes?: string;
+  id: string
+  created_at: string
+  updated_at: string
+  employee_id: string
+  service_id: string
+  business_id: string
+  location_id: string
+  expertise_level: 1 | 2 | 3 | 4 | 5 // 1=Principiante, 5=Experto
+  is_active: boolean
+  commission_percentage?: number
+  notes?: string
   // Populated fields
-  employee?: User;
-  service?: Service;
-  location?: Location;
+  employee?: User
+  service?: Service
+  location?: Location
 }
 
 // Reviews - Calificaciones de clientes
 export interface Review {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  business_id: string;
-  appointment_id: string;
-  client_id: string;
-  employee_id?: string;
-  rating: 1 | 2 | 3 | 4 | 5;
-  comment?: string;
-  response?: string;
-  response_at?: string;
-  response_by?: string;
-  is_visible: boolean;
-  is_verified: boolean; // Cliente verificado que asistió
-  helpful_count: number;
+  id: string
+  created_at: string
+  updated_at: string
+  business_id: string
+  appointment_id: string
+  client_id: string
+  employee_id?: string
+  rating: 1 | 2 | 3 | 4 | 5
+  comment?: string
+  response?: string
+  response_at?: string
+  response_by?: string
+  is_visible: boolean
+  is_verified: boolean // Cliente verificado que asistió
+  helpful_count: number
   // Populated fields (from joins)
-  client?: User;
-  employee?: User;
-  appointment?: Appointment;
+  client?: User
+  employee?: User
+  appointment?: Appointment
   // Denormalized fields for quick display
-  client_name?: string;
-  employee_name?: string;
+  client_name?: string
+  employee_name?: string
 }
 
 // Transactions - Ingresos y Egresos
 export interface Transaction {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  business_id: string;
-  location_id?: string;
-  type: TransactionType;
-  category: TransactionCategory;
-  amount: number;
-  currency: string;
-  description?: string;
-  appointment_id?: string;
-  employee_id?: string;
-  created_by?: string;
-  transaction_date: string; // DATE format
-  payment_method?: string;
-  reference_number?: string;
-  metadata?: Record<string, unknown>;
-  is_verified: boolean;
-  verified_by?: string;
-  verified_at?: string;
+  id: string
+  created_at: string
+  updated_at: string
+  business_id: string
+  location_id?: string
+  type: TransactionType
+  category: TransactionCategory
+  amount: number
+  currency: string
+  description?: string
+  appointment_id?: string
+  employee_id?: string
+  created_by?: string
+  transaction_date: string // DATE format
+  payment_method?: string
+  reference_number?: string
+  metadata?: Record<string, unknown>
+  is_verified: boolean
+  verified_by?: string
+  verified_at?: string
   // Populated fields
-  location?: Location;
-  appointment?: Appointment;
-  employee?: User;
+  location?: Location
+  appointment?: Appointment
+  employee?: User
 }
 
 // Employee Performance View
 export interface EmployeePerformance {
-  employee_id: string;
-  employee_name: string;
-  email: string;
-  avatar_url?: string;
-  business_id: string;
-  business_name: string;
-  location_id?: string;
-  location_name?: string;
-  position: 'employee' | 'manager';
-  services_offered: number;
-  total_appointments: number;
-  completed_appointments: number;
-  cancelled_appointments: number;
-  completion_rate: number;
-  average_rating: number;
-  total_reviews: number;
-  total_revenue: number;
-  total_paid: number;
+  employee_id: string
+  employee_name: string
+  email: string
+  avatar_url?: string
+  business_id: string
+  business_name: string
+  location_id?: string
+  location_name?: string
+  position: 'employee' | 'manager'
+  services_offered: number
+  total_appointments: number
+  completed_appointments: number
+  cancelled_appointments: number
+  completion_rate: number
+  average_rating: number
+  total_reviews: number
+  total_revenue: number
+  total_paid: number
 }
 
 // Financial Summary View
 export interface FinancialSummary {
-  business_id: string;
-  business_name: string;
-  location_id?: string;
-  location_name?: string;
-  period: string; // Month timestamp
-  total_income: number;
-  total_expenses: number;
-  net_profit: number;
-  income_transactions: number;
-  expense_transactions: number;
-  appointment_count: number;
+  business_id: string
+  business_name: string
+  location_id?: string
+  location_name?: string
+  period: string // Month timestamp
+  total_income: number
+  total_expenses: number
+  net_profit: number
+  income_transactions: number
+  expense_transactions: number
+  appointment_count: number
 }
 
 // Location Services Availability View
 export interface LocationServiceAvailability {
-  location_id: string;
-  location_name: string;
-  business_id: string;
-  business_name: string;
-  service_id: string;
-  service_name: string;
-  duration_minutes: number;
-  price: number;
-  category?: string;
-  available_at_location: boolean;
-  employees_offering: number;
-  average_rating: number;
-  total_reviews: number;
+  location_id: string
+  location_name: string
+  business_id: string
+  business_name: string
+  service_id: string
+  service_name: string
+  duration_minutes: number
+  price: number
+  category?: string
+  available_at_location: boolean
+  employees_offering: number
+  average_rating: number
+  total_reviews: number
 }
 
 // Extended Business interface with new fields
 export interface BusinessExtended extends Business {
-  total_reviews: number;
-  average_rating: number;
-  total_appointments: number;
-  total_revenue: number;
+  total_reviews: number
+  average_rating: number
+  total_appointments: number
+  total_revenue: number
 }
 
 // Extended Appointment interface with new fields
 export interface AppointmentExtended extends Appointment {
-  is_location_exception: boolean;
-  original_location_id?: string;
+  is_location_exception: boolean
+  original_location_id?: string
 }
 
 // Extended Business Employee with location assignment
 export interface BusinessEmployee {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  business_id: string;
-  employee_id: string;
-  location_id?: string; // Sede asignada por defecto
-  role: 'employee' | 'manager';
-  status: 'pending' | 'approved' | 'rejected';
-  hired_at?: string;
-  is_active: boolean;
+  id: string
+  created_at: string
+  updated_at: string
+  business_id: string
+  employee_id: string
+  location_id?: string // Sede asignada por defecto
+  role: 'employee' | 'manager'
+  status: 'pending' | 'approved' | 'rejected'
+  hired_at?: string
+  is_active: boolean
   // Populated fields
-  employee?: User;
-  business?: Business;
-  location?: Location;
+  employee?: User
+  business?: Business
+  location?: Location
 }
 
 // Filters for new entities
 export interface ReviewFilters {
-  business_id?: string;
-  employee_id?: string;
-  client_id?: string;
-  rating?: number[];
-  is_verified?: boolean;
+  business_id?: string
+  employee_id?: string
+  client_id?: string
+  rating?: number[]
+  is_verified?: boolean
   date_range?: {
-    start: string;
-    end: string;
-  };
+    start: string
+    end: string
+  }
 }
 
 export interface TransactionFilters {
-  business_id?: string;
-  location_id?: string;
-  type?: TransactionType[];
-  category?: TransactionCategory[];
+  business_id?: string
+  location_id?: string
+  type?: TransactionType[]
+  category?: TransactionCategory[]
   date_range?: {
-    start: string;
-    end: string;
-  };
-  is_verified?: boolean;
-  min_amount?: number;
-  max_amount?: number;
+    start: string
+    end: string
+  }
+  is_verified?: boolean
+  min_amount?: number
+  max_amount?: number
 }
 
 export interface EmployeeServiceFilters {
-  employee_id?: string;
-  service_id?: string;
-  business_id?: string;
-  location_id?: string;
-  is_active?: boolean;
-  min_expertise_level?: number;
+  employee_id?: string
+  service_id?: string
+  business_id?: string
+  location_id?: string
+  is_active?: boolean
+  min_expertise_level?: number
 }
 
 // ============================================================================
@@ -1315,44 +1341,44 @@ export type NotificationStatus = 'unread' | 'read' | 'archived'
 
 // Tipos de notificaciones (100% alineado con notification_type_enum de producción)
 // IMPORTANTE: Estos tipos deben coincidir EXACTAMENTE con el enum en Supabase
-export type InAppNotificationType = 
+export type InAppNotificationType =
   // Citas (7 tipos)
-  | 'appointment_reminder'            // Recordatorio automático programado
-  | 'appointment_confirmation'        // ⚠️ usar confirmation NO confirmed
-  | 'appointment_cancellation'        // ⚠️ usar cancellation NO cancelled
-  | 'appointment_rescheduled'         // Cita reprogramada
-  | 'appointment_new_client'          // Al cliente cuando agenda
-  | 'appointment_new_employee'        // Al empleado cuando le asignan
-  | 'appointment_new_business'        // Al negocio cuando hay nueva cita
-  
+  | 'appointment_reminder' // Recordatorio automático programado
+  | 'appointment_confirmation' // ⚠️ usar confirmation NO confirmed
+  | 'appointment_cancellation' // ⚠️ usar cancellation NO cancelled
+  | 'appointment_rescheduled' // Cita reprogramada
+  | 'appointment_new_client' // Al cliente cuando agenda
+  | 'appointment_new_employee' // Al empleado cuando le asignan
+  | 'appointment_new_business' // Al negocio cuando hay nueva cita
+
   // Empleados (3 tipos)
-  | 'employee_request_new'            // Al admin cuando recibe solicitud
-  | 'employee_request_accepted'       // Al usuario cuando aceptan
-  | 'employee_request_rejected'       // Al usuario cuando rechazan
-  
+  | 'employee_request_new' // Al admin cuando recibe solicitud
+  | 'employee_request_accepted' // Al usuario cuando aceptan
+  | 'employee_request_rejected' // Al usuario cuando rechazan
+
   // Ausencias y Vacaciones (1 tipo)
-  | 'absence_request'                 // Al admin cuando empleado solicita ausencia
-  
+  | 'absence_request' // Al admin cuando empleado solicita ausencia
+
   // Vacantes laborales (5 tipos)
-  | 'job_vacancy_new'                 // Nueva vacante publicada
-  | 'job_application_new'             // Al admin: nueva aplicación
-  | 'job_application_accepted'        // Al aplicante: aceptado
-  | 'job_application_rejected'        // Al aplicante: rechazado
-  | 'job_application_interview'       // Invitación a entrevista
-  
+  | 'job_vacancy_new' // Nueva vacante publicada
+  | 'job_application_new' // Al admin: nueva aplicación
+  | 'job_application_accepted' // Al aplicante: aceptado
+  | 'job_application_rejected' // Al aplicante: rechazado
+  | 'job_application_interview' // Invitación a entrevista
+
   // Verificación de contactos (3 tipos)
-  | 'email_verification'              // Verificar email
-  | 'phone_verification_sms'          // Verificar teléfono por SMS
-  | 'phone_verification_whatsapp'     // Verificar teléfono por WhatsApp
-  
+  | 'email_verification' // Verificar email
+  | 'phone_verification_sms' // Verificar teléfono por SMS
+  | 'phone_verification_whatsapp' // Verificar teléfono por WhatsApp
+
   // Sistema (4 tipos)
-  | 'security_alert'                  // Alertas de seguridad
-  | 'account_activity'                // Actividad de cuenta
-  | 'daily_digest'                    // Resumen diario
-  | 'weekly_summary'                  // Resumen semanal
-  
+  | 'security_alert' // Alertas de seguridad
+  | 'account_activity' // Actividad de cuenta
+  | 'daily_digest' // Resumen diario
+  | 'weekly_summary' // Resumen semanal
+
   // Chat (1 tipo) ✨ NUEVO
-  | 'chat_message'                    // Nuevo mensaje de chat
+  | 'chat_message' // Nuevo mensaje de chat
 
 // TOTAL: 23 tipos alineados con notification_type_enum de producción
 // Nota: reminder_24h, reminder_1h, reminder_15m se manejan como appointment_reminder con metadata
@@ -1366,19 +1392,19 @@ export interface InAppNotification {
   created_at: string
   updated_at: string
   read_at?: string
-  
+
   // Usuario destinatario
   user_id: string
-  
+
   // Contexto de negocio (opcional)
   business_id?: string
-  
+
   // Tipo y contenido
   type: InAppNotificationType
   title: string
   message: string // Nombre de columna en base de datos
   body?: string // Alias para compatibilidad
-  
+
   // Datos adicionales
   data: {
     appointment_id?: string
@@ -1387,14 +1413,14 @@ export interface InAppNotification {
     action?: string
     [key: string]: unknown
   }
-  
+
   // Estado y prioridad
   status: NotificationStatus
   priority: NotificationPriority
-  
+
   // URL de acción
   action_url?: string
-  
+
   // Soft delete
   is_deleted: boolean
 }
@@ -1447,25 +1473,25 @@ export interface Conversation {
   id: string
   created_at: string
   updated_at: string
-  
+
   // Contexto
   business_id: string
   type: ConversationType
-  
+
   // Metadata
   name?: string // Solo para grupos
   description?: string
   avatar_url?: string
   created_by: string
-  
+
   // Estado
   is_archived: boolean
   last_message_at?: string
   last_message_preview?: string
-  
+
   // Scope flexible
   scope: ConversationScope
-  
+
   // Relaciones (JOIN opcional)
   business?: {
     id: string
@@ -1480,7 +1506,7 @@ export interface Conversation {
   }
   members?: ConversationMember[]
   last_message?: Message
-  
+
   // Campos calculados para UI
   display_name?: string // Para conversaciones directas: nombre del otro usuario
   display_avatar?: string
@@ -1491,21 +1517,21 @@ export interface Conversation {
 export interface ConversationMember {
   conversation_id: string
   user_id: string
-  
+
   // Metadata
   joined_at: string
   role: ConversationRole
-  
+
   // Configuración personal
   muted: boolean
   notifications_enabled: boolean
   custom_name?: string
-  
+
   // Tracking
   last_read_at?: string
   last_seen_at?: string
   unread_count: number
-  
+
   // Relaciones (JOIN opcional)
   user?: {
     id: string
@@ -1521,27 +1547,27 @@ export interface Message {
   created_at: string
   updated_at: string
   edited_at?: string
-  
+
   // Relaciones
   conversation_id: string
   sender_id?: string // null si fue eliminado el sender
-  
+
   // Contenido
   type: MessageType
   body?: string
   metadata: MessageMetadata
-  
+
   // Features
   reply_to?: string
   is_pinned: boolean
   pinned_by?: string
   pinned_at?: string
-  
+
   // Soft delete
   is_deleted: boolean
   deleted_by?: string
   deleted_at?: string
-  
+
   // Relaciones (JOIN opcional)
   sender?: {
     id: string
@@ -1550,11 +1576,11 @@ export interface Message {
     avatar_url?: string
   }
   reply_to_message?: Message
-  
+
   // Estado de entrega y lectura
   delivery_status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
   read_by: ReadReceipt[] // Array de quién leyó el mensaje
-  
+
   // Campos calculados para UI
   is_own_message?: boolean // Si el mensaje es del usuario actual
   is_read?: boolean
@@ -1573,17 +1599,23 @@ export interface MessageMetadata {
   file_name?: string
   file_size?: number
   file_type?: string
-  
+
   // Para imágenes
   image_url?: string
   image_width?: number
   image_height?: number
   image_thumbnail_url?: string
-  
+
   // Para mensajes del sistema
-  system_type?: 'user_joined' | 'user_left' | 'conversation_created' | 'name_changed' | 'member_added' | 'member_removed'
+  system_type?:
+    | 'user_joined'
+    | 'user_left'
+    | 'conversation_created'
+    | 'name_changed'
+    | 'member_added'
+    | 'member_removed'
   system_data?: Record<string, unknown>
-  
+
   // Extras
   [key: string]: unknown
 }
@@ -1798,6 +1830,4 @@ export type {
 } from '@/lib/hierarchyService'
 
 // Re-export tipos de useEmployeeMetrics para uso global
-export type {
-  UseEmployeeMetricsOptions,
-} from '@/hooks/useEmployeeMetrics'
+export type { UseEmployeeMetricsOptions } from '@/hooks/useEmployeeMetrics'

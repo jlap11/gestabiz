@@ -1,11 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, DollarSign, MapPin, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { DollarSign, MapPin, Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -26,23 +22,28 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useBusinessResources, useDeleteResource, useCreateResource, useUpdateResource } from '@/hooks/useBusinessResources'
+import {
+  useBusinessResources,
+  useCreateResource,
+  useDeleteResource,
+  useUpdateResource,
+} from '@/hooks/useBusinessResources'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
-import type { BusinessResource, Business, Location } from '@/types/types'
+import type { Business, BusinessResource, Location } from '@/types/types'
 import { toast } from 'sonner'
 
 /**
  * Gestor de Recursos Físicos
  * CRUD completo para habitaciones, mesas, canchas, etc.
- * 
+ *
  * Fecha: 21 de Octubre de 2025
  * Parte del sistema de Modelo de Negocio Flexible
  */
@@ -56,20 +57,32 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
   const [selectedType, setSelectedType] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingResource, setEditingResource] = useState<BusinessResource | null>(null)
-  
+
   // Helper function to get resource type label from translations
   const getResourceTypeLabel = (type: string): string => {
     const key = `businessResources.types.${type}`
     return t(key) || type
   }
-  
+
   // List of all resource types
   const resourceTypes: Array<BusinessResource['resource_type']> = [
-    'room', 'table', 'court', 'desk', 'equipment', 'vehicle',
-    'space', 'lane', 'field', 'station', 'parking_spot',
-    'bed', 'studio', 'meeting_room', 'other'
+    'room',
+    'table',
+    'court',
+    'desk',
+    'equipment',
+    'vehicle',
+    'space',
+    'lane',
+    'field',
+    'station',
+    'parking_spot',
+    'bed',
+    'studio',
+    'meeting_room',
+    'other',
   ]
-  
+
   // Estado del formulario
   const [formData, setFormData] = useState({
     name: '',
@@ -86,7 +99,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
   const deleteMutation = useDeleteResource()
   const createMutation = useCreateResource()
   const updateMutation = useUpdateResource()
-  
+
   // Estado para ubicaciones del negocio
   const [locations, setLocations] = useState<Location[]>([])
 
@@ -98,19 +111,18 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
         .select('*')
         .eq('business_id', business.id)
         .eq('is_active', true)
-      
+
       if (data) {
         setLocations(data)
       }
     }
-    
+
     fetchLocations()
   }, [business.id])
 
   // Filtrar por tipo
-  const filteredResources = selectedType === 'all'
-    ? resources
-    : resources?.filter(r => r.resource_type === selectedType)
+  const filteredResources =
+    selectedType === 'all' ? resources : resources?.filter(r => r.resource_type === selectedType)
 
   const handleCreate = () => {
     setEditingResource(null)
@@ -213,9 +225,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{t('businessResources.title')}</h2>
-          <p className="text-muted-foreground">
-            {t('businessResources.subtitle')}
-          </p>
+          <p className="text-muted-foreground">{t('businessResources.subtitle')}</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -234,7 +244,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('businessResources.allTypes')}</SelectItem>
-                  {resourceTypes.map((type) => (
+                  {resourceTypes.map(type => (
                     <SelectItem key={type} value={type}>
                       {getResourceTypeLabel(type)}
                     </SelectItem>
@@ -254,21 +264,18 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           )}
-          
+
           {!isLoading && filteredResources?.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 {t('businessResources.noResources')}{' '}
-                <button
-                  onClick={handleCreate}
-                  className="text-primary hover:underline"
-                >
+                <button onClick={handleCreate} className="text-primary hover:underline">
                   {t('common.actions.create')}
                 </button>
               </p>
             </div>
           )}
-          
+
           {!isLoading && filteredResources && filteredResources.length > 0 && (
             <Table>
               <TableHeader>
@@ -279,15 +286,15 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                   <TableHead>{t('businessResources.table.capacity')}</TableHead>
                   <TableHead>{t('businessResources.table.price')}</TableHead>
                   <TableHead>{t('businessResources.table.status')}</TableHead>
-                  <TableHead className="text-right">{t('businessResources.table.actions')}</TableHead>
+                  <TableHead className="text-right">
+                    {t('businessResources.table.actions')}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredResources.map((resource) => (
+                {filteredResources.map(resource => (
                   <TableRow key={resource.id}>
-                    <TableCell className="font-medium">
-                      {resource.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{resource.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline">
                         {getResourceTypeLabel(resource.resource_type)}
@@ -317,21 +324,23 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                           : 'N/A'}
                       </div>
                     </TableCell>
-                      <TableCell>
+                    <TableCell>
                       <Badge
                         variant="outline"
-                        className={resource.is_active ? 'bg-green-500/10 text-green-700 border-green-500/20' : 'bg-red-500/10 text-red-700 border-red-500/20'}
+                        className={
+                          resource.is_active
+                            ? 'bg-green-500/10 text-green-700 border-green-500/20'
+                            : 'bg-red-500/10 text-red-700 border-red-500/20'
+                        }
                       >
-                        {resource.is_active ? t('businessResources.status.available') : t('businessResources.status.inactive')}
+                        {resource.is_active
+                          ? t('businessResources.status.available')
+                          : t('businessResources.status.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(resource)}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(resource)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -356,7 +365,9 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingResource ? t('businessResources.editResource') : t('businessResources.addResource')}
+              {editingResource
+                ? t('businessResources.editResource')
+                : t('businessResources.addResource')}
             </DialogTitle>
             <DialogDescription>
               {editingResource
@@ -374,7 +385,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder={t('businessResources.form.namePlaceholder')}
                 required
               />
@@ -387,16 +398,18 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               </Label>
               <Select
                 value={formData.resource_type}
-                onValueChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  resource_type: value as BusinessResource['resource_type'] 
-                }))}
+                onValueChange={value =>
+                  setFormData(prev => ({
+                    ...prev,
+                    resource_type: value as BusinessResource['resource_type'],
+                  }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {resourceTypes.map((type) => (
+                  {resourceTypes.map(type => (
                     <SelectItem key={type} value={type}>
                       {getResourceTypeLabel(type)}
                     </SelectItem>
@@ -412,7 +425,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               </Label>
               <Select
                 value={formData.location_id}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, location_id: value }))}
+                onValueChange={value => setFormData(prev => ({ ...prev, location_id: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t('businessResources.form.selectLocation')} />
@@ -426,9 +439,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                 </SelectContent>
               </Select>
               {locations.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {t('locations.no_locations')}
-                </p>
+                <p className="text-sm text-muted-foreground">{t('locations.no_locations')}</p>
               )}
             </div>
 
@@ -445,10 +456,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                     type="number"
                     min="1"
                     value={formData.capacity}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      capacity: Number.parseInt(e.target.value, 10) || 1 
-                    }))}
+                    onChange={e =>
+                      setFormData(prev => ({
+                        ...prev,
+                        capacity: Number.parseInt(e.target.value, 10) || 1,
+                      }))
+                    }
                     className="pl-10"
                     placeholder={t('businessResources.form.capacityPlaceholder')}
                     required
@@ -457,9 +470,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price_per_hour">
-                  {t('businessResources.form.pricePerHour')}
-                </Label>
+                <Label htmlFor="price_per_hour">{t('businessResources.form.pricePerHour')}</Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -468,10 +479,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                     min="0"
                     step="1000"
                     value={formData.price_per_hour}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      price_per_hour: Number.parseFloat(e.target.value) || 0 
-                    }))}
+                    onChange={e =>
+                      setFormData(prev => ({
+                        ...prev,
+                        price_per_hour: Number.parseFloat(e.target.value) || 0,
+                      }))
+                    }
                     className="pl-10"
                     placeholder={t('businessResources.form.pricePlaceholder')}
                   />
@@ -485,7 +498,7 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder={t('businessResources.form.descriptionPlaceholder')}
                 rows={3}
               />
@@ -493,13 +506,11 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
 
             {/* Amenidades */}
             <div className="space-y-2">
-              <Label htmlFor="amenities">
-                {t('businessResources.form.amenities')}
-              </Label>
+              <Label htmlFor="amenities">{t('businessResources.form.amenities')}</Label>
               <Input
                 id="amenities"
                 value={formData.amenities}
-                onChange={(e) => setFormData(prev => ({ ...prev, amenities: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, amenities: e.target.value }))}
                 placeholder={t('businessResources.form.amenitiesPlaceholder')}
               />
               <p className="text-xs text-muted-foreground">
@@ -512,10 +523,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
               <Label htmlFor="is_active">{t('businessResources.form.status')}</Label>
               <Select
                 value={formData.is_active ? 'active' : 'inactive'}
-                onValueChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  is_active: value === 'active' 
-                }))}
+                onValueChange={value =>
+                  setFormData(prev => ({
+                    ...prev,
+                    is_active: value === 'active',
+                  }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -528,17 +541,10 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             </div>
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCloseModal}
-              >
+              <Button type="button" variant="outline" onClick={handleCloseModal}>
                 {t('common.actions.cancel')}
               </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
                 {(createMutation.isPending || updateMutation.isPending) && (
                   <span className="mr-2">⏳</span>
                 )}

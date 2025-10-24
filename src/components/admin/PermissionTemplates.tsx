@@ -4,13 +4,7 @@
 // =====================================================
 
 import React, { useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -35,21 +29,18 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { usePermissions } from '@/hooks/usePermissions-v2'
-import { 
-  PERMISSION_CATEGORIES, 
-  PERMISSION_DESCRIPTIONS 
-} from '@/lib/permissions-v2'
-import { 
-  FileText, 
-  Plus, 
-  Trash2, 
-  Edit, 
+import { PERMISSION_CATEGORIES, PERMISSION_DESCRIPTIONS } from '@/lib/permissions-v2'
+import {
   Check,
-  Shield,
-  Crown,
-  UserCheck,
-  Loader2,
   Copy,
+  Crown,
+  Edit,
+  FileText,
+  Loader2,
+  Plus,
+  Shield,
+  Trash2,
+  UserCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Permission, PermissionTemplate } from '@/types/types'
@@ -90,8 +81,8 @@ function TemplateCard({
   onDelete?: () => void
   canModify: boolean
 }) {
-  const permissionsArray = Array.isArray(template.permissions) 
-    ? template.permissions 
+  const permissionsArray = Array.isArray(template.permissions)
+    ? template.permissions
     : JSON.parse(template.permissions as string)
 
   return (
@@ -110,7 +101,7 @@ function TemplateCard({
             </div>
             <CardDescription>{template.description}</CardDescription>
           </div>
-            <Badge variant={template.role === 'admin' ? 'default' : 'outline'}>
+          <Badge variant={template.role === 'admin' ? 'default' : 'outline'}>
             {template.role === 'admin' ? (
               <Crown className="h-3 w-3 mr-1" />
             ) : (
@@ -146,22 +137,12 @@ function TemplateCard({
 
         {/* Botones de acción */}
         <div className="flex items-center gap-2 pt-2">
-          <Button
-            onClick={onApply}
-            disabled={!canModify}
-            className="flex-1 gap-2"
-            size="sm"
-          >
+          <Button onClick={onApply} disabled={!canModify} className="flex-1 gap-2" size="sm">
             <Copy className="h-4 w-4" />
             {t('common.permissionTemplates.applyTemplate')}
           </Button>
           {!isSystem && onEdit && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              disabled={!canModify}
-            >
+            <Button variant="outline" size="sm" onClick={onEdit} disabled={!canModify}>
               <Edit className="h-4 w-4" />
             </Button>
           )}
@@ -195,7 +176,7 @@ function CreateTemplateDialog({
   const [name, setName] = useState(editingTemplate?.name || '')
   const [description, setDescription] = useState(editingTemplate?.description || '')
   const [role, setRole] = useState<'admin' | 'employee'>(editingTemplate?.role || 'employee')
-  
+
   // Parse permissions from editing template
   const getInitialPermissions = (): Permission[] => {
     if (!editingTemplate) return []
@@ -204,7 +185,7 @@ function CreateTemplateDialog({
     }
     return JSON.parse(editingTemplate.permissions as string) as Permission[]
   }
-  
+
   const [selectedPermissions, setSelectedPermissions] = useState<Set<Permission>>(
     new Set(getInitialPermissions())
   )
@@ -222,7 +203,7 @@ function CreateTemplateDialog({
   const toggleCategory = (categoryKey: string) => {
     const category = PERMISSION_CATEGORIES[categoryKey as keyof typeof PERMISSION_CATEGORIES]
     const allSelected = category.permissions.every(p => selectedPermissions.has(p))
-    
+
     const newSelection = new Set(selectedPermissions)
     category.permissions.forEach(permission => {
       if (allSelected) {
@@ -231,7 +212,7 @@ function CreateTemplateDialog({
         newSelection.add(permission)
       }
     })
-    
+
     setSelectedPermissions(newSelection)
   }
 
@@ -260,7 +241,9 @@ function CreateTemplateDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            {editingTemplate ? t('common.permissionTemplates.editTemplate') : t('common.permissionTemplates.newTemplate')}
+            {editingTemplate
+              ? t('common.permissionTemplates.editTemplate')
+              : t('common.permissionTemplates.newTemplate')}
           </DialogTitle>
           <DialogDescription>
             Define un conjunto reutilizable de permisos para asignar a múltiples usuarios
@@ -275,7 +258,7 @@ function CreateTemplateDialog({
               id="name"
               placeholder="Ej: Gerente de Citas"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
             />
           </div>
 
@@ -286,7 +269,7 @@ function CreateTemplateDialog({
               id="description"
               placeholder="Describe el propósito de esta plantilla..."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               rows={2}
             />
           </div>
@@ -301,7 +284,7 @@ function CreateTemplateDialog({
                   name="role"
                   value="admin"
                   checked={role === 'admin'}
-                  onChange={(e) => setRole(e.target.value as 'admin' | 'employee')}
+                  onChange={e => setRole(e.target.value as 'admin' | 'employee')}
                   className="w-4 h-4"
                 />
                 <span className="text-sm">Administrador</span>
@@ -312,7 +295,7 @@ function CreateTemplateDialog({
                   name="role"
                   value="employee"
                   checked={role === 'employee'}
-                  onChange={(e) => setRole(e.target.value as 'admin' | 'employee')}
+                  onChange={e => setRole(e.target.value as 'admin' | 'employee')}
                   className="w-4 h-4"
                 />
                 <span className="text-sm">Empleado</span>
@@ -324,7 +307,8 @@ function CreateTemplateDialog({
           <div className="flex items-center justify-between">
             <Label>Permisos seleccionados</Label>
             <Badge variant="outline">
-              {selectedPermissions.size} / {Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length}
+              {selectedPermissions.size} /{' '}
+              {Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length}
             </Badge>
           </div>
 
@@ -332,7 +316,9 @@ function CreateTemplateDialog({
           <ScrollArea className="h-[400px] border rounded-lg p-4">
             <Accordion type="multiple" className="space-y-2">
               {Object.entries(PERMISSION_CATEGORIES).map(([key, category]) => {
-                const selectedCount = category.permissions.filter(p => selectedPermissions.has(p)).length
+                const selectedCount = category.permissions.filter(p =>
+                  selectedPermissions.has(p)
+                ).length
                 const allSelected = selectedCount === category.permissions.length
 
                 return (
@@ -342,7 +328,7 @@ function CreateTemplateDialog({
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={allSelected}
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation()
                               toggleCategory(key)
                             }}
@@ -356,7 +342,7 @@ function CreateTemplateDialog({
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
                       <div className="space-y-2 pt-2">
-                        {category.permissions.map((permission) => (
+                        {category.permissions.map(permission => (
                           <div
                             key={permission}
                             className="flex items-start gap-3 p-2 rounded hover:bg-muted/50"
@@ -407,13 +393,7 @@ export function PermissionTemplates({
   currentUserId,
 }: Readonly<PermissionTemplatesProps>) {
   const { t } = useLanguage()
-  const { 
-    templates, 
-    createTemplate, 
-    deleteTemplate,
-    isOwner,
-    isLoading,
-  } = usePermissions({
+  const { templates, createTemplate, deleteTemplate, isOwner, isLoading } = usePermissions({
     userId: currentUserId,
     businessId,
     ownerId,
@@ -446,11 +426,11 @@ export function PermissionTemplates({
       },
       {
         onSuccess: () => {
-            toast.success(t('admin.templateActions.created'))
+          toast.success(t('admin.templateActions.created'))
           setCreateDialogOpen(false)
         },
-        onError: (error) => {
-            toast.error(t('admin.templateActions.createError'), {
+        onError: error => {
+          toast.error(t('admin.templateActions.createError'), {
             description: error.message,
           })
         },
@@ -473,7 +453,7 @@ export function PermissionTemplates({
           onSuccess: () => {
             toast.success(t('admin.templateActions.deleted'))
           },
-          onError: (error) => {
+          onError: error => {
             toast.error(t('admin.templateActions.deleteError'), {
               description: error.message,
             })
@@ -512,16 +492,16 @@ export function PermissionTemplates({
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               )}
-              
+
               {!isLoading && systemTemplates.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   No hay plantillas del sistema disponibles
                 </div>
               )}
-              
+
               {!isLoading && systemTemplates.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {systemTemplates.map((template) => (
+                  {systemTemplates.map(template => (
                     <TemplateCard
                       key={template.id}
                       template={template}
@@ -566,7 +546,7 @@ export function PermissionTemplates({
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               )}
-              
+
               {!isLoading && customTemplates.length === 0 && (
                 <div className="text-center py-12">
                   <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -589,10 +569,10 @@ export function PermissionTemplates({
                   </Button>
                 </div>
               )}
-              
+
               {!isLoading && customTemplates.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {customTemplates.map((template) => (
+                  {customTemplates.map(template => (
                     <TemplateCard
                       key={template.id}
                       template={template}

@@ -3,8 +3,8 @@
  * Permite registrar ventas directas sin cita previa y ver historial
  */
 
-import React, { useState, useEffect } from 'react'
-import { DollarSign, Calendar, User, Package, TrendingUp } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Calendar, DollarSign, Package, TrendingUp, User } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { QuickSaleForm } from '@/components/sales/QuickSaleForm'
 import supabase from '@/lib/supabase'
@@ -54,7 +54,8 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
     try {
       const { data, error } = await supabase
         .from('transactions')
-        .select(`
+        .select(
+          `
           id,
           amount,
           currency,
@@ -66,7 +67,8 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
           profiles!transactions_employee_id_fkey (
             full_name
           )
-        `)
+        `
+        )
         .eq('business_id', businessId)
         .eq('type', 'income')
         .eq('category', 'service_sale')
@@ -147,15 +149,11 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Ventas Hoy
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Ventas Hoy</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats.today.toLocaleString('es-CO')}
-            </div>
+            <div className="text-2xl font-bold">${stats.today.toLocaleString('es-CO')}</div>
             <p className="text-xs text-muted-foreground mt-1">COP</p>
           </CardContent>
         </Card>
@@ -168,9 +166,7 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats.week.toLocaleString('es-CO')}
-            </div>
+            <div className="text-2xl font-bold">${stats.week.toLocaleString('es-CO')}</div>
             <p className="text-xs text-muted-foreground mt-1">COP</p>
           </CardContent>
         </Card>
@@ -183,9 +179,7 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats.month.toLocaleString('es-CO')}
-            </div>
+            <div className="text-2xl font-bold">${stats.month.toLocaleString('es-CO')}</div>
             <p className="text-xs text-muted-foreground mt-1">COP</p>
           </CardContent>
         </Card>
@@ -213,7 +207,7 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {recentSales.map((sale) => (
+              {recentSales.map(sale => (
                 <div
                   key={sale.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -240,13 +234,9 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
                         )}
                       </div>
                     )}
-                    <p className="text-sm text-muted-foreground">
-                      {sale.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{sale.description}</p>
                     {sale.metadata?.notes && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        📝 {sale.metadata.notes}
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">📝 {sale.metadata.notes}</p>
                     )}
                     {sale.profiles?.full_name && (
                       <p className="text-xs text-muted-foreground mt-1">

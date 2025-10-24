@@ -1,10 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
@@ -15,19 +21,19 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { 
-  Briefcase, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  Users, 
-  Eye,
-  Plus,
-  Filter,
-  Search,
-  MoreVertical,
+import {
+  Briefcase,
+  Clock,
+  DollarSign,
   Edit,
-  XCircle
+  Eye,
+  Filter,
+  MapPin,
+  MoreVertical,
+  Plus,
+  Search,
+  Users,
+  XCircle,
 } from 'lucide-react'
 
 interface VacancyListProps {
@@ -69,37 +75,37 @@ const POSITION_TYPES = {
   full_time: 'Tiempo Completo',
   part_time: 'Medio Tiempo',
   freelance: 'Freelance',
-  temporary: 'Temporal'
+  temporary: 'Temporal',
 }
 
 const EXPERIENCE_LEVELS = {
   entry_level: 'Principiante',
   mid_level: 'Intermedio',
-  senior: 'Senior'
+  senior: 'Senior',
 }
 
 const STATUS_COLORS = {
   open: 'bg-green-500/10 text-green-500 border-green-500/20',
   paused: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
   closed: 'bg-muted text-muted-foreground border-border',
-  filled: 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+  filled: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
 }
 
 const STATUS_LABELS = {
   open: 'Abierta',
   paused: 'Pausada',
   closed: 'Cerrada',
-  filled: 'Ocupada'
+  filled: 'Ocupada',
 }
 
-export function VacancyList({ 
-  businessId, 
-  onCreateNew, 
-  onSelectVacancy, 
+export function VacancyList({
+  businessId,
+  onCreateNew,
+  onSelectVacancy,
   onEdit,
   onViewApplications,
   statusFilter: propStatusFilter = 'all',
-  highlightedVacancyId
+  highlightedVacancyId,
 }: Readonly<VacancyListProps>) {
   const { t } = useLanguage()
   const [vacancies, setVacancies] = useState<JobVacancy[]>([])
@@ -116,7 +122,7 @@ export function VacancyList({
   // Handler para cerrar una vacante
   const handleCloseVacancy = async (vacancyId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    
+
     try {
       const { error } = await supabase
         .from('job_vacancies')
@@ -136,9 +142,9 @@ export function VacancyList({
   useEffect(() => {
     if (highlightId && highlightRef.current) {
       setTimeout(() => {
-        highlightRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
+        highlightRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
         })
       }, 100) // Pequeño delay para asegurar que el elemento esté renderizado
     }
@@ -150,7 +156,7 @@ export function VacancyList({
       const timer = setTimeout(() => {
         setHighlightId(null)
       }, 3000)
-      
+
       return () => clearTimeout(timer)
     }
   }, [highlightId])
@@ -161,13 +167,15 @@ export function VacancyList({
 
       const { data, error } = await supabase
         .from('job_vacancies')
-        .select(`
+        .select(
+          `
           *,
           locations (
             name,
             city
           )
-        `)
+        `
+        )
         .eq('business_id', businessId)
         .order('created_at', { ascending: false })
 
@@ -197,9 +205,8 @@ export function VacancyList({
     // Búsqueda por título
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(v => 
-        v.title.toLowerCase().includes(query) ||
-        v.description.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        v => v.title.toLowerCase().includes(query) || v.description.toLowerCase().includes(query)
       )
     }
 
@@ -216,12 +223,12 @@ export function VacancyList({
 
   const formatSalary = (min: number | null, max: number | null, currency: string) => {
     if (!min && !max) return 'A convenir'
-    
+
     const formatter = new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: currency || 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     })
 
     if (min && max) {
@@ -302,7 +309,7 @@ export function VacancyList({
                 <Input
                   placeholder={t('common.placeholders.titleOrDescription')}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="bg-background border-border text-foreground pl-10"
                 />
               </div>
@@ -318,13 +325,14 @@ export function VacancyList({
             <div className="text-center">
               <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                {vacancies.length === 0 ? 'No hay vacantes publicadas' : 'No se encontraron vacantes'}
+                {vacancies.length === 0
+                  ? 'No hay vacantes publicadas'
+                  : 'No se encontraron vacantes'}
               </h3>
               <p className="text-muted-foreground mb-4">
-                {vacancies.length === 0 
+                {vacancies.length === 0
                   ? 'Crea tu primera vacante para empezar a recibir aplicaciones'
-                  : 'Intenta ajustar los filtros de búsqueda'
-                }
+                  : 'Intenta ajustar los filtros de búsqueda'}
               </p>
               {vacancies.length === 0 && (
                 <Button onClick={onCreateNew} className="bg-primary hover:bg-primary/90">
@@ -337,13 +345,13 @@ export function VacancyList({
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredVacancies.map((vacancy) => (
-            <Card 
+          {filteredVacancies.map(vacancy => (
+            <Card
               key={vacancy.id}
               ref={vacancy.id === highlightId ? highlightRef : null}
               className={cn(
-                "bg-card border-border hover:border-primary/50 transition-all",
-                vacancy.id === highlightId && "ring-2 ring-primary shadow-lg animate-pulse"
+                'bg-card border-border hover:border-primary/50 transition-all',
+                vacancy.id === highlightId && 'ring-2 ring-primary shadow-lg animate-pulse'
               )}
             >
               <CardHeader>
@@ -351,8 +359,8 @@ export function VacancyList({
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <CardTitle className="text-foreground">{vacancy.title}</CardTitle>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={STATUS_COLORS[vacancy.status as keyof typeof STATUS_COLORS]}
                       >
                         {STATUS_LABELS[vacancy.status as keyof typeof STATUS_LABELS]}
@@ -362,22 +370,22 @@ export function VacancyList({
                       {vacancy.description}
                     </CardDescription>
                   </div>
-                  
+
                   {/* Menú de acciones */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation()
                           if (onViewApplications) onViewApplications(vacancy.id)
                         }}
@@ -386,7 +394,7 @@ export function VacancyList({
                         Ver Aplicaciones
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation()
                           if (onEdit) onEdit(vacancy.id)
                         }}
@@ -396,7 +404,7 @@ export function VacancyList({
                       </DropdownMenuItem>
                       {vacancy.status === 'open' && (
                         <DropdownMenuItem
-                          onClick={(e) => handleCloseVacancy(vacancy.id, e)}
+                          onClick={e => handleCloseVacancy(vacancy.id, e)}
                           className="text-destructive focus:text-destructive"
                         >
                           <XCircle className="h-4 w-4 mr-2" />
@@ -411,7 +419,9 @@ export function VacancyList({
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Briefcase className="h-4 w-4" />
-                    <span>{POSITION_TYPES[vacancy.position_type as keyof typeof POSITION_TYPES]}</span>
+                    <span>
+                      {POSITION_TYPES[vacancy.position_type as keyof typeof POSITION_TYPES]}
+                    </span>
                   </div>
 
                   {vacancy.locations && (
@@ -423,7 +433,9 @@ export function VacancyList({
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <DollarSign className="h-4 w-4" />
-                    <span>{formatSalary(vacancy.salary_min, vacancy.salary_max, vacancy.currency)}</span>
+                    <span>
+                      {formatSalary(vacancy.salary_min, vacancy.salary_max, vacancy.currency)}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -435,7 +447,9 @@ export function VacancyList({
                 <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Users className="h-4 w-4 text-primary" />
-                    <span className="text-foreground font-semibold">{vacancy.applications_count}</span>
+                    <span className="text-foreground font-semibold">
+                      {vacancy.applications_count}
+                    </span>
                     <span>aplicaciones</span>
                   </div>
 
@@ -447,12 +461,19 @@ export function VacancyList({
 
                   {vacancy.experience_required && (
                     <Badge variant="outline" className="border-border text-foreground">
-                      {EXPERIENCE_LEVELS[vacancy.experience_required as keyof typeof EXPERIENCE_LEVELS]}
+                      {
+                        EXPERIENCE_LEVELS[
+                          vacancy.experience_required as keyof typeof EXPERIENCE_LEVELS
+                        ]
+                      }
                     </Badge>
                   )}
 
                   {vacancy.remote_allowed && (
-                    <Badge variant="outline" className="border-blue-500/20 text-blue-600 dark:text-blue-400">
+                    <Badge
+                      variant="outline"
+                      className="border-blue-500/20 text-blue-600 dark:text-blue-400"
+                    >
                       Remoto
                     </Badge>
                   )}

@@ -8,12 +8,12 @@ interface ProfilePageProps {
   onUserUpdate?: (user: User) => void
 }
 
-import { useState } from 'react';
-import BusinessRegistration from '../business/BusinessRegistration';
+import { useState } from 'react'
+import BusinessRegistration from '../business/BusinessRegistration'
 
 export default function ProfilePage({ user, onClose, onUserUpdate }: Readonly<ProfilePageProps>) {
-  const [showBusinessForm, setShowBusinessForm] = useState(false);
-  const { t } = useLanguage();
+  const [showBusinessForm, setShowBusinessForm] = useState(false)
+  const { t } = useLanguage()
 
   return (
     <div className="container mx-auto p-6">
@@ -45,13 +45,13 @@ export default function ProfilePage({ user, onClose, onUserUpdate }: Readonly<Pr
           <BusinessRegistration
             user={user}
             onBusinessCreated={() => {
-              setShowBusinessForm(false);
-              if (onUserUpdate) onUserUpdate(user);
+              setShowBusinessForm(false)
+              if (onUserUpdate) onUserUpdate(user)
             }}
             onCancel={() => setShowBusinessForm(false)}
           />
         </div>
       )}
     </div>
-  );
+  )
 }

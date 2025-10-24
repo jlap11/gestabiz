@@ -3,7 +3,7 @@
 // Editor de permisos granulares por usuario
 // =====================================================
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -25,19 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { usePermissions } from '@/hooks/usePermissions-v2'
-import { 
-  PERMISSION_CATEGORIES, 
-  PERMISSION_DESCRIPTIONS 
-} from '@/lib/permissions-v2'
-import { 
-  Shield, 
-  CheckSquare, 
-  XSquare, 
-  Loader2,
-  AlertCircle,
-  Plus,
-  Minus,
-} from 'lucide-react'
+import { PERMISSION_CATEGORIES, PERMISSION_DESCRIPTIONS } from '@/lib/permissions-v2'
+import { AlertCircle, CheckSquare, Loader2, Minus, Plus, Shield, XSquare } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { Permission, UserPermission } from '@/types/types'
@@ -145,7 +134,7 @@ export function PermissionEditor({
   const toggleCategory = (categoryKey: string) => {
     const category = PERMISSION_CATEGORIES[categoryKey as keyof typeof PERMISSION_CATEGORIES]
     const allSelected = category.permissions.every(p => selectedPermissions.has(p))
-    
+
     const newSelection = new Set(selectedPermissions)
     category.permissions.forEach(permission => {
       if (allSelected) {
@@ -154,7 +143,7 @@ export function PermissionEditor({
         newSelection.add(permission)
       }
     })
-    
+
     setSelectedPermissions(newSelection)
     calculateChanges(newSelection)
   }
@@ -174,8 +163,7 @@ export function PermissionEditor({
 
   // Seleccionar todos
   const selectAll = () => {
-    const allPermissions = Object.values(PERMISSION_CATEGORIES)
-      .flatMap(cat => cat.permissions)
+    const allPermissions = Object.values(PERMISSION_CATEGORIES).flatMap(cat => cat.permissions)
     const newSelection = new Set(allPermissions)
     setSelectedPermissions(newSelection)
     calculateChanges(newSelection)
@@ -200,7 +188,7 @@ export function PermissionEditor({
           },
           {
             onSuccess: () => resolve(),
-            onError: (error) => reject(error),
+            onError: error => reject(error),
           }
         )
       } else {
@@ -210,7 +198,7 @@ export function PermissionEditor({
             { permissionId: currentPerm.id },
             {
               onSuccess: () => resolve(),
-              onError: (error) => reject(error),
+              onError: error => reject(error),
             }
           )
         } else {
@@ -239,9 +227,9 @@ export function PermissionEditor({
 
     if (errors.length === 0) {
       toast.success(t('admin.permissionEditor.updatedSuccess'), {
-        description: t('admin.permissionEditor.updatedSuccessDesc', { 
+        description: t('admin.permissionEditor.updatedSuccessDesc', {
           count: String(pendingChanges.length),
-          name: targetUserName 
+          name: targetUserName,
         }),
       })
       onSuccess?.()
@@ -249,7 +237,7 @@ export function PermissionEditor({
     } else {
       toast.error(t('admin.permissionEditor.updateError'), {
         description: t('admin.permissionEditor.updateErrorDesc', {
-          errors: errors.slice(0, 3).join(', ') + (errors.length > 3 ? '...' : '')
+          errors: errors.slice(0, 3).join(', ') + (errors.length > 3 ? '...' : ''),
         }),
       })
     }
@@ -257,7 +245,9 @@ export function PermissionEditor({
 
   // Cancelar
   const handleCancel = () => {
-    setSelectedPermissions(new Set<Permission>(currentPermissions.map(p => p.permission as Permission)))
+    setSelectedPermissions(
+      new Set<Permission>(currentPermissions.map(p => p.permission as Permission))
+    )
     setPendingChanges([])
     onClose()
   }
@@ -271,7 +261,7 @@ export function PermissionEditor({
   }, [pendingChanges])
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
+    <Dialog open={isOpen} onOpenChange={open => !open && handleCancel()}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -284,53 +274,42 @@ export function PermissionEditor({
               : t('admin.permissionEditor.configurePermissions', { name: targetUserName })}
           </DialogDescription>
         </DialogHeader>
-
         {/* Información del usuario */}
-          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-            <div>
-              <p className="font-medium">{targetUserName}</p>
-              <p className="text-sm text-muted-foreground">{targetUserEmail}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {t('admin.permissionEditor.permissionsOf', { 
-                  granted: String(selectedPermissions.size),
-                  total: String(Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length)
-                })}
-              </Badge>
-            </div>
-          </div>        {/* Advertencia para owner */}
+        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+          <div>
+            <p className="font-medium">{targetUserName}</p>
+            <p className="text-sm text-muted-foreground">{targetUserEmail}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {t('admin.permissionEditor.permissionsOf', {
+                granted: String(selectedPermissions.size),
+                total: String(
+                  Object.values(PERMISSION_CATEGORIES).flatMap(c => c.permissions).length
+                ),
+              })}
+            </Badge>
+          </div>
+        </div>{' '}
+        {/* Advertencia para owner */}
         {isTargetOwner && (
           <div className="flex items-start gap-3 p-4 border rounded-lg bg-destructive/10 text-destructive">
             <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">{t('admin.permissionEditor.cannotEditOwner')}</p>
-              <p className="text-sm">
-                {t('admin.permissionEditor.ownerFullAccess')}
-              </p>
+              <p className="text-sm">{t('admin.permissionEditor.ownerFullAccess')}</p>
             </div>
           </div>
         )}
-
         {/* Acciones rápidas */}
         {canModify && (
           <div className="flex items-center justify-between gap-4 pb-4 border-b">
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={selectAll}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={selectAll} className="gap-2">
                 <CheckSquare className="h-4 w-4" />
                 {t('admin.permissionEditor.selectAll')}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAll}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={clearAll} className="gap-2">
                 <XSquare className="h-4 w-4" />
                 {t('admin.permissionEditor.clearAll')}
               </Button>
@@ -355,10 +334,13 @@ export function PermissionEditor({
             )}
           </div>
         )}
-
         {/* Lista de permisos por categoría */}
         <ScrollArea className="flex-1 pr-4">
-          <Accordion type="multiple" className="space-y-2" defaultValue={Object.keys(PERMISSION_CATEGORIES)}>
+          <Accordion
+            type="multiple"
+            className="space-y-2"
+            defaultValue={Object.keys(PERMISSION_CATEGORIES)}
+          >
             {Object.entries(PERMISSION_CATEGORIES).map(([key, category]) => {
               const isFullySelected = isCategoryFullySelected(key)
               const isPartiallySelected = isCategoryPartiallySelected(key)
@@ -370,7 +352,7 @@ export function PermissionEditor({
                       <div className="flex items-center gap-3">
                         <Checkbox
                           checked={isFullySelected}
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation()
                             if (canModify) {
                               toggleCategory(key)
@@ -384,13 +366,14 @@ export function PermissionEditor({
                         <span className="font-semibold">{category.label}</span>
                       </div>
                       <Badge variant="secondary" className="ml-auto mr-2">
-                        {category.permissions.filter(p => selectedPermissions.has(p)).length} / {category.permissions.length}
+                        {category.permissions.filter(p => selectedPermissions.has(p)).length} /{' '}
+                        {category.permissions.length}
                       </Badge>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
                     <div className="space-y-3 pt-2">
-                      {category.permissions.map((permission) => {
+                      {category.permissions.map(permission => {
                         const isSelected = selectedPermissions.has(permission)
                         const isPending = pendingChanges.find(c => c.permission === permission)
 
@@ -398,9 +381,13 @@ export function PermissionEditor({
                           <div
                             key={permission}
                             className={cn(
-                              "flex items-start gap-3 p-3 rounded-lg border transition-colors",
-                              isPending && isPending.action === 'grant' && 'bg-green-500/5 border-green-500/20',
-                              isPending && isPending.action === 'revoke' && 'bg-red-500/5 border-red-500/20',
+                              'flex items-start gap-3 p-3 rounded-lg border transition-colors',
+                              isPending &&
+                                isPending.action === 'grant' &&
+                                'bg-green-500/5 border-green-500/20',
+                              isPending &&
+                                isPending.action === 'revoke' &&
+                                'bg-red-500/5 border-red-500/20',
                               !isPending && 'bg-background'
                             )}
                           >
@@ -419,26 +406,27 @@ export function PermissionEditor({
                               <Label
                                 htmlFor={permission}
                                 className={cn(
-                                  "text-sm cursor-pointer",
-                                  !canModify && "cursor-not-allowed opacity-60"
+                                  'text-sm cursor-pointer',
+                                  !canModify && 'cursor-not-allowed opacity-60'
                                 )}
                               >
                                 {PERMISSION_DESCRIPTIONS[permission] || permission}
                               </Label>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {permission}
-                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{permission}</p>
                             </div>
                             {isPending && (
-                              <Badge 
-                                variant="outline" 
+                              <Badge
+                                variant="outline"
                                 className={cn(
-                                  "text-xs flex-shrink-0",
-                                  isPending.action === 'grant' && 'text-green-700 dark:text-green-400',
+                                  'text-xs flex-shrink-0',
+                                  isPending.action === 'grant' &&
+                                    'text-green-700 dark:text-green-400',
                                   isPending.action === 'revoke' && 'text-red-700 dark:text-red-400'
                                 )}
                               >
-                                {isPending.action === 'grant' ? t('admin.permissionEditor.new') : t('admin.permissionEditor.revoke')}
+                                {isPending.action === 'grant'
+                                  ? t('admin.permissionEditor.new')
+                                  : t('admin.permissionEditor.revoke')}
                               </Badge>
                             )}
                           </div>
@@ -451,17 +439,13 @@ export function PermissionEditor({
             })}
           </Accordion>
         </ScrollArea>
-
         {/* Footer */}
         <DialogFooter className="pt-4 border-t">
           <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
             {t('admin.permissionEditor.cancel')}
           </Button>
           {canModify && (
-            <Button 
-              onClick={handleSubmit} 
-              disabled={isSubmitting || pendingChanges.length === 0}
-            >
+            <Button onClick={handleSubmit} disabled={isSubmitting || pendingChanges.length === 0}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('admin.permissionEditor.saveChanges', { count: String(pendingChanges.length) })}
             </Button>

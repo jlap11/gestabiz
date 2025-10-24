@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -26,7 +26,8 @@ serve(async (req) => {
     // Find notifications that need to be sent
     const { data: notifications, error: fetchError } = await supabaseClient
       .from('notifications')
-      .select(`
+      .select(
+        `
         *,
         appointment:appointments(
           *,
@@ -34,7 +35,8 @@ serve(async (req) => {
           client:profiles!appointments_client_id_fkey(full_name, email),
           business:businesses(name)
         )
-      `)
+      `
+      )
       .lte('scheduled_for', oneHourFromNow.toISOString())
       .eq('sent_via_email', false)
       .not('appointment_id', 'is', null)
@@ -53,7 +55,9 @@ serve(async (req) => {
       try {
         const appointment = notification.appointment
         if (!appointment || !appointment.client) {
-          console.log(`Skipping notification ${notification.id} - missing appointment or client data`)
+          console.log(
+            `Skipping notification ${notification.id} - missing appointment or client data`
+          )
           continue
         }
 
@@ -66,17 +70,17 @@ serve(async (req) => {
             serviceName: appointment.service?.name || 'Servicio',
             businessName: appointment.business?.name || 'Negocio',
             startTime: appointment.start_time,
-            endTime: appointment.end_time
-          }
+            endTime: appointment.end_time,
+          },
         })
 
         if (emailSent) {
           // Mark notification as sent
           await supabaseClient
             .from('notifications')
-            .update({ 
+            .update({
               sent_via_email: true,
-              metadata: { sent_at: new Date().toISOString() }
+              metadata: { sent_at: new Date().toISOString() },
             })
             .eq('id', notification.id)
 
@@ -97,22 +101,19 @@ serve(async (req) => {
         success: true,
         processed: processedCount,
         errors: errorCount,
-        total: notifications?.length || 0
+        total: notifications?.length || 0,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-      },
+      }
     )
   } catch (error) {
     console.error('Error in send-reminders function:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      },
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })
 
@@ -131,17 +132,17 @@ async function sendEmailNotification(params: {
     // Format dates
     const startDate = new Date(params.appointmentDetails.startTime)
     const endDate = new Date(params.appointmentDetails.endTime)
-    
+
     const dateStr = startDate.toLocaleDateString('es-MX', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     })
-    
+
     const timeStr = startDate.toLocaleTimeString('es-MX', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
 
     // Create email HTML
@@ -193,12 +194,12 @@ async function sendEmailNotification(params: {
 
     // Use Resend (popular email service) or configure your preferred email service
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    
+
     if (RESEND_API_KEY) {
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          Authorization: `Bearer ${RESEND_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

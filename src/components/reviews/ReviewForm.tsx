@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import { Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { toast } from 'sonner';
+import React, { useState } from 'react'
+import { Star } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { toast } from 'sonner'
 
 interface ReviewFormProps {
-  appointmentId: string;
-  businessId: string;
-  employeeId?: string;
-  onSubmit: (rating: number, comment: string) => Promise<void>;
-  onCancel?: () => void;
+  appointmentId: string
+  businessId: string
+  employeeId?: string
+  onSubmit: (rating: number, comment: string) => Promise<void>
+  onCancel?: () => void
 }
 
 export function ReviewForm({
@@ -23,39 +23,39 @@ export function ReviewForm({
   onSubmit,
   onCancel,
 }: ReviewFormProps) {
-  const { t } = useLanguage();
-  const [rating, setRating] = useState<number>(0);
-  const [hoveredRating, setHoveredRating] = useState<number>(0);
-  const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useLanguage()
+  const [rating, setRating] = useState<number>(0)
+  const [hoveredRating, setHoveredRating] = useState<number>(0)
+  const [comment, setComment] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     if (rating === 0) {
-      toast.error(t('reviews.errors.ratingRequired'));
-      return;
+      toast.error(t('reviews.errors.ratingRequired'))
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      await onSubmit(rating, comment.trim());
-      toast.success(t('reviews.submitSuccess'));
+      await onSubmit(rating, comment.trim())
+      toast.success(t('reviews.submitSuccess'))
       // Reset form
-      setRating(0);
-      setComment('');
+      setRating(0)
+      setComment('')
     } catch {
-      toast.error(t('reviews.errors.submitFailed'));
+      toast.error(t('reviews.errors.submitFailed'))
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const renderStars = () => {
     return (
       <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((star) => {
-          const isActive = star <= (hoveredRating || rating);
+        {[1, 2, 3, 4, 5].map(star => {
+          const isActive = star <= (hoveredRating || rating)
           return (
             <button
               key={star}
@@ -74,11 +74,11 @@ export function ReviewForm({
                 )}
               />
             </button>
-          );
+          )
         })}
       </div>
-    );
-  };
+    )
+  }
 
   const getRatingLabel = (rating: number): string => {
     const labels = {
@@ -87,9 +87,9 @@ export function ReviewForm({
       3: t('reviews.ratings.good'),
       4: t('reviews.ratings.veryGood'),
       5: t('reviews.ratings.excellent'),
-    };
-    return labels[rating as keyof typeof labels] || '';
-  };
+    }
+    return labels[rating as keyof typeof labels] || ''
+  }
 
   return (
     <Card className="p-6">
@@ -97,9 +97,7 @@ export function ReviewForm({
         {/* Title */}
         <div>
           <h3 className="text-lg font-semibold">{t('reviews.leaveReview')}</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('reviews.reviewDescription')}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t('reviews.reviewDescription')}</p>
         </div>
 
         {/* Rating Stars */}
@@ -118,16 +116,14 @@ export function ReviewForm({
         {/* Comment */}
         <div className="space-y-2">
           <Label htmlFor="comment">
-            {t('reviews.comment')} {' '}
-            <span className="text-muted-foreground font-normal">
-              ({t('common.optional')})
-            </span>
+            {t('reviews.comment')}{' '}
+            <span className="text-muted-foreground font-normal">({t('common.optional')})</span>
           </Label>
           <Textarea
             id="comment"
             placeholder={t('reviews.commentPlaceholder')}
             value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            onChange={e => setComment(e.target.value)}
             rows={4}
             maxLength={1000}
             className="resize-none"
@@ -140,25 +136,16 @@ export function ReviewForm({
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
-          <Button
-            type="submit"
-            disabled={rating === 0 || isSubmitting}
-            className="flex-1"
-          >
+          <Button type="submit" disabled={rating === 0 || isSubmitting} className="flex-1">
             {isSubmitting ? t('common.submitting') : t('reviews.submitReview')}
           </Button>
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               {t('common.cancel')}
             </Button>
           )}
         </div>
       </form>
     </Card>
-  );
+  )
 }

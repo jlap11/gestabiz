@@ -1,71 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Briefcase, Crown, CheckCircle2, Plus, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
-import { useEmployeeTimeOff, TimeOffType } from '@/hooks/useEmployeeTimeOff';
-import { BusinessEmploymentCard, EnhancedBusiness } from './BusinessEmploymentCard';
-import { TimeOffRequestModal } from './TimeOffRequestModal';
-import { ConfirmEndEmploymentDialog } from './ConfirmEndEmploymentDialog';
-import { EmploymentDetailModal } from './EmploymentDetailModal';
-import supabase from '@/lib/supabase';
-import { toast } from 'sonner';
-import { countUpcomingForEmployee } from '@/lib/services/appointments';
+import React, { useEffect, useState } from 'react'
+import { Briefcase, CheckCircle2, Clock, Crown, Plus } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
+import { TimeOffType, useEmployeeTimeOff } from '@/hooks/useEmployeeTimeOff'
+import { BusinessEmploymentCard, EnhancedBusiness } from './BusinessEmploymentCard'
+import { TimeOffRequestModal } from './TimeOffRequestModal'
+import { ConfirmEndEmploymentDialog } from './ConfirmEndEmploymentDialog'
+import { EmploymentDetailModal } from './EmploymentDetailModal'
+import supabase from '@/lib/supabase'
+import { toast } from 'sonner'
+import { countUpcomingForEmployee } from '@/lib/services/appointments'
 
 interface MyEmploymentsProps {
-  employeeId: string;
-  onJoinBusiness?: () => void;
-  onNavigate?: (page: string, context?: Record<string, unknown>) => void;
+  employeeId: string
+  onJoinBusiness?: () => void
+  onNavigate?: (page: string, context?: Record<string, unknown>) => void
 }
 
 export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmploymentsProps) {
-  const [showPrevious, setShowPrevious] = useState(false);
-  const [enrichedBusinesses, setEnrichedBusinesses] = useState<EnhancedBusiness[]>([]);
-  const { businesses, loading, error } = useEmployeeBusinesses(employeeId, true);
-  const { createRequest } = useEmployeeTimeOff(employeeId);
+  const [showPrevious, setShowPrevious] = useState(false)
+  const [enrichedBusinesses, setEnrichedBusinesses] = useState<EnhancedBusiness[]>([])
+  const { businesses, loading, error } = useEmployeeBusinesses(employeeId, true)
+  const { createRequest } = useEmployeeTimeOff(employeeId)
 
   // Modales
   const [selectedBusinessForTimeOff, setSelectedBusinessForTimeOff] = useState<{
-    id: string;
-    name: string;
-    type: TimeOffType;
-  } | null>(null);
-  
+    id: string
+    name: string
+    type: TimeOffType
+  } | null>(null)
+
   const [selectedBusinessForEnd, setSelectedBusinessForEnd] = useState<{
-    id: string;
-    name: string;
-    upcomingCount?: number;
-  } | null>(null);
+    id: string
+    name: string
+    upcomingCount?: number
+  } | null>(null)
 
   const [selectedBusinessForDetails, setSelectedBusinessForDetails] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+    id: string
+    name: string
+  } | null>(null)
 
   // Enriquecer negocios con información extendida
   useEffect(() => {
     const enrichBusinesses = async () => {
       if (businesses.length === 0) {
-        setEnrichedBusinesses([]);
-        return;
+        setEnrichedBusinesses([])
+        return
       }
 
       const enriched = await Promise.all(
-        businesses.map(async (business) => {
+        businesses.map(async business => {
           try {
             // Verificar si es owner
             const { data: ownerData } = await supabase
               .from('businesses')
               .select('owner_id')
               .eq('id', business.id)
-              .single();
+              .single()
 
-            const isOwner = ownerData?.owner_id === employeeId;
+            const isOwner = ownerData?.owner_id === employeeId
 
             // Obtener datos extendidos del empleado
             const { data: employeeData } = await supabase
               .from('business_employees')
-              .select(`
+              .select(
+                `
                 location_id,
                 role,
                 employee_type,
@@ -75,10 +76,11 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
                   name,
                   address
                 )
-              `)
+              `
+              )
               .eq('business_id', business.id)
               .eq('employee_id', employeeId)
-              .single();
+              .single()
 
             // Calificación promedio del empleado
             const { data: reviewsData } = await supabase
@@ -86,11 +88,12 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
               .select('rating')
               .eq('employee_id', employeeId)
               .eq('business_id', business.id)
-              .eq('is_visible', true);
+              .eq('is_visible', true)
 
-            const avgRating = reviewsData && reviewsData.length > 0
-              ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length
-              : 0;
+            const avgRating =
+              reviewsData && reviewsData.length > 0
+                ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / reviewsData.length
+                : 0
 
             // Contar servicios
             const { count: servicesCount } = await supabase
@@ -98,11 +101,11 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
               .select('*', { count: 'exact', head: true })
               .eq('employee_id', employeeId)
               .eq('business_id', business.id)
-              .eq('is_active', true);
+              .eq('is_active', true)
 
             const location = Array.isArray(employeeData?.locations)
               ? employeeData.locations[0]
-              : employeeData?.locations;
+              : employeeData?.locations
 
             return {
               ...business,
@@ -116,7 +119,7 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
               role: employeeData?.role || null,
               employee_type: employeeData?.employee_type || null,
               is_active: employeeData?.is_active ?? true,
-            };
+            }
           } catch {
             // Error enriching business - usar valores por defecto
             return {
@@ -131,27 +134,27 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
               role: null,
               employee_type: null,
               is_active: true,
-            };
+            }
           }
         })
-      );
+      )
 
-      setEnrichedBusinesses(enriched);
-    };
+      setEnrichedBusinesses(enriched)
+    }
 
-    enrichBusinesses();
-  }, [businesses, employeeId]);
+    enrichBusinesses()
+  }, [businesses, employeeId])
 
   const handleRequestTimeOff = (businessId: string, type: TimeOffType) => {
-    const business = enrichedBusinesses.find(b => b.id === businessId);
+    const business = enrichedBusinesses.find(b => b.id === businessId)
     if (business) {
       setSelectedBusinessForTimeOff({
         id: businessId,
         name: business.name,
-        type
-      });
+        type,
+      })
     }
-  };
+  }
 
   const handleSubmitTimeOff = async (
     type: TimeOffType,
@@ -159,70 +162,65 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
     endDate: string,
     notes: string
   ) => {
-    if (!selectedBusinessForTimeOff) return;
-    
-    await createRequest(
-      selectedBusinessForTimeOff.id,
-      type,
-      startDate,
-      endDate,
-      notes
-    );
-  };
+    if (!selectedBusinessForTimeOff) return
+
+    await createRequest(selectedBusinessForTimeOff.id, type, startDate, endDate, notes)
+  }
 
   const handleEndEmployment = async (business: EnhancedBusiness) => {
     try {
-      setEndDialogOpen(true);
+      setEndDialogOpen(true)
       // Preload upcoming appointments count
       const upcomingCount = await countUpcomingForEmployee({
         businessId: business.id,
         employeeId: user?.id || '',
-      });
-      setSelectedBusinessForEnd({ ...business, upcomingCount });
+      })
+      setSelectedBusinessForEnd({ ...business, upcomingCount })
     } catch (e) {
-      setSelectedBusinessForEnd({ ...business, upcomingCount: undefined });
+      setSelectedBusinessForEnd({ ...business, upcomingCount: undefined })
     }
-  };
+  }
 
   const handleConfirmEndEmployment = async () => {
-    if (!selectedBusinessForEnd) return;
-    const businessId = selectedBusinessForEnd.id;
-    const employeeId = user?.id || '';
+    if (!selectedBusinessForEnd) return
+    const businessId = selectedBusinessForEnd.id
+    const employeeId = user?.id || ''
 
     try {
       const upcomingCount = await countUpcomingForEmployee({
         businessId,
         employeeId,
-      });
+      })
       if (upcomingCount > 0) {
         toast.error(
           t('employee.endEmployment.blockedByUpcoming', {
             count: upcomingCount,
           })
-        );
-        return;
+        )
+        return
       }
     } catch (err) {
       // If counting fails, be conservative and block to avoid orphaned appointments
-      toast.error(t('employee.endEmployment.errorCheckingAppointments'));
-      return;
+      toast.error(t('employee.endEmployment.errorCheckingAppointments'))
+      return
     }
 
     // Bloqueo: verificar citas futuras del empleado en este negocio
-    const nowIso = new Date().toISOString();
+    const nowIso = new Date().toISOString()
     const { count: upcomingCount, error: aptError } = await supabase
       .from('appointments')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', selectedBusinessForEnd.id)
       .eq('employee_id', employeeId)
       .in('status', ['pending', 'confirmed'])
-      .gte('start_time', nowIso);
+      .gte('start_time', nowIso)
 
-    if (aptError) throw aptError;
+    if (aptError) throw aptError
     if ((upcomingCount || 0) > 0) {
-      const msg = 'No puedes finalizar: tienes citas futuras pendientes. Cancélalas o reasígnalas primero.';
-      toast.error(msg);
-      throw new Error(msg);
+      const msg =
+        'No puedes finalizar: tienes citas futuras pendientes. Cancélalas o reasígnalas primero.'
+      toast.error(msg)
+      throw new Error(msg)
     }
 
     // Marcar como inactivo
@@ -232,24 +230,24 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
         is_active: false,
       })
       .eq('business_id', selectedBusinessForEnd.id)
-      .eq('employee_id', employeeId);
+      .eq('employee_id', employeeId)
 
-    if (updateError) throw updateError;
+    if (updateError) throw updateError
 
     // Desactivar servicios
     const { error: servicesError } = await supabase
       .from('employee_services')
       .update({ is_active: false })
       .eq('business_id', selectedBusinessForEnd.id)
-      .eq('employee_id', employeeId);
+      .eq('employee_id', employeeId)
 
-    if (servicesError) throw servicesError;
+    if (servicesError) throw servicesError
 
-    toast.success('Empleo finalizado correctamente');
-    
+    toast.success('Empleo finalizado correctamente')
+
     // Refrescar lista
-    window.location.reload();
-  };
+    window.location.reload()
+  }
 
   const handleReactivateEmployment = async (businessId: string) => {
     try {
@@ -257,33 +255,33 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
         .from('business_employees')
         .update({ is_active: true })
         .eq('business_id', businessId)
-        .eq('employee_id', employeeId);
+        .eq('employee_id', employeeId)
 
-      if (updateError) throw updateError;
+      if (updateError) throw updateError
 
       const { error: servicesError } = await supabase
         .from('employee_services')
         .update({ is_active: true })
         .eq('business_id', businessId)
-        .eq('employee_id', employeeId);
+        .eq('employee_id', employeeId)
 
-      if (servicesError) throw servicesError;
+      if (servicesError) throw servicesError
 
-      toast.success('Empleo reactivado correctamente');
-      window.location.reload();
+      toast.success('Empleo reactivado correctamente')
+      window.location.reload()
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al reactivar empleo';
-      toast.error(errorMessage);
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Error al reactivar empleo'
+      toast.error(errorMessage)
+      throw err
     }
-  };
+  }
 
   const handleViewDetails = (businessId: string) => {
-    const business = enrichedBusinesses.find(b => b.id === businessId);
+    const business = enrichedBusinesses.find(b => b.id === businessId)
     if (business) {
-      setSelectedBusinessForDetails({ id: business.id, name: business.name });
+      setSelectedBusinessForDetails({ id: business.id, name: business.name })
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -297,7 +295,7 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -305,14 +303,16 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
       <div className="p-6">
         <div className="text-destructive">Error al cargar empleos: {error}</div>
       </div>
-    );
+    )
   }
 
-  const activeEmployments = enrichedBusinesses.filter(b => b.is_active !== false);
-  const previousEmployments: EnhancedBusiness[] = enrichedBusinesses.filter(b => b.is_active === false);
+  const activeEmployments = enrichedBusinesses.filter(b => b.is_active !== false)
+  const previousEmployments: EnhancedBusiness[] = enrichedBusinesses.filter(
+    b => b.is_active === false
+  )
 
-  const ownedCount = activeEmployments.filter(b => b.isOwner).length;
-  const employeeCount = activeEmployments.filter(b => !b.isOwner).length;
+  const ownedCount = activeEmployments.filter(b => b.isOwner).length
+  const employeeCount = activeEmployments.filter(b => !b.isOwner).length
 
   return (
     <>
@@ -411,12 +411,12 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
             </Card>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {activeEmployments.map((business) => (
+              {activeEmployments.map(business => (
                 <BusinessEmploymentCard
                   key={business.id}
                   business={business}
                   onViewDetails={() => handleViewDetails(business.id)}
-                  onRequestTimeOff={(type) => handleRequestTimeOff(business.id, type)}
+                  onRequestTimeOff={type => handleRequestTimeOff(business.id, type)}
                   onEndEmployment={() => handleEndEmployment(business.id)}
                   onReactivateEmployment={() => handleReactivateEmployment(business.id)}
                 />
@@ -430,12 +430,12 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-4">Empleos Anteriores</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {previousEmployments.map((business) => (
+              {previousEmployments.map(business => (
                 <BusinessEmploymentCard
                   key={business.id}
                   business={business}
                   onViewDetails={() => handleViewDetails(business.id)}
-                  onRequestTimeOff={(type) => handleRequestTimeOff(business.id, type)}
+                  onRequestTimeOff={type => handleRequestTimeOff(business.id, type)}
                   onEndEmployment={() => handleEndEmployment(business.id)}
                   onReactivateEmployment={() => handleReactivateEmployment(business.id)}
                 />
@@ -471,5 +471,5 @@ export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmpl
         businessName={selectedBusinessForDetails?.name || ''}
       />
     </>
-  );
+  )
 }

@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Upload, Loader2 } from 'lucide-react'
+import { Loader2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { User as UserType } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { slugify } from '@/lib/utils'
 import { format } from 'date-fns'
-import { es, enUS } from 'date-fns/locale'
+import { enUS, es } from 'date-fns/locale'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { COUNTRY_CODES, COUNTRY_PHONE_EXAMPLES } from '@/constants'
 import { useFileUpload } from '@/hooks/useFileUpload'
@@ -28,21 +28,25 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
   const [isUpdating, setIsUpdating] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const { uploadFile, deleteFile } = useFileUpload('user-avatars')
-  
+
   // Image cropper states
   const [showCropper, setShowCropper] = useState(false)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
-  
+
   const [formData, setFormData] = useState({
     name: user.name,
     username: user.username || '',
     email: user.email,
     phone: user.phone || '',
-    avatar_url: user.avatar_url || ''
+    avatar_url: user.avatar_url || '',
   })
 
   // Detectar si es autenticación OAuth (Google, etc)
-  const isOAuthUser = Boolean(user.avatar_url && (user.avatar_url.includes('googleusercontent.com') || user.avatar_url.includes('lh3.googleusercontent.com')))
+  const isOAuthUser = Boolean(
+    user.avatar_url &&
+      (user.avatar_url.includes('googleusercontent.com') ||
+        user.avatar_url.includes('lh3.googleusercontent.com'))
+  )
 
   // Extract prefix for selector from existing phone, default to CO +57
   const initialPrefix = (() => {
@@ -57,10 +61,18 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
   useEffect(() => {
     setFormData(prev => {
       const next = { ...prev }
-      if (!prev.name && user.name) { next.name = user.name }
-      if (!prev.email && user.email) { next.email = user.email }
-      if (!prev.phone && user.phone) { next.phone = user.phone }
-      if (!prev.avatar_url && user.avatar_url) { next.avatar_url = user.avatar_url }
+      if (!prev.name && user.name) {
+        next.name = user.name
+      }
+      if (!prev.email && user.email) {
+        next.email = user.email
+      }
+      if (!prev.phone && user.phone) {
+        next.phone = user.phone
+      }
+      if (!prev.avatar_url && user.avatar_url) {
+        next.avatar_url = user.avatar_url
+      }
       if (!prev.username) {
         const suggested = user.username?.trim() || slugify(user.name).replace(/-+/g, '.')
         next.username = suggested
@@ -72,7 +84,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }))
   }
 
@@ -117,24 +129,24 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
 
       // Convert blob to file
       const croppedFile = new File([croppedBlob], `avatar-${Date.now()}.jpg`, {
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       })
 
       // Upload new avatar with userId as folder
       const fileName = `avatar-${Date.now()}.jpg`
       const filePath = `${user.id}/${fileName}`
-      
+
       const result = await uploadFile(croppedFile, filePath)
-      
+
       if (result.success && result.url) {
         // Add cache-busting timestamp to URL
         const timestamp = Date.now()
         const newAvatarUrl = `${result.url}?t=${timestamp}`
-        
+
         // Update form data with new URL (with cache buster)
         setFormData(prev => ({
           ...prev,
-          avatar_url: newAvatarUrl
+          avatar_url: newAvatarUrl,
         }))
 
         // Update profile in Supabase (store clean URL without timestamp)
@@ -151,7 +163,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
         // Update user object immediately to reflect in UI
         const updatedUser = { ...user, avatar_url: newAvatarUrl }
         onUserUpdate(updatedUser)
-        
+
         // Also update in localStorage
         try {
           window.localStorage.setItem('current-user', JSON.stringify(updatedUser))
@@ -160,9 +172,11 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
         }
 
         // Force re-render of all Avatar components by triggering a state update
-        window.dispatchEvent(new CustomEvent('avatar-updated', { 
-          detail: { userId: user.id, avatarUrl: newAvatarUrl } 
-        }))
+        window.dispatchEvent(
+          new CustomEvent('avatar-updated', {
+            detail: { userId: user.id, avatarUrl: newAvatarUrl },
+          })
+        )
 
         toast.success('Avatar actualizado exitosamente')
       } else {
@@ -177,7 +191,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
 
   const handleSaveProfile = async () => {
     setIsUpdating(true)
-    
+
     try {
       const updatedUser = {
         ...user,
@@ -186,13 +200,11 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
         email: formData.email,
         phone: formData.phone,
         avatar_url: formData.avatar_url,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       // Update in users array
-      await setUsers(prev => 
-        prev.map(u => u.id === user.id ? updatedUser : u)
-      )
+      await setUsers(prev => prev.map(u => (u.id === user.id ? updatedUser : u)))
 
       // Update current user
       onUserUpdate(updatedUser)
@@ -201,7 +213,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
       } catch {
         // noop
       }
-      
+
       toast.success(t('profile.success'))
     } catch (error) {
       toast.error(t('profile.error'))
@@ -217,7 +229,12 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
   }
 
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
   return (
@@ -234,11 +251,13 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
               </AvatarFallback>
             </Avatar>
           </div>
-          <label className={`absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-2 shadow-md transition-all border-2 border-background ${
-            isUploadingAvatar 
-              ? 'opacity-50 cursor-not-allowed' 
-              : 'cursor-pointer hover:bg-primary/90 hover:scale-105'
-          }`}>
+          <label
+            className={`absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-2 shadow-md transition-all border-2 border-background ${
+              isUploadingAvatar
+                ? 'opacity-50 cursor-not-allowed'
+                : 'cursor-pointer hover:bg-primary/90 hover:scale-105'
+            }`}
+          >
             {isUploadingAvatar ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -258,16 +277,12 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
         <div className="flex-1 w-full space-y-2">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div>
-              <h3 className="text-2xl font-bold text-foreground">
-                {user.name}
-              </h3>
-              <p className="text-sm text-muted-foreground font-medium mt-1">
-                @{formData.username}
-              </p>
+              <h3 className="text-2xl font-bold text-foreground">{user.name}</h3>
+              <p className="text-sm text-muted-foreground font-medium mt-1">@{formData.username}</p>
             </div>
             <div className="text-left md:text-right">
               <span className="inline-flex items-center gap-1.5 text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-full border border-border">
-                <span>�</span> 
+                <span>�</span>
                 <span className="font-medium">{t('profile.joined_on')}:</span>
                 <span>{formatDate(user.created_at)}</span>
               </span>
@@ -282,7 +297,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
           <h4 className="text-lg font-semibold text-foreground pb-2 border-b border-border">
             Información Personal
           </h4>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
@@ -296,13 +311,15 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 placeholder={t('common.placeholders.clientName')}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="username" className="text-sm font-medium">
                 Nombre de Usuario
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  @
+                </span>
                 <Input
                   id="username"
                   value={formData.username}
@@ -320,8 +337,14 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 Teléfono
               </Label>
               <div className="flex gap-2">
-                <Select value={phonePrefix} onValueChange={handlePrefixChange} disabled={isOAuthUser}>
-                  <SelectTrigger className={`w-32 ${isOAuthUser ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <Select
+                  value={phonePrefix}
+                  onValueChange={handlePrefixChange}
+                  disabled={isOAuthUser}
+                >
+                  <SelectTrigger
+                    className={`w-32 ${isOAuthUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
                     {(() => {
                       const sel = COUNTRY_CODES.find(c => c.code === phonePrefix)
                       const flag = sel ? sel.label.split(' ')[0] : ''
@@ -330,7 +353,9 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                   </SelectTrigger>
                   <SelectContent>
                     {COUNTRY_CODES.map(cc => (
-                      <SelectItem key={cc.code} value={cc.code}>{cc.label}</SelectItem>
+                      <SelectItem key={cc.code} value={cc.code}>
+                        {cc.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -338,7 +363,7 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                   id="phone"
                   type="tel"
                   value={(formData.phone || '').replace(/^\+\d{1,4}\s?/, '')}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  onChange={e => handlePhoneChange(e.target.value)}
                   placeholder={COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}
                   className="flex-1"
                 />
@@ -362,13 +387,9 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
               />
             </div>
           </div>
-          
+
           <div className="flex justify-end pt-4 border-t border-border">
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={isUpdating}
-              className="min-w-32"
-            >
+            <Button onClick={handleSaveProfile} disabled={isUpdating} className="min-w-32">
               {isUpdating ? 'Guardando...' : t('profile.save_changes')}
             </Button>
           </div>

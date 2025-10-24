@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { Sparkles, Building2, Rocket, Crown } from 'lucide-react'
+import { Building2, Crown, Rocket, Sparkles } from 'lucide-react'
 
 export interface PlanFeature {
   name: string
@@ -58,7 +58,7 @@ export const PRICING_PLANS: Plan[] = [
       employees: 1,
       appointments: 50,
       clients: 100,
-      services: 10
+      services: 10,
     },
     features: [
       { name: 'Gestión completa de citas y calendario', included: true },
@@ -70,8 +70,8 @@ export const PRICING_PLANS: Plan[] = [
       { name: 'Soporte por email', included: true },
       { name: 'Multi-ubicación', included: false },
       { name: 'Sistema contable', included: false },
-      { name: 'Portal de empleos', included: false }
-    ]
+      { name: 'Portal de empleos', included: false },
+    ],
   },
   {
     id: 'inicio',
@@ -89,7 +89,7 @@ export const PRICING_PLANS: Plan[] = [
       employees: 6,
       appointments: 'Ilimitado',
       clients: 'Ilimitado',
-      services: 'Ilimitado'
+      services: 'Ilimitado',
     },
     features: [
       { name: 'Todo del Plan Gratuito, más:', included: true, highlight: true },
@@ -101,8 +101,8 @@ export const PRICING_PLANS: Plan[] = [
       { name: 'Chat interno entre empleados', included: true },
       { name: 'Exportación de reportes (CSV, Excel)', included: true },
       { name: 'Extensión de navegador', included: true },
-      { name: 'Soporte prioritario (Chat + Email)', included: true }
-    ]
+      { name: 'Soporte prioritario (Chat + Email)', included: true },
+    ],
   },
   {
     id: 'profesional',
@@ -120,7 +120,7 @@ export const PRICING_PLANS: Plan[] = [
       employees: 21,
       appointments: 'Ilimitado',
       clients: 'Ilimitado',
-      services: 'Ilimitado'
+      services: 'Ilimitado',
     },
     features: [
       { name: 'Todo del Plan Inicio, más:', included: true, highlight: true },
@@ -132,8 +132,8 @@ export const PRICING_PLANS: Plan[] = [
       { name: 'Soporte Premium (Teléfono + WhatsApp)', included: true },
       { name: 'Onboarding personalizado', included: true },
       { name: 'Branding personalizado', included: true },
-      { name: 'Capacitación del equipo', included: true }
-    ]
+      { name: 'Capacitación del equipo', included: true },
+    ],
   },
   {
     id: 'empresarial',
@@ -151,7 +151,7 @@ export const PRICING_PLANS: Plan[] = [
       employees: 'Ilimitado',
       appointments: 'Ilimitado',
       clients: 'Ilimitado',
-      services: 'Ilimitado'
+      services: 'Ilimitado',
     },
     features: [
       { name: 'Todo del Plan Profesional, más:', included: true, highlight: true },
@@ -163,9 +163,9 @@ export const PRICING_PLANS: Plan[] = [
       { name: 'Soporte 24/7', included: true },
       { name: 'Capacitación presencial', included: true },
       { name: 'Migración de datos desde otros sistemas', included: true },
-      { name: 'Backup diario dedicado', included: true }
-    ]
-  }
+      { name: 'Backup diario dedicado', included: true },
+    ],
+  },
 ]
 
 /**

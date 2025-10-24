@@ -2,7 +2,7 @@
  * @file useUpdateEmployeeHierarchy.ts
  * @description Hook personalizado para actualizar el nivel jerárquico de empleados
  * Maneja actualizaciones optimistas, validaciones y notificaciones
- * 
+ *
  * IMPORTANTE: Este hook actualiza business_roles.hierarchy_level
  * NO afecta a reports_to (relación de supervisión)
  */
@@ -35,11 +35,7 @@ interface UpdateHierarchyLevelResponse {
 export function useUpdateEmployeeHierarchy() {
   const queryClient = useQueryClient()
 
-  const mutation = useMutation<
-    UpdateHierarchyLevelResponse,
-    Error,
-    UpdateHierarchyLevelParams
-  >({
+  const mutation = useMutation<UpdateHierarchyLevelResponse, Error, UpdateHierarchyLevelParams>({
     mutationFn: async ({ userId, businessId, newLevel }: UpdateHierarchyLevelParams) => {
       // VALIDACIÓN 1: Nivel válido (0-4)
       if (!isValidHierarchyLevel(newLevel)) {
@@ -50,7 +46,7 @@ export function useUpdateEmployeeHierarchy() {
       // PostgREST está corrupto, así que usamos una función serverless
       const { data } = await supabase.auth.getSession()
       const accessToken = data?.session?.access_token
-      
+
       if (!accessToken) {
         throw new Error('No autenticado - no se pudo obtener token')
       }
@@ -66,14 +62,14 @@ export function useUpdateEmployeeHierarchy() {
         lvl: newLevel,
       }
 
-  // eslint-disable-next-line no-console
-  console.log('Payload enviado update-hierarchy:', payload)
+      // eslint-disable-next-line no-console
+      console.log('Payload enviado update-hierarchy:', payload)
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/update-hierarchy`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/update-hierarchy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(payload),
       })
@@ -89,7 +85,9 @@ export function useUpdateEmployeeHierarchy() {
 
     onMutate: ({ employeeName, userId }) => {
       // Toast de carga
-      toast.loading(`Actualizando nivel de ${employeeName}...`, { id: `hierarchy-update-${userId}` })
+      toast.loading(`Actualizando nivel de ${employeeName}...`, {
+        id: `hierarchy-update-${userId}`,
+      })
     },
 
     onSuccess: (_, { employeeName, userId, businessId }) => {
@@ -130,11 +128,7 @@ export function useUpdateEmployeeHierarchy() {
 export function useUpdateEmployeeHierarchySimple(businessId: string) {
   const { updateHierarchyLevel, isUpdating, error } = useUpdateEmployeeHierarchy()
 
-  const updateLevel = async (
-    userId: string,
-    newLevel: number,
-    employeeName: string
-  ) => {
+  const updateLevel = async (userId: string, newLevel: number, employeeName: string) => {
     return updateHierarchyLevel({
       userId,
       businessId,

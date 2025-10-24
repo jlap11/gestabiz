@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Building2, Save, Bell, History } from 'lucide-react'
+import { Bell, Building2, History, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -37,7 +37,7 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
   const [isSaving, setIsSaving] = useState(false)
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +83,9 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
       <div className="flex items-center gap-3">
         <Building2 className="h-8 w-8 text-primary" />
         <div>
-          <h2 className="text-2xl font-bold text-foreground">{t('admin.businessSettings.title')}</h2>
+          <h2 className="text-2xl font-bold text-foreground">
+            {t('admin.businessSettings.title')}
+          </h2>
           <p className="text-muted-foreground text-sm">{t('admin.businessSettings.subtitle')}</p>
         </div>
       </div>
@@ -115,169 +117,179 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
 
         <TabsContent value="general">
           <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-              <CardTitle className="text-foreground">{t('admin.businessSettings.basicInfo.title')}</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                {t('admin.businessSettings.basicInfo.description')}
-              </CardDescription>
-            </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="name">{t('admin.businessSettings.nameLabel')}</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                placeholder={t('admin.businessSettings.namePlaceholder')}
-                required
-              />
+            {/* Basic Information */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  {t('admin.businessSettings.basicInfo.title')}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {t('admin.businessSettings.basicInfo.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="name">{t('admin.businessSettings.nameLabel')}</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={e => handleChange('name', e.target.value)}
+                    placeholder={t('admin.businessSettings.namePlaceholder')}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">
+                    {t('admin.businessSettings.descriptionLabel')}
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={e => handleChange('description', e.target.value)}
+                    placeholder={t('admin.businessSettings.descriptionPlaceholder')}
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  {t('admin.businessSettings.contact.title')}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {t('admin.businessSettings.contact.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="phone">{t('admin.businessSettings.contact.phoneLabel')}</Label>
+                  <PhoneInput
+                    value={formData.phone}
+                    onChange={value => handleChange('phone', value)}
+                    prefix={phonePrefix}
+                    onPrefixChange={setPhonePrefix}
+                    placeholder={t('common.placeholders.phoneNumber')}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">{t('admin.businessSettings.contact.emailLabel')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={e => handleChange('email', e.target.value)}
+                    placeholder={t('common.placeholders.email')}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="website">Sitio Web</Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    value={formData.website}
+                    onChange={e => handleChange('website', e.target.value)}
+                    placeholder="https://www.tunegocio.com"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Address Information */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  {t('admin.businessSettings.address.title')}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {t('admin.businessSettings.address.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="address">
+                    {t('admin.businessSettings.address.addressLabel')}
+                  </Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={e => handleChange('address', e.target.value)}
+                    placeholder={t('admin.businessSettings.address.addressPlaceholder')}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">{t('admin.businessSettings.address.cityLabel')}</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={e => handleChange('city', e.target.value)}
+                      placeholder={t('common.placeholders.city')}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="state">{t('admin.businessSettings.address.stateLabel')}</Label>
+                    <Input
+                      id="state"
+                      value={formData.state}
+                      onChange={e => handleChange('state', e.target.value)}
+                      placeholder={t('common.placeholders.state')}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Legal Information */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  {t('admin.businessSettings.legal.title')}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {t('admin.businessSettings.legal.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="legal_name">
+                    {t('admin.businessSettings.legal.legalNameLabel')}
+                  </Label>
+                  <Input
+                    id="legal_name"
+                    value={formData.legal_name}
+                    onChange={e => handleChange('legal_name', e.target.value)}
+                    placeholder={t('admin.businessSettings.legal.legalNamePlaceholder')}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="tax_id">{t('admin.businessSettings.legal.taxIdLabel')}</Label>
+                  <Input
+                    id="tax_id"
+                    value={formData.tax_id}
+                    onChange={e => handleChange('tax_id', e.target.value)}
+                    placeholder={t('admin.businessSettings.legal.taxIdPlaceholder')}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Save Button */}
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/90">
+                <Save className="h-4 w-4 mr-2" />
+                {isSaving ? t('common.actions.saving') : t('common.actions.save')}
+              </Button>
             </div>
-
-            <div>
-              <Label htmlFor="description">{t('admin.businessSettings.descriptionLabel')}</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder={t('admin.businessSettings.descriptionPlaceholder')}
-                rows={4}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Information */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">{t('admin.businessSettings.contact.title')}</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {t('admin.businessSettings.contact.description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="phone">{t('admin.businessSettings.contact.phoneLabel')}</Label>
-              <PhoneInput
-                value={formData.phone}
-                onChange={(value) => handleChange('phone', value)}
-                prefix={phonePrefix}
-                onPrefixChange={setPhonePrefix}
-                placeholder={t('common.placeholders.phoneNumber')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email">{t('admin.businessSettings.contact.emailLabel')}</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                placeholder={t('common.placeholders.email')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="website">Sitio Web</Label>
-              <Input
-                id="website"
-                type="url"
-                value={formData.website}
-                onChange={(e) => handleChange('website', e.target.value)}
-                placeholder="https://www.tunegocio.com"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Address Information */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">{t('admin.businessSettings.address.title')}</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {t('admin.businessSettings.address.description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-                <Label htmlFor="address">{t('admin.businessSettings.address.addressLabel')}</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => handleChange('address', e.target.value)}
-                placeholder={t('admin.businessSettings.address.addressPlaceholder')}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="city">{t('admin.businessSettings.address.cityLabel')}</Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  placeholder={t('common.placeholders.city')}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="state">{t('admin.businessSettings.address.stateLabel')}</Label>
-                <Input
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) => handleChange('state', e.target.value)}
-                  placeholder={t('common.placeholders.state')}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Legal Information */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-foreground">{t('admin.businessSettings.legal.title')}</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {t('admin.businessSettings.legal.description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="legal_name">{t('admin.businessSettings.legal.legalNameLabel')}</Label>
-              <Input
-                id="legal_name"
-                value={formData.legal_name}
-                onChange={(e) => handleChange('legal_name', e.target.value)}
-                placeholder={t('admin.businessSettings.legal.legalNamePlaceholder')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="tax_id">{t('admin.businessSettings.legal.taxIdLabel')}</Label>
-              <Input
-                id="tax_id"
-                value={formData.tax_id}
-                onChange={(e) => handleChange('tax_id', e.target.value)}
-                placeholder={t('admin.businessSettings.legal.taxIdPlaceholder')}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? t('common.actions.saving') : t('common.actions.save')}
-          </Button>
-        </div>
-      </form>
+          </form>
         </TabsContent>
 
         <TabsContent value="notifications">

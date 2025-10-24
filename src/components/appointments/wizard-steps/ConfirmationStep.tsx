@@ -1,34 +1,34 @@
-import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, MapPin, User, Scissors } from 'lucide-react';
-import { format } from 'date-fns';
+import React from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Card } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import { Calendar, Clock, MapPin, Scissors, User } from 'lucide-react'
+import { format } from 'date-fns'
 
 interface WizardData {
-  serviceId: string | null;
-  service: { name: string; duration: number; price?: number } | null;
-  date: Date | null;
-  startTime: string | null;
-  endTime: string | null;
-  notes: string;
-  locationId: string | null;
-  location: { name: string; address?: string | null } | null;
-  employeeId: string | null;
-  employee: { full_name: string | null; email: string } | null;
+  serviceId: string | null
+  service: { name: string; duration: number; price?: number } | null
+  date: Date | null
+  startTime: string | null
+  endTime: string | null
+  notes: string
+  locationId: string | null
+  location: { name: string; address?: string | null } | null
+  employeeId: string | null
+  employee: { full_name: string | null; email: string } | null
 }
 
 interface ConfirmationStepProps {
-  readonly wizardData: WizardData;
-  readonly onUpdateNotes: (notes: string) => void;
-  readonly onSubmit: () => void;
+  readonly wizardData: WizardData
+  readonly onUpdateNotes: (notes: string) => void
+  readonly onSubmit: () => void
 }
 
 interface InfoRowProps {
-  readonly icon: React.ReactNode;
-  readonly label: string;
-  readonly value: string;
+  readonly icon: React.ReactNode
+  readonly label: string
+  readonly value: string
 }
 
 function InfoRow({ icon, label, value }: InfoRowProps) {
@@ -40,15 +40,12 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
         <p className="text-sm text-foreground font-medium">{value}</p>
       </div>
     </div>
-  );
+  )
 }
 
-export function ConfirmationStep({
-  wizardData,
-  onUpdateNotes,
-}: Readonly<ConfirmationStepProps>) {
+export function ConfirmationStep({ wizardData, onUpdateNotes }: Readonly<ConfirmationStepProps>) {
   const { t } = useLanguage()
-  const { service, date, startTime, endTime, notes, location, employee } = wizardData;
+  const { service, date, startTime, endTime, notes, location, employee } = wizardData
 
   return (
     <div className="p-6 space-y-6">
@@ -120,7 +117,11 @@ export function ConfirmationStep({
               <div className="flex justify-between items-center pt-2">
                 <span className="text-[#94a3b8] font-medium">Total</span>
                 <span className="text-2xl font-bold text-[#ff8c00]">
-                  ${service.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  $
+                  {service.price.toLocaleString('es-CO', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}
                 </span>
               </div>
             </>
@@ -136,7 +137,7 @@ export function ConfirmationStep({
         <Textarea
           id="appointment-notes"
           value={notes}
-          onChange={(e) => onUpdateNotes(e.target.value)}
+          onChange={e => onUpdateNotes(e.target.value)}
           placeholder="Add any special requests or notes..."
           className="bg-background border-border text-foreground placeholder:text-muted-foreground min-h-[100px]
                      focus:border-primary focus:ring-primary/20"
@@ -150,5 +151,5 @@ export function ConfirmationStep({
         </p>
       </div>
     </div>
-  );
+  )
 }

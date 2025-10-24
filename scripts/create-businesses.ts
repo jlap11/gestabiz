@@ -3,21 +3,21 @@
  * Distribución: 7 Bogotá, 2 Girardot, 21 Medellín
  */
 
-import 'dotenv/config';
-import { createClient } from '@supabase/supabase-js';
+import 'dotenv/config'
+import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
-);
+)
 
 // Distribución geográfica
 const CITIES = [
   { name: 'Bogotá', department: 'Cundinamarca', count: 7 },
   { name: 'Girardot', department: 'Cundinamarca', count: 2 },
   { name: 'Medellín', department: 'Antioquia', count: 21 },
-];
+]
 
 // Categorías con valores del enum business_category
 const CATEGORIES = [
@@ -29,52 +29,63 @@ const CATEGORIES = [
   { value: 'consulting', name: 'Consultoría' },
   { value: 'food', name: 'Alimentación' },
   { value: 'maintenance', name: 'Mantenimiento' },
-];
+]
 
 // Sufijos para nombres de negocios
-const SUFFIXES = ['Premium', 'Elite', 'Plus', 'VIP', 'Express', 'Center', 'Studio', 'Pro', 'Deluxe', 'Exclusive'];
+const SUFFIXES = [
+  'Premium',
+  'Elite',
+  'Plus',
+  'VIP',
+  'Express',
+  'Center',
+  'Studio',
+  'Pro',
+  'Deluxe',
+  'Exclusive',
+]
 
 function randomElement<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
+  return array[Math.floor(Math.random() * array.length)]
 }
 
 function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 async function createBusinesses() {
-  console.log('🚀 Creando 30 negocios ficticios...\n');
+  console.log('🚀 Creando 30 negocios ficticios...\n')
 
   // Obtener los primeros 25 usuarios como owners
   const { data: owners } = await supabase
     .from('profiles')
     .select('id, email, full_name, phone')
     .order('created_at')
-    .limit(25);
+    .limit(25)
 
   if (!owners || owners.length < 25) {
-    console.error('❌ No hay suficientes usuarios (se necesitan al menos 25)');
-    return;
+    console.error('❌ No hay suficientes usuarios (se necesitan al menos 25)')
+    return
   }
 
-  console.log(`✅ ${owners.length} propietarios disponibles\n`);
+  console.log(`✅ ${owners.length} propietarios disponibles\n`)
 
-  let businessIndex = 0;
-  const createdBusinesses = [];
+  let businessIndex = 0
+  const createdBusinesses = []
 
   for (const cityDist of CITIES) {
-    console.log(`📍 Creando negocios en ${cityDist.name}...`);
+    console.log(`📍 Creando negocios en ${cityDist.name}...`)
 
     for (let i = 0; i < cityDist.count; i++) {
       // Seleccionar owner (primeros 20 únicos, después repetidos)
-      const ownerIndex = businessIndex < 20 ? businessIndex : randomInt(0, 19);
-      const owner = owners[ownerIndex];
+      const ownerIndex = businessIndex < 20 ? businessIndex : randomInt(0, 19)
+      const owner = owners[ownerIndex]
 
       // Seleccionar categoría aleatoria
-      const category = randomElement(CATEGORIES);
-      const businessName = `${category.name} ${randomElement(SUFFIXES)} ${cityDist.name}`;
-      const description = `${category.name} profesional en ${cityDist.name}. Ofrecemos servicios de alta calidad con profesionales certificados.`;
-      
+      const category = randomElement(CATEGORIES)
+      const businessName = `${category.name} ${randomElement(SUFFIXES)} ${cityDist.name}`
+      const description = `${category.name} profesional en ${cityDist.name}. Ofrecemos servicios de alta calidad con profesionales certificados.`
+
       // Generar slug único
       const slugBase = businessName
         .toLowerCase()
@@ -82,11 +93,11 @@ async function createBusinesses() {
         .replaceAll(/[\u0300-\u036f]/g, '')
         .replaceAll(/[^a-z0-9]+/g, '-')
         .replaceAll(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-      const slug = `${slugBase}-${businessIndex + 1}`;
+        .replace(/^-|-$/g, '')
+      const slug = `${slugBase}-${businessIndex + 1}`
 
       try {
-        const { data, error} = await supabase
+        const { data, error } = await supabase
           .from('businesses')
           .insert({
             owner_id: owner.id,
@@ -95,7 +106,15 @@ async function createBusinesses() {
             description,
             email: owner.email,
             phone: owner.phone || '3001234567',
-            category: category.value as 'beauty' | 'professional' | 'health' | 'fitness' | 'education' | 'consulting' | 'food' | 'maintenance',
+            category: category.value as
+              | 'beauty'
+              | 'professional'
+              | 'health'
+              | 'fitness'
+              | 'education'
+              | 'consulting'
+              | 'food'
+              | 'maintenance',
             city: cityDist.name,
             state: cityDist.department,
             country: 'Colombia',
@@ -103,37 +122,37 @@ async function createBusinesses() {
             is_public: true,
           })
           .select()
-          .single();
+          .single()
 
         if (error) {
-          console.error(`   ❌ Error:`, error.message);
-          continue;
+          console.error(`   ❌ Error:`, error.message)
+          continue
         }
 
-        createdBusinesses.push(data);
-        businessIndex++;
+        createdBusinesses.push(data)
+        businessIndex++
 
-        console.log(`   ✓ ${businessIndex}/30: ${businessName}`);
+        console.log(`   ✓ ${businessIndex}/30: ${businessName}`)
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.error(`   ❌ Error:`, error.message);
+          console.error(`   ❌ Error:`, error.message)
         }
       }
     }
 
-    console.log();
+    console.log()
   }
 
-  console.log(`✅ Total: ${createdBusinesses.length} negocios creados\n`);
-  
+  console.log(`✅ Total: ${createdBusinesses.length} negocios creados\n`)
+
   // Mostrar resumen por ciudad
-  console.log('📊 Resumen por ciudad:');
+  console.log('📊 Resumen por ciudad:')
   for (const city of CITIES) {
-    const count = createdBusinesses.filter(b => b.city === city.name).length;
-    console.log(`   ${city.name}: ${count} negocios`);
+    const count = createdBusinesses.filter(b => b.city === city.name).length
+    console.log(`   ${city.name}: ${count} negocios`)
   }
 
-  return createdBusinesses;
+  return createdBusinesses
 }
 
-await createBusinesses();
+await createBusinesses()

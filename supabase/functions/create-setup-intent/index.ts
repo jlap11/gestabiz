@@ -20,7 +20,7 @@ interface CreateSetupIntentResponse {
   setupIntentId: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -51,23 +51,25 @@ serve(async (req) => {
 
     if (authError || !user) {
       console.error('[create-setup-intent] Error de autenticación:', authError)
-      return new Response(
-        JSON.stringify({ error: 'No autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'No autorizado' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // 3. Parsear request body
     const { businessId } = (await req.json()) as CreateSetupIntentRequest
 
     if (!businessId) {
-      return new Response(
-        JSON.stringify({ error: 'businessId es requerido' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'businessId es requerido' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    console.log(`[create-setup-intent] Creando Setup Intent para business ${businessId}, usuario ${user.id}`)
+    console.log(
+      `[create-setup-intent] Creando Setup Intent para business ${businessId}, usuario ${user.id}`
+    )
 
     // 4. Verificar que el usuario es owner del negocio
     const { data: business, error: businessError } = await supabaseClient
@@ -78,18 +80,20 @@ serve(async (req) => {
 
     if (businessError || !business) {
       console.error('[create-setup-intent] Error al obtener negocio:', businessError)
-      return new Response(
-        JSON.stringify({ error: 'Negocio no encontrado' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'Negocio no encontrado' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     if (business.owner_id !== user.id) {
-      console.error(`[create-setup-intent] Usuario ${user.id} no es owner del negocio ${businessId}`)
-      return new Response(
-        JSON.stringify({ error: 'No autorizado para este negocio' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      console.error(
+        `[create-setup-intent] Usuario ${user.id} no es owner del negocio ${businessId}`
       )
+      return new Response(JSON.stringify({ error: 'No autorizado para este negocio' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // 5. Obtener o crear Stripe Customer
@@ -97,7 +101,7 @@ serve(async (req) => {
 
     if (!stripeCustomerId) {
       console.log(`[create-setup-intent] Creando nuevo Stripe Customer para business ${businessId}`)
-      
+
       const { data: profile } = await supabaseClient
         .from('profiles')
         .select('full_name, email')
@@ -154,9 +158,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('[create-setup-intent] Error:', error)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Error al crear Setup Intent',
-        details: error instanceof Error ? error.message : 'Error desconocido'
+        details: error instanceof Error ? error.message : 'Error desconocido',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

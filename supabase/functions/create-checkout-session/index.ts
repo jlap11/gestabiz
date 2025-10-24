@@ -43,7 +43,7 @@ interface CheckoutSessionRequest {
   cancelUrl: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Solo permitir POST
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
@@ -62,7 +62,10 @@ serve(async (req) => {
     })
 
     // Verificar autenticación
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
       return new Response('Unauthorized', { status: 401 })
     }
@@ -120,14 +123,15 @@ serve(async (req) => {
       customerId = customer.id
 
       // Guardar customer_id en business_plans
-      await supabase
-        .from('business_plans')
-        .upsert({
+      await supabase.from('business_plans').upsert(
+        {
           business_id: businessId,
           plan_type: planType,
           stripe_customer_id: customerId,
           status: 'inactive',
-        }, { onConflict: 'business_id' })
+        },
+        { onConflict: 'business_id' }
+      )
     }
 
     // Configuración de la sesión de checkout
@@ -187,9 +191,11 @@ serve(async (req) => {
           })
 
           if (promoCodes.data.length > 0) {
-            sessionConfig.discounts = [{
-              promotion_code: promoCodes.data[0].id,
-            }]
+            sessionConfig.discounts = [
+              {
+                promotion_code: promoCodes.data[0].id,
+              },
+            ]
           } else {
             console.warn('[Checkout] Stripe promo code not found:', discountCode)
           }
@@ -243,13 +249,13 @@ serve(async (req) => {
   } catch (err) {
     console.error('[Checkout] Error:', err)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: err instanceof Error ? err.message : 'Unknown error',
         type: err instanceof Stripe.errors.StripeError ? err.type : 'unknown',
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
       }
     )
   }

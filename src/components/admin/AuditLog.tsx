@@ -1,7 +1,13 @@
-import React, { useState, useMemo } from 'react'
-import { Download, Filter, Calendar as CalendarIcon, User as UserIcon, Activity } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
+import {
+  Activity,
+  Calendar as CalendarIcon,
+  Download,
+  Filter,
+  User as UserIcon,
+} from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -21,11 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { format } from 'date-fns'
@@ -44,37 +46,37 @@ const ACTION_CONFIG = {
   'role.assign': {
     label: 'Rol Asignado',
     color: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
-    icon: '👤'
+    icon: '👤',
   },
   'role.revoke': {
     label: 'Rol Revocado',
     color: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
-    icon: '🚫'
+    icon: '🚫',
   },
   'permission.grant': {
     label: 'Permiso Otorgado',
     color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
-    icon: '✓'
+    icon: '✓',
   },
   'permission.revoke': {
     label: 'Permiso Revocado',
     color: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
-    icon: '✗'
+    icon: '✗',
   },
   'template.apply': {
     label: 'Plantilla Aplicada',
     color: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
-    icon: '📋'
+    icon: '📋',
   },
   'template.create': {
     label: 'Plantilla Creada',
     color: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
-    icon: '➕'
+    icon: '➕',
   },
   'template.delete': {
     label: 'Plantilla Eliminada',
     color: 'bg-pink-500/10 text-pink-700 dark:text-pink-400 border-pink-500/20',
-    icon: '🗑️'
+    icon: '🗑️',
   },
 } as const
 
@@ -151,7 +153,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
     try {
       // CSV Headers
       const headers = ['Fecha', 'Usuario', 'Acción', 'Detalles', 'Realizado Por', 'Notas']
-      
+
       // CSV Rows
       const rows = filteredLog.map(entry => {
         const actionConfig = ACTION_CONFIG[entry.action as ActionType] || { label: entry.action }
@@ -161,25 +163,25 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
           actionConfig.label,
           entry.permission || entry.role || 'N/A',
           entry.performed_by_name || 'Sistema',
-          entry.notes || ''
+          entry.notes || '',
         ]
       })
 
       // Build CSV content
       const csvContent = [
         headers.join(','),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
       ].join('\n')
 
       // Create blob and download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
-      
+
       link.setAttribute('href', url)
       link.setAttribute('download', `auditoria_permisos_${format(new Date(), 'yyyy-MM-dd')}.csv`)
       link.style.visibility = 'hidden'
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -187,7 +189,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
       toast.success(t('admin.auditActions.exported'))
     } catch (error) {
       toast.error(t('admin.auditActions.exportError'), {
-        description: error instanceof Error ? error.message : 'Error desconocido'
+        description: error instanceof Error ? error.message : 'Error desconocido',
       })
     }
   }
@@ -218,9 +220,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
               <Activity className="h-5 w-5 text-primary" />
               Historial de Auditoría
             </CardTitle>
-            <CardDescription>
-              Registro completo de cambios en roles y permisos
-            </CardDescription>
+            <CardDescription>Registro completo de cambios en roles y permisos</CardDescription>
           </div>
           <Button
             onClick={handleExportCSV}
@@ -272,7 +272,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
               id="user-filter"
               placeholder={t('admin.actions.searchByName')}
               value={userFilter}
-              onChange={(e) => setUserFilter(e.target.value)}
+              onChange={e => setUserFilter(e.target.value)}
             />
           </div>
 
@@ -287,19 +287,16 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !dateFrom && "text-muted-foreground"
+                    'w-full justify-start text-left font-normal',
+                    !dateFrom && 'text-muted-foreground'
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFrom ? format(dateFrom, 'dd/MM/yyyy', { locale: es }) : "Seleccionar"}
+                  {dateFrom ? format(dateFrom, 'dd/MM/yyyy', { locale: es }) : 'Seleccionar'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  selected={dateFrom}
-                  onSelect={setDateFrom}
-                />
+                <Calendar selected={dateFrom} onSelect={setDateFrom} />
               </PopoverContent>
             </Popover>
           </div>
@@ -315,19 +312,16 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !dateTo && "text-muted-foreground"
+                    'w-full justify-start text-left font-normal',
+                    !dateTo && 'text-muted-foreground'
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateTo ? format(dateTo, 'dd/MM/yyyy', { locale: es }) : "Seleccionar"}
+                  {dateTo ? format(dateTo, 'dd/MM/yyyy', { locale: es }) : 'Seleccionar'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  selected={dateTo}
-                  onSelect={setDateTo}
-                />
+                <Calendar selected={dateTo} onSelect={setDateTo} />
               </PopoverContent>
             </Popover>
           </div>
@@ -338,7 +332,10 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
           <p className="text-sm text-muted-foreground">
             Mostrando <span className="font-semibold">{filteredLog.length}</span> registros
             {auditLog && filteredLog.length < auditLog.length && (
-              <> de <span className="font-semibold">{auditLog.length}</span> totales</>
+              <>
+                {' '}
+                de <span className="font-semibold">{auditLog.length}</span> totales
+              </>
             )}
           </p>
           {(actionFilter !== 'all' || userFilter || dateFrom || dateTo) && (
@@ -369,7 +366,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
                   </TableCell>
                 </TableRow>
               )}
-              
+
               {!isLoading && paginatedLog.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-12">
@@ -382,12 +379,14 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
                   </TableCell>
                 </TableRow>
               )}
-              
-              {!isLoading && paginatedLog.length > 0 && paginatedLog.map((entry) => {
+
+              {!isLoading &&
+                paginatedLog.length > 0 &&
+                paginatedLog.map(entry => {
                   const actionConfig = ACTION_CONFIG[entry.action as ActionType] || {
                     label: entry.action,
                     color: 'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20',
-                    icon: '•'
+                    icon: '•',
                   }
 
                   return (
@@ -402,7 +401,9 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
                               {entry.user_name ? entry.user_name.charAt(0).toUpperCase() : '?'}
                             </span>
                           </div>
-                          <span className="font-medium">{entry.user_name || 'Usuario desconocido'}</span>
+                          <span className="font-medium">
+                            {entry.user_name || 'Usuario desconocido'}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -427,14 +428,10 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
                         )}
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">
-                          {entry.performed_by_name || 'Sistema'}
-                        </span>
+                        <span className="text-sm">{entry.performed_by_name || 'Sistema'}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {entry.notes || '-'}
-                        </span>
+                        <span className="text-sm text-muted-foreground">{entry.notes || '-'}</span>
                       </TableCell>
                     </TableRow>
                   )

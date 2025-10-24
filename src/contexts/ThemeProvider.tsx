@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react'
 import { useKV } from '@/lib/useKV'
-import { ThemeContext, Theme } from './theme-core'
+import { Theme, ThemeContext } from './theme-core'
 
 export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [theme, setTheme] = useKV<Theme>('theme-preference', 'light')
@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
   useEffect(() => {
     const root = document.documentElement
     root.dataset.theme = effectiveTheme
-    
+
     // Also add class for compatibility
     if (effectiveTheme === 'dark') {
       root.classList.add('dark')
@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
     const handleChange = () => {
       const systemTheme = mediaQuery.matches ? 'dark' : 'light'
       document.documentElement.dataset.theme = systemTheme
-      
+
       if (systemTheme === 'dark') {
         document.documentElement.classList.add('dark')
         document.body.classList.add('dark')
@@ -59,9 +59,5 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
   }, [theme])
 
   const value = useMemo(() => ({ theme, setTheme, isDark }), [theme, setTheme, isDark])
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

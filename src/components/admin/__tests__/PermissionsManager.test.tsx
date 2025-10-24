@@ -4,12 +4,12 @@
 // Fecha: 13 de Octubre de 2025
 // =====================================================
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PermissionsManager } from '@/components/admin/PermissionsManager'
 import { usePermissions } from '@/hooks/usePermissions-v2'
-import type { BusinessRole, UserPermission, PermissionCheckResult } from '@/types/types'
+import type { BusinessRole, PermissionCheckResult, UserPermission } from '@/types/types'
 
 // =====================================================
 // MOCKS
@@ -80,11 +80,13 @@ function mockUsePermissions(overrides?: Partial<ReturnType<typeof usePermissions
     auditLog: [],
 
     // Verificaciones
-    checkPermission: vi.fn((permission: string): PermissionCheckResult => ({
-      hasPermission: true,
-      isOwner: false,
-      reason: 'Permiso otorgado',
-    })),
+    checkPermission: vi.fn(
+      (permission: string): PermissionCheckResult => ({
+        hasPermission: true,
+        isOwner: false,
+        reason: 'Permiso otorgado',
+      })
+    ),
     checkAnyPermission: vi.fn(() => ({ hasPermission: true, isOwner: false })),
     checkAllPermissions: vi.fn(() => ({ hasPermission: true, isOwner: false })),
 
@@ -143,11 +145,7 @@ describe('PermissionsManager - Render y Permisos', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-456"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-456" />
     )
 
     expect(screen.getByText('Acceso Denegado')).toBeInTheDocument()
@@ -161,11 +159,7 @@ describe('PermissionsManager - Render y Permisos', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Gestión de Permisos')).toBeInTheDocument()
@@ -179,11 +173,7 @@ describe('PermissionsManager - Render y Permisos', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="owner-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="owner-123" />
     )
 
     // El OwnerBadge debería estar visible
@@ -194,11 +184,7 @@ describe('PermissionsManager - Render y Permisos', () => {
     mockUsePermissions()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByRole('button', { name: /Asignar Rol/i })).toBeInTheDocument()
@@ -217,11 +203,7 @@ describe('PermissionsManager - Tabs', () => {
 
   it('renderiza 4 tabs correctamente', () => {
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByRole('tab', { name: /Usuarios/i })).toBeInTheDocument()
@@ -232,11 +214,7 @@ describe('PermissionsManager - Tabs', () => {
 
   it('tab "Usuarios" está activo por defecto', () => {
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     const usuariosTab = screen.getByRole('tab', { name: /Usuarios/i })
@@ -247,16 +225,12 @@ describe('PermissionsManager - Tabs', () => {
     const user = userEvent.setup()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Click en tab "Permisos"
     await user.click(screen.getByRole('tab', { name: /Permisos/i }))
-    
+
     await waitFor(() => {
       expect(screen.getByRole('tab', { name: /Permisos/i })).toHaveAttribute('data-state', 'active')
     })
@@ -268,11 +242,7 @@ describe('PermissionsManager - Tabs', () => {
     const user = userEvent.setup()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     await user.click(screen.getByRole('tab', { name: /Plantillas/i }))
@@ -286,11 +256,7 @@ describe('PermissionsManager - Tabs', () => {
     const user = userEvent.setup()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     await user.click(screen.getByRole('tab', { name: /Historial/i }))
@@ -316,11 +282,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Cargando usuarios...')).toBeInTheDocument()
@@ -332,11 +294,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('No se encontraron usuarios')).toBeInTheDocument()
@@ -344,12 +302,12 @@ describe('PermissionsManager - Lista de Usuarios', () => {
 
   it('muestra lista de usuarios correctamente', () => {
     const roles = [
-      createMockBusinessRole({ 
-        user_id: 'user-1', 
-        role: 'admin' 
+      createMockBusinessRole({
+        user_id: 'user-1',
+        role: 'admin',
       }),
-      createMockBusinessRole({ 
-        user_id: 'user-2', 
+      createMockBusinessRole({
+        user_id: 'user-2',
         role: 'employee',
         employee_type: 'service_provider',
       }),
@@ -360,11 +318,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Verificar que se muestran las columnas en el TableHeader
@@ -380,9 +334,9 @@ describe('PermissionsManager - Lista de Usuarios', () => {
 
   it('muestra badge de owner para usuarios propietarios', () => {
     const roles = [
-      createMockBusinessRole({ 
-        user_id: 'owner-123', 
-        role: 'admin' 
+      createMockBusinessRole({
+        user_id: 'owner-123',
+        role: 'admin',
       }),
     ]
 
@@ -391,11 +345,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // El owner debe tener un badge especial en la tabla
@@ -414,11 +364,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Admin')).toBeInTheDocument()
@@ -427,9 +373,9 @@ describe('PermissionsManager - Lista de Usuarios', () => {
 
   it('muestra badge de employee_type correctamente', () => {
     const roles = [
-      createMockBusinessRole({ 
+      createMockBusinessRole({
         role: 'employee',
-        employee_type: 'service_provider' 
+        employee_type: 'service_provider',
       }),
     ]
 
@@ -438,11 +384,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Presta servicios')).toBeInTheDocument()
@@ -459,11 +401,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Activo')).toBeInTheDocument()
@@ -474,7 +412,11 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     const roles = [createMockBusinessRole()]
     const permissions = [
       createMockUserPermission({ user_id: 'user-123' }),
-      createMockUserPermission({ id: 'perm-2', user_id: 'user-123', permission: 'write_appointments' }),
+      createMockUserPermission({
+        id: 'perm-2',
+        user_id: 'user-123',
+        permission: 'write_appointments',
+      }),
     ]
 
     mockUsePermissions({
@@ -483,11 +425,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // El usuario debe tener 2 permisos
@@ -496,9 +434,9 @@ describe('PermissionsManager - Lista de Usuarios', () => {
 
   it('muestra "Todos" para el contador de permisos del owner', () => {
     const roles = [
-      createMockBusinessRole({ 
-        user_id: 'owner-123', 
-        role: 'admin' 
+      createMockBusinessRole({
+        user_id: 'owner-123',
+        role: 'admin',
       }),
     ]
 
@@ -507,11 +445,7 @@ describe('PermissionsManager - Lista de Usuarios', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Todos')).toBeInTheDocument()
@@ -531,11 +465,7 @@ describe('PermissionsManager - Filtros', () => {
     mockUsePermissions()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByPlaceholderText('Buscar por nombre o email...')).toBeInTheDocument()
@@ -543,7 +473,7 @@ describe('PermissionsManager - Filtros', () => {
 
   it('filtra usuarios por búsqueda de texto', async () => {
     const user = userEvent.setup()
-    
+
     const roles = [
       createMockBusinessRole({ user_id: 'user-1' }),
       createMockBusinessRole({ user_id: 'user-2' }),
@@ -555,11 +485,7 @@ describe('PermissionsManager - Filtros', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Inicialmente hay 3 usuarios
@@ -579,11 +505,7 @@ describe('PermissionsManager - Filtros', () => {
     mockUsePermissions()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
@@ -592,7 +514,7 @@ describe('PermissionsManager - Filtros', () => {
   // NOTA: Los siguientes tests de interacción con el Select de Radix UI están comentados
   // debido a limitaciones de jsdom con el método hasPointerCapture del componente Select.
   // En un entorno E2E (Playwright/Cypress) estos tests funcionarían correctamente.
-  
+
   // it('filtra usuarios por rol', async () => {
   //   // Test comentado - requiere entorno E2E para Select de Radix UI
   // })
@@ -615,11 +537,7 @@ describe('PermissionsManager - Stats Cards', () => {
     mockUsePermissions()
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     expect(screen.getByText('Total Usuarios')).toBeInTheDocument()
@@ -639,15 +557,13 @@ describe('PermissionsManager - Stats Cards', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Buscar el número 3 como texto independiente
-    const totalCard = screen.getByText('Total Usuarios').closest('[class*="space-y"]')?.parentElement
+    const totalCard = screen
+      .getByText('Total Usuarios')
+      .closest('[class*="space-y"]')?.parentElement
     expect(within(totalCard!).getByText('3')).toBeInTheDocument()
   })
 
@@ -663,15 +579,13 @@ describe('PermissionsManager - Stats Cards', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Buscar el número 2 como texto independiente
-    const adminCard = screen.getByText('Administradores').closest('[class*="space-y"]')?.parentElement
+    const adminCard = screen
+      .getByText('Administradores')
+      .closest('[class*="space-y"]')?.parentElement
     expect(within(adminCard!).getByText('2')).toBeInTheDocument()
   })
 
@@ -687,11 +601,7 @@ describe('PermissionsManager - Stats Cards', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Buscar el número 2 como texto independiente
@@ -710,34 +620,28 @@ describe('PermissionsManager - Acciones', () => {
   })
 
   it('muestra botón de editar para cada usuario', () => {
-    const roles = [
-      createMockBusinessRole(),
-    ]
+    const roles = [createMockBusinessRole()]
 
     mockUsePermissions({
       businessRoles: roles,
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     // Debe haber un botón de editar en la tabla
-    const editButtons = screen.getAllByRole('button').filter(
-      btn => btn.querySelector('svg') !== null
-    )
+    const editButtons = screen
+      .getAllByRole('button')
+      .filter(btn => btn.querySelector('svg') !== null)
     expect(editButtons.length).toBeGreaterThan(0)
   })
 
   it('deshabilita botón de editar para owner si no es el usuario actual', () => {
     const roles = [
-      createMockBusinessRole({ 
-        user_id: 'owner-123', 
-        role: 'admin' 
+      createMockBusinessRole({
+        user_id: 'owner-123',
+        role: 'admin',
       }),
     ]
 
@@ -762,9 +666,9 @@ describe('PermissionsManager - Acciones', () => {
 
   it('no muestra botón de eliminar para owner', () => {
     const roles = [
-      createMockBusinessRole({ 
-        user_id: 'owner-123', 
-        role: 'admin' 
+      createMockBusinessRole({
+        user_id: 'owner-123',
+        role: 'admin',
       }),
     ]
 
@@ -773,26 +677,22 @@ describe('PermissionsManager - Acciones', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     const rows = screen.getAllByRole('row')
     const ownerRow = rows[1]
     const buttons = within(ownerRow).getAllByRole('button')
-    
+
     // Solo debe haber 1 botón (editar), no el de eliminar
     expect(buttons).toHaveLength(1)
   })
 
   it('muestra botón de eliminar para usuarios no-owner', () => {
     const roles = [
-      createMockBusinessRole({ 
-        user_id: 'user-123', 
-        role: 'employee' 
+      createMockBusinessRole({
+        user_id: 'user-123',
+        role: 'employee',
       }),
     ]
 
@@ -801,17 +701,13 @@ describe('PermissionsManager - Acciones', () => {
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="admin-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="admin-123" />
     )
 
     const rows = screen.getAllByRole('row')
     const userRow = rows[1]
     const buttons = within(userRow).getAllByRole('button')
-    
+
     // Debe haber 2 botones (editar y eliminar)
     expect(buttons).toHaveLength(2)
   })
@@ -819,31 +715,25 @@ describe('PermissionsManager - Acciones', () => {
   it('llama a console.log al hacer click en editar usuario', async () => {
     const user = userEvent.setup()
     const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    
-    const roles = [
-      createMockBusinessRole(),
-    ]
+
+    const roles = [createMockBusinessRole()]
 
     mockUsePermissions({
       businessRoles: roles,
     })
 
     render(
-      <PermissionsManager
-        businessId="business-123"
-        ownerId="owner-123"
-        currentUserId="user-123"
-      />
+      <PermissionsManager businessId="business-123" ownerId="owner-123" currentUserId="user-123" />
     )
 
     const rows = screen.getAllByRole('row')
     const userRow = rows[1]
     const editButton = within(userRow).getAllByRole('button')[0]
-    
+
     await user.click(editButton)
 
     expect(consoleLogSpy).toHaveBeenCalledWith('Selected user:', expect.any(Object))
-    
+
     consoleLogSpy.mockRestore()
   })
 })

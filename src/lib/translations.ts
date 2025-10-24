@@ -57,6 +57,7 @@ export const translations = {
         import: 'Import',
         print: 'Print',
       },
+      
       // States
       states: {
         loading: 'Loading...',
@@ -107,7 +108,25 @@ export const translations = {
       },
       // Uploads
       uploads: {
-        uploadingImages: 'Uploading images...'
+        uploadingImages: 'Uploading images...',
+      },
+
+      // Image Uploader specific translations
+      imageUploader: {
+        dropzone: {
+          uploading: 'Uploading...',
+          placeholder: 'Click to select or drag images here',
+          info: 'PNG, JPG, WEBP up to {maxSizeMB}MB • Max {maxFiles} images',
+        },
+        preview: {
+          count: '{count}/{max} images uploaded',
+        },
+        errors: {
+          maxFiles: 'You can only upload {remaining} more image(s)',
+          maxSize: 'File is too large. Max {maxSizeMB}MB',
+          uploadError: 'Error uploading image',
+        },
+        removeImage: 'Remove image',
       },
 
       // Admin - Permission templates
@@ -116,12 +135,12 @@ export const translations = {
         newTemplate: 'New Template',
         editTemplate: 'Edit Template',
         applyTemplate: 'Apply Template',
-        system: 'System'
+        system: 'System',
       },
 
       // Admin - Resources Manager
       resourcesManager: {
-        confirmDisable: 'Are you sure you want to disable this resource?'
+        confirmDisable: 'Are you sure you want to disable this resource?',
       },
       // Forms
       forms: {
@@ -134,7 +153,7 @@ export const translations = {
         noFileSelected: 'No file selected',
         dragDropFiles: 'Drag files here or click to select',
       },
-      
+
       // Placeholders
       placeholders: {
         businessName: 'Your business name',
@@ -296,24 +315,25 @@ export const translations = {
         pricing: 'Pricing',
         testimonials: 'Testimonials',
         signIn: 'Sign In',
-        getStarted: 'Get Started Free'
+        getStarted: 'Get Started Free',
       },
       hero: {
         badge: 'Designed for Colombian SMBs',
         title: 'Manage your business on',
         titleHighlight: 'autopilot',
-        subtitle: 'The ALL-IN-ONE platform to manage appointments, clients, employees, accounting, and more. Save time, increase revenue, and grow without limits.',
+        subtitle:
+          'The ALL-IN-ONE platform to manage appointments, clients, employees, accounting, and more. Save time, increase revenue, and grow without limits.',
         cta: {
           trial: '30-Day FREE Trial',
           pricing: 'View Plans & Pricing',
           noCreditCard: 'No credit card required',
-          cancelAnytime: 'Cancel anytime'
+          cancelAnytime: 'Cancel anytime',
         },
         stats: {
           businesses: 'Active Businesses',
           appointments: 'Appointments Scheduled',
-          satisfaction: 'Satisfaction'
-        }
+          satisfaction: 'Satisfaction',
+        },
       },
       dashboard: {
         title: 'Dashboard',
@@ -324,7 +344,7 @@ export const translations = {
         client: 'Client',
         haircut: 'Haircut',
         confirmed: 'Confirmed',
-        secureData: 'Secure & encrypted data'
+        secureData: 'Secure & encrypted data',
       },
       features: {
         badge: 'Features',
@@ -333,67 +353,69 @@ export const translations = {
         list: {
           appointments: {
             title: 'Appointment Management',
-            description: 'Smart calendar with conflict prevention and Google Calendar sync.'
+            description: 'Smart calendar with conflict prevention and Google Calendar sync.',
           },
           reminders: {
             title: 'Auto Reminders',
-            description: 'WhatsApp, Email & SMS. Reduce no-shows by 70%. Your clients never forget.'
+            description:
+              'WhatsApp, Email & SMS. Reduce no-shows by 70%. Your clients never forget.',
           },
           clients: {
             title: 'Client Management',
-            description: 'Complete database with history, notes, and recurring client analysis.'
+            description: 'Complete database with history, notes, and recurring client analysis.',
           },
           accounting: {
             title: 'Accounting System',
-            description: 'VAT, ICA, Retention. Automatic P&L reports. Ready for Colombian DIAN.'
+            description: 'VAT, ICA, Retention. Automatic P&L reports. Ready for Colombian DIAN.',
           },
           mobile: {
             title: 'Native Mobile App',
-            description: 'iOS & Android. Manage your business from anywhere, anytime.'
+            description: 'iOS & Android. Manage your business from anywhere, anytime.',
           },
           jobs: {
             title: 'Job Portal',
-            description: 'Post vacancies, manage applications, and find the talent you need.'
+            description: 'Post vacancies, manage applications, and find the talent you need.',
           },
           analytics: {
             title: 'Advanced Analytics',
-            description: 'Interactive dashboards, real-time charts, and exportable reports.'
+            description: 'Interactive dashboards, real-time charts, and exportable reports.',
           },
           automation: {
             title: 'Automation',
-            description: 'Confirmations, reminders, invoices. All automatic while you sleep.'
+            description: 'Confirmations, reminders, invoices. All automatic while you sleep.',
           },
           security: {
             title: 'Total Security',
-            description: 'Data encryption, automatic backups, and privacy compliance.'
-          }
-        }
+            description: 'Data encryption, automatic backups, and privacy compliance.',
+          },
+        },
       },
       benefits: {
         badge: 'Real Benefits',
         title: 'Recover up to $1.5M pesos monthly in lost appointments',
-        subtitle: "It's not magic, it's data. Our clients recover an average of 70% of appointments that were previously lost due to forgetfulness or cancellations.",
+        subtitle:
+          "It's not magic, it's data. Our clients recover an average of 70% of appointments that were previously lost due to forgetfulness or cancellations.",
         stats: {
           noShows: {
             value: '70%',
             label: 'Reduction in No-Shows',
-            description: 'Automatic reminders work'
+            description: 'Automatic reminders work',
           },
           timeSaved: {
             value: '8-12h',
             label: 'Weekly Time Saved',
-            description: 'No more time wasted on manual scheduling'
+            description: 'No more time wasted on manual scheduling',
           },
           bookings: {
             value: '35%',
             label: 'Increase in Bookings',
-            description: 'Your clients book 24/7, even while you sleep'
+            description: 'Your clients book 24/7, even while you sleep',
           },
           roi: {
             value: '900%',
             label: 'Average ROI',
-            description: 'Investment pays for itself in the first month'
-          }
+            description: 'Investment pays for itself in the first month',
+          },
         },
         cta: 'Start Recovering Money Today',
         calculator: {
@@ -404,13 +426,13 @@ export const translations = {
           appointmentsRecovered: 'Appointments recovered (70%)',
           cost: 'AppointSync Cost',
           netProfit: 'Net Profit',
-          paysSelf: '🎉 Investment pays for ITSELF in the first month'
-        }
+          paysSelf: '🎉 Investment pays for ITSELF in the first month',
+        },
       },
       pricing: {
         badge: 'Plans & Pricing',
         title: 'Transparent pricing. No surprises.',
-        subtitle: 'Cheaper than competitors. More features. Fair pricing for your business.'
+        subtitle: 'Cheaper than competitors. More features. Fair pricing for your business.',
       },
       testimonials: {
         badge: 'Testimonials',
@@ -421,34 +443,35 @@ export const translations = {
             name: 'María González',
             business: 'Glamour Salon - Medellín',
             text: "I can't believe I didn't start sooner. My clients say it looks super professional and I'm much calmer. I recovered $720,000/month in lost appointments.",
-            stat: '900% ROI'
+            stat: '900% ROI',
           },
           carlos: {
             name: 'Dr. Carlos Ramírez',
             business: 'SmileCare Dental Office - Bogotá',
-            text: "As a doctor, my time is gold. AppointSync gave me back 10 hours a week. Now I see more patients and my accountant is happy.",
-            stat: '800% ROI'
+            text: 'As a doctor, my time is gold. AppointSync gave me back 10 hours a week. Now I see more patients and my accountant is happy.',
+            stat: '800% ROI',
           },
           juan: {
             name: 'Juan Martínez',
             business: 'Personal Trainer - Cali',
             text: 'I invested $29,900 and it changed my life. Now I look like a professional business. I even raised my prices. Best investment ever.',
-            stat: '2000% ROI'
-          }
-        }
+            stat: '2000% ROI',
+          },
+        },
       },
       cta: {
         title: 'Ready to transform your business?',
-        subtitle: 'Join over 800 businesses already saving time and increasing revenue with Gestabiz.',
+        subtitle:
+          'Join over 800 businesses already saving time and increasing revenue with Gestabiz.',
         buttons: {
           trial: 'Start FREE for 30 Days',
-          login: 'I already have an account'
+          login: 'I already have an account',
         },
         benefits: {
           noCreditCard: 'No credit card required',
           cancelAnytime: 'Cancel anytime',
-          spanishSupport: 'Spanish support'
-        }
+          spanishSupport: 'Spanish support',
+        },
       },
       footer: {
         tagline: 'The #1 business management platform for Colombian SMBs.',
@@ -457,25 +480,25 @@ export const translations = {
           features: 'Features',
           pricing: 'Pricing',
           integrations: 'Integrations',
-          api: 'API'
+          api: 'API',
         },
         resources: {
           title: 'Resources',
           blog: 'Blog',
           help: 'Help',
           tutorials: 'Tutorials',
-          contact: 'Contact'
+          contact: 'Contact',
         },
         legal: {
           title: 'Legal',
           terms: 'Terms',
           privacy: 'Privacy',
           cookies: 'Cookies',
-          licenses: 'Licenses'
+          licenses: 'Licenses',
         },
         copyright: '© 2025 Gestabiz. All rights reserved.',
-        madeIn: 'Made with ❤️ in Colombia 🇨🇴'
-      }
+        madeIn: 'Made with ❤️ in Colombia 🇨🇴',
+      },
     },
 
     // Validations
@@ -486,7 +509,7 @@ export const translations = {
       businessRequired: 'Business selection is required',
       clientNameRequired: 'Client name is required',
       dateRequired: 'Date is required',
-      invalidTimeRange: 'Invalid time range'
+      invalidTimeRange: 'Invalid time range',
     },
 
     // Authentication
@@ -545,9 +568,10 @@ export const translations = {
       or: 'or',
       loginAsDemo: 'Login as Demo User',
       continueBooking: 'Sign in to continue with your booking',
-      accountInactive: 'Your account is inactive. You will not be able to sign in until you reactivate your account',
+      accountInactive:
+        'Your account is inactive. You will not be able to sign in until you reactivate your account',
       mustSignIn: 'You must sign in to create an appointment',
-      rememberMe: 'Remember me'
+      rememberMe: 'Remember me',
     },
 
     // Email Verification Modal
@@ -595,7 +619,7 @@ export const translations = {
       settings: 'Settings',
       profile: 'Profile',
       business: 'Business',
-      employees: 'Employees'
+      employees: 'Employees',
     },
 
     // Business Registration
@@ -609,11 +633,11 @@ export const translations = {
         info_description: 'Basic and contact information for your business',
         settings_title: 'Business Settings',
         settings_description: 'General settings for how your business operates',
-        updated: 'Business information updated'
+        updated: 'Business information updated',
       },
       registration: {
         title: 'Register Your Business',
-  business_description: 'Create your business profile to start managing appointments',
+        business_description: 'Create your business profile to start managing appointments',
         basic_info: 'Basic Information',
         business_name: 'Business Name',
         category: 'Category',
@@ -640,7 +664,7 @@ export const translations = {
         remove: 'Remove',
         service_name: 'Service Name',
         service_category: 'Category',
-  service_description: 'Description',
+        service_description: 'Description',
         duration: 'Duration',
         minutes: 'minutes',
         price: 'Price',
@@ -651,7 +675,7 @@ export const translations = {
         validation: {
           required_fields: 'Please fill in all required fields',
           at_least_one_service: 'Please add at least one service',
-          clientNameRequired: 'Client name is required'
+          clientNameRequired: 'Client name is required',
         },
         placeholders: {
           business_name: 'Enter your business name',
@@ -667,7 +691,7 @@ export const translations = {
           longitude: 'Longitude',
           service_name: 'e.g. Haircut',
           service_category: 'e.g. Hair Services',
-          service_description: 'Brief description of the service'
+          service_description: 'Brief description of the service',
         },
         days: {
           monday: 'Monday',
@@ -676,8 +700,8 @@ export const translations = {
           thursday: 'Thursday',
           friday: 'Friday',
           saturday: 'Saturday',
-          sunday: 'Sunday'
-        }
+          sunday: 'Sunday',
+        },
       },
       categories: {
         beauty_salon: 'Beauty Salon',
@@ -691,11 +715,11 @@ export const translations = {
         education: 'Education',
         legal: 'Legal',
         real_estate: 'Real Estate',
-        other: 'Other'
+        other: 'Other',
       },
       hours: {
-        closed: 'Closed'
-      }
+        closed: 'Closed',
+      },
     },
 
     // Employee Management
@@ -717,12 +741,12 @@ export const translations = {
         no_results_title: 'No businesses found',
         no_results_description: 'Try adjusting your search terms',
         no_businesses_title: 'No businesses available',
-        no_businesses_description: 'There are no businesses you can join at the moment'
+        no_businesses_description: 'There are no businesses you can join at the moment',
       },
       requests: {
         pending_title: 'Pending Requests',
         pending_description: 'Review and approve employee join requests',
-        processed_title: 'Processed Requests', 
+        processed_title: 'Processed Requests',
         processed_description: 'Previously reviewed requests',
         approve: 'Approve',
         reject: 'Reject',
@@ -736,16 +760,18 @@ export const translations = {
         status: {
           pending: 'Pending',
           approved: 'Approved',
-          rejected: 'Rejected'
-        }
+          rejected: 'Rejected',
+        },
       },
       absences: {
         cancelRequest: 'Cancel Request',
-        cancelRequestConfirm: 'Are you sure you want to cancel this absence request? This action cannot be undone.',
+        cancelRequestConfirm:
+          'Are you sure you want to cancel this absence request? This action cannot be undone.',
         deleting: 'Deleting...',
         confirmEndEmployment: 'Confirm End Employment',
-        endEmploymentMessage: 'Are you sure you want to end your employment? This action will deactivate your account.'
-      }
+        endEmploymentMessage:
+          'Are you sure you want to end your employment? This action will deactivate your account.',
+      },
     },
 
     // Profile
@@ -753,8 +779,8 @@ export const translations = {
       title: 'Profile',
       personal_info: 'Personal Information',
       name: 'Full Name',
-  username: 'Username',
-  username_hint: 'Letters, numbers, dots and underscores only.',
+      username: 'Username',
+      username_hint: 'Letters, numbers, dots and underscores only.',
       email: 'Email',
       phone: 'Phone',
       avatar: 'Profile Picture',
@@ -767,7 +793,7 @@ export const translations = {
       save_changes: 'Save Changes',
       saving: 'Saving...',
       success: 'Profile updated successfully',
-      error: 'Error updating profile'
+      error: 'Error updating profile',
     },
 
     // Settings
@@ -803,7 +829,7 @@ export const translations = {
         businessPreferences: 'Business Preferences',
         employeePreferences: 'Employee Preferences',
         clientPreferences: 'Client Preferences',
-        dangerZone: 'Danger Zone'
+        dangerZone: 'Danger Zone',
       },
       // Theme section
       themeSection: {
@@ -814,25 +840,26 @@ export const translations = {
         themes: {
           light: {
             label: 'Light',
-            description: 'Light colored interface'
+            description: 'Light colored interface',
           },
           dark: {
             label: 'Dark',
-            description: 'Dark colored interface'
+            description: 'Dark colored interface',
           },
           system: {
             label: 'System',
-            description: 'According to system preferences'
-          }
+            description: 'According to system preferences',
+          },
         },
         currentTheme: 'Current theme: {{theme}}',
-        systemThemeNote: 'The theme automatically changes according to your operating system preferences',
-        changeAnytime: 'You can change the theme at any time'
+        systemThemeNote:
+          'The theme automatically changes according to your operating system preferences',
+        changeAnytime: 'You can change the theme at any time',
       },
       // Language section
       languageSection: {
         label: 'Interface Language',
-        description: 'Select the interface language'
+        description: 'Select the interface language',
       },
       // Admin Business Preferences
       businessInfo: {
@@ -841,14 +868,14 @@ export const translations = {
         tabs: {
           info: 'Business Information',
           notifications: 'Business Notifications',
-          tracking: 'History'
+          tracking: 'History',
         },
         basicInfo: {
           title: 'Basic Information',
           nameLabel: 'Business Name *',
           namePlaceholder: 'Enter business name',
           descriptionLabel: 'Description',
-          descriptionPlaceholder: 'Describe your business...'
+          descriptionPlaceholder: 'Describe your business...',
         },
         contactInfo: {
           title: 'Contact Information',
@@ -857,7 +884,7 @@ export const translations = {
           emailLabel: 'Email',
           emailPlaceholder: 'contact@business.com',
           websiteLabel: 'Website',
-          websitePlaceholder: 'https://www.business.com'
+          websitePlaceholder: 'https://www.business.com',
         },
         addressInfo: {
           title: 'Address',
@@ -866,24 +893,24 @@ export const translations = {
           cityLabel: 'City',
           cityPlaceholder: 'City',
           stateLabel: 'Department/State',
-          statePlaceholder: 'Department or State'
+          statePlaceholder: 'Department or State',
         },
         legalInfo: {
           title: 'Legal Information',
           legalNameLabel: 'Legal Name',
           legalNamePlaceholder: 'Legal business name',
           taxIdLabel: 'Tax ID / NIT',
-          taxIdPlaceholder: 'Tax identification number'
+          taxIdPlaceholder: 'Tax identification number',
         },
         operationSettings: {
           title: 'Operation Settings',
           allowOnlineBooking: 'Allow online bookings',
           autoConfirm: 'Automatic confirmation',
           autoReminders: 'Automatic reminders',
-          showPrices: 'Show prices publicly'
+          showPrices: 'Show prices publicly',
         },
         nameRequired: 'Business name is required',
-        saveSettings: 'Save Settings'
+        saveSettings: 'Save Settings',
       },
       // Employee Preferences
       employeePrefs: {
@@ -893,7 +920,7 @@ export const translations = {
           title: 'Availability',
           availableForAppointments: 'Available for new appointments',
           notifyNewAssignments: 'Notify new assignments',
-          appointmentReminders: 'Appointment reminders'
+          appointmentReminders: 'Appointment reminders',
         },
         schedule: {
           title: 'My Work Schedule',
@@ -902,12 +929,12 @@ export const translations = {
           startTime: 'Start',
           endTime: 'End',
           lunchBreak: 'Lunch',
-          saveSchedule: 'Save Schedules'
+          saveSchedule: 'Save Schedules',
         },
         messages: {
           title: 'Client Messages',
           allowMessages: 'Allow messages from clients',
-          description: 'When enabled, clients can send you direct messages'
+          description: 'When enabled, clients can send you direct messages',
         },
         professionalInfo: {
           title: 'Professional Information',
@@ -920,8 +947,8 @@ export const translations = {
             fullTime: 'Full Time',
             partTime: 'Part Time',
             contract: 'Contract',
-            flexible: 'Flexible'
-          }
+            flexible: 'Flexible',
+          },
         },
         salary: {
           title: 'Salary Expectations',
@@ -929,19 +956,19 @@ export const translations = {
           maxLabel: 'Maximum Expected Salary',
           minPlaceholder: 'Min amount',
           maxPlaceholder: 'Max amount',
-          invalidRange: 'The minimum salary cannot be greater than the maximum'
+          invalidRange: 'The minimum salary cannot be greater than the maximum',
         },
         specializations: {
           title: 'Specializations',
           noSpecializations: 'No specializations added yet',
           newPlaceholder: 'New specialization',
-          addButton: 'Add'
+          addButton: 'Add',
         },
         languages: {
           title: 'Languages',
           noLanguages: 'No languages added yet',
           newPlaceholder: 'Language (e.g., English - Advanced)',
-          addButton: 'Add'
+          addButton: 'Add',
         },
         certifications: {
           title: 'Certifications and Licenses',
@@ -957,21 +984,21 @@ export const translations = {
             urlLabel: 'Credential URL (optional)',
             urlPlaceholder: 'https://...',
             cancelButton: 'Cancel',
-            saveButton: 'Save'
+            saveButton: 'Save',
           },
           issued: 'Issued',
           verifyCredential: 'Verify credential',
-          deleteButton: 'Delete'
+          deleteButton: 'Delete',
         },
         links: {
           title: 'Professional Links',
           portfolioLabel: 'Portfolio / Website',
           portfolioPlaceholder: 'https://your-portfolio.com',
           linkedinLabel: 'LinkedIn',
-          linkedinPlaceholder: 'https://linkedin.com/in/yourprofile'
+          linkedinPlaceholder: 'https://linkedin.com/in/yourprofile',
         },
         saveButton: 'Save Preferences',
-        resetButton: 'Reset'
+        resetButton: 'Reset',
       },
       // Client Preferences
       clientPrefs: {
@@ -982,7 +1009,7 @@ export const translations = {
           appointmentReminders: 'Appointment reminders',
           emailConfirmation: 'Email confirmation',
           promotionNotifications: 'Promotion notifications',
-          savePaymentMethods: 'Save payment methods'
+          savePaymentMethods: 'Save payment methods',
         },
         advanceTime: {
           title: 'Preferred Advance Time',
@@ -992,13 +1019,13 @@ export const translations = {
             oneDay: '1 day',
             twoDays: '2 days',
             threeDays: '3 days',
-            oneWeek: '1 week'
-          }
+            oneWeek: '1 week',
+          },
         },
         serviceHistory: {
           title: 'Service History',
           label: 'Save my service history for recommendations',
-          description: 'We use this to suggest similar services'
+          description: 'We use this to suggest similar services',
         },
         paymentMethods: {
           title: 'Payment Methods',
@@ -1007,11 +1034,11 @@ export const translations = {
             card: 'Credit/Debit Card',
             pse: 'PSE',
             cash: 'Cash',
-            transfer: 'Bank Transfer'
+            transfer: 'Bank Transfer',
           },
-          addButton: 'Add Payment Method'
+          addButton: 'Add Payment Method',
         },
-        savePreferences: 'Save Preferences'
+        savePreferences: 'Save Preferences',
       },
       // Danger Zone
       dangerZone: {
@@ -1022,35 +1049,38 @@ export const translations = {
           description: 'Temporarily suspend your account. You can reactivate it anytime.',
           button: 'Deactivate Account',
           confirmTitle: 'Are you sure you want to deactivate your account?',
-          confirmDescription: 'Your account will be temporarily suspended. All your data will be preserved and you can reactivate it anytime by signing in again.',
+          confirmDescription:
+            'Your account will be temporarily suspended. All your data will be preserved and you can reactivate it anytime by signing in again.',
           inputLabel: 'Confirm your email to continue:',
           inputPlaceholder: 'your@email.com',
           checkbox: 'I understand that my account will be temporarily suspended',
           cancel: 'Cancel',
-          confirm: 'Yes, deactivate my account'
+          confirm: 'Yes, deactivate my account',
         },
         delete: {
           title: 'Delete Account',
-          description: 'Permanently delete your account and all associated data. This action cannot be undone.',
+          description:
+            'Permanently delete your account and all associated data. This action cannot be undone.',
           button: 'Delete Account',
           confirmTitle: 'Delete account permanently',
           warningTitle: 'Warning: This action is irreversible',
-          warningDescription: 'You are about to permanently delete your account and all associated data. This includes:',
+          warningDescription:
+            'You are about to permanently delete your account and all associated data. This includes:',
           warningItems: {
             profile: 'Your profile and personal information',
             appointments: 'All your appointments (past and future)',
             history: 'Your complete service history',
             payments: 'Payment history and methods',
-            preferences: 'All your preferences and settings'
+            preferences: 'All your preferences and settings',
           },
           confirmText: 'Type "DEACTIVATE ACCOUNT" to confirm',
           confirmPlaceholder: 'DEACTIVATE ACCOUNT',
           mustTypeCorrectly: 'You must type "DEACTIVATE ACCOUNT" to confirm',
           cancel: 'Cancel',
           confirm: 'Yes, delete permanently',
-          processing: 'Processing...'
-        }
-      }
+          processing: 'Processing...',
+        },
+      },
     },
 
     // Accounting
@@ -1059,7 +1089,7 @@ export const translations = {
       subtitle: 'Complete management of taxes, transactions and tax configuration',
       tabs: {
         taxConfig: 'Tax Configuration',
-        transactions: 'Transactions'
+        transactions: 'Transactions',
       },
       sections: {
         taxConfig: 'Business Tax Configuration',
@@ -1076,30 +1106,31 @@ export const translations = {
         icaSubtitle: 'Automatic rates',
         withholding: 'Withholding',
         withholdingValue: '5 Types',
-        withholdingSubtitle: 'Professional, Services, etc.'
+        withholdingSubtitle: 'Professional, Services, etc.',
       },
       messages: {
         saved: 'Transaction saved successfully',
-        error: 'Error saving transaction'
-      }
+        error: 'Error saving transaction',
+      },
     },
 
     // Financial dashboard (translations used by EnhancedFinancialDashboard)
     financial: {
       dashboard: 'Financial Dashboard',
-      dashboardDescription: 'Interactive financial overview with charts, filters and PDF/CSV/Excel export',
+      dashboardDescription:
+        'Interactive financial overview with charts, filters and PDF/CSV/Excel export',
       filters: 'Filters:',
       period: {
         lastMonth: 'Last month',
         last3Months: 'Last 3 months',
         last6Months: 'Last 6 months',
-        lastYear: 'Last year'
+        lastYear: 'Last year',
       },
       tabs: {
         overview: 'Overview',
         categories: 'By Category',
         locations: 'By Location',
-        employees: 'By Employee'
+        employees: 'By Employee',
       },
       incomeVsExpense: 'Income vs Expenses',
       monthlyTrend: 'Monthly Trend',
@@ -1120,11 +1151,9 @@ export const translations = {
         equipment: 'Equipment',
         marketing: 'Marketing',
         maintenance: 'Maintenance',
-        tax: 'Taxes'
-      }
+        tax: 'Taxes',
+      },
     },
-
-    
 
     // Business hours picker
     businessHours: {
@@ -1145,16 +1174,16 @@ export const translations = {
       presets: {
         lunFriSat: 'Mon-Fri 9-18, Sat 9-14',
         lunSat: 'Mon-Sat 9-18',
-        lunDom: 'Mon-Sun 10-20 (closed Wed)'
-      }
+        lunDom: 'Mon-Sun 10-20 (closed Wed)',
+      },
     },
 
     // Dashboard
     dashboard: {
       title: 'Dashboard',
       welcome: 'Welcome back, {{name}}!',
-  overview: 'Here\'s what\'s happening with your business today',
-  overview_client: 'Here\'s what\'s happening with your appointments today',
+      overview: "Here's what's happening with your business today",
+      overview_client: "Here's what's happening with your appointments today",
       quick_stats: 'Quick Stats',
       recent_appointments: 'Recent Appointments',
       upcoming_appointments: 'Upcoming Appointments',
@@ -1165,10 +1194,11 @@ export const translations = {
       register_business: 'Register Business',
       join_business: 'Join Business',
       no_business_title: 'No Business Registered',
-      no_business_description: 'Register your business or join an existing one to start managing appointments',
+      no_business_description:
+        'Register your business or join an existing one to start managing appointments',
       register_business_description: 'Create your business profile and start managing appointments',
       join_business_description: 'Request to join an existing business as an employee',
-      todayAppointments: 'Today\'s Appointments',
+      todayAppointments: "Today's Appointments",
       totalClients: 'Total Clients',
       monthlyRevenue: 'Monthly Revenue',
       upcomingToday: 'Upcoming Today',
@@ -1177,7 +1207,7 @@ export const translations = {
       comingSoon: 'Coming soon...',
       upcomingWeek: 'Upcoming Week',
       nextSevenDays: 'Next 7 Days',
-      todaySchedule: 'Today\'s Schedule',
+      todaySchedule: "Today's Schedule",
       noAppointmentsToday: 'No appointments scheduled for today',
       noUpcomingAppointments: 'No upcoming appointments',
       totalRevenue: 'Total Revenue',
@@ -1185,7 +1215,7 @@ export const translations = {
       avgAppointmentValue: 'Avg Appointment Value',
       perAppointment: 'Per Appointment',
       weeklyAppointments: 'Weekly Appointments',
-      appointmentStatus: 'Appointment Status'
+      appointmentStatus: 'Appointment Status',
     },
 
     // Search
@@ -1194,13 +1224,13 @@ export const translations = {
         services: 'Services',
         businesses: 'Businesses',
         categories: 'Categories',
-        users: 'Professionals'
+        users: 'Professionals',
       },
       placeholders: {
         services: 'Search services...',
         businesses: 'Search businesses...',
         categories: 'Search categories...',
-        users: 'Search professionals...'
+        users: 'Search professionals...',
       },
       results: {
         viewAll: 'View all results →',
@@ -1212,7 +1242,7 @@ export const translations = {
         serviceCategory: 'Service category',
         userNoName: 'User without name',
         independentProfessional: 'Independent professional',
-        professionalServices: 'Service professional'
+        professionalServices: 'Service professional',
       },
       sorting: {
         relevance: 'Relevance',
@@ -1220,14 +1250,14 @@ export const translations = {
         distance: 'Nearest',
         rating: 'Best rated',
         newest: 'Newest',
-        oldest: 'Oldest'
+        oldest: 'Oldest',
       },
       filters: {
         filters: 'Filters',
         filter: 'Filter',
         active: 'Active',
         enableLocation: 'Enable location to see distances',
-        enableLocationShort: 'Enable location'
+        enableLocationShort: 'Enable location',
       },
       resultsPage: {
         title: 'Search results',
@@ -1241,9 +1271,9 @@ export const translations = {
           service: 'Service',
           business: 'Business',
           category: 'Category',
-          user: 'Professional'
-        }
-      }
+          user: 'Professional',
+        },
+      },
     },
 
     // Appointments
@@ -1299,7 +1329,8 @@ export const translations = {
         selectDate: 'Please select a date for the appointment',
         selectTime: 'Please select a time for the appointment',
         professionalNotAvailable: 'This professional is not available for bookings at this time',
-        professionalCannotAccept: 'This professional cannot accept appointments. Please select another professional',
+        professionalCannotAccept:
+          'This professional cannot accept appointments. Please select another professional',
         missingRequiredData: 'Missing required data to create the appointment',
         mustLogin: 'You must log in to create an appointment',
         errorCreating: 'Error creating appointment',
@@ -1336,12 +1367,12 @@ export const translations = {
       frequent_clients: 'Frequent Clients',
       inactive_clients: 'Inactive Clients',
       send_whatsapp: 'Send WhatsApp',
-      whatsapp_message: 'Hi! We miss you. Would you like to schedule a new appointment?'
+      whatsapp_message: 'Hi! We miss you. Would you like to schedule a new appointment?',
     },
 
     // Services
     services: {
-    // Admin - Services (preview alt moved into services block to avoid duplicate `admin` keys)
+      // Admin - Services (preview alt moved into services block to avoid duplicate `admin` keys)
       title: 'Services',
       subtitle: 'Manage the services you offer',
       imageLabel: 'Service Image (Optional)',
@@ -1367,7 +1398,7 @@ export const translations = {
       service_updated: 'Service updated successfully',
       service_deleted: 'Service deleted successfully',
       no_services: 'No services found',
-      minutes: 'minutes'
+      minutes: 'minutes',
     },
 
     // Reports
@@ -1375,7 +1406,7 @@ export const translations = {
       title: 'Reports',
       business_overview: 'Business Overview',
       period_selection: 'Period Selection',
-  this_quarter: 'This Quarter',
+      this_quarter: 'This Quarter',
       this_week: 'This Week',
       this_month: 'This Month',
       last_year: 'Last Year',
@@ -1396,7 +1427,7 @@ export const translations = {
       client_retention: 'Client Retention',
       new_clients: 'New Clients',
       returning_clients: 'Returning Clients',
-      no_data_available: 'No data available for selected period'
+      no_data_available: 'No data available for selected period',
     },
     admin: {
       actions: {
@@ -1412,18 +1443,19 @@ export const translations = {
         updateServiceInfo: 'Update the service information',
         completeServiceInfo: 'Complete the information of the new service',
         createFirstService: 'Create First Service',
-        confirmDeleteService: 'Are you sure you want to delete this service? This action cannot be undone.',
+        confirmDeleteService:
+          'Are you sure you want to delete this service? This action cannot be undone.',
         searchCategory: 'Search category...',
         searchByName: 'Search by name...',
         exportCSV: 'Export CSV',
         completeLocationInfo: 'Complete the information of the new location',
         addNewLocation: 'Add a new location for your business',
-        addNewService: 'Add a new service'
+        addNewService: 'Add a new service',
       },
-      
+
       // Admin - Services small extras
       services: {
-        previewAlt: 'Preview'
+        previewAlt: 'Preview',
       },
 
       clientManagement: {
@@ -1437,244 +1469,461 @@ export const translations = {
           unknown: 'Unknown',
           active_plural: 'Active',
           inactive_plural: 'Inactive',
-          blocked_plural: 'Blocked'
+          blocked_plural: 'Blocked',
         },
         tabs: {
           all: 'All',
           recurring: 'Recurring',
           at_risk: 'At Risk',
-          lost: 'Lost'
+          lost: 'Lost',
         },
         empty: {
           title: 'No clients found',
           description_search: 'Try different search terms',
-          description_category: 'There are no clients in this category'
+          description_category: 'There are no clients in this category',
         },
         badges: {
           total_appointments: 'Total Appointments',
-          total_value: 'Total Value'
+          total_value: 'Total Value',
         },
         last_appointment_prefix: 'Last appointment',
         never: 'Never',
         actions: {
           schedule: 'Schedule',
-          contact: 'Contact'
+          contact: 'Contact',
         },
         risk: {
           at_risk: 'Client at risk ({{days}} days)',
-          lost: 'Lost client ({{days}} days)'
+          lost: 'Lost client ({{days}} days)',
         },
         whatsapp: {
           missing: 'Client has no WhatsApp number',
-          message_template: 'Hi {{name}}, hope you are well. Would you like to book your next appointment?'
-        }
+          message_template:
+            'Hi {{name}}, hope you are well. Would you like to book your next appointment?',
+        },
       },
       comprehensiveReports: {
         title: 'Advanced Reports',
         subtitle: 'Detailed analysis of your business performance',
         actions: { update: 'Refresh', updating: 'Refreshing...' },
         metrics: {
-        tabs: { summary: 'Summary' },
-        descriptions: {
-          by_status: 'Distribution by status in the selected period',
-          client_metrics: 'Retention and growth metrics',
-          previewAlt: 'Preview',
-          peak_hours: 'Days and hours with the most appointments scheduled',
-          employee_performance: 'Productivity and efficiency statistics',
-          top_services: 'Most demanded and profitable services',
-          recurring_clients: 'Frequent clients and activity status analysis'
+          tabs: { summary: 'Summary' },
+          descriptions: {
+            by_status: 'Distribution by status in the selected period',
+            client_metrics: 'Retention and growth metrics',
+            previewAlt: 'Preview',
+            peak_hours: 'Days and hours with the most appointments scheduled',
+            employee_performance: 'Productivity and efficiency statistics',
+            top_services: 'Most demanded and profitable services',
+            recurring_clients: 'Frequent clients and activity status analysis',
+          },
+          cards: {
+            peak_hours: 'Highest Demand Hours',
+            recurring_clients: 'Recurring Clients',
+            client_analysis: 'Client Analysis',
+          },
+          labels: {
+            active_clients: 'Active Clients',
+            retention_rate: 'Retention Rate',
+            efficiency: 'efficiency',
+            average_short: 'avg',
+            days: 'days',
+            at: 'at',
+            last_visit: 'Last visit',
+          },
+          status: {
+            active: 'Active',
+            at_risk: 'At Risk',
+            lost: 'Lost',
+          },
+          whatsapp: {
+            missing: 'This client has no WhatsApp configured',
+            message_template:
+              'Hi {{name}}! We noticed it has been a while since your last visit. Would you like to schedule a new appointment? We miss you! 😊',
+          },
+          errors: {
+            generate_failed: 'Could not generate reports',
+          },
+          services: {
+            title: 'Services',
+            subtitle: 'Manage the services you offer',
+            noServicesTitle: 'No services yet',
+            noServicesDesc: 'Add your first service so customers can book appointments',
+            nameLabel: 'Service Name *',
+            namePlaceholder: 'E.g: Haircut',
+            descriptionLabel: 'Description',
+            descriptionPlaceholder: 'Describe the service',
+            durationLabel: 'Duration (minutes) *',
+            priceLabel: 'Price *',
+            imageLabel: 'Service Image (Optional)',
+            imageDesc: 'You can upload an image to showcase the service or examples',
+            availableAtLocations: 'Available at the following locations:',
+            selectAtLeastOneLocation: 'You must select at least one location',
+            providedBy: 'Provided by:',
+            noName: 'No name',
+            imageAlt: 'Service image',
+            activeLabel: 'Service active',
+          },
         },
-        cards: {
-          peak_hours: 'Highest Demand Hours',
-          recurring_clients: 'Recurring Clients',
-          client_analysis: 'Client Analysis'
-        },
-        labels: {
-          active_clients: 'Active Clients',
-          retention_rate: 'Retention Rate',
-          efficiency: 'efficiency',
-          average_short: 'avg',
-          days: 'days',
-          at: 'at',
-          last_visit: 'Last visit'
-        },
-        status: {
-          active: 'Active',
-          at_risk: 'At Risk',
-          lost: 'Lost'
-        },
-        whatsapp: {
-          missing: 'This client has no WhatsApp configured',
-          message_template: 'Hi {{name}}! We noticed it has been a while since your last visit. Would you like to schedule a new appointment? We miss you! 😊'
+      },
+
+      // Calendar
+      calendar: {
+        title: 'Calendar',
+        hour: 'Hour',
+        today: 'Today',
+        month: 'Month',
+        week: 'Week',
+        day: 'Day',
+        agenda: 'Agenda',
+        no_appointments: 'No appointments scheduled',
+        time_slot_available: 'Available',
+        time_slot_busy: 'Busy',
+        view_details: 'View Details',
+        book_appointment: 'Book Appointment',
+      },
+
+      // Locations
+      locations: {
+        title: 'Locations',
+        new_location: 'New Location',
+        edit_location: 'Edit Location',
+        location_details: 'Location Details',
+        name: 'Name',
+        address: 'Address',
+        city: 'City',
+        country: 'Country',
+        postal_code: 'Postal Code',
+        phone: 'Phone',
+        email: 'Email',
+        active: 'Active',
+        create_location: 'Create Location',
+        update_location: 'Update Location',
+        delete_location: 'Delete Location',
+        location_created: 'Location created successfully',
+        location_updated: 'Location updated successfully',
+        location_deleted: 'Location deleted successfully',
+        no_locations: 'No locations found',
+        main_location: 'Main Location',
+      },
+
+      // Banner Cropper
+      bannerCropper: {
+        title: 'Crop Banner',
+        instructions: 'Adjust the rectangular area for the banner (16:9)',
+        confirm: 'Confirm',
+      },
+
+      reviews: {
+        title: 'Reviews',
+        leaveReview: 'Leave a Review',
+        reviewDescription: 'Share your experience with others',
+        rating: 'Rating',
+        comment: 'Comment',
+        commentPlaceholder: 'Tell us about your experience...',
+        shareExperience: 'Your review will be posted anonymously',
+        submitReview: 'Submit Review',
+        submitSuccess: 'Review submitted successfully',
+        anonymous: 'Anonymous User',
+        verified: 'Verified',
+        hidden: 'Hidden',
+        hide: 'Hide',
+        show: 'Show',
+        delete: 'Delete',
+        confirmDelete: 'Are you sure you want to delete this review?',
+        employeeLabel: 'Professional',
+        businessResponse: 'Business Response',
+        respond: 'Respond',
+        responsePlaceholder: 'Write your response...',
+        submitResponse: 'Submit Response',
+        helpful: 'Helpful',
+        overallRating: 'Overall Rating',
+        basedOn: 'Based on {{count}} reviews',
+        ratingDistribution: 'Rating Distribution',
+        filterByRating: 'Filter by Rating',
+        allRatings: 'All Ratings',
+        searchReviews: 'Search reviews...',
+        noReviews: 'No reviews yet',
+        noReviewsDescription: 'Be the first to leave a review',
+        review: 'review',
+        reviewsPlural: 'reviews',
+        ratings: {
+          poor: 'Poor',
+          fair: 'Fair',
+          good: 'Good',
+          veryGood: 'Very Good',
+          excellent: 'Excellent',
         },
         errors: {
-          generate_failed: 'Could not generate reports'
+          ratingRequired: 'Please select a rating',
+          submitFailed: 'Failed to submit review',
+          loadFailed: 'Failed to load reviews',
         },
-        services: {
-          title: 'Services',
-          subtitle: 'Manage the services you offer',
-          noServicesTitle: 'No services yet',
-          noServicesDesc: 'Add your first service so customers can book appointments',
-          nameLabel: 'Service Name *',
-          namePlaceholder: 'E.g: Haircut',
-          descriptionLabel: 'Description',
-          descriptionPlaceholder: 'Describe the service',
-          durationLabel: 'Duration (minutes) *',
-          priceLabel: 'Price *',
-          imageLabel: 'Service Image (Optional)',
-          imageDesc: 'You can upload an image to showcase the service or examples',
-          availableAtLocations: 'Available at the following locations:',
-          selectAtLeastOneLocation: 'You must select at least one location',
-          providedBy: 'Provided by:',
-          noName: 'No name',
-          imageAlt: 'Service image',
-          activeLabel: 'Service active',
-        }
-      }
-    },
-
-    // Calendar
-    calendar: {
-      title: 'Calendar',
-      today: 'Today',
-      month: 'Month',
-      week: 'Week',
-      day: 'Day',
-      agenda: 'Agenda',
-      no_appointments: 'No appointments scheduled',
-      time_slot_available: 'Available',
-      time_slot_busy: 'Busy',
-      view_details: 'View Details',
-      book_appointment: 'Book Appointment'
-    },
-
-    // Locations
-    locations: {
-      title: 'Locations',
-      new_location: 'New Location',
-      edit_location: 'Edit Location',
-      location_details: 'Location Details',
-      name: 'Name',
-      address: 'Address',
-      city: 'City',
-      country: 'Country',
-      postal_code: 'Postal Code',
-      phone: 'Phone',
-      email: 'Email',
-      active: 'Active',
-      create_location: 'Create Location',
-      update_location: 'Update Location',
-      delete_location: 'Delete Location',
-      location_created: 'Location created successfully',
-      location_updated: 'Location updated successfully',
-      location_deleted: 'Location deleted successfully',
-      no_locations: 'No locations found',
-      main_location: 'Main Location'
-    },
-
-    // Banner Cropper
-    bannerCropper: {
-      title: 'Crop Banner',
-      instructions: 'Adjust the rectangular area for the banner (16:9)',
-      confirm: 'Confirm',
-    },
-
-    reviews: {
-      title: 'Reviews',
-      leaveReview: 'Leave a Review',
-      reviewDescription: 'Share your experience with others',
-      rating: 'Rating',
-      comment: 'Comment',
-      commentPlaceholder: 'Tell us about your experience...',
-      shareExperience: 'Your review will be posted anonymously',
-      submitReview: 'Submit Review',
-      submitSuccess: 'Review submitted successfully',
-      anonymous: 'Anonymous User',
-      verified: 'Verified',
-      hidden: 'Hidden',
-      hide: 'Hide',
-      show: 'Show',
-      delete: 'Delete',
-      confirmDelete: 'Are you sure you want to delete this review?',
-      employeeLabel: 'Professional',
-      businessResponse: 'Business Response',
-      respond: 'Respond',
-      responsePlaceholder: 'Write your response...',
-      submitResponse: 'Submit Response',
-      helpful: 'Helpful',
-      overallRating: 'Overall Rating',
-      basedOn: 'Based on {{count}} reviews',
-      ratingDistribution: 'Rating Distribution',
-      filterByRating: 'Filter by Rating',
-      allRatings: 'All Ratings',
-      searchReviews: 'Search reviews...',
-      noReviews: 'No reviews yet',
-      noReviewsDescription: 'Be the first to leave a review',
-      review: 'review',
-      reviewsPlural: 'reviews',
-      ratings: {
-        poor: 'Poor',
-        fair: 'Fair',
-        good: 'Good',
-        veryGood: 'Very Good',
-        excellent: 'Excellent',
       },
-      errors: {
-        ratingRequired: 'Please select a rating',
-        submitFailed: 'Failed to submit review',
-        loadFailed: 'Failed to load reviews',
-      },
-    },
 
-    // Employee Hierarchy Management
-    employees: {
-      management: {
-        title: 'Employee Management',
-        subtitle: 'Hierarchical view with performance metrics',
-        totalEmployees: 'Total Employees',
-        byLevel: 'By Level',
-        avgOccupancy: 'Average Occupancy',
-        avgRating: 'Average Rating',
-        listView: 'List',
-        mapView: 'Map',
-        filters: 'Filters',
-        clearFilters: 'Clear filters',
-        employeesShown: 'employees shown',
-        noEmployees: 'No employees found',
-        loading: 'Loading employees...',
-        error: 'Error loading employees',
-        retry: 'Retry',
+      // Employee Hierarchy Management
+      employees: {
+        management: {
+          title: 'Employee Management',
+          subtitle: 'Hierarchical view with performance metrics',
+          totalEmployees: 'Total Employees',
+          byLevel: 'By Level',
+          avgOccupancy: 'Average Occupancy',
+          avgRating: 'Average Rating',
+          listView: 'List',
+          mapView: 'Map',
+          filters: 'Filters',
+          clearFilters: 'Clear filters',
+          employeesShown: 'employees shown',
+          noEmployees: 'No employees found',
+          loading: 'Loading employees...',
+          error: 'Error loading employees',
+          retry: 'Retry',
+        },
+        filters: {
+          search: 'Search by name or email',
+          searchPlaceholder: 'Type to search...',
+          hierarchyLevel: 'Hierarchy Level',
+          allLevels: 'All Levels',
+          employeeType: 'Employee Type',
+          allTypes: 'All Types',
+          department: 'Department',
+          allDepartments: 'All Departments',
+          occupancyRange: 'Occupancy Range',
+          ratingRange: 'Rating Range',
+          activeFilters: 'Active Filters',
+          clear: 'Clear',
+        },
+        levels: {
+          0: 'Owner',
+          1: 'Administrator',
+          2: 'Manager',
+          3: 'Team Lead',
+          4: 'Staff',
+        },
+        hierarchy: {
+          changeLevel: 'Change hierarchy level for {{name}}',
+          level: 'Level',
+          note: 'Note',
+          noteLevel: 'Level determines position in organizational chart',
+          noteReports: 'Update supervisor separately if needed',
+          updateSuccess: 'Hierarchy level updated successfully',
+          updateError: 'Error updating hierarchy level',
+          confirmChange: 'Are you sure you want to change the level?',
+          levels: {
+            owner: 'Owner',
+            admin: 'Admin',
+            manager: 'Manager',
+            lead: 'Lead',
+            staff: 'Staff',
+            level: 'Level',
+          },
+        },
+        types: {
+          fullTime: 'Full Time',
+          partTime: 'Part Time',
+          contractor: 'Contractor',
+          intern: 'Intern',
+        },
+        departments: {
+          sales: 'Sales',
+          service: 'Service',
+          support: 'Support',
+          admin: 'Administration',
+        },
+        card: {
+          viewProfile: 'View Profile',
+          edit: 'Edit',
+          assignSupervisor: 'Assign Supervisor',
+          active: 'Active',
+          inactive: 'Inactive',
+          supervisor: 'Supervisor',
+          subordinates: 'Subordinates',
+          noSupervisor: 'No Supervisor',
+          occupancy: 'Occupancy',
+          rating: 'Rating',
+          revenue: 'Revenue',
+        },
+        list: {
+          sortBy: 'Sort by',
+          name: 'Name',
+          level: 'Level',
+          occupancy: 'Occupancy',
+          rating: 'Rating',
+          revenue: 'Revenue',
+          expandAll: 'Expand All',
+          collapseAll: 'Collapse All',
+        },
+        map: {
+          zoomIn: 'Zoom In',
+          zoomOut: 'Zoom Out',
+          resetZoom: 'Reset Zoom',
+          expandAll: 'Expand All',
+          collapseAll: 'Collapse All',
+          zoom: 'Zoom',
+        },
+        actions: {
+          updateSuccess: 'Employee updated successfully',
+          updateError: 'Failed to update employee',
+          assignSuccess: 'Supervisor assigned successfully',
+          assignError: 'Failed to assign supervisor',
+          deleteSuccess: 'Employee removed successfully',
+          deleteError: 'Failed to remove employee',
+        },
+        metrics: {
+          appointments: 'Appointments',
+          completed: 'Completed',
+          pending: 'Pending',
+          cancelled: 'Cancelled',
+          totalRevenue: 'Total Revenue',
+          avgRating: 'Avg Rating',
+          occupancyRate: 'Occupancy Rate',
+        },
       },
-      filters: {
-        search: 'Search by name or email',
-        searchPlaceholder: 'Type to search...',
-        hierarchyLevel: 'Hierarchy Level',
-        allLevels: 'All Levels',
-        employeeType: 'Employee Type',
-        allTypes: 'All Types',
-        department: 'Department',
-        allDepartments: 'All Departments',
-        occupancyRange: 'Occupancy Range',
-        ratingRange: 'Rating Range',
-        activeFilters: 'Active Filters',
-        clear: 'Clear',
+
+      // Physical Resources System
+      businessResources: {
+        title: 'Resource Management',
+        subtitle: 'Manage rooms, tables, courts and more',
+        addResource: 'Add Resource',
+        editResource: 'Edit Resource',
+        deleteResource: 'Delete Resource',
+        noResources: 'No resources registered',
+        filterByType: 'Filter by type',
+        allTypes: 'All types',
+
+        form: {
+          name: 'Resource Name',
+          namePlaceholder: 'E.g: Room 101, VIP Table, Court #1',
+          type: 'Resource Type',
+          location: 'Location',
+          selectLocation: 'Select location',
+          capacity: 'Capacity',
+          capacityPlaceholder: 'Number of people',
+          pricePerHour: 'Price per Hour',
+          pricePlaceholder: 'Price in COP',
+          description: 'Description',
+          descriptionPlaceholder: 'Describe the resource features...',
+          amenities: 'Services / Amenities',
+          amenitiesPlaceholder: 'WiFi, Air Conditioning, TV, etc. (comma separated)',
+          status: 'Status',
+          active: 'Active',
+          inactive: 'Inactive',
+        },
+
+        types: {
+          room: 'Room',
+          table: 'Table',
+          court: 'Court',
+          desk: 'Desk',
+          equipment: 'Equipment',
+          vehicle: 'Vehicle',
+          space: 'Space',
+          lane: 'Lane',
+          field: 'Field',
+          station: 'Station',
+          parking_spot: 'Parking Spot',
+          bed: 'Bed',
+          studio: 'Studio',
+          meeting_room: 'Meeting Room',
+          other: 'Other',
+        },
+
+        table: {
+          name: 'Name',
+          type: 'Type',
+          location: 'Location',
+          capacity: 'Capacity',
+          price: 'Price/Hour',
+          status: 'Status',
+          actions: 'Actions',
+        },
+
+        status: {
+          available: 'Available',
+          occupied: 'Occupied',
+          maintenance: 'Maintenance',
+          inactive: 'Inactive',
+        },
+
+        actions: {
+          createSuccess: 'Resource created successfully',
+          createError: 'Error creating resource',
+          updateSuccess: 'Resource updated successfully',
+          updateError: 'Error updating resource',
+          deleteSuccess: 'Resource deleted successfully',
+          deleteError: 'Error deleting resource',
+          confirmDelete: 'Are you sure you want to delete this resource?',
+          deleteWarning: 'This action cannot be undone',
+        },
+
+        stats: {
+          totalResources: 'Total Resources',
+          activeResources: 'Active Resources',
+          occupancyRate: 'Occupancy Rate',
+          totalRevenue: 'Total Revenue',
+        },
+
+        reports: {
+          title: 'Financial Reports',
+          subtitle: 'Interactive dashboard with charts, filters and PDF/CSV/Excel export',
+          locationFilter: 'Filter by location',
+          allLocations: 'All locations',
+          showing: 'Showing reports from:',
+          loading: 'Loading financial dashboard...',
+        },
+
+        testData: {
+          title: 'Create Test Users',
+          description: 'Create 30 example users (10 admin, 10 employees, 10 clients) for testing',
+          warning:
+            'Important: This action requires admin permissions and will create 30 real users in your Supabase database.',
+          willCreate: 'Will be created:',
+          adminUsers: '10 admin users (business owners)',
+          employeeUsers: '10 employees (to assign to businesses)',
+          clientUsers: '10 clients (end users)',
+          createButton: 'Create Test Users',
+          progressLabel: 'Progress',
+          creatingLabel: 'Creating:',
+          successMessage: '{{count}} users created successfully',
+          errorsMessage: '{{count}} errors found',
+          clearResultsButton: 'Clear Results',
+        },
+
+        permissionEditor: {
+          title: 'Permission Editor',
+          ownerAllPermissions: 'The business owner has all permissions automatically',
+          configurePermissions: 'Configure detailed permissions for {{name}}',
+          cannotEditOwner: 'Cannot edit owner permissions',
+          ownerFullAccess: 'The business owner always has full access to all features.',
+          selectAll: 'Select All',
+          clearAll: 'Clear All',
+          toGrant: 'to grant',
+          toRevoke: 'to revoke',
+          cancel: 'Cancel',
+          saveChanges: 'Save Changes',
+          permissionsCount: '{{count}} permissions',
+          permissionsOf: '{{granted}} / {{total}} permissions',
+          new: 'New',
+          revoke: 'Revoke',
+          updatedSuccess: 'Permissions updated successfully',
+          updatedSuccessDesc: '{{count}} changes applied to {{name}}',
+          updateError: 'Some permissions could not be updated',
+          updateErrorDesc: 'Errors in: {{errors}}',
+        },
+        employeeListView: {
+          sortBy: 'Sort by:',
+          name: 'Name',
+          level: 'Level',
+          occupancy: 'Occupancy',
+          rating: 'Rating',
+          revenue: 'Revenue',
+          noEmployees: 'No employees to display',
+        },
       },
-      levels: {
-        0: 'Owner',
-        1: 'Administrator',
-        2: 'Manager',
-        3: 'Team Lead',
-        4: 'Staff',
-      },
+
+      // Hierarchy System
       hierarchy: {
-        changeLevel: 'Change hierarchy level for {{name}}',
-        level: 'Level',
-        note: 'Note',
-        noteLevel: 'Level determines position in organizational chart',
-        noteReports: 'Update supervisor separately if needed',
-        updateSuccess: 'Hierarchy level updated successfully',
-        updateError: 'Error updating hierarchy level',
-        confirmChange: 'Are you sure you want to change the level?',
         levels: {
           owner: 'Owner',
           admin: 'Admin',
@@ -1683,425 +1932,265 @@ export const translations = {
           staff: 'Staff',
           level: 'Level',
         },
-      },
-      types: {
-        fullTime: 'Full Time',
-        partTime: 'Part Time',
-        contractor: 'Contractor',
-        intern: 'Intern',
-      },
-      departments: {
-        sales: 'Sales',
-        service: 'Service',
-        support: 'Support',
-        admin: 'Administration',
-      },
-      card: {
-        viewProfile: 'View Profile',
-        edit: 'Edit',
-        assignSupervisor: 'Assign Supervisor',
-        active: 'Active',
-        inactive: 'Inactive',
-        supervisor: 'Supervisor',
-        subordinates: 'Subordinates',
-        noSupervisor: 'No Supervisor',
-        occupancy: 'Occupancy',
-        rating: 'Rating',
-        revenue: 'Revenue',
-      },
-      list: {
-        sortBy: 'Sort by',
-        name: 'Name',
-        level: 'Level',
-        occupancy: 'Occupancy',
-        rating: 'Rating',
-        revenue: 'Revenue',
-        expandAll: 'Expand All',
-        collapseAll: 'Collapse All',
-      },
-      map: {
-        zoomIn: 'Zoom In',
-        zoomOut: 'Zoom Out',
-        resetZoom: 'Reset Zoom',
-        expandAll: 'Expand All',
-        collapseAll: 'Collapse All',
-        zoom: 'Zoom',
-      },
-      actions: {
-        updateSuccess: 'Employee updated successfully',
-        updateError: 'Failed to update employee',
-        assignSuccess: 'Supervisor assigned successfully',
-        assignError: 'Failed to assign supervisor',
-        deleteSuccess: 'Employee removed successfully',
-        deleteError: 'Failed to remove employee',
-      },
-      metrics: {
-        appointments: 'Appointments',
-        completed: 'Completed',
-        pending: 'Pending',
-        cancelled: 'Cancelled',
-        totalRevenue: 'Total Revenue',
-        avgRating: 'Avg Rating',
-        occupancyRate: 'Occupancy Rate',
-      },
-    },
+        metrics: {
+          occupancy: 'Occup.',
+          rating: 'Rating',
+          revenue: 'Rev.',
+        },
 
-    // Physical Resources System
-    businessResources: {
-      title: 'Resource Management',
-      subtitle: 'Manage rooms, tables, courts and more',
-      addResource: 'Add Resource',
-      editResource: 'Edit Resource',
-      deleteResource: 'Delete Resource',
-      noResources: 'No resources registered',
-      filterByType: 'Filter by type',
-      allTypes: 'All types',
-      
-      form: {
-        name: 'Resource Name',
-        namePlaceholder: 'E.g: Room 101, VIP Table, Court #1',
-        type: 'Resource Type',
-        location: 'Location',
-        selectLocation: 'Select location',
-        capacity: 'Capacity',
-        capacityPlaceholder: 'Number of people',
-        pricePerHour: 'Price per Hour',
-        pricePlaceholder: 'Price in COP',
-        description: 'Description',
-        descriptionPlaceholder: 'Describe the resource features...',
-        amenities: 'Services / Amenities',
-        amenitiesPlaceholder: 'WiFi, Air Conditioning, TV, etc. (comma separated)',
-        status: 'Status',
-        active: 'Active',
-        inactive: 'Inactive',
-      },
+        // Service Management Actions
+        serviceActions: {
+          created: 'Service created successfully',
+          updated: 'Service updated successfully',
+          deleted: 'Service deleted successfully',
+          createError: 'Error creating service',
+          updateError: 'Error updating service',
+          deleteError: 'Error deleting service',
+          loadError: 'Error loading data',
+          assignError: 'Error loading assignments',
+        },
 
-      types: {
-        room: 'Room',
-        table: 'Table',
-        court: 'Court',
-        desk: 'Desk',
-        equipment: 'Equipment',
-        vehicle: 'Vehicle',
-        space: 'Space',
-        lane: 'Lane',
-        field: 'Field',
-        station: 'Station',
-        parking_spot: 'Parking Spot',
-        bed: 'Bed',
-        studio: 'Studio',
-        meeting_room: 'Meeting Room',
-        other: 'Other',
-      },
+        // Location Management Actions
+        locationActions: {
+          created: 'Location created successfully',
+          updated: 'Location updated successfully',
+          deleted: 'Location deleted successfully',
+          createError: 'Error creating location',
+          updateError: 'Error updating location',
+          deleteError: 'Error deleting location',
+          loadError: 'Error loading locations',
+        },
 
-      table: {
-        name: 'Name',
-        type: 'Type',
-        location: 'Location',
-        capacity: 'Capacity',
-        price: 'Price/Hour',
-        status: 'Status',
-        actions: 'Actions',
-      },
+        // Role & Permission Actions
+        roleActions: {
+          modified: 'Role modified successfully',
+          assigned: 'Role assigned successfully',
+          modifyError: 'Error assigning new role',
+          revokeError: 'Error revoking previous role',
+          assignError: 'Error assigning role',
+        },
 
-      status: {
-        available: 'Available',
-        occupied: 'Occupied',
-        maintenance: 'Maintenance',
-        inactive: 'Inactive',
-      },
+        // Permission Templates
+        templateActions: {
+          created: 'Template created successfully',
+          deleted: 'Template deleted successfully',
+          createError: 'Error creating template',
+          deleteError: 'Error deleting template',
+          nameRequired: 'Template name is required',
+          permissionRequired: 'At least one permission must be selected',
+        },
 
-      actions: {
-        createSuccess: 'Resource created successfully',
-        createError: 'Error creating resource',
-        updateSuccess: 'Resource updated successfully',
-        updateError: 'Error updating resource',
-        deleteSuccess: 'Resource deleted successfully',
-        deleteError: 'Error deleting resource',
-        confirmDelete: 'Are you sure you want to delete this resource?',
-        deleteWarning: 'This action cannot be undone',
-      },
+        // Audit & Tracking
+        auditActions: {
+          exported: 'Audit exported successfully',
+          exportError: 'Error exporting',
+          noRecords: 'No records to export',
+          filtersClear: 'Filters cleared',
+        },
 
-      stats: {
-        totalResources: 'Total Resources',
-        activeResources: 'Active Resources',
-        occupancyRate: 'Occupancy Rate',
-        totalRevenue: 'Total Revenue',
-      },
+        // Services Management
+        serviceValidation: {
+          nameRequired: 'Service name is required',
+          priceRequired: 'Price must be greater than or equal to 0',
+          durationRequired: 'Duration must be greater than 0',
+          loadError: 'Error loading data',
+          assignError: 'Error loading assignments',
+          updateSuccess: 'Service updated successfully',
+          createSuccess: 'Service created successfully',
+          deleteSuccess: 'Service deleted successfully',
+          deleteError: 'Error deleting service',
+        },
 
-      reports: {
-        title: 'Financial Reports',
-        subtitle: 'Interactive dashboard with charts, filters and PDF/CSV/Excel export',
-        locationFilter: 'Filter by location',
-        allLocations: 'All locations',
-        showing: 'Showing reports from:',
-        loading: 'Loading financial dashboard...',
-      },
+        // Notification Tracking
+        notificationTracking: {
+          loadError: 'Could not load notifications',
+          exportSuccess: '{{count}} notifications exported',
+          exportError: 'Error exporting',
+        },
 
-      testData: {
-        title: 'Create Test Users',
-        description: 'Create 30 example users (10 admin, 10 employees, 10 clients) for testing',
-        warning: 'Important: This action requires admin permissions and will create 30 real users in your Supabase database.',
-        willCreate: 'Will be created:',
-        adminUsers: '10 admin users (business owners)',
-        employeeUsers: '10 employees (to assign to businesses)',
-        clientUsers: '10 clients (end users)',
-        createButton: 'Create Test Users',
-        progressLabel: 'Progress',
-        creatingLabel: 'Creating:',
-        successMessage: '{{count}} users created successfully',
-        errorsMessage: '{{count}} errors found',
-        clearResultsButton: 'Clear Results',
-      },
+        // Transaction Form
+        transactionValidation: {
+          subtotalRequired: 'Subtotal must be greater than 0',
+        },
 
-      permissionEditor: {
-        title: 'Permission Editor',
-        ownerAllPermissions: 'The business owner has all permissions automatically',
-        configurePermissions: 'Configure detailed permissions for {{name}}',
-        cannotEditOwner: 'Cannot edit owner permissions',
-        ownerFullAccess: 'The business owner always has full access to all features.',
-        selectAll: 'Select All',
-        clearAll: 'Clear All',
-        toGrant: 'to grant',
-        toRevoke: 'to revoke',
-        cancel: 'Cancel',
-        saveChanges: 'Save Changes',
-        permissionsCount: '{{count}} permissions',
-        permissionsOf: '{{granted}} / {{total}} permissions',
-        new: 'New',
-        revoke: 'Revoke',
-        updatedSuccess: 'Permissions updated successfully',
-        updatedSuccessDesc: '{{count}} changes applied to {{name}}',
-        updateError: 'Some permissions could not be updated',
-        updateErrorDesc: 'Errors in: {{errors}}',
-      },
-      employeeListView: {
-        sortBy: 'Sort by:',
-        name: 'Name',
-        level: 'Level',
-        occupancy: 'Occupancy',
-        rating: 'Rating',
-        revenue: 'Revenue',
-        noEmployees: 'No employees to display',
-      },
-    },
+        // Location & Service Management
+        locationManagement: {
+          missingFields: 'Please complete all required fields',
+          locationUpdateSuccess: 'Location updated successfully',
+          locationCreateSuccess: 'Location created successfully',
+          locationSaveError: 'Error saving location',
+          serviceNameRequired: 'Please enter the service name',
+          serviceUpdateSuccess: 'Service updated successfully',
+          serviceCreateSuccess: 'Service created successfully',
+          serviceSaveError: 'Error saving service',
+          locationDeleteSuccess: 'Location deleted successfully',
+          serviceDeleteSuccess: 'Service deleted successfully',
+        },
 
-    // Hierarchy System
-    hierarchy: {
-      levels: {
-        owner: 'Owner',
-        admin: 'Admin',
-        manager: 'Manager',
-        lead: 'Lead',
-        staff: 'Staff',
-        level: 'Level',
-      },
-      metrics: {
-        occupancy: 'Occup.',
-        rating: 'Rating',
-        revenue: 'Rev.',
-      },
-      
-      // Service Management Actions
-      serviceActions: {
-        created: 'Service created successfully',
-        updated: 'Service updated successfully',
-        deleted: 'Service deleted successfully',
-        createError: 'Error creating service',
-        updateError: 'Error updating service',
-        deleteError: 'Error deleting service',
-        loadError: 'Error loading data',
-        assignError: 'Error loading assignments',
-      },
-      
-      // Location Management Actions
-      locationActions: {
-        created: 'Location created successfully',
-        updated: 'Location updated successfully',
-        deleted: 'Location deleted successfully',
-        createError: 'Error creating location',
-        updateError: 'Error updating location',
-        deleteError: 'Error deleting location',
-        loadError: 'Error loading locations',
-      },
-      
-      // Role & Permission Actions
-      roleActions: {
-        modified: 'Role modified successfully',
-        assigned: 'Role assigned successfully',
-        modifyError: 'Error assigning new role',
-        revokeError: 'Error revoking previous role',
-        assignError: 'Error assigning role',
-      },
-      
-      // Permission Templates
-      templateActions: {
-        created: 'Template created successfully',
-        deleted: 'Template deleted successfully',
-        createError: 'Error creating template',
-        deleteError: 'Error deleting template',
-        nameRequired: 'Template name is required',
-        permissionRequired: 'At least one permission must be selected',
-      },
-      
-      // Audit & Tracking
-      auditActions: {
-        exported: 'Audit exported successfully',
-        exportError: 'Error exporting',
-        noRecords: 'No records to export',
-        filtersClear: 'Filters cleared',
-      },
+        // Job Applications
+        jobApplications: {
+          cvDownloadError: 'Error downloading CV',
+          loadError: 'Error loading application',
+          updateError: 'Error updating application',
+          formError: 'Error submitting application',
+          fileTypeError: 'Only PDF or DOCX files are allowed',
+          fileSizeError: 'File must be smaller than 5MB',
+          chatInitError: 'Unable to start chat at this time',
+          chatError: 'Error starting chat',
+        },
 
-      // Services Management
-      serviceValidation: {
-        nameRequired: 'Service name is required',
-        priceRequired: 'Price must be greater than or equal to 0',
-        durationRequired: 'Duration must be greater than 0',
-        loadError: 'Error loading data',
-        assignError: 'Error loading assignments',
-        updateSuccess: 'Service updated successfully',
-        createSuccess: 'Service created successfully',
-        deleteSuccess: 'Service deleted successfully',
-        deleteError: 'Error deleting service',
-      },
+        // Quick Sales
+        quickSale: {
+          loadDataError: 'Error loading data',
+          clientNameRequired: 'Client name is required',
+          serviceRequired: 'Select a service',
+          locationRequired: 'Select a location',
+          amountRequired: 'Enter a valid amount',
+          paymentMethodRequired: 'Select a payment method',
+          saleRegistrationError: 'Error registering sale',
+        },
 
-      // Notification Tracking
-      notificationTracking: {
-        loadError: 'Could not load notifications',
-        exportSuccess: '{{count}} notifications exported',
-        exportError: 'Error exporting',
-      },
+        // Recurring Clients
+        recurringClients: {
+          daysSinceLastVisit: 'days since last visit',
+        },
 
-      // Transaction Form
-      transactionValidation: {
-        subtotalRequired: 'Subtotal must be greater than 0',
-      },
+        // Client Dashboard
+        clientDashboard: {
+          confirmError: 'Error confirming appointment',
+          confirmErrorWithMsg: 'Error confirming',
+          googleCalendarError: 'Error opening Google Calendar',
+          deleteError: 'Error deleting appointment',
+          errorDeleting: 'Error deleting: {{message}}',
+          chatInitError: 'Unable to start chat at this time',
+          chatError: 'Could not start chat. Please try again.',
+          cancelError: 'Could not cancel appointment. Please try again.',
+        },
 
-      // Location & Service Management  
-      locationManagement: {
-        missingFields: 'Please complete all required fields',
-        locationUpdateSuccess: 'Location updated successfully',
-        locationCreateSuccess: 'Location created successfully',
-        locationSaveError: 'Error saving location',
-        serviceNameRequired: 'Please enter the service name',
-        serviceUpdateSuccess: 'Service updated successfully',
-        serviceCreateSuccess: 'Service created successfully',
-        serviceSaveError: 'Error saving service',
-        locationDeleteSuccess: 'Location deleted successfully',
-        serviceDeleteSuccess: 'Service deleted successfully',
-      },
+        // Appointment Form
+        appointmentForm: {
+          clientNameRequired: 'Client name is required',
+          dateRequired: 'Date is required',
+          startTimeRequired: 'Start time is required',
+          serviceRequired: 'Service is required',
+          createdSuccess: 'Appointment created successfully',
+          updatedSuccess: 'Appointment updated successfully',
+          createError: 'Error creating appointment',
+          updateError: 'Error updating appointment',
+        },
 
-      // Job Applications
-      jobApplications: {
-        cvDownloadError: 'Error downloading CV',
-        loadError: 'Error loading application',
-        updateError: 'Error updating application',
-        formError: 'Error submitting application',
-        fileTypeError: 'Only PDF or DOCX files are allowed',
-        fileSizeError: 'File must be smaller than 5MB',
-        chatInitError: 'Unable to start chat at this time',
-        chatError: 'Error starting chat',
-      },
+        // Unified Settings
+        unifiedSettings: {
+          availableForAppointments: 'Available for new appointments',
+          notifyNewAssignments: 'Notify new assignments',
+          appointmentReminders: 'Appointment reminders',
+          availabilityDescription: 'Accept new appointments from clients',
+          assignmentNotificationDescription: 'Get alerts when assigned new appointments',
+          remindersDescription: 'Receive reminders about your appointments',
+        },
 
-      // Quick Sales
-      quickSale: {
-        loadDataError: 'Error loading data',
-        clientNameRequired: 'Client name is required',
-        serviceRequired: 'Select a service',
-        locationRequired: 'Select a location',
-        amountRequired: 'Enter a valid amount',
-        paymentMethodRequired: 'Select a payment method',
-        saleRegistrationError: 'Error registering sale',
-      },
+        // Admin Onboarding
+        adminOnboarding: {
+          nameRequired: 'Business name and category are required',
+          nitInvalid: 'Invalid NIT. Must be 9-10 digits',
+          cedInvalid: 'Invalid ID. Must be 6-10 digits',
+          nitVerifyError: 'Error verifying NIT/ID',
+          authError: 'Error verifying authentication. Please reload the page',
+          notAuthenticated: 'You are not authenticated. Please log in again',
+          userIdError: 'User ID not available. Please reload the page',
+          authCheckError: 'Authentication error. Please log out and log in again',
+        },
 
-      // Recurring Clients
-      recurringClients: {
-        daysSinceLastVisit: 'days since last visit',
-      },
+        // Business Settings
+        businessSettings: {
+          businessNameRequired: 'Business name is required',
+          updateError: 'Error updating configuration',
+        },
 
-      // Client Dashboard
-      clientDashboard: {
-        confirmError: 'Error confirming appointment',
-        confirmErrorWithMsg: 'Error confirming',
-        googleCalendarError: 'Error opening Google Calendar',
-        deleteError: 'Error deleting appointment',
-        errorDeleting: 'Error deleting: {{message}}',
-        chatInitError: 'Unable to start chat at this time',
-        chatError: 'Could not start chat. Please try again.',
-        cancelError: 'Could not cancel appointment. Please try again.',
-      },
+        // Calendar & Appointments
+        appointmentCalendar: {
+          title: 'Appointments Calendar',
+          loadingCalendar: 'Loading calendar...',
+          filters: 'Filters',
+          clearFilters: 'Clear Filters',
+          statusLabel: 'Status',
+          selectedCount: '{{count}} selected',
+          selectAll: 'Select all',
+          hideServices: 'Hide services',
+          showServices: 'Show services',
+          locationLabel: 'Location',
+          serviceLabel: 'Service',
+          employeeLabel: 'Employee',
+          statuses: {
+            pending: 'Pending',
+            confirmed: 'Confirmed',
+            cancelled: 'Cancelled',
+            completed: 'Completed',
+          },
+          manage: 'Manage',
+          overdueTitle: 'Pending to Confirm ({{count}})',
+          completeButton: 'Mark as completed',
+          noShowButton: 'Mark as no-show',
+          proposalLabel: 'Proposal (optional)',
+          tipLabel: 'Tip (optional)',
+          markCompleted: 'Mark as completed',
+          markNoShow: 'Mark as no-show',
+          cancelAppointment: 'Cancel appointment',
+          notes: 'Notes',
+          noNotes: 'No notes for this appointment',
+          noServiceName: 'Unnamed service',
+          noClientName: 'Unnamed client',
+          noEmployeeAssigned: 'Unassigned',
+          noEmployeeName: 'No name',
+          successCompleted: 'Appointment marked as completed',
+          successCancelled: 'Appointment cancelled successfully',
+          noShowMarked: 'Appointment marked as no-show',
+          noShowNote: 'Client did not show up',
+          errorCompleting: 'Error completing appointment',
+          errorCancelling: 'Error cancelling appointment',
+          loadDataError: 'Error loading data',
+          errorMarkingNoShow: 'Error marking as no-show',
+        },
+        
+        // Chat
+        chat: {
+          conversations: 'Conversations',
+          loading: 'Loading...',
+          noConversations: {
+            title: 'No conversations',
+            subtitle: 'You do not have any active conversations yet',
+          },
+          emptyPreview: 'No messages',
+          youPrefix: 'You: ',
+          conversationFallback: 'Conversation',
+          noMessagesPrompt: 'No messages yet — send the first one!',
+          inputPlaceholder: 'Type a message...',
+          send: 'Send',
+          loadingConversation: 'Loading conversation...',
+          userAlt: 'User',
+          fallback: 'Chat',
+          outOfHoursText: 'Out of business hours',
+          noScheduleSuffix: '(no schedule)',
+          pin: 'Pin',
+          unpin: 'Unpin',
+          mute: 'Mute',
+          unmute: 'Unmute',
+        },
 
-      // Appointment Form
-      appointmentForm: {
-        clientNameRequired: 'Client name is required',
-        dateRequired: 'Date is required',
-        startTimeRequired: 'Start time is required',
-        serviceRequired: 'Service is required',
-        createdSuccess: 'Appointment created successfully',
-        updatedSuccess: 'Appointment updated successfully',
-        createError: 'Error creating appointment',
-        updateError: 'Error updating appointment',
-      },
+        // Resources Manager
+        resourcesManager: {
+          nameRequired: 'Name is required',
+          locationRequired: 'Must select a location',
+        },
 
-      // Unified Settings
-      unifiedSettings: {
-        availableForAppointments: 'Available for new appointments',
-        notifyNewAssignments: 'Notify new assignments',
-        appointmentReminders: 'Appointment reminders',
-        availabilityDescription: 'Accept new appointments from clients',
-        assignmentNotificationDescription: 'Get alerts when assigned new appointments',
-        remindersDescription: 'Receive reminders about your appointments',
+        // Business Notification Settings
+        businessNotificationSettings: {
+          loadError: 'Could not load settings',
+          saveError: 'Could not save settings',
+          minutesInvalid: 'Enter a valid number of minutes',
+          timeAlreadyExists: 'This time is already in the list',
+        },
       },
-
-      // Admin Onboarding
-      adminOnboarding: {
-        nameRequired: 'Business name and category are required',
-        nitInvalid: 'Invalid NIT. Must be 9-10 digits',
-        cedInvalid: 'Invalid ID. Must be 6-10 digits',
-        nitVerifyError: 'Error verifying NIT/ID',
-        authError: 'Error verifying authentication. Please reload the page',
-        notAuthenticated: 'You are not authenticated. Please log in again',
-        userIdError: 'User ID not available. Please reload the page',
-        authCheckError: 'Authentication error. Please log out and log in again',
-      },
-
-      // Business Settings
-      businessSettings: {
-        businessNameRequired: 'Business name is required',
-        updateError: 'Error updating configuration',
-      },
-
-      // Calendar & Appointments
-      appointmentCalendar: {
-        proposalLabel: 'Proposal (optional)',
-        tipLabel: 'Tip (optional)',
-        markCompleted: 'Mark as completed',
-        markNoShow: 'Mark as no-show',
-        cancelAppointment: 'Cancel appointment',
-        notes: 'Notes',
-        noNotes: 'No notes for this appointment',
-        successCompleted: 'Appointment marked as completed',
-        successCancelled: 'Appointment cancelled successfully',
-        errorCompleting: 'Error completing appointment',
-        errorCancelling: 'Error cancelling appointment',
-        loadDataError: 'Error loading data',
-        errorMarkingNoShow: 'Error marking as no-show',
-      },
-
-      // Resources Manager
-      resourcesManager: {
-        nameRequired: 'Name is required',
-        locationRequired: 'Must select a location',
-      },
-
-      // Business Notification Settings
-      businessNotificationSettings: {
-        loadError: 'Could not load settings',
-        saveError: 'Could not save settings',
-        minutesInvalid: 'Enter a valid number of minutes',
-        timeAlreadyExists: 'This time is already in the list',
-      },
-    },
 
       // Admin Overview
       overview: {
@@ -2136,776 +2225,785 @@ export const translations = {
         phone: 'Phone',
         noCategory: 'No category',
         email: 'Email',
-        },
+      },
 
-        // Business Settings (Admin)
-        businessSettings: {
-          title: 'Business Settings',
-          subtitle: 'Update your business information',
-          businessNameRequired: 'Business name is required',
-          updateSuccess: 'Business settings updated successfully',
-          updateError: 'Error updating settings',
-          basicInfo: {
-            title: 'Basic Information',
-            description: 'General information about your business',
-          },
-          nameLabel: 'Business Name *',
-          namePlaceholder: 'Your business name',
-          descriptionLabel: 'Description',
-          descriptionPlaceholder: 'Describe your business',
-          contact: {
-            title: 'Contact Information',
-            description: 'How clients can contact you',
-            phoneLabel: 'Phone',
-            emailLabel: 'Email',
-            websiteLabel: 'Website',
-          },
-          address: {
-            title: 'Address',
-            description: 'Primary location of your business',
-            addressLabel: 'Address',
-            addressPlaceholder: 'Street and number',
-            cityLabel: 'City',
-            stateLabel: 'State',
-          },
-          legal: {
-            title: 'Legal Information',
-            description: 'Tax and legal details',
-            legalNameLabel: 'Legal Name',
-            legalNamePlaceholder: 'Legal name or business name',
-            taxIdLabel: 'Tax ID',
-            taxIdPlaceholder: 'Tax identification number',
-          },
+      // Business Settings (Admin)
+      businessSettings: {
+        title: 'Business Settings',
+        subtitle: 'Update your business information',
+        businessNameRequired: 'Business name is required',
+        updateSuccess: 'Business settings updated successfully',
+        updateError: 'Error updating settings',
+        basicInfo: {
+          title: 'Basic Information',
+          description: 'General information about your business',
         },
-
-        // Location management (Admin)
-        locationManagement: {
-          title: 'Locations & Services',
-          subtitle: 'Manage your business locations and services',
-          editDescription: 'Edit location information',
-          nameLabel: 'Location Name *',
-          namePlaceholder: 'E.g: Main Branch, North Branch',
-          addressLabel: 'Address *',
-          addressPlaceholder: 'Street, number, neighborhood',
-          cityLabel: 'City',
-          stateLabel: 'State/Province',
-          countryLabel: 'Country',
-          countryPlaceholder: 'Country',
-          postalLabel: 'Postal Code',
-          postalPlaceholder: 'Postal code',
+        nameLabel: 'Business Name *',
+        namePlaceholder: 'Your business name',
+        descriptionLabel: 'Description',
+        descriptionPlaceholder: 'Describe your business',
+        contact: {
+          title: 'Contact Information',
+          description: 'How clients can contact you',
           phoneLabel: 'Phone',
-          phonePlaceholder: '+1 555 123 4567',
           emailLabel: 'Email',
-          primaryLabel: 'Primary Location',
-          primaryDescription: 'Mark this location as the primary business location',
-          serviceNamePlaceholder: 'E.g: Dental Cleaning, Medical Consultation',
-          editServiceDescription: 'Edit service information',
-          missingFields: 'Please fill required fields',
-          confirmDeleteLocation: 'Are you sure you want to delete this location?',
+          websiteLabel: 'Website',
         },
+        address: {
+          title: 'Address',
+          description: 'Primary location of your business',
+          addressLabel: 'Address',
+          addressPlaceholder: 'Street and number',
+          cityLabel: 'City',
+          stateLabel: 'State',
+        },
+        legal: {
+          title: 'Legal Information',
+          description: 'Tax and legal details',
+          legalNameLabel: 'Legal Name',
+          legalNamePlaceholder: 'Legal name or business name',
+          taxIdLabel: 'Tax ID',
+          taxIdPlaceholder: 'Tax identification number',
+        },
+      },
 
-        // (admin services/actions deduplicated - canonical entries exist earlier)
+      // Location management (Admin)
+      locationManagement: {
+        title: 'Locations & Services',
+        subtitle: 'Manage your business locations and services',
+        editDescription: 'Edit location information',
+        nameLabel: 'Location Name *',
+        namePlaceholder: 'E.g: Main Branch, North Branch',
+        addressLabel: 'Address *',
+        addressPlaceholder: 'Street, number, neighborhood',
+        cityLabel: 'City',
+        stateLabel: 'State/Province',
+        countryLabel: 'Country',
+        countryPlaceholder: 'Country',
+        postalLabel: 'Postal Code',
+        postalPlaceholder: 'Postal code',
+        phoneLabel: 'Phone',
+        phonePlaceholder: '+1 555 123 4567',
+        emailLabel: 'Email',
+        primaryLabel: 'Primary Location',
+        primaryDescription: 'Mark this location as the primary business location',
+        serviceNamePlaceholder: 'E.g: Dental Cleaning, Medical Consultation',
+        editServiceDescription: 'Edit service information',
+        missingFields: 'Please fill required fields',
+        confirmDeleteLocation: 'Are you sure you want to delete this location?',
+      },
 
-    // Absence and Vacation System
-    absences: {
-      title: 'Request Absence',
-      subtitle: 'Request time off or vacation',
-      absenceType: 'Absence Type',
-      selectType: 'Select type',
-      startDate: 'Start Date',
-      endDate: 'End Date',
-      reason: 'Reason',
-      reasonPlaceholder: 'Describe the reason for your absence...',
-      employeeNotes: 'Additional Notes',
-      notesPlaceholder: 'Any additional information...',
-      daysRequested: 'Days Requested',
-      vacationBalance: 'Vacation Balance',
-      daysAvailable: 'days available',
-      daysRemaining: 'days remaining',
-      insufficientBalance: 'Insufficient vacation balance',
-      affectedAppointments: 'Affected Appointments',
-      appointment: 'appointment',
-      appointments: 'appointments',
-      noAppointments: 'No appointments affected',
-      loadingAppointments: 'Loading appointments...',
-      submit: 'Request Absence',
-      submitting: 'Submitting...',
-      cancel: 'Cancel',
-      success: 'Absence request submitted successfully',
-      error: 'Error submitting absence request',
-      types: {
-        vacation: '🌴 Vacation',
-        emergency: '🚨 Emergency',
-        sick_leave: '🤒 Sick Leave',
-        personal: '👤 Personal',
-        other: '📋 Other',
+      // (admin services/actions deduplicated - canonical entries exist earlier)
+
+      // Absence and Vacation System
+      absences: {
+        title: 'Request Absence',
+        subtitle: 'Request time off or vacation',
+        absenceType: 'Absence Type',
+        selectType: 'Select type',
+        startDate: 'Start Date',
+        endDate: 'End Date',
+        reason: 'Reason',
+        reasonPlaceholder: 'Describe the reason for your absence...',
+        employeeNotes: 'Additional Notes',
+        notesPlaceholder: 'Any additional information...',
+        daysRequested: 'Days Requested',
+        vacationBalance: 'Vacation Balance',
+        daysAvailable: 'days available',
+        daysRemaining: 'days remaining',
+        insufficientBalance: 'Insufficient vacation balance',
+        affectedAppointments: 'Affected Appointments',
+        appointment: 'appointment',
+        appointments: 'appointments',
+        noAppointments: 'No appointments affected',
+        loadingAppointments: 'Loading appointments...',
+        submit: 'Request Absence',
+        submitting: 'Submitting...',
+        cancel: 'Cancel',
+        success: 'Absence request submitted successfully',
+        error: 'Error submitting absence request',
+        types: {
+          vacation: '🌴 Vacation',
+          emergency: '🚨 Emergency',
+          sick_leave: '🤒 Sick Leave',
+          personal: '👤 Personal',
+          other: '📋 Other',
+        },
+        validation: {
+          selectType: 'Select absence type',
+          selectStartDate: 'Select start date',
+          selectEndDate: 'Select end date',
+          endAfterStart: 'End date must be after start date',
+          reasonRequired: 'Reason is required',
+          maxDays: 'Request cannot exceed 365 days',
+        },
+        disabledDays: {
+          weekend: 'Weekend',
+          saturday: 'Saturday - Weekend',
+          sunday: 'Sunday - Weekend',
+          nonWorkDay: 'Non-working day',
+          holiday: 'Public Holiday',
+        },
+        invalidDays: {
+          title: 'Non-working days',
+          message: 'The following days are not in your work schedule: {{days}}',
+          instruction: 'Please select only days when you work.',
+        },
+        holidays: {
+          title: 'Public holidays in range',
+          message:
+            'The following days are public holidays and cannot be requested as absence: {{days}}',
+          instruction: 'Adjust your dates excluding these days.',
+        },
+        affected: {
+          title: '{{count}} appointment affected',
+          titlePlural: '{{count}} appointments affected',
+          messageSingle: 'This appointment will be cancelled if the absence is approved',
+          messagePlural: 'These appointments will be cancelled if the absence is approved',
+        },
+        labels: {
+          reasonRequired: 'Reason for Absence *',
+          reasonPlaceholder: 'Briefly describe the reason for your absence...',
+          notesLabel: 'Additional Notes (optional)',
+          notesPlaceholder: 'Additional information you want to share...',
+          cancelButton: 'Cancel',
+          submitButton: 'Submit Request',
+          submittingButton: 'Submitting...',
+        },
+        createTestUsers: {
+          title: 'Test Data Generator',
+          description: 'Create sample users for testing and development',
+          warning: 'This will create 30 test users in the database',
+          willCreate: 'This will create:',
+          adminUsers: '10 Admin Users',
+          employeeUsers: '10 Employee Users',
+          clientUsers: '10 Client Users',
+          createButton: 'Create Test Users',
+          creating: 'Creating test users...',
+          successMessage: 'Test users created successfully!',
+          errorsMessage: 'Some users could not be created:',
+          noErrors: 'No errors',
+          errors: 'Errors',
+        },
+        vacationWidget: {
+          title: 'Vacation',
+          titleWithYear: 'Vacation {{year}}',
+          totalDays: 'total days',
+          daysAvailable: 'Days Available',
+          daysUsed: 'Used',
+          daysPending: 'Pending',
+          daysFree: 'Available',
+          used: 'Used',
+          pending: 'Pending',
+          remaining: 'Remaining',
+          noInfo: 'No vacation information available',
+          loading: 'Loading vacation days...',
+        },
+        management: {
+          title: 'Absence Management',
+          subtitle: 'Approve or reject absence and vacation requests from your employees',
+          tabs: {
+            pending: 'Pending ({{count}})',
+            history: 'History ({{count}})',
+          },
+          empty: {
+            noPending: 'No pending requests',
+            noHistory: 'No request history',
+          },
+        },
       },
-      validation: {
-        selectType: 'Select absence type',
-        selectStartDate: 'Select start date',
-        selectEndDate: 'Select end date',
-        endAfterStart: 'End date must be after start date',
-        reasonRequired: 'Reason is required',
-        maxDays: 'Request cannot exceed 365 days',
+
+      // Image Cropper
+      imageCropper: {
+        title: 'Crop profile image',
+        dragToAdjust: 'Drag to adjust the crop area (will be circular)',
+        processing: 'Processing...',
       },
-      disabledDays: {
-        weekend: 'Weekend',
-        saturday: 'Saturday - Weekend',
-        sunday: 'Sunday - Weekend',
-        nonWorkDay: 'Non-working day',
-        holiday: 'Public Holiday',
+
+      // Jobs & Vacancies
+      jobs: {
+        application: {
+          submit: 'Submit Application',
+          sending: 'Sending...',
+        },
       },
-      invalidDays: {
-        title: 'Non-working days',
-        message: 'The following days are not in your work schedule: {{days}}',
-        instruction: 'Please select only days when you work.',
+
+      // Notifications
+      notifications: {
+        preferencesSaved: 'Your notification preferences have been updated',
+        markAllAsRead: 'Mark all as read',
+        closeNotifications: 'Close notifications',
+        moreActions: 'More notification actions',
+
+        // NotificationSettings component
+        channels: {
+          title: 'Notification channels',
+          email: 'Email',
+          sms: 'SMS',
+          whatsapp: 'WhatsApp',
+          verified: 'Verified',
+        },
+        types: {
+          title: 'Preferences by type',
+          appointmentReminder: 'Appointment reminders',
+          appointmentConfirmation: 'Appointment confirmations',
+          appointmentCancellation: 'Cancellations',
+          appointmentRescheduled: 'Rescheduling',
+          securityAlert: 'Security alerts',
+        },
+        doNotDisturb: {
+          title: 'Do not disturb',
+          from: 'From',
+          until: 'Until',
+        },
+        summaries: {
+          title: 'Summaries',
+          dailyDigest: 'Daily digest',
+          weeklyDigest: 'Weekly digest',
+          sendTime: 'Send time',
+          sendDay: 'Send day',
+        },
+        days: {
+          sunday: 'Sunday',
+          monday: 'Monday',
+          tuesday: 'Tuesday',
+          wednesday: 'Wednesday',
+          thursday: 'Thursday',
+          friday: 'Friday',
+          saturday: 'Saturday',
+        },
+        errors: {
+          loadError: 'Could not load preferences',
+          noPreferences: 'Could not load preferences',
+        },
       },
-      holidays: {
-        title: 'Public holidays in range',
-        message: 'The following days are public holidays and cannot be requested as absence: {{days}}',
-        instruction: 'Adjust your dates excluding these days.',
-      },
-      affected: {
-        title: '{{count}} appointment affected',
-        titlePlural: '{{count}} appointments affected',
-        messageSingle: 'This appointment will be cancelled if the absence is approved',
-        messagePlural: 'These appointments will be cancelled if the absence is approved',
-      },
-      labels: {
-        reasonRequired: 'Reason for Absence *',
-        reasonPlaceholder: 'Briefly describe the reason for your absence...',
-        notesLabel: 'Additional Notes (optional)',
-        notesPlaceholder: 'Additional information you want to share...',
-        cancelButton: 'Cancel',
-        submitButton: 'Submit Request',
-        submittingButton: 'Submitting...',
-      },
-      createTestUsers: {
-        title: 'Test Data Generator',
-        description: 'Create sample users for testing and development',
-        warning: 'This will create 30 test users in the database',
-        willCreate: 'This will create:',
-        adminUsers: '10 Admin Users',
-        employeeUsers: '10 Employee Users',
-        clientUsers: '10 Client Users',
-        createButton: 'Create Test Users',
-        creating: 'Creating test users...',
-        successMessage: 'Test users created successfully!',
-        errorsMessage: 'Some users could not be created:',
-        noErrors: 'No errors',
-        errors: 'Errors',
-      },
-      vacationWidget: {
-        title: 'Vacation',
-        titleWithYear: 'Vacation {{year}}',
-        totalDays: 'total days',
-        daysAvailable: 'Days Available',
-        daysUsed: 'Used',
-        daysPending: 'Pending',
-        daysFree: 'Available',
-        used: 'Used',
-        pending: 'Pending',
-        remaining: 'Remaining',
-        noInfo: 'No vacation information available',
-        loading: 'Loading vacation days...',
-      },
-      management: {
-        title: 'Absence Management',
-        subtitle: 'Approve or reject absence and vacation requests from your employees',
+
+      // User Profile
+      userProfile: {
         tabs: {
-          pending: 'Pending ({{count}})',
-          history: 'History ({{count}})'
-        },
-        empty: {
-          noPending: 'No pending requests',
-          noHistory: 'No request history',
-        },
-      },
-    },
-
-    // Image Cropper
-    imageCropper: {
-      title: 'Crop profile image',
-      dragToAdjust: 'Drag to adjust the crop area (will be circular)',
-      processing: 'Processing...',
-    },
-
-    // Jobs & Vacancies
-    jobs: {
-      application: {
-        submit: 'Submit Application',
-        sending: 'Sending...',
-      },
-    },
-
-    // Notifications
-    notifications: {
-      preferencesSaved: 'Your notification preferences have been updated',
-      markAllAsRead: 'Mark all as read',
-      closeNotifications: 'Close notifications',
-      moreActions: 'More notification actions',
-      
-      // NotificationSettings component
-      channels: {
-        title: 'Notification channels',
-        email: 'Email',
-        sms: 'SMS',
-        whatsapp: 'WhatsApp',
-        verified: 'Verified',
-      },
-      types: {
-        title: 'Preferences by type',
-        appointmentReminder: 'Appointment reminders',
-        appointmentConfirmation: 'Appointment confirmations',
-        appointmentCancellation: 'Cancellations',
-        appointmentRescheduled: 'Rescheduling',
-        securityAlert: 'Security alerts',
-      },
-      doNotDisturb: {
-        title: 'Do not disturb',
-        from: 'From',
-        until: 'Until',
-      },
-      summaries: {
-        title: 'Summaries',
-        dailyDigest: 'Daily digest',
-        weeklyDigest: 'Weekly digest',
-        sendTime: 'Send time',
-        sendDay: 'Send day',
-      },
-      days: {
-        sunday: 'Sunday',
-        monday: 'Monday',
-        tuesday: 'Tuesday',
-        wednesday: 'Wednesday',
-        thursday: 'Thursday',
-        friday: 'Friday',
-        saturday: 'Saturday',
-      },
-      errors: {
-        loadError: 'Could not load preferences',
-        noPreferences: 'Could not load preferences',
-      },
-    },
-
-    // User Profile
-    userProfile: {
-      tabs: {
-        services: 'Services',
-        experience: 'Experience',
-        reviews: 'Reviews',
-      },
-      header: {
-        completedAppointments: 'completed appointments',
-        verifiedProfessional: 'Verified professional',
-      },
-      services: {
-        title: 'Services',
-        noServices: 'No services available',
-        schedule: 'Schedule',
-      },
-      experience: {
-        title: 'Experience',
-        businessesTitle: 'Businesses where they work',
-        independentProfessional: 'Independent professional',
-        aboutMe: 'About me',
-        statistics: 'Statistics',
-        stats: {
-          completedAppointments: 'Completed appointments',
-          rating: 'Rating',
           services: 'Services',
+          experience: 'Experience',
+          reviews: 'Reviews',
+        },
+        header: {
+          completedAppointments: 'completed appointments',
+          verifiedProfessional: 'Verified professional',
+        },
+        services: {
+          title: 'Services',
+          noServices: 'No services available',
+          schedule: 'Schedule',
+        },
+        experience: {
+          title: 'Experience',
+          businessesTitle: 'Businesses where they work',
+          independentProfessional: 'Independent professional',
+          aboutMe: 'About me',
+          statistics: 'Statistics',
+          stats: {
+            completedAppointments: 'Completed appointments',
+            rating: 'Rating',
+            services: 'Services',
+          },
+        },
+        reviews: {
+          title: 'Reviews',
+          leaveReview: 'Leave review',
+        },
+        footer: {
+          scheduleWith: 'Schedule Appointment with {name}',
+          notAvailable: 'Professional not available',
+          notLinkedMessage: 'This professional is not linked to any active business',
+        },
+        errors: {
+          loadError: 'Could not load professional information',
+          submitReviewError: 'Could not send review at this time',
+        },
+        actions: {
+          close: 'Close',
         },
       },
-      reviews: {
-        title: 'Reviews',
-        leaveReview: 'Leave review',
-      },
-      footer: {
-        scheduleWith: 'Schedule Appointment with {name}',
-        notAvailable: 'Professional not available',
-        notLinkedMessage: 'This professional is not linked to any active business',
-      },
-      errors: {
-        loadError: 'Could not load professional information',
-        submitReviewError: 'Could not send review at this time',
-      },
-      actions: {
-        close: 'Close',
-      },
-    },
 
-    // Tax Configuration
-    taxConfiguration: {
-      title: 'Tax Configuration',
-      subtitle: 'Configure taxes and tax obligations for your business',
-      resetSuccess: 'Configuration reset',
-      tabs: {
-        general: 'General',
-        iva: 'VAT',
-        ica: 'ICA',
-        retention: 'Retention',
-      },
-      general: {
-        taxRegime: 'Tax Regime',
-        taxRegimeDescription: 'Common regime charges VAT, simplified generally does not',
-        taxId: 'Tax ID Number (NIT)',
-        taxIdPlaceholder: '900123456-7',
-        taxIdDescription: 'Include verification digit',
-        city: 'City (for ICA)',
-        cityDescription: 'Each city has a different ICA rate',
-        regimes: {
-          common: 'Common Regime',
-          simple: 'Simplified Regime',
-          special: 'Special Regime',
+      // Tax Configuration
+      taxConfiguration: {
+        title: 'Tax Configuration',
+        subtitle: 'Configure taxes and tax obligations for your business',
+        resetSuccess: 'Configuration reset',
+        tabs: {
+          general: 'General',
+          iva: 'VAT',
+          ica: 'ICA',
+          retention: 'Retention',
+        },
+        general: {
+          taxRegime: 'Tax Regime',
+          taxRegimeDescription: 'Common regime charges VAT, simplified generally does not',
+          taxId: 'Tax ID Number (NIT)',
+          taxIdPlaceholder: '900123456-7',
+          taxIdDescription: 'Include verification digit',
+          city: 'City (for ICA)',
+          cityDescription: 'Each city has a different ICA rate',
+          regimes: {
+            common: 'Common Regime',
+            simple: 'Simplified Regime',
+            special: 'Special Regime',
+          },
+        },
+        iva: {
+          title: 'VAT',
+          enable: 'Charge VAT',
+          description: 'Value Added Tax',
+          rate: 'VAT Rate (%)',
+          rateDescription: '19% is the general rate in Colombia',
+          rates: {
+            exempt: '0% (Exempt)',
+            basic: '5% (Basic products)',
+            general: '19% (General)',
+          },
+          infoNote:
+            'VAT is calculated on the subtotal of each transaction. Products may have different rates (0%, 5%, 19%).',
+        },
+        ica: {
+          title: 'ICA',
+          enable: 'Charge ICA',
+          description: 'Industry and Commerce Tax',
+          rate: 'ICA Rate',
+          rateCalculated: '(calculated by city)',
+          selectCityHint: 'Select city in General tab to update rate',
+          cityRates: 'ICA by city:',
+        },
+        retention: {
+          title: 'Retention',
+          enable: 'Apply Withholding Tax',
+          description: 'For large taxpayers',
+          activityType: 'Activity Type',
+          rate: 'Retention Rate',
+          rateDescription: 'Automatic rate based on selected activity type',
+          infoNote:
+            'Withholding tax is deducted from the amount to be paid to the supplier and must be declared monthly to DIAN.',
+        },
+        summary: {
+          title: 'Configuration Summary',
+          regime: 'Regime:',
+          taxId: 'Tax ID:',
+          city: 'City:',
+          notConfigured: 'Not configured',
+          notSelected: 'Not selected',
+          active: 'Active',
+          inactive: 'Inactive',
+        },
+        alerts: {
+          simpleRegimeTitle: 'Simplified Regime',
+          simpleRegimeDescription:
+            'In simplified regime, VAT is not charged. ICA may apply depending on the city.',
         },
       },
-      iva: {
-        title: 'VAT',
-        enable: 'Charge VAT',
-        description: 'Value Added Tax',
-        rate: 'VAT Rate (%)',
-        rateDescription: '19% is the general rate in Colombia',
-        rates: {
-          exempt: '0% (Exempt)',
-          basic: '5% (Basic products)',
-          general: '19% (General)',
+
+      // Admin Dashboard
+      adminDashboard: {
+        sidebar: {
+          overview: 'Overview',
+          appointments: 'Appointments',
+          absences: 'Absences',
+          locations: 'Locations',
+          services: 'Services',
+          resources: 'Resources',
+          employees: 'Employees',
+          recruitment: 'Recruitment',
+          quickSales: 'Quick Sales',
+          accounting: 'Accounting',
+          reports: 'Reports',
+          billing: 'Billing',
+          permissions: 'Permissions',
         },
-        infoNote: 'VAT is calculated on the subtotal of each transaction. Products may have different rates (0%, 5%, 19%).',
       },
-      ica: {
-        title: 'ICA',
-        enable: 'Charge ICA',
-        description: 'Industry and Commerce Tax',
-        rate: 'ICA Rate',
-        rateCalculated: '(calculated by city)',
-        selectCityHint: 'Select city in General tab to update rate',
-        cityRates: 'ICA by city:',
+
+      // Billing Module
+      billing: {
+        securePayment: 'Secure Payment',
+        addPaymentMethod: 'Add Payment Method',
+        freePlan: 'Free Plan',
+        freeplanDescription: 'You are currently using the free plan with basic features',
+        currentPlan: 'Current Plan',
+        overduePayment: 'Overdue Payment',
+        statusActive: 'Active',
+        statusTrialing: 'Trial Period',
+        statusCanceled: 'Canceled',
+        statusSuspended: 'Suspended',
+        statusInactive: 'Inactive',
+        statusExpired: 'Expired',
+        statusPaused: 'Paused',
+        billingMonthly: 'Monthly',
+        billingAnnual: 'Annual',
+        usageMetrics: 'Resource Usage',
+        monitorUsage: 'Monitor your current plan usage',
+        cancelSubscriptionTitle: 'Cancel Subscription',
+        cancelSubscriptionDescription:
+          "We're sorry to see you go. Please tell us why you're canceling.",
+        cancelWhenQuestion: 'When do you want to cancel?',
+        cancelAtPeriodEnd: 'At the end of current period',
+        cancelAtPeriodEndDescription:
+          "You can continue using the service until your current billing period ends. You won't be charged again.",
+        cancelImmediately: 'Immediately',
+        cancelImmediatelyDescription:
+          'Your access will be revoked immediately. This action cannot be undone.',
+        cancellationReason: 'Reason for cancellation (Optional)',
+        cancellationReasonPlaceholder: "Help us improve by telling us why you're canceling...",
+        cancelWarningTitle: 'Please note:',
+        cancelWarning1: 'You will lose access to all plan features',
+        cancelWarning2: 'Your data will be retained for 30 days',
+        cancelWarning3: 'You can reactivate your account at any time',
+        cancelingSubscription: 'Canceling...',
+        confirmCancellation: 'Confirm Cancellation',
+        upgradePlan: 'Upgrade Plan',
+        upgradePlanDescription: 'Upgrade your plan',
+        changePlanDescription: 'Change your plan',
+        adjustPlanNeeds: 'to fit your needs',
+        billingCycle: 'Billing Cycle',
+        billingAnnualSavings: 'Annual (Save 17%)',
+        updatingPlan: 'Updating...',
+        confirmChange: 'Confirm Change',
+        paymentHistory: 'Payment History',
+        paymentHistoryDescription: 'View all your transactions and download invoices',
+        historyExportedCSV: 'History exported to CSV',
+        planLabel: 'Plan',
+        cycleLabel: 'Cycle',
+        alertCount: 'Alert',
+        upcomingLimits: 'Upcoming Limits',
+        // Status badges
+        statusBadge: {
+          critical: 'Critical',
+          warning: 'Warning',
+          normal: 'Normal',
+        },
+        // Alert descriptions
+        alertDescription:
+          'Some resources are approaching your plan limits. Consider upgrading to avoid interruptions.',
+        // Export messages
+        csvLoading: 'Exporting to CSV...',
+        excelLoading: 'Exporting to Excel...',
+        pdfLoading: 'Generating PDF...',
+        csvSuccess: 'CSV report exported successfully',
+        excelSuccess: 'Excel report exported successfully',
+        pdfSuccess: 'PDF report generated successfully',
+        csvError: 'Error exporting CSV: {{error}}',
+        excelError: 'Error exporting Excel: {{error}}',
+        pdfError: 'Error generating PDF: {{error}}',
       },
-      retention: {
-        title: 'Retention',
-        enable: 'Apply Withholding Tax',
-        description: 'For large taxpayers',
-        activityType: 'Activity Type',
-        rate: 'Retention Rate',
-        rateDescription: 'Automatic rate based on selected activity type',
-        infoNote: 'Withholding tax is deducted from the amount to be paid to the supplier and must be declared monthly to DIAN.',
+
+      // Employee Dashboard
+      employeeDashboard: {
+        sidebar: {
+          myEmployments: 'My Jobs',
+          searchVacancies: 'Search Vacancies',
+          myAbsences: 'My Absences',
+          myAppointments: 'My Appointments',
+          schedule: 'Schedule',
+        },
       },
-      summary: {
-        title: 'Configuration Summary',
-        regime: 'Regime:',
-        taxId: 'Tax ID:',
-        city: 'City:',
-        notConfigured: 'Not configured',
-        notSelected: 'Not selected',
+
+      // Client Dashboard
+      clientDashboard: {
+        upcomingTitle: 'Upcoming Appointments',
+        viewAll: 'View All',
+        noUpcoming: 'No upcoming appointments',
+        bookFirstAppointment: 'Book your first appointment to get started',
+        bookAppointment: 'Book Appointment',
+        pastTitle: 'Past Appointments',
+        confirmButton: 'Confirm',
+        alreadyConfirmed: 'Already confirmed',
+        addToCalendar: 'Add to Google Calendar',
+        deleteAppointment: 'Delete appointment',
+        rebook: 'Rebook',
+        appointment: 'Appointment',
+        with: 'with',
+        confirmDelete: 'Are you sure you want to delete this appointment?',
+        deleteSuccess: 'Appointment deleted successfully',
+        deleteError: 'Error deleting appointment',
+        errorDeleting: 'Error deleting: {message}',
+        status: {
+          confirmed: 'Confirmed',
+          pending: 'Pending',
+          completed: 'Completed',
+          cancelled: 'Cancelled',
+          scheduled: 'Scheduled',
+          noShow: 'No Show',
+        },
+        table: {
+          service: 'Service',
+          dateTime: 'Date & Time',
+          provider: 'Provider',
+          location: 'Location',
+          actions: 'Actions',
+        },
+      },
+
+      // Favorites List
+      favoritesList: {
+        loading: 'Loading your favorite businesses...',
+        errorTitle: 'Error loading favorites',
+        emptyTitle: 'No favorites yet',
+        emptyDescription:
+          'Mark your preferred businesses as favorites to access them quickly and book appointments more easily.',
+        tipHeader: 'Tip: Search for a business and click the heart icon to add it to favorites',
+        bookButton: 'Book Appointment',
+        myFavorites: 'My Favorites',
+        businessMarked: 'business marked as favorite',
+        businessesMarked: 'businesses marked as favorites',
+        tipDescription:
+          'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
+      },
+
+      // City Selector
+      citySelector: {
+        selectRegion: 'Select Region',
+        loading: 'Loading...',
+        noRegions: 'No regions available',
+        retry: 'Retry',
+        allCities: 'All cities',
+        loadingCities: 'Loading cities...',
+      },
+
+      // Business Selector
+      businessSelector: {
+        selectBusiness: 'Select Business',
+      },
+
+      // Theme Toggle
+      themeToggle: {
+        label: 'Toggle theme',
+        light: 'Light',
+        dark: 'Dark',
+        system: 'System',
+      },
+
+      // Role Selector
+      roleSelector: {
+        label: 'Change Role',
+        admin: 'Administrator',
+        employee: 'Employee',
+        client: 'Client',
+        selectRole: 'Select a role',
+        createBusiness: 'Create business',
+        joinBusiness: 'Join business',
+        bookServices: 'Book services',
+      },
+
+      // Service Status Badge
+      serviceStatusBadge: {
         active: 'Active',
         inactive: 'Inactive',
       },
-      alerts: {
-        simpleRegimeTitle: 'Simplified Regime',
-        simpleRegimeDescription: 'In simplified regime, VAT is not charged. ICA may apply depending on the city.',
-      },
-    },
 
-    // Admin Dashboard
-    adminDashboard: {
-      sidebar: {
-        overview: 'Overview',
-        appointments: 'Appointments',
-        absences: 'Absences',
-        locations: 'Locations',
-        services: 'Services',
-        resources: 'Resources',
-        employees: 'Employees',
-        recruitment: 'Recruitment',
-        quickSales: 'Quick Sales',
-        accounting: 'Accounting',
-        reports: 'Reports',
-        billing: 'Billing',
-        permissions: 'Permissions',
+      // Language Toggle
+      languageToggle: {
+        label: 'Language',
+        spanish: 'Español',
+        english: 'English',
       },
-    },
 
-    // Billing Module
-    billing: {
-      securePayment: 'Secure Payment',
-      addPaymentMethod: 'Add Payment Method',
-      freePlan: 'Free Plan',
-      freeplanDescription: 'You are currently using the free plan with basic features',
-      currentPlan: 'Current Plan',
-      overduePayment: 'Overdue Payment',
-      statusActive: 'Active',
-      statusTrialing: 'Trial Period',
-      statusCanceled: 'Canceled',
-      statusSuspended: 'Suspended',
-      statusInactive: 'Inactive',
-      statusExpired: 'Expired',
-      statusPaused: 'Paused',
-      billingMonthly: 'Monthly',
-      billingAnnual: 'Annual',
-      usageMetrics: 'Resource Usage',
-      monitorUsage: 'Monitor your current plan usage',
-      cancelSubscriptionTitle: 'Cancel Subscription',
-      cancelSubscriptionDescription: 'We\'re sorry to see you go. Please tell us why you\'re canceling.',
-      cancelWhenQuestion: 'When do you want to cancel?',
-      cancelAtPeriodEnd: 'At the end of current period',
-      cancelAtPeriodEndDescription: 'You can continue using the service until your current billing period ends. You won\'t be charged again.',
-      cancelImmediately: 'Immediately',
-      cancelImmediatelyDescription: 'Your access will be revoked immediately. This action cannot be undone.',
-      cancellationReason: 'Reason for cancellation (Optional)',
-      cancellationReasonPlaceholder: 'Help us improve by telling us why you\'re canceling...',
-      cancelWarningTitle: 'Please note:',
-      cancelWarning1: 'You will lose access to all plan features',
-      cancelWarning2: 'Your data will be retained for 30 days',
-      cancelWarning3: 'You can reactivate your account at any time',
-      cancelingSubscription: 'Canceling...',
-      confirmCancellation: 'Confirm Cancellation',
-      upgradePlan: 'Upgrade Plan',
-      upgradePlanDescription: 'Upgrade your plan',
-      changePlanDescription: 'Change your plan',
-      adjustPlanNeeds: 'to fit your needs',
-      billingCycle: 'Billing Cycle',
-      billingAnnualSavings: 'Annual (Save 17%)',
-      updatingPlan: 'Updating...',
-      confirmChange: 'Confirm Change',
-      paymentHistory: 'Payment History',
-      paymentHistoryDescription: 'View all your transactions and download invoices',
-      historyExportedCSV: 'History exported to CSV',
-      planLabel: 'Plan',
-      cycleLabel: 'Cycle',
-      alertCount: 'Alert',
-      upcomingLimits: 'Upcoming Limits',
-      // Status badges
-      statusBadge: {
-        critical: 'Critical',
-        warning: 'Warning',
-        normal: 'Normal',
+      // Owner Badge
+      ownerBadge: {
+        owner: 'Owner',
+        admin: 'Admin',
       },
-      // Alert descriptions
-      alertDescription: 'Some resources are approaching your plan limits. Consider upgrading to avoid interruptions.',
-      // Export messages
-      csvLoading: 'Exporting to CSV...',
-      excelLoading: 'Exporting to Excel...',
-      pdfLoading: 'Generating PDF...',
-      csvSuccess: 'CSV report exported successfully',
-      excelSuccess: 'Excel report exported successfully',
-      pdfSuccess: 'PDF report generated successfully',
-      csvError: 'Error exporting CSV: {{error}}',
-      excelError: 'Error exporting Excel: {{error}}',
-      pdfError: 'Error generating PDF: {{error}}',
-    },
 
-    // Employee Dashboard
-    employeeDashboard: {
-      sidebar: {
-        myEmployments: 'My Jobs',
-        searchVacancies: 'Search Vacancies',
-        myAbsences: 'My Absences',
-        myAppointments: 'My Appointments',
-        schedule: 'Schedule',
+      // Business Invitation Card
+      businessInvitationCard: {
+        copied: 'Code copied to clipboard',
+        qrGenerated: 'QR Code generated',
+        qrError: 'Error generating QR code',
+        qrDownloaded: 'QR Code downloaded',
+        shareSuccess: 'Shared successfully',
+        shareError: 'Error sharing',
+        copyCode: 'Copy Code',
+        generateQR: 'Generate QR',
+        downloadQR: 'Download QR',
+        share: 'Share Invitation',
       },
-    },
 
-    // Client Dashboard
-    clientDashboard: {
-      upcomingTitle: 'Upcoming Appointments',
-      viewAll: 'View All',
-      noUpcoming: 'No upcoming appointments',
-      bookFirstAppointment: 'Book your first appointment to get started',
-      bookAppointment: 'Book Appointment',
-      pastTitle: 'Past Appointments',
-      confirmButton: 'Confirm',
-      alreadyConfirmed: 'Already confirmed',
-      addToCalendar: 'Add to Google Calendar',
-      deleteAppointment: 'Delete appointment',
-      rebook: 'Rebook',
-      appointment: 'Appointment',
-      with: 'with',
-      confirmDelete: 'Are you sure you want to delete this appointment?',
-      deleteSuccess: 'Appointment deleted successfully',
-      deleteError: 'Error deleting appointment',
-      errorDeleting: 'Error deleting: {message}',
-      status: {
-        confirmed: 'Confirmed',
-        pending: 'Pending',
-        completed: 'Completed',
-        cancelled: 'Cancelled',
-        scheduled: 'Scheduled',
-        noShow: 'No Show',
+      // Quick Sale Form
+      quickSaleForm: {
+        title: 'Quick Sale',
+        subtitle: 'Register a quick walk-in sale',
+        clientNameLabel: 'Client Name',
+        clientPhoneLabel: 'Phone',
+        clientDocumentLabel: 'Document',
+        clientEmailLabel: 'Email',
+        serviceLabel: 'Service',
+        locationLabel: 'Location',
+        employeeLabel: 'Employee (Optional)',
+        paymentMethodLabel: 'Payment Method',
+        amountLabel: 'Amount',
+        notesLabel: 'Notes',
+        cash: 'Cash',
+        card: 'Card',
+        transfer: 'Transfer',
+        clientNameRequired: 'Client name is required',
+        selectService: 'Select a service',
+        selectLocation: 'Select a location',
+        enterAmount: 'Enter a valid amount',
+        selectPaymentMethod: 'Select a payment method',
+        register: 'Register Sale',
+        loading: 'Loading...',
+        error: 'Error loading data',
+        errorRegistering: 'Error registering sale',
+        successRegistering: 'Sale registered successfully',
+        cancel: 'Cancel',
       },
-      table: {
-        service: 'Service',
-        dateTime: 'Date & Time',
-        provider: 'Provider',
+
+      // Review Form
+      reviewForm: {
+        title: 'Leave a Review',
+        subtitle: 'Share your experience',
+        ratingLabel: 'Rating',
+        commentLabel: 'Comment',
+        submitButton: 'Submit Review',
+        cancelButton: 'Cancel',
+        selectRating: 'Select a rating',
+        loading: 'Submitting...',
+        successSubmit: 'Thank you for your review!',
+        errorSubmit: 'Error submitting review',
+      },
+
+      // Review Card
+      reviewCard: {
+        anonymous: 'Anonymous',
+        rating: 'Rating',
+        verified: 'Verified Purchase',
+        helpful: 'Helpful',
+        notHelpful: 'Not Helpful',
+        report: 'Report',
+        loading: 'Loading...',
+      },
+
+      // Review List
+      reviewList: {
+        noReviews: 'No reviews yet',
+        loading: 'Loading reviews...',
+        error: 'Error loading reviews',
+        sortBy: 'Sort by',
+        recent: 'Recent',
+        highest: 'Highest Rating',
+        lowest: 'Lowest Rating',
+        mostHelpful: 'Most Helpful',
+      },
+
+      // Profile Page
+      profilePage: {
+        title: 'My Profile',
+        editProfile: 'Edit Profile',
+        saveChanges: 'Save Changes',
+        cancel: 'Cancel',
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        email: 'Email',
+        phone: 'Phone',
+        successUpdate: 'Profile updated successfully',
+        errorUpdate: 'Error updating profile',
+      },
+
+      // Recommended Businesses
+      recommendedBusinesses: {
+        title: 'Recommended for You',
+        noRecommendations: 'No recommendations available',
+        loading: 'Loading recommendations...',
+      },
+
+      // Business Suggestions
+      businessSuggestions: {
+        title: 'Popular Businesses',
+        noSuggestions: 'No suggestions available',
+        loading: 'Loading suggestions...',
+        viewMore: 'View More',
+        basedOnReviews: 'Based on your reviews',
+        inCity: 'In',
+      },
+
+      // Dashboard Overview
+      dashboardOverview: {
+        title: 'Dashboard',
+        welcomeBack: 'Welcome back',
+        upcoming: 'Upcoming',
+        noUpcoming: 'No upcoming appointments',
+        recent: 'Recent Activity',
+        noActivity: 'No recent activity',
+        viewMore: 'View More',
+      },
+
+      // Cookie Consent
+      cookieConsent: {
+        title: 'We use cookies to improve your experience',
+        description:
+          'This site uses analytics cookies to understand how you interact with our platform. We do not share your data with third parties and respect your privacy.',
+        reject: 'Reject',
+        accept: 'Accept cookies',
+        close: 'Close',
+      },
+
+      // Chat
+      chat: {
+        startChat: 'Start Chat',
+        availableEmployees: 'Available Employees',
+        administratorOf: 'Administrator of',
+        employeesOf: 'Available employees from',
+        noAvailability: 'No employees available at the moment',
+        loading: 'Loading...',
+        error: 'Error loading employees',
+        chatWith: 'Chat with',
         location: 'Location',
-        actions: 'Actions',
+        noLocation: 'No location',
+        conversations: {
+          title: 'Messages',
+          searchPlaceholder: 'Search conversations...',
+          loading: 'Loading conversations...',
+          noResults: 'No conversations found',
+          empty: 'No conversations',
+          noMessages: 'No messages',
+          user: 'User',
+          group: 'Group',
+        },
+      },
+
+      // UI Elements
+      ui: {
+        morePages: 'More pages',
+        toggleSidebar: 'Toggle Sidebar',
+        previousSlide: 'Previous slide',
+        nextSlide: 'Next slide',
+      },
+
+      // Settings
+      settingsButtons: {
+        saveConfigurations: 'Save Configurations',
+        saveSchedule: 'Save Schedule',
+        savePreferences: 'Save Preferences',
+      },
+
+      // Issues & Support
+      support: {
+        reportProblem: 'Report Problem',
+        reportIssue: 'Report an Issue',
+        describeProblem: 'Describe the problem you experienced',
+        attachScreenshot: 'Attach a screenshot (optional)',
+      },
+
+      // Jobs & Recruitment
+      jobsUI: {
+        professionalSummary: 'Professional Summary',
+        expectedSalary: 'Expected Salary',
+        availableFrom: 'Available From',
+        administrativeNotes: 'Administrative Notes',
+        scheduledInterview: 'Scheduled Interview',
+        myApplications: 'My Applications',
+        availableVacancies: 'Available Vacancies',
+        salaryMustBePositive: 'Expected salary must be positive',
+        salaryExceedsMaximum: 'Expected salary cannot exceed the maximum of the vacancy',
+        professionalSummaryMinLength: 'Professional summary must have at least 50 characters',
       },
     },
-
-    // Favorites List
-    favoritesList: {
-      loading: 'Loading your favorite businesses...',
-      errorTitle: 'Error loading favorites',
-      emptyTitle: 'No favorites yet',
-      emptyDescription: 'Mark your preferred businesses as favorites to access them quickly and book appointments more easily.',
-      tipHeader: 'Tip: Search for a business and click the heart icon to add it to favorites',
-      bookButton: 'Book Appointment',
-      myFavorites: 'My Favorites',
-      businessMarked: 'business marked as favorite',
-      businessesMarked: 'businesses marked as favorites',
-      tipDescription: 'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
-    },
-
-    // City Selector
-    citySelector: {
-      selectRegion: 'Select Region',
-      loading: 'Loading...',
-      noRegions: 'No regions available',
-      retry: 'Retry',
-      allCities: 'All cities',
-      loadingCities: 'Loading cities...',
-    },
-
-    // Business Selector
-    businessSelector: {
-      selectBusiness: 'Select Business',
-    },
-
-    // Theme Toggle
-    themeToggle: {
-      label: 'Toggle theme',
-      light: 'Light',
-      dark: 'Dark',
-      system: 'System',
-    },
-
-    // Role Selector
-    roleSelector: {
-      label: 'Change Role',
-      admin: 'Administrator',
-      employee: 'Employee',
-      client: 'Client',
-      selectRole: 'Select a role',
-      createBusiness: 'Create business',
-      joinBusiness: 'Join business',
-      bookServices: 'Book services',
-    },
-
-    // Service Status Badge
-    serviceStatusBadge: {
-      active: 'Active',
-      inactive: 'Inactive',
-    },
-
-    // Language Toggle
-    languageToggle: {
-      label: 'Language',
-      spanish: 'Español',
-      english: 'English',
-    },
-
-    // Owner Badge
-    ownerBadge: {
-      owner: 'Owner',
-      admin: 'Admin',
-    },
-
-    // Business Invitation Card
-    businessInvitationCard: {
-      copied: 'Code copied to clipboard',
-      qrGenerated: 'QR Code generated',
-      qrError: 'Error generating QR code',
-      qrDownloaded: 'QR Code downloaded',
-      shareSuccess: 'Shared successfully',
-      shareError: 'Error sharing',
-      copyCode: 'Copy Code',
-      generateQR: 'Generate QR',
-      downloadQR: 'Download QR',
-      share: 'Share Invitation',
-    },
-
-    // Quick Sale Form
-    quickSaleForm: {
-      title: 'Quick Sale',
-      subtitle: 'Register a quick walk-in sale',
-      clientNameLabel: 'Client Name',
-      clientPhoneLabel: 'Phone',
-      clientDocumentLabel: 'Document',
-      clientEmailLabel: 'Email',
-      serviceLabel: 'Service',
-      locationLabel: 'Location',
-      employeeLabel: 'Employee (Optional)',
-      paymentMethodLabel: 'Payment Method',
-      amountLabel: 'Amount',
-      notesLabel: 'Notes',
-      cash: 'Cash',
-      card: 'Card',
-      transfer: 'Transfer',
-      clientNameRequired: 'Client name is required',
-      selectService: 'Select a service',
-      selectLocation: 'Select a location',
-      enterAmount: 'Enter a valid amount',
-      selectPaymentMethod: 'Select a payment method',
-      register: 'Register Sale',
-      loading: 'Loading...',
-      error: 'Error loading data',
-      errorRegistering: 'Error registering sale',
-      successRegistering: 'Sale registered successfully',
-      cancel: 'Cancel',
-    },
-
-    // Review Form
-    reviewForm: {
-      title: 'Leave a Review',
-      subtitle: 'Share your experience',
-      ratingLabel: 'Rating',
-      commentLabel: 'Comment',
-      submitButton: 'Submit Review',
-      cancelButton: 'Cancel',
-      selectRating: 'Select a rating',
-      loading: 'Submitting...',
-      successSubmit: 'Thank you for your review!',
-      errorSubmit: 'Error submitting review',
-    },
-
-    // Review Card
-    reviewCard: {
-      anonymous: 'Anonymous',
-      rating: 'Rating',
-      verified: 'Verified Purchase',
-      helpful: 'Helpful',
-      notHelpful: 'Not Helpful',
-      report: 'Report',
-      loading: 'Loading...',
-    },
-
-    // Review List
-    reviewList: {
-      noReviews: 'No reviews yet',
-      loading: 'Loading reviews...',
-      error: 'Error loading reviews',
-      sortBy: 'Sort by',
-      recent: 'Recent',
-      highest: 'Highest Rating',
-      lowest: 'Lowest Rating',
-      mostHelpful: 'Most Helpful',
-    },
-
-    // Profile Page
-    profilePage: {
-      title: 'My Profile',
-      editProfile: 'Edit Profile',
-      saveChanges: 'Save Changes',
-      cancel: 'Cancel',
-      firstName: 'First Name',
-      lastName: 'Last Name',
-      email: 'Email',
-      phone: 'Phone',
-      successUpdate: 'Profile updated successfully',
-      errorUpdate: 'Error updating profile',
-    },
-
-    // Recommended Businesses
-    recommendedBusinesses: {
-      title: 'Recommended for You',
-      noRecommendations: 'No recommendations available',
-      loading: 'Loading recommendations...',
-    },
-    
-
-    // Business Suggestions
-    businessSuggestions: {
-      title: 'Popular Businesses',
-      noSuggestions: 'No suggestions available',
-      loading: 'Loading suggestions...',
-      viewMore: 'View More',
-      basedOnReviews: 'Based on your reviews',
-      inCity: 'In',
-    },
-
-    // Dashboard Overview
-    dashboardOverview: {
-      title: 'Dashboard',
-      welcomeBack: 'Welcome back',
-      upcoming: 'Upcoming',
-      noUpcoming: 'No upcoming appointments',
-      recent: 'Recent Activity',
-      noActivity: 'No recent activity',
-      viewMore: 'View More',
-    },
-
-    // Cookie Consent
-    cookieConsent: {
-      title: 'We use cookies to improve your experience',
-      description: 'This site uses analytics cookies to understand how you interact with our platform. We do not share your data with third parties and respect your privacy.',
-      reject: 'Reject',
-      accept: 'Accept cookies',
-      close: 'Close',
-    },
-
-    // Chat
-    chat: {
-      startChat: 'Start Chat',
-      availableEmployees: 'Available Employees',
-      administratorOf: 'Administrator of',
-      employeesOf: 'Available employees from',
-      noAvailability: 'No employees available at the moment',
-      loading: 'Loading...',
-      error: 'Error loading employees',
-      chatWith: 'Chat with',
-      location: 'Location',
-      noLocation: 'No location',
-      conversations: {
-        title: 'Messages',
-        searchPlaceholder: 'Search conversations...',
-        loading: 'Loading conversations...',
-        noResults: 'No conversations found',
-        empty: 'No conversations',
-        noMessages: 'No messages',
-        user: 'User',
-        group: 'Group',
-      },
-    },
-
-    // UI Elements
-    ui: {
-      morePages: 'More pages',
-      toggleSidebar: 'Toggle Sidebar',
-      previousSlide: 'Previous slide',
-      nextSlide: 'Next slide',
-    },
-
-    // Settings
-    settingsButtons: {
-      saveConfigurations: 'Save Configurations',
-      saveSchedule: 'Save Schedule',
-      savePreferences: 'Save Preferences',
-    },
-
-    // Issues & Support
-    support: {
-      reportProblem: 'Report Problem',
-      reportIssue: 'Report an Issue',
-      describeProblem: 'Describe the problem you experienced',
-      attachScreenshot: 'Attach a screenshot (optional)',
-    },
-
-    // Jobs & Recruitment
-    jobsUI: {
-      professionalSummary: 'Professional Summary',
-      expectedSalary: 'Expected Salary',
-      availableFrom: 'Available From',
-      administrativeNotes: 'Administrative Notes',
-      scheduledInterview: 'Scheduled Interview',
-      myApplications: 'My Applications',
-      availableVacancies: 'Available Vacancies',
-      salaryMustBePositive: 'Expected salary must be positive',
-      salaryExceedsMaximum: 'Expected salary cannot exceed the maximum of the vacancy',
-      professionalSummaryMinLength: 'Professional summary must have at least 50 characters',
-    },
-  },
   },
   es: {
-  
     // Landing Page
     landing: {
       nav: {
@@ -2914,24 +3012,25 @@ export const translations = {
         pricing: 'Planes',
         testimonials: 'Testimonios',
         signIn: 'Iniciar Sesión',
-        getStarted: 'Comenzar Gratis'
+        getStarted: 'Comenzar Gratis',
       },
       hero: {
         badge: 'Diseñado para PyMES Colombianas',
         title: 'Gestiona tu negocio en',
         titleHighlight: 'piloto automático',
-        subtitle: 'La plataforma TODO-EN-UNO para gestionar citas, clientes, empleados, contabilidad y más. Ahorra tiempo, aumenta ingresos y crece sin límites.',
+        subtitle:
+          'La plataforma TODO-EN-UNO para gestionar citas, clientes, empleados, contabilidad y más. Ahorra tiempo, aumenta ingresos y crece sin límites.',
         cta: {
           trial: 'Prueba 30 Días GRATIS',
           pricing: 'Ver Planes y Precios',
           noCreditCard: 'Sin tarjeta de crédito',
-          cancelAnytime: 'Cancela cuando quieras'
+          cancelAnytime: 'Cancela cuando quieras',
         },
         stats: {
           businesses: 'Negocios Activos',
           appointments: 'Citas Agendadas',
-          satisfaction: 'Satisfacción'
-        }
+          satisfaction: 'Satisfacción',
+        },
       },
       dashboard: {
         title: 'Dashboard',
@@ -2942,7 +3041,7 @@ export const translations = {
         client: 'Cliente',
         haircut: 'Corte de cabello',
         confirmed: 'Confirmada',
-        secureData: 'Datos seguros y encriptados'
+        secureData: 'Datos seguros y encriptados',
       },
       features: {
         badge: 'Funcionalidades',
@@ -2951,67 +3050,75 @@ export const translations = {
         list: {
           appointments: {
             title: 'Gestión de Citas',
-            description: 'Calendario inteligente con prevención de conflictos y sincronización con Google Calendar.'
+            description:
+              'Calendario inteligente con prevención de conflictos y sincronización con Google Calendar.',
           },
           reminders: {
             title: 'Recordatorios Automáticos',
-            description: 'WhatsApp, Email y SMS. Reduce no-shows en un 70%. Tus clientes nunca olvidan.'
+            description:
+              'WhatsApp, Email y SMS. Reduce no-shows en un 70%. Tus clientes nunca olvidan.',
           },
           clients: {
             title: 'Gestión de Clientes',
-            description: 'Base de datos completa con historial, notas y análisis de clientes recurrentes.'
+            description:
+              'Base de datos completa con historial, notas y análisis de clientes recurrentes.',
           },
           accounting: {
             title: 'Sistema Contable',
-            description: 'IVA, ICA, Retención. Reportes P&L automáticos. Preparado para DIAN Colombia.'
+            description:
+              'IVA, ICA, Retención. Reportes P&L automáticos. Preparado para DIAN Colombia.',
           },
           mobile: {
             title: 'App Móvil Nativa',
-            description: 'iOS y Android. Gestiona tu negocio desde cualquier lugar, en cualquier momento.'
+            description:
+              'iOS y Android. Gestiona tu negocio desde cualquier lugar, en cualquier momento.',
           },
           jobs: {
             title: 'Portal de Empleos',
-            description: 'Publica vacantes, gestiona aplicaciones y encuentra el talento que necesitas.'
+            description:
+              'Publica vacantes, gestiona aplicaciones y encuentra el talento que necesitas.',
           },
           analytics: {
             title: 'Analytics Avanzados',
-            description: 'Dashboards interactivos, gráficos en tiempo real y reportes exportables.'
+            description: 'Dashboards interactivos, gráficos en tiempo real y reportes exportables.',
           },
           automation: {
             title: 'Automatizaciones',
-            description: 'Confirmaciones, recordatorios, facturas. Todo automático mientras duermes.'
+            description:
+              'Confirmaciones, recordatorios, facturas. Todo automático mientras duermes.',
           },
           security: {
             title: 'Seguridad Total',
-            description: 'Encriptación de datos, backups automáticos y cumplimiento de privacidad.'
-          }
-        }
+            description: 'Encriptación de datos, backups automáticos y cumplimiento de privacidad.',
+          },
+        },
       },
       benefits: {
         badge: 'Beneficios Reales',
         title: 'Recupera hasta $1.5M pesos mensuales en citas perdidas',
-        subtitle: 'No es magia, son datos. Nuestros clientes recuperan en promedio 70% de las citas que antes se perdían por olvidos o cancelaciones.',
+        subtitle:
+          'No es magia, son datos. Nuestros clientes recuperan en promedio 70% de las citas que antes se perdían por olvidos o cancelaciones.',
         stats: {
           noShows: {
             value: '70%',
             label: 'Reducción de No-Shows',
-            description: 'Los recordatorios automáticos funcionan'
+            description: 'Los recordatorios automáticos funcionan',
           },
           timeSaved: {
             value: '8-12h',
             label: 'Tiempo Ahorrado Semanal',
-            description: 'Ya no pierdes tiempo agendando manualmente'
+            description: 'Ya no pierdes tiempo agendando manualmente',
           },
           bookings: {
             value: '35%',
             label: 'Aumento en Reservas',
-            description: 'Tus clientes agendan 24/7, incluso cuando duermes'
+            description: 'Tus clientes agendan 24/7, incluso cuando duermes',
           },
           roi: {
             value: '900%',
             label: 'ROI Promedio',
-            description: 'La inversión se paga sola en el primer mes'
-          }
+            description: 'La inversión se paga sola en el primer mes',
+          },
         },
         cta: 'Empieza a Recuperar Dinero Hoy',
         calculator: {
@@ -3022,13 +3129,14 @@ export const translations = {
           appointmentsRecovered: 'Citas recuperadas (70%)',
           cost: 'Costo de AppointSync',
           netProfit: 'Ganancia Neta',
-          paysSelf: '🎉 La inversión se paga SOLA en el primer mes'
-        }
+          paysSelf: '🎉 La inversión se paga SOLA en el primer mes',
+        },
       },
       pricing: {
         badge: 'Planes y Precios',
         title: 'Precios transparentes. Sin sorpresas.',
-        subtitle: 'Más barato que la competencia. Más funcionalidades. Precio justo para tu negocio.'
+        subtitle:
+          'Más barato que la competencia. Más funcionalidades. Precio justo para tu negocio.',
       },
       testimonials: {
         badge: 'Testimonios',
@@ -3039,34 +3147,35 @@ export const translations = {
             name: 'María González',
             business: 'Salón Glamour - Medellín',
             text: 'No puedo creer que no empecé antes. Mis clientas dicen que se ve súper profesional y yo estoy mucho más tranquila. Recuperé $720.000/mes en citas perdidas.',
-            stat: '900% ROI'
+            stat: '900% ROI',
           },
           carlos: {
             name: 'Dr. Carlos Ramírez',
             business: 'Consultorio Dental SmileCare - Bogotá',
             text: 'Como médico, mi tiempo vale oro. AppointSync me devolvió 10 horas a la semana. Ahora atiendo más pacientes y mi contador está feliz.',
-            stat: '800% ROI'
+            stat: '800% ROI',
           },
           juan: {
             name: 'Juan Martínez',
             business: 'Personal Trainer - Cali',
             text: 'Invertí $29.900 y me cambió la vida. Ahora parezco un negocio profesional. Incluso subí mis precios. Mejor inversión que he hecho.',
-            stat: '2000% ROI'
-          }
-        }
+            stat: '2000% ROI',
+          },
+        },
       },
       cta: {
         title: '¿Listo para transformar tu negocio?',
-        subtitle: 'Únete a más de 800 negocios que ya están ahorrando tiempo y aumentando ingresos con Gestabiz.',
+        subtitle:
+          'Únete a más de 800 negocios que ya están ahorrando tiempo y aumentando ingresos con Gestabiz.',
         buttons: {
           trial: 'Empieza GRATIS por 30 Días',
-          login: 'Ya tengo cuenta'
+          login: 'Ya tengo cuenta',
         },
         benefits: {
           noCreditCard: 'Sin tarjeta de crédito',
           cancelAnytime: 'Cancela cuando quieras',
-          spanishSupport: 'Soporte en español'
-        }
+          spanishSupport: 'Soporte en español',
+        },
       },
       footer: {
         tagline: 'La plataforma #1 de gestión empresarial para PyMES colombianas.',
@@ -3075,25 +3184,25 @@ export const translations = {
           features: 'Características',
           pricing: 'Precios',
           integrations: 'Integraciones',
-          api: 'API'
+          api: 'API',
         },
         resources: {
           title: 'Recursos',
           blog: 'Blog',
           help: 'Ayuda',
           tutorials: 'Tutoriales',
-          contact: 'Contacto'
+          contact: 'Contacto',
         },
         legal: {
           title: 'Legal',
           terms: 'Términos',
           privacy: 'Privacidad',
           cookies: 'Cookies',
-          licenses: 'Licencias'
+          licenses: 'Licencias',
         },
         copyright: '© 2025 Gestabiz. Todos los derechos reservados.',
-        madeIn: 'Hecho con ❤️ en Colombia 🇨🇴'
-      }
+        madeIn: 'Hecho con ❤️ en Colombia 🇨🇴',
+      },
     },
 
     // Admin - Services (preview alt moved into services block to avoid duplicate `admin` keys)
@@ -3304,7 +3413,8 @@ export const translations = {
         storage: 'Archivos',
         verifyAgain: 'Verificar de nuevo',
         lastCheck: 'Última verificación',
-        connectionError: 'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.',
+        connectionError:
+          'No pudimos conectarnos a la plataforma. Por favor intenta de nuevo en unos minutos.',
         persistentIssue: 'Si el problema persiste, contáctanos',
       },
       // Time & Date
@@ -3389,7 +3499,7 @@ export const translations = {
       markAllAsRead: 'Marcar todas como leídas',
       closeNotifications: 'Cerrar notificaciones',
       moreActions: 'Más acciones de notificación',
-      
+
       // NotificationSettings component
       channels: {
         title: 'Canales de notificación',
@@ -3441,7 +3551,7 @@ export const translations = {
       businessRequired: 'La selección de negocio es requerida',
       clientNameRequired: 'El nombre del cliente es requerido',
       dateRequired: 'La fecha es requerida',
-      invalidTimeRange: 'Rango de tiempo inválido'
+      invalidTimeRange: 'Rango de tiempo inválido',
     },
 
     // Authentication
@@ -3500,9 +3610,10 @@ export const translations = {
       or: 'o',
       loginAsDemo: 'Iniciar Sesión como Demo',
       continueBooking: 'Inicia sesión para continuar con tu reserva',
-      accountInactive: 'Tu cuenta está inactiva. No podrás iniciar sesión hasta reactivar tu cuenta',
+      accountInactive:
+        'Tu cuenta está inactiva. No podrás iniciar sesión hasta reactivar tu cuenta',
       mustSignIn: 'Debes iniciar sesión para crear una cita',
-      rememberMe: 'Recuérdame'
+      rememberMe: 'Recuérdame',
     },
 
     // Email Verification Modal
@@ -3550,7 +3661,7 @@ export const translations = {
       settings: 'Configuración',
       profile: 'Perfil',
       business: 'Negocio',
-      employees: 'Empleados'
+      employees: 'Empleados',
     },
 
     // Business Registration
@@ -3564,11 +3675,11 @@ export const translations = {
         info_description: 'Información básica y de contacto de tu negocio',
         settings_title: 'Configuración del Negocio',
         settings_description: 'Ajustes generales para el funcionamiento de tu negocio',
-        updated: 'Información del negocio actualizada'
+        updated: 'Información del negocio actualizada',
       },
       registration: {
         title: 'Registra tu Negocio',
-  business_description: 'Crea el perfil de tu negocio para comenzar a gestionar citas',
+        business_description: 'Crea el perfil de tu negocio para comenzar a gestionar citas',
         basic_info: 'Información Básica',
         business_name: 'Nombre del Negocio',
         category: 'Categoría',
@@ -3606,7 +3717,7 @@ export const translations = {
         validation: {
           required_fields: 'Por favor completa todos los campos requeridos',
           at_least_one_service: 'Por favor agrega al menos un servicio',
-          clientNameRequired: 'El nombre del cliente es obligatorio'
+          clientNameRequired: 'El nombre del cliente es obligatorio',
         },
         placeholders: {
           business_name: 'Ingresa el nombre de tu negocio',
@@ -3622,7 +3733,7 @@ export const translations = {
           longitude: 'Longitud',
           service_name: 'ej. Corte de Cabello',
           service_category: 'ej. Servicios de Cabello',
-          service_description: 'Breve descripción del servicio'
+          service_description: 'Breve descripción del servicio',
         },
         days: {
           monday: 'Lunes',
@@ -3631,8 +3742,8 @@ export const translations = {
           thursday: 'Jueves',
           friday: 'Viernes',
           saturday: 'Sábado',
-          sunday: 'Domingo'
-        }
+          sunday: 'Domingo',
+        },
       },
       categories: {
         beauty_salon: 'Salón de Belleza',
@@ -3646,11 +3757,11 @@ export const translations = {
         education: 'Educación',
         legal: 'Legal',
         real_estate: 'Bienes Raíces',
-        other: 'Otro'
+        other: 'Otro',
       },
       hours: {
-        closed: 'Cerrado'
-      }
+        closed: 'Cerrado',
+      },
     },
 
     // Employee Management
@@ -3672,7 +3783,7 @@ export const translations = {
         no_results_title: 'No se encontraron negocios',
         no_results_description: 'Intenta ajustar tus términos de búsqueda',
         no_businesses_title: 'No hay negocios disponibles',
-        no_businesses_description: 'No hay negocios a los que puedas unirte en este momento'
+        no_businesses_description: 'No hay negocios a los que puedas unirte en este momento',
       },
       requests: {
         pending_title: 'Solicitudes Pendientes',
@@ -3687,20 +3798,23 @@ export const translations = {
         rejected_success: 'Solicitud de empleado rechazada',
         error: 'Error al procesar la solicitud',
         no_requests_title: 'No hay solicitudes de empleados',
-        no_requests_description: 'Cuando los usuarios soliciten unirse a tu negocio, aparecerán aquí',
+        no_requests_description:
+          'Cuando los usuarios soliciten unirse a tu negocio, aparecerán aquí',
         status: {
           pending: 'Pendiente',
           approved: 'Aprobado',
-          rejected: 'Rechazado'
-        }
+          rejected: 'Rechazado',
+        },
       },
       absences: {
         cancelRequest: 'Cancelar Solicitud',
-        cancelRequestConfirm: '¿Está seguro de que desea cancelar esta solicitud de ausencia? Esta acción no se puede deshacer.',
+        cancelRequestConfirm:
+          '¿Está seguro de que desea cancelar esta solicitud de ausencia? Esta acción no se puede deshacer.',
         deleting: 'Eliminando...',
         confirmEndEmployment: 'Confirmar Finalización de Empleo',
-        endEmploymentMessage: '¿Está seguro de que desea finalizar su empleo? Esta acción desactivará su cuenta.'
-      }
+        endEmploymentMessage:
+          '¿Está seguro de que desea finalizar su empleo? Esta acción desactivará su cuenta.',
+      },
     },
 
     // Profile
@@ -3708,8 +3822,8 @@ export const translations = {
       title: 'Perfil',
       personal_info: 'Información Personal',
       name: 'Nombre Completo',
-  username: 'Usuario',
-  username_hint: 'Solo letras, números, puntos y guiones bajos.',
+      username: 'Usuario',
+      username_hint: 'Solo letras, números, puntos y guiones bajos.',
       email: 'Correo Electrónico',
       phone: 'Teléfono',
       avatar: 'Foto de Perfil',
@@ -3722,7 +3836,7 @@ export const translations = {
       save_changes: 'Guardar Cambios',
       saving: 'Guardando...',
       success: 'Perfil actualizado exitosamente',
-      error: 'Error al actualizar el perfil'
+      error: 'Error al actualizar el perfil',
     },
 
     // Settings
@@ -3758,7 +3872,7 @@ export const translations = {
         businessPreferences: 'Preferencias del Negocio',
         employeePreferences: 'Preferencias de Empleado',
         clientPreferences: 'Preferencias de Cliente',
-        dangerZone: 'Zona Peligrosa'
+        dangerZone: 'Zona Peligrosa',
       },
       // Theme section
       themeSection: {
@@ -3769,25 +3883,26 @@ export const translations = {
         themes: {
           light: {
             label: 'Claro',
-            description: 'Interfaz con colores claros'
+            description: 'Interfaz con colores claros',
           },
           dark: {
             label: 'Oscuro',
-            description: 'Interfaz con colores oscuros'
+            description: 'Interfaz con colores oscuros',
           },
           system: {
             label: 'Sistema',
-            description: 'Según preferencias del sistema'
-          }
+            description: 'Según preferencias del sistema',
+          },
         },
         currentTheme: 'Tema actual: {{theme}}',
-        systemThemeNote: 'El tema cambia automáticamente según las preferencias de tu sistema operativo',
-        changeAnytime: 'Puedes cambiar el tema en cualquier momento'
+        systemThemeNote:
+          'El tema cambia automáticamente según las preferencias de tu sistema operativo',
+        changeAnytime: 'Puedes cambiar el tema en cualquier momento',
       },
       // Language section
       languageSection: {
         label: 'Idioma de la interfaz',
-        description: 'Selecciona el idioma de la interfaz'
+        description: 'Selecciona el idioma de la interfaz',
       },
       // Admin Business Preferences
       businessInfo: {
@@ -3796,14 +3911,14 @@ export const translations = {
         tabs: {
           info: 'Información del Negocio',
           notifications: 'Notificaciones del Negocio',
-          tracking: 'Historial'
+          tracking: 'Historial',
         },
         basicInfo: {
           title: 'Información Básica',
           nameLabel: 'Nombre del Negocio *',
           namePlaceholder: 'Ingresa el nombre del negocio',
           descriptionLabel: 'Descripción',
-          descriptionPlaceholder: 'Describe tu negocio...'
+          descriptionPlaceholder: 'Describe tu negocio...',
         },
         contactInfo: {
           title: 'Información de Contacto',
@@ -3812,7 +3927,7 @@ export const translations = {
           emailLabel: 'Correo Electrónico',
           emailPlaceholder: 'contacto@negocio.com',
           websiteLabel: 'Sitio Web',
-          websitePlaceholder: 'https://www.negocio.com'
+          websitePlaceholder: 'https://www.negocio.com',
         },
         addressInfo: {
           title: 'Dirección',
@@ -3821,24 +3936,24 @@ export const translations = {
           cityLabel: 'Ciudad',
           cityPlaceholder: 'Ciudad',
           stateLabel: 'Departamento/Estado',
-          statePlaceholder: 'Departamento o Estado'
+          statePlaceholder: 'Departamento o Estado',
         },
         legalInfo: {
           title: 'Información Legal',
           legalNameLabel: 'Razón Social',
           legalNamePlaceholder: 'Nombre legal del negocio',
           taxIdLabel: 'NIT / Identificación Tributaria',
-          taxIdPlaceholder: 'Número de identificación tributaria'
+          taxIdPlaceholder: 'Número de identificación tributaria',
         },
         operationSettings: {
           title: 'Configuraciones de Operación',
           allowOnlineBooking: 'Permitir reservas online',
           autoConfirm: 'Confirmación automática',
           autoReminders: 'Recordatorios automáticos',
-          showPrices: 'Mostrar precios públicamente'
+          showPrices: 'Mostrar precios públicamente',
         },
         nameRequired: 'El nombre del negocio es requerido',
-        saveSettings: 'Guardar Configuraciones'
+        saveSettings: 'Guardar Configuraciones',
       },
       // Employee Preferences
       employeePrefs: {
@@ -3848,7 +3963,7 @@ export const translations = {
           title: 'Disponibilidad',
           availableForAppointments: 'Disponible para nuevas citas',
           notifyNewAssignments: 'Notificar nuevas asignaciones',
-          appointmentReminders: 'Recordatorios de citas'
+          appointmentReminders: 'Recordatorios de citas',
         },
         schedule: {
           title: 'Mi horario de trabajo',
@@ -3857,12 +3972,12 @@ export const translations = {
           startTime: 'Inicio',
           endTime: 'Fin',
           lunchBreak: 'Almuerzo',
-          saveSchedule: 'Guardar Horarios'
+          saveSchedule: 'Guardar Horarios',
         },
         messages: {
           title: 'Mensajes de Clientes',
           allowMessages: 'Permitir mensajes de clientes',
-          description: 'Cuando esté activado, los clientes pueden enviarte mensajes directos'
+          description: 'Cuando esté activado, los clientes pueden enviarte mensajes directos',
         },
         professionalInfo: {
           title: 'Información Profesional',
@@ -3875,8 +3990,8 @@ export const translations = {
             fullTime: 'Tiempo Completo',
             partTime: 'Medio Tiempo',
             contract: 'Contrato',
-            flexible: 'Flexible'
-          }
+            flexible: 'Flexible',
+          },
         },
         salary: {
           title: 'Expectativas Salariales',
@@ -3884,19 +3999,19 @@ export const translations = {
           maxLabel: 'Salario Máximo Esperado',
           minPlaceholder: 'Monto mínimo',
           maxPlaceholder: 'Monto máximo',
-          invalidRange: 'El salario mínimo no puede ser mayor al máximo'
+          invalidRange: 'El salario mínimo no puede ser mayor al máximo',
         },
         specializations: {
           title: 'Especializaciones',
           noSpecializations: 'No se han agregado especializaciones aún',
           newPlaceholder: 'Nueva especialización',
-          addButton: 'Agregar'
+          addButton: 'Agregar',
         },
         languages: {
           title: 'Idiomas',
           noLanguages: 'No se han agregado idiomas aún',
           newPlaceholder: 'Idioma (ej: Inglés - Avanzado)',
-          addButton: 'Agregar'
+          addButton: 'Agregar',
         },
         certifications: {
           title: 'Certificaciones y Licencias',
@@ -3912,21 +4027,21 @@ export const translations = {
             urlLabel: 'URL de Credencial (opcional)',
             urlPlaceholder: 'https://...',
             cancelButton: 'Cancelar',
-            saveButton: 'Guardar'
+            saveButton: 'Guardar',
           },
           issued: 'Emitida',
           verifyCredential: 'Verificar credencial',
-          deleteButton: 'Eliminar'
+          deleteButton: 'Eliminar',
         },
         links: {
           title: 'Enlaces Profesionales',
           portfolioLabel: 'Portfolio / Sitio Web',
           portfolioPlaceholder: 'https://tu-portfolio.com',
           linkedinLabel: 'LinkedIn',
-          linkedinPlaceholder: 'https://linkedin.com/in/tuperfil'
+          linkedinPlaceholder: 'https://linkedin.com/in/tuperfil',
         },
         saveButton: 'Guardar Preferencias',
-        resetButton: 'Restablecer'
+        resetButton: 'Restablecer',
       },
       // Client Preferences
       clientPrefs: {
@@ -3937,7 +4052,7 @@ export const translations = {
           appointmentReminders: 'Recordatorios de citas',
           emailConfirmation: 'Confirmación por email',
           promotionNotifications: 'Notificaciones de promociones',
-          savePaymentMethods: 'Guardar métodos de pago'
+          savePaymentMethods: 'Guardar métodos de pago',
         },
         advanceTime: {
           title: 'Tiempo de Anticipación Preferido',
@@ -3947,13 +4062,13 @@ export const translations = {
             oneDay: '1 día',
             twoDays: '2 días',
             threeDays: '3 días',
-            oneWeek: '1 semana'
-          }
+            oneWeek: '1 semana',
+          },
         },
         serviceHistory: {
           title: 'Historial de Servicios',
           label: 'Guardar mi historial de servicios para recomendaciones',
-          description: 'Usamos esto para sugerirte servicios similares'
+          description: 'Usamos esto para sugerirte servicios similares',
         },
         paymentMethods: {
           title: 'Métodos de Pago',
@@ -3962,11 +4077,11 @@ export const translations = {
             card: 'Tarjeta de Crédito/Débito',
             pse: 'PSE',
             cash: 'Efectivo',
-            transfer: 'Transferencia bancaria'
+            transfer: 'Transferencia bancaria',
           },
-          addButton: 'Agregar Método de Pago'
+          addButton: 'Agregar Método de Pago',
         },
-        savePreferences: 'Guardar Preferencias'
+        savePreferences: 'Guardar Preferencias',
       },
       // Danger Zone
       dangerZone: {
@@ -3977,35 +4092,38 @@ export const translations = {
           description: 'Suspende temporalmente tu cuenta. Puedes reactivarla en cualquier momento.',
           button: 'Desactivar Cuenta',
           confirmTitle: '¿Estás seguro de que deseas desactivar tu cuenta?',
-          confirmDescription: 'Tu cuenta será suspendida temporalmente. Todos tus datos se preservarán y podrás reactivarla en cualquier momento iniciando sesión nuevamente.',
+          confirmDescription:
+            'Tu cuenta será suspendida temporalmente. Todos tus datos se preservarán y podrás reactivarla en cualquier momento iniciando sesión nuevamente.',
           inputLabel: 'Confirma tu correo para continuar:',
           inputPlaceholder: 'tu@correo.com',
           checkbox: 'Entiendo que mi cuenta será suspendida temporalmente',
           cancel: 'Cancelar',
-          confirm: 'Sí, desactivar mi cuenta'
+          confirm: 'Sí, desactivar mi cuenta',
         },
         delete: {
           title: 'Eliminar Cuenta',
-          description: 'Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.',
+          description:
+            'Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.',
           button: 'Eliminar Cuenta',
           confirmTitle: 'Eliminar cuenta permanentemente',
           warningTitle: 'Advertencia: Esta acción es irreversible',
-          warningDescription: 'Estás a punto de eliminar permanentemente tu cuenta y todos los datos asociados. Esto incluye:',
+          warningDescription:
+            'Estás a punto de eliminar permanentemente tu cuenta y todos los datos asociados. Esto incluye:',
           warningItems: {
             profile: 'Tu perfil e información personal',
             appointments: 'Todas tus citas (pasadas y futuras)',
             history: 'Tu historial completo de servicios',
             payments: 'Historial de pagos y métodos',
-            preferences: 'Todas tus preferencias y configuraciones'
+            preferences: 'Todas tus preferencias y configuraciones',
           },
           confirmText: 'Escribe "DESACTIVAR CUENTA" para confirmar',
           confirmPlaceholder: 'DESACTIVAR CUENTA',
           mustTypeCorrectly: 'Debes escribir "DESACTIVAR CUENTA" para confirmar',
           cancel: 'Cancelar',
           confirm: 'Sí, eliminar permanentemente',
-          processing: 'Procesando...'
-        }
-      }
+          processing: 'Procesando...',
+        },
+      },
     },
 
     // Contabilidad
@@ -4014,7 +4132,7 @@ export const translations = {
       subtitle: 'Gestión completa de impuestos, transacciones y configuración fiscal',
       tabs: {
         taxConfig: 'Configuración Fiscal',
-        transactions: 'Transacciones'
+        transactions: 'Transacciones',
       },
       sections: {
         taxConfig: 'Configuración Fiscal del Negocio',
@@ -4031,30 +4149,31 @@ export const translations = {
         icaSubtitle: 'Tarifas automáticas',
         withholding: 'Retención',
         withholdingValue: '5 Tipos',
-        withholdingSubtitle: 'Profesional, Servicios, etc.'
+        withholdingSubtitle: 'Profesional, Servicios, etc.',
       },
       messages: {
         saved: 'Transacción guardada exitosamente',
-        error: 'Error al guardar transacción'
-      }
+        error: 'Error al guardar transacción',
+      },
     },
 
     // Panel financiero (usado por EnhancedFinancialDashboard)
     financial: {
       dashboard: 'Panel Financiero',
-      dashboardDescription: 'Vista financiera interactiva con gráficas, filtros y exportación a PDF/CSV/Excel',
+      dashboardDescription:
+        'Vista financiera interactiva con gráficas, filtros y exportación a PDF/CSV/Excel',
       filters: 'Filtros:',
       period: {
         lastMonth: 'Último mes',
         last3Months: 'Últimos 3 meses',
         last6Months: 'Últimos 6 meses',
-        lastYear: 'Último año'
+        lastYear: 'Último año',
       },
       tabs: {
         overview: 'Resumen',
         categories: 'Por Categoría',
         locations: 'Por Sede',
-        employees: 'Por Empleado'
+        employees: 'Por Empleado',
       },
       incomeVsExpense: 'Ingresos vs Egresos',
       monthlyTrend: 'Tendencia Mensual',
@@ -4075,17 +4194,17 @@ export const translations = {
         equipment: 'Equipos',
         marketing: 'Marketing',
         maintenance: 'Mantenimiento',
-        tax: 'Impuestos'
-      }
+        tax: 'Impuestos',
+      },
     },
 
     // Dashboard
     dashboard: {
       title: 'Panel Principal',
       welcome: '¡Bienvenido de vuelta, {{name}}!',
-  overview: 'Esto es lo que está pasando con tu negocio hoy',
-  overview_client: 'Aquí puedes ver el estado de tus citas. ¿Quieres agendar una nueva?',
-  schedule_appointment: 'Agendar cita',
+      overview: 'Esto es lo que está pasando con tu negocio hoy',
+      overview_client: 'Aquí puedes ver el estado de tus citas. ¿Quieres agendar una nueva?',
+      schedule_appointment: 'Agendar cita',
       quick_stats: 'Estadísticas Rápidas',
       recent_appointments: 'Citas Recientes',
       upcoming_appointments: 'Próximas Citas',
@@ -4096,7 +4215,8 @@ export const translations = {
       register_business: 'Registrar Negocio',
       join_business: 'Unirse a Negocio',
       no_business_title: 'No hay Negocio Registrado',
-      no_business_description: 'Registra tu negocio o únete a uno existente para comenzar a gestionar citas',
+      no_business_description:
+        'Registra tu negocio o únete a uno existente para comenzar a gestionar citas',
       register_business_description: 'Crea el perfil de tu negocio y comienza a gestionar citas',
       join_business_description: 'Solicita unirte a un negocio existente como empleado',
       todayAppointments: 'Citas de Hoy',
@@ -4116,7 +4236,7 @@ export const translations = {
       avgAppointmentValue: 'Valor Promedio por Cita',
       perAppointment: 'Por Cita',
       weeklyAppointments: 'Citas Semanales',
-      appointmentStatus: 'Estado de Citas'
+      appointmentStatus: 'Estado de Citas',
     },
 
     // Search
@@ -4125,13 +4245,13 @@ export const translations = {
         services: 'Servicios',
         businesses: 'Negocios',
         categories: 'Categorías',
-        users: 'Profesionales'
+        users: 'Profesionales',
       },
       placeholders: {
         services: 'Buscar servicios...',
         businesses: 'Buscar negocios...',
         categories: 'Buscar categorías...',
-        users: 'Buscar profesionales...'
+        users: 'Buscar profesionales...',
       },
       results: {
         viewAll: 'Ver todos los resultados →',
@@ -4143,7 +4263,7 @@ export const translations = {
         serviceCategory: 'Categoría de servicios',
         userNoName: 'Usuario sin nombre',
         independentProfessional: 'Profesional independiente',
-        professionalServices: 'Profesional de servicios'
+        professionalServices: 'Profesional de servicios',
       },
       sorting: {
         relevance: 'Relevancia',
@@ -4151,14 +4271,14 @@ export const translations = {
         distance: 'Más cercanos',
         rating: 'Mejor calificados',
         newest: 'Más nuevos',
-        oldest: 'Más antiguos'
+        oldest: 'Más antiguos',
       },
       filters: {
         filters: 'Filtros',
         filter: 'Filtrar',
         active: 'Activos',
         enableLocation: 'Habilita la ubicación para ver distancias',
-        enableLocationShort: 'Activa ubicación'
+        enableLocationShort: 'Activa ubicación',
       },
       resultsPage: {
         title: 'Resultados de búsqueda',
@@ -4172,9 +4292,9 @@ export const translations = {
           service: 'Servicio',
           business: 'Negocio',
           category: 'Categoría',
-          user: 'Profesional'
-        }
-      }
+          user: 'Profesional',
+        },
+      },
     },
 
     // Appointments
@@ -4229,8 +4349,10 @@ export const translations = {
         cannotVerifyCompatibility: 'No se pudo verificar la compatibilidad del profesional',
         selectDate: 'Por favor selecciona una fecha para la cita',
         selectTime: 'Por favor selecciona una hora para la cita',
-        professionalNotAvailable: 'Este profesional no está disponible para reservas en este momento',
-        professionalCannotAccept: 'Este profesional no puede aceptar citas. Selecciona otro profesional',
+        professionalNotAvailable:
+          'Este profesional no está disponible para reservas en este momento',
+        professionalCannotAccept:
+          'Este profesional no puede aceptar citas. Selecciona otro profesional',
         missingRequiredData: 'Faltan datos requeridos para crear la cita',
         mustLogin: 'Debes iniciar sesión para crear una cita',
         errorCreating: 'Error al crear la cita',
@@ -4267,7 +4389,7 @@ export const translations = {
       frequent_clients: 'Clientes Frecuentes',
       inactive_clients: 'Clientes Inactivos',
       send_whatsapp: 'Enviar WhatsApp',
-      whatsapp_message: '¡Hola! Te extrañamos. ¿Te gustaría agendar una nueva cita?'
+      whatsapp_message: '¡Hola! Te extrañamos. ¿Te gustaría agendar una nueva cita?',
     },
 
     // Services
@@ -4290,7 +4412,7 @@ export const translations = {
       service_updated: 'Servicio actualizado exitosamente',
       service_deleted: 'Servicio eliminado exitosamente',
       no_services: 'No se encontraron servicios',
-      minutes: 'minutos'
+      minutes: 'minutos',
     },
 
     // Reports
@@ -4298,7 +4420,7 @@ export const translations = {
       title: 'Reportes',
       business_overview: 'Resumen del Negocio',
       period_selection: 'Selección de Período',
-  this_quarter: 'Este Trimestre',
+      this_quarter: 'Este Trimestre',
       this_week: 'Esta Semana',
       this_month: 'Este Mes',
       last_year: 'Último Año',
@@ -4319,7 +4441,7 @@ export const translations = {
       client_retention: 'Retención de Clientes',
       new_clients: 'Clientes Nuevos',
       returning_clients: 'Clientes Recurrentes',
-      no_data_available: 'No hay datos disponibles para el período seleccionado'
+      no_data_available: 'No hay datos disponibles para el período seleccionado',
     },
     admin: {
       actions: {
@@ -4335,7 +4457,8 @@ export const translations = {
         updateServiceInfo: 'Actualiza la información del servicio',
         completeServiceInfo: 'Completa la información del nuevo servicio',
         createFirstService: 'Crear Primer Servicio',
-        confirmDeleteService: '¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.',
+        confirmDeleteService:
+          '¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.',
         confirmDeleteLocation: '¿Estás seguro de que quieres eliminar esta ubicación?',
         searchCategory: 'Buscar categoría...',
         searchByName: 'Buscar por nombre...',
@@ -4343,19 +4466,20 @@ export const translations = {
         completeLocationInfo: 'Completa la información de la nueva sede',
         addNewLocation: 'Agrega una nueva ubicación para tu negocio',
         addNewService: 'Agrega un nuevo servicio',
-        exporting: 'Exportando...'
+        exporting: 'Exportando...',
       },
-      
+
       // Admin - Services small extras
       services: {
-        previewAlt: 'Vista previa'
+        previewAlt: 'Vista previa',
       },
-      
+
       billing: {
         securePayment: 'Pago Seguro',
         addPaymentMethod: 'Agregar Método de Pago',
         freePlan: 'Plan Gratuito',
-        freeplanDescription: 'Actualmente estás usando el plan gratuito con funcionalidades básicas',
+        freeplanDescription:
+          'Actualmente estás usando el plan gratuito con funcionalidades básicas',
         currentPlan: 'Plan Actual',
         overduePayment: 'Pago Vencido',
         statusActive: 'Activa',
@@ -4370,12 +4494,15 @@ export const translations = {
         usageMetrics: 'Uso de Recursos',
         monitorUsage: 'Monitorea el uso de tu plan actual',
         cancelSubscriptionTitle: 'Cancelar Suscripción',
-        cancelSubscriptionDescription: 'Lamentamos que te vayas. Por favor cuéntanos por qué cancelas.',
+        cancelSubscriptionDescription:
+          'Lamentamos que te vayas. Por favor cuéntanos por qué cancelas.',
         cancelWhenQuestion: '¿Cuándo quieres cancelar?',
         cancelAtPeriodEnd: 'Al final del período actual',
-        cancelAtPeriodEndDescription: 'Podrás seguir usando el servicio hasta que termine tu período de facturación actual. No se te cobrará nuevamente.',
+        cancelAtPeriodEndDescription:
+          'Podrás seguir usando el servicio hasta que termine tu período de facturación actual. No se te cobrará nuevamente.',
         cancelImmediately: 'Inmediatamente',
-        cancelImmediatelyDescription: 'Tu acceso será revocado de inmediato. Esta acción no se puede deshacer.',
+        cancelImmediatelyDescription:
+          'Tu acceso será revocado de inmediato. Esta acción no se puede deshacer.',
         cancellationReason: 'Razón de cancelación (Opcional)',
         cancellationReasonPlaceholder: 'Ayúdanos a mejorar contándonos por qué cancelas...',
         cancelWarningTitle: 'Ten en cuenta:',
@@ -4406,7 +4533,8 @@ export const translations = {
           normal: 'Normal',
         },
         // Alert descriptions
-        alertDescription: 'Algunos recursos están cerca del límite de tu plan. Considera actualizar para evitar interrupciones.',
+        alertDescription:
+          'Algunos recursos están cerca del límite de tu plan. Considera actualizar para evitar interrupciones.',
         // Export messages
         csvLoading: 'Exportando a CSV...',
         excelLoading: 'Exportando a Excel...',
@@ -4429,37 +4557,38 @@ export const translations = {
           unknown: 'Desconocido',
           active_plural: 'Activos',
           inactive_plural: 'Inactivos',
-          blocked_plural: 'Bloqueados'
+          blocked_plural: 'Bloqueados',
         },
         tabs: {
           all: 'Todos',
           recurring: 'Recurrentes',
           at_risk: 'En Riesgo',
-          lost: 'Perdidos'
+          lost: 'Perdidos',
         },
         empty: {
           title: 'No se encontraron clientes',
           description_search: 'Prueba con otros términos de búsqueda',
-          description_category: 'No hay clientes en esta categoría'
+          description_category: 'No hay clientes en esta categoría',
         },
         badges: {
           total_appointments: 'Total Citas',
-          total_value: 'Valor Total'
+          total_value: 'Valor Total',
         },
         last_appointment_prefix: 'Última cita',
         never: 'Nunca',
         actions: {
           schedule: 'Agendar',
-          contact: 'Contactar'
+          contact: 'Contactar',
         },
         risk: {
           at_risk: 'Cliente en riesgo ({{days}} días)',
-          lost: 'Cliente perdido ({{days}} días)'
+          lost: 'Cliente perdido ({{days}} días)',
         },
         whatsapp: {
           missing: 'Cliente no tiene WhatsApp registrado',
-          message_template: 'Hola {{name}}, esperamos que estés bien. Te esperamos pronto para tu próxima cita.'
-        }
+          message_template:
+            'Hola {{name}}, esperamos que estés bien. Te esperamos pronto para tu próxima cita.',
+        },
       },
       comprehensiveReports: {
         title: 'Reportes Avanzados',
@@ -4470,7 +4599,7 @@ export const translations = {
           revenue: 'Ingresos',
           average: 'Promedio',
           completion_rate: 'Tasa de Finalización',
-          new_in_period: 'nuevos este período'
+          new_in_period: 'nuevos este período',
         },
         tabs: { summary: 'Resumen' },
         descriptions: {
@@ -4479,12 +4608,12 @@ export const translations = {
           peak_hours: 'Los días y horas con más citas programadas',
           employee_performance: 'Estadísticas de productividad y eficiencia',
           top_services: 'Los servicios con mayor demanda y rentabilidad',
-          recurring_clients: 'Análisis de clientes frecuentes y estado de actividad'
+          recurring_clients: 'Análisis de clientes frecuentes y estado de actividad',
         },
         cards: {
           peak_hours: 'Horarios con Mayor Demanda',
           recurring_clients: 'Clientes Recurrentes',
-          client_analysis: 'Análisis de Clientes'
+          client_analysis: 'Análisis de Clientes',
         },
         labels: {
           active_clients: 'Clientes Activos',
@@ -4493,22 +4622,23 @@ export const translations = {
           average_short: 'prom',
           days: 'días',
           at: 'a las',
-          last_visit: 'Última visita'
+          last_visit: 'Última visita',
         },
         status: {
           active: 'Activo',
           at_risk: 'En Riesgo',
-          lost: 'Perdido'
+          lost: 'Perdido',
         },
         whatsapp: {
           missing: 'Este cliente no tiene WhatsApp configurado',
-          message_template: '¡Hola {{name}}! Hemos notado que hace tiempo no vienes a vernos. ¿Te gustaría agendar una nueva cita? ¡Te extrañamos! 😊'
+          message_template:
+            '¡Hola {{name}}! Hemos notado que hace tiempo no vienes a vernos. ¿Te gustaría agendar una nueva cita? ¡Te extrañamos! 😊',
         },
         errors: {
-          generate_failed: 'No se pudieron generar los reportes'
-        }
+          generate_failed: 'No se pudieron generar los reportes',
+        },
       },
-      
+
       // Service Management Actions
       serviceActions: {
         created: 'Servicio creado exitosamente',
@@ -4520,7 +4650,7 @@ export const translations = {
         loadError: 'Error al cargar datos',
         assignError: 'Error al cargar asignaciones',
       },
-      
+
       // Location Management Actions
       locationActions: {
         created: 'Ubicación creada exitosamente',
@@ -4531,7 +4661,7 @@ export const translations = {
         deleteError: 'Error al eliminar ubicación',
         loadError: 'Error al cargar las sedes',
       },
-      
+
       // Role & Permission Actions
       roleActions: {
         modified: 'Rol modificado exitosamente',
@@ -4540,7 +4670,7 @@ export const translations = {
         revokeError: 'Error al revocar rol anterior',
         assignError: 'Error al asignar rol',
       },
-      
+
       // Permission Templates
       templateActions: {
         created: 'Plantilla creada exitosamente',
@@ -4550,7 +4680,7 @@ export const translations = {
         nameRequired: 'El nombre de la plantilla es requerido',
         permissionRequired: 'Debes seleccionar al menos un permiso',
       },
-      
+
       // Audit & Tracking
       auditActions: {
         exported: 'Auditoría exportada exitosamente',
@@ -4584,7 +4714,7 @@ export const translations = {
         subtotalRequired: 'El subtotal debe ser mayor a 0',
       },
 
-      // Location & Service Management  
+      // Location & Service Management
       locationManagement: {
         missingFields: 'Por favor completa todos los campos requeridos',
         locationUpdateSuccess: 'Ubicación actualizada exitosamente',
@@ -4713,8 +4843,6 @@ export const translations = {
         },
       },
 
-      
-
       // Admin actions used across admin screens
       // (merged into admin.actions above to avoid duplicate keys)
 
@@ -4767,10 +4895,30 @@ export const translations = {
         email: 'Email',
       },
 
-      
-
       // Calendar & Appointments
       appointmentCalendar: {
+        title: 'Calendario de Citas',
+        loadingCalendar: 'Cargando calendario...',
+        filters: 'Filtros',
+        clearFilters: 'Limpiar filtros',
+        statusLabel: 'Estado',
+        selectedCount: '{{count}} seleccionados',
+        selectAll: 'Seleccionar Todos',
+        hideServices: 'Ocultar servicios',
+        showServices: 'Ver servicios',
+        locationLabel: 'Sede',
+        serviceLabel: 'Servicio',
+        employeeLabel: 'Profesional',
+        statuses: {
+          pending: 'Pendiente',
+          confirmed: 'Confirmada',
+          cancelled: 'Cancelada',
+          completed: 'Completada',
+        },
+        manage: 'Gestionar',
+        overdueTitle: 'Pendientes de Confirmar ({{count}})',
+        completeButton: 'Completada',
+        noShowButton: 'Sin Asistencia',
         proposalLabel: 'Propuesta (opcional)',
         tipLabel: 'Propina (opcional)',
         markCompleted: 'Marcar como completada',
@@ -4778,18 +4926,50 @@ export const translations = {
         cancelAppointment: 'Cancelar cita',
         notes: 'Notas',
         noNotes: 'Sin notas para esta cita',
+  noServiceName: 'Servicio sin nombre',
+  noClientName: 'Cliente sin nombre',
+  noEmployeeAssigned: 'Sin asignar',
+  noEmployeeName: 'Sin nombre',
         successCompleted: 'Cita marcada como completada',
         successCancelled: 'Cita cancelada exitosamente',
+  noShowMarked: 'Cita marcada como sin asistencia',
+  noShowNote: 'Cliente no se presentó',
         errorCompleting: 'Error al completar la cita',
         errorCancelling: 'Error al cancelar la cita',
         loadDataError: 'Error al cargar los datos',
         errorMarkingNoShow: 'Error al marcar sin asistencia',
       },
+      // Chat
+      chat: {
+        conversations: 'Conversaciones',
+        loading: 'Cargando...',
+        noConversations: {
+          title: 'No hay conversaciones',
+          subtitle: 'Aún no tienes conversaciones activas',
+        },
+        emptyPreview: 'Sin mensajes',
+        youPrefix: 'Tu: ',
+        conversationFallback: 'Conversación',
+        noMessagesPrompt: 'No hay mensajes. ¡Envía el primero!',
+        inputPlaceholder: 'Escribe un mensaje...',
+        send: 'Enviar',
+        loadingConversation: 'Cargando conversación...',
+        userAlt: 'Usuario',
+        fallback: 'Chat',
+        outOfHoursText: 'Fuera de horario laboral',
+        noScheduleSuffix: '(sin horario)',
+        pin: 'Fijar',
+        unpin: 'Desfijar',
+        mute: 'Silenciar',
+        unmute: 'Quitar silencio',
+      },
+
     },
 
     // Calendar
     calendar: {
       title: 'Calendario',
+      hour: 'Hora',
       today: 'Hoy',
       month: 'Mes',
       week: 'Semana',
@@ -4799,7 +4979,7 @@ export const translations = {
       time_slot_available: 'Disponible',
       time_slot_busy: 'Ocupado',
       view_details: 'Ver Detalles',
-      book_appointment: 'Reservar Cita'
+      book_appointment: 'Reservar Cita',
     },
 
     // Locations
@@ -4823,7 +5003,7 @@ export const translations = {
       location_updated: 'Ubicación actualizada exitosamente',
       location_deleted: 'Ubicación eliminada exitosamente',
       no_locations: 'No se encontraron ubicaciones',
-      main_location: 'Ubicación Principal'
+      main_location: 'Ubicación Principal',
     },
 
     reviews: {
@@ -5003,7 +5183,7 @@ export const translations = {
       noResources: 'No hay recursos registrados',
       filterByType: 'Filtrar por tipo',
       allTypes: 'Todos los tipos',
-      
+
       form: {
         name: 'Nombre del Recurso',
         namePlaceholder: 'Ej: Habitación 101, Mesa VIP, Cancha #1',
@@ -5087,8 +5267,10 @@ export const translations = {
 
       testData: {
         title: 'Crear Usuarios de Prueba',
-        description: 'Crea 30 usuarios de ejemplo (10 admin, 10 empleados, 10 clientes) para pruebas',
-        warning: 'Importante: Esta acción requiere permisos de administrador y creará 30 usuarios reales en tu base de datos de Supabase.',
+        description:
+          'Crea 30 usuarios de ejemplo (10 admin, 10 empleados, 10 clientes) para pruebas',
+        warning:
+          'Importante: Esta acción requiere permisos de administrador y creará 30 usuarios reales en tu base de datos de Supabase.',
         willCreate: 'Se crearán:',
         adminUsers: '10 usuarios admin (dueños de negocios)',
         employeeUsers: '10 empleados (para asignar a negocios)',
@@ -5106,7 +5288,8 @@ export const translations = {
         ownerAllPermissions: 'El propietario del negocio tiene todos los permisos automáticamente',
         configurePermissions: 'Configura los permisos detallados para {{name}}',
         cannotEditOwner: 'No se pueden editar permisos del propietario',
-        ownerFullAccess: 'El propietario del negocio siempre tiene acceso completo a todas las funcionalidades.',
+        ownerFullAccess:
+          'El propietario del negocio siempre tiene acceso completo a todas las funcionalidades.',
         selectAll: 'Seleccionar Todos',
         clearAll: 'Limpiar Todos',
         toGrant: 'a otorgar',
@@ -5206,7 +5389,8 @@ export const translations = {
       },
       holidays: {
         title: 'Festivos en el rango',
-        message: 'Los siguientes días son festivos públicos y no se pueden solicitar como ausencia: {{days}}',
+        message:
+          'Los siguientes días son festivos públicos y no se pueden solicitar como ausencia: {{days}}',
         instruction: 'Ajusta tus fechas excluyendo estos días.',
       },
       affected: {
@@ -5243,7 +5427,7 @@ export const translations = {
         subtitle: 'Aprueba o rechaza solicitudes de ausencias y vacaciones de tus empleados',
         tabs: {
           pending: 'Pendientes ({{count}})',
-          history: 'Historial ({{count}})'
+          history: 'Historial ({{count}})',
         },
         empty: {
           noPending: 'No hay solicitudes pendientes',
@@ -5349,7 +5533,8 @@ export const translations = {
           basic: '5% (Productos básicos)',
           general: '19% (General)',
         },
-        infoNote: 'El IVA se calcula sobre el subtotal de cada transacción. Los productos pueden tener tasas diferentes (0%, 5%, 19%).',
+        infoNote:
+          'El IVA se calcula sobre el subtotal de cada transacción. Los productos pueden tener tasas diferentes (0%, 5%, 19%).',
       },
       ica: {
         title: 'ICA',
@@ -5367,7 +5552,8 @@ export const translations = {
         activityType: 'Tipo de Actividad',
         rate: 'Tasa de Retención',
         rateDescription: 'Tasa automática según el tipo de actividad seleccionado',
-        infoNote: 'La retención en la fuente se descuenta del valor a pagar al proveedor y se debe declarar mensualmente ante la DIAN.',
+        infoNote:
+          'La retención en la fuente se descuenta del valor a pagar al proveedor y se debe declarar mensualmente ante la DIAN.',
       },
       summary: {
         title: 'Resumen de Configuración',
@@ -5381,7 +5567,8 @@ export const translations = {
       },
       alerts: {
         simpleRegimeTitle: 'Régimen Simplificado',
-        simpleRegimeDescription: 'En régimen simplificado no se cobra IVA. El ICA puede aplicarse según la ciudad.',
+        simpleRegimeDescription:
+          'En régimen simplificado no se cobra IVA. El ICA puede aplicarse según la ciudad.',
       },
     },
 
@@ -5461,13 +5648,16 @@ export const translations = {
       loading: 'Cargando tus negocios favoritos...',
       errorTitle: 'Error al cargar favoritos',
       emptyTitle: 'No tienes favoritos aún',
-      emptyDescription: 'Marca tus negocios preferidos como favoritos para acceder rápidamente a ellos y reservar citas más fácilmente.',
-      tipHeader: 'Tip: Busca un negocio y haz clic en el ícono de corazón para agregarlo a favoritos',
+      emptyDescription:
+        'Marca tus negocios preferidos como favoritos para acceder rápidamente a ellos y reservar citas más fácilmente.',
+      tipHeader:
+        'Tip: Busca un negocio y haz clic en el ícono de corazón para agregarlo a favoritos',
       bookButton: 'Reservar cita',
       myFavorites: 'Mis Favoritos',
       businessMarked: 'negocio marcado',
       businessesMarked: 'negocios marcados',
-      tipDescription: 'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
+      tipDescription:
+        'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
     },
 
     // City Selector
@@ -5657,7 +5847,8 @@ export const translations = {
     // Cookie Consent
     cookieConsent: {
       title: 'Usamos cookies para mejorar tu experiencia',
-      description: 'Este sitio utiliza cookies analíticas para entender cómo interactúas con nuestra plataforma. No compartimos tus datos con terceros y respetamos tu privacidad.',
+      description:
+        'Este sitio utiliza cookies analíticas para entender cómo interactúas con nuestra plataforma. No compartimos tus datos con terceros y respetamos tu privacidad.',
       reject: 'Rechazar',
       accept: 'Aceptar cookies',
       close: 'Cerrar',
@@ -5714,5 +5905,4 @@ export const translations = {
       professionalSummaryMinLength: 'El resumen profesional debe tener al menos 50 caracteres',
     },
   },
-};
-
+}

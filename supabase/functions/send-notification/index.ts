@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
 import { sendBrevoEmail, createBasicEmailTemplate } from '../_shared/brevo.ts'
@@ -12,33 +12,45 @@ const corsHeaders = {
 }
 
 interface NotificationRequest {
-  type: 'appointment_reminder' | 'appointment_confirmation' | 'appointment_cancellation' | 
-        'appointment_new_client' | 'appointment_new_employee' | 'appointment_new_business' |
-        'email_verification' | 'phone_verification_sms' | 'phone_verification_whatsapp' |
-        'employee_request_new' | 'employee_request_accepted' | 'employee_request_rejected' |
-        'job_vacancy_new' | 'job_application_new' | 'job_application_accepted' | 
-        'job_application_rejected' | 'job_application_interview'
-  
+  type:
+    | 'appointment_reminder'
+    | 'appointment_confirmation'
+    | 'appointment_cancellation'
+    | 'appointment_new_client'
+    | 'appointment_new_employee'
+    | 'appointment_new_business'
+    | 'email_verification'
+    | 'phone_verification_sms'
+    | 'phone_verification_whatsapp'
+    | 'employee_request_new'
+    | 'employee_request_accepted'
+    | 'employee_request_rejected'
+    | 'job_vacancy_new'
+    | 'job_application_new'
+    | 'job_application_accepted'
+    | 'job_application_rejected'
+    | 'job_application_interview'
+
   recipient_user_id?: string
   recipient_email?: string
   recipient_phone?: string
   recipient_whatsapp?: string
   recipient_name?: string
-  
+
   business_id?: string
   appointment_id?: string
-  
+
   data: any // Datos específicos del tipo de notificación
-  
+
   force_channels?: ('email' | 'sms' | 'whatsapp' | 'in_app')[] // Forzar canales específicos
   skip_preferences?: boolean // Ignorar preferencias del usuario (para verificaciones)
-  
+
   // Campos específicos para notificaciones in-app
   action_url?: string // URL de navegación al hacer clic
   priority?: number // -1: low, 0: normal, 1: high, 2: urgent
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -49,16 +61,16 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const request: NotificationRequest = await req.json()
-    
+
     // Determinar canales a usar
     const channels = await determineChannels(supabase, request)
-    
+
     // Preparar contenido de la notificación
     const content = await prepareNotificationContent(request)
-    
+
     // Enviar por cada canal
     const results = []
-    
+
     for (const channel of channels) {
       try {
         let sent = false
@@ -69,11 +81,11 @@ serve(async (req) => {
           case 'email': {
             const emailResult = await sendEmail(request, content)
             sent = emailResult.success
-            externalId = ('messageId' in emailResult) ? emailResult.messageId : null
+            externalId = 'messageId' in emailResult ? emailResult.messageId : null
             errorMsg = emailResult.error || null
             break
           }
-            
+
           case 'sms': {
             const smsResult = await sendSMS(request, content)
             sent = smsResult.success
@@ -81,7 +93,7 @@ serve(async (req) => {
             errorMsg = smsResult.error
             break
           }
-            
+
           case 'whatsapp': {
             const waResult = await sendWhatsApp(request, content)
             sent = waResult.success
@@ -89,7 +101,7 @@ serve(async (req) => {
             errorMsg = waResult.error
             break
           }
-            
+
           case 'in_app': {
             const inAppResult = await sendInAppNotification(supabase, request, content)
             sent = inAppResult.success
@@ -114,14 +126,14 @@ serve(async (req) => {
           sent_at: sent ? new Date().toISOString() : null,
           external_id: externalId,
           error_message: errorMsg,
-          metadata: request.data
+          metadata: request.data,
         })
 
         results.push({
           channel,
           sent,
           externalId,
-          error: errorMsg
+          error: errorMsg,
         })
 
         // Si se envió exitosamente y no requiere fallback, salir
@@ -133,7 +145,7 @@ serve(async (req) => {
         results.push({
           channel,
           sent: false,
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -144,33 +156,29 @@ serve(async (req) => {
         type: request.type,
         channels_attempted: results.length,
         channels_succeeded: results.filter(r => r.sent).length,
-        results
+        results,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error in send-notification:', error)
-    
+
     // Capture error to Sentry
     captureEdgeFunctionError(error as Error, {
       functionName: 'send-notification',
       operation: 'main',
-      extra: { requestBody: await req.clone().text() }
+      extra: { requestBody: await req.clone().text() },
     })
-    
+
     await flushSentry()
-    
-    return new Response(
-      JSON.stringify({ error: (error as Error).message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
-    )
+
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })
 
@@ -184,7 +192,6 @@ async function determineChannels(
   supabase: any,
   request: NotificationRequest
 ): Promise<NotificationChannel[]> {
-  
   // Si se fuerzan canales específicos
   if (request.force_channels && request.force_channels.length > 0) {
     return request.force_channels
@@ -210,7 +217,7 @@ async function determineChannels(
 
     if (userPrefs && userPrefs.notification_preferences) {
       const typePrefs = userPrefs.notification_preferences[request.type]
-      
+
       if (typePrefs) {
         const channels: NotificationChannel[] = []
         // Siempre agregar in_app primero si está habilitado
@@ -218,7 +225,7 @@ async function determineChannels(
         if (typePrefs.email && userPrefs.email_enabled) channels.push('email')
         if (typePrefs.whatsapp && userPrefs.whatsapp_enabled) channels.push('whatsapp')
         if (typePrefs.sms && userPrefs.sms_enabled) channels.push('sms')
-        
+
         if (channels.length > 0) return channels
       }
     }
@@ -243,7 +250,7 @@ async function determineChannels(
           channels.push(channel)
         }
       }
-      
+
       if (channels.length > 0) return channels
     }
   }
@@ -256,65 +263,65 @@ async function prepareNotificationContent(request: NotificationRequest) {
   const templates = {
     appointment_confirmation: {
       subject: '✅ Cita Confirmada',
-      message: `Hola {{name}},\n\nTu cita ha sido confirmada:\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Lugar: {{location}}\n📝 Servicio: {{service}}\n\n¡Te esperamos!`
+      message: `Hola {{name}},\n\nTu cita ha sido confirmada:\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Lugar: {{location}}\n📝 Servicio: {{service}}\n\n¡Te esperamos!`,
     },
     appointment_reminder: {
       subject: '🔔 Recordatorio de Cita',
-      message: `Hola {{name}},\n\nTe recordamos que tienes una cita:\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Lugar: {{location}}\n📝 Servicio: {{service}}\n\n¡Nos vemos pronto!`
+      message: `Hola {{name}},\n\nTe recordamos que tienes una cita:\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Lugar: {{location}}\n📝 Servicio: {{service}}\n\n¡Nos vemos pronto!`,
     },
     appointment_cancellation: {
       subject: '❌ Cita Cancelada',
-      message: `Hola {{name}},\n\nTu cita del {{date}} a las {{time}} ha sido cancelada.\n\nSi deseas reprogramar, contáctanos.`
+      message: `Hola {{name}},\n\nTu cita del {{date}} a las {{time}} ha sido cancelada.\n\nSi deseas reprogramar, contáctanos.`,
     },
     appointment_new_employee: {
       subject: '📅 Nueva Cita Asignada',
-      message: `Hola {{employee_name}},\n\nSe te ha asignado una nueva cita:\n\n👤 Cliente: {{client_name}}\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📝 Servicio: {{service}}`
+      message: `Hola {{employee_name}},\n\nSe te ha asignado una nueva cita:\n\n👤 Cliente: {{client_name}}\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📝 Servicio: {{service}}`,
     },
     appointment_new_business: {
       subject: '🎉 Nueva Cita Agendada',
-      message: `Nueva cita registrada:\n\n👤 Cliente: {{client_name}}\n👨‍💼 Empleado: {{employee_name}}\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📝 Servicio: {{service}}`
+      message: `Nueva cita registrada:\n\n👤 Cliente: {{client_name}}\n👨‍💼 Empleado: {{employee_name}}\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📝 Servicio: {{service}}`,
     },
     employee_request_new: {
       subject: '👔 Nueva Solicitud de Empleado',
-      message: `{{user_name}} desea unirse a tu equipo en {{business_name}}.\n\nRevisa su perfil y responde a la solicitud.`
+      message: `{{user_name}} desea unirse a tu equipo en {{business_name}}.\n\nRevisa su perfil y responde a la solicitud.`,
     },
     employee_request_accepted: {
       subject: '🎉 ¡Solicitud Aceptada!',
-      message: `¡Felicidades {{name}}!\n\nTu solicitud para unirte a {{business_name}} ha sido aceptada.\n\nYa puedes comenzar a gestionar citas.`
+      message: `¡Felicidades {{name}}!\n\nTu solicitud para unirte a {{business_name}} ha sido aceptada.\n\nYa puedes comenzar a gestionar citas.`,
     },
     employee_request_rejected: {
       subject: 'Actualización de Solicitud',
-      message: `Hola {{name}},\n\nLamentamos informarte que tu solicitud para {{business_name}} no fue aceptada en esta ocasión.`
+      message: `Hola {{name}},\n\nLamentamos informarte que tu solicitud para {{business_name}} no fue aceptada en esta ocasión.`,
     },
     job_application_new: {
       subject: '📋 Nueva Aplicación a Vacante',
-      message: `{{user_name}} ha aplicado a la vacante: {{vacancy_title}}\n\nRevisa su perfil y experiencia.`
+      message: `{{user_name}} ha aplicado a la vacante: {{vacancy_title}}\n\nRevisa su perfil y experiencia.`,
     },
     job_application_accepted: {
       subject: '🎉 ¡Aplicación Aceptada!',
-      message: `¡Felicidades {{name}}!\n\nTu aplicación para {{vacancy_title}} en {{business_name}} ha sido aceptada.\n\nNos pondremos en contacto pronto.`
+      message: `¡Felicidades {{name}}!\n\nTu aplicación para {{vacancy_title}} en {{business_name}} ha sido aceptada.\n\nNos pondremos en contacto pronto.`,
     },
     job_application_interview: {
       subject: '📞 Invitación a Entrevista',
-      message: `Hola {{name}},\n\n¡Nos gustó tu perfil!\n\nTe invitamos a una entrevista para {{vacancy_title}}.\n\nFecha: {{date}}\nHora: {{time}}`
+      message: `Hola {{name}},\n\n¡Nos gustó tu perfil!\n\nTe invitamos a una entrevista para {{vacancy_title}}.\n\nFecha: {{date}}\nHora: {{time}}`,
     },
     email_verification: {
       subject: '✉️ Verifica tu Email',
-      message: `Hola {{name}},\n\nPor favor verifica tu email usando este código:\n\n{{code}}\n\nO haz clic en: {{link}}`
+      message: `Hola {{name}},\n\nPor favor verifica tu email usando este código:\n\n{{code}}\n\nO haz clic en: {{link}}`,
     },
     phone_verification_sms: {
       subject: 'Código de Verificación',
-      message: `Tu código de verificación es: {{code}}`
+      message: `Tu código de verificación es: {{code}}`,
     },
     phone_verification_whatsapp: {
       subject: 'Verificación de WhatsApp',
-      message: `Hola {{name}}, tu código de verificación es: {{code}}`
-    }
+      message: `Hola {{name}}, tu código de verificación es: {{code}}`,
+    },
   }
 
   const template = templates[request.type] || {
     subject: 'Notificación',
-    message: JSON.stringify(request.data)
+    message: JSON.stringify(request.data),
   }
 
   // Reemplazar variables
@@ -335,9 +342,9 @@ async function loadHTMLTemplate(templateName: string, data: any): Promise<string
   try {
     // En producción, cargar desde Supabase Storage o archivo local
     const templatePath = `../templates/${templateName}.html`
-    
+
     // Por ahora retornamos null para usar template básico
-    
+
     return null
   } catch (error) {
     console.error(`Error loading template ${templateName}:`, error)
@@ -348,27 +355,31 @@ async function loadHTMLTemplate(templateName: string, data: any): Promise<string
 // Helper para renderizar template HTML con datos
 function renderHTMLTemplate(template: string, data: any): string {
   let rendered = template
-  
+
   // Reemplazar variables {{variable}}
   for (const [key, value] of Object.entries(data)) {
     const placeholder = new RegExp(`{{${key}}}`, 'g')
     rendered = rendered.replace(placeholder, String(value || ''))
   }
-  
+
   // Manejar condicionales {{#if variable}}...{{/if}}
   rendered = rendered.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, variable, content) => {
     return data[variable] ? content : ''
   })
-  
+
   return rendered
 }
 
 function getRecipientContact(request: NotificationRequest, channel: string): string {
   switch (channel) {
-    case 'email': return request.recipient_email || ''
-    case 'sms': return request.recipient_phone || ''
-    case 'whatsapp': return request.recipient_whatsapp || request.recipient_phone || ''
-    default: return ''
+    case 'email':
+      return request.recipient_email || ''
+    case 'sms':
+      return request.recipient_phone || ''
+    case 'whatsapp':
+      return request.recipient_whatsapp || request.recipient_phone || ''
+    default:
+      return ''
   }
 }
 
@@ -379,30 +390,28 @@ async function sendEmail(request: NotificationRequest, content: any) {
 
   try {
     let htmlBody = ''
-    
+
     // Usar template HTML personalizado para job_application_new
-    if (request.type === 'job_application_new' || request.type === 'job_application_accepted' || request.type === 'job_application_interview') {
+    if (
+      request.type === 'job_application_new' ||
+      request.type === 'job_application_accepted' ||
+      request.type === 'job_application_interview'
+    ) {
       // Intentar cargar template HTML personalizado
       const templateName = request.type === 'job_application_new' ? 'job-application' : request.type
       const customTemplate = await loadHTMLTemplate(templateName, request.data)
-      
+
       if (customTemplate) {
         htmlBody = renderHTMLTemplate(customTemplate, request.data)
       } else {
         // Fallback al template básico desde brevo.ts
-        htmlBody = createBasicEmailTemplate(
-          content.subject,
-          content.message
-        )
+        htmlBody = createBasicEmailTemplate(content.subject, content.message)
       }
     } else {
       // Template básico para otros tipos
-      htmlBody = createBasicEmailTemplate(
-        content.subject,
-        content.message
-      )
+      htmlBody = createBasicEmailTemplate(content.subject, content.message)
     }
-    
+
     // Enviar email usando Brevo
     const result = await sendBrevoEmail({
       to: request.recipient_email,
@@ -410,9 +419,9 @@ async function sendEmail(request: NotificationRequest, content: any) {
       htmlBody: htmlBody,
       textBody: content.message,
       fromEmail: 'no-reply@gestabiz.com',
-      fromName: 'Gestabiz'
+      fromName: 'Gestabiz',
     })
-    
+
     return result
   } catch (error) {
     return { success: false, error: error.message }
@@ -420,19 +429,24 @@ async function sendEmail(request: NotificationRequest, content: any) {
 }
 
 // Helper para enviar email con AWS SES usando fetch (sin SDK)
-async function sendSESEmail(params: any, accessKeyId: string, secretAccessKey: string, region: string) {
+async function sendSESEmail(
+  params: any,
+  accessKeyId: string,
+  secretAccessKey: string,
+  region: string
+) {
   try {
     // Preparar el body como query string para SES
     const formData = new URLSearchParams({
-      'Action': 'SendEmail',
-      'Source': params.Source,
+      Action: 'SendEmail',
+      Source: params.Source,
       'Destination.ToAddresses.member.1': params.Destination.ToAddresses[0],
       'Message.Subject.Data': params.Message.Subject.Data,
       'Message.Subject.Charset': 'UTF-8',
       'Message.Body.Text.Data': params.Message.Body.Text.Data,
       'Message.Body.Text.Charset': 'UTF-8',
       'Message.Body.Html.Data': params.Message.Body.Html.Data,
-      'Message.Body.Html.Charset': 'UTF-8'
+      'Message.Body.Html.Charset': 'UTF-8',
     })
 
     // AWS Signature V4
@@ -440,11 +454,11 @@ async function sendSESEmail(params: any, accessKeyId: string, secretAccessKey: s
     const endpoint = `https://${host}/`
     const method = 'POST'
     const service = 'ses'
-    
+
     const now = new Date()
     const dateStamp = now.toISOString().split('T')[0].replace(/-/g, '')
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
-    
+
     // Crear signature
     const canonicalUri = '/'
     const canonicalQuerystring = ''
@@ -452,28 +466,28 @@ async function sendSESEmail(params: any, accessKeyId: string, secretAccessKey: s
     const signedHeaders = 'content-type;host;x-amz-date'
     const payloadHash = await sha256(formData.toString())
     const canonicalRequest = `${method}\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`
-    
+
     const algorithm = 'AWS4-HMAC-SHA256'
     const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`
     const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${await sha256(canonicalRequest)}`
-    
+
     const signingKey = await getSignatureKey(secretAccessKey, dateStamp, region, service)
     const signature = await hmacSha256(signingKey, stringToSign)
-    
+
     const authorizationHeader = `${algorithm} Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
-    
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Amz-Date': amzDate,
-        'Authorization': authorizationHeader
+        Authorization: authorizationHeader,
       },
-      body: formData.toString()
+      body: formData.toString(),
     })
 
     const responseText = await response.text()
-    
+
     if (response.ok) {
       // Extraer MessageId del XML response
       const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/)
@@ -510,7 +524,12 @@ async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promi
     .join('')
 }
 
-async function getSignatureKey(key: string, dateStamp: string, regionName: string, serviceName: string): Promise<Uint8Array> {
+async function getSignatureKey(
+  key: string,
+  dateStamp: string,
+  regionName: string,
+  serviceName: string
+): Promise<Uint8Array> {
   const kDate = await hmacSha256Raw(new TextEncoder().encode('AWS4' + key), dateStamp)
   const kRegion = await hmacSha256Raw(kDate, regionName)
   const kService = await hmacSha256Raw(kRegion, serviceName)
@@ -534,7 +553,7 @@ async function sendSMS(request: NotificationRequest, content: any) {
   const awsAccessKeyId = Deno.env.get('AWS_ACCESS_KEY_ID')
   const awsSecretAccessKey = Deno.env.get('AWS_SECRET_ACCESS_KEY')
   const awsRegion = Deno.env.get('AWS_REGION') || 'us-east-1'
-  
+
   if (!awsAccessKeyId || !awsSecretAccessKey || !request.recipient_phone) {
     return { success: false, error: 'SMS not configured or recipient missing' }
   }
@@ -542,21 +561,21 @@ async function sendSMS(request: NotificationRequest, content: any) {
   try {
     // Preparar mensaje para Amazon SNS
     const message = `${content.subject}\n\n${content.message}`
-    
+
     const params = {
       Message: message,
       PhoneNumber: request.recipient_phone,
       MessageAttributes: {
         'AWS.SNS.SMS.SMSType': {
           DataType: 'String',
-          StringValue: 'Transactional' // Transactional = alta prioridad
-        }
-      }
+          StringValue: 'Transactional', // Transactional = alta prioridad
+        },
+      },
     }
 
     // Usar Amazon SNS para enviar SMS
     const response = await sendSNSMessage(params, awsAccessKeyId, awsSecretAccessKey, awsRegion)
-    
+
     return response
   } catch (error) {
     return { success: false, error: (error as Error).message }
@@ -564,59 +583,64 @@ async function sendSMS(request: NotificationRequest, content: any) {
 }
 
 // Helper para enviar SMS con Amazon SNS
-async function sendSNSMessage(params: any, accessKeyId: string, secretAccessKey: string, region: string) {
+async function sendSNSMessage(
+  params: any,
+  accessKeyId: string,
+  secretAccessKey: string,
+  region: string
+) {
   try {
     const host = `sns.${region}.amazonaws.com`
     const endpoint = `https://${host}/`
     const method = 'POST'
     const service = 'sns'
-    
+
     const now = new Date()
     const dateStamp = now.toISOString().split('T')[0].replace(/-/g, '')
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
-    
+
     // Preparar el body
     const bodyParams = new URLSearchParams({
-      'Action': 'Publish',
-      'Message': params.Message,
-      'PhoneNumber': params.PhoneNumber,
+      Action: 'Publish',
+      Message: params.Message,
+      PhoneNumber: params.PhoneNumber,
       'MessageAttributes.entry.1.Name': 'AWS.SNS.SMS.SMSType',
       'MessageAttributes.entry.1.Value.DataType': 'String',
-      'MessageAttributes.entry.1.Value.StringValue': 'Transactional'
+      'MessageAttributes.entry.1.Value.StringValue': 'Transactional',
     })
-    
+
     const payloadHash = await sha256(bodyParams.toString())
-    
+
     // Crear canonical request
     const canonicalUri = '/'
     const canonicalQuerystring = ''
     const canonicalHeaders = `content-type:application/x-www-form-urlencoded\nhost:${host}\nx-amz-date:${amzDate}\n`
     const signedHeaders = 'content-type;host;x-amz-date'
     const canonicalRequest = `${method}\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`
-    
+
     // Crear string to sign
     const algorithm = 'AWS4-HMAC-SHA256'
     const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`
     const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${await sha256(canonicalRequest)}`
-    
+
     // Calcular signature
     const signingKey = await getSignatureKey(secretAccessKey, dateStamp, region, service)
     const signature = await hmacSha256(signingKey, stringToSign)
-    
+
     const authorizationHeader = `${algorithm} Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
-    
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Amz-Date': amzDate,
-        'Authorization': authorizationHeader
+        Authorization: authorizationHeader,
       },
-      body: bodyParams.toString()
+      body: bodyParams.toString(),
     })
 
     const responseText = await response.text()
-    
+
     if (response.ok) {
       // Extraer MessageId del XML response
       const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/)
@@ -633,37 +657,37 @@ async function sendSNSMessage(params: any, accessKeyId: string, secretAccessKey:
 async function sendWhatsApp(request: NotificationRequest, content: any) {
   const whatsappToken = Deno.env.get('WHATSAPP_ACCESS_TOKEN')
   const whatsappPhoneNumberId = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID')
-  
+
   const recipient = request.recipient_whatsapp || request.recipient_phone
-  
+
   if (!whatsappToken || !whatsappPhoneNumberId || !recipient) {
     return { success: false, error: 'WhatsApp not configured or recipient missing' }
   }
 
   try {
     const cleanedPhone = recipient.replace(/[^\d+]/g, '')
-    
+
     const response = await fetch(
       `https://graph.facebook.com/v18.0/${whatsappPhoneNumberId}/messages`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${whatsappToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${whatsappToken}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           messaging_product: 'whatsapp',
           to: cleanedPhone,
           type: 'text',
           text: {
-            body: `*${content.subject}*\n\n${content.message}`
-          }
-        })
+            body: `*${content.subject}*\n\n${content.message}`,
+          },
+        }),
       }
     )
 
     const data = await response.json()
-    
+
     if (response.ok) {
       return { success: true, id: data.messages?.[0]?.id }
     } else {
@@ -674,11 +698,7 @@ async function sendWhatsApp(request: NotificationRequest, content: any) {
   }
 }
 
-async function sendInAppNotification(
-  supabase: any,
-  request: NotificationRequest,
-  content: any
-) {
+async function sendInAppNotification(supabase: any, request: NotificationRequest, content: any) {
   if (!request.recipient_user_id) {
     return { success: false, error: 'Recipient user_id required for in-app notifications' }
   }
@@ -691,7 +711,7 @@ async function sendInAppNotification(
     // Preparar data JSONB (incluir appointment_id si existe)
     const notificationData = {
       ...request.data,
-      ...(request.appointment_id && { appointment_id: request.appointment_id })
+      ...(request.appointment_id && { appointment_id: request.appointment_id }),
     }
 
     // Llamar a la función SQL helper para crear la notificación
@@ -703,7 +723,7 @@ async function sendInAppNotification(
       p_data: notificationData,
       p_business_id: request.business_id || null,
       p_priority: request.priority ?? 0,
-      p_action_url: request.action_url || null
+      p_action_url: request.action_url || null,
     })
 
     if (error) {

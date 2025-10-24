@@ -1,11 +1,11 @@
 /**
  * MercadoPago Gateway Implementation
- * 
+ *
  * Implementación de IPaymentGateway para MercadoPago
  * Soporta pagos con tarjeta de crédito, débito, efectivo (Oxxo, Baloto, etc.)
- * 
+ *
  * Documentación oficial: https://www.mercadopago.com.ar/developers
- * 
+ *
  * Flujo:
  * 1. createCheckoutSession() → Llama Edge Function mercadopago-create-preference
  * 2. Edge Function genera Preference con items, payer, back_urls
@@ -13,25 +13,25 @@
  * 4. Usuario paga en MercadoPago
  * 5. MercadoPago envía notificación IPN a mercadopago-webhook
  * 6. Webhook valida y actualiza subscription en Supabase
- * 
+ *
  * Variables requeridas:
  * - VITE_MERCADOPAGO_PUBLIC_KEY (frontend)
  * - MERCADOPAGO_ACCESS_TOKEN (Edge Functions)
- * 
+ *
  * @author GitHub Copilot
  * @date 2025-10-17
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
-  IPaymentGateway,
-  SubscriptionDashboard,
+  CancelSubscriptionParams,
   CheckoutSessionParams,
   CheckoutSessionResult,
-  UpdateSubscriptionParams,
-  CancelSubscriptionParams,
-  SubscriptionInfo,
+  IPaymentGateway,
   PlanType,
+  SubscriptionDashboard,
+  SubscriptionInfo,
+  UpdateSubscriptionParams,
 } from './PaymentGateway'
 import { PaymentGatewayError } from './PaymentGateway'
 
@@ -57,9 +57,12 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async createCheckoutSession(params: CheckoutSessionParams): Promise<CheckoutSessionResult> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('mercadopago-create-preference', {
-        body: params,
-      })
+      const { data, error } = await this.supabase.functions.invoke(
+        'mercadopago-create-preference',
+        {
+          body: params,
+        }
+      )
       if (error) throw new PaymentGatewayError(error.message, 'checkout_error')
       return {
         sessionUrl: data.init_point,
@@ -77,9 +80,12 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async updateSubscription(params: UpdateSubscriptionParams): Promise<SubscriptionInfo> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('mercadopago-manage-subscription', {
-        body: { action: 'update', ...params },
-      })
+      const { data, error } = await this.supabase.functions.invoke(
+        'mercadopago-manage-subscription',
+        {
+          body: { action: 'update', ...params },
+        }
+      )
       if (error) throw new PaymentGatewayError(error.message, 'update_subscription_error')
       return data.subscription as SubscriptionInfo
     } catch (error) {
@@ -94,9 +100,12 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async cancelSubscription(params: CancelSubscriptionParams): Promise<SubscriptionInfo> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('mercadopago-manage-subscription', {
-        body: { action: 'cancel', ...params },
-      })
+      const { data, error } = await this.supabase.functions.invoke(
+        'mercadopago-manage-subscription',
+        {
+          body: { action: 'cancel', ...params },
+        }
+      )
       if (error) throw new PaymentGatewayError(error.message, 'cancel_subscription_error')
       return data.subscription as SubscriptionInfo
     } catch (error) {
@@ -111,9 +120,12 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async pauseSubscription(businessId: string): Promise<SubscriptionInfo> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('mercadopago-manage-subscription', {
-        body: { action: 'pause', businessId },
-      })
+      const { data, error } = await this.supabase.functions.invoke(
+        'mercadopago-manage-subscription',
+        {
+          body: { action: 'pause', businessId },
+        }
+      )
       if (error) throw new PaymentGatewayError(error.message, 'pause_subscription_error')
       return data.subscription as SubscriptionInfo
     } catch (error) {
@@ -128,9 +140,12 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async resumeSubscription(businessId: string): Promise<SubscriptionInfo> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('mercadopago-manage-subscription', {
-        body: { action: 'resume', businessId },
-      })
+      const { data, error } = await this.supabase.functions.invoke(
+        'mercadopago-manage-subscription',
+        {
+          body: { action: 'resume', businessId },
+        }
+      )
       if (error) throw new PaymentGatewayError(error.message, 'resume_subscription_error')
       return data.subscription as SubscriptionInfo
     } catch (error) {
@@ -145,9 +160,12 @@ export class MercadoPagoGateway implements IPaymentGateway {
 
   async reactivateSubscription(businessId: string): Promise<SubscriptionInfo> {
     try {
-      const { data, error } = await this.supabase.functions.invoke('mercadopago-manage-subscription', {
-        body: { action: 'reactivate', businessId },
-      })
+      const { data, error } = await this.supabase.functions.invoke(
+        'mercadopago-manage-subscription',
+        {
+          body: { action: 'reactivate', businessId },
+        }
+      )
       if (error) throw new PaymentGatewayError(error.message, 'reactivate_subscription_error')
       return data.subscription as SubscriptionInfo
     } catch (error) {
@@ -160,7 +178,10 @@ export class MercadoPagoGateway implements IPaymentGateway {
     }
   }
 
-  async validatePlanLimit(businessId: string, resource: string): Promise<{
+  async validatePlanLimit(
+    businessId: string,
+    resource: string
+  ): Promise<{
     allowed: boolean
     current: number
     limit: number

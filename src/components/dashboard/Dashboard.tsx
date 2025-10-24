@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { User, DashboardStats, Appointment } from '@/types'
+import { Appointment, DashboardStats, User } from '@/types'
 import { useLanguage } from '@/contexts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calendar, Users, Clock, Plus, TrendingUp } from 'lucide-react'
+import { Calendar, Clock, Plus, TrendingUp, Users } from 'lucide-react'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import AppointmentsView from './AppointmentsView'
 import ClientsView from './ClientsView'
@@ -22,14 +22,14 @@ interface DashboardProps {
   roleSelector?: React.ReactNode // Para pasar al ClientDashboard
 }
 
-function Dashboard({ 
-  user, 
-  appointments, 
-  stats, 
-  loading, 
-  refetch, 
+function Dashboard({
+  user,
+  appointments,
+  stats,
+  loading,
+  refetch,
   createAppointment,
-  roleSelector
+  roleSelector,
 }: Readonly<DashboardProps>) {
   const { t } = useLanguage()
   const [showAppointmentForm, setShowAppointmentForm] = useState(false)
@@ -37,9 +37,7 @@ function Dashboard({
 
   // Calculate today's appointments
   const today = new Date().toISOString().split('T')[0]
-  const todayAppointments = appointments.filter(apt => 
-    apt.start_time.split('T')[0] === today
-  )
+  const todayAppointments = appointments.filter(apt => apt.start_time.split('T')[0] === today)
 
   // Calculate upcoming appointments (next 7 days)
   const nextWeek = new Date()
@@ -53,9 +51,9 @@ function Dashboard({
     {
       title: t('dashboard.todayAppointments'),
       value: todayAppointments.length.toString(),
-  icon: Calendar,
+      icon: Calendar,
       color: 'text-blue-600',
-      change: '+12%'
+      change: '+12%',
     },
     // Métricas de negocio (ocultas para cliente)
     {
@@ -63,27 +61,25 @@ function Dashboard({
       value: stats?.total_appointments?.toString() || '0',
       icon: Users,
       color: 'text-green-600',
-      change: '+8%'
+      change: '+8%',
     },
     {
       title: t('dashboard.monthlyRevenue'),
       value: `$${stats?.revenue_this_month?.toFixed(0) || '0'}`,
-  icon: Calendar,
+      icon: Calendar,
       color: 'text-purple-600',
-      change: '+15%'
+      change: '+15%',
     },
     {
       title: t('dashboard.upcomingWeek'),
       value: upcomingAppointments.length.toString(),
-  icon: Clock,
+      icon: Clock,
       color: 'text-orange-600',
-      change: '+5%'
-    }
+      change: '+5%',
+    },
   ]
 
-  const dashboardStats = user.activeRole === 'client'
-    ? [allStats[0], allStats[3]]
-    : allStats
+  const dashboardStats = user.activeRole === 'client' ? [allStats[0], allStats[3]] : allStats
 
   if (loading) {
     return (
@@ -100,7 +96,7 @@ function Dashboard({
   // El RoleSelector ahora está en el Layout, no lo pasamos aquí
   if (user.activeRole === 'client') {
     return (
-      <ClientDashboard 
+      <ClientDashboard
         user={user}
         appointments={appointments}
         createAppointment={createAppointment}
@@ -119,9 +115,7 @@ function Dashboard({
             {t('dashboard.welcome', { name: user.name })}
           </h1>
           <div className="flex items-center gap-4 mt-2">
-            <p className="text-muted-foreground">
-              {t('dashboard.overview')}
-            </p>
+            <p className="text-muted-foreground">{t('dashboard.overview')}</p>
           </div>
         </div>
         <Button onClick={() => setShowAppointmentForm(true)}>
@@ -135,22 +129,27 @@ function Dashboard({
         <Card className="bg-muted/30 border-dashed border-2">
           <CardContent className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div>
-              <p className="font-medium">{t('business.cta.no_business') || 'Aún no tienes un negocio creado.'}</p>
-              <p className="text-sm text-muted-foreground">{t('business.cta.create_hint') || 'Crea tu negocio para empezar a agendar y gestionar tus citas.'}</p>
+              <p className="font-medium">
+                {t('business.cta.no_business') || 'Aún no tienes un negocio creado.'}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t('business.cta.create_hint') ||
+                  'Crea tu negocio para empezar a agendar y gestionar tus citas.'}
+              </p>
             </div>
-            <Button onClick={() => setShowBusinessRegistration(true)}>{t('business.cta.create_button') || 'Crear negocio'}</Button>
+            <Button onClick={() => setShowBusinessRegistration(true)}>
+              {t('business.cta.create_button') || 'Crear negocio'}
+            </Button>
           </CardContent>
         </Card>
       )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {dashboardStats.map((stat) => (
+        {dashboardStats.map(stat => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </CardHeader>
             <CardContent>
@@ -178,11 +177,7 @@ function Dashboard({
 
         {user.activeRole !== 'client' && (
           <TabsContent value="overview" className="space-y-4">
-            <DashboardOverview 
-              user={user}
-              appointments={appointments}
-              stats={stats}
-            />
+            <DashboardOverview user={user} appointments={appointments} stats={stats} />
           </TabsContent>
         )}
 
@@ -209,8 +204,12 @@ function Dashboard({
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-background rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-auto">
             <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold">{t('business.registration.title') || 'Registrar Negocio'}</h3>
-              <Button variant="ghost" onClick={() => setShowBusinessRegistration(false)}>✕</Button>
+              <h3 className="text-lg font-semibold">
+                {t('business.registration.title') || 'Registrar Negocio'}
+              </h3>
+              <Button variant="ghost" onClick={() => setShowBusinessRegistration(false)}>
+                ✕
+              </Button>
             </div>
             <div className="p-4">
               <BusinessRegistration
@@ -230,4 +229,3 @@ function Dashboard({
 }
 
 export default Dashboard
-

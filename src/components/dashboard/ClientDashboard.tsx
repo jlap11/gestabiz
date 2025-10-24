@@ -1,20 +1,20 @@
-import { useState, useMemo } from 'react'
-import { User, Appointment } from '@/types'
+import { useMemo, useState } from 'react'
+import { Appointment, User } from '@/types'
 import { useLanguage } from '@/contexts'
 import { useKV } from '@/lib/useKV'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import supabase from '@/lib/supabase'
-import { 
-  Calendar, 
-  Clock, 
+import {
+  Calendar,
+  CalendarCheck,
+  CalendarPlus,
+  CalendarX,
+  Clock,
   MapPin,
   Plus,
-  CalendarCheck,
-  CalendarX,
   Trash2,
-  CalendarPlus
 } from 'lucide-react'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import { toast } from 'sonner'
@@ -26,16 +26,16 @@ interface ClientDashboardProps {
   refetch: () => void
 }
 
-export default function ClientDashboard({ 
-  user, 
+export default function ClientDashboard({
+  user,
   appointments,
   createAppointment,
-  refetch
+  refetch,
 }: Readonly<ClientDashboardProps>) {
   const { t } = useLanguage()
   const [showAppointmentForm, setShowAppointmentForm] = useState(false)
-  const [localAppointments, setLocalAppointments] = useKV<Appointment[]>(
-    `appointments-${user.business_id || user.id}`, 
+  const [localAppointments] = useKV<Appointment[]>(
+    `appointments-${user.business_id || user.id}`,
     []
   )
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -76,10 +76,10 @@ export default function ClientDashboard({
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString)
-      return date.toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric', 
-        year: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
       })
     } catch {
       return dateString
@@ -89,10 +89,10 @@ export default function ClientDashboard({
   const formatTime = (dateString: string) => {
     try {
       const date = new Date(dateString)
-      return date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
         minute: '2-digit',
-        hour12: true 
+        hour12: true,
       })
     } catch {
       return ''
@@ -101,29 +101,29 @@ export default function ClientDashboard({
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; className: string }> = {
-      confirmed: { 
-        label: t('clientDashboard.status.confirmed'), 
-        className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-medium' 
+      confirmed: {
+        label: t('clientDashboard.status.confirmed'),
+        className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 font-medium',
       },
-      pending: { 
-        label: t('clientDashboard.status.pending'), 
-        className: 'bg-amber-500/20 text-amber-400 border-amber-500/30 font-medium' 
+      pending: {
+        label: t('clientDashboard.status.pending'),
+        className: 'bg-amber-500/20 text-amber-400 border-amber-500/30 font-medium',
       },
-      completed: { 
-        label: t('clientDashboard.status.completed'), 
-        className: 'bg-blue-500/20 text-blue-400 border-blue-500/30 font-medium' 
+      completed: {
+        label: t('clientDashboard.status.completed'),
+        className: 'bg-blue-500/20 text-blue-400 border-blue-500/30 font-medium',
       },
-      cancelled: { 
-        label: t('clientDashboard.status.cancelled'), 
-        className: 'bg-red-500/20 text-red-400 border-red-500/30 font-medium' 
+      cancelled: {
+        label: t('clientDashboard.status.cancelled'),
+        className: 'bg-red-500/20 text-red-400 border-red-500/30 font-medium',
       },
-      scheduled: { 
-        label: t('clientDashboard.status.scheduled'), 
-        className: 'bg-primary/20 text-primary border-primary/30 font-medium' 
+      scheduled: {
+        label: t('clientDashboard.status.scheduled'),
+        className: 'bg-primary/20 text-primary border-primary/30 font-medium',
       },
-      'no-show': { 
-        label: t('clientDashboard.status.noShow'), 
-        className: 'bg-muted text-muted-foreground border-border font-medium' 
+      'no-show': {
+        label: t('clientDashboard.status.noShow'),
+        className: 'bg-muted text-muted-foreground border-border font-medium',
       },
     }
 
@@ -135,18 +135,16 @@ export default function ClientDashboard({
     )
   }
 
-
-
   // Función para confirmar cita
   const handleConfirmAppointment = async (appointmentId: string) => {
     setConfirmingId(appointmentId)
-    
+
     try {
       const { error } = await supabase
         .from('appointments')
-        .update({ 
+        .update({
           status: 'confirmed',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', appointmentId)
 
@@ -171,7 +169,7 @@ export default function ClientDashboard({
       // Crear URL de Google Calendar
       const startDate = new Date(appointment.start_time)
       const endDate = new Date(appointment.end_time || appointment.start_time)
-      
+
       // Si no hay end_time, agregar 1 hora por defecto
       if (!appointment.end_time) {
         endDate.setHours(endDate.getHours() + 1)
@@ -204,12 +202,9 @@ export default function ClientDashboard({
     }
 
     setDeletingId(appointmentId)
-    
+
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', appointmentId)
+      const { error } = await supabase.from('appointments').delete().eq('id', appointmentId)
 
       if (error) {
         toast.error(t('clientDashboard.deleteError'))
@@ -229,7 +224,7 @@ export default function ClientDashboard({
   return (
     <div className="min-h-screen bg-background">
       {/* Header is now in Layout - no need to render here */}
-      
+
       <div className="px-6 py-8 space-y-8">
         {/* Upcoming Appointments Section */}
         <section>
@@ -248,11 +243,13 @@ export default function ClientDashboard({
             <Card className="border-dashed border-2 border-border bg-transparent">
               <CardContent className="py-16 text-center">
                 <CalendarX className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2 text-foreground">{t('clientDashboard.noUpcoming')}</h3>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">
+                  {t('clientDashboard.noUpcoming')}
+                </h3>
                 <p className="text-muted-foreground mb-6">
                   {t('clientDashboard.bookFirstAppointment')}
                 </p>
-                <Button 
+                <Button
                   onClick={() => setShowAppointmentForm(true)}
                   className="bg-primary hover:bg-primary/90"
                 >
@@ -263,8 +260,8 @@ export default function ClientDashboard({
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upcomingAppointments.map((appointment) => (
-                <Card 
+              {upcomingAppointments.map(appointment => (
+                <Card
                   key={appointment.id}
                   className="bg-card border-border hover:border-primary/20 transition-all"
                 >
@@ -279,7 +276,8 @@ export default function ClientDashboard({
 
                     {/* Provider */}
                     <div className="text-muted-foreground mb-4">
-                      {t('clientDashboard.with')} {appointment.employee_name || t('clientDashboard.table.provider')}
+                      {t('clientDashboard.with')}{' '}
+                      {appointment.employee_name || t('clientDashboard.table.provider')}
                     </div>
 
                     {/* Date, Time, Location */}
@@ -302,13 +300,19 @@ export default function ClientDashboard({
 
                     {/* Action Icons */}
                     <div className="flex gap-3 pt-4 border-t border-border">
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="text-muted-foreground hover:text-green-500 hover:bg-muted"
                         onClick={() => handleConfirmAppointment(appointment.id)}
-                        disabled={confirmingId === appointment.id || appointment.status === 'confirmed'}
-                        title={appointment.status === 'confirmed' ? t('clientDashboard.alreadyConfirmed') : t('clientDashboard.confirmButton')}
+                        disabled={
+                          confirmingId === appointment.id || appointment.status === 'confirmed'
+                        }
+                        title={
+                          appointment.status === 'confirmed'
+                            ? t('clientDashboard.alreadyConfirmed')
+                            : t('clientDashboard.confirmButton')
+                        }
                       >
                         {confirmingId === appointment.id ? (
                           <span className="animate-spin">⏳</span>
@@ -316,8 +320,8 @@ export default function ClientDashboard({
                           <CalendarCheck className="h-5 w-5" />
                         )}
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="text-muted-foreground hover:text-blue-500 hover:bg-muted"
                         onClick={() => handleAddToGoogleCalendar(appointment)}
@@ -325,8 +329,8 @@ export default function ClientDashboard({
                       >
                         <CalendarPlus className="h-5 w-5" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="icon"
                         className="text-muted-foreground hover:text-red-500 hover:bg-muted"
                         onClick={() => handleDeleteAppointment(appointment.id)}
@@ -381,11 +385,8 @@ export default function ClientDashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {pastAppointments.map((appointment) => (
-                        <tr 
-                          key={appointment.id}
-                          className="hover:bg-muted transition-colors"
-                        >
+                      {pastAppointments.map(appointment => (
+                        <tr key={appointment.id} className="hover:bg-muted transition-colors">
                           <td className="px-6 py-4">
                             <div className="font-medium text-foreground">
                               {appointment.title || t('clientDashboard.appointment')}
@@ -393,7 +394,8 @@ export default function ClientDashboard({
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-foreground/90">
-                              {formatDate(appointment.start_time)}, {formatTime(appointment.start_time)}
+                              {formatDate(appointment.start_time)},{' '}
+                              {formatTime(appointment.start_time)}
                             </div>
                           </td>
                           <td className="px-6 py-4 text-sm text-foreground/90">
@@ -404,15 +406,15 @@ export default function ClientDashboard({
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
-                              <Button 
-                                variant="link" 
+                              <Button
+                                variant="link"
                                 size="sm"
                                 className="text-[#8B5CF6] hover:text-[#a78bfa] font-semibold p-0 h-auto"
                               >
                                 {t('clientDashboard.rebook')}
                               </Button>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteAppointment(appointment.id)}
                                 disabled={deletingId === appointment.id}
@@ -435,7 +437,7 @@ export default function ClientDashboard({
 
                 {/* Mobile Cards - Shown on Mobile Only */}
                 <div className="md:hidden p-3 space-y-3">
-                  {pastAppointments.map((appointment) => (
+                  {pastAppointments.map(appointment => (
                     <Card key={appointment.id} className="p-4 bg-muted/30">
                       <div className="space-y-3">
                         {/* Service Title */}
@@ -453,7 +455,10 @@ export default function ClientDashboard({
 
                         {/* Provider */}
                         <div className="text-sm text-foreground/70">
-                          <span className="font-medium">{t('clientDashboard.table.provider')}:</span> {appointment.employee_name || t('clientDashboard.table.provider')}
+                          <span className="font-medium">
+                            {t('clientDashboard.table.provider')}:
+                          </span>{' '}
+                          {appointment.employee_name || t('clientDashboard.table.provider')}
                         </div>
 
                         {/* Location */}
@@ -464,15 +469,15 @@ export default function ClientDashboard({
 
                         {/* Actions */}
                         <div className="flex gap-2 pt-2 border-t border-border">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             className="flex-1 min-h-[44px] text-[#8B5CF6] hover:text-[#a78bfa] border-[#8B5CF6]"
                           >
                             {t('clientDashboard.rebook')}
                           </Button>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleDeleteAppointment(appointment.id)}
                             disabled={deletingId === appointment.id}
@@ -503,8 +508,8 @@ export default function ClientDashboard({
         businessId={user.business_id || ''}
         userId={user.id}
         onSuccess={() => {
-          refetch(); // Recargar citas después de crear una nueva
-          setShowAppointmentForm(false);
+          refetch() // Recargar citas después de crear una nueva
+          setShowAppointmentForm(false)
         }}
       />
     </div>

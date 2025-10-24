@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -18,7 +18,7 @@ interface BusinessInactivityStats {
   }
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -45,7 +45,8 @@ serve(async (req) => {
     // Get all active businesses
     const { data: businesses, error: businessesError } = await supabase
       .from('businesses')
-      .select(`
+      .select(
+        `
         id,
         name,
         owner_id,
@@ -59,7 +60,8 @@ serve(async (req) => {
           full_name,
           email
         )
-      `)
+      `
+      )
       .order('last_activity_at', { ascending: true })
 
     if (businessesError) {
@@ -77,13 +79,17 @@ serve(async (req) => {
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
 
     for (const business of businesses || []) {
-      const lastActivity = business.last_activity_at ? new Date(business.last_activity_at) : new Date(business.created_at)
+      const lastActivity = business.last_activity_at
+        ? new Date(business.last_activity_at)
+        : new Date(business.created_at)
       const createdAt = new Date(business.created_at)
       const hasFirstClient = business.first_client_at !== null
 
       // Rule 1: Deactivate if inactive for 30+ days
       if (business.is_active && lastActivity < thirtyDaysAgo) {
-        const daysInactive = Math.floor((now.getTime() - lastActivity.getTime()) / (24 * 60 * 60 * 1000))
+        const daysInactive = Math.floor(
+          (now.getTime() - lastActivity.getTime()) / (24 * 60 * 60 * 1000)
+        )
 
         // Deactivate business
         const { error: deactivateError } = await supabase
@@ -120,8 +126,10 @@ serve(async (req) => {
 
       // Rule 2: Delete if 1 year old without any clients (with 7-day warning)
       if (!hasFirstClient && createdAt < oneYearAgo) {
-        const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (24 * 60 * 60 * 1000))
-        
+        const daysSinceCreation = Math.floor(
+          (now.getTime() - createdAt.getTime()) / (24 * 60 * 60 * 1000)
+        )
+
         // Check if we already sent a warning (stored in metadata or separate table)
         const { data: existingWarning } = await supabase
           .from('notifications')
@@ -160,7 +168,9 @@ serve(async (req) => {
         } else {
           // Warning was already sent, check if 7 days have passed
           const warningDate = new Date(existingWarning.created_at)
-          const daysSinceWarning = Math.floor((now.getTime() - warningDate.getTime()) / (24 * 60 * 60 * 1000))
+          const daysSinceWarning = Math.floor(
+            (now.getTime() - warningDate.getTime()) / (24 * 60 * 60 * 1000)
+          )
 
           if (daysSinceWarning >= 7) {
             // Delete business and all related data
@@ -192,29 +202,28 @@ serve(async (req) => {
     console.log('Business inactivity check completed:', stats)
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         message: 'Business inactivity check completed',
         stats,
         timestamp: now.toISOString(),
       }),
-      { 
+      {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Error checking business inactivity:', error)
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message,
       }),
-      { 
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
   }
@@ -273,7 +282,7 @@ async function sendDeactivationEmail(apiKey: string, business: any, daysInactive
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -352,7 +361,7 @@ async function sendDeletionWarningEmail(apiKey: string, business: any, daysSince
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -418,7 +427,7 @@ async function sendDeletionConfirmationEmail(apiKey: string, business: any) {
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

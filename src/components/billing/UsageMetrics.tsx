@@ -3,7 +3,7 @@
 // Shows resource usage vs plan limits
 
 import React from 'react'
-import { AlertTriangle, TrendingUp, MapPin, Users, Briefcase, Calendar } from 'lucide-react'
+import { AlertTriangle, Briefcase, Calendar, MapPin, TrendingUp, Users } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -53,23 +53,27 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
       return <Badge variant="destructive">{t('billing.statusBadge.critical')}</Badge>
     }
     if (percentage >= 80) {
-      return <Badge variant="secondary" className="bg-yellow-500 text-yellow-950">{t('billing.statusBadge.warning')}</Badge>
+      return (
+        <Badge variant="secondary" className="bg-yellow-500 text-yellow-950">
+          {t('billing.statusBadge.warning')}
+        </Badge>
+      )
     }
     return <Badge variant="default">{t('billing.statusBadge.normal')}</Badge>
   }
 
   // Calculate alerts
-  const alerts = usage.filter((item) => item.percentage >= 80)
-  const hasUnlimited = usage.some((item) => item.limit === -1)
+  const alerts = usage.filter(item => item.percentage >= 80)
+  const hasUnlimited = usage.some(item => item.limit === -1)
 
   // Project when limits will be reached (simple linear projection)
   const getProjection = (current: number, limit: number, percentage: number) => {
     if (limit === -1) return null // Unlimited
     if (percentage < 50) return null // Not close enough to project
-    
+
     const remaining = limit - current
     const daysToLimit = Math.ceil((remaining / current) * 30) // Assuming 30 days period
-    
+
     if (daysToLimit <= 0) return 'Límite alcanzado'
     if (daysToLimit <= 7) return `~${daysToLimit} días para límite`
     if (daysToLimit <= 30) return `~${Math.ceil(daysToLimit / 7)} semanas para límite`
@@ -83,7 +87,8 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
         <div>
           <h2 className="text-2xl font-bold">{t('billing.usageMetrics')}</h2>
           <p className="text-muted-foreground">
-            {t('billing.planLabel')} {planName} • {t('billing.cycleLabel')} {billingCycle === 'monthly' ? t('billing.billingMonthly') : t('billing.billingAnnual')}
+            {t('billing.planLabel')} {planName} • {t('billing.cycleLabel')}{' '}
+            {billingCycle === 'monthly' ? t('billing.billingMonthly') : t('billing.billingAnnual')}
           </p>
         </div>
         {alerts.length > 0 && (
@@ -98,15 +103,13 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>{t('billing.upcomingLimits')}</AlertTitle>
-          <AlertDescription>
-            {t('billing.alertDescription')}
-          </AlertDescription>
+          <AlertDescription>{t('billing.alertDescription')}</AlertDescription>
         </Alert>
       )}
 
       {/* Usage Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        {usage.map((item) => {
+        {usage.map(item => {
           const projection = getProjection(item.current_count, item.limit, item.percentage)
           const isUnlimited = item.limit === -1
 
@@ -132,14 +135,15 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
                     {/* Progress Bar */}
                     <div className="space-y-2">
                       <div className="relative">
-                        <Progress 
-                          value={item.percentage} 
-                          className="h-3"
-                        />
+                        <Progress value={item.percentage} className="h-3" />
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{item.percentage.toFixed(0)}% usado</span>
-                        <span className="font-medium">{item.limit - item.current_count} disponibles</span>
+                        <span className="text-muted-foreground">
+                          {item.percentage.toFixed(0)}% usado
+                        </span>
+                        <span className="font-medium">
+                          {item.limit - item.current_count} disponibles
+                        </span>
                       </div>
                     </div>
 
@@ -159,8 +163,9 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
                       <Alert variant="destructive" className="mt-4">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription className="text-xs">
-                          Has alcanzado el {item.percentage.toFixed(0)}% del límite. 
-                          Actualiza tu plan para seguir agregando {getResourceName(item.resource_type).toLowerCase()}.
+                          Has alcanzado el {item.percentage.toFixed(0)}% del límite. Actualiza tu
+                          plan para seguir agregando{' '}
+                          {getResourceName(item.resource_type).toLowerCase()}.
                         </AlertDescription>
                       </Alert>
                     )}
@@ -197,19 +202,19 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
           <div className="grid gap-4 md:grid-cols-3">
             <div>
               <div className="text-2xl font-bold">
-                {usage.filter((item) => item.percentage >= 80 && item.limit !== -1).length}
+                {usage.filter(item => item.percentage >= 80 && item.limit !== -1).length}
               </div>
               <p className="text-sm text-muted-foreground">Recursos en advertencia</p>
             </div>
             <div>
               <div className="text-2xl font-bold">
-                {usage.filter((item) => item.limit === -1).length}
+                {usage.filter(item => item.limit === -1).length}
               </div>
               <p className="text-sm text-muted-foreground">Recursos ilimitados</p>
             </div>
             <div>
               <div className="text-2xl font-bold">
-                {usage.filter((item) => item.percentage < 50 && item.limit !== -1).length}
+                {usage.filter(item => item.percentage < 50 && item.limit !== -1).length}
               </div>
               <p className="text-sm text-muted-foreground">Recursos disponibles</p>
             </div>
@@ -229,7 +234,8 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
                 <h3 className="font-semibold mb-1">¡Capacidad Ilimitada!</h3>
                 <p className="text-sm text-muted-foreground">
                   Tu plan {planName} incluye recursos ilimitados para escalar sin límites.
-                  {alerts.length > 0 && ' Algunos recursos aún tienen límites - considera actualizar si necesitas más.'}
+                  {alerts.length > 0 &&
+                    ' Algunos recursos aún tienen límites - considera actualizar si necesitas más.'}
                 </p>
               </div>
             </div>

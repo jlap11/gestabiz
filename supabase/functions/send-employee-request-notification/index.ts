@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -10,7 +10,7 @@ interface EmployeeRequestNotification {
   request_id: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -31,7 +31,8 @@ serve(async (req) => {
     // Get request details with business and user information
     const { data: request, error: requestError } = await supabase
       .from('employee_requests')
-      .select(`
+      .select(
+        `
         *,
         business:businesses!employee_requests_business_id_fkey (
           id,
@@ -46,7 +47,8 @@ serve(async (req) => {
           email,
           phone
         )
-      `)
+      `
+      )
       .eq('id', request_id)
       .single()
 
@@ -67,18 +69,18 @@ serve(async (req) => {
 
     // Email service configuration (using Resend)
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    
+
     if (!resendApiKey) {
       console.warn('RESEND_API_KEY not configured, skipping email notification')
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           message: 'Email service not configured',
-          request_id 
+          request_id,
         }),
-        { 
+        {
           status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       )
     }
@@ -117,31 +119,39 @@ serve(async (req) => {
           <td style="padding: 8px 0; font-weight: bold;">📧 Email:</td>
           <td style="padding: 8px 0;">${request.user.email}</td>
         </tr>
-        ${request.user.phone ? `
+        ${
+          request.user.phone
+            ? `
         <tr>
           <td style="padding: 8px 0; font-weight: bold;">📱 Teléfono:</td>
           <td style="padding: 8px 0;">${request.user.phone}</td>
         </tr>
-        ` : ''}
+        `
+            : ''
+        }
         <tr>
           <td style="padding: 8px 0; font-weight: bold;">🔑 Código usado:</td>
           <td style="padding: 8px 0;"><code style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">${request.invitation_code}</code></td>
         </tr>
         <tr>
           <td style="padding: 8px 0; font-weight: bold;">📅 Fecha:</td>
-          <td style="padding: 8px 0;">${new Date(request.created_at).toLocaleString('es-ES', { 
-            dateStyle: 'full', 
-            timeStyle: 'short' 
+          <td style="padding: 8px 0;">${new Date(request.created_at).toLocaleString('es-ES', {
+            dateStyle: 'full',
+            timeStyle: 'short',
           })}</td>
         </tr>
       </table>
       
-      ${request.message ? `
+      ${
+        request.message
+          ? `
       <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
         <p style="margin: 0; font-weight: bold; color: #667eea;">💬 Mensaje del solicitante:</p>
         <p style="margin: 10px 0 0 0; font-style: italic;">"${request.message}"</p>
       </div>
-      ` : ''}
+      `
+          : ''
+      }
     </div>
     
     <div style="text-align: center; margin: 30px 0;">
@@ -176,7 +186,7 @@ serve(async (req) => {
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -209,29 +219,28 @@ serve(async (req) => {
     })
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Email notification sent successfully',
         email_id: resendData.id,
-        request_id 
+        request_id,
       }),
-      { 
+      {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Error sending employee request notification:', error)
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message,
       }),
-      { 
+      {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
   }

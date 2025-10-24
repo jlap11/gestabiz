@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { Search, Building2, Briefcase, Tag, User, ChevronDown, Loader2 } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Briefcase, Building2, ChevronDown, Loader2, Search, Tag, User } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,7 @@ const searchTypeIconConfig = {
   services: Briefcase,
   businesses: Building2,
   categories: Tag,
-  users: User
+  users: User,
 }
 
 export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarProps) {
@@ -60,23 +60,25 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const performSearch = useCallback(async (term: string, type: SearchType) => {
-    if (!term || term.length < 2) {
-      setResults([])
-      setIsSearching(false)
-      return
-    }
+  const performSearch = useCallback(
+    async (term: string, type: SearchType) => {
+      if (!term || term.length < 2) {
+        setResults([])
+        setIsSearching(false)
+        return
+      }
 
-    setIsSearching(true)
+      setIsSearching(true)
 
-    try {
-      let data: SearchResult[] = []
+      try {
+        let data: SearchResult[] = []
 
-      switch (type) {
-        case 'services': {
-          const { data: servicesData, error } = await supabase
-            .from('services')
-            .select(`
+        switch (type) {
+          case 'services': {
+            const { data: servicesData, error } = await supabase
+              .from('services')
+              .select(
+                `
               id,
               name,
               description,
@@ -84,27 +86,29 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                 id,
                 name
               )
-            `)
-            .ilike('name', `%${term}%`)
-            .eq('is_active', true)
-            .limit(5)
+            `
+              )
+              .ilike('name', `%${term}%`)
+              .eq('is_active', true)
+              .limit(5)
 
-          if (error) throw error
+            if (error) throw error
 
-          data = (servicesData || []).map((service: any) => ({
-            id: service.id,
-            name: service.name,
-            type: 'services' as SearchType,
-            subtitle: service.business?.name || t('search.results.independentService'),
-            category: service.description
-          }))
-          break
-        }
+            data = (servicesData || []).map((service: any) => ({
+              id: service.id,
+              name: service.name,
+              type: 'services' as SearchType,
+              subtitle: service.business?.name || t('search.results.independentService'),
+              category: service.description,
+            }))
+            break
+          }
 
-        case 'businesses': {
-          const { data: businessesData, error } = await supabase
-            .from('businesses')
-            .select(`
+          case 'businesses': {
+            const { data: businessesData, error } = await supabase
+              .from('businesses')
+              .select(
+                `
               id,
               name,
               description,
@@ -116,47 +120,49 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                 name,
                 city
               )
-            `)
-            .ilike('name', `%${term}%`)
-            .eq('is_active', true)
-            .limit(5)
+            `
+              )
+              .ilike('name', `%${term}%`)
+              .eq('is_active', true)
+              .limit(5)
 
-          if (error) throw error
+            if (error) throw error
 
-          data = (businessesData || []).map((business: any) => ({
-            id: business.id,
-            name: business.name,
-            type: 'businesses' as SearchType,
-            subtitle: business.category?.name || t('search.results.noCategory'),
-            location: business.locations?.[0]?.city || t('search.results.locationNotSpecified')
-          }))
-          break
-        }
+            data = (businessesData || []).map((business: any) => ({
+              id: business.id,
+              name: business.name,
+              type: 'businesses' as SearchType,
+              subtitle: business.category?.name || t('search.results.noCategory'),
+              location: business.locations?.[0]?.city || t('search.results.locationNotSpecified'),
+            }))
+            break
+          }
 
-        case 'categories': {
-          const { data: categoriesData, error } = await supabase
-            .from('business_categories')
-            .select('id, name, description')
-            .ilike('name', `%${term}%`)
-            .eq('is_active', true)
-            .limit(5)
+          case 'categories': {
+            const { data: categoriesData, error } = await supabase
+              .from('business_categories')
+              .select('id, name, description')
+              .ilike('name', `%${term}%`)
+              .eq('is_active', true)
+              .limit(5)
 
-          if (error) throw error
+            if (error) throw error
 
-          data = (categoriesData || []).map((category: any) => ({
-            id: category.id,
-            name: category.name,
-            type: 'categories' as SearchType,
-            subtitle: category.description || t('search.results.serviceCategory')
-          }))
-          break
-        }
+            data = (categoriesData || []).map((category: any) => ({
+              id: category.id,
+              name: category.name,
+              type: 'categories' as SearchType,
+              subtitle: category.description || t('search.results.serviceCategory'),
+            }))
+            break
+          }
 
-        case 'users': {
-          // Search for users who are employees (have services)
-          const { data: usersData, error } = await supabase
-            .from('profiles')
-            .select(`
+          case 'users': {
+            // Search for users who are employees (have services)
+            const { data: usersData, error } = await supabase
+              .from('profiles')
+              .select(
+                `
               id,
               full_name,
               bio,
@@ -165,33 +171,38 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                   name
                 )
               )
-            `)
-            .ilike('full_name', `%${term}%`)
-            .not('business_employees', 'is', null)
-            .limit(5)
+            `
+              )
+              .ilike('full_name', `%${term}%`)
+              .not('business_employees', 'is', null)
+              .limit(5)
 
-          if (error) throw error
+            if (error) throw error
 
-          data = (usersData || []).map((user: any) => ({
-            id: user.id,
-            name: user.full_name || t('search.results.userNoName'),
-            type: 'users' as SearchType,
-            subtitle: user.business_employees?.[0]?.business?.name || t('search.results.independentProfessional'),
-            category: user.bio || t('search.results.professionalServices')
-          }))
-          break
+            data = (usersData || []).map((user: any) => ({
+              id: user.id,
+              name: user.full_name || t('search.results.userNoName'),
+              type: 'users' as SearchType,
+              subtitle:
+                user.business_employees?.[0]?.business?.name ||
+                t('search.results.independentProfessional'),
+              category: user.bio || t('search.results.professionalServices'),
+            }))
+            break
+          }
         }
-      }
 
-      setResults(data)
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error searching:', error)
-      setResults([])
-    } finally {
-      setIsSearching(false)
-    }
-  }, [t])
+        setResults(data)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error searching:', error)
+        setResults([])
+      } finally {
+        setIsSearching(false)
+      }
+    },
+    [t]
+  )
 
   // Debounced search
   useEffect(() => {
@@ -263,7 +274,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44 sm:w-48">
-            {(Object.keys(searchTypeIconConfig) as SearchType[]).map((type) => {
+            {(Object.keys(searchTypeIconConfig) as SearchType[]).map(type => {
               const TypeIcon = searchTypeIconConfig[type]
               const isActive = type === searchType
               return (
@@ -271,8 +282,8 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                   key={type}
                   onClick={() => handleSearchTypeChange(type)}
                   className={cn(
-                    "gap-2 cursor-pointer",
-                    isActive && "bg-accent text-accent-foreground"
+                    'gap-2 cursor-pointer',
+                    isActive && 'bg-accent text-accent-foreground'
                   )}
                 >
                   <TypeIcon className="h-4 w-4" />
@@ -306,7 +317,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
         <div className="absolute top-full mt-2 sm:mt-3 left-0 right-0 w-full bg-card border border-border rounded-lg shadow-xl z-50 max-h-[70vh] sm:max-h-[32rem] overflow-y-auto">
           {results.length > 0 ? (
             <>
-              {results.map((result) => {
+              {results.map(result => {
                 const ResultIcon = searchTypeIconConfig[result.type]
                 return (
                   <button
@@ -336,7 +347,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                   </button>
                 )
               })}
-              
+
               {/* View More Button - Mobile Optimized */}
               <button
                 onClick={handleViewMore}

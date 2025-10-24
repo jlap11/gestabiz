@@ -20,7 +20,10 @@ import EditAppointmentScreen from './src/screens/EditAppointmentScreen'
 // Services
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
 import { supabase } from './src/lib/supabase'
-import { registerForPushNotificationsAsync, setupNotificationHandlers } from './src/services/notificationService'
+import {
+  registerForPushNotificationsAsync,
+  setupNotificationHandlers,
+} from './src/services/notificationService'
 
 // Icons (you'll need to install @expo/vector-icons)
 import { Ionicons } from '@expo/vector-icons'
@@ -42,10 +45,10 @@ const Tab = createBottomTabNavigator()
 
 function AuthStack() {
   return (
-    <Stack.Navigator 
+    <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#f8f9fa' }
+        cardStyle: { backgroundColor: '#f8f9fa' },
       }}
     >
       <Stack.Screen name="Auth" component={AuthScreen} />
@@ -66,18 +69,18 @@ function AppointmentStack() {
         },
       }}
     >
-      <Stack.Screen 
-        name="AppointmentList" 
+      <Stack.Screen
+        name="AppointmentList"
         component={AppointmentListScreen}
         options={{ title: 'Appointments' }}
       />
-      <Stack.Screen 
-        name="CreateAppointment" 
+      <Stack.Screen
+        name="CreateAppointment"
         component={CreateAppointmentScreen}
         options={{ title: 'New Appointment' }}
       />
-      <Stack.Screen 
-        name="EditAppointment" 
+      <Stack.Screen
+        name="EditAppointment"
         component={EditAppointmentScreen}
         options={{ title: 'Edit Appointment' }}
       />
@@ -140,15 +143,14 @@ function AppNavigator() {
       try {
         // Set up notification handlers
         setupNotificationHandlers()
-        
+
         // Register for push notifications
         if (user) {
           await registerForPushNotificationsAsync()
         }
-        
+
         // Load any cached data
         // await loadCachedData()
-        
       } catch (e) {
         console.warn('Error during app preparation:', e)
       } finally {
@@ -166,11 +168,7 @@ function AppNavigator() {
     return null // Show splash screen
   }
 
-  return (
-    <NavigationContainer>
-      {user ? <MainTabs /> : <AuthStack />}
-    </NavigationContainer>
-  )
+  return <NavigationContainer>{user ? <MainTabs /> : <AuthStack />}</NavigationContainer>
 }
 
 export default function App() {

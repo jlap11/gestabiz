@@ -1,18 +1,18 @@
 /**
  * useSubscription Hook
- * 
+ *
  * Hook de React para gestionar suscripciones
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { getPaymentGateway } from '../lib/payments/PaymentGatewayFactory'
 import type {
-  SubscriptionDashboard,
-  CheckoutSessionParams,
-  UpdateSubscriptionParams,
-  CancelSubscriptionParams,
-  PlanType,
   BillingCycle,
+  CancelSubscriptionParams,
+  CheckoutSessionParams,
+  PlanType,
+  SubscriptionDashboard,
+  UpdateSubscriptionParams,
 } from '../lib/payments/PaymentGateway'
 import { useAppState } from '../contexts/AppStateContext'
 import { logger } from '../lib/logger'
@@ -22,7 +22,7 @@ export function useSubscription(businessId: string | null) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { showToast } = useAppState()
-  
+
   // Obtener gateway configurado (Stripe o PayU)
   const paymentGateway = getPaymentGateway()
 
@@ -45,7 +45,7 @@ export function useSubscription(businessId: string | null) {
         component: 'useSubscription',
         operation: 'loadDashboard',
         businessId,
-      });
+      })
       showToast(message, 'error')
     } finally {
       setIsLoading(false)
@@ -53,110 +53,109 @@ export function useSubscription(businessId: string | null) {
   }, [businessId, showToast])
 
   // Crear sesión de checkout
-  const createCheckout = useCallback(async (
-    planType: PlanType,
-    billingCycle: BillingCycle,
-    discountCode?: string
-  ) => {
-    if (!businessId) {
-      throw new Error('Business ID is required')
-    }
-
-    try {
-      const params: CheckoutSessionParams = {
-        businessId,
-        planType,
-        billingCycle,
-        discountCode,
-        successUrl: `${window.location.origin}/dashboard/billing?payment=success`,
-        cancelUrl: `${window.location.origin}/pricing?payment=canceled`,
+  const createCheckout = useCallback(
+    async (planType: PlanType, billingCycle: BillingCycle, discountCode?: string) => {
+      if (!businessId) {
+        throw new Error('Business ID is required')
       }
 
-      const result = await paymentGateway.createCheckoutSession(params)
-      
-      // Redirigir a Stripe Checkout
-      window.location.href = result.sessionUrl
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error creating checkout'
-      logger.error('Payment gateway checkout creation failed', err as Error, {
-        component: 'useSubscription',
-        operation: 'createCheckout',
-        businessId,
-        planType,
-        billingCycle,
-      });
-      showToast(message, 'error')
-      throw err
-    }
-  }, [businessId, showToast])
+      try {
+        const params: CheckoutSessionParams = {
+          businessId,
+          planType,
+          billingCycle,
+          discountCode,
+          successUrl: `${window.location.origin}/dashboard/billing?payment=success`,
+          cancelUrl: `${window.location.origin}/pricing?payment=canceled`,
+        }
+
+        const result = await paymentGateway.createCheckoutSession(params)
+
+        // Redirigir a Stripe Checkout
+        window.location.href = result.sessionUrl
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error creating checkout'
+        logger.error('Payment gateway checkout creation failed', err as Error, {
+          component: 'useSubscription',
+          operation: 'createCheckout',
+          businessId,
+          planType,
+          billingCycle,
+        })
+        showToast(message, 'error')
+        throw err
+      }
+    },
+    [businessId, showToast]
+  )
 
   // Actualizar plan
-  const updatePlan = useCallback(async (
-    newPlanType: PlanType,
-    newBillingCycle: BillingCycle
-  ) => {
-    if (!businessId) {
-      throw new Error('Business ID is required')
-    }
-
-    try {
-      const params: UpdateSubscriptionParams = {
-        businessId,
-        newPlanType,
-        newBillingCycle,
+  const updatePlan = useCallback(
+    async (newPlanType: PlanType, newBillingCycle: BillingCycle) => {
+      if (!businessId) {
+        throw new Error('Business ID is required')
       }
 
-      await paymentGateway.updateSubscription(params)
-      showToast('Plan actualizado exitosamente', 'success')
-      
-      // Recargar dashboard
-      await loadDashboard()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error updating plan'
-      logger.error('Subscription plan update failed', err as Error, {
-        component: 'useSubscription',
-        operation: 'updatePlan',
-        businessId,
-        newPlanType,
-        newBillingCycle,
-      });
-      showToast(message, 'error')
-      throw err
-    }
-  }, [businessId, showToast, loadDashboard])
+      try {
+        const params: UpdateSubscriptionParams = {
+          businessId,
+          newPlanType,
+          newBillingCycle,
+        }
+
+        await paymentGateway.updateSubscription(params)
+        showToast('Plan actualizado exitosamente', 'success')
+
+        // Recargar dashboard
+        await loadDashboard()
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error updating plan'
+        logger.error('Subscription plan update failed', err as Error, {
+          component: 'useSubscription',
+          operation: 'updatePlan',
+          businessId,
+          newPlanType,
+          newBillingCycle,
+        })
+        showToast(message, 'error')
+        throw err
+      }
+    },
+    [businessId, showToast, loadDashboard]
+  )
 
   // Cancelar suscripción
-  const cancelSubscription = useCallback(async (
-    cancelAtPeriodEnd = true,
-    cancellationReason?: string
-  ) => {
-    if (!businessId) {
-      throw new Error('Business ID is required')
-    }
-
-    try {
-      const params: CancelSubscriptionParams = {
-        businessId,
-        cancelAtPeriodEnd,
-        cancellationReason,
+  const cancelSubscription = useCallback(
+    async (cancelAtPeriodEnd = true, cancellationReason?: string) => {
+      if (!businessId) {
+        throw new Error('Business ID is required')
       }
 
-      await paymentGateway.cancelSubscription(params)
-      showToast(
-        cancelAtPeriodEnd
-          ? 'Suscripción cancelada al final del período'
-          : 'Suscripción cancelada inmediatamente',
-        'success'
-      )
-      
-      // Recargar dashboard
-      await loadDashboard()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error canceling subscription'
-      showToast(message, 'error')
-      throw err
-    }
-  }, [businessId, showToast, loadDashboard])
+      try {
+        const params: CancelSubscriptionParams = {
+          businessId,
+          cancelAtPeriodEnd,
+          cancellationReason,
+        }
+
+        await paymentGateway.cancelSubscription(params)
+        showToast(
+          cancelAtPeriodEnd
+            ? 'Suscripción cancelada al final del período'
+            : 'Suscripción cancelada inmediatamente',
+          'success'
+        )
+
+        // Recargar dashboard
+        await loadDashboard()
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error canceling subscription'
+        showToast(message, 'error')
+        throw err
+      }
+    },
+    [businessId, showToast, loadDashboard]
+  )
 
   // Pausar suscripción
   const pauseSubscription = useCallback(async () => {
@@ -210,58 +209,60 @@ export function useSubscription(businessId: string | null) {
   }, [businessId, showToast, loadDashboard])
 
   // Validar límite de plan
-  const validateLimit = useCallback(async (resource: string) => {
-    if (!businessId) {
-      throw new Error('Business ID is required')
-    }
-
-    try {
-      const result = await paymentGateway.validatePlanLimit(businessId, resource)
-      
-      if (!result.allowed) {
-        showToast(
-          result.message || `Límite alcanzado: ${result.current}/${result.limit} ${resource}`,
-          'warning'
-        )
+  const validateLimit = useCallback(
+    async (resource: string) => {
+      if (!businessId) {
+        throw new Error('Business ID is required')
       }
-      
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error validating limit'
-      showToast(message, 'error')
-      throw err
-    }
-  }, [businessId, showToast])
+
+      try {
+        const result = await paymentGateway.validatePlanLimit(businessId, resource)
+
+        if (!result.allowed) {
+          showToast(
+            result.message || `Límite alcanzado: ${result.current}/${result.limit} ${resource}`,
+            'warning'
+          )
+        }
+
+        return result
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error validating limit'
+        showToast(message, 'error')
+        throw err
+      }
+    },
+    [businessId, showToast]
+  )
 
   // Aplicar código de descuento
-  const applyDiscount = useCallback(async (
-    code: string,
-    planType: PlanType,
-    amount: number
-  ) => {
-    if (!businessId) {
-      throw new Error('Business ID is required')
-    }
-
-    try {
-      const result = await paymentGateway.applyDiscountCode(businessId, code, planType, amount)
-      
-      if (result.isValid) {
-        showToast(
-          `Código aplicado: ${code}. Descuento: $${result.discountAmount.toLocaleString()} COP`,
-          'success'
-        )
-      } else {
-        showToast(result.message || 'Código de descuento inválido', 'error')
+  const applyDiscount = useCallback(
+    async (code: string, planType: PlanType, amount: number) => {
+      if (!businessId) {
+        throw new Error('Business ID is required')
       }
-      
-      return result
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error applying discount'
-      showToast(message, 'error')
-      throw err
-    }
-  }, [businessId, showToast])
+
+      try {
+        const result = await paymentGateway.applyDiscountCode(businessId, code, planType, amount)
+
+        if (result.isValid) {
+          showToast(
+            `Código aplicado: ${code}. Descuento: $${result.discountAmount.toLocaleString()} COP`,
+            'success'
+          )
+        } else {
+          showToast(result.message || 'Código de descuento inválido', 'error')
+        }
+
+        return result
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error applying discount'
+        showToast(message, 'error')
+        throw err
+      }
+    },
+    [businessId, showToast]
+  )
 
   // Cargar dashboard al montar
   useEffect(() => {
@@ -273,7 +274,7 @@ export function useSubscription(businessId: string | null) {
     dashboard,
     isLoading,
     error,
-    
+
     // Acciones
     createCheckout,
     updatePlan,

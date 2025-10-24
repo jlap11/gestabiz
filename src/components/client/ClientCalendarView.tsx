@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { cn, DEFAULT_TIME_ZONE, extractTimeZoneParts } from '@/lib/utils'
+import { DEFAULT_TIME_ZONE, cn, extractTimeZoneParts } from '@/lib/utils'
 import type { Appointment } from '@/types'
 
 type AppointmentWithRelations = Appointment & {
@@ -51,7 +51,11 @@ function formatTimeInTZ(dateStr: string): string {
   return `${h12}:${mm} ${ampm}`
 }
 
-export function ClientCalendarView({ appointments, onAppointmentClick, onCreateAppointment }: ClientCalendarViewProps) {
+export function ClientCalendarView({
+  appointments,
+  onAppointmentClick,
+  onCreateAppointment,
+}: ClientCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>('month')
   const [hoveredDay, setHoveredDay] = useState<string | null>(null)
@@ -111,11 +115,7 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
     const target = extractTimeZoneParts(date, DEFAULT_TIME_ZONE)
     return filteredAppointments.filter(apt => {
       const parts = extractTimeZoneParts(new Date(apt.start_time), DEFAULT_TIME_ZONE)
-      return (
-        parts.year === target.year &&
-        parts.month === target.month &&
-        parts.day === target.day
-      )
+      return parts.year === target.year && parts.month === target.month && parts.day === target.day
     })
   }
 
@@ -126,7 +126,7 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
         weekday: 'long',
         day: 'numeric',
         month: 'long',
-        year: 'numeric'
+        year: 'numeric',
       })
     } else if (view === 'week') {
       const { start, end } = getDateRange
@@ -146,7 +146,9 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm font-semibold">{a.service?.name || a.title}</div>
-                  <div className="text-xs text-muted-foreground">{formatTimeInTZ(a.start_time)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatTimeInTZ(a.start_time)}
+                  </div>
                 </div>
                 <Badge>{a.status}</Badge>
               </div>
@@ -166,19 +168,28 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
 
   const renderWeekView = () => {
     const start = new Date(getDateRange.start)
-    const days = Array.from({ length: 7 }, (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i))
+    const days = Array.from(
+      { length: 7 },
+      (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
+    )
     return (
       <div className="grid grid-cols-7 gap-2">
         {days.map(d => (
           <Card key={d.toISOString()} className="p-2">
             <CardContent>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-semibold">{d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</div>
+                <div className="text-sm font-semibold">
+                  {d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                </div>
                 <Badge>{getAppointmentsForDate(d).length}</Badge>
               </div>
               <div className="space-y-1">
                 {getAppointmentsForDate(d).map(a => (
-                  <div key={a.id} className="text-xs truncate cursor-pointer" onClick={() => onAppointmentClick?.(a)}>
+                  <div
+                    key={a.id}
+                    className="text-xs truncate cursor-pointer"
+                    onClick={() => onAppointmentClick?.(a)}
+                  >
                     {a.service?.name || a.title} • {formatTimeInTZ(a.start_time)}
                   </div>
                 ))}
@@ -193,7 +204,10 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
   const renderMonthView = () => {
     const start = new Date(getDateRange.start)
     const daysInMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate()
-    const days = Array.from({ length: daysInMonth }, (_, i) => new Date(start.getFullYear(), start.getMonth(), i + 1))
+    const days = Array.from(
+      { length: daysInMonth },
+      (_, i) => new Date(start.getFullYear(), start.getMonth(), i + 1)
+    )
 
     return (
       <div className="grid grid-cols-7 gap-2">
@@ -201,22 +215,36 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
           const appts = getAppointmentsForDate(d)
           const nowParts = extractTimeZoneParts(new Date(), DEFAULT_TIME_ZONE)
           const dayParts = extractTimeZoneParts(d, DEFAULT_TIME_ZONE)
-          const isToday = dayParts.day === nowParts.day && dayParts.month === nowParts.month && dayParts.year === nowParts.year
+          const isToday =
+            dayParts.day === nowParts.day &&
+            dayParts.month === nowParts.month &&
+            dayParts.year === nowParts.year
 
           return (
-            <Card key={d.toISOString()} className={cn('p-2', isToday && 'border-primary border-2 bg-primary/5')}>
+            <Card
+              key={d.toISOString()}
+              className={cn('p-2', isToday && 'border-primary border-2 bg-primary/5')}
+            >
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold">{d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</div>
+                  <div className="text-sm font-semibold">
+                    {d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                  </div>
                   <Badge>{appts.length}</Badge>
                 </div>
                 <div className="space-y-1">
                   {appts.slice(0, 3).map(a => (
-                    <div key={a.id} className="text-xs truncate cursor-pointer" onClick={() => onAppointmentClick?.(a)}>
+                    <div
+                      key={a.id}
+                      className="text-xs truncate cursor-pointer"
+                      onClick={() => onAppointmentClick?.(a)}
+                    >
                       {a.service?.name || a.title} • {formatTimeInTZ(a.start_time)}
                     </div>
                   ))}
-                  {appts.length > 3 && <div className="text-xs text-muted-foreground">+{appts.length - 3} más</div>}
+                  {appts.length > 3 && (
+                    <div className="text-xs text-muted-foreground">+{appts.length - 3} más</div>
+                  )}
                 </div>
                 {onCreateAppointment && (
                   <div className="mt-2 flex justify-end">
@@ -237,13 +265,28 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={navigatePrevious} className="hover:bg-primary hover:text-primary-foreground hover:border-primary">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={navigatePrevious}
+            className="hover:bg-primary hover:text-primary-foreground hover:border-primary"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={goToToday} className="hover:bg-primary hover:text-primary-foreground hover:border-primary">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToToday}
+            className="hover:bg-primary hover:text-primary-foreground hover:border-primary"
+          >
             Hoy
           </Button>
-          <Button variant="outline" size="sm" onClick={navigateNext} className="hover:bg-primary hover:text-primary-foreground hover:border-primary">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={navigateNext}
+            className="hover:bg-primary hover:text-primary-foreground hover:border-primary"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
           <h3 className="text-lg font-semibold text-foreground ml-2">{getHeaderTitle()}</h3>
@@ -254,7 +297,10 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
             variant={view === 'day' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('day')}
-            className={cn(view !== 'day' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary')}
+            className={cn(
+              view !== 'day' &&
+                'hover:bg-primary hover:text-primary-foreground hover:border-primary'
+            )}
           >
             Día
           </Button>
@@ -262,7 +308,10 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
             variant={view === 'week' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('week')}
-            className={cn(view !== 'week' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary')}
+            className={cn(
+              view !== 'week' &&
+                'hover:bg-primary hover:text-primary-foreground hover:border-primary'
+            )}
           >
             Semana
           </Button>
@@ -270,7 +319,10 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
             variant={view === 'month' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('month')}
-            className={cn(view !== 'month' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary')}
+            className={cn(
+              view !== 'month' &&
+                'hover:bg-primary hover:text-primary-foreground hover:border-primary'
+            )}
           >
             Mes
           </Button>

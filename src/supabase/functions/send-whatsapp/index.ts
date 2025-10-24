@@ -13,7 +13,7 @@ interface WhatsAppRequest {
   variables?: Record<string, string>
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -40,19 +40,19 @@ serve(async (req) => {
     // Get WhatsApp API credentials from environment
     const whatsappToken = Deno.env.get('WHATSAPP_TOKEN')
     const whatsappPhoneId = Deno.env.get('WHATSAPP_PHONE_ID')
-    
+
     if (!whatsappToken || !whatsappPhoneId) {
       console.log('WhatsApp API not configured. Message simulation only.')
       console.log(`Would send WhatsApp to: ${to}`)
       console.log(`Message: ${message}`)
-      
+
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'WhatsApp message simulated successfully',
-          details: { to, message }
+          details: { to, message },
         }),
-        { 
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         }
@@ -75,11 +75,11 @@ serve(async (req) => {
               type: 'body',
               parameters: Object.values(variables).map(value => ({
                 type: 'text',
-                text: value
-              }))
-            }
-          ]
-        }
+                text: value,
+              })),
+            },
+          ],
+        },
       }
     } else {
       // Send text message
@@ -87,22 +87,19 @@ serve(async (req) => {
         messaging_product: 'whatsapp',
         to: to,
         type: 'text',
-        text: { body: message }
+        text: { body: message },
       }
     }
 
     // Send message using WhatsApp Business API
-    const response = await fetch(
-      `https://graph.facebook.com/v18.0/${whatsappPhoneId}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${whatsappToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(messagePayload),
-      }
-    )
+    const response = await fetch(`https://graph.facebook.com/v18.0/${whatsappPhoneId}/messages`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${whatsappToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messagePayload),
+    })
 
     const responseData = await response.json()
 
@@ -111,26 +108,25 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'WhatsApp message sent successfully',
-        whatsapp_message_id: responseData.messages?.[0]?.id
+        whatsapp_message_id: responseData.messages?.[0]?.id,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error sending WhatsApp message:', error)
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       }

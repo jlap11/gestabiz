@@ -22,7 +22,7 @@ export function RecruitmentView({ businessId }: Readonly<RecruitmentViewProps>) 
         <VacancyList
           businessId={businessId}
           onCreateNew={() => setJobView('create')}
-          onSelectVacancy={(id) => {
+          onSelectVacancy={id => {
             setSelectedVacancyId(id)
             setJobView('detail')
           }}
@@ -51,11 +51,11 @@ export function RecruitmentView({ businessId }: Readonly<RecruitmentViewProps>) 
           vacancyId={selectedVacancyId}
           businessId={businessId}
           onBack={() => setJobView('list')}
-          onEdit={(id) => {
+          onEdit={id => {
             setEditingVacancyId(id)
             setJobView('edit')
           }}
-          onViewApplication={(id) => {
+          onViewApplication={id => {
             setSelectedApplicationId(id)
             setJobView('application-detail')
           }}

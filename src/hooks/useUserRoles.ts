@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User, UserRole, UserRoleAssignment } from '@/types/types'
 import { useKV } from '@/lib/useKV'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 const ACTIVE_ROLE_KEY = 'user-active-role'
 
@@ -20,11 +21,11 @@ export function useUserRoles(user: User | null) {
 
   // Persist active role context in localStorage
   const [storedContext, setStoredContext] = useKV<StoredRoleContext | null>(ACTIVE_ROLE_KEY, null)
-  
+
   // Use ref to avoid infinite loop in fetchUserRoles dependencies
   const storedContextRef = useRef(storedContext)
   const setStoredContextRef = useRef(setStoredContext)
-  
+
   // Keep refs updated
   useEffect(() => {
     storedContextRef.current = storedContext
@@ -52,8 +53,9 @@ export function useUserRoles(user: User | null) {
         .eq('owner_id', user.id)
 
       if (businessError && businessError.code !== 'PGRST116') {
-        throw businessError
-      }
+          logger.error('[useUserRoles] Error fetching owned businesses:', { error: businessError })
+          throw businessError
+        }
 
       // Add admin roles for owned businesses
       if (ownedBusinesses && ownedBusinesses.length > 0) {
@@ -137,7 +139,7 @@ export function useUserRoles(user: User | null) {
 
       // Restore previous role context from localStorage
       const currentStoredContext = storedContextRef.current
-      
+
       if (currentStoredContext) {
         // Always restore the last used role from localStorage
         setActiveRole(currentStoredContext.role)
@@ -157,7 +159,7 @@ export function useUserRoles(user: User | null) {
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Error fetching user roles:', error)
+      logger.error('Error fetching user roles:', { error })
       toast.error('Error al cargar roles disponibles')
     } finally {
       setIsLoading(false)
@@ -188,14 +190,15 @@ export function useUserRoles(user: User | null) {
       }
 
       // Check if user has this role WITH a business
-      const hasRole = roles.find(r => 
-        r.role === newRole && 
-        (businessId ? r.business_id === businessId : r.business_id === null)
+      const hasRole = roles.find(
+        r =>
+          r.role === newRole && (businessId ? r.business_id === businessId : r.business_id === null)
       )
 
       // For admin/employee roles: Allow switching even without business (will show onboarding)
       // For client role: Always available to everyone
-      const canSwitch = hasRole || newRole === 'client' || newRole === 'admin' || newRole === 'employee'
+      const canSwitch =
+        hasRole || newRole === 'client' || newRole === 'admin' || newRole === 'employee'
 
       if (!canSwitch) {
         toast.error('No tienes acceso a este rol')
@@ -208,13 +211,11 @@ export function useUserRoles(user: User | null) {
 
         // Update active business context
         if (businessId && (newRole === 'admin' || newRole === 'employee')) {
-          const roleAssignment = roles.find(
-            r => r.role === newRole && r.business_id === businessId
-          )
+          const roleAssignment = roles.find(r => r.role === newRole && r.business_id === businessId)
           if (roleAssignment?.business_name) {
             const business = { id: businessId, name: roleAssignment.business_name }
             setActiveBusiness(business)
-            
+
             // Store in localStorage
             setStoredContextRef.current({
               role: newRole,
@@ -232,16 +233,16 @@ export function useUserRoles(user: User | null) {
         let roleLabel = 'Cliente'
         if (newRole === 'admin') roleLabel = 'Administrador'
         else if (newRole === 'employee') roleLabel = 'Empleado'
-        
+
         toast.success(`Cambiado a rol ${roleLabel}`)
 
         // No reload needed - state update will trigger re-render
         // The component will automatically show the new role's view
-        
+
         return true
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error('Error switching role:', error)
+        logger.error('Error switching role:', { error })
         toast.error('Error al cambiar de rol')
         return false
       }

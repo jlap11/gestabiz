@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, CheckCircle, XCircle, Clock, Mail, Phone, Loader2, AlertCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, Loader2, Mail, Phone, Users, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +18,11 @@ interface EmployeeRequestsListProps {
   className?: string
 }
 
-export function EmployeeRequestsList({ businessId, adminId, className }: Readonly<EmployeeRequestsListProps>) {
+export function EmployeeRequestsList({
+  businessId,
+  adminId,
+  className,
+}: Readonly<EmployeeRequestsListProps>) {
   const { t } = useLanguage()
   const { requests, isLoading, approveRequest, rejectRequest, pendingCount } = useEmployeeRequests({
     businessId,
@@ -27,9 +31,9 @@ export function EmployeeRequestsList({ businessId, adminId, className }: Readonl
 
   const [processingId, setProcessingId] = useState<string | null>(null)
 
-  const pendingRequests = requests.filter((r) => r.status === 'pending')
-  const approvedRequests = requests.filter((r) => r.status === 'approved')
-  const rejectedRequests = requests.filter((r) => r.status === 'rejected')
+  const pendingRequests = requests.filter(r => r.status === 'pending')
+  const approvedRequests = requests.filter(r => r.status === 'approved')
+  const rejectedRequests = requests.filter(r => r.status === 'rejected')
 
   const handleApprove = async (requestId: string) => {
     setProcessingId(requestId)
@@ -81,13 +85,19 @@ export function EmployeeRequestsList({ businessId, adminId, className }: Readonl
 
             {/* Status Badge */}
             {request.status === 'pending' && (
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30">
+              <Badge
+                variant="secondary"
+                className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30"
+              >
                 <Clock className="h-3 w-3 mr-1" />
                 Pendiente
               </Badge>
             )}
             {request.status === 'approved' && (
-              <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30">
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-800 dark:bg-green-900/30"
+              >
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Aprobada
               </Badge>
@@ -202,7 +212,8 @@ export function EmployeeRequestsList({ businessId, adminId, className }: Readonl
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              No hay solicitudes aún. Comparte tu código de invitación para que empleados puedan unirse.
+              No hay solicitudes aún. Comparte tu código de invitación para que empleados puedan
+              unirse.
             </AlertDescription>
           </Alert>
         ) : (
@@ -222,7 +233,9 @@ export function EmployeeRequestsList({ businessId, adminId, className }: Readonl
 
             <TabsContent value="pending" className="space-y-3 mt-4">
               {pendingRequests.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No hay solicitudes pendientes</p>
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No hay solicitudes pendientes
+                </p>
               ) : (
                 pendingRequests.map(renderRequestCard)
               )}
@@ -230,7 +243,9 @@ export function EmployeeRequestsList({ businessId, adminId, className }: Readonl
 
             <TabsContent value="approved" className="space-y-3 mt-4">
               {approvedRequests.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No hay solicitudes aprobadas</p>
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No hay solicitudes aprobadas
+                </p>
               ) : (
                 approvedRequests.map(renderRequestCard)
               )}
@@ -238,7 +253,9 @@ export function EmployeeRequestsList({ businessId, adminId, className }: Readonl
 
             <TabsContent value="rejected" className="space-y-3 mt-4">
               {rejectedRequests.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No hay solicitudes rechazadas</p>
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No hay solicitudes rechazadas
+                </p>
               ) : (
                 rejectedRequests.map(renderRequestCard)
               )}

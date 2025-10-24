@@ -3,8 +3,8 @@
 // Tests para el nodo de organigrama con avatar y métricas
 // ============================================================================
 
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HierarchyNode } from '../HierarchyNode'
 import type { EmployeeHierarchy } from '@/types'
 
@@ -182,12 +182,7 @@ describe('HierarchyNode', () => {
 
   describe('Expansión y subordinados', () => {
     it('debería mostrar botón de expansión cuando hay subordinados', () => {
-      render(
-        <HierarchyNode
-          employee={mockEmployee}
-          onToggleExpand={mockOnToggleExpand}
-        />
-      )
+      render(<HierarchyNode employee={mockEmployee} onToggleExpand={mockOnToggleExpand} />)
 
       const expandButton = screen.getByRole('button')
       expect(expandButton).toBeInTheDocument()
@@ -207,10 +202,7 @@ describe('HierarchyNode', () => {
       }
 
       render(
-        <HierarchyNode
-          employee={employeeWithoutSubordinates}
-          onToggleExpand={mockOnToggleExpand}
-        />
+        <HierarchyNode employee={employeeWithoutSubordinates} onToggleExpand={mockOnToggleExpand} />
       )
 
       const buttons = screen.queryAllByRole('button')
@@ -246,12 +238,7 @@ describe('HierarchyNode', () => {
     })
 
     it('debería llamar a onToggleExpand al hacer clic en botón', () => {
-      render(
-        <HierarchyNode
-          employee={mockEmployee}
-          onToggleExpand={mockOnToggleExpand}
-        />
-      )
+      render(<HierarchyNode employee={mockEmployee} onToggleExpand={mockOnToggleExpand} />)
 
       const button = screen.getByRole('button')
       fireEvent.click(button)
@@ -278,12 +265,7 @@ describe('HierarchyNode', () => {
 
   describe('Click en nodo', () => {
     it('debería llamar a onClick al hacer clic en el nodo', () => {
-      render(
-        <HierarchyNode
-          employee={mockEmployee}
-          onClick={mockOnClick}
-        />
-      )
+      render(<HierarchyNode employee={mockEmployee} onClick={mockOnClick} />)
 
       const node = screen.getByText('John Doe').closest('div')
       if (node?.parentElement) {
@@ -303,10 +285,7 @@ describe('HierarchyNode', () => {
   describe('Props opcionales', () => {
     it('debería aceptar className personalizado', () => {
       const { container } = render(
-        <HierarchyNode
-          employee={mockEmployee}
-          className="custom-class"
-        />
+        <HierarchyNode employee={mockEmployee} className="custom-class" />
       )
 
       const node = container.querySelector('.custom-class')
@@ -314,12 +293,7 @@ describe('HierarchyNode', () => {
     })
 
     it('debería funcionar con depth personalizado', () => {
-      render(
-        <HierarchyNode
-          employee={mockEmployee}
-          depth={2}
-        />
-      )
+      render(<HierarchyNode employee={mockEmployee} depth={2} />)
 
       expect(screen.getByText('John Doe')).toBeInTheDocument()
     })
@@ -356,12 +330,7 @@ describe('HierarchyNode', () => {
     })
 
     it('debería tener botón de expansión accesible', () => {
-      render(
-        <HierarchyNode
-          employee={mockEmployee}
-          onToggleExpand={mockOnToggleExpand}
-        />
-      )
+      render(<HierarchyNode employee={mockEmployee} onToggleExpand={mockOnToggleExpand} />)
 
       const button = screen.getByRole('button')
       expect(button).toBeInTheDocument()

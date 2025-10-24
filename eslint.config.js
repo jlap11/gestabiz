@@ -3,6 +3,7 @@
 import tseslint from 'typescript-eslint'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import unusedImports from 'eslint-plugin-unused-imports'
 
 export default tseslint.config(
   ...tseslint.configs.recommended,
@@ -20,6 +21,10 @@ export default tseslint.config(
       'docs/**',
       'database/**',
       'tailwind.config.js',
+      // Added: ignore generated supabase types (very large files)
+      'src/types/supabase.ts',
+      'src/types/supabase.gen.ts',
+      'src/types/supabase.gen.tmp.ts',
     ],
   },
   {
@@ -36,17 +41,40 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      'unused-imports': unusedImports,
     },
     rules: {
-      'no-console': ['warn'],
+      'no-console': ['error'],
+      'no-debugger': ['error'],
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      // Matches repo policy: handle or rethrow
       'no-empty': ['warn', { allowEmptyCatch: false }],
-      // Relax strictness to get repo green; tighten gradually
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { args: 'none', ignoreRestSiblings: true }],
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
+      ],
+      'sort-imports': ['warn', { ignoreDeclarationSort: true, allowSeparatedGroups: true }],
     },
   },
+  // Overrides for tests and scripts: relax strict rules
+  {
+    files: [
+      'tests/**/*.{ts,tsx}',
+      '**/*.test.{ts,tsx}',
+      'scripts/**/*.{ts,js}',
+      '*.js',
+      'test-*.js',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-console': 'off',
+      'unused-imports/no-unused-imports': 'off',
+      'unused-imports/no-unused-vars': 'off',
+    },
+  }
 )

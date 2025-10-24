@@ -55,7 +55,10 @@ async function hasOverlap(params: {
     q = q.neq('id', excludeId)
   }
 
-  const { data, error } = await q as unknown as { data: DbAppointmentRow[] | null; error: { message: string } | null }
+  const { data, error } = (await q) as unknown as {
+    data: DbAppointmentRow[] | null
+    error: { message: string } | null
+  }
   if (error) throw error
   return (data || []).length > 0
 }
@@ -79,7 +82,12 @@ export const appointmentsService = {
     return db
   },
 
-  async _checkOverlapIfNeeded(id: string, current: Appointment, updates: Partial<Appointment>, options?: OverlapOptions) {
+  async _checkOverlapIfNeeded(
+    id: string,
+    current: Appointment,
+    updates: Partial<Appointment>,
+    options?: OverlapOptions
+  ) {
     const needsCheck = Boolean(
       updates.start_time || updates.end_time || updates.user_id || updates.location_id
     )
@@ -101,37 +109,48 @@ export const appointmentsService = {
   async list(q: AppointmentQuery = {}): Promise<Appointment[]> {
     let query = supabase.from('appointments').select('*')
 
-  if (q.businessId) { query = query.eq('business_id', q.businessId) }
-  if (q.employeeId) { query = query.eq('employee_id', q.employeeId) }
-  if (q.clientId) { query = query.eq('client_id', q.clientId) }
-  if (q.dateRange) {
+    if (q.businessId) {
+      query = query.eq('business_id', q.businessId)
+    }
+    if (q.employeeId) {
+      query = query.eq('employee_id', q.employeeId)
+    }
+    if (q.clientId) {
+      query = query.eq('client_id', q.clientId)
+    }
+    if (q.dateRange) {
       query = query.gte('start_time', q.dateRange.start).lte('start_time', q.dateRange.end)
     }
-  if (q.status?.length) { query = query.in('status', q.status) }
+    if (q.status?.length) {
+      query = query.in('status', q.status)
+    }
 
     // Orden
     query = query.order('start_time', { ascending: q.order !== 'desc' })
     // Paginación
     if (typeof q.offset === 'number') {
       const lim = typeof q.limit === 'number' ? q.limit : 50
-  // range es [from, to] — cast a unknown para evitar problemas de tipos en el mock
-  const qAny = query as unknown as { range: (from: number, to: number) => typeof query }
-  query = qAny.range(q.offset, q.offset + lim - 1)
+      // range es [from, to] — cast a unknown para evitar problemas de tipos en el mock
+      const qAny = query as unknown as { range: (from: number, to: number) => typeof query }
+      query = qAny.range(q.offset, q.offset + lim - 1)
     } else if (typeof q.limit === 'number') {
       query = query.limit(q.limit)
     }
-  const { data, error } = await query
+    const { data, error } = await query
     if (error) throw error
-  return ((data as Row<'appointments'>[] | null) || []).map(normalizeAppointment)
+    return ((data as Row<'appointments'>[] | null) || []).map(normalizeAppointment)
   },
 
   async get(id: string): Promise<Appointment | null> {
-  const { data, error } = await supabase.from('appointments').select('*').eq('id', id).single()
+    const { data, error } = await supabase.from('appointments').select('*').eq('id', id).single()
     if (error) throw error
-  return normalizeAppointment(data as Row<'appointments'>)
+    return normalizeAppointment(data as Row<'appointments'>)
   },
 
-  async create(payload: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>, options?: OverlapOptions): Promise<Appointment> {
+  async create(
+    payload: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>,
+    options?: OverlapOptions
+  ): Promise<Appointment> {
     // Validación de solapamientos (overbooking) solo si hay empleado asignado
     if (payload.user_id) {
       const overlap = await hasOverlap({
@@ -139,7 +158,7 @@ export const appointmentsService = {
         start_time: payload.start_time,
         end_time: payload.end_time,
         location_id: payload.location_id,
-        options
+        options,
       })
       if (overlap) throw new Error('CONFLICT_APPOINTMENT_OVERLAP')
     }
@@ -166,12 +185,21 @@ export const appointmentsService = {
     return normalizeAppointment(data as Row<'appointments'>)
   },
 
-  async update(id: string, updates: Partial<Appointment>, options?: OverlapOptions): Promise<Appointment> {
+  async update(
+    id: string,
+    updates: Partial<Appointment>,
+    options?: OverlapOptions
+  ): Promise<Appointment> {
     const current = await this.get(id)
     if (!current) throw new Error('NOT_FOUND')
     await this._checkOverlapIfNeeded(id, current, updates, options)
     const dbUpdates = this._buildDbUpdates(updates)
-    const { data, error } = await supabase.from('appointments').update(dbUpdates).eq('id', id).select().single()
+    const { data, error } = await supabase
+      .from('appointments')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single()
     if (error) throw error
     return normalizeAppointment(data as Row<'appointments'>)
   },
@@ -179,7 +207,7 @@ export const appointmentsService = {
   async remove(id: string): Promise<void> {
     const { error } = await supabase.from('appointments').delete().eq('id', id)
     if (error) throw error
-  }
+  },
 }
 
 // Helpers de detalles desde la vista appointment_details
@@ -197,7 +225,8 @@ export const appointmentDetailsService = {
     if (q.businessId) query = query.eq('business_id', q.businessId)
     if (q.employeeId) query = query.eq('employee_id', q.employeeId)
     if (q.clientId) query = query.eq('client_id', q.clientId)
-    if (q.dateRange) query = query.gte('start_time', q.dateRange.start).lte('start_time', q.dateRange.end)
+    if (q.dateRange)
+      query = query.gte('start_time', q.dateRange.start).lte('start_time', q.dateRange.end)
     if (q.status?.length) query = query.in('status', q.status.map(toDbAppointmentStatus))
     query = query.order('start_time', { ascending: q.order !== 'desc' })
     if (typeof q.offset === 'number') {
@@ -210,7 +239,7 @@ export const appointmentDetailsService = {
     const { data, error } = await query
     if (error) throw error
     const rows = (data as Array<Record<string, unknown>> | null) || []
-    return rows.map((r) => {
+    return rows.map(r => {
       const base = normalizeAppointment(r as unknown as Row<'appointments'>)
       return {
         ...base,
@@ -224,7 +253,11 @@ export const appointmentDetailsService = {
   },
 
   async get(id: string): Promise<AppointmentDetail | null> {
-    const { data, error } = await supabase.from('appointment_details').select('*').eq('id', id).single()
+    const { data, error } = await supabase
+      .from('appointment_details')
+      .select('*')
+      .eq('id', id)
+      .single()
     if (error) throw error
     const r = data as Record<string, unknown>
     const base = normalizeAppointment(r as unknown as Row<'appointments'>)
@@ -240,11 +273,11 @@ export const appointmentDetailsService = {
 }
 
 export async function countUpcomingForEmployee(opts: {
-  businessId: string;
-  employeeId: string;
-  fromIso?: string;
-  statuses?: Array<'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>;
-  client?: typeof supabase;
+  businessId: string
+  employeeId: string
+  fromIso?: string
+  statuses?: Array<'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>
+  client?: typeof supabase
 }): Promise<number> {
   const {
     businessId,
@@ -252,28 +285,28 @@ export async function countUpcomingForEmployee(opts: {
     fromIso = new Date().toISOString(),
     statuses = ['pending', 'confirmed'],
     client = supabase,
-  } = opts;
+  } = opts
 
   let query = client
     .from('appointments')
     .select('*', { count: 'exact', head: true })
     .eq('business_id', businessId)
-    .eq('employee_id', employeeId);
+    .eq('employee_id', employeeId)
   if (statuses?.length) {
-    query = query.in('status', statuses);
+    query = query.in('status', statuses)
   }
-  const { count, error } = await query.gte('start_time', fromIso);
-  if (error) throw error;
-  return count || 0;
+  const { count, error } = await query.gte('start_time', fromIso)
+  if (error) throw error
+  return count || 0
 }
 
 export async function hasUpcomingForEmployee(opts: {
-  businessId: string;
-  employeeId: string;
-  fromIso?: string;
-  statuses?: Array<'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>;
-  client?: typeof supabase;
+  businessId: string
+  employeeId: string
+  fromIso?: string
+  statuses?: Array<'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>
+  client?: typeof supabase
 }): Promise<boolean> {
-  const n = await countUpcomingForEmployee(opts);
-  return n > 0;
+  const n = await countUpcomingForEmployee(opts)
+  return n > 0
 }

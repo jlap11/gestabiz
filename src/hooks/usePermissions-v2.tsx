@@ -3,24 +3,24 @@
 // Fecha: 13 de Octubre de 2025
 // =====================================================
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import {
-  Permission,
   BusinessRole,
-  UserPermission,
-  PermissionTemplate,
+  Permission,
   PermissionAuditLog,
+  PermissionTemplate,
+  UserPermission,
 } from '@/types/types'
 import {
-  isBusinessOwner,
-  hasPermission,
-  hasAnyPermission,
-  hasAllPermissions,
-  getUserActivePermissions,
-  hasBusinessRole,
-  getUserBusinessRole,
   canProvideServices,
+  getUserActivePermissions,
+  getUserBusinessRole,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasBusinessRole,
+  hasPermission,
+  isBusinessOwner,
 } from '@/lib/permissions-v2'
 
 // =====================================================
@@ -120,17 +120,19 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
     queryFn: async () => {
       const { data, error } = await supabase
         .from('permission_audit_log')
-        .select(`
+        .select(
+          `
           *,
           user:profiles!permission_audit_log_user_id_fkey (id, name, email),
           performed_by_user:profiles!permission_audit_log_performed_by_fkey (id, name, email)
-        `)
+        `
+        )
         .eq('business_id', businessId)
         .order('performed_at', { ascending: false })
         .limit(500)
 
       if (error) throw error
-      
+
       // Mapear datos para incluir nombres calculados y created_at
       const mapped = (data || []).map(entry => ({
         ...entry,
@@ -138,7 +140,7 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
         user_name: entry.user?.name || 'Usuario desconocido',
         performed_by_name: entry.performed_by_user?.name || 'Sistema',
       }))
-      
+
       return mapped as PermissionAuditLog[]
     },
     enabled: !!businessId,
@@ -205,11 +207,7 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
   /**
    * Obtiene todos los permisos activos del usuario
    */
-  const activePermissions = getUserActivePermissions(
-    userId,
-    ownerId,
-    userPermissions || []
-  )
+  const activePermissions = getUserActivePermissions(userId, ownerId, userPermissions || [])
 
   // =====================================================
   // MUTATIONS
@@ -257,10 +255,7 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
    */
   const revokeRole = useMutation({
     mutationFn: async ({ roleId }: { roleId: string }) => {
-      const { error } = await supabase
-        .from('business_roles')
-        .delete()
-        .eq('id', roleId)
+      const { error } = await supabase.from('business_roles').delete().eq('id', roleId)
 
       if (error) throw error
     },
@@ -312,10 +307,7 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
    */
   const revokePermission = useMutation({
     mutationFn: async ({ permissionId }: { permissionId: string }) => {
-      const { error } = await supabase
-        .from('user_permissions')
-        .delete()
-        .eq('id', permissionId)
+      const { error } = await supabase.from('user_permissions').delete().eq('id', permissionId)
 
       if (error) throw error
     },
@@ -337,11 +329,11 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
       templateId: string
     }) => {
       // Obtener plantilla
-      const template = templates?.find((t) => t.id === templateId)
+      const template = templates?.find(t => t.id === templateId)
       if (!template) throw new Error('Template not found')
 
       // Insertar permisos en batch
-      const permissions = template.permissions.map((permission) => ({
+      const permissions = template.permissions.map(permission => ({
         business_id: businessId,
         user_id: targetUserId,
         permission,

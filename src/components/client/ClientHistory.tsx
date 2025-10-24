@@ -1,10 +1,28 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { Calendar, Clock, MapPin, User, DollarSign, Filter, X, Search, Building2, Briefcase, ChevronDown } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  Briefcase,
+  Building2,
+  Calendar,
+  ChevronDown,
+  Clock,
+  DollarSign,
+  Filter,
+  MapPin,
+  Search,
+  User,
+  X,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -30,7 +48,14 @@ interface AppointmentWithRelations {
   client_phone?: string
   start_time: string
   end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status:
+    | 'scheduled'
+    | 'confirmed'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled'
+    | 'no_show'
+    | 'rescheduled'
   notes?: string
   price?: number
   currency?: string
@@ -93,7 +118,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  
+
   // Filter states - now arrays to support multiple selections
   const [statusFilters, setStatusFilters] = useState<string[]>([])
   const [businessFilters, setBusinessFilters] = useState<string[]>([])
@@ -102,7 +127,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   const [categoryFilters, setCategoryFilters] = useState<string[]>([])
   const [employeeFilters, setEmployeeFilters] = useState<string[]>([])
   const [priceRangeFilter, setPriceRangeFilter] = useState<string>('all')
-  
+
   // Data for filters
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [locations, setLocations] = useState<Location[]>([])
@@ -136,7 +161,8 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       // Fetch appointments with related data
       const { data, error } = await supabase
         .from('appointments')
-        .select(`
+        .select(
+          `
           id,
           start_time,
           end_time,
@@ -157,7 +183,8 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             name,
             price
           )
-        `)
+        `
+        )
         .eq('client_id', userId)
         .order('start_time', { ascending: false })
 
@@ -175,12 +202,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   useEffect(() => {
     const uniqueBusinesses = Array.from(
       new Map(
-        appointments
-          .filter(apt => apt.business)
-          .map(apt => [apt.business?.id, apt.business])
+        appointments.filter(apt => apt.business).map(apt => [apt.business?.id, apt.business])
       ).values()
     ) as Business[]
-    
+
     const sorted = [...uniqueBusinesses].sort((a, b) => a.name.localeCompare(b.name))
     setBusinesses(sorted)
   }, [appointments])
@@ -191,10 +216,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       new Map(
         appointments
           .filter(apt => apt.location)
-          .map(apt => [apt.location?.id, { id: apt.location?.id || '', name: apt.location?.name || '', business_id: apt.business_id }])
+          .map(apt => [
+            apt.location?.id,
+            {
+              id: apt.location?.id || '',
+              name: apt.location?.name || '',
+              business_id: apt.business_id,
+            },
+          ])
       ).values()
     ) as Location[]
-    
+
     const sorted = [...uniqueLocations].sort((a, b) => a.name.localeCompare(b.name))
     setLocations(sorted)
   }, [appointments])
@@ -205,10 +237,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       new Map(
         appointments
           .filter(apt => apt.service)
-          .map(apt => [apt.service?.id, { id: apt.service?.id || '', name: apt.service?.name || '', business_id: apt.business_id }])
+          .map(apt => [
+            apt.service?.id,
+            {
+              id: apt.service?.id || '',
+              name: apt.service?.name || '',
+              business_id: apt.business_id,
+            },
+          ])
       ).values()
     ) as Service[]
-    
+
     const sorted = [...uniqueServices].sort((a, b) => a.name.localeCompare(b.name))
     setServices(sorted)
   }, [appointments])
@@ -219,10 +258,13 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       new Map(
         appointments
           .filter(apt => apt.service?.category_id)
-          .map(apt => [apt.service?.category_id, { id: apt.service?.category_id || '', name: apt.service?.name || '', slug: '' }])
+          .map(apt => [
+            apt.service?.category_id,
+            { id: apt.service?.category_id || '', name: apt.service?.name || '', slug: '' },
+          ])
       ).values()
     ) as Category[]
-    
+
     const sorted = [...uniqueCategories].sort((a, b) => a.name.localeCompare(b.name))
     setCategories(sorted)
   }, [appointments])
@@ -231,76 +273,80 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   useEffect(() => {
     const uniqueEmployees = Array.from(
       new Map(
-        appointments
-          .filter(apt => apt.employee)
-          .map(apt => [apt.employee?.id, apt.employee])
+        appointments.filter(apt => apt.employee).map(apt => [apt.employee?.id, apt.employee])
       ).values()
     ) as Employee[]
-    
+
     const sorted = [...uniqueEmployees].sort((a, b) => a.full_name.localeCompare(b.full_name))
     setEmployees(sorted)
   }, [appointments])
 
   // Filtered appointments
   // Helper functions for filtering
-  const matchesStatus = useCallback((apt: AppointmentWithRelations): boolean => {
-    if (statusFilters.length === 0) return true
-    return statusFilters.some(filter => {
-      if (filter === 'attended') return apt.status === 'completed'
-      if (filter === 'cancelled') return apt.status === 'cancelled'
-      if (filter === 'no_show') return apt.status === 'no_show'
-      return false
-    })
-  }, [statusFilters])
+  const matchesStatus = useCallback(
+    (apt: AppointmentWithRelations): boolean => {
+      if (statusFilters.length === 0) return true
+      return statusFilters.some(filter => {
+        if (filter === 'attended') return apt.status === 'completed'
+        if (filter === 'cancelled') return apt.status === 'cancelled'
+        if (filter === 'no_show') return apt.status === 'no_show'
+        return false
+      })
+    },
+    [statusFilters]
+  )
 
-  const matchesFilters = useCallback((apt: AppointmentWithRelations): boolean => {
-    if (businessFilters.length > 0 && !businessFilters.includes(apt.business_id)) return false
-    if (locationFilters.length > 0 && !locationFilters.includes(apt.location_id ?? '')) return false
-    if (serviceFilters.length > 0 && !serviceFilters.includes(apt.service_id ?? '')) return false
-    if (categoryFilters.length > 0 && !categoryFilters.includes(apt.service?.category_id ?? '')) return false
-    if (employeeFilters.length > 0 && !employeeFilters.includes(apt.employee?.id ?? '')) return false
-    return true
-  }, [businessFilters, locationFilters, serviceFilters, categoryFilters, employeeFilters])
+  const matchesFilters = useCallback(
+    (apt: AppointmentWithRelations): boolean => {
+      if (businessFilters.length > 0 && !businessFilters.includes(apt.business_id)) return false
+      if (locationFilters.length > 0 && !locationFilters.includes(apt.location_id ?? ''))
+        return false
+      if (serviceFilters.length > 0 && !serviceFilters.includes(apt.service_id ?? '')) return false
+      if (categoryFilters.length > 0 && !categoryFilters.includes(apt.service?.category_id ?? ''))
+        return false
+      if (employeeFilters.length > 0 && !employeeFilters.includes(apt.employee?.id ?? ''))
+        return false
+      return true
+    },
+    [businessFilters, locationFilters, serviceFilters, categoryFilters, employeeFilters]
+  )
 
-  const matchesPriceRange = useCallback((apt: AppointmentWithRelations): boolean => {
-    if (priceRangeFilter === 'all') return true
-    const price = apt.service?.price || apt.price || 0
-    if (priceRangeFilter === '0-500' && price > 500) return false
-    if (priceRangeFilter === '501-1000' && (price <= 500 || price > 1000)) return false
-    if (priceRangeFilter === '1001-2000' && (price <= 1000 || price > 2000)) return false
-    if (priceRangeFilter === '2001+' && price <= 2000) return false
-    return true
-  }, [priceRangeFilter])
+  const matchesPriceRange = useCallback(
+    (apt: AppointmentWithRelations): boolean => {
+      if (priceRangeFilter === 'all') return true
+      const price = apt.service?.price || apt.price || 0
+      if (priceRangeFilter === '0-500' && price > 500) return false
+      if (priceRangeFilter === '501-1000' && (price <= 500 || price > 1000)) return false
+      if (priceRangeFilter === '1001-2000' && (price <= 1000 || price > 2000)) return false
+      if (priceRangeFilter === '2001+' && price <= 2000) return false
+      return true
+    },
+    [priceRangeFilter]
+  )
 
-  const matchesSearch = useCallback((apt: AppointmentWithRelations): boolean => {
-    if (!searchTerm) return true
-    const search = searchTerm.toLowerCase()
-    return (
-      apt.business?.name?.toLowerCase().includes(search) ||
-      apt.service?.name?.toLowerCase().includes(search) ||
-      apt.employee?.full_name?.toLowerCase().includes(search) ||
-      apt.location?.name?.toLowerCase().includes(search) ||
-      false
-    )
-  }, [searchTerm])
+  const matchesSearch = useCallback(
+    (apt: AppointmentWithRelations): boolean => {
+      if (!searchTerm) return true
+      const search = searchTerm.toLowerCase()
+      return (
+        apt.business?.name?.toLowerCase().includes(search) ||
+        apt.service?.name?.toLowerCase().includes(search) ||
+        apt.employee?.full_name?.toLowerCase().includes(search) ||
+        apt.location?.name?.toLowerCase().includes(search) ||
+        false
+      )
+    },
+    [searchTerm]
+  )
 
   // Filtering logic
   const filteredAppointments = useMemo(() => {
     return appointments.filter(apt => {
       return (
-        matchesStatus(apt) &&
-        matchesFilters(apt) &&
-        matchesPriceRange(apt) &&
-        matchesSearch(apt)
+        matchesStatus(apt) && matchesFilters(apt) && matchesPriceRange(apt) && matchesSearch(apt)
       )
     })
-  }, [
-    appointments,
-    matchesStatus,
-    matchesFilters,
-    matchesPriceRange,
-    matchesSearch
-  ])
+  }, [appointments, matchesStatus, matchesFilters, matchesPriceRange, matchesSearch])
 
   // Statistics
   const stats = useMemo(() => {
@@ -311,7 +357,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       noShow: filteredAppointments.filter(a => a.status === 'no_show').length,
       totalSpent: filteredAppointments
         .filter(a => a.status === 'completed')
-        .reduce((sum, a) => sum + (a.service?.price || a.price || 0), 0)
+        .reduce((sum, a) => sum + (a.service?.price || a.price || 0), 0),
     }
   }, [filteredAppointments])
 
@@ -364,12 +410,20 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      completed: { label: 'Asistida', variant: 'default' as const, className: 'bg-green-500 hover:bg-green-600' },
+      completed: {
+        label: 'Asistida',
+        variant: 'default' as const,
+        className: 'bg-green-500 hover:bg-green-600',
+      },
       cancelled: { label: 'Cancelada', variant: 'destructive' as const, className: '' },
-      no_show: { label: 'Perdida', variant: 'secondary' as const, className: 'bg-yellow-500 hover:bg-yellow-600' },
+      no_show: {
+        label: 'Perdida',
+        variant: 'secondary' as const,
+        className: 'bg-yellow-500 hover:bg-yellow-600',
+      },
       confirmed: { label: 'Confirmada', variant: 'default' as const, className: '' },
       pending: { label: 'Pendiente', variant: 'secondary' as const, className: '' },
-      scheduled: { label: 'Agendada', variant: 'default' as const, className: '' }
+      scheduled: { label: 'Agendada', variant: 'default' as const, className: '' },
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
@@ -392,7 +446,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
     setCurrentPage(1)
   }
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     statusFilters.length > 0 ||
     businessFilters.length > 0 ||
     locationFilters.length > 0 ||
@@ -410,7 +464,16 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [statusFilters, businessFilters, locationFilters, serviceFilters, categoryFilters, employeeFilters, priceRangeFilter, searchTerm])
+  }, [
+    statusFilters,
+    businessFilters,
+    locationFilters,
+    serviceFilters,
+    categoryFilters,
+    employeeFilters,
+    priceRangeFilter,
+    searchTerm,
+  ])
 
   if (loading) {
     return (
@@ -462,11 +525,18 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pagado</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Pagado
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              ${stats.totalSpent.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
+              $
+              {stats.totalSpent.toLocaleString('es-CO', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}{' '}
+              COP
             </div>
           </CardContent>
         </Card>
@@ -500,7 +570,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             <Input
               placeholder="Buscar por negocio, servicio, empleado o sede..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -510,10 +580,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Status */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                >
+                <Button variant="outline" className="w-full justify-between">
                   {statusFilters.length === 0 ? 'Estado' : `${statusFilters.length} estado(s)`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
@@ -521,20 +588,22 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
               <PopoverContent className="w-56 p-0">
                 <div className="p-4 space-y-3">
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id="status-all"
                       checked={statusFilters.length === 0}
                       onCheckedChange={() => setStatusFilters([])}
                     />
-                    <label htmlFor="status-all" className="text-sm cursor-pointer">Todos los estados</label>
+                    <label htmlFor="status-all" className="text-sm cursor-pointer">
+                      Todos los estados
+                    </label>
                   </div>
                   <div className="border-t pt-3 space-y-2">
                     {['attended', 'cancelled', 'no_show'].map(status => (
                       <div key={status} className="flex items-center space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id={`status-${status}`}
                           checked={statusFilters.includes(status)}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             if (checked) {
                               setStatusFilters([...statusFilters, status])
                             } else {
@@ -542,10 +611,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                             }
                           }}
                         />
-                        <label 
-                          htmlFor={`status-${status}`} 
-                          className="text-sm cursor-pointer"
-                        >
+                        <label htmlFor={`status-${status}`} className="text-sm cursor-pointer">
                           {status === 'attended' && 'Asistidas'}
                           {status === 'cancelled' && 'Canceladas'}
                           {status === 'no_show' && 'Perdidas'}
@@ -560,11 +626,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Business */}
             <Popover open={businessPopoverOpen} onOpenChange={setBusinessPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                >
-                  {businessFilters.length === 0 ? 'Negocio' : `${businessFilters.length} negocio(s)`}
+                <Button variant="outline" className="w-full justify-between">
+                  {businessFilters.length === 0
+                    ? 'Negocio'
+                    : `${businessFilters.length} negocio(s)`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -573,14 +638,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                   <Input
                     placeholder="Buscar negocio..."
                     value={businessSearch}
-                    onChange={(e) => setBusinessSearch(e.target.value)}
+                    onChange={e => setBusinessSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
-                    <Checkbox 
+                    <Checkbox
                       id="business-all"
                       checked={businessFilters.length === 0}
                       onCheckedChange={() => {
@@ -588,15 +653,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                         setBusinessSearch('')
                       }}
                     />
-                    <label htmlFor="business-all" className="text-sm cursor-pointer">Todos los negocios</label>
+                    <label htmlFor="business-all" className="text-sm cursor-pointer">
+                      Todos los negocios
+                    </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
                     {filteredBusinesses.map(business => (
                       <div key={business.id} className="flex items-center space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id={`business-${business.id}`}
                           checked={businessFilters.includes(business.id)}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             if (checked) {
                               setBusinessFilters([...businessFilters, business.id])
                             } else {
@@ -604,7 +671,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                             }
                           }}
                         />
-                        <label htmlFor={`business-${business.id}`} className="text-sm cursor-pointer flex-1">
+                        <label
+                          htmlFor={`business-${business.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
                           {business.name}
                         </label>
                       </div>
@@ -622,10 +692,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Location */}
             <Popover open={locationPopoverOpen} onOpenChange={setLocationPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                >
+                <Button variant="outline" className="w-full justify-between">
                   {locationFilters.length === 0 ? 'Sede' : `${locationFilters.length} sede(s)`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
@@ -635,14 +702,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                   <Input
                     placeholder="Buscar sede..."
                     value={locationSearch}
-                    onChange={(e) => setLocationSearch(e.target.value)}
+                    onChange={e => setLocationSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
-                    <Checkbox 
+                    <Checkbox
                       id="location-all"
                       checked={locationFilters.length === 0}
                       onCheckedChange={() => {
@@ -650,15 +717,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                         setLocationSearch('')
                       }}
                     />
-                    <label htmlFor="location-all" className="text-sm cursor-pointer">Todas las sedes</label>
+                    <label htmlFor="location-all" className="text-sm cursor-pointer">
+                      Todas las sedes
+                    </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
                     {filteredLocations.map(location => (
                       <div key={location.id} className="flex items-center space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id={`location-${location.id}`}
                           checked={locationFilters.includes(location.id)}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             if (checked) {
                               setLocationFilters([...locationFilters, location.id])
                             } else {
@@ -666,7 +735,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                             }
                           }}
                         />
-                        <label htmlFor={`location-${location.id}`} className="text-sm cursor-pointer flex-1">
+                        <label
+                          htmlFor={`location-${location.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
                           {location.name}
                         </label>
                       </div>
@@ -684,11 +756,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Service */}
             <Popover open={servicePopoverOpen} onOpenChange={setServicePopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                >
-                  {serviceFilters.length === 0 ? 'Servicio' : `${serviceFilters.length} servicio(s)`}
+                <Button variant="outline" className="w-full justify-between">
+                  {serviceFilters.length === 0
+                    ? 'Servicio'
+                    : `${serviceFilters.length} servicio(s)`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -697,14 +768,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                   <Input
                     placeholder="Buscar servicio..."
                     value={serviceSearch}
-                    onChange={(e) => setServiceSearch(e.target.value)}
+                    onChange={e => setServiceSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
-                    <Checkbox 
+                    <Checkbox
                       id="service-all"
                       checked={serviceFilters.length === 0}
                       onCheckedChange={() => {
@@ -712,15 +783,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                         setServiceSearch('')
                       }}
                     />
-                    <label htmlFor="service-all" className="text-sm cursor-pointer">Todos los servicios</label>
+                    <label htmlFor="service-all" className="text-sm cursor-pointer">
+                      Todos los servicios
+                    </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
                     {filteredServices.map(service => (
                       <div key={service.id} className="flex items-center space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id={`service-${service.id}`}
                           checked={serviceFilters.includes(service.id)}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             if (checked) {
                               setServiceFilters([...serviceFilters, service.id])
                             } else {
@@ -728,7 +801,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                             }
                           }}
                         />
-                        <label htmlFor={`service-${service.id}`} className="text-sm cursor-pointer flex-1">
+                        <label
+                          htmlFor={`service-${service.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
                           {service.name}
                         </label>
                       </div>
@@ -746,11 +822,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Category */}
             <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                >
-                  {categoryFilters.length === 0 ? 'Categoría' : `${categoryFilters.length} categoría(s)`}
+                <Button variant="outline" className="w-full justify-between">
+                  {categoryFilters.length === 0
+                    ? 'Categoría'
+                    : `${categoryFilters.length} categoría(s)`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -759,14 +834,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                   <Input
                     placeholder="Buscar categoría..."
                     value={categorySearch}
-                    onChange={(e) => setCategorySearch(e.target.value)}
+                    onChange={e => setCategorySearch(e.target.value)}
                     className="mb-2"
                     autoFocus
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
-                    <Checkbox 
+                    <Checkbox
                       id="category-all"
                       checked={categoryFilters.length === 0}
                       onCheckedChange={() => {
@@ -774,15 +849,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                         setCategorySearch('')
                       }}
                     />
-                    <label htmlFor="category-all" className="text-sm cursor-pointer">Todas las categorías</label>
+                    <label htmlFor="category-all" className="text-sm cursor-pointer">
+                      Todas las categorías
+                    </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
                     {filteredCategories.map(category => (
                       <div key={category.id} className="flex items-center space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id={`category-${category.id}`}
                           checked={categoryFilters.includes(category.id)}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             if (checked) {
                               setCategoryFilters([...categoryFilters, category.id])
                             } else {
@@ -790,7 +867,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                             }
                           }}
                         />
-                        <label htmlFor={`category-${category.id}`} className="text-sm cursor-pointer flex-1">
+                        <label
+                          htmlFor={`category-${category.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
                           {category.name}
                         </label>
                       </div>
@@ -808,11 +888,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Employee */}
             <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                >
-                  {employeeFilters.length === 0 ? 'Profesional' : `${employeeFilters.length} profesional(es)`}
+                <Button variant="outline" className="w-full justify-between">
+                  {employeeFilters.length === 0
+                    ? 'Profesional'
+                    : `${employeeFilters.length} profesional(es)`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -821,14 +900,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                   <Input
                     placeholder="Buscar profesional..."
                     value={employeeSearch}
-                    onChange={(e) => setEmployeeSearch(e.target.value)}
+                    onChange={e => setEmployeeSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
-                    <Checkbox 
+                    <Checkbox
                       id="employee-all"
                       checked={employeeFilters.length === 0}
                       onCheckedChange={() => {
@@ -836,15 +915,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                         setEmployeeSearch('')
                       }}
                     />
-                    <label htmlFor="employee-all" className="text-sm cursor-pointer">Todos los profesionales</label>
+                    <label htmlFor="employee-all" className="text-sm cursor-pointer">
+                      Todos los profesionales
+                    </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
                     {filteredEmployees.map(employee => (
                       <div key={employee.id} className="flex items-center space-x-2">
-                        <Checkbox 
+                        <Checkbox
                           id={`employee-${employee.id}`}
                           checked={employeeFilters.includes(employee.id)}
-                          onCheckedChange={(checked) => {
+                          onCheckedChange={checked => {
                             if (checked) {
                               setEmployeeFilters([...employeeFilters, employee.id])
                             } else {
@@ -852,7 +933,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                             }
                           }}
                         />
-                        <label htmlFor={`employee-${employee.id}`} className="text-sm cursor-pointer flex-1">
+                        <label
+                          htmlFor={`employee-${employee.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
                           {employee.full_name}
                         </label>
                       </div>
@@ -887,7 +971,8 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       {/* Results Count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Mostrando {paginatedAppointments.length} de {filteredAppointments.length} citas ({appointments.length} total)
+          Mostrando {paginatedAppointments.length} de {filteredAppointments.length} citas (
+          {appointments.length} total)
         </p>
       </div>
 
@@ -896,11 +981,9 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
         <Card>
           <CardContent className="py-12 text-center">
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No se encontraron citas
-            </h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No se encontraron citas</h3>
             <p className="text-muted-foreground">
-              {hasActiveFilters 
+              {hasActiveFilters
                 ? 'Intenta ajustar los filtros para ver más resultados'
                 : 'Aún no tienes citas en tu historial'}
             </p>
@@ -910,80 +993,85 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
         <>
           <div className="grid grid-cols-1 gap-4">
             {paginatedAppointments.map(appointment => (
-            <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  {/* Left Section */}
-                  <div className="flex-1 space-y-3">
-                    {/* Status and Business */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {getStatusBadge(appointment.status)}
-                      {appointment.business?.name && (
-                        <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                          <Building2 className="h-4 w-4" />
-                          {appointment.business.name}
+              <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    {/* Left Section */}
+                    <div className="flex-1 space-y-3">
+                      {/* Status and Business */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        {getStatusBadge(appointment.status)}
+                        {appointment.business?.name && (
+                          <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                            <Building2 className="h-4 w-4" />
+                            {appointment.business.name}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Service */}
+                      {appointment.service?.name && (
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          <span className="font-semibold text-foreground text-lg">
+                            {appointment.service.name}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Date and Time */}
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            {format(new Date(appointment.start_time), "d 'de' MMMM, yyyy", {
+                              locale: es,
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            {format(new Date(appointment.start_time), 'HH:mm', { locale: es })} -{' '}
+                            {format(new Date(appointment.end_time), 'HH:mm', { locale: es })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Location */}
+                      {appointment.location?.name && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span>{appointment.location.name}</span>
+                        </div>
+                      )}
+
+                      {/* Employee */}
+                      {appointment.employee?.full_name && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <User className="h-4 w-4 flex-shrink-0" />
+                          <span>{appointment.employee.full_name}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Service */}
-                    {appointment.service?.name && (
-                      <div className="flex items-center gap-2">
-                        <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        <span className="font-semibold text-foreground text-lg">
-                          {appointment.service.name}
+                    {/* Right Section - Price */}
+                    {(appointment.service?.price || appointment.price) && (
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-2 text-2xl font-bold text-foreground">
+                          <DollarSign className="h-6 w-6" />
+                          {(appointment.service?.price || appointment.price || 0).toLocaleString(
+                            'es-MX'
+                          )}
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {appointment.service?.currency || appointment.currency || 'MXN'}
                         </span>
-                      </div>
-                    )}
-
-                    {/* Date and Time */}
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {format(new Date(appointment.start_time), "d 'de' MMMM, yyyy", { locale: es })}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {format(new Date(appointment.start_time), 'HH:mm', { locale: es })} - {format(new Date(appointment.end_time), 'HH:mm', { locale: es })}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Location */}
-                    {appointment.location?.name && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 flex-shrink-0" />
-                        <span>{appointment.location.name}</span>
-                      </div>
-                    )}
-
-                    {/* Employee */}
-                    {appointment.employee?.full_name && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-4 w-4 flex-shrink-0" />
-                        <span>{appointment.employee.full_name}</span>
                       </div>
                     )}
                   </div>
-
-                  {/* Right Section - Price */}
-                  {(appointment.service?.price || appointment.price) && (
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="flex items-center gap-2 text-2xl font-bold text-foreground">
-                        <DollarSign className="h-6 w-6" />
-                        {(appointment.service?.price || appointment.price || 0).toLocaleString('es-MX')}
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {appointment.service?.currency || appointment.currency || 'MXN'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             ))}
           </div>
 

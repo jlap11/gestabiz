@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -22,13 +22,10 @@ serve(async (req) => {
     const { appointment } = await req.json()
 
     if (!appointment) {
-      return new Response(
-        JSON.stringify({ error: 'Appointment data is required' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Appointment data is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Get user and client information
@@ -39,13 +36,10 @@ serve(async (req) => {
       .single()
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { 
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Format appointment date and time
@@ -57,7 +51,7 @@ serve(async (req) => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
 
     // Send confirmation email to user
@@ -66,7 +60,7 @@ serve(async (req) => {
       recipientName: user.full_name || 'User',
       appointment,
       appointmentDateTime,
-      isClientEmail: false
+      isClientEmail: false,
     })
 
     // Send confirmation email to client if email provided
@@ -77,30 +71,26 @@ serve(async (req) => {
         recipientName: appointment.client_name,
         appointment,
         appointmentDateTime,
-        isClientEmail: true
+        isClientEmail: true,
       })
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         userEmailSent,
-        clientEmailSent: appointment.client_email ? clientEmailSent : null
+        clientEmailSent: appointment.client_email ? clientEmailSent : null,
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Function error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })
 
@@ -109,7 +99,7 @@ async function sendConfirmationEmail({
   recipientName,
   appointment,
   appointmentDateTime,
-  isClientEmail
+  isClientEmail,
 }: {
   to: string
   recipientName: string
@@ -118,7 +108,7 @@ async function sendConfirmationEmail({
   isClientEmail: boolean
 }): Promise<boolean> {
   try {
-    const subject = isClientEmail 
+    const subject = isClientEmail
       ? `Appointment Confirmed - ${appointment.title}`
       : `Appointment Created - ${appointment.title}`
 
@@ -152,9 +142,10 @@ async function sendConfirmationEmail({
         <div class="content">
           <p>Hello ${recipientName}!</p>
           
-          ${isClientEmail 
-            ? '<p>Your appointment has been confirmed. Here are the details:</p>'
-            : '<p>You have successfully created a new appointment. Here are the details:</p>'
+          ${
+            isClientEmail
+              ? '<p>Your appointment has been confirmed. Here are the details:</p>'
+              : '<p>You have successfully created a new appointment. Here are the details:</p>'
           }
           
           <div class="appointment-card">
@@ -175,20 +166,30 @@ async function sendConfirmationEmail({
               <div class="detail-row">
                 <span class="label">Duration:</span> ${appointment.duration || 60} minutes
               </div>
-              ${appointment.location ? `
+              ${
+                appointment.location
+                  ? `
               <div class="detail-row">
                 <span class="label">Location:</span> ${appointment.location}
               </div>
-              ` : ''}
-              ${appointment.description ? `
+              `
+                  : ''
+              }
+              ${
+                appointment.description
+                  ? `
               <div class="detail-row">
                 <span class="label">Description:</span> ${appointment.description}
               </div>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
           </div>
           
-          ${isClientEmail ? `
+          ${
+            isClientEmail
+              ? `
           <p><strong>📱 Contact Information:</strong></p>
           <p>If you need to make any changes or have questions, please contact us.</p>
           
@@ -200,7 +201,8 @@ async function sendConfirmationEmail({
               <li>Bring any relevant documents or materials</li>
             </ul>
           </div>
-          ` : `
+          `
+              : `
           <p>You will receive automatic reminders before the appointment.</p>
           
           <div style="text-align: center; margin: 30px 0;">
@@ -208,7 +210,8 @@ async function sendConfirmationEmail({
               Manage Appointments
             </a>
           </div>
-          `}
+          `
+          }
         </div>
         <div class="footer">
           <p>This confirmation was sent from Gestabiz</p>
@@ -226,7 +229,7 @@ async function sendConfirmationEmail({
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
+          Authorization: `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -244,11 +247,10 @@ async function sendConfirmationEmail({
         to,
         subject,
         isClientEmail,
-        appointment: appointment.title
+        appointment: appointment.title,
       })
       return true
     }
-
   } catch (error) {
     console.error('Email send error:', error)
     return false

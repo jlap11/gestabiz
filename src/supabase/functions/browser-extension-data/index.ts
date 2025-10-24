@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -20,16 +20,17 @@ serve(async (req) => {
     const { user_id, limit = 5 } = await req.json()
 
     if (!user_id) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required field: user_id' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'Missing required field: user_id' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Get upcoming appointments for the user
     const { data: appointments, error } = await supabaseClient
       .from('appointments')
-      .select(`
+      .select(
+        `
         id,
         title,
         description,
@@ -41,7 +42,8 @@ serve(async (req) => {
         status,
         location,
         notes
-      `)
+      `
+      )
       .eq('user_id', user_id)
       .eq('status', 'scheduled')
       .gte('start_time', new Date().toISOString())
@@ -53,43 +55,40 @@ serve(async (req) => {
     }
 
     // Format appointments for browser extension
-    const formattedAppointments = appointments?.map(apt => ({
-      id: apt.id,
-      title: apt.title,
-      client: apt.client_name,
-      datetime: apt.start_time,
-      location: apt.location,
-      status: apt.status,
-      timeUntil: getTimeUntil(apt.start_time)
-    })) || []
+    const formattedAppointments =
+      appointments?.map(apt => ({
+        id: apt.id,
+        title: apt.title,
+        client: apt.client_name,
+        datetime: apt.start_time,
+        location: apt.location,
+        status: apt.status,
+        timeUntil: getTimeUntil(apt.start_time),
+      })) || []
 
     // Get user stats
     const { data: stats } = await supabaseClient.rpc('get_appointment_stats', {
-      user_uuid: user_id
+      user_uuid: user_id,
     })
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         appointments: formattedAppointments,
         stats: stats || {},
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
-
   } catch (error) {
     console.error('Error in browser-extension-data function:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })
 
@@ -97,12 +96,12 @@ function getTimeUntil(datetime: string): string {
   const now = new Date()
   const appointmentTime = new Date(datetime)
   const diffInMs = appointmentTime.getTime() - now.getTime()
-  
+
   if (diffInMs < 0) return 'Past due'
-  
+
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
   const diffInDays = Math.floor(diffInHours / 24)
-  
+
   if (diffInDays > 0) {
     return `${diffInDays} day${diffInDays === 1 ? '' : 's'}`
   } else if (diffInHours > 0) {

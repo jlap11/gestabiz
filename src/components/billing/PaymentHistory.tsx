@@ -2,12 +2,18 @@
 // Payment history table with filters, pagination, and PDF/CSV export
 // Integrates with subscription_payments table
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Calendar, Download, FileText, Filter, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -66,7 +72,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
   // Filter payments
   const filteredPayments = useMemo(() => {
-    return payments.filter((payment) => {
+    return payments.filter(payment => {
       // Status filter
       if (statusFilter !== 'all' && payment.status !== statusFilter) {
         return false
@@ -107,7 +113,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
   // Export to CSV
   const handleExportCSV = () => {
     const headers = ['Fecha', 'ID Transacción', 'Monto', 'Estado', 'Descripción']
-    const rows = filteredPayments.map((payment) => [
+    const rows = filteredPayments.map(payment => [
       formatDate(payment.paid_at),
       payment.id,
       formatCurrency(payment.amount, payment.currency),
@@ -117,7 +123,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
     const csvContent = [
       headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -136,7 +142,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
   // Export to PDF (basic implementation)
   const handleExportPDF = () => {
     toast.info('Generando PDF...', { duration: 2000 })
-    
+
     // In production, use a library like jsPDF or call an Edge Function
     setTimeout(() => {
       toast.success('PDF generado (implementación simulada)')
@@ -156,7 +162,10 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
   // Status badge variant
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+    const variants: Record<
+      string,
+      { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
+    > = {
       succeeded: { variant: 'default', label: 'Exitoso' },
       failed: { variant: 'destructive', label: 'Fallido' },
       pending: { variant: 'secondary', label: 'Pendiente' },
@@ -164,20 +173,14 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
     }
 
     const { variant, label } = variants[status] || { variant: 'outline' as const, label: status }
-    return (
-      <Badge variant={variant}>
-        {label}
-      </Badge>
-    )
+    return <Badge variant={variant}>{label}</Badge>
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t('billing.paymentHistory')}</CardTitle>
-        <CardDescription>
-          {t('billing.paymentHistoryDescription')}
-        </CardDescription>
+        <CardDescription>{t('billing.paymentHistoryDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Filters */}
@@ -189,14 +192,17 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
               <Input
                 placeholder="Buscar por ID o descripción..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="pl-9 min-h-[44px] text-sm sm:text-base"
               />
             </div>
           </div>
 
           {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+          <Select
+            value={statusFilter}
+            onValueChange={value => setStatusFilter(value as StatusFilter)}
+          >
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder={t('common.placeholders.status')} />
@@ -211,7 +217,10 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
           </Select>
 
           {/* Period Filter */}
-          <Select value={periodFilter} onValueChange={(value) => setPeriodFilter(value as PeriodFilter)}>
+          <Select
+            value={periodFilter}
+            onValueChange={value => setPeriodFilter(value as PeriodFilter)}
+          >
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue placeholder={t('common.placeholders.period')} />
@@ -226,19 +235,19 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
           {/* Export Buttons */}
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleExportCSV} 
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleExportCSV}
               title="Exportar CSV"
               className="min-w-[44px] min-h-[44px]"
             >
               <FileText className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleExportPDF} 
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleExportPDF}
               title="Exportar PDF"
               className="min-w-[44px] min-h-[44px]"
             >
@@ -273,19 +282,21 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedPayments.map((payment) => (
+                paginatedPayments.map(payment => (
                   <TableRow key={payment.id}>
-                    <TableCell className="font-medium">
-                      {formatDate(payment.paid_at)}
-                    </TableCell>
+                    <TableCell className="font-medium">{formatDate(payment.paid_at)}</TableCell>
                     <TableCell className="font-mono text-sm">
                       {payment.id.substring(0, 12)}...
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{payment.description || 'Pago de suscripción'}</div>
+                        <div className="font-medium">
+                          {payment.description || 'Pago de suscripción'}
+                        </div>
                         {payment.failure_reason && (
-                          <div className="text-xs text-destructive mt-1">{payment.failure_reason}</div>
+                          <div className="text-xs text-destructive mt-1">
+                            {payment.failure_reason}
+                          </div>
                         )}
                       </div>
                     </TableCell>
@@ -319,7 +330,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
               No se encontraron pagos
             </div>
           ) : (
-            paginatedPayments.map((payment) => (
+            paginatedPayments.map(payment => (
               <Card key={payment.id} className="p-4">
                 <div className="space-y-3">
                   {/* Header: Date + Status */}
@@ -378,7 +389,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 className="flex-1 sm:flex-none min-h-[44px]"
               >
@@ -387,7 +398,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 className="flex-1 sm:flex-none min-h-[44px]"
               >

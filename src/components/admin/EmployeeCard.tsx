@@ -5,7 +5,7 @@
  * Phase 3 - UI Components
  */
 
-import { MoreVertical, User, TrendingUp, Star, DollarSign, Edit, Eye, UserPlus } from 'lucide-react'
+import { DollarSign, Edit, Eye, MoreVertical, Star, TrendingUp, User, UserPlus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,12 +58,12 @@ const getLevelBadgeColor = (level: number): string => {
 const getLevelLabel = (level: number, t: (key: string) => string): string => {
   const levelKey = `employees.levels.${level}` as const
   const label = t(levelKey)
-  
+
   // Fallback si la traducción no existe
   if (label === levelKey) {
     return `${t('employees.list.level')} ${level}`
   }
-  
+
   return label
 }
 
@@ -195,7 +195,8 @@ export function EmployeeCard({
             {employee.supervisor_name && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <User className="h-3 w-3" />
-                {t('employees.card.supervisor')}: <span className="font-medium">{employee.supervisor_name}</span>
+                {t('employees.card.supervisor')}:{' '}
+                <span className="font-medium">{employee.supervisor_name}</span>
               </div>
             )}
             {employee.direct_reports_count > 0 && (

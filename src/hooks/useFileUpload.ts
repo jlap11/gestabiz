@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -56,7 +56,7 @@ export function useFileUpload(bucket: StorageBucket) {
         return {
           valid: false,
           error: `Tipo de archivo no permitido. Solo se permiten: ${allowedTypes
-            .map((t) => t.split('/')[1])
+            .map(t => t.split('/')[1])
             .join(', ')}`,
         }
       }
@@ -105,7 +105,7 @@ export function useFileUpload(bucket: StorageBucket) {
 
         // Simulate progress (Supabase doesn't provide real-time upload progress)
         const progressInterval = setInterval(() => {
-          setUploadProgress((prev) => {
+          setUploadProgress(prev => {
             const next = prev + 10
             if (next >= 90) {
               clearInterval(progressInterval)
@@ -148,7 +148,8 @@ export function useFileUpload(bucket: StorageBucket) {
           path: data.path,
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error desconocido al subir archivo'
+        const errorMessage =
+          err instanceof Error ? err.message : 'Error desconocido al subir archivo'
         setError(errorMessage)
         toast.error(errorMessage)
         return { success: false, error: errorMessage }
@@ -176,7 +177,7 @@ export function useFileUpload(bucket: StorageBucket) {
         results.push(result)
       }
 
-      const successCount = results.filter((r) => r.success).length
+      const successCount = results.filter(r => r.success).length
       const failCount = results.length - successCount
 
       if (failCount > 0) {
@@ -232,7 +233,7 @@ export function useFileUpload(bucket: StorageBucket) {
 
         if (error) throw error
 
-        return data.map((file) => `${folderPath}/${file.name}`)
+        return data.map(file => `${folderPath}/${file.name}`)
       } catch (err) {
         console.error('Error listing files:', err)
         return []

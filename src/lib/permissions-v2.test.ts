@@ -1,19 +1,19 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   ALL_PERMISSIONS,
-  PERMISSION_DESCRIPTIONS,
   PERMISSION_CATEGORIES,
-  isBusinessOwner,
-  hasPermission,
-  hasAnyPermission,
-  hasAllPermissions,
-  getUserActivePermissions,
-  hasBusinessRole,
-  getUserBusinessRole,
+  PERMISSION_DESCRIPTIONS,
   canProvideServices,
   convertLegacyPermissions,
+  getUserActivePermissions,
+  getUserBusinessRole,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasBusinessRole,
+  hasPermission,
+  isBusinessOwner,
 } from '@/lib/permissions-v2'
-import type { UserPermission, BusinessRole } from '@/types/types'
+import type { BusinessRole, UserPermission } from '@/types/types'
 
 /**
  * Helper para crear mock de UserPermission
@@ -61,7 +61,7 @@ describe('permissions-v2.ts - Core Library', () => {
 
     it('debe tener descripciones para todos los permisos', () => {
       const permissionsWithoutDescription = ALL_PERMISSIONS.filter(
-        (perm) => !PERMISSION_DESCRIPTIONS[perm]
+        perm => !PERMISSION_DESCRIPTIONS[perm]
       )
       expect(permissionsWithoutDescription).toHaveLength(0)
     })
@@ -73,7 +73,7 @@ describe('permissions-v2.ts - Core Library', () => {
 
     it('debe tener todos los permisos organizados en categorías', () => {
       const allCategoryPermissions = Object.values(PERMISSION_CATEGORIES).flatMap(
-        (cat) => cat.permissions
+        cat => cat.permissions
       )
       expect(allCategoryPermissions).toHaveLength(60)
       expect(allCategoryPermissions.sort()).toEqual(ALL_PERMISSIONS.sort())
@@ -85,14 +85,14 @@ describe('permissions-v2.ts - Core Library', () => {
     })
 
     it('todas las descripciones deben ser strings no vacíos', () => {
-      Object.values(PERMISSION_DESCRIPTIONS).forEach((desc) => {
+      Object.values(PERMISSION_DESCRIPTIONS).forEach(desc => {
         expect(typeof desc).toBe('string')
         expect(desc.length).toBeGreaterThan(0)
       })
     })
 
     it('todas las categorías deben tener label', () => {
-      Object.values(PERMISSION_CATEGORIES).forEach((cat) => {
+      Object.values(PERMISSION_CATEGORIES).forEach(cat => {
         expect(cat.label).toBeTruthy()
         expect(typeof cat.label).toBe('string')
       })
@@ -132,16 +132,12 @@ describe('permissions-v2.ts - Core Library', () => {
     const ownerId = 'owner-456'
 
     it('debe retornar true si el usuario tiene el permiso', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(hasPermission(userId, ownerId, permissions, 'business.view')).toBe(true)
     })
 
     it('debe retornar false si el usuario NO tiene el permiso', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(hasPermission(userId, ownerId, permissions, 'business.delete')).toBe(false)
     })
 
@@ -181,27 +177,21 @@ describe('permissions-v2.ts - Core Library', () => {
     const ownerId = 'owner-456'
 
     it('debe retornar true si el usuario tiene alguno de los permisos', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(
         hasAnyPermission(userId, ownerId, permissions, ['business.view', 'business.edit'])
       ).toBe(true)
     })
 
     it('debe retornar false si el usuario NO tiene ninguno', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(
         hasAnyPermission(userId, ownerId, permissions, ['business.delete', 'business.edit'])
       ).toBe(false)
     })
 
     it('debe manejar array vacío de permisos requeridos', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(hasAnyPermission(userId, ownerId, permissions, [])).toBe(false)
     })
 
@@ -228,23 +218,21 @@ describe('permissions-v2.ts - Core Library', () => {
     })
 
     it('debe retornar false si falta algún permiso', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(
         hasAllPermissions(userId, ownerId, permissions, ['business.view', 'business.edit'])
       ).toBe(false)
     })
 
     it('debe retornar true con array vacío de permisos requeridos', () => {
-      const permissions = [
-        createMockUserPermission({ permission: 'business.view' }),
-      ]
+      const permissions = [createMockUserPermission({ permission: 'business.view' })]
       expect(hasAllPermissions(userId, ownerId, permissions, [])).toBe(true)
     })
 
     it('debe retornar true si es Admin Dueño', () => {
-      expect(hasAllPermissions('owner-123', 'owner-123', [], ['business.delete', 'business.edit'])).toBe(true)
+      expect(
+        hasAllPermissions('owner-123', 'owner-123', [], ['business.delete', 'business.edit'])
+      ).toBe(true)
     })
   })
 
@@ -296,23 +284,17 @@ describe('permissions-v2.ts - Core Library', () => {
   // =====================================================
   describe('hasBusinessRole()', () => {
     it('debe retornar true si el usuario tiene el rol en el negocio', () => {
-      const roles = [
-        createMockBusinessRole({ business_id: 'business-1', role: 'admin' }),
-      ]
+      const roles = [createMockBusinessRole({ business_id: 'business-1', role: 'admin' })]
       expect(hasBusinessRole(roles, 'business-1', 'admin')).toBe(true)
     })
 
     it('debe retornar false si el usuario NO tiene el rol', () => {
-      const roles = [
-        createMockBusinessRole({ business_id: 'business-1', role: 'admin' }),
-      ]
+      const roles = [createMockBusinessRole({ business_id: 'business-1', role: 'admin' })]
       expect(hasBusinessRole(roles, 'business-1', 'employee')).toBe(false)
     })
 
     it('debe retornar false si es otro negocio', () => {
-      const roles = [
-        createMockBusinessRole({ business_id: 'business-1', role: 'admin' }),
-      ]
+      const roles = [createMockBusinessRole({ business_id: 'business-1', role: 'admin' })]
       expect(hasBusinessRole(roles, 'business-2', 'admin')).toBe(false)
     })
 
@@ -329,16 +311,12 @@ describe('permissions-v2.ts - Core Library', () => {
   // =====================================================
   describe('getUserBusinessRole()', () => {
     it('debe retornar el rol del usuario en el negocio', () => {
-      const roles = [
-        createMockBusinessRole({ business_id: 'business-1', role: 'admin' }),
-      ]
+      const roles = [createMockBusinessRole({ business_id: 'business-1', role: 'admin' })]
       expect(getUserBusinessRole(roles, 'business-1')).toBe('admin')
     })
 
     it('debe retornar null si no tiene rol en el negocio', () => {
-      const roles = [
-        createMockBusinessRole({ business_id: 'business-1', role: 'admin' }),
-      ]
+      const roles = [createMockBusinessRole({ business_id: 'business-1', role: 'admin' })]
       expect(getUserBusinessRole(roles, 'business-2')).toBe(null)
     })
 
@@ -377,9 +355,7 @@ describe('permissions-v2.ts - Core Library', () => {
     })
 
     it('debe retornar false si es admin', () => {
-      const roles = [
-        createMockBusinessRole({ business_id: 'business-1', role: 'admin' }),
-      ]
+      const roles = [createMockBusinessRole({ business_id: 'business-1', role: 'admin' })]
       expect(canProvideServices(roles, 'business-1')).toBe(false)
     })
   })

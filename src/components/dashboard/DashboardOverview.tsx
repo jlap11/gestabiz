@@ -1,32 +1,32 @@
 import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+import {
   Area,
-  AreaChart
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts'
-import { 
-  Clock, 
-  DollarSign, 
-  TrendingUp, 
+import {
   AlertCircle,
+  CalendarDays,
   CheckCircle as CheckCircleIcon,
+  Clock,
+  DollarSign,
+  TrendingUp,
   XCircle as XCircleIcon,
-  CalendarDays
 } from 'lucide-react'
-import { User, Appointment, DashboardStats } from '@/types'
+import { Appointment, DashboardStats, User } from '@/types'
 import { useLanguage } from '@/contexts'
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday } from 'date-fns'
+import { eachDayOfInterval, endOfWeek, format, isToday, startOfWeek } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 interface DashboardOverviewProps {
@@ -51,7 +51,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
     )
 
     // Appointments by day of week
-  const appointmentsByDay = weekDays.map(day => {
+    const appointmentsByDay = weekDays.map(day => {
       const dayAppointments = appointments.filter(apt => {
         const aptDate = new Date(apt.start_time)
         return aptDate.toDateString() === day.toDateString()
@@ -63,7 +63,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
         completed: dayAppointments.filter(apt => apt.status === 'completed').length,
         cancelled: dayAppointments.filter(apt => apt.status === 'cancelled').length,
         confirmed: dayAppointments.filter(apt => apt.status === 'confirmed').length,
-        no_show: dayAppointments.filter(apt => apt.status === 'no_show').length
+        no_show: dayAppointments.filter(apt => apt.status === 'no_show').length,
       }
     })
 
@@ -72,14 +72,14 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       confirmed: appointments.filter(apt => apt.status === 'confirmed').length,
       completed: appointments.filter(apt => apt.status === 'completed').length,
       cancelled: appointments.filter(apt => apt.status === 'cancelled').length,
-      no_show: appointments.filter(apt => apt.status === 'no_show').length
+      no_show: appointments.filter(apt => apt.status === 'no_show').length,
     }
 
     const statusData = [
       { name: t('status.confirmed'), value: statusCounts.confirmed, color: '#3b82f6' },
       { name: t('status.completed'), value: statusCounts.completed, color: '#10b981' },
       { name: t('status.cancelled'), value: statusCounts.cancelled, color: '#ef4444' },
-      { name: t('status.noShow'), value: statusCounts.no_show, color: '#6b7280' }
+      { name: t('status.noShow'), value: statusCounts.no_show, color: '#6b7280' },
     ].filter(item => item.value > 0)
 
     // Revenue by week
@@ -88,7 +88,11 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       const revenue = appointments
         .filter(apt => {
           const aptDate = new Date(apt.start_time)
-          return !!targetDateString && aptDate.toDateString() === targetDateString && apt.status === 'completed'
+          return (
+            !!targetDateString &&
+            aptDate.toDateString() === targetDateString &&
+            apt.status === 'completed'
+          )
         })
         .reduce((sum, apt) => sum + (apt.price || 0), 0)
       return { ...day, revenue }
@@ -98,27 +102,31 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       appointmentsByDay,
       statusData,
       revenueData,
-      statusCounts
+      statusCounts,
     }
   }, [appointments, t, locale])
 
   // Today's appointments
   const todayAppointments = useMemo(() => {
-    return appointments.filter(apt => {
-      const aptDate = new Date(apt.start_time)
-      return isToday(aptDate)
-    }).sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+    return appointments
+      .filter(apt => {
+        const aptDate = new Date(apt.start_time)
+        return isToday(aptDate)
+      })
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
   }, [appointments])
 
   // Upcoming appointments (next 7 days)
   const upcomingAppointments = useMemo(() => {
     const now = new Date()
     const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    
-    return appointments.filter(apt => {
-      const aptDate = new Date(apt.start_time)
-      return aptDate >= now && aptDate <= nextWeek && apt.status !== 'cancelled'
-    }).sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+
+    return appointments
+      .filter(apt => {
+        const aptDate = new Date(apt.start_time)
+        return aptDate >= now && aptDate <= nextWeek && apt.status !== 'cancelled'
+      })
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
   }, [appointments])
 
   const getStatusIcon = (status: string) => {
@@ -136,7 +144,9 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
     }
   }
 
-  const getStatusBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusBadgeVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'completed':
         return 'default'
@@ -165,62 +175,53 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
           <CardContent>
             <div className="text-2xl font-bold">{todayAppointments.length}</div>
             <p className="text-xs text-muted-foreground">
-              {todayAppointments.filter(apt => apt.status === 'completed').length} {t('status.completed')}
+              {todayAppointments.filter(apt => apt.status === 'completed').length}{' '}
+              {t('status.completed')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('dashboard.upcomingWeek')}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.upcomingWeek')}</CardTitle>
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {t('dashboard.nextSevenDays')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.nextSevenDays')}</p>
           </CardContent>
         </Card>
 
         {user.activeRole !== 'client' && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('dashboard.totalRevenue')}
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats?.revenue_total?.toFixed(2) || '0.00'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t('dashboard.thisMonth')}
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('dashboard.totalRevenue')}</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${stats?.revenue_total?.toFixed(2) || '0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">{t('dashboard.thisMonth')}</p>
+            </CardContent>
+          </Card>
         )}
 
         {user.activeRole !== 'client' && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('dashboard.avgAppointmentValue')}
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats?.average_appointment_value?.toFixed(2) || '0.00'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t('dashboard.perAppointment')}
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t('dashboard.avgAppointmentValue')}
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${stats?.average_appointment_value?.toFixed(2) || '0.00'}
+              </div>
+              <p className="text-xs text-muted-foreground">{t('dashboard.perAppointment')}</p>
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -238,11 +239,11 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
                   <YAxis />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px'
+                      borderRadius: '6px',
                     }}
                   />
                   <Bar dataKey="completed" fill="#10b981" name={t('status.completed')} />
@@ -273,15 +274,15 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {analyticsData.statusData.map((entry) => (
+                      {analyticsData.statusData.map(entry => (
                         <Cell key={`cell-${entry.name}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px'
+                        borderRadius: '6px',
                       }}
                     />
                   </PieChart>
@@ -298,35 +299,35 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
 
       {/* Revenue Chart (admins/empleados) */}
       {user.activeRole !== 'client' && (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('dashboard.weeklyRevenue')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={analyticsData.revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '6px'
-                }}
-                formatter={(value) => [`$${Number(value).toFixed(2)}`, t('dashboard.revenue')]}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#6366f1" 
-                fill="#6366f1" 
-                fillOpacity={0.2}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.weeklyRevenue')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={analyticsData.revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px',
+                  }}
+                  formatter={value => [`$${Number(value).toFixed(2)}`, t('dashboard.revenue')]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#6366f1"
+                  fill="#6366f1"
+                  fillOpacity={0.2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       )}
 
       {/* Today's Schedule & Upcoming Appointments */}
@@ -348,7 +349,10 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
             ) : (
               <div className="space-y-3">
                 {todayAppointments.slice(0, 5).map(appointment => (
-                  <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={appointment.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       {getStatusIcon(appointment.status)}
                       <div>
@@ -390,7 +394,10 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
             ) : (
               <div className="space-y-3">
                 {upcomingAppointments.slice(0, 5).map(appointment => (
-                  <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={appointment.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       {getStatusIcon(appointment.status)}
                       <div>

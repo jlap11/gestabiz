@@ -1,5 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle, X, Heart } from 'lucide-react'
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+  Calendar,
+  CalendarDays,
+  Clock,
+  FileText,
+  Heart,
+  History,
+  List,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Plus,
+  User as UserIcon,
+  X,
+} from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,7 +35,7 @@ import { useChat } from '@/hooks/useChat'
 import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { usePreferredCity } from '@/hooks/usePreferredCity'
-import type { UserRole, User, Appointment } from '@/types/types'
+import type { Appointment, User, UserRole } from '@/types/types'
 import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -111,25 +126,32 @@ interface ClientDashboardProps {
   } | null
 }
 
-export function ClientDashboard({ 
+export function ClientDashboard({
   currentRole,
   availableRoles,
   onRoleChange,
   onLogout,
   user,
-  initialBookingContext
+  initialBookingContext,
 }: Readonly<ClientDashboardProps>) {
   const [activePage, setActivePage] = useState('appointments')
   const [showAppointmentWizard, setShowAppointmentWizard] = useState(false)
-  const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<string | undefined>(undefined)
+  const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<
+    string | undefined
+  >(undefined)
   const [appointmentToEdit, setAppointmentToEdit] = useState<AppointmentWithRelations | null>(null)
-  const [bookingPreselection, setBookingPreselection] = useState<{
-    serviceId?: string
-    locationId?: string
-    employeeId?: string
-  } | undefined>(undefined)
+  const [bookingPreselection, setBookingPreselection] = useState<
+    | {
+        serviceId?: string
+        locationId?: string
+        employeeId?: string
+      }
+    | undefined
+  >(undefined)
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
-  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(
+    null
+  )
   const [currentUser, setCurrentUser] = useState(user)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [preselectedDate, setPreselectedDate] = useState<Date | undefined>(undefined)
@@ -138,11 +160,11 @@ export function ClientDashboard({
   const [searchParams, setSearchParams] = useState<{ term: string; type: SearchType } | null>(null)
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  
+
   // Chat state
   const [chatConversationId, setChatConversationId] = useState<string | null>(null)
   const [isStartingChat, setIsStartingChat] = useState(false)
-  
+
   // Chat hook
   const { createOrGetConversation } = useChat(user.id)
 
@@ -160,25 +182,22 @@ export function ClientDashboard({
   usePendingNavigation(handlePageChange)
 
   // Mandatory reviews hook
-  const { 
-    shouldShowModal: shouldShowReviewModal, 
+  const {
+    shouldShowModal: shouldShowReviewModal,
     pendingReviewsCount,
     checkPendingReviews,
     remindLater,
-    dismissModal: dismissReviewModal
+    dismissModal: dismissReviewModal,
   } = useMandatoryReviews(user.id)
 
   // Geolocation for proximity-based search
   const geolocation = useGeolocation({
     requestOnMount: true,
-    showPermissionPrompt: true
+    showPermissionPrompt: true,
   })
 
   // Hook para preferencias de ciudad (para sugerencias)
-  const {
-    preferredCityName,
-    preferredRegionName
-  } = usePreferredCity()
+  const { preferredCityName, preferredRegionName } = usePreferredCity()
 
   // Handle initial booking context from public profile redirect
   useEffect(() => {
@@ -186,15 +205,19 @@ export function ClientDashboard({
       if (initialBookingContext.businessId) {
         setAppointmentWizardBusinessId(initialBookingContext.businessId)
       }
-      
-      if (initialBookingContext.serviceId || initialBookingContext.locationId || initialBookingContext.employeeId) {
+
+      if (
+        initialBookingContext.serviceId ||
+        initialBookingContext.locationId ||
+        initialBookingContext.employeeId
+      ) {
         setBookingPreselection({
           serviceId: initialBookingContext.serviceId,
           locationId: initialBookingContext.locationId,
-          employeeId: initialBookingContext.employeeId
+          employeeId: initialBookingContext.employeeId,
         })
       }
-      
+
       // Open appointment wizard
       setShowAppointmentWizard(true)
       setActivePage('appointments')
@@ -205,12 +228,12 @@ export function ClientDashboard({
   useEffect(() => {
     const urlParams = new URLSearchParams(globalThis.location.search)
     const conversationParam = urlParams.get('conversation')
-    
+
     if (conversationParam) {
       // eslint-disable-next-line no-console
       console.log('[ClientDashboard] Opening chat from URL param:', conversationParam)
       setChatConversationId(conversationParam)
-      
+
       // Limpiar URL sin recargar página
       globalThis.history.replaceState({}, '', globalThis.location.pathname)
     }
@@ -237,7 +260,7 @@ export function ClientDashboard({
   // Handle result click from SearchResults modal
   const handleSearchResultItemClick = useCallback((result: SearchResultItem) => {
     setSearchModalOpen(false)
-    
+
     if (result.type === 'businesses') {
       setSelectedBusinessId(result.id)
     } else if (result.type === 'users') {
@@ -248,111 +271,126 @@ export function ClientDashboard({
   }, [])
 
   // Handle booking from business profile
-  const handleBookAppointment = useCallback((serviceId?: string, locationId?: string, employeeId?: string) => {
-    // Guardar el businessId antes de cerrar el modal
-    const businessIdToUse = selectedBusinessId
-    
-    // Close profile modal
-    setSelectedBusinessId(null)
-    setSelectedUserId(null)
-    
-    // Open appointment wizard with preselected business
-    if (businessIdToUse) {
-      setAppointmentWizardBusinessId(businessIdToUse)
-    }
-    setShowAppointmentWizard(true)
-    
-    // eslint-disable-next-line no-console
-    console.log('Book appointment:', { businessId: businessIdToUse, serviceId, locationId, employeeId })
-  }, [selectedBusinessId])
-  
-  // Handle chat with professional from appointment details
-  const handleStartChatWithProfessional = useCallback(async (professionalId: string, businessId?: string) => {
-    if (!user?.id || !professionalId) {
-      toast.error(t('clientDashboard.chatInitError'))
-      return
-    }
-    
-    console.log('[ClientDashboard] Starting chat with professional:', { professionalId, businessId })
-    setIsStartingChat(true)
-    
-    try {
-      // Crear o obtener conversación con el profesional
-      const conversationId = await createOrGetConversation({
-        other_user_id: professionalId,
-        business_id: businessId,
-        initial_message: '¡Hola! Tengo algunas preguntas sobre mi cita.'
-      })
-      
-      console.log('[ClientDashboard] Conversation created/retrieved:', conversationId)
-      
-      if (conversationId) {
-        // Cerrar modal de detalles
-        setSelectedAppointment(null)
-        
-        // Establecer la conversación activa para abrir el chat
-        setChatConversationId(conversationId)
-        console.log('[ClientDashboard] chatConversationId set to:', conversationId)
-        
-        toast.success('Chat iniciado con el profesional')
+  const handleBookAppointment = useCallback(
+    (serviceId?: string, locationId?: string, employeeId?: string) => {
+      // Guardar el businessId antes de cerrar el modal
+      const businessIdToUse = selectedBusinessId
+
+      // Close profile modal
+      setSelectedBusinessId(null)
+      setSelectedUserId(null)
+
+      // Open appointment wizard with preselected business
+      if (businessIdToUse) {
+        setAppointmentWizardBusinessId(businessIdToUse)
       }
-    } catch (error) {
-      console.error('Error al iniciar chat:', error)
-      toast.error(t('clientDashboard.chatError'))
-    } finally {
-      setIsStartingChat(false)
-    }
-  }, [user?.id, createOrGetConversation])
+      setShowAppointmentWizard(true)
+
+      // eslint-disable-next-line no-console
+      console.log('Book appointment:', {
+        businessId: businessIdToUse,
+        serviceId,
+        locationId,
+        employeeId,
+      })
+    },
+    [selectedBusinessId]
+  )
+
+  // Handle chat with professional from appointment details
+  const handleStartChatWithProfessional = useCallback(
+    async (professionalId: string, businessId?: string) => {
+      if (!user?.id || !professionalId) {
+        toast.error(t('clientDashboard.chatInitError'))
+        return
+      }
+
+      console.log('[ClientDashboard] Starting chat with professional:', {
+        professionalId,
+        businessId,
+      })
+      setIsStartingChat(true)
+
+      try {
+        // Crear o obtener conversación con el profesional
+        const conversationId = await createOrGetConversation({
+          other_user_id: professionalId,
+          business_id: businessId,
+          initial_message: '¡Hola! Tengo algunas preguntas sobre mi cita.',
+        })
+
+        console.log('[ClientDashboard] Conversation created/retrieved:', conversationId)
+
+        if (conversationId) {
+          // Cerrar modal de detalles
+          setSelectedAppointment(null)
+
+          // Establecer la conversación activa para abrir el chat
+          setChatConversationId(conversationId)
+          console.log('[ClientDashboard] chatConversationId set to:', conversationId)
+
+          toast.success('Chat iniciado con el profesional')
+        }
+      } catch (error) {
+        console.error('Error al iniciar chat:', error)
+        toast.error(t('clientDashboard.chatError'))
+      } finally {
+        setIsStartingChat(false)
+      }
+    },
+    [user?.id, createOrGetConversation]
+  )
 
   // Handle cancel appointment
-  const handleCancelAppointment = useCallback(async (appointmentId: string) => {
-    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-      return
-    }
+  const handleCancelAppointment = useCallback(
+    async (appointmentId: string) => {
+      if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+        return
+      }
 
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ 
-          status: 'cancelled',
-          cancelled_at: new Date().toISOString(),
-          cancelled_by: user?.id,
-          cancel_reason: 'Cancelada por el cliente'
-        })
-        .eq('id', appointmentId)
+      try {
+        const { error } = await supabase
+          .from('appointments')
+          .update({
+            status: 'cancelled',
+            cancelled_at: new Date().toISOString(),
+            cancelled_by: user?.id,
+            cancel_reason: 'Cancelada por el cliente',
+          })
+          .eq('id', appointmentId)
 
-      if (error) throw error
+        if (error) throw error
 
-      toast.success('Cita cancelada exitosamente')
-      setSelectedAppointment(null)
-      
-      // Refresh appointments list
-      const refreshedAppointments = appointments.map(apt => 
-        apt.id === appointmentId 
-          ? { ...apt, status: 'cancelled' as const }
-          : apt
-      )
-      setAppointments(refreshedAppointments)
-    } catch (error) {
-      console.error('Error al cancelar cita:', error)
-      toast.error(t('clientDashboard.cancelError'))
-    }
-  }, [user?.id, appointments])
+        toast.success('Cita cancelada exitosamente')
+        setSelectedAppointment(null)
+
+        // Refresh appointments list
+        const refreshedAppointments = appointments.map(apt =>
+          apt.id === appointmentId ? { ...apt, status: 'cancelled' as const } : apt
+        )
+        setAppointments(refreshedAppointments)
+      } catch (error) {
+        console.error('Error al cancelar cita:', error)
+        toast.error(t('clientDashboard.cancelError'))
+      }
+    },
+    [user?.id, appointments]
+  )
 
   // Handle reschedule appointment
   const handleRescheduleAppointment = useCallback((appointment: AppointmentWithRelations) => {
     // Close modal
     setSelectedAppointment(null)
-    
+
     // Set appointment to edit
     setAppointmentToEdit(appointment)
-    
+
     // Open wizard with preselected data
     setAppointmentWizardBusinessId(appointment.business_id)
     setBookingPreselection({
       serviceId: appointment.service_id || undefined,
       locationId: appointment.location_id || undefined,
-      employeeId: appointment.employee_id || undefined
+      employeeId: appointment.employee_id || undefined,
     })
 
     if (appointment.start_time) {
@@ -361,7 +399,7 @@ export function ClientDashboard({
       const formattedTime = startDate.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       })
       setPreselectedTime(formattedTime)
     } else {
@@ -369,7 +407,7 @@ export function ClientDashboard({
       setPreselectedTime(undefined)
     }
     setShowAppointmentWizard(true)
-    
+
     toast.info('Modifica los datos de tu cita y confirma los cambios')
   }, [])
 
@@ -397,7 +435,7 @@ export function ClientDashboard({
     console.log('👤 ClientDashboard: user prop changed', { userId: user?.id, userName: user?.name })
     setCurrentUser(user)
   }, [user])
-  
+
   // Fetch client appointments with related data (business, location, employee)
   const fetchClientAppointments = React.useCallback(async () => {
     if (!currentUser?.id) {
@@ -405,15 +443,16 @@ export function ClientDashboard({
       console.log('⚠️ No currentUser.id, skipping fetch')
       return
     }
-    
+
     // eslint-disable-next-line no-console
     console.log('🔍 Fetching appointments for client:', currentUser.id)
-    
+
     try {
       // Query appointments con JOINs para traer toda la información necesaria
       const { data, error } = await supabase
         .from('appointments')
-        .select(`
+        .select(
+          `
           id,
           created_at,
           updated_at,
@@ -459,24 +498,27 @@ export function ClientDashboard({
             price,
             currency
           )
-        `)
+        `
+        )
         .eq('client_id', currentUser.id)
         .order('start_time', { ascending: true })
-      
+
       // eslint-disable-next-line no-console
       console.log('📊 Query result:', { appointmentsCount: data?.length || 0, error })
-      
+
       if (error) throw error
-      
+
       // Mapear datos para compatibilidad (los JOINs retornan arrays, tomar el primero)
       const mappedData = (data || []).map((apt: any) => ({
         ...apt,
         business: apt.businesses?.[0],
         location: apt.locations?.[0],
         employee: apt.profiles?.[0],
-        service: apt.services?.[0] ? { ...apt.services[0], duration: apt.services[0].duration } : undefined
-      }));
-      
+        service: apt.services?.[0]
+          ? { ...apt.services[0], duration: apt.services[0].duration }
+          : undefined,
+      }))
+
       // eslint-disable-next-line no-console
       console.log('✅ Data enriquecida:', mappedData)
       setAppointments(mappedData)
@@ -495,18 +537,18 @@ export function ClientDashboard({
     {
       id: 'appointments',
       label: 'Mis Citas',
-      icon: <Calendar className="h-5 w-5" />
+      icon: <Calendar className="h-5 w-5" />,
     },
     {
       id: 'favorites',
       label: 'Favoritos',
-      icon: <Heart className="h-5 w-5" />
+      icon: <Heart className="h-5 w-5" />,
     },
     {
       id: 'history',
       label: 'Historial',
-      icon: <History className="h-5 w-5" />
-    }
+      icon: <History className="h-5 w-5" />,
+    },
   ]
 
   // Filter upcoming appointments
@@ -561,8 +603,8 @@ export function ClientDashboard({
                     size="sm"
                     onClick={() => setViewMode('list')}
                     className={cn(
-                      "h-8",
-                      viewMode !== 'list' && "hover:bg-primary hover:text-primary-foreground"
+                      'h-8',
+                      viewMode !== 'list' && 'hover:bg-primary hover:text-primary-foreground'
                     )}
                   >
                     <List className="h-4 w-4 mr-2" />
@@ -573,15 +615,15 @@ export function ClientDashboard({
                     size="sm"
                     onClick={() => setViewMode('calendar')}
                     className={cn(
-                      "h-8",
-                      viewMode !== 'calendar' && "hover:bg-primary hover:text-primary-foreground"
+                      'h-8',
+                      viewMode !== 'calendar' && 'hover:bg-primary hover:text-primary-foreground'
                     )}
                   >
                     <CalendarDays className="h-4 w-4 mr-2" />
                     Calendario
                   </Button>
                 </div>
-                <Button 
+                <Button
                   onClick={() => setShowAppointmentWizard(true)}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
@@ -617,9 +659,9 @@ export function ClientDashboard({
                       </Card>
                     ) : (
                       <div className="grid grid-cols-1 gap-4">
-                        {upcomingAppointments.map((appointment) => (
-                          <Card 
-                            key={appointment.id} 
+                        {upcomingAppointments.map(appointment => (
+                          <Card
+                            key={appointment.id}
                             className="cursor-pointer hover:shadow-lg transition-shadow"
                             onClick={() => setSelectedAppointment(appointment)}
                           >
@@ -630,14 +672,18 @@ export function ClientDashboard({
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-foreground">
                                       {appointment.business?.name}
-                                      {appointment.business?.name && appointment.location?.name && ' • '}
+                                      {appointment.business?.name &&
+                                        appointment.location?.name &&
+                                        ' • '}
                                       <span className="font-normal text-muted-foreground">
                                         {appointment.location?.name}
                                       </span>
                                     </p>
                                   </div>
-                                  <Badge 
-                                    variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
+                                  <Badge
+                                    variant={
+                                      appointment.status === 'confirmed' ? 'default' : 'secondary'
+                                    }
                                     className="flex-shrink-0 whitespace-nowrap"
                                   >
                                     {getStatusLabel(appointment.status)}
@@ -653,8 +699,8 @@ export function ClientDashboard({
                                 {appointment.employee?.full_name && (
                                   <div className="flex items-center gap-3 bg-card/50 p-2 rounded-lg border border-border/50">
                                     {appointment.employee?.avatar_url ? (
-                                      <img 
-                                        src={appointment.employee.avatar_url} 
+                                      <img
+                                        src={appointment.employee.avatar_url}
                                         alt={appointment.employee.full_name}
                                         className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                       />
@@ -678,12 +724,12 @@ export function ClientDashboard({
                                   <span className="line-clamp-1">
                                     {new Date(appointment.start_time).toLocaleDateString('es', {
                                       day: 'numeric',
-                                      month: 'short'
+                                      month: 'short',
                                     })}
                                     {' • '}
                                     {new Date(appointment.start_time).toLocaleTimeString('es', {
                                       hour: '2-digit',
-                                      minute: '2-digit'
+                                      minute: '2-digit',
                                     })}
                                   </span>
                                 </div>
@@ -692,7 +738,16 @@ export function ClientDashboard({
                                 {(appointment.service?.price || appointment.price) && (
                                   <div className="pt-2 border-t border-border">
                                     <span className="text-lg font-bold text-primary">
-                                      ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
+                                      $
+                                      {(
+                                        appointment.service?.price ??
+                                        appointment.price ??
+                                        0
+                                      ).toLocaleString('es-CO', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
+                                      })}{' '}
+                                      COP
                                     </span>
                                   </div>
                                 )}
@@ -712,7 +767,7 @@ export function ClientDashboard({
                   userId={currentUser.id}
                   preferredCityName={preferredCityName}
                   preferredRegionName={preferredRegionName}
-                  onBusinessSelect={(businessId) => {
+                  onBusinessSelect={businessId => {
                     setSelectedBusinessId(businessId)
                   }}
                 />
@@ -762,12 +817,16 @@ export function ClientDashboard({
         sidebarItems={sidebarItems}
         activePage={activePage}
         onPageChange={setActivePage}
-        user={currentUser ? {
-          id: currentUser.id,
-          name: currentUser.name,
-          email: currentUser.email,
-          avatar: currentUser.avatar_url
-        } : undefined}
+        user={
+          currentUser
+            ? {
+                id: currentUser.id,
+                name: currentUser.name,
+                email: currentUser.email,
+                avatar: currentUser.avatar_url,
+              }
+            : undefined
+        }
         onSearchResultSelect={handleSearchResultSelect}
         onSearchViewMore={handleSearchViewMore}
         chatConversationId={chatConversationId}
@@ -801,10 +860,14 @@ export function ClientDashboard({
         <SearchResults
           searchTerm={searchParams.term}
           searchType={searchParams.type}
-          userLocation={geolocation.hasLocation ? {
-            latitude: geolocation.latitude!,
-            longitude: geolocation.longitude!
-          } : undefined}
+          userLocation={
+            geolocation.hasLocation
+              ? {
+                  latitude: geolocation.latitude!,
+                  longitude: geolocation.longitude!,
+                }
+              : undefined
+          }
           onResultClick={handleSearchResultItemClick}
           onClose={() => setSearchModalOpen(false)}
         />
@@ -821,7 +884,7 @@ export function ClientDashboard({
             <div className="space-y-6 pt-4">
               {/* Status Badge and Business Name */}
               <div className="flex items-center justify-between">
-                <Badge 
+                <Badge
                   variant={selectedAppointment.status === 'confirmed' ? 'default' : 'secondary'}
                   className="text-base px-4 py-1"
                 >
@@ -859,7 +922,7 @@ export function ClientDashboard({
                       weekday: 'long',
                       day: 'numeric',
                       month: 'long',
-                      year: 'numeric'
+                      year: 'numeric',
                     })}
                   </p>
                 </div>
@@ -872,13 +935,13 @@ export function ClientDashboard({
                     {new Date(selectedAppointment.start_time).toLocaleTimeString('es', {
                       hour: 'numeric',
                       minute: '2-digit',
-                      hour12: true
+                      hour12: true,
                     })}
                     {' - '}
                     {new Date(selectedAppointment.end_time).toLocaleTimeString('es', {
                       hour: 'numeric',
                       minute: '2-digit',
-                      hour12: true
+                      hour12: true,
                     })}
                   </p>
                   {selectedAppointment.service?.duration && (
@@ -898,8 +961,8 @@ export function ClientDashboard({
                   </h3>
                   <div className="flex items-center gap-3 mt-2 p-3 bg-muted/30 rounded-lg">
                     {selectedAppointment.employee.avatar_url ? (
-                      <img 
-                        src={selectedAppointment.employee.avatar_url} 
+                      <img
+                        src={selectedAppointment.employee.avatar_url}
                         alt={selectedAppointment.employee.full_name}
                         className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
                       />
@@ -950,21 +1013,27 @@ export function ClientDashboard({
                     {selectedAppointment.location.address && (
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {selectedAppointment.location.address}
-                        {selectedAppointment.location.city && `, ${selectedAppointment.location.city}`}
-                        {selectedAppointment.location.state && `, ${selectedAppointment.location.state}`}
-                        {selectedAppointment.location.postal_code && ` ${selectedAppointment.location.postal_code}`}
-                        {selectedAppointment.location.country && `, ${selectedAppointment.location.country}`}
+                        {selectedAppointment.location.city &&
+                          `, ${selectedAppointment.location.city}`}
+                        {selectedAppointment.location.state &&
+                          `, ${selectedAppointment.location.state}`}
+                        {selectedAppointment.location.postal_code &&
+                          ` ${selectedAppointment.location.postal_code}`}
+                        {selectedAppointment.location.country &&
+                          `, ${selectedAppointment.location.country}`}
                       </p>
                     )}
                     {(() => {
                       // Generate Google Maps URL: use saved URL or fallback to coordinates
-                      const googleMapsUrl = selectedAppointment.location.google_maps_url || 
-                        (selectedAppointment.location.latitude && selectedAppointment.location.longitude ? 
-                          `https://www.google.com/maps?q=${selectedAppointment.location.latitude},${selectedAppointment.location.longitude}` : 
-                          null);
-                      
+                      const googleMapsUrl =
+                        selectedAppointment.location.google_maps_url ||
+                        (selectedAppointment.location.latitude &&
+                        selectedAppointment.location.longitude
+                          ? `https://www.google.com/maps?q=${selectedAppointment.location.latitude},${selectedAppointment.location.longitude}`
+                          : null)
+
                       return googleMapsUrl ? (
-                        <a 
+                        <a
                           href={googleMapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -973,7 +1042,7 @@ export function ClientDashboard({
                           <MapPin className="h-4 w-4" />
                           Ver en Google Maps
                         </a>
-                      ) : null;
+                      ) : null
                     })()}
                   </div>
                 </div>
@@ -1010,7 +1079,9 @@ export function ClientDashboard({
                 <div className="pt-4 border-t border-border">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-medium text-muted-foreground">Valor del Servicio</h3>
+                      <h3 className="text-lg font-medium text-muted-foreground">
+                        Valor del Servicio
+                      </h3>
                       {selectedAppointment.service?.duration && (
                         <p className="text-xs text-muted-foreground">
                           Duración estimada: {selectedAppointment.service.duration} minutos
@@ -1018,7 +1089,16 @@ export function ClientDashboard({
                       )}
                     </div>
                     <p className="text-2xl font-bold text-foreground">
-                      ${(selectedAppointment.service?.price ?? selectedAppointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
+                      $
+                      {(
+                        selectedAppointment.service?.price ??
+                        selectedAppointment.price ??
+                        0
+                      ).toLocaleString('es-CO', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      })}{' '}
+                      COP
                     </p>
                   </div>
                 </div>
@@ -1030,10 +1110,12 @@ export function ClientDashboard({
                 {selectedAppointment.employee?.id && (
                   <Button
                     variant="default"
-                    onClick={() => handleStartChatWithProfessional(
-                      selectedAppointment.employee!.id,
-                      selectedAppointment.business_id
-                    )}
+                    onClick={() =>
+                      handleStartChatWithProfessional(
+                        selectedAppointment.employee!.id,
+                        selectedAppointment.business_id
+                      )
+                    }
                     disabled={isStartingChat}
                     className="flex items-center gap-2"
                   >
@@ -1041,7 +1123,7 @@ export function ClientDashboard({
                     {isStartingChat ? 'Iniciando chat...' : 'Chatear con el profesional'}
                   </Button>
                 )}
-                
+
                 {/* Reschedule button - only if not completed, cancelled or no_show */}
                 {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
                   <Button
@@ -1053,7 +1135,7 @@ export function ClientDashboard({
                     Reprogramar
                   </Button>
                 )}
-                
+
                 {/* Cancel button - only if not completed, cancelled or no_show */}
                 {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
                   <Button
@@ -1065,9 +1147,9 @@ export function ClientDashboard({
                     Cancelar Cita
                   </Button>
                 )}
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   onClick={() => setSelectedAppointment(null)}
                   className="ml-auto"
                 >
@@ -1085,17 +1167,17 @@ export function ClientDashboard({
           businessId={selectedBusinessId}
           onClose={() => setSelectedBusinessId(null)}
           onBookAppointment={handleBookAppointment}
-          onChatStarted={(conversationId) => {
+          onChatStarted={conversationId => {
             // Cambiar a la página de chat y establecer la conversación activa
-            setActivePage('chat');
-            setChatConversationId(conversationId);
-            setSelectedBusinessId(null); // Cerrar el modal de perfil
+            setActivePage('chat')
+            setChatConversationId(conversationId)
+            setSelectedBusinessId(null) // Cerrar el modal de perfil
           }}
           userLocation={
             geolocation.hasLocation
               ? {
                   latitude: geolocation.latitude!,
-                  longitude: geolocation.longitude!
+                  longitude: geolocation.longitude!,
                 }
               : undefined
           }
@@ -1108,17 +1190,15 @@ export function ClientDashboard({
           userId={selectedUserId}
           onClose={() => setSelectedUserId(null)}
           onBookAppointment={(serviceId, businessId) => {
-            setSelectedUserId(null);
-            
-            setShowAppointmentWizard(true);
-            // eslint-disable-next-line no-console
-            
+            setSelectedUserId(null)
+
+            setShowAppointmentWizard(true)
           }}
           userLocation={
             geolocation.hasLocation
               ? {
                   latitude: geolocation.latitude!,
-                  longitude: geolocation.longitude!
+                  longitude: geolocation.longitude!,
                 }
               : undefined
           }
@@ -1129,13 +1209,15 @@ export function ClientDashboard({
       <MandatoryReviewModal
         isOpen={shouldShowReviewModal}
         onClose={() => {
-          remindLater();
-          toast.info(`Te recordaremos en 5 minutos. Tienes ${pendingReviewsCount} reseña${pendingReviewsCount > 1 ? 's' : ''} pendiente${pendingReviewsCount > 1 ? 's' : ''}.`);
+          remindLater()
+          toast.info(
+            `Te recordaremos en 5 minutos. Tienes ${pendingReviewsCount} reseña${pendingReviewsCount > 1 ? 's' : ''} pendiente${pendingReviewsCount > 1 ? 's' : ''}.`
+          )
         }}
         onReviewSubmitted={() => {
-          checkPendingReviews();
-          fetchClientAppointments();
-          toast.success('¡Gracias por tu reseña!');
+          checkPendingReviews()
+          fetchClientAppointments()
+          toast.success('¡Gracias por tu reseña!')
         }}
         userId={user.id}
       />

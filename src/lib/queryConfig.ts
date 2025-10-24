@@ -1,6 +1,6 @@
 /**
  * Configuración global de React Query para optimizar performance
- * 
+ *
  * Estrategia:
  * - staleTime largo: Evitar refetches innecesarios (5 minutos)
  * - gcTime grande: Mantener datos en caché (24 horas)
@@ -47,24 +47,11 @@ export const QUERY_CONFIG = {
       businessId,
       year,
     ],
-    PUBLIC_HOLIDAYS: (country: string, year: number) => [
-      'public-holidays',
-      country,
-      year,
-    ],
-    IN_APP_NOTIFICATIONS: (userId: string) => [
-      'in-app-notifications',
-      userId,
-    ],
-    EMPLOYEE_BUSINESSES: (employeeId: string) => [
-      'employee-businesses',
-      employeeId,
-    ],
-    COMPLETED_APPOINTMENTS: (clientId: string) => [
-      'completed-appointments',
-      clientId,
-    ],
+    PUBLIC_HOLIDAYS: (country: string, year: number) => ['public-holidays', country, year],
+    IN_APP_NOTIFICATIONS: (userId: string) => ['in-app-notifications', userId],
+    EMPLOYEE_BUSINESSES: (employeeId: string) => ['employee-businesses', employeeId],
+    COMPLETED_APPOINTMENTS: (clientId: string) => ['completed-appointments', clientId],
   },
-};
+}
 
-export default QUERY_CONFIG;
+export default QUERY_CONFIG

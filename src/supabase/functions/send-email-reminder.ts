@@ -1,7 +1,7 @@
 // Supabase Edge Function: Send Email Reminders
 // Deploy with: supabase functions deploy send-email-reminder
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -37,10 +37,12 @@ serve(async (req) => {
 
     const { data: appointment, error: appointmentError } = await supabaseClient
       .from('appointments')
-      .select(`
+      .select(
+        `
         *,
         users!inner(email, full_name, timezone)
-      `)
+      `
+      )
       .eq('id', appointmentId)
       .single()
 
@@ -82,11 +84,15 @@ serve(async (req) => {
                 ${appointment.description ? `<p style="margin: 0 0 10px 0;"><strong>Descripción:</strong> ${appointment.description}</p>` : ''}
               </div>
 
-              ${appointment.notes ? `
+              ${
+                appointment.notes
+                  ? `
                 <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
                   <p style="margin: 0; color: #856404;"><strong>Notas:</strong> ${appointment.notes}</p>
                 </div>
-              ` : ''}
+              `
+                  : ''
+              }
 
               <div style="margin: 30px 0; text-align: center;">
                 <p style="margin: 0; color: #6c757d;">
@@ -113,7 +119,7 @@ serve(async (req) => {
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -148,14 +154,13 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         emailId: emailResult.id,
-        message: 'Email reminder sent successfully'
+        message: 'Email reminder sent successfully',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error sending email reminder:', error)
 
@@ -168,7 +173,7 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
           )
-          
+
           await supabaseClient
             .from('notifications')
             .update({
@@ -185,7 +190,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -22,9 +22,9 @@ async function compressImageBlob(
   quality: number,
   maxSizeBytes: number
 ): Promise<Blob | null> {
-  return new Promise<Blob | null>((resolveBlob) => {
+  return new Promise<Blob | null>(resolveBlob => {
     canvas.toBlob(
-      (blob) => {
+      blob => {
         if (!blob) {
           resolveBlob(null)
           return
@@ -125,32 +125,24 @@ async function handleImageLoading(
 
 /**
  * Comprime una imagen automáticamente
- * 
+ *
  * Características:
  * - Convierte a JPEG de alta calidad
  * - Reduce dimensiones si exceden máximos
  * - Reintenta con calidad más baja si sigue siendo muy grande
  * - Valida que el resultado sea menor al tamaño máximo
- * 
+ *
  * @param file - Archivo de imagen a comprimir
  * @param options - Opciones de compresión
  * @returns Blob comprimido
  */
-export async function compressImage(
-  file: File,
-  options: CompressionOptions = {}
-): Promise<Blob> {
-  const {
-    quality = 0.85,
-    maxWidth = 2048,
-    maxHeight = 2048,
-    maxSizeMB = 2,
-  } = options
+export async function compressImage(file: File, options: CompressionOptions = {}): Promise<Blob> {
+  const { quality = 0.85, maxWidth = 2048, maxHeight = 2048, maxSizeMB = 2 } = options
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
-    reader.onload = (event) => {
+    reader.onload = event => {
       const dataUrl = event.target?.result as string
       handleImageLoading(dataUrl, maxWidth, maxHeight, quality, maxSizeMB)
         .then(resolve)
@@ -167,7 +159,7 @@ export async function compressImage(
 
 /**
  * Comprime una imagen para logo (pequeño y cuadrado)
- * 
+ *
  * @param file - Archivo de imagen
  * @returns Blob comprimido optimizado para logo
  */
@@ -182,7 +174,7 @@ export async function compressImageForLogo(file: File): Promise<Blob> {
 
 /**
  * Comprime una imagen para banner (panorámica)
- * 
+ *
  * @param file - Archivo de imagen
  * @returns Blob comprimido optimizado para banner
  */
@@ -197,7 +189,7 @@ export async function compressImageForBanner(file: File): Promise<Blob> {
 
 /**
  * Convierte un Blob a File
- * 
+ *
  * @param blob - Blob a convertir
  * @param fileName - Nombre del archivo
  * @returns Archivo
@@ -208,7 +200,7 @@ export function blobToFile(blob: Blob, fileName: string): File {
 
 /**
  * Obtiene información de tamaño formateada
- * 
+ *
  * @param bytes - Tamaño en bytes
  * @returns String formateado (ej: "2.5 MB")
  */

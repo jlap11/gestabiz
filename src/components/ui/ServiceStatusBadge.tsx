@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Activity, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
-import { useServiceStatus, ServiceStatus } from '@/hooks/useServiceStatus'
+import { Activity, AlertCircle, CheckCircle, RefreshCw, XCircle } from 'lucide-react'
+import { ServiceStatus, useServiceStatus } from '@/hooks/useServiceStatus'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 
@@ -54,8 +54,12 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
   }
 
   // Solo mostrar si hay problemas (no operational)
-  const hasProblems = supabase !== 'operational' || auth !== 'operational' || database !== 'operational' || storage !== 'operational'
-  
+  const hasProblems =
+    supabase !== 'operational' ||
+    auth !== 'operational' ||
+    database !== 'operational' ||
+    storage !== 'operational'
+
   if (!hasProblems) {
     return null
   }
@@ -73,19 +77,22 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
       >
         {getStatusIcon(supabase)}
         <span>{getStatusText(supabase)}</span>
-        
+
         {isExpanded && (
-          <div className="fixed inset-0 bg-black/20 z-50 flex items-start justify-center pt-20" onClick={() => setIsExpanded(false)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-black/20 z-50 flex items-start justify-center pt-20"
+            onClick={() => setIsExpanded(false)}
+          >
+            <div
               className="bg-card border border-border rounded-lg shadow-xl p-4 w-96 max-w-[90vw]"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Activity className="h-4 w-4" />
                   {t('common.serviceStatus.connectionStatus')}
                 </h3>
-                <button 
+                <button
                   onClick={() => refresh()}
                   className="p-1 hover:bg-muted rounded transition-colors"
                   title={t('common.serviceStatus.verifyAgain')}
@@ -104,9 +111,7 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
               {error && (
                 <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
                   <p className="text-xs text-red-700 dark:text-red-400">
-                    {error.includes('Supabase') 
-                      ? t('common.serviceStatus.connectionError')
-                      : error}
+                    {error.includes('Supabase') ? t('common.serviceStatus.connectionError') : error}
                   </p>
                 </div>
               )}
@@ -137,7 +142,7 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
           <Activity className="h-4 w-4" />
           {t('common.serviceStatus.connectionStatus')}
         </h3>
-        <button 
+        <button
           onClick={() => refresh()}
           className="p-1 hover:bg-muted rounded transition-colors"
           title={t('common.serviceStatus.verifyAgain')}
@@ -156,9 +161,7 @@ export function ServiceStatusBadge({ variant = 'minimal', className }: ServiceSt
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-xs text-red-700 dark:text-red-400">
-            {error.includes('Supabase') 
-              ? t('common.serviceStatus.connectionError')
-              : error}
+            {error.includes('Supabase') ? t('common.serviceStatus.connectionError') : error}
           </p>
         </div>
       )}

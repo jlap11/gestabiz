@@ -9,7 +9,9 @@ export interface ClientQuery {
 export const clientsService = {
   async list(q: ClientQuery = {}): Promise<Client[]> {
     let query = supabase.from('clients').select('*')
-    if (q.businessId) { query = query.eq('business_id', q.businessId) }
+    if (q.businessId) {
+      query = query.eq('business_id', q.businessId)
+    }
     if (q.search) {
       // simple ilike on name or email
       query = query.ilike ? query.ilike('name', `%${q.search}%`) : query
@@ -32,7 +34,12 @@ export const clientsService = {
   },
 
   async update(id: string, updates: Partial<Client>): Promise<Client> {
-    const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single()
+    const { data, error } = await supabase
+      .from('clients')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
     if (error) throw error
     return data as Client
   },
@@ -40,5 +47,5 @@ export const clientsService = {
   async remove(id: string): Promise<void> {
     const { error } = await supabase.from('clients').delete().eq('id', id)
     if (error) throw error
-  }
+  },
 }

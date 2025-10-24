@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -13,7 +13,7 @@ interface EmailData {
   text?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders })
@@ -28,7 +28,8 @@ serve(async (req) => {
     // Process pending notifications
     const { data: pendingNotifications, error: fetchError } = await supabaseClient
       .from('notification_queue')
-      .select(`
+      .select(
+        `
         *,
         appointments (
           title,
@@ -37,7 +38,8 @@ serve(async (req) => {
           clients (name, email)
         ),
         users (email, name)
-      `)
+      `
+      )
       .eq('status', 'pending')
       .lte('scheduled_for', new Date().toISOString())
 
@@ -57,68 +59,63 @@ serve(async (req) => {
         }
 
         // Update notification status
-        const updateData = emailSent 
+        const updateData = emailSent
           ? { status: 'sent', sent_at: new Date().toISOString() }
-          : { 
-              status: 'failed', 
+          : {
+              status: 'failed',
               attempts: notification.attempts + 1,
-              error_message: 'Failed to send email'
+              error_message: 'Failed to send email',
             }
 
-        await supabaseClient
-          .from('notification_queue')
-          .update(updateData)
-          .eq('id', notification.id)
+        await supabaseClient.from('notification_queue').update(updateData).eq('id', notification.id)
 
         results.push({
           id: notification.id,
           status: emailSent ? 'sent' : 'failed',
-          type: notification.type
+          type: notification.type,
         })
-
       } catch (error) {
         console.error(`Error processing notification ${notification.id}:`, error)
-        
+
         await supabaseClient
           .from('notification_queue')
           .update({
             status: 'failed',
             attempts: notification.attempts + 1,
-            error_message: error.message
+            error_message: error.message,
           })
           .eq('id', notification.id)
 
         results.push({
           id: notification.id,
           status: 'failed',
-          error: error.message
+          error: error.message,
         })
       }
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         processed: results.length,
-        results 
+        results,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error in send-notifications function:', error)
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: error.message,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 500,
       }
     )
   }
@@ -128,17 +125,17 @@ function generateEmailContent(notification: any): EmailData {
   const appointment = notification.appointments
   const user = notification.users
   const client = appointment.clients
-  
+
   const appointmentDate = new Date(appointment.start_datetime)
   const formattedDate = appointmentDate.toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
   const formattedTime = appointmentDate.toLocaleTimeString('es-ES', {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 
   switch (notification.type) {
@@ -163,7 +160,7 @@ function generateEmailContent(notification: any): EmailData {
             </p>
           </div>
         `,
-        text: `Recordatorio: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`
+        text: `Recordatorio: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`,
       }
 
     case 'confirmation':
@@ -187,7 +184,7 @@ function generateEmailContent(notification: any): EmailData {
             </p>
           </div>
         `,
-        text: `Cita confirmada: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`
+        text: `Cita confirmada: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`,
       }
 
     case 'cancellation':
@@ -210,7 +207,7 @@ function generateEmailContent(notification: any): EmailData {
             </p>
           </div>
         `,
-        text: `Cita cancelada: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`
+        text: `Cita cancelada: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`,
       }
 
     default:
@@ -222,7 +219,7 @@ async function sendEmail(emailData: EmailData): Promise<boolean> {
   try {
     // Using Supabase's built-in email service or integrate with SendGrid/Resend
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    
+
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY not configured')
       return false
@@ -231,7 +228,7 @@ async function sendEmail(emailData: EmailData): Promise<boolean> {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -252,7 +249,6 @@ async function sendEmail(emailData: EmailData): Promise<boolean> {
     const result = await response.json()
     console.log('Email sent successfully:', result.id)
     return true
-
   } catch (error) {
     console.error('Error sending email:', error)
     return false

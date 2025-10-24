@@ -44,10 +44,10 @@ export function ChatErrorBoundary({ children }: Readonly<{ children: React.React
  * ErrorBoundary compacto para componentes individuales del chat
  * (p.ej. MessageBubble, ChatInput)
  */
-export function ChatComponentErrorBoundary({ 
-  children, 
-  componentName 
-}: { 
+export function ChatComponentErrorBoundary({
+  children,
+  componentName,
+}: {
   children: React.ReactNode
   componentName: string
 }) {

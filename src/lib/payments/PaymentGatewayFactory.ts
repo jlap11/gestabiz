@@ -1,18 +1,18 @@
 /**
  * PaymentGatewayFactory.ts
- * 
+ *
  * Factory pattern para instanciar el gateway de pagos correcto
  * según la configuración en variables de entorno
- * 
+ *
  * Soporta:
  * - Stripe (default)
  * - PayU Latam
  * - MercadoPago
- * 
+ *
  * Uso:
  * ```typescript
  * import { getPaymentGateway } from '@/lib/payments/PaymentGatewayFactory'
- * 
+ *
  * const gateway = getPaymentGateway()
  * const dashboard = await gateway.getSubscriptionDashboard(businessId)
  * ```
@@ -33,15 +33,15 @@ export type PaymentGatewayType = 'stripe' | 'payu' | 'mercadopago'
  */
 export function getConfiguredGatewayType(): PaymentGatewayType {
   const configured = import.meta.env.VITE_PAYMENT_GATEWAY as string | undefined
-  
+
   if (configured === 'payu') {
     return 'payu'
   }
-  
+
   if (configured === 'mercadopago') {
     return 'mercadopago'
   }
-  
+
   // Default a Stripe si no está configurado o es inválido
   return 'stripe'
 }
@@ -52,7 +52,7 @@ export function getConfiguredGatewayType(): PaymentGatewayType {
  */
 export function getPaymentGateway(): IPaymentGateway {
   const gatewayType = getConfiguredGatewayType()
-  
+
   switch (gatewayType) {
     case 'payu':
       return new PayUGateway(supabase)
@@ -69,7 +69,7 @@ export function getPaymentGateway(): IPaymentGateway {
  */
 export function getGatewayDisplayName(type?: PaymentGatewayType): string {
   const gatewayType = type || getConfiguredGatewayType()
-  
+
   switch (gatewayType) {
     case 'payu':
       return 'PayU Latam'

@@ -8,15 +8,15 @@ const corsHeaders = {
 
 /**
  * Edge Function: cancel-future-appointments-on-transfer
- * 
+ *
  * Propósito: Cancelar automáticamente citas futuras cuando un empleado
  *            programa un traslado de sede, y notificar a los clientes.
- * 
+ *
  * Input:
  *   - businessEmployeeId: UUID del registro en business_employees
  *   - effectiveDate: Fecha en que el traslado se hace efectivo
  *   - employeeId: UUID del empleado (para notificaciones)
- * 
+ *
  * Output:
  *   - cancelledCount: Número de citas canceladas
  *   - notificationsSent: Número de notificaciones enviadas
@@ -28,7 +28,7 @@ interface RequestBody {
   employeeId: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -39,13 +39,10 @@ serve(async (req) => {
     const { businessEmployeeId, effectiveDate, employeeId }: RequestBody = await req.json()
 
     if (!businessEmployeeId || !effectiveDate || !employeeId) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      )
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Crear cliente Supabase con service_role key (permisos completos)
@@ -62,7 +59,8 @@ serve(async (req) => {
     // 1. Buscar citas a cancelar (posteriores a fecha efectiva)
     const { data: appointmentsToCancel, error: fetchError } = await supabase
       .from('appointments')
-      .select(`
+      .select(
+        `
         id,
         client_id,
         start_time,
@@ -72,7 +70,8 @@ serve(async (req) => {
         services (name),
         profiles (name, email),
         locations (name)
-      `)
+      `
+      )
       .eq('employee_id', businessEmployeeId)
       .gte('start_time', effectiveDate)
       .in('status', ['pending', 'confirmed'])
@@ -132,22 +131,20 @@ serve(async (req) => {
         })
 
         // Notificación in-app
-        const { error: notifError } = await supabase
-          .from('in_app_notifications')
-          .insert({
-            user_id: appointment.client_id,
-            type: 'appointment_cancelled_transfer',
-            title: 'Cita cancelada por traslado',
-            message: `Tu cita del ${appointmentDate} ha sido cancelada debido a un traslado del profesional a otra sede. Disculpa las molestias.`,
-            data: {
-              appointment_id: appointment.id,
-              reason: 'employee_transfer',
-              effective_date: effectiveDate,
-              service_name: appointment.services?.name,
-              location_name: appointment.locations?.name,
-            },
-            read: false,
-          })
+        const { error: notifError } = await supabase.from('in_app_notifications').insert({
+          user_id: appointment.client_id,
+          type: 'appointment_cancelled_transfer',
+          title: 'Cita cancelada por traslado',
+          message: `Tu cita del ${appointmentDate} ha sido cancelada debido a un traslado del profesional a otra sede. Disculpa las molestias.`,
+          data: {
+            appointment_id: appointment.id,
+            reason: 'employee_transfer',
+            effective_date: effectiveDate,
+            service_name: appointment.services?.name,
+            location_name: appointment.locations?.name,
+          },
+          read: false,
+        })
 
         if (notifError) {
           console.error('❌ Error al crear notificación in-app:', notifError)
@@ -171,17 +168,14 @@ serve(async (req) => {
             },
           }
 
-          const emailResponse = await fetch(
-            `${supabaseUrl}/functions/v1/send-notification`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${supabaseServiceKey}`,
-              },
-              body: JSON.stringify(emailPayload),
-            }
-          )
+          const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify(emailPayload),
+          })
 
           if (!emailResponse.ok) {
             console.error('⚠️ Error al enviar email:', await emailResponse.text())
@@ -196,7 +190,9 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Proceso completado: ${appointmentIds.length} citas canceladas, ${notificationsSent} notificaciones enviadas`)
+    console.log(
+      `✅ Proceso completado: ${appointmentIds.length} citas canceladas, ${notificationsSent} notificaciones enviadas`
+    )
 
     return new Response(
       JSON.stringify({
@@ -211,12 +207,9 @@ serve(async (req) => {
     )
   } catch (error) {
     console.error('❌ Error en cancel-future-appointments-on-transfer:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

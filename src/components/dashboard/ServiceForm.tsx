@@ -1,13 +1,19 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Clock, CurrencyDollar, Tag, Plus, Pencil, Trash } from '@phosphor-icons/react'
+import { Clock, CurrencyDollar, Pencil, Plus, Tag, Trash } from '@phosphor-icons/react'
 import { Service, User } from '@/types'
 import { useLanguage } from '@/contexts'
 import { supabase } from '@/lib/supabase'
@@ -22,23 +28,23 @@ interface ServiceFormProps {
   businessId: string
 }
 
-export function ServiceForm({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  user, 
+export function ServiceForm({
+  isOpen,
+  onClose,
+  onSubmit,
+  user,
   service,
-  businessId 
+  businessId,
 }: Readonly<ServiceFormProps>) {
   const { t } = useLanguage()
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     duration: 60,
     price: 0,
     currency: 'MXN',
-    category: ''
+    category: '',
   })
   const [loading, setLoading] = useState(false)
 
@@ -51,7 +57,7 @@ export function ServiceForm({
         duration: service.duration,
         price: service.price,
         currency: service.currency || 'MXN',
-        category: service.category || ''
+        category: service.category || '',
       })
     } else {
       setFormData({
@@ -60,7 +66,7 @@ export function ServiceForm({
         duration: 60,
         price: 0,
         currency: 'MXN',
-        category: ''
+        category: '',
       })
     }
   }, [service])
@@ -93,7 +99,7 @@ export function ServiceForm({
       const serviceData: Partial<Service> = {
         ...formData,
         business_id: businessId,
-        is_active: true
+        is_active: true,
       }
 
       await onSubmit(serviceData)
@@ -118,16 +124,14 @@ export function ServiceForm({
     'Consultoría',
     'Fitness',
     'Salud',
-    'Otros'
+    'Otros',
   ]
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
-            {service ? t('services.edit') : t('services.create')}
-          </DialogTitle>
+          <DialogTitle>{service ? t('services.edit') : t('services.create')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -147,7 +151,7 @@ export function ServiceForm({
                   type="text"
                   placeholder={t('services.namePlaceholder')}
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={e => handleInputChange('name', e.target.value)}
                   required
                 />
               </div>
@@ -158,16 +162,16 @@ export function ServiceForm({
                   id="serviceDescription"
                   placeholder={t('services.descriptionPlaceholder')}
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={e => handleInputChange('description', e.target.value)}
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="serviceCategory">{t('services.category')}</Label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(value) => handleInputChange('category', value)}
+                <Select
+                  value={formData.category}
+                  onValueChange={value => handleInputChange('category', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t('services.selectCategory')} />
@@ -203,7 +207,7 @@ export function ServiceForm({
                       type="number"
                       placeholder="60"
                       value={formData.duration}
-                      onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)}
+                      onChange={e => handleInputChange('duration', parseInt(e.target.value) || 0)}
                       className="pl-10"
                       min="15"
                       step="15"
@@ -221,7 +225,7 @@ export function ServiceForm({
                       type="number"
                       placeholder="100.00"
                       value={formData.price}
-                      onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                      onChange={e => handleInputChange('price', parseFloat(e.target.value) || 0)}
                       className="pl-10"
                       min="0"
                       step="0.01"
@@ -233,9 +237,9 @@ export function ServiceForm({
 
               <div className="space-y-2">
                 <Label htmlFor="serviceCurrency">{t('services.currency')}</Label>
-                <Select 
-                  value={formData.currency} 
-                  onValueChange={(value) => handleInputChange('currency', value)}
+                <Select
+                  value={formData.currency}
+                  onValueChange={value => handleInputChange('currency', value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -262,11 +266,11 @@ export function ServiceForm({
                     <h3 className="text-lg font-semibold">{formData.name}</h3>
                     <Badge variant="outline">{formData.category || 'Sin categoría'}</Badge>
                   </div>
-                  
+
                   {formData.description && (
                     <p className="text-muted-foreground">{formData.description}</p>
                   )}
-                  
+
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
@@ -292,7 +296,11 @@ export function ServiceForm({
               if (loading) label = t('common.saving')
               else if (service) label = t('common.update')
               else label = t('common.create')
-              return <Button type="submit" disabled={loading}>{label}</Button>
+              return (
+                <Button type="submit" disabled={loading}>
+                  {label}
+                </Button>
+              )
             })()}
           </div>
         </form>
@@ -342,11 +350,7 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
   }, [businessId, fetchServices])
 
   const handleCreateService = async (serviceData: Partial<Service>) => {
-    const { data, error } = await supabase
-      .from('services')
-      .insert(serviceData)
-      .select()
-      .single()
+    const { data, error } = await supabase.from('services').insert(serviceData).select().single()
 
     if (error) throw error
 
@@ -365,7 +369,7 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
 
     if (error) throw error
 
-    setServices(prev => prev.map(s => s.id === editingService.id ? data : s))
+    setServices(prev => prev.map(s => (s.id === editingService.id ? data : s)))
     setEditingService(null)
   }
 
@@ -458,7 +462,9 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => { void handleDeleteService(service.id).catch(() => {}) }}
+                      onClick={() => {
+                        void handleDeleteService(service.id).catch(() => {})
+                      }}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
@@ -467,9 +473,7 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
               </CardHeader>
               <CardContent>
                 {service.description && (
-                  <p className="text-muted-foreground text-sm mb-3">
-                    {service.description}
-                  </p>
+                  <p className="text-muted-foreground text-sm mb-3">{service.description}</p>
                 )}
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center">

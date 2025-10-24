@@ -1,26 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AdminDashboard } from '../AdminDashboard'
-import type { Business, UserRole, User } from '@/types/types'
+import type { Business, User, UserRole } from '@/types/types'
 
 // Mock child components
 vi.mock('../OverviewTab', () => ({
   OverviewTab: ({ business }: { business: Business }) => (
     <div data-testid="overview-tab">Overview for {business.name}</div>
-  )
+  ),
 }))
 
 vi.mock('../LocationsManager', () => ({
   LocationsManager: ({ businessId }: { businessId: string }) => (
     <div data-testid="locations-manager">Locations for {businessId}</div>
-  )
+  ),
 }))
 
 vi.mock('../ServicesManager', () => ({
   ServicesManager: ({ businessId }: { businessId: string }) => (
     <div data-testid="services-manager">Services for {businessId}</div>
-  )
+  ),
 }))
 
 vi.mock('../AccountingPage', () => ({
@@ -29,7 +29,7 @@ vi.mock('../AccountingPage', () => ({
       Accounting for {businessId}
       <button onClick={onUpdate}>Update</button>
     </div>
-  )
+  ),
 }))
 
 vi.mock('../ReportsPage', () => ({
@@ -37,23 +37,23 @@ vi.mock('../ReportsPage', () => ({
     <div data-testid="reports-page">
       Reports for {businessId}, user: {user.name}
     </div>
-  )
+  ),
 }))
 
 vi.mock('../PermissionsManager', () => ({
-  PermissionsManager: ({ 
-    businessId, 
-    ownerId, 
-    currentUserId 
-  }: { 
+  PermissionsManager: ({
+    businessId,
+    ownerId,
+    currentUserId,
+  }: {
     businessId: string
     ownerId: string
-    currentUserId: string 
+    currentUserId: string
   }) => (
     <div data-testid="permissions-manager">
       Permissions for business: {businessId}, owner: {ownerId}, user: {currentUserId}
     </div>
-  )
+  ),
 }))
 
 vi.mock('../BusinessSettings', () => ({
@@ -62,7 +62,7 @@ vi.mock('../BusinessSettings', () => ({
       Settings for {business.name}
       <button onClick={onUpdate}>Update Settings</button>
     </div>
-  )
+  ),
 }))
 
 vi.mock('@/components/settings/UserProfile', () => ({
@@ -73,7 +73,7 @@ vi.mock('@/components/settings/UserProfile', () => ({
         Update Profile
       </button>
     </div>
-  )
+  ),
 }))
 
 // Helper functions
@@ -99,7 +99,7 @@ function createMockBusiness(overrides?: Partial<Business>): Business {
       thursday: { open: '09:00', close: '18:00', closed: false },
       friday: { open: '09:00', close: '18:00', closed: false },
       saturday: { open: '10:00', close: '14:00', closed: false },
-      sunday: { open: '00:00', close: '00:00', closed: true }
+      sunday: { open: '00:00', close: '00:00', closed: true },
     },
     settings: {
       appointment_buffer: 15,
@@ -108,11 +108,11 @@ function createMockBusiness(overrides?: Partial<Business>): Business {
       auto_confirm: false,
       require_deposit: false,
       deposit_percentage: 0,
-      currency: 'MXN'
+      currency: 'MXN',
     },
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   }
 }
 
@@ -123,9 +123,7 @@ function createMockUser(overrides?: Partial<User>): User {
     email: 'test@user.com',
     role: 'admin' as UserRole,
     activeRole: 'admin' as UserRole,
-    roles: [
-      { businessId: 'business-1', role: 'admin' as UserRole, permissions: [] }
-    ],
+    roles: [{ businessId: 'business-1', role: 'admin' as UserRole, permissions: [] }],
     avatar_url: 'https://example.com/avatar.jpg',
     language: 'es',
     notification_preferences: {
@@ -137,12 +135,12 @@ function createMockUser(overrides?: Partial<User>): User {
       reminder_1h: true,
       reminder_15m: false,
       daily_digest: false,
-      weekly_report: false
+      weekly_report: false,
     },
     permissions: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   }
 }
 
@@ -151,7 +149,7 @@ describe('AdminDashboard', () => {
   const mockBusinesses = [
     mockBusiness,
     createMockBusiness({ id: 'business-2', name: 'Second Business' }),
-    createMockBusiness({ id: 'business-3', name: 'Third Business' })
+    createMockBusiness({ id: 'business-3', name: 'Third Business' }),
   ]
   const mockUser = createMockUser()
   const mockOnSelectBusiness = vi.fn()
@@ -170,7 +168,7 @@ describe('AdminDashboard', () => {
     currentRole: 'admin' as UserRole,
     availableRoles: ['admin', 'employee', 'client'] as UserRole[],
     onRoleChange: mockOnRoleChange,
-    user: mockUser
+    user: mockUser,
   }
 
   beforeEach(() => {
@@ -247,7 +245,9 @@ describe('AdminDashboard', () => {
       await user.click(screen.getByText('Empleados'))
 
       expect(screen.getByText('Gestión de Empleados')).toBeInTheDocument()
-      expect(screen.getByText(/Esta funcionalidad estará disponible próximamente/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Esta funcionalidad estará disponible próximamente/i)
+      ).toBeInTheDocument()
     })
 
     it('navega a la página de Contabilidad', async () => {
@@ -267,7 +267,9 @@ describe('AdminDashboard', () => {
       await user.click(screen.getByText('Reportes'))
 
       expect(screen.getByTestId('reports-page')).toBeInTheDocument()
-      expect(screen.getByText(`Reports for ${mockBusiness.id}, user: ${mockUser.name}`)).toBeInTheDocument()
+      expect(
+        screen.getByText(`Reports for ${mockBusiness.id}, user: ${mockUser.name}`)
+      ).toBeInTheDocument()
     })
 
     it('navega a la página de Permisos', async () => {
@@ -277,9 +279,11 @@ describe('AdminDashboard', () => {
       await user.click(screen.getByText('Permisos'))
 
       expect(screen.getByTestId('permissions-manager')).toBeInTheDocument()
-      expect(screen.getByText(
-        `Permissions for business: ${mockBusiness.id}, owner: ${mockBusiness.owner_id}, user: ${mockUser.id}`
-      )).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          `Permissions for business: ${mockBusiness.id}, owner: ${mockBusiness.owner_id}, user: ${mockUser.id}`
+        )
+      ).toBeInTheDocument()
     })
   })
 
@@ -289,7 +293,9 @@ describe('AdminDashboard', () => {
       render(<AdminDashboard {...defaultProps} />)
 
       // Buscar el trigger del dropdown (el nombre del negocio con ChevronDown)
-      const businessTrigger = screen.getByRole('button', { name: new RegExp(mockBusiness.name, 'i') })
+      const businessTrigger = screen.getByRole('button', {
+        name: new RegExp(mockBusiness.name, 'i'),
+      })
       await user.click(businessTrigger)
 
       // Verifica que todos los negocios estén en el dropdown
@@ -302,7 +308,9 @@ describe('AdminDashboard', () => {
       render(<AdminDashboard {...defaultProps} />)
 
       // Abrir dropdown
-      const businessTrigger = screen.getByRole('button', { name: new RegExp(mockBusiness.name, 'i') })
+      const businessTrigger = screen.getByRole('button', {
+        name: new RegExp(mockBusiness.name, 'i'),
+      })
       await user.click(businessTrigger)
 
       // Click en "Second Business"
@@ -316,7 +324,9 @@ describe('AdminDashboard', () => {
       render(<AdminDashboard {...defaultProps} />)
 
       // Abrir dropdown
-      const businessTrigger = screen.getByRole('button', { name: new RegExp(mockBusiness.name, 'i') })
+      const businessTrigger = screen.getByRole('button', {
+        name: new RegExp(mockBusiness.name, 'i'),
+      })
       await user.click(businessTrigger)
 
       // Verifica que el header esté presente
@@ -326,13 +336,13 @@ describe('AdminDashboard', () => {
     it('no muestra dropdown si solo hay un negocio', async () => {
       const propsWithOneBusiness = {
         ...defaultProps,
-        businesses: [mockBusiness] // Solo un negocio
+        businesses: [mockBusiness], // Solo un negocio
       }
       render(<AdminDashboard {...propsWithOneBusiness} />)
 
       // El business name debe aparecer
       expect(screen.getByText(mockBusiness.name)).toBeInTheDocument()
-      
+
       // Pero el dropdown no debe tener contenido (businesses.length === 1)
       // En este caso, el trigger existe pero no hay DropdownMenuContent renderizado
     })
@@ -374,7 +384,7 @@ describe('AdminDashboard', () => {
     it('no duplica roles si availableRoles tiene duplicados', () => {
       const propsWithDuplicates = {
         ...defaultProps,
-        availableRoles: ['admin', 'admin', 'employee', 'employee', 'client'] as UserRole[]
+        availableRoles: ['admin', 'admin', 'employee', 'employee', 'client'] as UserRole[],
       }
       render(<AdminDashboard {...propsWithDuplicates} />)
 
@@ -442,7 +452,7 @@ describe('AdminDashboard', () => {
 
       // Verifica que el email esté en el dropdown
       expect(screen.getByText(mockUser.email)).toBeInTheDocument()
-      
+
       // Y el nombre también debe estar visible ahora
       expect(screen.getByText(mockUser.name)).toBeInTheDocument()
     })
@@ -490,7 +500,9 @@ describe('AdminDashboard', () => {
       await user.click(screen.getByText('Reportes'))
 
       const reportsPage = screen.getByTestId('reports-page')
-      expect(reportsPage).toHaveTextContent(`Reports for ${mockBusiness.id}, user: ${mockUser.name}`)
+      expect(reportsPage).toHaveTextContent(
+        `Reports for ${mockBusiness.id}, user: ${mockUser.name}`
+      )
     })
 
     it('pasa businessId, ownerId y currentUserId correcto a PermissionsManager', async () => {

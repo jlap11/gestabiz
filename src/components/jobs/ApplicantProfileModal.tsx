@@ -5,7 +5,6 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -17,19 +16,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
+  Award,
+  Briefcase,
+  Calendar,
   CheckCircle,
-  XCircle,
+  Clock,
+  DollarSign,
+  ExternalLink,
+  Github,
+  Globe,
+  Linkedin,
   Mail,
   Phone,
-  Calendar,
-  DollarSign,
-  Briefcase,
-  Award,
-  Globe,
-  Github,
-  Linkedin,
-  ExternalLink,
-  Clock
+  XCircle,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -47,7 +46,7 @@ export function ApplicantProfileModal({
   open,
   onClose,
   onAccept,
-  onReject
+  onReject,
 }: Readonly<ApplicantProfileModalProps>) {
   const { t } = useLanguage()
   const { profile, loading, fetchProfile } = useEmployeeProfile()
@@ -59,11 +58,12 @@ export function ApplicantProfileModal({
     }
   }, [open, application.user_id])
 
-  const initials = application.applicant?.full_name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || '??'
+  const initials =
+    application.applicant?.full_name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase() || '??'
 
   const appliedDate = application.created_at ? new Date(application.created_at) : null
   const isValidDate = appliedDate && !Number.isNaN(appliedDate.getTime())
@@ -75,7 +75,7 @@ export function ApplicantProfileModal({
     full_time: 'Tiempo Completo',
     part_time: 'Medio Tiempo',
     contract: 'Contrato',
-    flexible: 'Flexible'
+    flexible: 'Flexible',
   }
 
   return (
@@ -214,7 +214,7 @@ export function ApplicantProfileModal({
                             {new Intl.NumberFormat('es-CO', {
                               style: 'currency',
                               currency: 'COP',
-                              minimumFractionDigits: 0
+                              minimumFractionDigits: 0,
                             }).format(profile.expected_salary_min)}
                           </span>
                         )}
@@ -226,7 +226,7 @@ export function ApplicantProfileModal({
                             {new Intl.NumberFormat('es-CO', {
                               style: 'currency',
                               currency: 'COP',
-                              minimumFractionDigits: 0
+                              minimumFractionDigits: 0,
                             }).format(profile.expected_salary_max)}
                           </span>
                         )}
@@ -351,7 +351,7 @@ export function ApplicantProfileModal({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {profile.certifications.map((cert) => (
+                      {profile.certifications.map(cert => (
                         <div key={cert.id} className="border-l-2 border-primary pl-4">
                           <h4 className="font-semibold">{cert.name}</h4>
                           <p className="text-sm text-muted-foreground">{cert.issuer}</p>
@@ -396,12 +396,14 @@ export function ApplicantProfileModal({
               <CardContent className="space-y-4">
                 {application.expected_salary && (
                   <div>
-                    <Label className="text-sm text-muted-foreground">{t('jobsUI.expectedSalary')}</Label>
+                    <Label className="text-sm text-muted-foreground">
+                      {t('jobsUI.expectedSalary')}
+                    </Label>
                     <p className="text-lg font-semibold mt-1">
                       {new Intl.NumberFormat('es-CO', {
                         style: 'currency',
                         currency: application.vacancy?.currency || 'COP',
-                        minimumFractionDigits: 0
+                        minimumFractionDigits: 0,
                       }).format(application.expected_salary)}
                     </p>
                   </div>
@@ -409,13 +411,15 @@ export function ApplicantProfileModal({
 
                 {application.available_from && (
                   <div>
-                    <Label className="text-sm text-muted-foreground">{t('jobsUI.availableFrom')}</Label>
+                    <Label className="text-sm text-muted-foreground">
+                      {t('jobsUI.availableFrom')}
+                    </Label>
                     <p className="text-lg font-semibold mt-1 flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
                       {new Date(application.available_from).toLocaleDateString('es-CO', {
                         year: 'numeric',
                         month: 'long',
-                        day: 'numeric'
+                        day: 'numeric',
                       })}
                     </p>
                   </div>
@@ -485,6 +489,9 @@ export function ApplicantProfileModal({
   )
 }
 
-function Label({ children, className = '' }: Readonly<{ children: React.ReactNode; className?: string }>) {
+function Label({
+  children,
+  className = '',
+}: Readonly<{ children: React.ReactNode; className?: string }>) {
   return <label className={`text-sm font-medium ${className}`}>{children}</label>
 }

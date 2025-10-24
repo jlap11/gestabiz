@@ -24,7 +24,7 @@ serve(async (req: Request) => {
   try {
     const body = await req.json()
     console.log('Raw request body:', JSON.stringify(body))
-    
+
     const { uid, bid, lvl } = body
     const user_id = uid
     const business_id = bid
@@ -36,9 +36,9 @@ serve(async (req: Request) => {
     if (!user_id || !business_id || new_level === undefined) {
       console.log('Validation failed:', { user_id, business_id, new_level })
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Missing required parameters: uid, bid, lvl',
-          received: { uid, bid, lvl, user_id, business_id, new_level }
+          received: { uid, bid, lvl, user_id, business_id, new_level },
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -66,10 +66,10 @@ serve(async (req: Request) => {
 
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing Supabase credentials')
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
@@ -114,9 +114,9 @@ serve(async (req: Request) => {
     )
   } catch (error) {
     console.error('Function error:', error)
-    return new Response(
-      JSON.stringify({ success: false, message: 'Error: ' + error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ success: false, message: 'Error: ' + error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

@@ -1,6 +1,6 @@
 /**
  * WorkScheduleEditor - Editor de horario laboral para empleados
- * 
+ *
  * Permite a los empleados configurar su horario de trabajo para cada negocio.
  * Cada día de la semana puede tener:
  * - Estado activo/inactivo
@@ -8,9 +8,9 @@
  * - Hora de fin
  */
 
-import React, { useState, useEffect } from 'react'
-import { Clock, Save, AlertCircle } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import React, { useEffect, useState } from 'react'
+import { AlertCircle, Clock, Save } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -123,7 +123,7 @@ export function WorkScheduleEditor({
 
   // Actualizar estado de un día
   const toggleDay = (day: keyof WeekSchedule) => {
-    setSchedule((prev) => ({
+    setSchedule(prev => ({
       ...prev,
       [day]: {
         ...prev[day],
@@ -134,7 +134,7 @@ export function WorkScheduleEditor({
 
   // Actualizar hora de inicio
   const updateStartTime = (day: keyof WeekSchedule, time: string) => {
-    setSchedule((prev) => ({
+    setSchedule(prev => ({
       ...prev,
       [day]: {
         ...prev[day],
@@ -145,7 +145,7 @@ export function WorkScheduleEditor({
 
   // Actualizar hora de fin
   const updateEndTime = (day: keyof WeekSchedule, time: string) => {
-    setSchedule((prev) => ({
+    setSchedule(prev => ({
       ...prev,
       [day]: {
         ...prev[day],
@@ -234,21 +234,21 @@ export function WorkScheduleEditor({
           Horario de Trabajo
         </CardTitle>
         <CardDescription>
-          Configura los días y horarios en los que trabajarás en este negocio.
-          Esto se usará para determinar tu disponibilidad.
+          Configura los días y horarios en los que trabajarás en este negocio. Esto se usará para
+          determinar tu disponibilidad.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Los clientes podrán agendar citas contigo solo durante estos horarios.
-            Asegúrate de mantener tu horario actualizado.
+            Los clientes podrán agendar citas contigo solo durante estos horarios. Asegúrate de
+            mantener tu horario actualizado.
           </AlertDescription>
         </Alert>
 
         <div className="space-y-3">
-          {(Object.keys(schedule) as (keyof WeekSchedule)[]).map((day) => {
+          {(Object.keys(schedule) as (keyof WeekSchedule)[]).map(day => {
             const daySchedule = schedule[day]
 
             return (
@@ -262,10 +262,7 @@ export function WorkScheduleEditor({
               >
                 {/* Día + Switch */}
                 <div className="flex items-center gap-3 w-32">
-                  <Switch
-                    checked={daySchedule.is_active}
-                    onCheckedChange={() => toggleDay(day)}
-                  />
+                  <Switch checked={daySchedule.is_active} onCheckedChange={() => toggleDay(day)} />
                   <Label className="font-medium cursor-pointer" onClick={() => toggleDay(day)}>
                     {t(`common.time.${DAYS_ES[day]}`)}
                   </Label>
@@ -273,13 +270,11 @@ export function WorkScheduleEditor({
 
                 {/* Hora de Inicio */}
                 <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Inicio
-                  </Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Inicio</Label>
                   <Input
                     type="time"
                     value={daySchedule.start_time}
-                    onChange={(e) => updateStartTime(day, e.target.value)}
+                    onChange={e => updateStartTime(day, e.target.value)}
                     disabled={!daySchedule.is_active}
                     className="h-9"
                   />
@@ -287,13 +282,11 @@ export function WorkScheduleEditor({
 
                 {/* Hora de Fin */}
                 <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Fin
-                  </Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Fin</Label>
                   <Input
                     type="time"
                     value={daySchedule.end_time}
-                    onChange={(e) => updateEndTime(day, e.target.value)}
+                    onChange={e => updateEndTime(day, e.target.value)}
                     disabled={!daySchedule.is_active}
                     className="h-9"
                   />
@@ -316,8 +309,8 @@ export function WorkScheduleEditor({
             </div>
             <Switch
               checked={lunchBreak.has_lunch_break}
-              onCheckedChange={(checked) =>
-                setLunchBreak((prev) => ({
+              onCheckedChange={checked =>
+                setLunchBreak(prev => ({
                   ...prev,
                   has_lunch_break: checked,
                 }))
@@ -329,14 +322,12 @@ export function WorkScheduleEditor({
             <div className="flex gap-4 p-4 rounded-lg bg-muted/50">
               {/* Inicio Almuerzo */}
               <div className="flex-1">
-                <Label className="text-sm text-muted-foreground mb-2 block">
-                  Inicio Almuerzo
-                </Label>
+                <Label className="text-sm text-muted-foreground mb-2 block">Inicio Almuerzo</Label>
                 <Input
                   type="time"
                   value={lunchBreak.lunch_break_start}
-                  onChange={(e) =>
-                    setLunchBreak((prev) => ({
+                  onChange={e =>
+                    setLunchBreak(prev => ({
                       ...prev,
                       lunch_break_start: e.target.value,
                     }))
@@ -347,14 +338,12 @@ export function WorkScheduleEditor({
 
               {/* Fin Almuerzo */}
               <div className="flex-1">
-                <Label className="text-sm text-muted-foreground mb-2 block">
-                  Fin Almuerzo
-                </Label>
+                <Label className="text-sm text-muted-foreground mb-2 block">Fin Almuerzo</Label>
                 <Input
                   type="time"
                   value={lunchBreak.lunch_break_end}
-                  onChange={(e) =>
-                    setLunchBreak((prev) => ({
+                  onChange={e =>
+                    setLunchBreak(prev => ({
                       ...prev,
                       lunch_break_end: e.target.value,
                     }))

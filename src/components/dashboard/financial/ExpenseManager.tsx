@@ -3,20 +3,20 @@
 // Gestión completa de gastos recurrentes con plantillas y alertas
 // ============================================================================
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useEffect, useMemo, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -24,51 +24,51 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from '@/components/ui/dialog'
 import {
   AlertCircle,
+  Bell,
   Calendar,
   DollarSign,
+  Edit,
+  FileText,
   Plus,
   Repeat,
   Trash2,
-  Edit,
-  Bell,
-  FileText,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useTransactions } from '@/hooks/useTransactions';
-import supabase from '@/lib/supabase';
-import { formatCOP } from '@/lib/accounting/colombiaTaxes';
-import type { TransactionCategory } from '@/types/types';
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { useTransactions } from '@/hooks/useTransactions'
+import supabase from '@/lib/supabase'
+import { formatCOP } from '@/lib/accounting/colombiaTaxes'
+import type { TransactionCategory } from '@/types/types'
 
 interface RecurringExpense {
-  id: string;
-  business_id: string;
-  category: TransactionCategory;
-  description: string;
-  amount: number;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-  next_payment_date: string;
-  last_payment_date?: string;
-  is_active: boolean;
-  payment_method?: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  business_id: string
+  category: TransactionCategory
+  description: string
+  amount: number
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+  next_payment_date: string
+  last_payment_date?: string
+  is_active: boolean
+  payment_method?: string
+  notes?: string
+  created_at: string
+  updated_at: string
 }
 
 interface ExpenseTemplate {
-  id: string;
-  name: string;
-  category: TransactionCategory;
-  default_amount?: number;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-  description: string;
+  id: string
+  name: string
+  category: TransactionCategory
+  default_amount?: number
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+  description: string
 }
 
 interface ExpenseManagerProps {
-  businessId: string;
+  businessId: string
 }
 
 // Plantillas predefinidas de gastos comunes
@@ -79,7 +79,7 @@ const EXPENSE_TEMPLATES: ExpenseTemplate[] = [
     category: 'rent',
     default_amount: 2000000, // $2M COP mensual
     frequency: 'monthly',
-    description: 'Pago mensual de arriendo del local comercial'
+    description: 'Pago mensual de arriendo del local comercial',
   },
   {
     id: 'utilities',
@@ -87,7 +87,7 @@ const EXPENSE_TEMPLATES: ExpenseTemplate[] = [
     category: 'utilities',
     default_amount: 300000, // $300K COP mensual
     frequency: 'monthly',
-    description: 'Agua, luz, gas, internet'
+    description: 'Agua, luz, gas, internet',
   },
   {
     id: 'insurance',
@@ -95,14 +95,14 @@ const EXPENSE_TEMPLATES: ExpenseTemplate[] = [
     category: 'insurance',
     default_amount: 500000, // $500K COP mensual
     frequency: 'monthly',
-    description: 'Póliza de seguro del establecimiento'
+    description: 'Póliza de seguro del establecimiento',
   },
   {
     id: 'supplies',
     name: 'Compra de Insumos',
     category: 'supplies',
     frequency: 'weekly',
-    description: 'Materiales y suministros de trabajo'
+    description: 'Materiales y suministros de trabajo',
   },
   {
     id: 'marketing',
@@ -110,16 +110,16 @@ const EXPENSE_TEMPLATES: ExpenseTemplate[] = [
     category: 'marketing',
     default_amount: 400000, // $400K COP mensual
     frequency: 'monthly',
-    description: 'Gastos en redes sociales y marketing'
+    description: 'Gastos en redes sociales y marketing',
   },
   {
     id: 'maintenance',
     name: 'Mantenimiento',
     category: 'maintenance',
     frequency: 'quarterly',
-    description: 'Mantenimiento de equipos e instalaciones'
+    description: 'Mantenimiento de equipos e instalaciones',
   },
-];
+]
 
 const EXPENSE_CATEGORIES: TransactionCategory[] = [
   'rent',
@@ -132,7 +132,7 @@ const EXPENSE_CATEGORIES: TransactionCategory[] = [
   'equipment',
   'training',
   'other_expense',
-];
+]
 
 // Helper functions
 const getFrequencyLabel = (frequency: RecurringExpense['frequency']): string => {
@@ -142,37 +142,37 @@ const getFrequencyLabel = (frequency: RecurringExpense['frequency']): string => 
     monthly: 'Mensual',
     quarterly: 'Trimestral',
     yearly: 'Anual',
-  };
-  return labels[frequency];
-};
+  }
+  return labels[frequency]
+}
 
 const getDaysUntilPaymentLabel = (days: number): string => {
-  if (days < 0) return `Vencido hace ${Math.abs(days)} días`;
-  if (days === 0) return 'Hoy';
-  if (days === 1) return 'Mañana';
-  return `En ${days} días`;
-};
+  if (days < 0) return `Vencido hace ${Math.abs(days)} días`
+  if (days === 0) return 'Hoy'
+  if (days === 1) return 'Mañana'
+  return `En ${days} días`
+}
 
 const getPaymentStatusClass = (isOverdue: boolean, isUrgent: boolean): string => {
-  if (isOverdue) return 'border-red-500';
-  if (isUrgent) return 'border-yellow-500';
-  return '';
-};
+  if (isOverdue) return 'border-red-500'
+  if (isUrgent) return 'border-yellow-500'
+  return ''
+}
 
 const getPaymentTextClass = (isOverdue: boolean, isUrgent: boolean): string => {
-  if (isOverdue) return 'text-red-600';
-  if (isUrgent) return 'text-yellow-600';
-  return 'text-foreground';
-};
+  if (isOverdue) return 'text-red-600'
+  if (isUrgent) return 'text-yellow-600'
+  return 'text-foreground'
+}
 
 export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
-  const { createFiscalTransaction } = useTransactions();
+  const { createFiscalTransaction } = useTransactions()
 
-  const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null);
-  const [activeTab, setActiveTab] = useState('list');
-  const [loading, setLoading] = useState(false);
+  const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([])
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null)
+  const [activeTab, setActiveTab] = useState('list')
+  const [loading, setLoading] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -183,89 +183,95 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
     next_payment_date: new Date().toISOString().split('T')[0],
     payment_method: '',
     notes: '',
-  });
+  })
 
   // Fetch recurring expenses
   const fetchRecurringExpenses = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       const { data, error } = await supabase
         .from('recurring_expenses')
         .select('*')
         .eq('business_id', businessId)
-        .order('next_payment_date', { ascending: true });
+        .order('next_payment_date', { ascending: true })
 
-      if (error) throw error;
-      setRecurringExpenses(data || []);
+      if (error) throw error
+      setRecurringExpenses(data || [])
     } catch (error) {
-      toast.error(`Error al cargar gastos recurrentes: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      toast.error(
+        `Error al cargar gastos recurrentes: ${error instanceof Error ? error.message : 'Error desconocido'}`
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    void fetchRecurringExpenses();
+    void fetchRecurringExpenses()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [businessId]);
+  }, [businessId])
 
   // Calculate next payment date based on frequency
-  const calculateNextPaymentDate = (currentDate: string, frequency: RecurringExpense['frequency']): string => {
-    const date = new Date(currentDate);
+  const calculateNextPaymentDate = (
+    currentDate: string,
+    frequency: RecurringExpense['frequency']
+  ): string => {
+    const date = new Date(currentDate)
     switch (frequency) {
       case 'daily':
-        date.setDate(date.getDate() + 1);
-        break;
+        date.setDate(date.getDate() + 1)
+        break
       case 'weekly':
-        date.setDate(date.getDate() + 7);
-        break;
+        date.setDate(date.getDate() + 7)
+        break
       case 'monthly':
-        date.setMonth(date.getMonth() + 1);
-        break;
+        date.setMonth(date.getMonth() + 1)
+        break
       case 'quarterly':
-        date.setMonth(date.getMonth() + 3);
-        break;
+        date.setMonth(date.getMonth() + 3)
+        break
       case 'yearly':
-        date.setFullYear(date.getFullYear() + 1);
-        break;
+        date.setFullYear(date.getFullYear() + 1)
+        break
     }
-    return date.toISOString().split('T')[0];
-  };
+    return date.toISOString().split('T')[0]
+  }
 
   // Create recurring expense
   const handleCreateExpense = async () => {
-    const toastId = toast.loading('Creando gasto recurrente...');
+    const toastId = toast.loading('Creando gasto recurrente...')
     try {
-      const { error } = await supabase
-        .from('recurring_expenses')
-        .insert({
-          business_id: businessId,
-          category: formData.category,
-          description: formData.description,
-          amount: formData.amount,
-          frequency: formData.frequency,
-          next_payment_date: formData.next_payment_date,
-          payment_method: formData.payment_method || null,
-          notes: formData.notes || null,
-          is_active: true,
-        });
+      const { error } = await supabase.from('recurring_expenses').insert({
+        business_id: businessId,
+        category: formData.category,
+        description: formData.description,
+        amount: formData.amount,
+        frequency: formData.frequency,
+        next_payment_date: formData.next_payment_date,
+        payment_method: formData.payment_method || null,
+        notes: formData.notes || null,
+        is_active: true,
+      })
 
-      if (error) throw error;
+      if (error) throw error
 
-      toast.success('Gasto recurrente creado exitosamente', { id: toastId });
-      setIsDialogOpen(false);
-      resetForm();
-      fetchRecurringExpenses();
+      toast.success('Gasto recurrente creado exitosamente', { id: toastId })
+      setIsDialogOpen(false)
+      resetForm()
+      fetchRecurringExpenses()
     } catch (error) {
-      toast.error(`Error al crear gasto: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(
+        `Error al crear gasto: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        { id: toastId }
+      )
     }
-  };
+  }
 
   // Update recurring expense
   const handleUpdateExpense = async () => {
-    if (!editingExpense) return;
+    if (!editingExpense) return
 
-    const toastId = toast.loading('Actualizando gasto recurrente...');
+    const toastId = toast.loading('Actualizando gasto recurrente...')
     try {
       const { error } = await supabase
         .from('recurring_expenses')
@@ -278,43 +284,46 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
           payment_method: formData.payment_method || null,
           notes: formData.notes || null,
         })
-        .eq('id', editingExpense.id);
+        .eq('id', editingExpense.id)
 
-      if (error) throw error;
+      if (error) throw error
 
-      toast.success('Gasto recurrente actualizado exitosamente', { id: toastId });
-      setIsDialogOpen(false);
-      setEditingExpense(null);
-      resetForm();
-      fetchRecurringExpenses();
+      toast.success('Gasto recurrente actualizado exitosamente', { id: toastId })
+      setIsDialogOpen(false)
+      setEditingExpense(null)
+      resetForm()
+      fetchRecurringExpenses()
     } catch (error) {
-      toast.error(`Error al actualizar gasto: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(
+        `Error al actualizar gasto: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        { id: toastId }
+      )
     }
-  };
+  }
 
   // Delete recurring expense
   const handleDeleteExpense = async (expenseId: string) => {
-    if (!confirm('¿Estás seguro de eliminar este gasto recurrente?')) return;
+    if (!confirm('¿Estás seguro de eliminar este gasto recurrente?')) return
 
-    const toastId = toast.loading('Eliminando gasto...');
+    const toastId = toast.loading('Eliminando gasto...')
     try {
-      const { error } = await supabase
-        .from('recurring_expenses')
-        .delete()
-        .eq('id', expenseId);
+      const { error } = await supabase.from('recurring_expenses').delete().eq('id', expenseId)
 
-      if (error) throw error;
+      if (error) throw error
 
-      toast.success('Gasto recurrente eliminado exitosamente', { id: toastId });
-      fetchRecurringExpenses();
+      toast.success('Gasto recurrente eliminado exitosamente', { id: toastId })
+      fetchRecurringExpenses()
     } catch (error) {
-      toast.error(`Error al eliminar gasto: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(
+        `Error al eliminar gasto: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        { id: toastId }
+      )
     }
-  };
+  }
 
   // Process payment (create transaction and update next payment date)
   const handleProcessPayment = async (expense: RecurringExpense) => {
-    const toastId = toast.loading('Procesando pago...');
+    const toastId = toast.loading('Procesando pago...')
     try {
       // Create transaction
       await createFiscalTransaction({
@@ -326,26 +335,29 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
         description: `${expense.description} - ${expense.frequency}`,
         transaction_date: new Date().toISOString().split('T')[0],
         payment_method: expense.payment_method,
-      });
+      })
 
       // Update recurring expense
-      const nextPaymentDate = calculateNextPaymentDate(expense.next_payment_date, expense.frequency);
+      const nextPaymentDate = calculateNextPaymentDate(expense.next_payment_date, expense.frequency)
       const { error } = await supabase
         .from('recurring_expenses')
         .update({
           last_payment_date: new Date().toISOString().split('T')[0],
           next_payment_date: nextPaymentDate,
         })
-        .eq('id', expense.id);
+        .eq('id', expense.id)
 
-      if (error) throw error;
+      if (error) throw error
 
-      toast.success('Pago procesado exitosamente', { id: toastId });
-      fetchRecurringExpenses();
+      toast.success('Pago procesado exitosamente', { id: toastId })
+      fetchRecurringExpenses()
     } catch (error) {
-      toast.error(`Error al procesar pago: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(
+        `Error al procesar pago: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        { id: toastId }
+      )
     }
-  };
+  }
 
   // Apply template
   const applyTemplate = (template: ExpenseTemplate) => {
@@ -357,14 +369,14 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
       next_payment_date: new Date().toISOString().split('T')[0],
       payment_method: '',
       notes: '',
-    });
-    setActiveTab('list');
-    setIsDialogOpen(true);
-  };
+    })
+    setActiveTab('list')
+    setIsDialogOpen(true)
+  }
 
   // Edit expense
   const handleEditExpense = (expense: RecurringExpense) => {
-    setEditingExpense(expense);
+    setEditingExpense(expense)
     setFormData({
       category: expense.category,
       description: expense.description,
@@ -373,9 +385,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
       next_payment_date: expense.next_payment_date,
       payment_method: expense.payment_method || '',
       notes: expense.notes || '',
-    });
-    setIsDialogOpen(true);
-  };
+    })
+    setIsDialogOpen(true)
+  }
 
   // Reset form
   const resetForm = () => {
@@ -387,33 +399,37 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
       next_payment_date: new Date().toISOString().split('T')[0],
       payment_method: '',
       notes: '',
-    });
-    setEditingExpense(null);
-  };
+    })
+    setEditingExpense(null)
+  }
 
   // Upcoming payments (next 30 days)
   const upcomingPayments = useMemo(() => {
-    const today = new Date();
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(today.getDate() + 30);
+    const today = new Date()
+    const thirtyDaysFromNow = new Date()
+    thirtyDaysFromNow.setDate(today.getDate() + 30)
 
-    return recurringExpenses.filter(expense => {
-      const paymentDate = new Date(expense.next_payment_date);
-      return expense.is_active && paymentDate <= thirtyDaysFromNow;
-    }).sort((a, b) => new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime());
-  }, [recurringExpenses]);
+    return recurringExpenses
+      .filter(expense => {
+        const paymentDate = new Date(expense.next_payment_date)
+        return expense.is_active && paymentDate <= thirtyDaysFromNow
+      })
+      .sort(
+        (a, b) => new Date(a.next_payment_date).getTime() - new Date(b.next_payment_date).getTime()
+      )
+  }, [recurringExpenses])
 
   // Overdue payments
   const overduePayments = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
     return recurringExpenses.filter(expense => {
-      const paymentDate = new Date(expense.next_payment_date);
-      paymentDate.setHours(0, 0, 0, 0);
-      return expense.is_active && paymentDate < today;
-    });
-  }, [recurringExpenses]);
+      const paymentDate = new Date(expense.next_payment_date)
+      paymentDate.setHours(0, 0, 0, 0)
+      return expense.is_active && paymentDate < today
+    })
+  }, [recurringExpenses])
 
   // Total monthly expenses
   const totalMonthlyExpenses = useMemo(() => {
@@ -421,24 +437,24 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
       .filter(e => e.is_active)
       .reduce((sum, expense) => {
         // Convert to monthly equivalent
-        let monthlyAmount = expense.amount;
+        let monthlyAmount = expense.amount
         switch (expense.frequency) {
           case 'daily':
-            monthlyAmount = expense.amount * 30;
-            break;
+            monthlyAmount = expense.amount * 30
+            break
           case 'weekly':
-            monthlyAmount = expense.amount * 4.33; // ~4.33 weeks/month
-            break;
+            monthlyAmount = expense.amount * 4.33 // ~4.33 weeks/month
+            break
           case 'quarterly':
-            monthlyAmount = expense.amount / 3;
-            break;
+            monthlyAmount = expense.amount / 3
+            break
           case 'yearly':
-            monthlyAmount = expense.amount / 12;
-            break;
+            monthlyAmount = expense.amount / 12
+            break
         }
-        return sum + monthlyAmount;
-      }, 0);
-  }, [recurringExpenses]);
+        return sum + monthlyAmount
+      }, 0)
+  }, [recurringExpenses])
 
   return (
     <div className="space-y-6">
@@ -476,7 +492,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className={`text-2xl font-bold ${overduePayments.length > 0 ? 'text-red-600' : 'text-foreground'}`}>
+            <p
+              className={`text-2xl font-bold ${overduePayments.length > 0 ? 'text-red-600' : 'text-foreground'}`}
+            >
               {overduePayments.length}
             </p>
           </CardContent>
@@ -493,12 +511,15 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                 Administra tus gastos fijos y recurrentes del negocio
               </CardDescription>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) {
-                resetForm();
-              }
-            }}>
+            <Dialog
+              open={isDialogOpen}
+              onOpenChange={open => {
+                setIsDialogOpen(open)
+                if (!open) {
+                  resetForm()
+                }
+              }}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -521,7 +542,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                     <Label htmlFor="category">Categoría</Label>
                     <Select
                       value={formData.category}
-                      onValueChange={(value) => setFormData({...formData, category: value as TransactionCategory})}
+                      onValueChange={value =>
+                        setFormData({ ...formData, category: value as TransactionCategory })
+                      }
                     >
                       <SelectTrigger id="category">
                         <SelectValue />
@@ -542,7 +565,7 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                     <Input
                       id="description"
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      onChange={e => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Ej: Arriendo local comercial"
                       required
                     />
@@ -557,7 +580,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                       step="1000"
                       min="0"
                       value={formData.amount}
-                      onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value) || 0})}
+                      onChange={e =>
+                        setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
+                      }
                       required
                     />
                   </div>
@@ -567,7 +592,12 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                     <Label htmlFor="frequency">Frecuencia</Label>
                     <Select
                       value={formData.frequency}
-                      onValueChange={(value) => setFormData({...formData, frequency: value as RecurringExpense['frequency']})}
+                      onValueChange={value =>
+                        setFormData({
+                          ...formData,
+                          frequency: value as RecurringExpense['frequency'],
+                        })
+                      }
                     >
                       <SelectTrigger id="frequency">
                         <SelectValue />
@@ -589,7 +619,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                       id="next_payment_date"
                       type="date"
                       value={formData.next_payment_date}
-                      onChange={(e) => setFormData({...formData, next_payment_date: e.target.value})}
+                      onChange={e =>
+                        setFormData({ ...formData, next_payment_date: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -600,7 +632,7 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                     <Input
                       id="payment_method"
                       value={formData.payment_method}
-                      onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
+                      onChange={e => setFormData({ ...formData, payment_method: e.target.value })}
                       placeholder="Ej: Transferencia bancaria, Efectivo"
                     />
                   </div>
@@ -611,7 +643,7 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                     <Textarea
                       id="notes"
                       value={formData.notes}
-                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      onChange={e => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="Información adicional sobre este gasto..."
                       rows={3}
                     />
@@ -622,15 +654,13 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setIsDialogOpen(false);
-                        resetForm();
+                        setIsDialogOpen(false)
+                        resetForm()
                       }}
                     >
                       Cancelar
                     </Button>
-                    <Button
-                      onClick={editingExpense ? handleUpdateExpense : handleCreateExpense}
-                    >
+                    <Button onClick={editingExpense ? handleUpdateExpense : handleCreateExpense}>
                       {editingExpense ? 'Actualizar' : 'Crear'}
                     </Button>
                   </div>
@@ -659,7 +689,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
 
             {/* Active Expenses */}
             <TabsContent value="list" className="space-y-4">
-              {loading && <div className="text-center py-8 text-muted-foreground">Cargando gastos...</div>}
+              {loading && (
+                <div className="text-center py-8 text-muted-foreground">Cargando gastos...</div>
+              )}
               {!loading && recurringExpenses.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   No hay gastos recurrentes registrados
@@ -682,8 +714,10 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                               {formatCOP(expense.amount)} - {getFrequencyLabel(expense.frequency)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Próximo pago: {new Date(expense.next_payment_date).toLocaleDateString('es-CO')}
-                              {expense.last_payment_date && ` | Último: ${new Date(expense.last_payment_date).toLocaleDateString('es-CO')}`}
+                              Próximo pago:{' '}
+                              {new Date(expense.next_payment_date).toLocaleDateString('es-CO')}
+                              {expense.last_payment_date &&
+                                ` | Último: ${new Date(expense.last_payment_date).toLocaleDateString('es-CO')}`}
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -727,16 +761,14 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                 <div className="space-y-2">
                   {upcomingPayments.map(expense => {
                     const daysUntilPayment = Math.ceil(
-                      (new Date(expense.next_payment_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-                    );
-                    const isOverdue = daysUntilPayment < 0;
-                    const isUrgent = daysUntilPayment <= 7 && !isOverdue;
+                      (new Date(expense.next_payment_date).getTime() - new Date().getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                    const isOverdue = daysUntilPayment < 0
+                    const isUrgent = daysUntilPayment <= 7 && !isOverdue
 
                     return (
-                      <Card
-                        key={expense.id}
-                        className={getPaymentStatusClass(isOverdue, isUrgent)}
-                      >
+                      <Card key={expense.id} className={getPaymentStatusClass(isOverdue, isUrgent)}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -746,7 +778,9 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className={`text-sm font-medium ${getPaymentTextClass(isOverdue, isUrgent)}`}>
+                              <p
+                                className={`text-sm font-medium ${getPaymentTextClass(isOverdue, isUrgent)}`}
+                              >
                                 {new Date(expense.next_payment_date).toLocaleDateString('es-CO')}
                               </p>
                               <p className="text-xs text-muted-foreground">
@@ -756,7 +790,7 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                           </div>
                         </CardContent>
                       </Card>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -766,8 +800,11 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
             <TabsContent value="templates" className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 {EXPENSE_TEMPLATES.map(template => (
-                  <Card key={template.id} className="hover:border-primary cursor-pointer transition-colors"
-                        onClick={() => applyTemplate(template)}>
+                  <Card
+                    key={template.id}
+                    className="hover:border-primary cursor-pointer transition-colors"
+                    onClick={() => applyTemplate(template)}
+                  >
                     <CardHeader>
                       <CardTitle className="text-base flex items-center gap-2">
                         <FileText className="h-4 w-4" />
@@ -779,9 +816,7 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-sm text-muted-foreground">Frecuencia</p>
-                          <p className="font-medium">
-                            {getFrequencyLabel(template.frequency)}
-                          </p>
+                          <p className="font-medium">{getFrequencyLabel(template.frequency)}</p>
                         </div>
                         {template.default_amount && (
                           <div className="text-right">
@@ -799,5 +834,5 @@ export function ExpenseManager({ businessId }: Readonly<ExpenseManagerProps>) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

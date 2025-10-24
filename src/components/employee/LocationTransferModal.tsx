@@ -1,8 +1,8 @@
 /**
  * LocationTransferModal
- * 
+ *
  * Modal para programar traslado de empleado entre sedes
- * 
+ *
  * Features:
  * - Selector de sede destino
  * - DatePicker para fecha efectiva (mínimo +7 días)
@@ -10,8 +10,8 @@
  * - Confirmación con checkbox
  */
 
-import React, { useState, useEffect } from 'react';
-import { MapPin, AlertTriangle, Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
+import { AlertTriangle, Check, MapPin } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -19,42 +19,42 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { format, addDays } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { supabase } from '@/lib/supabase';
-import { useLocationTransfer } from '@/hooks/useLocationTransfer';
+} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { addDays, format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { supabase } from '@/lib/supabase'
+import { useLocationTransfer } from '@/hooks/useLocationTransfer'
 
 interface Location {
-  id: string;
-  name: string;
-  address?: string;
-  city?: string;
+  id: string
+  name: string
+  address?: string
+  city?: string
 }
 
 interface LocationTransferModalProps {
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly businessId: string;
-  readonly employeeId: string;
-  readonly currentLocationId: string;
-  readonly currentLocationName: string;
-  readonly targetLocationId?: string; // Nueva prop: ubicación destino prefijada
-  readonly targetLocationName?: string; // Nueva prop: nombre de sede destino
-  readonly onTransferScheduled: () => void;
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly businessId: string
+  readonly employeeId: string
+  readonly currentLocationId: string
+  readonly currentLocationName: string
+  readonly targetLocationId?: string // Nueva prop: ubicación destino prefijada
+  readonly targetLocationName?: string // Nueva prop: nombre de sede destino
+  readonly onTransferScheduled: () => void
 }
 
 export function LocationTransferModal({
@@ -68,21 +68,21 @@ export function LocationTransferModal({
   targetLocationName,
   onTransferScheduled,
 }: LocationTransferModalProps) {
-  const { t } = useLanguage();
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('');
-  const [daysUntilTransfer, setDaysUntilTransfer] = useState<number>(7); // Días elegibles 1-30
-  const [impact, setImpact] = useState<{ toKeep: number; toCancel: number } | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [loadingImpact, setLoadingImpact] = useState(false);
+  const { t } = useLanguage()
+  const [locations, setLocations] = useState<Location[]>([])
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('')
+  const [daysUntilTransfer, setDaysUntilTransfer] = useState<number>(7) // Días elegibles 1-30
+  const [impact, setImpact] = useState<{ toKeep: number; toCancel: number } | null>(null)
+  const [confirmed, setConfirmed] = useState(false)
+  const [loadingImpact, setLoadingImpact] = useState(false)
 
-  const { scheduleTransfer, getTransferImpact, isLoading } = useLocationTransfer();
+  const { scheduleTransfer, getTransferImpact, isLoading } = useLocationTransfer()
 
   // Si tenemos targetLocationId prefijado, usarlo. Si no, cargar sedes
   useEffect(() => {
     if (targetLocationId && targetLocationName) {
       // Modo traslado desde otra sede: ya sabemos la destino
-      setSelectedLocationId(targetLocationId);
+      setSelectedLocationId(targetLocationId)
     } else {
       // Modo cambio desde sede actual: cargar sedes disponibles
       async function fetchLocations() {
@@ -92,32 +92,32 @@ export function LocationTransferModal({
           .eq('business_id', businessId)
           .eq('is_active', true)
           .neq('id', currentLocationId)
-          .order('name');
+          .order('name')
 
         if (!error && data) {
-          setLocations(data);
+          setLocations(data)
         }
       }
 
       if (open && !targetLocationId) {
-        fetchLocations();
+        fetchLocations()
       }
     }
-  }, [open, businessId, currentLocationId, targetLocationId, targetLocationName]);
+  }, [open, businessId, currentLocationId, targetLocationId, targetLocationName])
 
   // Calcular impacto cuando cambie los días o sede destino
   useEffect(() => {
     async function calculateImpact() {
       if (!selectedLocationId || daysUntilTransfer <= 0) {
-        setImpact(null);
-        return;
+        setImpact(null)
+        return
       }
 
-      setLoadingImpact(true);
+      setLoadingImpact(true)
 
       try {
         // Calcular fecha efectiva basada en días elegidos
-        const effectiveDate = addDays(new Date(), daysUntilTransfer);
+        const effectiveDate = addDays(new Date(), daysUntilTransfer)
 
         // Primero obtener business_employee_id
         const { data: employeeData } = await supabase
@@ -125,31 +125,31 @@ export function LocationTransferModal({
           .select('id')
           .eq('employee_id', employeeId)
           .eq('business_id', businessId)
-          .single();
+          .single()
 
         if (employeeData) {
-          const impactData = await getTransferImpact(employeeData.id, effectiveDate);
+          const impactData = await getTransferImpact(employeeData.id, effectiveDate)
           if (impactData) {
             setImpact({
               toKeep: impactData.appointmentsToKeep,
               toCancel: impactData.appointmentsToCancel,
-            });
+            })
           }
         }
       } finally {
-        setLoadingImpact(false);
+        setLoadingImpact(false)
       }
     }
 
-    calculateImpact();
-  }, [daysUntilTransfer, selectedLocationId, employeeId, businessId, getTransferImpact]);
+    calculateImpact()
+  }, [daysUntilTransfer, selectedLocationId, employeeId, businessId, getTransferImpact])
 
   const handleSchedule = async () => {
     if (!selectedLocationId || daysUntilTransfer <= 0) {
-      return;
+      return
     }
 
-    const effectiveDate = addDays(new Date(), daysUntilTransfer);
+    const effectiveDate = addDays(new Date(), daysUntilTransfer)
 
     const result = await scheduleTransfer(
       businessId,
@@ -157,27 +157,27 @@ export function LocationTransferModal({
       selectedLocationId,
       effectiveDate,
       daysUntilTransfer
-    );
+    )
 
     if (result.success) {
-      onTransferScheduled();
-      onOpenChange(false);
+      onTransferScheduled()
+      onOpenChange(false)
       // Reset form
-      setSelectedLocationId('');
-      setDaysUntilTransfer(7);
-      setConfirmed(false);
-      setImpact(null);
+      setSelectedLocationId('')
+      setDaysUntilTransfer(7)
+      setConfirmed(false)
+      setImpact(null)
     }
-  };
+  }
 
-  const effectiveDate = daysUntilTransfer > 0 ? addDays(new Date(), daysUntilTransfer) : undefined;
+  const effectiveDate = daysUntilTransfer > 0 ? addDays(new Date(), daysUntilTransfer) : undefined
 
   // Renderizar contenido de impacto
   const renderImpactContent = () => {
     if (loadingImpact) {
-      return <p className="text-sm text-muted-foreground">Calculando...</p>;
+      return <p className="text-sm text-muted-foreground">Calculando...</p>
     }
-    
+
     if (impact) {
       return (
         <div className="space-y-1">
@@ -197,16 +197,15 @@ export function LocationTransferModal({
           </div>
           {impact.toCancel > 0 && (
             <p className="text-xs text-muted-foreground mt-2">
-              ⚠️ Los clientes afectados recibirán notificación por correo y en la
-              aplicación.
+              ⚠️ Los clientes afectados recibirán notificación por correo y en la aplicación.
             </p>
           )}
         </div>
-      );
+      )
     }
 
-    return <p className="text-sm text-muted-foreground">No se pudo calcular el impacto</p>;
-  };
+    return <p className="text-sm text-muted-foreground">No se pudo calcular el impacto</p>
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -238,8 +237,12 @@ export function LocationTransferModal({
             {targetLocationId && targetLocationName ? (
               <div className="flex items-center gap-2 p-3 rounded-md bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
                 <MapPin className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-green-900 dark:text-green-100">{targetLocationName}</span>
-                <Badge variant="default" className="ml-auto">Preseleccionada</Badge>
+                <span className="font-medium text-green-900 dark:text-green-100">
+                  {targetLocationName}
+                </span>
+                <Badge variant="default" className="ml-auto">
+                  Preseleccionada
+                </Badge>
               </div>
             ) : (
               <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
@@ -247,7 +250,7 @@ export function LocationTransferModal({
                   <SelectValue placeholder="Selecciona nueva sede..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {locations.map((location) => (
+                  {locations.map(location => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
                       {location.city && ` - ${location.city}`}
@@ -268,19 +271,20 @@ export function LocationTransferModal({
                 min="1"
                 max="30"
                 value={daysUntilTransfer}
-                onChange={(e) => setDaysUntilTransfer(Number.parseInt(e.target.value, 10))}
+                onChange={e => setDaysUntilTransfer(Number.parseInt(e.target.value, 10))}
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
               />
               <span className="font-bold text-lg min-w-fit px-3 py-1 bg-primary text-primary-foreground rounded-md">
                 {daysUntilTransfer} {daysUntilTransfer === 1 ? 'día' : 'días'}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Elige entre 1 y 30 días desde hoy
-            </p>
+            <p className="text-xs text-muted-foreground">Elige entre 1 y 30 días desde hoy</p>
             {daysUntilTransfer > 0 && (
               <p className="text-xs font-medium text-foreground">
-                Fecha efectiva: <strong>{format(addDays(new Date(), daysUntilTransfer), 'dd MMMM yyyy', { locale: es })}</strong>
+                Fecha efectiva:{' '}
+                <strong>
+                  {format(addDays(new Date(), daysUntilTransfer), 'dd MMMM yyyy', { locale: es })}
+                </strong>
               </p>
             )}
           </div>
@@ -304,14 +308,13 @@ export function LocationTransferModal({
               <Checkbox
                 id="confirm"
                 checked={confirmed}
-                onCheckedChange={(checked) => setConfirmed(checked === true)}
+                onCheckedChange={checked => setConfirmed(checked === true)}
               />
               <label
                 htmlFor="confirm"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Entiendo que se cancelarán {impact.toCancel} citas y los clientes serán
-                notificados
+                Entiendo que se cancelarán {impact.toCancel} citas y los clientes serán notificados
               </label>
             </div>
           )}
@@ -327,7 +330,7 @@ export function LocationTransferModal({
               !selectedLocationId ||
               !effectiveDate ||
               isLoading ||
-              (impact?.toCancel ?? 0) > 0 && !confirmed
+              ((impact?.toCancel ?? 0) > 0 && !confirmed)
             }
           >
             {isLoading ? 'Programando...' : 'Programar Traslado'}
@@ -335,5 +338,5 @@ export function LocationTransferModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

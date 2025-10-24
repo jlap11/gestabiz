@@ -4,7 +4,7 @@
  * Proporciona métodos para CRUD de jerarquía, validaciones y operaciones masivas
  */
 
-import { supabase } from './supabase';
+import { supabase } from './supabase'
 
 // UUID type alias para mejor legibilidad
 // =====================================================
@@ -12,43 +12,43 @@ import { supabase } from './supabase';
 // =====================================================
 
 export interface HierarchyUpdateData {
-  userId: string;
-  businessId: string;
-  hierarchyLevel?: number;
-  reportsTo?: string | null;
-  jobTitle?: string | null;
+  userId: string
+  businessId: string
+  hierarchyLevel?: number
+  reportsTo?: string | null
+  jobTitle?: string | null
 }
 
 export interface BulkHierarchyUpdate {
-  updates: HierarchyUpdateData[];
+  updates: HierarchyUpdateData[]
 }
 
 export interface HierarchyValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
+  isValid: boolean
+  errors: string[]
+  warnings: string[]
 }
 
 export interface SupervisorAssignment {
-  employeeId: string;
-  businessId: string;
-  newSupervisorId: string | null;
+  employeeId: string
+  businessId: string
+  newSupervisorId: string | null
 }
 
 export interface DirectReportNode {
-  user_id: string;
-  full_name: string;
-  email: string;
-  hierarchy_level: number;
-  job_title: string | null;
+  user_id: string
+  full_name: string
+  email: string
+  hierarchy_level: number
+  job_title: string | null
 }
 
 export interface ReportingChainNode {
-  level: number;
-  user_id: string;
-  full_name: string;
-  hierarchy_level: number;
-  job_title: string | null;
+  level: number
+  user_id: string
+  full_name: string
+  hierarchy_level: number
+  job_title: string | null
 }
 
 // =====================================================
@@ -59,22 +59,24 @@ class HierarchyService {
   /**
    * Actualiza el nivel jerárquico de un empleado
    */
-  async updateEmployeeHierarchy(data: HierarchyUpdateData): Promise<{ success: boolean; error?: string }> {
+  async updateEmployeeHierarchy(
+    data: HierarchyUpdateData
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      const { userId, businessId, hierarchyLevel, reportsTo } = data;
+      const { userId, businessId, hierarchyLevel, reportsTo } = data
 
       // Validar que no sea el owner (nivel 0 no se puede cambiar)
       const { data: businessData } = await supabase
         .from('businesses')
         .select('owner_id')
         .eq('id', businessId)
-        .single();
+        .single()
 
       if (businessData?.owner_id === userId) {
         return {
           success: false,
           error: 'No se puede modificar la jerarquía del propietario del negocio',
-        };
+        }
       }
 
       // Actualizar en business_roles
@@ -86,27 +88,29 @@ class HierarchyService {
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId)
-        .eq('business_id', businessId);
+        .eq('business_id', businessId)
 
       if (rolesError) {
-        return { success: false, error: rolesError.message };
+        return { success: false, error: rolesError.message }
       }
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-      };
+      }
     }
   }
 
   /**
    * Asigna un supervisor a un empleado
    */
-  async assignSupervisor(assignment: SupervisorAssignment): Promise<{ success: boolean; error?: string }> {
+  async assignSupervisor(
+    assignment: SupervisorAssignment
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      const { employeeId, businessId, newSupervisorId } = assignment;
+      const { employeeId, businessId, newSupervisorId } = assignment
 
       // Validar que el supervisor pertenezca al negocio (si no es null)
       if (newSupervisorId) {
@@ -116,13 +120,13 @@ class HierarchyService {
           .eq('user_id', newSupervisorId)
           .eq('business_id', businessId)
           .eq('is_active', true)
-          .single();
+          .single()
 
         if (!supervisorExists) {
           return {
             success: false,
             error: 'El supervisor especificado no pertenece a este negocio',
-          };
+          }
         }
       }
 
@@ -134,18 +138,18 @@ class HierarchyService {
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', employeeId)
-        .eq('business_id', businessId);
+        .eq('business_id', businessId)
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message }
       }
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-      };
+      }
     }
   }
 
@@ -153,71 +157,79 @@ class HierarchyService {
    * Actualiza múltiples empleados en batch
    */
   async bulkUpdateHierarchy(bulk: BulkHierarchyUpdate): Promise<{
-    success: boolean;
-    results: Array<{ userId: string; success: boolean; error?: string }>;
+    success: boolean
+    results: Array<{ userId: string; success: boolean; error?: string }>
   }> {
-    const results: Array<{ userId: string; success: boolean; error?: string }> = [];
+    const results: Array<{ userId: string; success: boolean; error?: string }> = []
 
     for (const update of bulk.updates) {
-      const result = await this.updateEmployeeHierarchy(update);
+      const result = await this.updateEmployeeHierarchy(update)
       results.push({
         userId: update.userId,
         success: result.success,
         error: result.error,
-      });
+      })
     }
 
-    const allSuccess = results.every(r => r.success);
-    return { success: allSuccess, results };
+    const allSuccess = results.every(r => r.success)
+    return { success: allSuccess, results }
   }
 
   /**
    * Valida un cambio de jerarquía antes de aplicarlo
    */
   async validateHierarchyChange(data: HierarchyUpdateData): Promise<HierarchyValidationResult> {
-    const errors: string[] = [];
-    const warnings: string[] = [];
+    const errors: string[] = []
+    const warnings: string[] = []
 
     try {
-      const { userId, businessId, hierarchyLevel, reportsTo } = data;
+      const { userId, businessId, hierarchyLevel, reportsTo } = data
 
       // 1. Validar que el usuario existe en el negocio
-      const roleData = await this.validateUserInBusiness(userId, businessId);
+      const roleData = await this.validateUserInBusiness(userId, businessId)
       if (!roleData) {
-        return { isValid: false, errors: ['El usuario no pertenece a este negocio'], warnings };
+        return { isValid: false, errors: ['El usuario no pertenece a este negocio'], warnings }
       }
 
       // 2. Validar que no sea el owner
-      const isOwnerValid = await this.validateNotOwner(userId, businessId);
+      const isOwnerValid = await this.validateNotOwner(userId, businessId)
       if (!isOwnerValid) {
-        return { isValid: false, errors: ['No se puede modificar la jerarquía del propietario'], warnings };
+        return {
+          isValid: false,
+          errors: ['No se puede modificar la jerarquía del propietario'],
+          warnings,
+        }
       }
 
       // 3. Validar nivel jerárquico válido
       if (hierarchyLevel !== undefined) {
-        this.validateHierarchyLevelRange(hierarchyLevel, roleData.hierarchy_level, errors, warnings);
+        this.validateHierarchyLevelRange(hierarchyLevel, roleData.hierarchy_level, errors, warnings)
       }
 
       // 4. Validar que el supervisor existe (si se especifica)
       if (reportsTo) {
-        await this.validateSupervisorInBusiness(reportsTo, businessId, hierarchyLevel, errors, warnings);
+        await this.validateSupervisorInBusiness(
+          reportsTo,
+          businessId,
+          hierarchyLevel,
+          errors,
+          warnings
+        )
       }
 
       // 5. Validar que no se crea un ciclo
       if (reportsTo) {
-        await this.validateNoCycle(userId, businessId, reportsTo, errors);
+        await this.validateNoCycle(userId, businessId, reportsTo, errors)
       }
 
       return {
         isValid: errors.length === 0,
         errors,
         warnings,
-      };
+      }
     } catch (error) {
-      errors.push(
-        error instanceof Error ? error.message : 'Error al validar cambio de jerarquía'
-      );
-      return { isValid: false, errors, warnings };
+      errors.push(error instanceof Error ? error.message : 'Error al validar cambio de jerarquía')
+      return { isValid: false, errors, warnings }
     }
   }
 
@@ -231,9 +243,9 @@ class HierarchyService {
       .eq('user_id', userId)
       .eq('business_id', businessId)
       .eq('is_active', true)
-      .single();
+      .single()
 
-    return roleData;
+    return roleData
   }
 
   /**
@@ -244,9 +256,9 @@ class HierarchyService {
       .from('businesses')
       .select('owner_id')
       .eq('id', businessId)
-      .single();
+      .single()
 
-    return businessData?.owner_id !== userId;
+    return businessData?.owner_id !== userId
   }
 
   /**
@@ -259,11 +271,11 @@ class HierarchyService {
     warnings: string[]
   ) {
     if (hierarchyLevel < 1 || hierarchyLevel > 4) {
-      errors.push('El nivel jerárquico debe estar entre 1 (Admin) y 4 (Staff)');
+      errors.push('El nivel jerárquico debe estar entre 1 (Admin) y 4 (Staff)')
     }
 
     if (currentLevel && hierarchyLevel > currentLevel) {
-      warnings.push(`Se está reduciendo el nivel de ${currentLevel} a ${hierarchyLevel}`);
+      warnings.push(`Se está reduciendo el nivel de ${currentLevel} a ${hierarchyLevel}`)
     }
   }
 
@@ -283,33 +295,38 @@ class HierarchyService {
       .eq('user_id', reportsTo)
       .eq('business_id', businessId)
       .eq('is_active', true)
-      .single();
+      .single()
 
     if (!supervisorData) {
-      errors.push('El supervisor especificado no pertenece a este negocio');
-      return;
+      errors.push('El supervisor especificado no pertenece a este negocio')
+      return
     }
 
     if (hierarchyLevel !== undefined && supervisorData.hierarchy_level >= hierarchyLevel) {
-      warnings.push('El supervisor tiene un nivel jerárquico igual o inferior al del empleado');
+      warnings.push('El supervisor tiene un nivel jerárquico igual o inferior al del empleado')
     }
   }
 
   /**
    * Valida que no se crea un ciclo en la jerarquía
    */
-  private async validateNoCycle(userId: string, businessId: string, reportsTo: string, errors: string[]) {
+  private async validateNoCycle(
+    userId: string,
+    businessId: string,
+    reportsTo: string,
+    errors: string[]
+  ) {
     const { data: cycleCheck } = await supabase.rpc('get_reporting_chain', {
       p_user_id: reportsTo,
       p_business_id: businessId,
-    });
+    })
 
     if (cycleCheck && Array.isArray(cycleCheck)) {
       const hasUserInChain = (cycleCheck as ReportingChainNode[]).some(
         node => node.user_id === userId
-      );
+      )
       if (hasUserInChain) {
-        errors.push('Esta asignación crearía un ciclo en la jerarquía');
+        errors.push('Esta asignación crearía un ciclo en la jerarquía')
       }
     }
   }
@@ -330,18 +347,18 @@ class HierarchyService {
           updated_at: new Date().toISOString(),
         })
         .eq('employee_id', employeeId)
-        .eq('business_id', businessId);
+        .eq('business_id', businessId)
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message }
       }
 
-      return { success: true };
+      return { success: true }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-      };
+      }
     }
   }
 
@@ -356,18 +373,18 @@ class HierarchyService {
       const { data, error } = await supabase.rpc('get_direct_reports', {
         p_user_id: userId,
         p_business_id: businessId,
-      });
+      })
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message }
       }
 
-      return { success: true, data: data || [] };
+      return { success: true, data: data || [] }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-      };
+      }
     }
   }
 
@@ -382,18 +399,18 @@ class HierarchyService {
       const { data, error } = await supabase.rpc('get_reporting_chain', {
         p_user_id: userId,
         p_business_id: businessId,
-      });
+      })
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message }
       }
 
-      return { success: true, data: data || [] };
+      return { success: true, data: data || [] }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-      };
+      }
     }
   }
 
@@ -408,23 +425,22 @@ class HierarchyService {
       const { data, error } = await supabase.rpc('user_has_hierarchy_permission', {
         p_business_id: businessId,
         p_permission_name: permissionName,
-      });
+      })
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message }
       }
 
-      return { success: true, hasPermission: data === true };
+      return { success: true, hasPermission: data === true }
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido',
-      };
+      }
     }
   }
 }
 
 // Exportar instancia singleton
-export const hierarchyService = new HierarchyService();
-export default hierarchyService;
-
+export const hierarchyService = new HierarchyService()
+export default hierarchyService

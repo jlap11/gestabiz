@@ -2,7 +2,7 @@
 export * from './types'
 
 // Bring types into local scope for type guards
-import type { UserRole, Appointment, Notification, Client, Business } from './types'
+import type { Appointment, Business, Client, Notification, UserRole } from './types'
 
 // Type guards and utilities
 export function isValidUserRole(role: string): role is UserRole {
@@ -14,7 +14,15 @@ export function isValidLanguage(language: string): language is 'es' | 'en' {
 }
 
 export function isValidAppointmentStatus(status: string): status is Appointment['status'] {
-  return ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'].includes(status)
+  return [
+    'scheduled',
+    'confirmed',
+    'in_progress',
+    'completed',
+    'cancelled',
+    'no_show',
+    'rescheduled',
+  ].includes(status)
 }
 
 export function isValidNotificationType(type: string): type is Notification['type'] {
@@ -25,10 +33,16 @@ export function isValidNotificationType(type: string): type is Notification['typ
 export type OptionalExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>
 export type RequiredExcept<T, K extends keyof T> = Required<T> & Partial<Pick<T, K>>
 
-export type CreateAppointmentData = OptionalExcept<Appointment, 'business_id' | 'client_name' | 'start_time' | 'end_time' | 'status'>
+export type CreateAppointmentData = OptionalExcept<
+  Appointment,
+  'business_id' | 'client_name' | 'start_time' | 'end_time' | 'status'
+>
 export type UpdateAppointmentData = Partial<Omit<Appointment, 'id' | 'business_id' | 'created_at'>>
 
-export type CreateClientData = OptionalExcept<Client, 'business_id' | 'name' | 'language' | 'status'>
+export type CreateClientData = OptionalExcept<
+  Client,
+  'business_id' | 'name' | 'language' | 'status'
+>
 export type UpdateClientData = Partial<Omit<Client, 'id' | 'business_id' | 'created_at'>>
 
 export type CreateBusinessData = OptionalExcept<Business, 'name' | 'category' | 'owner_id'>

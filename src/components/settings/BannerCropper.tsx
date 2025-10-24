@@ -1,7 +1,13 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -16,7 +22,7 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
   isOpen,
   onClose,
   imageFile,
-  onCropComplete
+  onCropComplete,
 }) => {
   const { t } = useLanguage()
   const [imageSrc, setImageSrc] = useState<string | null>(null)
@@ -41,7 +47,7 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
   // Initialize crop when image loads
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget
-    
+
     // Calculate crop dimensions for 16:9 aspect ratio
     const aspectRatio = 16 / 9
     let cropWidth = width
@@ -62,7 +68,7 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
       x,
       y,
       width: cropWidth,
-      height: cropHeight
+      height: cropHeight,
     }
 
     setCrop(initialCrop)
@@ -99,12 +105,8 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
       outputHeight
     )
 
-    return new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(
-        (blob) => resolve(blob),
-        'image/jpeg',
-        0.95
-      )
+    return new Promise<Blob | null>(resolve => {
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.95)
     })
   }, [completedCrop])
 
@@ -127,8 +129,8 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
           <div className="flex flex-col items-center gap-4">
             <ReactCrop
               crop={crop}
-              onChange={(c) => setCrop(c)}
-              onComplete={(c) => setCompletedCrop(c)}
+              onChange={c => setCrop(c)}
+              onComplete={c => setCompletedCrop(c)}
               aspect={16 / 9}
             >
               <img
@@ -140,9 +142,7 @@ export const BannerCropper: React.FC<BannerCropperProps> = ({
               />
             </ReactCrop>
 
-            <div className="text-sm text-muted-foreground">
-              {t('bannerCropper.instructions')}
-            </div>
+            <div className="text-sm text-muted-foreground">{t('bannerCropper.instructions')}</div>
           </div>
         )}
 

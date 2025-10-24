@@ -23,11 +23,11 @@ describe.skip('Job Vacancy Complete Flow E2E', () => {
     // ⚠️ IMPORTANTE: No usar auth.signUp para evitar envío de emails
     // Crear usuarios directamente en auth.users requiere service_role key
     // Por ahora, usar UUIDs fijos y crear solo los registros necesarios
-    
+
     // Generate fixed UUIDs for test users (no email sending)
     testOwnerId = '00000000-0000-0000-0000-000000000001'
     testApplicantId = '00000000-0000-0000-0000-000000000002'
-    
+
     console.log('Using mock user IDs:', { testOwnerId, testApplicantId })
 
     // Create test business (using real category_id from business_categories table)
@@ -43,7 +43,7 @@ describe.skip('Job Vacancy Complete Flow E2E', () => {
 
     if (businessError) throw new Error(`Business creation failed: ${businessError.message}`)
     if (!business) throw new Error('Business not created')
-    
+
     testBusinessId = business.id
     console.log('Business created:', testBusinessId)
   })
@@ -175,7 +175,8 @@ describe.skip('Job Vacancy Complete Flow E2E', () => {
     const applicationData = {
       vacancy_id: testVacancyId,
       user_id: testApplicantId,
-      cover_letter: 'I am very interested in this position and believe my 7 years of React experience make me a great fit.',
+      cover_letter:
+        'I am very interested in this position and believe my 7 years of React experience make me a great fit.',
       status: 'pending',
       availability: {
         monday: { enabled: true, start_time: '09:00', end_time: '18:00' },

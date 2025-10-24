@@ -23,7 +23,7 @@ const TRANSACTION_STATES = {
   ERROR: 104,
 }
 
-serve(async (req) => {
+serve(async req => {
   try {
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 })
@@ -31,7 +31,7 @@ serve(async (req) => {
 
     // PayU envía datos como form-urlencoded
     const formData = await req.formData()
-    
+
     // Extraer parámetros
     const merchantId = formData.get('merchant_id')
     const referenceCode = formData.get('reference_sale')
@@ -93,7 +93,7 @@ serve(async (req) => {
     if (paymentStatus === 'succeeded' && businessId) {
       const startDate = new Date()
       const endDate = new Date(startDate)
-      
+
       // Calcular fecha de fin según ciclo
       if (billingCycle === 'yearly') {
         endDate.setFullYear(endDate.getFullYear() + 1)
@@ -175,15 +175,15 @@ serve(async (req) => {
     return new Response('OK', { status: 200 })
   } catch (error) {
     console.error('PayU Webhook Error:', error)
-    
+
     // Capture error to Sentry
     captureEdgeFunctionError(error as Error, {
       functionName: 'payu-webhook',
-      operation: 'handleWebhook'
+      operation: 'handleWebhook',
     })
-    
+
     await flushSentry()
-    
+
     return new Response('Internal server error', { status: 500 })
   }
 })

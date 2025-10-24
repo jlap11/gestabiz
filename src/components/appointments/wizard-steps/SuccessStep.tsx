@@ -1,55 +1,57 @@
-import React, { useState, useEffect } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Calendar, Share2, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import React, { useEffect, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Button } from '@/components/ui/button'
+import { Calendar, CheckCircle, Share2, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 
 interface WizardData {
-  service: { name: string } | null;
-  date: Date | null;
-  startTime: string | null;
-  location: { name: string } | null;
+  service: { name: string } | null
+  date: Date | null
+  startTime: string | null
+  location: { name: string } | null
 }
 
 interface SuccessStepProps {
-  readonly appointmentData: WizardData;
-  readonly onClose: () => void;
+  readonly appointmentData: WizardData
+  readonly onClose: () => void
 }
 
 export function SuccessStep({ appointmentData, onClose }: Readonly<SuccessStepProps>) {
   const { t } = useLanguage()
-  const [status, setStatus] = useState<'loading' | 'success'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success'>('loading')
 
   useEffect(() => {
     // Simular proceso de guardado
     const timer = setTimeout(() => {
-      setStatus('success');
-    }, 1500);
+      setStatus('success')
+    }, 1500)
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => clearTimeout(timer)
+  }, [])
 
-  const { service, date, startTime, location } = appointmentData;
+  const { service, date, startTime, location } = appointmentData
 
   const handleAddToCalendar = () => {
     // Implementar integración con Google Calendar
-    alert('Add to Google Calendar feature coming soon!');
-  };
+    alert('Add to Google Calendar feature coming soon!')
+  }
 
   const handleShare = () => {
     // Implementar funcionalidad de compartir
     if (navigator.share) {
-      navigator.share({
-        title: 'Appointment Confirmation',
-        text: `Appointment for ${service?.name} on ${date ? format(date, 'MMMM d, yyyy') : ''} at ${startTime}`,
-      }).catch(() => {
-        // Silently fail if user cancels share
-      });
+      navigator
+        .share({
+          title: 'Appointment Confirmation',
+          text: `Appointment for ${service?.name} on ${date ? format(date, 'MMMM d, yyyy') : ''} at ${startTime}`,
+        })
+        .catch(() => {
+          // Silently fail if user cancels share
+        })
     } else {
-      alert('Share feature not supported on this browser');
+      alert('Share feature not supported on this browser')
     }
-  };
+  }
 
   return (
     <div className="p-8">
@@ -69,8 +71,8 @@ export function SuccessStep({ appointmentData, onClose }: Readonly<SuccessStepPr
         {status === 'loading' ? (
           <div
             className={cn(
-              "w-20 h-20 rounded-full border-4 border-primary/30",
-              "border-t-primary animate-spin mb-6"
+              'w-20 h-20 rounded-full border-4 border-primary/30',
+              'border-t-primary animate-spin mb-6'
             )}
           />
         ) : (
@@ -88,22 +90,26 @@ export function SuccessStep({ appointmentData, onClose }: Readonly<SuccessStepPr
         {status === 'success' && (
           <div className="text-center mb-8 animate-in fade-in duration-500 delay-300">
             <p className="text-muted-foreground text-base max-w-md">
-              Your appointment {service?.name && (
+              Your appointment{' '}
+              {service?.name && (
                 <>
                   for <span className="font-semibold text-foreground">{service.name}</span>
                 </>
-              )} {location?.name && (
+              )}{' '}
+              {location?.name && (
                 <>
                   at <span className="font-semibold text-foreground">{location.name}</span>
                 </>
-              )} {date && startTime && (
+              )}{' '}
+              {date && startTime && (
                 <>
                   for{' '}
                   <span className="font-semibold text-foreground">
                     {format(date, 'EEEE, MMMM d')} at {startTime}
                   </span>
                 </>
-              )} has been successfully scheduled.
+              )}{' '}
+              has been successfully scheduled.
             </p>
           </div>
         )}
@@ -142,5 +148,5 @@ export function SuccessStep({ appointmentData, onClose }: Readonly<SuccessStepPr
         </div>
       )}
     </div>
-  );
+  )
 }

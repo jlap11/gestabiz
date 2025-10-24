@@ -1,28 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Send, Paperclip, X, Smile, FileIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { FileUpload } from './FileUpload';
-import type { MessageWithSender } from '@/hooks/useMessages';
-import type { ChatAttachment } from '@/hooks/useChat'; // Temporal - future phase
-import { cn } from '@/lib/utils';
-import { announce } from '@/lib/accessibility';
+import React, { useEffect, useRef, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { FileIcon, Paperclip, Send, Smile, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { FileUpload } from './FileUpload'
+import type { MessageWithSender } from '@/hooks/useMessages'
+import type { ChatAttachment } from '@/hooks/useChat' // Temporal - future phase
+import { cn } from '@/lib/utils'
+import { announce } from '@/lib/accessibility'
 
 interface ChatInputProps {
-  conversationId: string;
-  onSendMessage: (content: string, replyTo?: string, attachments?: ChatAttachment[]) => Promise<void>;
-  onTypingChange?: (isTyping: boolean) => void;
-  replyToMessage?: MessageWithSender | null;
-  onCancelReply?: () => void;
-  disabled?: boolean;
-  placeholder?: string;
+  conversationId: string
+  onSendMessage: (
+    content: string,
+    replyTo?: string,
+    attachments?: ChatAttachment[]
+  ) => Promise<void>
+  onTypingChange?: (isTyping: boolean) => void
+  replyToMessage?: MessageWithSender | null
+  onCancelReply?: () => void
+  disabled?: boolean
+  placeholder?: string
 }
 
 /**
  * ChatInput Component
- * 
+ *
  * Input de chat con:
  * - Textarea con auto-resize
  * - Botón enviar
@@ -38,102 +42,102 @@ export function ChatInput({
   replyToMessage,
   onCancelReply,
   disabled = false,
-  placeholder = 'Escribe un mensaje...'
+  placeholder = 'Escribe un mensaje...',
 }: Readonly<ChatInputProps>) {
   const { t } = useLanguage()
-  const [message, setMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [message, setMessage] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([])
+  const [isUploadOpen, setIsUploadOpen] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Auto-focus en textarea cuando se monta o cambia conversación
   useEffect(() => {
     if (textareaRef.current && !disabled) {
-      textareaRef.current.focus();
+      textareaRef.current.focus()
     }
-  }, [conversationId, disabled]);
+  }, [conversationId, disabled])
 
   // Auto-resize textarea
   useEffect(() => {
-    const textarea = textareaRef.current;
+    const textarea = textareaRef.current
     if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+      textarea.style.height = 'auto'
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`
     }
-  }, [message]);
+  }, [message])
 
   // Limpiar typing timeout al desmontar
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
+        clearTimeout(typingTimeoutRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   /**
    * Manejar cambio en el textarea
    * Notifica typing indicator con debounce
    */
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setMessage(newValue);
+    const newValue = e.target.value
+    setMessage(newValue)
 
     // Notificar typing indicator
     if (onTypingChange) {
-      onTypingChange(true);
+      onTypingChange(true)
 
       // Reset timeout de typing
       if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
+        clearTimeout(typingTimeoutRef.current)
       }
 
       // Auto-stop typing después de 3 segundos sin escribir
       typingTimeoutRef.current = setTimeout(() => {
-        onTypingChange(false);
-      }, 3000);
+        onTypingChange(false)
+      }, 3000)
     }
-  };
+  }
 
   /**
    * Manejar upload completo
    */
   const handleUploadComplete = (uploaded: ChatAttachment[]) => {
-    setAttachments((prev) => [...prev, ...uploaded]);
-    setIsUploadOpen(false);
-  };
+    setAttachments(prev => [...prev, ...uploaded])
+    setIsUploadOpen(false)
+  }
 
   /**
    * Remover attachment
    */
   const handleRemoveAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
+    setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
 
   /**
    * Formatear tamaño de archivo
    */
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
 
   /**
    * Enviar mensaje
    */
   const handleSend = async () => {
-    const trimmedMessage = message.trim();
-    if ((!trimmedMessage && attachments.length === 0) || isSending) return;
+    const trimmedMessage = message.trim()
+    if ((!trimmedMessage && attachments.length === 0) || isSending) return
 
     try {
-      setIsSending(true);
+      setIsSending(true)
 
       // Detener typing indicator
       if (onTypingChange) {
-        onTypingChange(false);
+        onTypingChange(false)
       }
 
       // Enviar mensaje con attachments
@@ -141,28 +145,28 @@ export function ChatInput({
         trimmedMessage || '📎 Archivo adjunto',
         replyToMessage?.id,
         attachments.length > 0 ? attachments : undefined
-      );
+      )
 
       // Limpiar input y attachments
-      setMessage('');
-      setAttachments([]);
+      setMessage('')
+      setAttachments([])
 
       // Cancelar reply
       if (onCancelReply) {
-        onCancelReply();
+        onCancelReply()
       }
     } catch {
       // Error será manejado por el componente padre
       // El hook useChat ya muestra el error en el estado
     } finally {
-      setIsSending(false);
+      setIsSending(false)
 
       // Re-focus en textarea
       if (textareaRef.current) {
-        textareaRef.current.focus();
+        textareaRef.current.focus()
       }
     }
-  };
+  }
 
   /**
    * Manejar teclas de acceso
@@ -173,28 +177,29 @@ export function ChatInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter sin Shift: enviar
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-      return;
+      e.preventDefault()
+      handleSend()
+      return
     }
-    
+
     // Esc: cancelar reply
     if (e.key === 'Escape' && replyToMessage) {
-      e.preventDefault();
-      onCancelReply?.();
-      announce('Respuesta cancelada', 'polite');
-      textareaRef.current?.focus();
+      e.preventDefault()
+      onCancelReply?.()
+      announce('Respuesta cancelada', 'polite')
+      textareaRef.current?.focus()
     }
-  };
+  }
 
   return (
-    <div className="border-t bg-background">
+    <div className="border-t bg-background pb-[env(safe-area-inset-bottom)]">
       {/* Screen reader announcements */}
       <output className="sr-only" aria-live="polite" aria-atomic="true">
         {isSending && 'Enviando mensaje...'}
-        {attachments.length > 0 && `${attachments.length} archivo${attachments.length > 1 ? 's' : ''} adjunto${attachments.length > 1 ? 's' : ''}`}
+        {attachments.length > 0 &&
+          `${attachments.length} archivo${attachments.length > 1 ? 's' : ''} adjunto${attachments.length > 1 ? 's' : ''}`}
       </output>
-      
+
       {/* Preview de mensaje al que se responde */}
       {replyToMessage && (
         <div className="px-3 py-2 sm:px-4 bg-muted/50 border-b flex items-start justify-between gap-2">
@@ -223,7 +228,7 @@ export function ChatInput({
 
       {/* Preview de attachments seleccionados */}
       {attachments.length > 0 && (
-        <div className="px-3 py-2 sm:px-4 bg-muted/30 border-b">
+        <div className="px-3 py-2 sm:px-4 bg-muted/30 border-b overflow-x-auto">
           <div className="text-xs font-medium text-muted-foreground mb-2">
             Archivos adjuntos ({attachments.length})
           </div>
@@ -261,7 +266,7 @@ export function ChatInput({
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden xs:flex"
+              className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden sm:flex"
               disabled={disabled}
               title="Adjuntar archivo"
               aria-label="Adjuntar archivo"
@@ -291,7 +296,7 @@ export function ChatInput({
           placeholder={placeholder}
           disabled={disabled || isSending}
           className={cn(
-            'min-h-[44px] sm:min-h-[40px] max-h-[120px] resize-none text-base',
+            'min-h-[44px] sm:min-h-[40px] max-h-[120px] sm:max-h-[160px] resize-none text-base sm:text-sm leading-tight overflow-y-auto',
             'focus-visible:ring-1'
           )}
           rows={1}
@@ -331,10 +336,11 @@ export function ChatInput({
         <kbd className="px-1 py-0.5 bg-muted rounded">Shift+Enter</kbd> para nueva línea
         {replyToMessage && (
           <>
-            {' '}· <kbd className="px-1 py-0.5 bg-muted rounded">Esc</kbd> para cancelar respuesta
+            {' '}
+            · <kbd className="px-1 py-0.5 bg-muted rounded">Esc</kbd> para cancelar respuesta
           </>
         )}
       </div>
     </div>
-  );
+  )
 }

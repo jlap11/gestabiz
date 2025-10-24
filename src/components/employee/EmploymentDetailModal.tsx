@@ -1,62 +1,57 @@
-import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, DollarSign, BarChart3, Briefcase } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LocationSelector } from './LocationSelector';
-import { ServiceSelector } from './ServiceSelector';
-import { WorkScheduleEditor } from './WorkScheduleEditor';
-import supabase from '@/lib/supabase';
+import React, { useEffect, useState } from 'react'
+import { BarChart3, Briefcase, Building2, DollarSign, MapPin } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LocationSelector } from './LocationSelector'
+import { ServiceSelector } from './ServiceSelector'
+import { WorkScheduleEditor } from './WorkScheduleEditor'
+import supabase from '@/lib/supabase'
 
 interface EmploymentDetailModalProps {
-  open: boolean;
-  onClose: () => void;
-  businessId: string;
-  employeeId: string;
-  businessName: string;
+  open: boolean
+  onClose: () => void
+  businessId: string
+  employeeId: string
+  businessName: string
 }
 
 interface BusinessDetails {
   // Business info (matches RPC function columns)
-  business_id: string;
-  business_name: string;
-  business_description?: string;
-  logo_url?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  average_rating?: number;
-  total_reviews?: number;
-  category_name?: string;
-  
+  business_id: string
+  business_name: string
+  business_description?: string
+  logo_url?: string
+  phone?: string
+  email?: string
+  website?: string
+  address?: string
+  city?: string
+  state?: string
+  country?: string
+  average_rating?: number
+  total_reviews?: number
+  category_name?: string
+
   // Employment info
-  location_id?: string;
-  location_name?: string;
-  location_address?: string;
-  role?: string;
-  employee_type?: string;
-  job_title?: string;
-  salary_base?: number;
-  salary_type?: string;
-  contract_type?: string;
-  hire_date?: string;
-  is_active?: boolean;
-  
+  location_id?: string
+  location_name?: string
+  location_address?: string
+  role?: string
+  employee_type?: string
+  job_title?: string
+  salary_base?: number
+  salary_type?: string
+  contract_type?: string
+  hire_date?: string
+  is_active?: boolean
+
   // Stats
-  employee_avg_rating?: number;
-  employee_total_reviews?: number;
-  services_count?: number;
-  completed_appointments?: number;
+  employee_avg_rating?: number
+  employee_total_reviews?: number
+  services_count?: number
+  completed_appointments?: number
 }
 
 export function EmploymentDetailModal({
@@ -64,58 +59,57 @@ export function EmploymentDetailModal({
   onClose,
   businessId,
   employeeId,
-  businessName
+  businessName,
 }: EmploymentDetailModalProps) {
-  const [loading, setLoading] = useState(true);
-  const [details, setDetails] = useState<BusinessDetails | null>(null);
-  const [activeTab, setActiveTab] = useState('info');
+  const [loading, setLoading] = useState(true)
+  const [details, setDetails] = useState<BusinessDetails | null>(null)
+  const [activeTab, setActiveTab] = useState('info')
 
   // Helper functions
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
-    });
-  };
+      day: 'numeric',
+    })
+  }
 
   const fetchDetails = React.useCallback(async () => {
     try {
-      setLoading(true);
+      setLoading(true)
 
       // Usar RPC function get_employee_business_details
-      const { data, error } = await supabase
-        .rpc('get_employee_business_details', {
-          p_employee_id: employeeId,
-          p_business_id: businessId
-        }) as { data: BusinessDetails[] | null; error: Error | null };
+      const { data, error } = (await supabase.rpc('get_employee_business_details', {
+        p_employee_id: employeeId,
+        p_business_id: businessId,
+      })) as { data: BusinessDetails[] | null; error: Error | null }
 
-      if (error) throw error;
+      if (error) throw error
 
       if (data && Array.isArray(data) && data.length > 0) {
-        setDetails(data[0]);
+        setDetails(data[0])
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [employeeId, businessId]);
+  }, [employeeId, businessId])
 
   useEffect(() => {
     if (open && businessId && employeeId) {
-      fetchDetails();
+      fetchDetails()
     }
-  }, [open, businessId, employeeId, fetchDetails]);
+  }, [open, businessId, employeeId, fetchDetails])
 
   if (!details && !loading) {
-    return null;
+    return null
   }
 
   return (
@@ -165,8 +159,19 @@ export function EmploymentDetailModal({
                 Servicios
               </TabsTrigger>
               <TabsTrigger value="schedule" className="text-xs sm:text-sm">
-                <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="h-4 w-4 mr-1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 Horario
               </TabsTrigger>
@@ -201,11 +206,11 @@ export function EmploymentDetailModal({
                     </div>
                   )}
 
-
-
-                  {(details?.average_rating !== undefined && details?.average_rating > 0) && (
+                  {details?.average_rating !== undefined && details?.average_rating > 0 && (
                     <div>
-                      <p className="font-medium text-muted-foreground mb-1">Calificación del Negocio</p>
+                      <p className="font-medium text-muted-foreground mb-1">
+                        Calificación del Negocio
+                      </p>
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-semibold text-foreground">
                           ⭐ {details.average_rating.toFixed(1)}/5
@@ -220,22 +225,25 @@ export function EmploymentDetailModal({
                   <div className="pt-3 border-t">
                     <p className="font-medium text-muted-foreground mb-2">Contacto</p>
                     <div className="space-y-2">
-                      {details?.email && (
-                        <p className="text-foreground">📧 {details.email}</p>
-                      )}
-                      {details?.phone && (
-                        <p className="text-foreground">📞 {details.phone}</p>
-                      )}
+                      {details?.email && <p className="text-foreground">📧 {details.email}</p>}
+                      {details?.phone && <p className="text-foreground">📞 {details.phone}</p>}
                       {details?.website && (
                         <p className="text-foreground">
-                          🌐 <a href={details.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          🌐{' '}
+                          <a
+                            href={details.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
                             {details.website}
                           </a>
                         </p>
                       )}
                       {(details?.address || details?.city || details?.state) && (
                         <p className="text-foreground">
-                          📍 {[details.address, details.city, details.state, details.country]
+                          📍{' '}
+                          {[details.address, details.city, details.state, details.country]
                             .filter(Boolean)
                             .join(', ')}
                         </p>
@@ -267,7 +275,9 @@ export function EmploymentDetailModal({
                   {details?.contract_type && (
                     <div>
                       <p className="font-medium text-muted-foreground mb-1">Tipo de Contrato</p>
-                      <p className="text-foreground capitalize">{details.contract_type.replace('_', ' ')}</p>
+                      <p className="text-foreground capitalize">
+                        {details.contract_type.replace('_', ' ')}
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -313,7 +323,9 @@ export function EmploymentDetailModal({
                   {details?.salary_base !== undefined && details.salary_base > 0 ? (
                     <>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground mb-1">Salario Base</p>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                          Salario Base
+                        </p>
                         <p className="text-2xl font-bold text-foreground">
                           {formatCurrency(details.salary_base)}
                         </p>
@@ -325,12 +337,14 @@ export function EmploymentDetailModal({
                       </div>
 
                       <div className="pt-4 border-t space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">Beneficios Estimados</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Beneficios Estimados
+                        </p>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-muted-foreground">Seguridad Social (10%)</p>
                             <p className="font-medium text-foreground">
-                              {formatCurrency(details.salary_base * 0.10)}
+                              {formatCurrency(details.salary_base * 0.1)}
                             </p>
                           </div>
                           <div>
@@ -351,7 +365,7 @@ export function EmploymentDetailModal({
                           <div className="flex justify-between items-center">
                             <p className="font-medium text-foreground">Total Estimado Mensual</p>
                             <p className="text-xl font-bold text-primary">
-                              {formatCurrency(details.salary_base * 1.20)}
+                              {formatCurrency(details.salary_base * 1.2)}
                             </p>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
@@ -363,7 +377,9 @@ export function EmploymentDetailModal({
                   ) : (
                     <div className="text-center py-8">
                       <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground">No se ha configurado información salarial</p>
+                      <p className="text-muted-foreground">
+                        No se ha configurado información salarial
+                      </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         Contacta al administrador del negocio
                       </p>
@@ -403,16 +419,17 @@ export function EmploymentDetailModal({
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">Calificación Promedio</p>
                       <p className="text-3xl font-bold text-foreground">
-                        {details?.employee_avg_rating 
+                        {details?.employee_avg_rating
                           ? `⭐ ${details.employee_avg_rating.toFixed(1)}`
-                          : 'N/A'
-                        }
+                          : 'N/A'}
                       </p>
-                      {details?.employee_total_reviews !== undefined && details.employee_total_reviews > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {details.employee_total_reviews} review{details.employee_total_reviews > 1 ? 's' : ''}
-                        </p>
-                      )}
+                      {details?.employee_total_reviews !== undefined &&
+                        details.employee_total_reviews > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {details.employee_total_reviews} review
+                            {details.employee_total_reviews > 1 ? 's' : ''}
+                          </p>
+                        )}
                     </div>
                   </CardContent>
                 </Card>
@@ -422,10 +439,12 @@ export function EmploymentDetailModal({
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">Días Trabajados</p>
                       <p className="text-3xl font-bold text-foreground">
-                        {details?.hire_date 
-                          ? Math.floor((new Date().getTime() - new Date(details.hire_date).getTime()) / (1000 * 60 * 60 * 24))
-                          : 0
-                        }
+                        {details?.hire_date
+                          ? Math.floor(
+                              (new Date().getTime() - new Date(details.hire_date).getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            )
+                          : 0}
                       </p>
                     </div>
                   </CardContent>
@@ -440,14 +459,12 @@ export function EmploymentDetailModal({
                   <CardContent>
                     <div className="space-y-2">
                       {[5, 4, 3, 2, 1].map(star => {
-                        const percentage = details.employee_total_reviews 
-                          ? Math.random() * 100 
-                          : 0;
+                        const percentage = details.employee_total_reviews ? Math.random() * 100 : 0
                         return (
                           <div key={star} className="flex items-center gap-3">
                             <span className="text-sm w-12">{star} ⭐</span>
                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div 
+                              <div
                                 className="h-full bg-primary rounded-full transition-all"
                                 style={{ width: `${percentage}%` }}
                               />
@@ -456,7 +473,7 @@ export function EmploymentDetailModal({
                               {percentage.toFixed(0)}%
                             </span>
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   </CardContent>
@@ -467,5 +484,5 @@ export function EmploymentDetailModal({
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }

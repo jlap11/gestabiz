@@ -2,12 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import QUERY_CONFIG from '@/lib/queryConfig'
-import { useEffect, useRef, useCallback, useState } from 'react'
-import type { 
-  InAppNotification, 
-  NotificationStatus,
-  InAppNotificationType 
-} from '@/types/types'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { InAppNotification, InAppNotificationType, NotificationStatus } from '@/types/types'
 
 interface UseInAppNotificationsOptions {
   userId: string
@@ -35,9 +31,9 @@ interface UseInAppNotificationsReturn {
 export function useInAppNotifications(
   options: UseInAppNotificationsOptions
 ): UseInAppNotificationsReturn {
-  const { 
-    userId, 
-    autoFetch = true, 
+  const {
+    userId,
+    autoFetch = true,
     limit = 50,
     status,
     type,
@@ -50,11 +46,11 @@ export function useInAppNotifications(
   const [unreadCount, setUnreadCount] = useState(0)
 
   // ✅ Una única query cacheada para todas las notificaciones del usuario
-  const { 
-    data: baseNotifications = [], 
-    isLoading: loading, 
+  const {
+    data: baseNotifications = [],
+    isLoading: loading,
     error,
-    refetch: refetchQuery 
+    refetch: refetchQuery,
   } = useQuery({
     queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId),
     queryFn: async () => {
@@ -117,11 +113,11 @@ export function useInAppNotifications(
           event: '*',
           schema: 'public',
           table: 'in_app_notifications',
-          filter: `user_id=eq.${userId}`
+          filter: `user_id=eq.${userId}`,
         },
         () => {
           queryClient.invalidateQueries({
-            queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)
+            queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId),
           })
         }
       )
@@ -137,21 +133,24 @@ export function useInAppNotifications(
   }, [userId, queryClient])
 
   // ✅ Acciones
-  const markAsRead = useCallback(async (notificationId: string) => {
-    const { error } = await supabase
-      .from('in_app_notifications')
-      .update({ status: 'read', read_at: new Date().toISOString() })
-      .eq('id', notificationId)
+  const markAsRead = useCallback(
+    async (notificationId: string) => {
+      const { error } = await supabase
+        .from('in_app_notifications')
+        .update({ status: 'read', read_at: new Date().toISOString() })
+        .eq('id', notificationId)
 
-    if (error) {
-      toast.error('Error al marcar como leído')
-      throw error
-    }
+      if (error) {
+        toast.error('Error al marcar como leído')
+        throw error
+      }
 
-    queryClient.invalidateQueries({
-      queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)
-    })
-  }, [userId, queryClient])
+      queryClient.invalidateQueries({
+        queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId),
+      })
+    },
+    [userId, queryClient]
+  )
 
   const markAllAsRead = useCallback(async () => {
     const { error } = await supabase
@@ -166,41 +165,47 @@ export function useInAppNotifications(
     }
 
     queryClient.invalidateQueries({
-      queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)
+      queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId),
     })
   }, [userId, queryClient])
 
-  const archive = useCallback(async (notificationId: string) => {
-    const { error } = await supabase
-      .from('in_app_notifications')
-      .update({ status: 'archived' })
-      .eq('id', notificationId)
+  const archive = useCallback(
+    async (notificationId: string) => {
+      const { error } = await supabase
+        .from('in_app_notifications')
+        .update({ status: 'archived' })
+        .eq('id', notificationId)
 
-    if (error) {
-      toast.error('Error al archivar')
-      throw error
-    }
+      if (error) {
+        toast.error('Error al archivar')
+        throw error
+      }
 
-    queryClient.invalidateQueries({
-      queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)
-    })
-  }, [userId, queryClient])
+      queryClient.invalidateQueries({
+        queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId),
+      })
+    },
+    [userId, queryClient]
+  )
 
-  const deleteNotification = useCallback(async (notificationId: string) => {
-    const { error } = await supabase
-      .from('in_app_notifications')
-      .delete()
-      .eq('id', notificationId)
+  const deleteNotification = useCallback(
+    async (notificationId: string) => {
+      const { error } = await supabase
+        .from('in_app_notifications')
+        .delete()
+        .eq('id', notificationId)
 
-    if (error) {
-      toast.error('Error al eliminar')
-      throw error
-    }
+      if (error) {
+        toast.error('Error al eliminar')
+        throw error
+      }
 
-    queryClient.invalidateQueries({
-      queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)
-    })
-  }, [userId, queryClient])
+      queryClient.invalidateQueries({
+        queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId),
+      })
+    },
+    [userId, queryClient]
+  )
 
   const refetch = useCallback(async () => {
     await refetchQuery()
@@ -215,6 +220,6 @@ export function useInAppNotifications(
     markAllAsRead,
     archive,
     deleteNotification,
-    refetch
+    refetch,
   }
 }

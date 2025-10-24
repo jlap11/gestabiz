@@ -1,28 +1,28 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useChat } from '@/hooks/useChat';
-import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness';
-import { useNotificationContext } from '@/contexts/NotificationContext';
-import { ReadReceipts } from './ReadReceipts';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import React, { useEffect, useRef, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useChat } from '@/hooks/useChat'
+import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness'
+import { useNotificationContext } from '@/contexts/NotificationContext'
+import { ReadReceipts } from './ReadReceipts'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle, ArrowLeft, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface SimpleChatLayoutProps {
-  userId: string;
-  businessId?: string;
-  initialConversationId?: string | null;
-  onMessagesRead?: () => void; // Callback para notificar cuando se marcan mensajes como leídos
+  userId: string
+  businessId?: string
+  initialConversationId?: string | null
+  onMessagesRead?: () => void // Callback para notificar cuando se marcan mensajes como leídos
 }
 
-export function SimpleChatLayout({ 
-  userId, 
+export function SimpleChatLayout({
+  userId,
   businessId,
   initialConversationId,
-  onMessagesRead
+  onMessagesRead,
 }: Readonly<SimpleChatLayoutProps>) {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
   const {
     conversations,
     activeMessages,
@@ -35,65 +35,65 @@ export function SimpleChatLayout({
     fetchConversations,
     togglePinConversation,
     toggleMuteConversation,
-  } = useChat(userId);
+  } = useChat(userId)
 
-  const { setActiveConversation: setGlobalActiveConversation } = useNotificationContext();
-  const [showChat, setShowChat] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { setActiveConversation: setGlobalActiveConversation } = useNotificationContext()
+  const [showChat, setShowChat] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+    fetchConversations()
+  }, [fetchConversations])
 
   useEffect(() => {
     if (initialConversationId) {
-      setActiveConversationId(initialConversationId);
-      setShowChat(true);
+      setActiveConversationId(initialConversationId)
+      setShowChat(true)
     }
-  }, [initialConversationId, setActiveConversationId]);
+  }, [initialConversationId, setActiveConversationId])
 
   useEffect(() => {
     if (activeConversation) {
-      setGlobalActiveConversation(activeConversation.id);
+      setGlobalActiveConversation(activeConversation.id)
     } else {
-      setGlobalActiveConversation(null);
+      setGlobalActiveConversation(null)
     }
-    return () => setGlobalActiveConversation(null);
-  }, [activeConversation, setGlobalActiveConversation]);
+    return () => setGlobalActiveConversation(null)
+  }, [activeConversation, setGlobalActiveConversation])
 
   useEffect(() => {
-    if (!activeConversation || activeMessages.length === 0) return;
+    if (!activeConversation || activeMessages.length === 0) return
 
-    const lastMessage = activeMessages[activeMessages.length - 1];
+    const lastMessage = activeMessages[activeMessages.length - 1]
     const unreadMessages = activeMessages.filter(
       msg => msg.sender_id !== userId && (!msg.read_by || !msg.read_by.includes(userId))
-    );
+    )
 
     if (unreadMessages.length > 0) {
-      markMessagesAsRead(activeConversation.id, lastMessage.id);
-      setTimeout(() => onMessagesRead?.(), 600);
+      markMessagesAsRead(activeConversation.id, lastMessage.id)
+      setTimeout(() => onMessagesRead?.(), 600)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeConversation?.id, activeMessages.length, userId]);
+  }, [activeConversation?.id, activeMessages.length, userId])
 
   const handleSendMessage = async (content: string) => {
-    if (!activeConversation) return;
+    if (!activeConversation) return
     try {
-      await sendMessage({ conversation_id: activeConversation.id, content, type: 'text' });
+      await sendMessage({ conversation_id: activeConversation.id, content, type: 'text' })
     } catch (err) {
-      console.error('Error sending message', err);
+      console.error('Error sending message', err)
     }
-  };
+  }
 
   const handleSelectConversation = (conversationId: string) => {
-    setActiveConversationId(conversationId);
-    setShowChat(true);
-  };
+    setActiveConversationId(conversationId)
+    setShowChat(true)
+  }
 
   const handleBackToList = () => {
-    setShowChat(false);
-    setActiveConversationId(null);
-  };
+    setShowChat(false)
+    setActiveConversationId(null)
+  }
 
   if (error) {
     return (
@@ -101,7 +101,7 @@ export function SimpleChatLayout({
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
-    );
+    )
   }
 
   return (
@@ -109,60 +109,65 @@ export function SimpleChatLayout({
       {!showChat && (
         <div className="w-full bg-card">
           <div className="border-b border-border bg-card px-4 py-3">
-            <h2 className="font-semibold text-lg">Conversaciones</h2>
+            <h2 className="font-semibold text-lg">{t('chat.conversations')}</h2>
           </div>
 
-          {loading && conversations.length === 0 ? (
+            {loading && conversations.length === 0 ? (
             <div className="flex items-center justify-center h-full py-8">
-              <div className="text-muted-foreground">Cargando...</div>
+              <div className="text-muted-foreground">{t('chat.loading')}</div>
             </div>
           ) : conversations.length === 0 ? (
             <div className="flex col items-center justify-center h-full p-8">
               <div className="text-muted-foreground text-center">
-                <p className="font-semibold mb-2">No hay conversaciones</p>
-                <p className="text-sm">Aún no tienes conversaciones activas</p>
+                <p className="font-semibold mb-2">{t('chat.noConversations.title')}</p>
+                <p className="text-sm">{t('chat.noConversations.subtitle')}</p>
               </div>
             </div>
           ) : (
             <div className="overflow-y-auto">
-              {([...conversations].sort((a, b) => {
-                const aPinned = (a as any).is_pinned === true;
-                const bPinned = (b as any).is_pinned === true;
-                if (aPinned && !bPinned) return -1;
-                if (!aPinned && bPinned) return 1;
-                const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
-                const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
-                return bTime - aTime;
-              })).map((conv) => {
-                const metadata = conv.metadata as { last_sender_id?: unknown } | undefined;
-                const metadataSenderId = typeof metadata?.last_sender_id === 'string' ? metadata.last_sender_id : undefined;
-                const lastSenderId = conv.last_message_sender_id ?? metadataSenderId ?? null;
-                const preview = conv.last_message_preview || 'Sin mensajes';
-                const isOwnLastMessage = lastSenderId === userId;
-                const displayPreview = conv.last_message_preview
-                  ? `${isOwnLastMessage ? 'Tu: ' : ''}${conv.last_message_preview}`
-                  : preview;
+              {[...conversations]
+                .sort((a, b) => {
+                  const aPinned = (a as any).is_pinned === true
+                  const bPinned = (b as any).is_pinned === true
+                  if (aPinned && !bPinned) return -1
+                  if (!aPinned && bPinned) return 1
+                  const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0
+                  const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0
+                  return bTime - aTime
+                })
+                .map(conv => {
+                  const metadata = conv.metadata as { last_sender_id?: unknown } | undefined
+                  const metadataSenderId =
+                    typeof metadata?.last_sender_id === 'string'
+                      ? metadata.last_sender_id
+                      : undefined
+                  const lastSenderId = conv.last_message_sender_id ?? metadataSenderId ?? null
+                  const preview = conv.last_message_preview || t('chat.emptyPreview')
+                  const isOwnLastMessage = lastSenderId === userId
+                  const displayPreview = conv.last_message_preview
+                    ? `${isOwnLastMessage ? t('chat.youPrefix') : ''}${conv.last_message_preview}`
+                    : preview
 
-                return (
-                  <button
-                    key={conv.id}
-                    onClick={() => handleSelectConversation(conv.id)}
-                    className="w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="font-semibold">
-                      {conv.other_user?.full_name || conv.title || 'Conversación'}
-                    </div>
-                    <div className="text-sm text-muted-foreground truncate">{displayPreview}</div>
-                    {conv.unread_count ? (
-                      <div className="mt-1">
-                        <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary rounded-full">
-                          {conv.unread_count}
-                        </span>
+                  return (
+                    <button
+                      key={conv.id}
+                      onClick={() => handleSelectConversation(conv.id)}
+                      className="w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="font-semibold">
+                        {conv.other_user?.full_name || conv.title || t('chat.conversationFallback')}
                       </div>
-                    ) : null}
-                  </button>
-                );
-              })}
+                      <div className="text-sm text-muted-foreground truncate">{displayPreview}</div>
+                      {conv.unread_count ? (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary rounded-full">
+                            {conv.unread_count}
+                          </span>
+                        </div>
+                      ) : null}
+                    </button>
+                  )
+                })}
             </div>
           )}
         </div>
@@ -175,24 +180,36 @@ export function SimpleChatLayout({
               <ChatHeader
                 activeConversation={activeConversation}
                 onBackToList={handleBackToList}
-                onTogglePin={(isPinned) => togglePinConversation?.(activeConversation.id, isPinned)}
-                onToggleMute={(isMuted) => toggleMuteConversation?.(activeConversation.id, isMuted)}
+                onTogglePin={isPinned => togglePinConversation?.(activeConversation.id, isPinned)}
+                onToggleMute={isMuted => toggleMuteConversation?.(activeConversation.id, isMuted)}
               />
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {activeMessages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">No hay mensajes. ¡Envía el primero!</div>
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    {t('chat.noMessagesPrompt')}
+                  </div>
                 ) : (
                   <>
-                    {activeMessages.map((message) => (
-                      <div key={message.id} className={`flex ${message.sender_id === userId ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-lg px-4 py-2 ${message.sender_id === userId ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    {activeMessages.map(message => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.sender_id === userId ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[85%] rounded-lg px-4 py-2 ${message.sender_id === userId ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                        >
                           {message.sender_id !== userId && message.sender && (
-                            <div className="text-xs font-semibold mb-1">{message.sender.full_name || message.sender.email}</div>
+                            <div className="text-xs font-semibold mb-1">
+                              {message.sender.full_name || message.sender.email}
+                            </div>
                           )}
                           <div className="break-words">{message.content}</div>
                           <div className="text-xs opacity-70 mt-1 flex items-center gap-1.5">
-                            {new Date(message.sent_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(message.sent_at).toLocaleTimeString('es', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                             <ReadReceipts
                               senderId={message.sender_id}
                               currentUserId={userId}
@@ -212,12 +229,12 @@ export function SimpleChatLayout({
 
               <div className="border-t border-border bg-card p-4">
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const input = e.currentTarget.elements.namedItem('message') as HTMLInputElement;
+                  onSubmit={e => {
+                    e.preventDefault()
+                    const input = e.currentTarget.elements.namedItem('message') as HTMLInputElement
                     if (input.value.trim()) {
-                      handleSendMessage(input.value.trim());
-                      input.value = '';
+                      handleSendMessage(input.value.trim())
+                      input.value = ''
                     }
                   }}
                   className="flex gap-2"
@@ -225,58 +242,77 @@ export function SimpleChatLayout({
                   <input
                     type="text"
                     name="message"
-                    placeholder="Escribe un mensaje..."
+                    placeholder={t('chat.inputPlaceholder')}
                     className="flex-1 px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     autoComplete="off"
                   />
-                  <Button type="submit" className="px-6">Enviar</Button>
+                  <Button type="submit" className="px-6">
+                    {t('chat.send')}
+                  </Button>
                 </form>
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">
-                <p className="font-semibold mb-2">Cargando conversación...</p>
+                <p className="font-semibold mb-2">{t('chat.loadingConversation')}</p>
               </div>
             </div>
           )}
         </div>
       )}
     </div>
-  );
+  )
 }
 
 interface ChatHeaderProps {
-  activeConversation: NonNullable<ReturnType<typeof useChat>['activeConversation']>;
-  onBackToList: () => void;
-  onTogglePin: (isPinned: boolean) => void;
-  onToggleMute: (isMuted: boolean) => void;
+  activeConversation: NonNullable<ReturnType<typeof useChat>['activeConversation']>
+  onBackToList: () => void
+  onTogglePin: (isPinned: boolean) => void
+  onToggleMute: (isMuted: boolean) => void
 }
 
-function ChatHeader({ activeConversation, onBackToList, onTogglePin, onToggleMute }: ChatHeaderProps) {
-  const otherUserId = activeConversation.other_user?.id;
-  const activeBusiness = useEmployeeActiveBusiness(otherUserId);
+function ChatHeader({
+  activeConversation,
+  onBackToList,
+  onTogglePin,
+  onToggleMute,
+}: ChatHeaderProps) {
+  const otherUserId = activeConversation.other_user?.id
+  const activeBusiness = useEmployeeActiveBusiness(otherUserId)
 
   const getInitials = (name: string | null | undefined) => {
-    if (!name) return '?';
-    return name.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
-  };
+    if (!name) return '?'
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2)
+  }
 
-  const isPinned = (activeConversation as any)?.is_pinned === true;
-  const isMuted = (activeConversation as any)?.is_muted === true;
+  const isPinned = (activeConversation as any)?.is_pinned === true
+  const isMuted = (activeConversation as any)?.is_muted === true
 
   return (
     <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3 justify-between">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBackToList} className="shrink-0">
+        <Button variant="ghost" size="icon" onClick={onBackToList} className="shrink-0 h-11 w-11 sm:h-9 sm:w-9" aria-label="Volver">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarImage src={activeConversation.other_user?.avatar_url || undefined} alt={activeConversation.other_user?.full_name || 'Usuario'} />
-          <AvatarFallback className="bg-primary/10 text-primary font-semibold">{getInitials(activeConversation.other_user?.full_name)}</AvatarFallback>
+          <AvatarImage
+            src={activeConversation.other_user?.avatar_url || undefined}
+            alt={activeConversation.other_user?.full_name || 'Usuario'}
+          />
+          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+            {getInitials(activeConversation.other_user?.full_name)}
+          </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <div className="font-semibold truncate">{activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}</div>
+          <div className="font-semibold truncate">
+            {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
+          </div>
           {activeBusiness.status === 'active' && activeBusiness.business_name ? (
             <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -302,6 +338,5 @@ function ChatHeader({ activeConversation, onBackToList, onTogglePin, onToggleMut
         </Button>
       </div>
     </div>
-  );
+  )
 }
-

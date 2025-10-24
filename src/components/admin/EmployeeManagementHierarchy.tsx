@@ -5,8 +5,8 @@
  * Phase 3 - UI Components
  */
 
-import { useState, useEffect } from 'react'
-import { Users, List, Network, Filter } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Filter, List, Network, Users } from 'lucide-react'
 import { useBusinessHierarchy } from '@/hooks/useBusinessHierarchy'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -42,7 +42,7 @@ export function EmployeeManagementHierarchy({
   const [showFilters, setShowFilters] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  
+
   // Hook de sede preferida
   const { preferredLocationId } = usePreferredLocation(businessId)
 
@@ -55,7 +55,7 @@ export function EmployeeManagementHierarchy({
     updateFilters,
     clearFilters,
   } = useBusinessHierarchy(businessId)
-  
+
   // Pre-seleccionar sede preferida al montar el componente
   useEffect(() => {
     if (preferredLocationId && !filters.location_id) {
@@ -76,12 +76,14 @@ export function EmployeeManagementHierarchy({
       3: employees.filter(e => e.hierarchy_level === 3).length, // Lead
       4: employees.filter(e => e.hierarchy_level === 4).length, // Staff
     },
-    avgOccupancy: employees.length > 0
-      ? employees.reduce((acc, e) => acc + (e.occupancy_rate || 0), 0) / employees.length
-      : 0,
-    avgRating: employees.length > 0
-      ? employees.reduce((acc, e) => acc + (e.average_rating || 0), 0) / employees.length
-      : 0,
+    avgOccupancy:
+      employees.length > 0
+        ? employees.reduce((acc, e) => acc + (e.occupancy_rate || 0), 0) / employees.length
+        : 0,
+    avgRating:
+      employees.length > 0
+        ? employees.reduce((acc, e) => acc + (e.average_rating || 0), 0) / employees.length
+        : 0,
   }
 
   // =====================================================
@@ -144,12 +146,8 @@ export function EmployeeManagementHierarchy({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {t('employees.management.title')}
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {t('employees.management.subtitle')}
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('employees.management.title')}</h1>
+            <p className="text-muted-foreground mt-1">{t('employees.management.subtitle')}</p>
           </div>
 
           {/* VIEW MODE TOGGLE */}
@@ -252,19 +250,28 @@ export function EmployeeManagementHierarchy({
           >
             <Filter className="h-4 w-4" />
             {t('employees.management.filters')}
-            {(filters.searchQuery || filters.hierarchyLevel !== undefined || filters.employeeType || filters.departmentId) && (
+            {(filters.searchQuery ||
+              filters.hierarchyLevel !== undefined ||
+              filters.employeeType ||
+              filters.departmentId) && (
               <span className="ml-1 rounded-full bg-primary-foreground px-2 py-0.5 text-xs">
-                {[filters.searchQuery, filters.hierarchyLevel, filters.employeeType, filters.departmentId].filter(Boolean).length}
+                {
+                  [
+                    filters.searchQuery,
+                    filters.hierarchyLevel,
+                    filters.employeeType,
+                    filters.departmentId,
+                  ].filter(Boolean).length
+                }
               </span>
             )}
           </Button>
 
-          {(filters.searchQuery || filters.hierarchyLevel !== undefined || filters.employeeType || filters.departmentId) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-            >
+          {(filters.searchQuery ||
+            filters.hierarchyLevel !== undefined ||
+            filters.employeeType ||
+            filters.departmentId) && (
+            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
               {t('employees.management.clearFilters')}
             </Button>
           )}
@@ -302,10 +309,7 @@ export function EmployeeManagementHierarchy({
           </Card>
         ) : (
           <Card className="p-6">
-            <HierarchyMapView
-              employees={employees}
-              onEmployeeSelect={handleEmployeeClick}
-            />
+            <HierarchyMapView employees={employees} onEmployeeSelect={handleEmployeeClick} />
           </Card>
         )}
       </div>

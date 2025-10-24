@@ -30,7 +30,9 @@ export default function DashboardScreen({ navigation }) {
   }, [])
 
   const getUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     setUser(user)
   }
 
@@ -50,8 +52,7 @@ export default function DashboardScreen({ navigation }) {
       setAppointments(appointmentsData || [])
 
       // Get statistics
-      const { data: statsData, error: statsError } = await supabase
-        .rpc('get_dashboard_stats')
+      const { data: statsData, error: statsError } = await supabase.rpc('get_dashboard_stats')
 
       if (statsError) throw statsError
 
@@ -63,7 +64,6 @@ export default function DashboardScreen({ navigation }) {
           completed: statsData[0].completed_appointments,
         })
       }
-
     } catch (error) {
       console.error('Error loading dashboard data:', error)
       Alert.alert('Error', 'Failed to load dashboard data')
@@ -76,15 +76,19 @@ export default function DashboardScreen({ navigation }) {
     setIsRefreshing(false)
   }
 
-  const formatDateTime = (dateTime) => {
+  const formatDateTime = dateTime => {
     const date = new Date(dateTime)
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    )
   }
 
-  const getTimeUntil = (dateTime) => {
+  const getTimeUntil = dateTime => {
     const now = new Date()
     const appointmentTime = new Date(dateTime)
     const diffMs = appointmentTime - now
@@ -106,9 +110,7 @@ export default function DashboardScreen({ navigation }) {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -178,7 +180,7 @@ export default function DashboardScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         ) : (
-          appointments.map((appointment) => (
+          appointments.map(appointment => (
             <TouchableOpacity
               key={appointment.id}
               style={styles.appointmentCard}
@@ -186,22 +188,16 @@ export default function DashboardScreen({ navigation }) {
             >
               <View style={styles.appointmentHeader}>
                 <Text style={styles.appointmentTitle}>{appointment.title}</Text>
-                <Text style={styles.appointmentTime}>
-                  {getTimeUntil(appointment.start_time)}
-                </Text>
+                <Text style={styles.appointmentTime}>{getTimeUntil(appointment.start_time)}</Text>
               </View>
               <Text style={styles.appointmentDateTime}>
                 {formatDateTime(appointment.start_time)}
               </Text>
               {appointment.client_name && (
-                <Text style={styles.appointmentClient}>
-                  Client: {appointment.client_name}
-                </Text>
+                <Text style={styles.appointmentClient}>Client: {appointment.client_name}</Text>
               )}
               {appointment.location && (
-                <Text style={styles.appointmentLocation}>
-                  📍 {appointment.location}
-                </Text>
+                <Text style={styles.appointmentLocation}>📍 {appointment.location}</Text>
               )}
             </TouchableOpacity>
           ))

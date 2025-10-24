@@ -2,32 +2,29 @@
 /* eslint-disable no-console */
 /**
  * useConversations Hook - Sistema de Chat FASE 2
- * 
+ *
  * Hook refactorizado para usar nueva arquitectura:
  * - Tablas: conversations, conversation_members, messages
  * - Edge Function: send-message
  * - Funciones RPC avanzadas (get_conversation_preview, search_messages, etc.)
  * - Realtime subscriptions
- * 
+ *
  * @author Gestabiz Team
  * @version 3.0.0
  * @date 2025-10-13
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { trackChatEvent, ChatEvents } from '@/lib/analytics'
-import { logger } from '@/lib/logger'
+import { ChatEvents, trackChatEvent } from '@/lib/analytics'
+import { logger } from '../lib/logger'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type {
-  Conversation,
-  ConversationMember,
-  Message,
-  SendMessagePayload,
-  CreateDirectConversationPayload,
-  CreateGroupConversationPayload,
-  ConversationFilters,
   ChatStats,
+  Conversation,
+  ConversationFilters,
+  ConversationMember,
+  CreateGroupConversationPayload,
 } from '@/types/types'
 import { toast } from 'sonner'
 
@@ -106,15 +103,12 @@ export function useConversations(
         setError(null)
 
         // Usar función RPC get_conversation_preview
-        const { data, error: rpcError } = await supabase.rpc(
-          'get_conversation_preview',
-          {
-            p_user_id: userId,
-            p_business_id: filters?.business_id || businessId || null,
-            p_limit: filters?.limit || 50,
-            p_offset: filters?.offset || 0,
-          }
-        )
+        const { data, error: rpcError } = await supabase.rpc('get_conversation_preview', {
+          p_user_id: userId,
+          p_business_id: filters?.business_id || businessId || null,
+          p_limit: filters?.limit || 50,
+          p_offset: filters?.offset || 0,
+        })
 
         if (rpcError) throw rpcError
 
@@ -127,21 +121,21 @@ export function useConversations(
         let filtered = conversationsData
 
         if (filters?.type) {
-          filtered = filtered.filter((c) => c.type === filters.type)
+          filtered = filtered.filter(c => c.type === filters.type)
         }
 
         if (filters?.is_archived !== undefined) {
-          filtered = filtered.filter((c) => c.is_archived === filters.is_archived)
+          filtered = filtered.filter(c => c.is_archived === filters.is_archived)
         }
 
         if (filters?.has_unread) {
-          filtered = filtered.filter((c) => (c.unread_count || 0) > 0)
+          filtered = filtered.filter(c => (c.unread_count || 0) > 0)
         }
 
         if (filters?.search) {
           const search = filters.search.toLowerCase()
           filtered = filtered.filter(
-            (c) =>
+            c =>
               c.name?.toLowerCase().includes(search) ||
               c.display_name?.toLowerCase().includes(search) ||
               c.last_message_preview?.toLowerCase().includes(search)
@@ -156,12 +150,12 @@ export function useConversations(
           business_id: businessId,
         })
       } catch (err: any) {
-        console.error('Error fetching conversations:', err)  
+        logger.error('Error fetching conversations:', { error: err })
         logger.error('Failed to fetch conversations', err, {
           component: 'useConversations',
           operation: 'fetchConversations',
           businessId,
-        });
+        })
         setError(err.message || 'Error al cargar conversaciones')
         toast.error('Error al cargar conversaciones')
       } finally {
@@ -186,14 +180,11 @@ export function useConversations(
 
       try {
         // Usar función RPC create_direct_conversation
-        const { data, error: rpcError } = await supabase.rpc(
-          'create_direct_conversation',
-          {
-            p_business_id: businessIdParam,
-            p_user_a: userId,
-            p_user_b: otherUserId,
-          }
-        )
+        const { data, error: rpcError } = await supabase.rpc('create_direct_conversation', {
+          p_business_id: businessIdParam,
+          p_user_a: userId,
+          p_user_b: otherUserId,
+        })
 
         if (rpcError) throw rpcError
 
@@ -212,12 +203,12 @@ export function useConversations(
         toast.success('Conversación creada')
         return conversationId
       } catch (err: any) {
-        console.error('Error creating direct conversation:', err)
+        logger.error('Error creating direct conversation:', { error: err })
         logger.error('Failed to create direct conversation', err, {
           component: 'useConversations',
           operation: 'createDirectConversation',
           userId,
-        });
+        })
         toast.error('Error al crear conversación')
         return null
       }
@@ -265,8 +256,8 @@ export function useConversations(
           },
           // 3. Agregar otros miembros
           ...payload.member_ids
-            .filter((id) => id !== userId)
-            .map((id) => ({
+            .filter(id => id !== userId)
+            .map(id => ({
               conversation_id: conversation.id,
               user_id: id,
               role: 'member' as const,
@@ -307,7 +298,7 @@ export function useConversations(
         toast.success('Grupo creado exitosamente')
         return conversation.id
       } catch (err: any) {
-        console.error('Error creating group conversation:', err)
+        logger.error('Error creating group conversation:', { error: err })
         toast.error('Error al crear grupo')
         return null
       }
@@ -333,12 +324,8 @@ export function useConversations(
         if (rpcError) throw rpcError
 
         // Actualizar estado local
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conversationId
-              ? { ...c, unread_count: 0 }
-              : c
-          )
+        setConversations(prev =>
+          prev.map(c => (c.id === conversationId ? { ...c, unread_count: 0 } : c))
         )
 
         // Track analytics
@@ -346,7 +333,7 @@ export function useConversations(
           conversation_id: conversationId,
         })
       } catch (err: any) {
-        console.error('Error marking conversation read:', err)
+        logger.error('Error marking conversation read:', { error: err })
       }
     },
     [userId]
@@ -369,10 +356,8 @@ export function useConversations(
         if (updateError) throw updateError
 
         // Actualizar estado local
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conversationId ? { ...c, is_archived: archive } : c
-          )
+        setConversations(prev =>
+          prev.map(c => (c.id === conversationId ? { ...c, is_archived: archive } : c))
         )
 
         toast.success(archive ? 'Conversación archivada' : 'Conversación restaurada')
@@ -383,7 +368,7 @@ export function useConversations(
           { conversation_id: conversationId }
         )
       } catch (err: any) {
-        console.error('Error archiving conversation:', err)
+        logger.error('Error archiving conversation:', { error: err })
         toast.error('Error al archivar conversación')
       }
     },
@@ -408,14 +393,12 @@ export function useConversations(
         if (updateError) throw updateError
 
         // Actualizar estado local
-        setConversations((prev) =>
-          prev.map((c) => {
+        setConversations(prev =>
+          prev.map(c => {
             if (c.id === conversationId && c.members) {
               return {
                 ...c,
-                members: c.members.map((m) =>
-                  m.user_id === userId ? { ...m, muted: mute } : m
-                ),
+                members: c.members.map(m => (m.user_id === userId ? { ...m, muted: mute } : m)),
               }
             }
             return c
@@ -425,12 +408,11 @@ export function useConversations(
         toast.success(mute ? 'Conversación silenciada' : 'Silencio desactivado')
 
         // Track analytics
-        trackChatEvent(
-          mute ? ChatEvents.CONVERSATION_MUTED : ChatEvents.CONVERSATION_UNMUTED,
-          { conversation_id: conversationId }
-        )
+        trackChatEvent(mute ? ChatEvents.CONVERSATION_MUTED : ChatEvents.CONVERSATION_UNMUTED, {
+          conversation_id: conversationId,
+        })
       } catch (err: any) {
-        console.error('Error muting conversation:', err)
+        logger.error('Error muting conversation:', { error: err })
         toast.error('Error al silenciar conversación')
       }
     },
@@ -455,15 +437,13 @@ export function useConversations(
         if (updateError) throw updateError
 
         // Actualizar estado local
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conversationId ? { ...c, display_name: customName } : c
-          )
+        setConversations(prev =>
+          prev.map(c => (c.id === conversationId ? { ...c, display_name: customName } : c))
         )
 
         toast.success('Nombre personalizado actualizado')
       } catch (err: any) {
-        console.error('Error updating custom name:', err)
+        logger.error('Error updating custom name:', { error: err })
         toast.error('Error al actualizar nombre')
       }
     },
@@ -488,7 +468,7 @@ export function useConversations(
 
         setStats(data as ChatStats)
       } catch (err: any) {
-        console.error('Error fetching chat stats:', err)
+        logger.error('Error fetching chat stats:', { error: err })
       }
     },
     [userId, businessId]

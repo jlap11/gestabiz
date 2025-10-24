@@ -1,7 +1,13 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -14,13 +20,13 @@ interface ImageCropperProps {
 }
 
 export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: ImageCropperProps) {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
     width: 90,
     height: 90,
     x: 5,
-    y: 5
+    y: 5,
   })
   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null)
   const [imageSrc, setImageSrc] = useState<string>('')
@@ -31,7 +37,7 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
   useEffect(() => {
     if (imageFile) {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = e => {
         setImageSrc(e.target?.result as string)
       }
       reader.readAsDataURL(imageFile)
@@ -49,7 +55,7 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
       width: size,
       height: size,
       x,
-      y
+      y,
     })
   }, [])
 
@@ -84,9 +90,9 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
       size
     )
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       canvas.toBlob(
-        (blob) => {
+        blob => {
           resolve(blob)
         },
         'image/jpeg',
@@ -116,13 +122,13 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
         <DialogHeader>
           <DialogTitle>{t('imageCropper.title')}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="flex flex-col items-center gap-4 py-4">
           {imageSrc && (
             <ReactCrop
               crop={crop}
-              onChange={(c) => setCrop(c)}
-              onComplete={(c) => setCompletedCrop(c)}
+              onChange={c => setCrop(c)}
+              onComplete={c => setCompletedCrop(c)}
               aspect={1}
               circularCrop
               className="max-h-[500px]"
@@ -136,24 +142,15 @@ export function ImageCropper({ isOpen, onClose, imageFile, onCropComplete }: Ima
               />
             </ReactCrop>
           )}
-          
-          <p className="text-sm text-muted-foreground">
-            {t('imageCropper.dragToAdjust')}
-          </p>
+
+          <p className="text-sm text-muted-foreground">{t('imageCropper.dragToAdjust')}</p>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isProcessing}
-          >
+          <Button variant="outline" onClick={onClose} disabled={isProcessing}>
             {t('common.actions.cancel')}
           </Button>
-          <Button
-            onClick={handleCropConfirm}
-            disabled={isProcessing || !completedCrop}
-          >
+          <Button onClick={handleCropConfirm} disabled={isProcessing || !completedCrop}>
             {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

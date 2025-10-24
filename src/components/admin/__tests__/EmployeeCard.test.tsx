@@ -3,8 +3,8 @@
 // Tests para el card de empleado individual
 // ============================================================================
 
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { EmployeeCard } from '../EmployeeCard'
 import type { EmployeeHierarchy } from '@/types'
 
@@ -106,12 +106,7 @@ describe('EmployeeCard', () => {
 
   describe('Acciones del Card', () => {
     it('debería llamar a onEdit al hacer clic en "Editar"', () => {
-      render(
-        <EmployeeCard
-          employee={mockEmployee}
-          onEdit={mockOnEdit}
-        />
-      )
+      render(<EmployeeCard employee={mockEmployee} onEdit={mockOnEdit} />)
 
       // Abrir dropdown
       const dropdownButton = screen.getByRole('button', { name: /more/i })
@@ -125,12 +120,7 @@ describe('EmployeeCard', () => {
     })
 
     it('debería llamar a onViewProfile al hacer clic en "Ver Perfil"', () => {
-      render(
-        <EmployeeCard
-          employee={mockEmployee}
-          onViewProfile={mockOnViewProfile}
-        />
-      )
+      render(<EmployeeCard employee={mockEmployee} onViewProfile={mockOnViewProfile} />)
 
       const dropdownButton = screen.getByRole('button', { name: /more/i })
       fireEvent.click(dropdownButton)
@@ -142,12 +132,7 @@ describe('EmployeeCard', () => {
     })
 
     it('debería llamar a onAssignSupervisor al hacer clic en "Asignar Supervisor"', () => {
-      render(
-        <EmployeeCard
-          employee={mockEmployee}
-          onAssignSupervisor={mockOnAssignSupervisor}
-        />
-      )
+      render(<EmployeeCard employee={mockEmployee} onAssignSupervisor={mockOnAssignSupervisor} />)
 
       const dropdownButton = screen.getByRole('button', { name: /more/i })
       fireEvent.click(dropdownButton)

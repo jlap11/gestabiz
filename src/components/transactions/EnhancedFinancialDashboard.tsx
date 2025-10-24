@@ -1,49 +1,49 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react'
 import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
+  BarChart3,
   Calendar,
+  DollarSign,
   Download,
   Filter,
-  BarChart3,
   PieChart as PieChartIcon,
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import supabase from '@/lib/supabase';
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import supabase from '@/lib/supabase'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTransactions } from '@/hooks/useTransactions';
-import { useChartData } from '@/hooks/useChartData';
-import { useFinancialReports } from '@/hooks/useFinancialReports';
-import { toast } from 'sonner';
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useTransactions } from '@/hooks/useTransactions'
+import { useChartData } from '@/hooks/useChartData'
+import { useFinancialReports } from '@/hooks/useFinancialReports'
+import { toast } from 'sonner'
 import {
-  IncomeVsExpenseChart,
   CategoryPieChart,
-  MonthlyTrendChart,
-  LocationBarChart,
   EmployeeRevenueChart,
-} from '@/components/accounting';
-import { formatCOP } from '@/lib/accounting/colombiaTaxes';
-import { cn } from '@/lib/utils';
-import type { Location, Service } from '@/types/types';
+  IncomeVsExpenseChart,
+  LocationBarChart,
+  MonthlyTrendChart,
+} from '@/components/accounting'
+import { formatCOP } from '@/lib/accounting/colombiaTaxes'
+import { cn } from '@/lib/utils'
+import type { Location, Service } from '@/types/types'
 
 interface EnhancedFinancialDashboardProps {
-  businessId: string;
-  locationId?: string;
-  locations?: Location[];
-  services?: Service[];
+  businessId: string
+  locationId?: string
+  locations?: Location[]
+  services?: Service[]
 }
 
-type Period = '1m' | '3m' | '6m' | '1y' | 'custom';
+type Period = '1m' | '3m' | '6m' | '1y' | 'custom'
 
 export function EnhancedFinancialDashboard({
   businessId,
@@ -51,49 +51,52 @@ export function EnhancedFinancialDashboard({
   locations = [],
   services = [],
 }: EnhancedFinancialDashboardProps) {
-  const { t } = useLanguage();
-  const [period, setPeriod] = useState<Period>('1m');
-  const [selectedLocation, setSelectedLocation] = useState<string>(locationId || 'all');
-  const [selectedEmployee, setSelectedEmployee] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [employees, setEmployees] = useState<Array<{ id: string; name: string }>>([]);
+  const { t } = useLanguage()
+  const [period, setPeriod] = useState<Period>('1m')
+  const [selectedLocation, setSelectedLocation] = useState<string>(locationId || 'all')
+  const [selectedEmployee, setSelectedEmployee] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [employees, setEmployees] = useState<Array<{ id: string; name: string }>>([])
 
   // Calculate date range based on period
   const dateRange = useMemo(() => {
-    const end = new Date();
-    const start = new Date();
-    
+    const end = new Date()
+    const start = new Date()
+
     switch (period) {
       case '1m':
-        start.setMonth(start.getMonth() - 1);
-        break;
+        start.setMonth(start.getMonth() - 1)
+        break
       case '3m':
-        start.setMonth(start.getMonth() - 3);
-        break;
+        start.setMonth(start.getMonth() - 3)
+        break
       case '6m':
-        start.setMonth(start.getMonth() - 6);
-        break;
+        start.setMonth(start.getMonth() - 6)
+        break
       case '1y':
-        start.setFullYear(start.getFullYear() - 1);
-        break;
+        start.setFullYear(start.getFullYear() - 1)
+        break
       default:
-        start.setMonth(start.getMonth() - 1);
+        start.setMonth(start.getMonth() - 1)
     }
-    
+
     return {
       start: start.toISOString(),
       end: end.toISOString(),
-    };
-  }, [period]);
+    }
+  }, [period])
 
   // Fetch transactions with filters
-  const txFilters = useMemo(() => ({
-    business_id: businessId,
-    location_id: selectedLocation !== 'all' ? selectedLocation : undefined,
-    date_range: dateRange,
-  }), [businessId, selectedLocation, dateRange]);
+  const txFilters = useMemo(
+    () => ({
+      business_id: businessId,
+      location_id: selectedLocation !== 'all' ? selectedLocation : undefined,
+      date_range: dateRange,
+    }),
+    [businessId, selectedLocation, dateRange]
+  )
 
-  const { summary, loading } = useTransactions(txFilters);
+  const { summary, loading } = useTransactions(txFilters)
 
   // Cargar empleados del negocio
   useEffect(() => {
@@ -101,109 +104,128 @@ export function EnhancedFinancialDashboard({
       const { data } = await supabase
         .from('business_employees')
         .select('employee_id, profiles!business_employees_employee_id_fkey(id, full_name)')
-        .eq('business_id', businessId);
-      
+        .eq('business_id', businessId)
+
       if (data && Array.isArray(data)) {
-        const empList = data.map((emp) => {
-          const profile = Array.isArray(emp.profiles) ? emp.profiles[0] : emp.profiles;
+        const empList = data.map(emp => {
+          const profile = Array.isArray(emp.profiles) ? emp.profiles[0] : emp.profiles
           return {
             id: emp.employee_id,
             name: profile?.full_name || 'Sin nombre',
-          };
-        });
-        setEmployees(empList);
+          }
+        })
+        setEmployees(empList)
       }
-    };
-    loadEmployees();
-  }, [businessId]);
+    }
+    loadEmployees()
+  }, [businessId])
 
   // Process chart data - usa filtros de tipo ReportFilters
-  const reportFilters = useMemo(() => ({
-    business_id: businessId,
-    start_date: dateRange.start,
-    end_date: dateRange.end,
-    location_id: selectedLocation !== 'all' ? [selectedLocation] : undefined,
-    employee_id: selectedEmployee !== 'all' ? [selectedEmployee] : undefined,
-    category: selectedCategory !== 'all' ? [selectedCategory] : undefined,
-  }), [businessId, dateRange, selectedLocation, selectedEmployee, selectedCategory]);
-  
+  const reportFilters = useMemo(
+    () => ({
+      business_id: businessId,
+      start_date: dateRange.start,
+      end_date: dateRange.end,
+      location_id: selectedLocation !== 'all' ? [selectedLocation] : undefined,
+      employee_id: selectedEmployee !== 'all' ? [selectedEmployee] : undefined,
+      category: selectedCategory !== 'all' ? [selectedCategory] : undefined,
+    }),
+    [businessId, dateRange, selectedLocation, selectedEmployee, selectedCategory]
+  )
+
   const {
     incomeVsExpenseData,
     categoryDistributionData,
     monthlyTrendData,
     locationComparisonData,
     employeePerformanceData,
-  } = useChartData(businessId, reportFilters);
-  
+  } = useChartData(businessId, reportFilters)
+
   // Financial reports hook
-  const { generateProfitAndLoss, exportToCSV, exportToExcel, exportToPDF } = useFinancialReports();
+  const { generateProfitAndLoss, exportToCSV, exportToExcel, exportToPDF } = useFinancialReports()
 
   // Stats calculations
-  const profitMargin = summary.total_income > 0
-    ? ((summary.net_profit / summary.total_income) * 100).toFixed(1)
-    : '0.0';
+  const profitMargin =
+    summary.total_income > 0
+      ? ((summary.net_profit / summary.total_income) * 100).toFixed(1)
+      : '0.0'
 
   const handleExportCSV = async () => {
-    const toastId = toast.loading(t('billing.csvLoading'));
+    const toastId = toast.loading(t('billing.csvLoading'))
     try {
-      const report = await generateProfitAndLoss(reportFilters);
+      const report = await generateProfitAndLoss(reportFilters)
       // Convertir el reporte a array para exportar
       const dataArray = [
         { item: 'Ingresos Totales', monto: report.total_income },
         ...report.income_by_category.map(cat => ({
           item: `  - ${cat.category}`,
-          monto: cat.amount
+          monto: cat.amount,
         })),
         { item: 'Egresos Totales', monto: report.total_expenses },
         ...report.expenses_by_category.map(cat => ({
           item: `  - ${cat.category}`,
-          monto: cat.amount
+          monto: cat.amount,
         })),
         { item: 'Utilidad Bruta', monto: report.gross_profit },
         { item: 'Utilidad Neta', monto: report.net_profit },
-      ];
-      exportToCSV(dataArray, `reporte_${period}`, { format: 'csv', delimiter: ';' });
-      toast.success(t('billing.csvSuccess'), { id: toastId });
+      ]
+      exportToCSV(dataArray, `reporte_${period}`, { format: 'csv', delimiter: ';' })
+      toast.success(t('billing.csvSuccess'), { id: toastId })
     } catch (error) {
-      toast.error(t('billing.csvError', { error: error instanceof Error ? error.message : 'Error desconocido' }), { id: toastId });
+      toast.error(
+        t('billing.csvError', {
+          error: error instanceof Error ? error.message : 'Error desconocido',
+        }),
+        { id: toastId }
+      )
     }
-  };
+  }
 
   const handleExportExcel = async () => {
-    const toastId = toast.loading(t('billing.excelLoading'));
+    const toastId = toast.loading(t('billing.excelLoading'))
     try {
-      const report = await generateProfitAndLoss(reportFilters);
+      const report = await generateProfitAndLoss(reportFilters)
       const dataArray = [
         { item: 'Ingresos Totales', monto: report.total_income },
         ...report.income_by_category.map(cat => ({
           item: `  - ${cat.category}`,
-          monto: cat.amount
+          monto: cat.amount,
         })),
         { item: 'Egresos Totales', monto: report.total_expenses },
         ...report.expenses_by_category.map(cat => ({
           item: `  - ${cat.category}`,
-          monto: cat.amount
+          monto: cat.amount,
         })),
         { item: 'Utilidad Bruta', monto: report.gross_profit },
         { item: 'Utilidad Neta', monto: report.net_profit },
-      ];
-      exportToExcel(dataArray, `Reporte_Financiero_${period}`, 'Reporte');
-      toast.success(t('billing.excelSuccess'), { id: toastId });
+      ]
+      exportToExcel(dataArray, `Reporte_Financiero_${period}`, 'Reporte')
+      toast.success(t('billing.excelSuccess'), { id: toastId })
     } catch (error) {
-      toast.error(t('billing.excelError', { error: error instanceof Error ? error.message : 'Error desconocido' }), { id: toastId });
+      toast.error(
+        t('billing.excelError', {
+          error: error instanceof Error ? error.message : 'Error desconocido',
+        }),
+        { id: toastId }
+      )
     }
-  };
+  }
 
   const handleExportPDF = async () => {
-    const toastId = toast.loading(t('billing.pdfLoading'));
+    const toastId = toast.loading(t('billing.pdfLoading'))
     try {
-      const report = await generateProfitAndLoss(reportFilters);
-      exportToPDF(report, report.business_name, `reporte_${period}.pdf`);
-      toast.success(t('billing.pdfSuccess'), { id: toastId });
+      const report = await generateProfitAndLoss(reportFilters)
+      exportToPDF(report, report.business_name, `reporte_${period}.pdf`)
+      toast.success(t('billing.pdfSuccess'), { id: toastId })
     } catch (error) {
-      toast.error(t('billing.pdfError', { error: error instanceof Error ? error.message : 'Error desconocido' }), { id: toastId });
+      toast.error(
+        t('billing.pdfError', {
+          error: error instanceof Error ? error.message : 'Error desconocido',
+        }),
+        { id: toastId }
+      )
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -211,9 +233,7 @@ export function EnhancedFinancialDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              {t('financial.dashboard')}
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">{t('financial.dashboard')}</h2>
             <p className="text-sm text-muted-foreground mt-1">
               {t('financial.dashboardDescription')}
             </p>
@@ -241,9 +261,9 @@ export function EnhancedFinancialDashboard({
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">{t('financial.filters')}</span>
             </div>
-            
+
             {/* Period Filter */}
-            <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+            <Select value={period} onValueChange={v => setPeriod(v as Period)}>
               <SelectTrigger className="w-36">
                 <Calendar className="h-4 w-4 mr-2" />
                 <SelectValue />
@@ -264,7 +284,7 @@ export function EnhancedFinancialDashboard({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('common.placeholders.allLocations')}</SelectItem>
-                  {locations.map((loc) => (
+                  {locations.map(loc => (
                     <SelectItem key={loc.id} value={loc.id}>
                       {loc.name}
                     </SelectItem>
@@ -281,7 +301,7 @@ export function EnhancedFinancialDashboard({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('common.placeholders.allEmployees')}</SelectItem>
-                  {employees.map((emp) => (
+                  {employees.map(emp => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.name}
                     </SelectItem>
@@ -297,7 +317,9 @@ export function EnhancedFinancialDashboard({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('common.placeholders.allCategories')}</SelectItem>
-                <SelectItem value="appointment_payment">{t('financial.category.appointment_payment')}</SelectItem>
+                <SelectItem value="appointment_payment">
+                  {t('financial.category.appointment_payment')}
+                </SelectItem>
                 <SelectItem value="product_sale">{t('financial.category.product_sale')}</SelectItem>
                 <SelectItem value="membership">{t('financial.category.membership')}</SelectItem>
                 <SelectItem value="salary">{t('financial.category.salary')}</SelectItem>
@@ -376,8 +398,8 @@ export function EnhancedFinancialDashboard({
               <p
                 className={cn(
                   'text-2xl font-bold',
-                  summary.net_profit >= 0 
-                    ? 'text-green-600 dark:text-green-400' 
+                  summary.net_profit >= 0
+                    ? 'text-green-600 dark:text-green-400'
                     : 'text-red-600 dark:text-red-400'
                 )}
               >
@@ -401,9 +423,7 @@ export function EnhancedFinancialDashboard({
             {loading ? (
               <div className="h-8 bg-muted animate-pulse rounded" />
             ) : (
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {profitMargin}%
-              </p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{profitMargin}%</p>
             )}
           </div>
         </Card>
@@ -420,12 +440,8 @@ export function EnhancedFinancialDashboard({
             <PieChartIcon className="h-4 w-4 mr-2" />
             {t('financial.tabs.categories')}
           </TabsTrigger>
-          <TabsTrigger value="locations">
-            {t('financial.tabs.locations')}
-          </TabsTrigger>
-          <TabsTrigger value="employees">
-            {t('financial.tabs.employees')}
-          </TabsTrigger>
+          <TabsTrigger value="locations">{t('financial.tabs.locations')}</TabsTrigger>
+          <TabsTrigger value="employees">{t('financial.tabs.employees')}</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -460,16 +476,13 @@ export function EnhancedFinancialDashboard({
                 {t('financial.categoryBreakdown')}
               </h3>
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {categoryDistributionData.map((cat) => (
+                {categoryDistributionData.map(cat => (
                   <div
                     key={cat.category}
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 rounded"
-                        style={{ backgroundColor: cat.color }}
-                      />
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color }} />
                       <div>
                         <p className="font-medium text-foreground">{cat.category}</p>
                         <p className="text-xs text-muted-foreground">
@@ -478,12 +491,8 @@ export function EnhancedFinancialDashboard({
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-foreground">
-                        {formatCOP(cat.amount)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {cat.percentage.toFixed(1)}%
-                      </p>
+                      <p className="font-semibold text-foreground">{formatCOP(cat.amount)}</p>
+                      <p className="text-xs text-muted-foreground">{cat.percentage.toFixed(1)}%</p>
                     </div>
                   </div>
                 ))}
@@ -513,5 +522,5 @@ export function EnhancedFinancialDashboard({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

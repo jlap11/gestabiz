@@ -1,12 +1,13 @@
 /**
  * CancelSubscriptionModal Component
- * 
+ *
  * Modal para cancelar una suscripción
  */
 
 import { useState } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAsync } from '@/hooks/useAsync'
 import {
   Dialog,
   DialogContent,
@@ -35,20 +36,15 @@ export function CancelSubscriptionModal({
   const { t } = useLanguage()
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(true)
   const [reason, setReason] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const cancelReq = useAsync<void>()
 
   const { cancelSubscription } = useSubscription(businessId)
 
   const handleSubmit = async () => {
-    setIsSubmitting(true)
-    try {
+    await cancelReq.run(async () => {
       await cancelSubscription(cancelAtPeriodEnd, reason || undefined)
       onSuccess()
-    } catch (error) {
-      // Error is handled by the hook
-    } finally {
-      setIsSubmitting(false)
-    }
+    })
   }
 
   return (
@@ -56,9 +52,7 @@ export function CancelSubscriptionModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('billing.cancelSubscriptionTitle')}</DialogTitle>
-          <DialogDescription>
-            {t('billing.cancelSubscriptionDescription')}
-          </DialogDescription>
+          <DialogDescription>{t('billing.cancelSubscriptionDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -67,7 +61,7 @@ export function CancelSubscriptionModal({
             <Label>{t('billing.cancelWhenQuestion')}</Label>
             <RadioGroup
               value={cancelAtPeriodEnd ? 'end' : 'now'}
-              onValueChange={(value) => setCancelAtPeriodEnd(value === 'end')}
+              onValueChange={value => setCancelAtPeriodEnd(value === 'end')}
             >
               <div className="flex items-start space-x-2 p-3 border rounded-lg">
                 <RadioGroupItem value="end" id="end" />
@@ -102,7 +96,7 @@ export function CancelSubscriptionModal({
               id="reason"
               placeholder={t('billing.cancellationReasonPlaceholder')}
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
               rows={4}
             />
           </div>
@@ -122,15 +116,11 @@ export function CancelSubscriptionModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <Button variant="outline" onClick={onClose} disabled={cancelReq.status === 'pending'}>
             {t('common.actions.cancel')}
           </Button>
-          <Button 
-            variant="destructive"
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
+          <Button variant="destructive" onClick={handleSubmit} disabled={cancelReq.status === 'pending'}>
+            {cancelReq.status === 'pending' ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {t('billing.cancelingSubscription')}

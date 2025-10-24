@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export interface GeolocationState {
   latitude: number | null
@@ -23,7 +23,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     timeout = 10000,
     maximumAge = 0,
     requestOnMount = false,
-    showPermissionPrompt = true
+    showPermissionPrompt = true,
   } = options
 
   const [state, setState] = useState<GeolocationState>({
@@ -32,7 +32,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     accuracy: null,
     error: null,
     loading: false,
-    permissionStatus: null
+    permissionStatus: null,
   })
 
   // Check permission status
@@ -43,7 +43,10 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
     try {
       const result = await navigator.permissions.query({ name: 'geolocation' })
-      setState(prev => ({ ...prev, permissionStatus: result.state as 'granted' | 'denied' | 'prompt' }))
+      setState(prev => ({
+        ...prev,
+        permissionStatus: result.state as 'granted' | 'denied' | 'prompt',
+      }))
       return result.state
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -58,7 +61,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       setState(prev => ({
         ...prev,
         error: 'La geolocalización no está soportada por este navegador',
-        loading: false
+        loading: false,
       }))
       return
     }
@@ -66,22 +69,23 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         setState({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
           error: null,
           loading: false,
-          permissionStatus: 'granted'
+          permissionStatus: 'granted',
         })
       },
-      (error) => {
+      error => {
         let errorMessage = 'Error desconocido'
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Permiso de ubicación denegado. Por favor, habilita la ubicación en la configuración de tu navegador para una mejor experiencia.'
+            errorMessage =
+              'Permiso de ubicación denegado. Por favor, habilita la ubicación en la configuración de tu navegador para una mejor experiencia.'
             setState(prev => ({ ...prev, permissionStatus: 'denied' }))
             break
           case error.POSITION_UNAVAILABLE:
@@ -95,13 +99,13 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         setState(prev => ({
           ...prev,
           error: errorMessage,
-          loading: false
+          loading: false,
         }))
       },
       {
         enableHighAccuracy,
         timeout,
-        maximumAge
+        maximumAge,
       }
     )
   }, [enableHighAccuracy, timeout, maximumAge])
@@ -112,7 +116,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       setState(prev => ({
         ...prev,
         error: 'La geolocalización no está soportada por este navegador',
-        loading: false
+        loading: false,
       }))
       return null
     }
@@ -120,19 +124,19 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     const watchId = navigator.geolocation.watchPosition(
-      (position) => {
+      position => {
         setState({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
           error: null,
           loading: false,
-          permissionStatus: 'granted'
+          permissionStatus: 'granted',
         })
       },
-      (error) => {
+      error => {
         let errorMessage = 'Error desconocido'
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = 'Permiso de ubicación denegado.'
@@ -149,13 +153,13 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         setState(prev => ({
           ...prev,
           error: errorMessage,
-          loading: false
+          loading: false,
         }))
       },
       {
         enableHighAccuracy,
         timeout,
-        maximumAge
+        maximumAge,
       }
     )
 
@@ -170,33 +174,31 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   }, [])
 
   // Calculate distance between two points (Haversine formula)
-  const calculateDistance = useCallback((
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371 // Radius of Earth in kilometers
-    const dLat = (lat2 - lat1) * (Math.PI / 180)
-    const dLon = (lon2 - lon1) * (Math.PI / 180)
-    
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2)
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    const distance = R * c // Distance in km
-    
-    return distance
-  }, [])
+  const calculateDistance = useCallback(
+    (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+      const R = 6371 // Radius of Earth in kilometers
+      const dLat = (lat2 - lat1) * (Math.PI / 180)
+      const dLon = (lon2 - lon1) * (Math.PI / 180)
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) *
+          Math.cos(lat2 * (Math.PI / 180)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2)
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      const distance = R * c // Distance in km
+
+      return distance
+    },
+    []
+  )
 
   // Request location on mount if specified
   useEffect(() => {
     checkPermission()
-    
+
     if (requestOnMount) {
       requestLocation()
     }
@@ -220,6 +222,6 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     checkPermission,
     hasLocation: state.latitude !== null && state.longitude !== null,
     isPermissionGranted: state.permissionStatus === 'granted',
-    isPermissionDenied: state.permissionStatus === 'denied'
+    isPermissionDenied: state.permissionStatus === 'denied',
   }
 }

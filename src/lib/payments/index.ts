@@ -1,6 +1,6 @@
 /**
  * Payments Module
- * 
+ *
  * Exports para el sistema de pagos y suscripciones
  */
 

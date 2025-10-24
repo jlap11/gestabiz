@@ -3,16 +3,8 @@
   "name": "Gestabiz - Quick Access",
   "version": "1.0.0",
   "description": "Quick access to your upcoming appointments and easy app navigation",
-  "permissions": [
-    "storage",
-    "alarms",
-    "notifications",
-    "activeTab"
-  ],
-  "host_permissions": [
-    "https://*.supabase.co/*",
-    "https://your-app-domain.com/*"
-  ],
+  "permissions": ["storage", "alarms", "notifications", "activeTab"],
+  "host_permissions": ["https://*.supabase.co/*", "https://your-app-domain.com/*"],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Gestabiz",

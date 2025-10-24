@@ -1,14 +1,14 @@
 /**
  * Script de Verificación de Integridad del Sistema de Modelo de Negocio Flexible
- * 
+ *
  * Ejecutar: npx tsx scripts/verify-resource-model-integrity.ts
- * 
+ *
  * Verifica:
  * 1. Todos los negocios tienen resource_model definido
  * 2. CHECK constraint de appointments (employee_id XOR resource_id)
  * 3. Integridad referencial de resource_id
  * 4. Integridad referencial de location_id en recursos
- * 
+ *
  * Fecha: 21 de Octubre de 2025
  */
 
@@ -16,10 +16,13 @@ import { createClient } from '@supabase/supabase-js'
 
 // Configuración de Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL || ''
-const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''
+const supabaseServiceKey =
+  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || ''
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Error: Variables de entorno VITE_SUPABASE_URL y VITE_SUPABASE_SERVICE_ROLE_KEY no están configuradas')
+  console.error(
+    '❌ Error: Variables de entorno VITE_SUPABASE_URL y VITE_SUPABASE_SERVICE_ROLE_KEY no están configuradas'
+  )
   process.exit(1)
 }
 
@@ -55,7 +58,7 @@ async function verifyResourceModelIntegrity(): Promise<VerificationResult> {
   } else if (businessesWithoutModel && businessesWithoutModel.length > 0) {
     result.warnings.push(`${businessesWithoutModel.length} negocios sin resource_model definido`)
     console.log(`   ⚠️  ${businessesWithoutModel.length} negocios requieren actualización`)
-    
+
     // Actualizar automáticamente a 'professional'
     const { error: updateError } = await supabase
       .from('businesses')
@@ -86,11 +89,15 @@ async function verifyResourceModelIntegrity(): Promise<VerificationResult> {
     result.errors.push(`Error al consultar appointments: ${appointmentError.message}`)
     result.passed = false
   } else if (invalidAppointments && invalidAppointments.length > 0) {
-    result.errors.push(`${invalidAppointments.length} appointments violan CHECK constraint (tienen employee_id Y resource_id)`)
+    result.errors.push(
+      `${invalidAppointments.length} appointments violan CHECK constraint (tienen employee_id Y resource_id)`
+    )
     result.passed = false
     console.log(`   ❌ ${invalidAppointments.length} appointments inválidos:`)
     invalidAppointments.slice(0, 5).forEach(apt => {
-      console.log(`      - ID: ${apt.id}, Employee: ${apt.employee_id}, Resource: ${apt.resource_id}`)
+      console.log(
+        `      - ID: ${apt.id}, Employee: ${apt.employee_id}, Resource: ${apt.resource_id}`
+      )
     })
     if (invalidAppointments.length > 5) {
       console.log(`      ... y ${invalidAppointments.length - 5} más`)
@@ -213,10 +220,18 @@ async function verifyResourceModelIntegrity(): Promise<VerificationResult> {
     .not('resource_id', 'is', null)
 
   console.log(`Negocios Totales: ${totalBusinesses || 0}`)
-  console.log(`  ├─ Profesionales: ${professionalBusinesses || 0} (${((professionalBusinesses || 0) / (totalBusinesses || 1) * 100).toFixed(1)}%)`)
-  console.log(`  ├─ Recursos Físicos: ${resourceBusinesses || 0} (${((resourceBusinesses || 0) / (totalBusinesses || 1) * 100).toFixed(1)}%)`)
-  console.log(`  ├─ Híbridos: ${hybridBusinesses || 0} (${((hybridBusinesses || 0) / (totalBusinesses || 1) * 100).toFixed(1)}%)`)
-  console.log(`  └─ Clases Grupales: ${groupClassBusinesses || 0} (${((groupClassBusinesses || 0) / (totalBusinesses || 1) * 100).toFixed(1)}%)`)
+  console.log(
+    `  ├─ Profesionales: ${professionalBusinesses || 0} (${(((professionalBusinesses || 0) / (totalBusinesses || 1)) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `  ├─ Recursos Físicos: ${resourceBusinesses || 0} (${(((resourceBusinesses || 0) / (totalBusinesses || 1)) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `  ├─ Híbridos: ${hybridBusinesses || 0} (${(((hybridBusinesses || 0) / (totalBusinesses || 1)) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `  └─ Clases Grupales: ${groupClassBusinesses || 0} (${(((groupClassBusinesses || 0) / (totalBusinesses || 1)) * 100).toFixed(1)}%)`
+  )
   console.log(`\nRecursos Físicos Activos: ${totalResources || 0}`)
   console.log(`\nAppointments:`)
   console.log(`  ├─ Con Empleado: ${appointmentsWithEmployee || 0}`)
@@ -258,7 +273,6 @@ async function main() {
       process.exit(1)
     }
     console.log('='.repeat(50) + '\n')
-
   } catch (error) {
     console.error('\n❌ Error fatal durante la verificación:', error)
     process.exit(1)

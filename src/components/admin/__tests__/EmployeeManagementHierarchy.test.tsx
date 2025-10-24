@@ -5,7 +5,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createElement } from 'react'
 import { EmployeeManagementHierarchy } from '../EmployeeManagementHierarchy'
 
@@ -41,7 +41,7 @@ function createTestWrapper() {
 describe('EmployeeManagementHierarchy', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Setup default mock return
     mockUseBusinessHierarchy.mockReturnValue({
       data: [],
@@ -61,10 +61,9 @@ describe('EmployeeManagementHierarchy', () => {
 
   describe('Renderizado inicial', () => {
     it('debería renderizar el componente', () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       expect(screen.getByText('employees.management.title')).toBeInTheDocument()
     })
@@ -80,19 +79,17 @@ describe('EmployeeManagementHierarchy', () => {
         refetch: vi.fn(),
       })
 
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       expect(screen.getByText(/loading/i)).toBeInTheDocument()
     })
 
     it('debería mostrar las 4 stats cards', async () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         expect(screen.getByText('employees.management.totalEmployees')).toBeInTheDocument()
@@ -103,10 +100,9 @@ describe('EmployeeManagementHierarchy', () => {
     })
 
     it('debería mostrar botones de vista (Lista y Mapa)', async () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         expect(screen.getByText('employees.management.listView')).toBeInTheDocument()
@@ -115,10 +111,9 @@ describe('EmployeeManagementHierarchy', () => {
     })
 
     it('debería mostrar botón de filtros', async () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         expect(screen.getByText('employees.management.filters')).toBeInTheDocument()
@@ -128,10 +123,9 @@ describe('EmployeeManagementHierarchy', () => {
 
   describe('Empty State', () => {
     it('debería mostrar mensaje cuando no hay empleados', async () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         expect(screen.getByText('employees.management.noEmployees')).toBeInTheDocument()
@@ -202,18 +196,17 @@ describe('EmployeeManagementHierarchy', () => {
         refetch: vi.fn(),
       })
 
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         // Total empleados
         expect(screen.getByText('2')).toBeInTheDocument()
-        
+
         // Ocupación promedio (80 + 70) / 2 = 75
         expect(screen.getByText('75.0%')).toBeInTheDocument()
-        
+
         // Rating promedio (4.5 + 4.0) / 2 = 4.25
         expect(screen.getByText(/4\.2/)).toBeInTheDocument()
       })
@@ -225,10 +218,7 @@ describe('EmployeeManagementHierarchy', () => {
       const onSelect = vi.fn()
 
       render(
-        <EmployeeManagementHierarchy 
-          businessId="test-business"
-          onEmployeeSelect={onSelect}
-        />,
+        <EmployeeManagementHierarchy businessId="test-business" onEmployeeSelect={onSelect} />,
         { wrapper: createTestWrapper() }
       )
 
@@ -253,10 +243,9 @@ describe('EmployeeManagementHierarchy', () => {
         refetch: vi.fn(),
       })
 
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         expect(screen.getByText('employees.management.error')).toBeInTheDocument()
@@ -274,10 +263,9 @@ describe('EmployeeManagementHierarchy', () => {
         refetch: vi.fn(),
       })
 
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         expect(screen.getByText('employees.management.retry')).toBeInTheDocument()
@@ -287,10 +275,9 @@ describe('EmployeeManagementHierarchy', () => {
 
   describe('Accessibility', () => {
     it('debería tener heading principal', async () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         const heading = screen.getByRole('heading', { level: 1 })
@@ -300,10 +287,9 @@ describe('EmployeeManagementHierarchy', () => {
     })
 
     it('debería tener botones accesibles', async () => {
-      render(
-        <EmployeeManagementHierarchy businessId="test-business" />,
-        { wrapper: createTestWrapper() }
-      )
+      render(<EmployeeManagementHierarchy businessId="test-business" />, {
+        wrapper: createTestWrapper(),
+      })
 
       await waitFor(() => {
         const buttons = screen.getAllByRole('button')

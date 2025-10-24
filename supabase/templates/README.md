@@ -10,12 +10,14 @@ Esta guía explica cómo configurar el template HTML de confirmación de email e
 ## 🎨 Características del Template
 
 ### Diseño Visual
+
 - ✅ **Colores de la app**: Primary purple (#a855f7) y gradientes matching
 - ✅ **Responsive**: Se adapta a móviles y desktop
 - ✅ **Iconos**: Emojis para mejor visual
 - ✅ **Dark mode friendly**: Colores optimizados para ambos temas
 
 ### Elementos Incluidos
+
 - Logo de Gestabiz
 - Botón CTA principal (Confirmar mi Email)
 - Link alternativo (si el botón no funciona)
@@ -40,6 +42,7 @@ Esta guía explica cómo configurar el template HTML de confirmación de email e
 ### Paso 3: Configurar Asunto del Email
 
 En el campo **Subject**, escribe:
+
 ```
 Confirma tu cuenta en Gestabiz 🎉
 ```
@@ -83,13 +86,13 @@ Confirma tu cuenta en Gestabiz 🎉
 
 Las variables de Supabase disponibles son:
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `{{ .Email }}` | Email del usuario | `usuario@ejemplo.com` |
-| `{{ .ConfirmationURL }}` | URL de confirmación | `https://xxx.supabase.co/auth/v1/verify?token=...` |
-| `{{ .Token }}` | Token de confirmación | `abc123...` |
-| `{{ .TokenHash }}` | Hash del token | `def456...` |
-| `{{ .SiteURL }}` | URL del sitio | `https://tuapp.com` |
+| Variable                 | Descripción           | Ejemplo                                            |
+| ------------------------ | --------------------- | -------------------------------------------------- |
+| `{{ .Email }}`           | Email del usuario     | `usuario@ejemplo.com`                              |
+| `{{ .ConfirmationURL }}` | URL de confirmación   | `https://xxx.supabase.co/auth/v1/verify?token=...` |
+| `{{ .Token }}`           | Token de confirmación | `abc123...`                                        |
+| `{{ .TokenHash }}`       | Hash del token        | `def456...`                                        |
+| `{{ .SiteURL }}`         | URL del sitio         | `https://tuapp.com`                                |
 
 ## 🎯 Personalización
 
@@ -103,25 +106,28 @@ background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
 
 /* Botón CTA */
 .cta-button {
-    background: linear-gradient(135deg, #TU-COLOR 0%, #TU-COLOR-OSCURO 100%);
+  background: linear-gradient(135deg, #TU-COLOR 0%, #TU-COLOR-OSCURO 100%);
 }
 ```
 
 ### Cambiar Logo
 
 Opción 1 - Emoji (actual):
+
 ```html
 <div class="logo">📅</div>
 ```
 
 Opción 2 - Imagen:
+
 ```html
-<img src="https://tu-cdn.com/logo.png" alt="Gestabiz" style="width: 80px; height: 80px;">
+<img src="https://tu-cdn.com/logo.png" alt="Gestabiz" style="width: 80px; height: 80px;" />
 ```
 
 ### Añadir Links Sociales Reales
 
 Reemplaza los placeholders en el footer:
+
 ```html
 <a href="https://twitter.com/TU-USUARIO" class="social-icon">𝕏</a>
 <a href="https://facebook.com/TU-PAGINA" class="social-icon">f</a>
@@ -149,6 +155,7 @@ Reemplaza los placeholders en el footer:
 ## 📱 Compatibilidad
 
 Template probado y optimizado para:
+
 - ✅ Gmail (Web + Mobile)
 - ✅ Outlook (Web + Desktop)
 - ✅ Apple Mail (macOS + iOS)
@@ -179,6 +186,7 @@ Template probado y optimizado para:
 ## 🆘 Soporte
 
 Si tienes problemas con la configuración:
+
 1. Revisa los logs de Supabase (Logs → Auth)
 2. Verifica las settings de SMTP
 3. Contacta al soporte de Supabase si es necesario

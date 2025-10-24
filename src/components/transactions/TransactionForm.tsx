@@ -1,40 +1,40 @@
-import React, { useState } from 'react';
-import { DollarSign, Calendar, Tag, FileText, CreditCard } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState } from 'react'
+import { Calendar, CreditCard, DollarSign, FileText, Tag } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { toast } from 'sonner';
-import type { TransactionType, TransactionCategory } from '@/types/types';
+} from '@/components/ui/select'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { toast } from 'sonner'
+import type { TransactionCategory, TransactionType } from '@/types/types'
 
 interface TransactionFormProps {
-  businessId: string;
-  locationId?: string;
-  onSubmit: (transaction: TransactionFormData) => Promise<void>;
-  onCancel?: () => void;
-  defaultType?: TransactionType;
-  onSuccess?: () => void;
+  businessId: string
+  locationId?: string
+  onSubmit: (transaction: TransactionFormData) => Promise<void>
+  onCancel?: () => void
+  defaultType?: TransactionType
+  onSuccess?: () => void
 }
 
 export interface TransactionFormData {
-  type: TransactionType;
-  category: TransactionCategory;
-  amount: number;
-  currency: string;
-  description?: string;
-  transaction_date: string;
-  payment_method?: string;
-  employee_id?: string;
-  appointment_id?: string;
+  type: TransactionType
+  category: TransactionCategory
+  amount: number
+  currency: string
+  description?: string
+  transaction_date: string
+  payment_method?: string
+  employee_id?: string
+  appointment_id?: string
 }
 
 const INCOME_CATEGORIES: TransactionCategory[] = [
@@ -44,7 +44,7 @@ const INCOME_CATEGORIES: TransactionCategory[] = [
   'package',
   'tip',
   'other_income',
-];
+]
 
 const EXPENSE_CATEGORIES: TransactionCategory[] = [
   'salary',
@@ -59,7 +59,7 @@ const EXPENSE_CATEGORIES: TransactionCategory[] = [
   'insurance',
   'training',
   'other_expense',
-];
+]
 
 const PAYMENT_METHODS = [
   'cash',
@@ -68,7 +68,7 @@ const PAYMENT_METHODS = [
   'bank_transfer',
   'digital_wallet',
   'check',
-];
+]
 
 export function TransactionForm({
   businessId,
@@ -77,8 +77,8 @@ export function TransactionForm({
   onCancel,
   defaultType = 'income',
 }: TransactionFormProps) {
-  const { t } = useLanguage();
-  
+  const { t } = useLanguage()
+
   const [formData, setFormData] = useState<TransactionFormData>({
     type: defaultType,
     category: defaultType === 'income' ? 'appointment_payment' : 'salary',
@@ -87,22 +87,22 @@ export function TransactionForm({
     description: '',
     transaction_date: new Date().toISOString().split('T')[0],
     payment_method: 'cash',
-  });
+  })
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (formData.amount <= 0) {
-      toast.error(t('transactions.errors.invalidAmount'));
-      return;
+      toast.error(t('transactions.errors.invalidAmount'))
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      await onSubmit(formData);
-      toast.success(t('transactions.submitSuccess'));
+      await onSubmit(formData)
+      toast.success(t('transactions.submitSuccess'))
       // Reset form
       setFormData({
         type: defaultType,
@@ -112,23 +112,23 @@ export function TransactionForm({
         description: '',
         transaction_date: new Date().toISOString().split('T')[0],
         payment_method: 'cash',
-      });
+      })
     } catch {
-      toast.error(t('transactions.errors.submitFailed'));
+      toast.error(t('transactions.errors.submitFailed'))
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleTypeChange = (type: TransactionType) => {
     setFormData(prev => ({
       ...prev,
       type,
       category: type === 'income' ? 'appointment_payment' : 'salary',
-    }));
-  };
+    }))
+  }
 
-  const categories = formData.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories = formData.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
 
   return (
     <Card className="p-6">
@@ -136,9 +136,7 @@ export function TransactionForm({
         {/* Title */}
         <div>
           <h3 className="text-lg font-semibold">{t('transactions.newTransaction')}</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('transactions.formDescription')}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t('transactions.formDescription')}</p>
         </div>
 
         {/* Type Selection (Income/Expense) */}
@@ -158,9 +156,7 @@ export function TransactionForm({
                 <DollarSign className="h-5 w-5 text-green-600" />
                 <span className="font-medium">{t('transactions.income')}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t('transactions.incomeDescription')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('transactions.incomeDescription')}</p>
             </button>
 
             <button
@@ -193,7 +189,7 @@ export function TransactionForm({
             </Label>
             <Select
               value={formData.category}
-              onValueChange={(value) =>
+              onValueChange={value =>
                 setFormData(prev => ({ ...prev, category: value as TransactionCategory }))
               }
             >
@@ -223,7 +219,7 @@ export function TransactionForm({
                 step="0.01"
                 min="0"
                 value={formData.amount}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))
                 }
                 placeholder="0.00"
@@ -232,7 +228,7 @@ export function TransactionForm({
               />
               <Select
                 value={formData.currency}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+                onValueChange={value => setFormData(prev => ({ ...prev, currency: value }))}
               >
                 <SelectTrigger className="w-24">
                   <SelectValue />
@@ -259,9 +255,7 @@ export function TransactionForm({
               id="transaction_date"
               type="date"
               value={formData.transaction_date}
-              onChange={(e) =>
-                setFormData(prev => ({ ...prev, transaction_date: e.target.value }))
-              }
+              onChange={e => setFormData(prev => ({ ...prev, transaction_date: e.target.value }))}
               required
             />
           </div>
@@ -274,9 +268,7 @@ export function TransactionForm({
             </Label>
             <Select
               value={formData.payment_method}
-              onValueChange={(value) =>
-                setFormData(prev => ({ ...prev, payment_method: value }))
-              }
+              onValueChange={value => setFormData(prev => ({ ...prev, payment_method: value }))}
             >
               <SelectTrigger id="payment_method">
                 <SelectValue />
@@ -296,16 +288,14 @@ export function TransactionForm({
         <div className="space-y-2">
           <Label htmlFor="description">
             <FileText className="h-4 w-4 inline mr-2" />
-            {t('transactions.description')} {' '}
-            <span className="text-muted-foreground font-normal">
-              ({t('common.optional')})
-            </span>
+            {t('transactions.description')}{' '}
+            <span className="text-muted-foreground font-normal">({t('common.optional')})</span>
           </Label>
           <Textarea
             id="description"
             placeholder={t('transactions.descriptionPlaceholder')}
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
             rows={3}
             maxLength={500}
           />
@@ -316,25 +306,16 @@ export function TransactionForm({
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
-          <Button
-            type="submit"
-            disabled={formData.amount <= 0 || isSubmitting}
-            className="flex-1"
-          >
+          <Button type="submit" disabled={formData.amount <= 0 || isSubmitting} className="flex-1">
             {isSubmitting ? t('common.submitting') : t('transactions.submitTransaction')}
           </Button>
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               {t('common.cancel')}
             </Button>
           )}
         </div>
       </form>
     </Card>
-  );
+  )
 }

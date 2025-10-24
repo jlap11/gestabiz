@@ -4,30 +4,50 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { 
-  Plus, 
-  Star, 
-  Pencil, 
-  Trash, 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
   Clock,
   CurrencyDollar,
-  Tag,
+  List,
   MagnifyingGlass,
+  Pencil,
+  Plus,
   Sliders,
   SquaresFour,
-  List
+  Star,
+  Tag,
+  Trash,
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatCurrency } from '@/lib/i18n'
 import type { Language } from '@/contexts/LanguageContext'
-import { User, Service } from '@/types'
+import { Service, User } from '@/types'
 
 interface ServiceManagementProps {
   user: User
@@ -41,13 +61,13 @@ const SERVICE_CATEGORIES = [
   { id: 'emergency', name: 'Emergencia', color: 'bg-red-500' },
   { id: 'cosmetic', name: 'Cosmético', color: 'bg-pink-500' },
   { id: 'wellness', name: 'Bienestar', color: 'bg-teal-500' },
-  { id: 'other', name: 'Otro', color: 'bg-gray-500' }
+  { id: 'other', name: 'Otro', color: 'bg-gray-500' },
 ]
 
 export default function ServiceManagement({ user }: Readonly<ServiceManagementProps>) {
   const { t, language } = useLanguage()
   const [services, setServices] = useKV<Service[]>(`services-${user.business_id || user.id}`, [])
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showDialog, setShowDialog] = useState(false)
@@ -62,12 +82,13 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
     is_active: true,
     requires_preparation: false,
     online_available: false,
-    max_participants: 1
+    max_participants: 1,
   })
 
   const filteredServices = services.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory
     return matchesSearch && matchesCategory
   })
@@ -93,11 +114,13 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
         business_id: user.business_id || user.id,
         created_at: editingService?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        created_by: user.id
+        created_by: user.id,
       }
 
       if (editingService) {
-        setServices(prev => prev.map(service => service.id === editingService.id ? serviceData : service))
+        setServices(prev =>
+          prev.map(service => (service.id === editingService.id ? serviceData : service))
+        )
         toast.success(t('admin.serviceActions.updated'))
       } else {
         setServices(prev => [...prev, serviceData])
@@ -115,7 +138,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
         is_active: true,
         requires_preparation: false,
         online_available: false,
-        max_participants: 1
+        max_participants: 1,
       })
     } catch (error) {
       toast.error(t('message.error'))
@@ -149,13 +172,16 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
       is_active: true,
       requires_preparation: false,
       online_available: false,
-      max_participants: 1
+      max_participants: 1,
     })
     setEditingService(null)
   }
 
   const getCategoryInfo = (categoryId: string) => {
-    return SERVICE_CATEGORIES.find(cat => cat.id === categoryId) || SERVICE_CATEGORIES.find(cat => cat.id === 'other')!
+    return (
+      SERVICE_CATEGORIES.find(cat => cat.id === categoryId) ||
+      SERVICE_CATEGORIES.find(cat => cat.id === 'other')!
+    )
   }
 
   const activeServices = services.filter(s => s.is_active).length
@@ -167,11 +193,9 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">{t('services.title')}</h2>
-          <p className="text-muted-foreground">
-            Gestiona los servicios que ofreces a tus clientes
-          </p>
+          <p className="text-muted-foreground">Gestiona los servicios que ofreces a tus clientes</p>
         </div>
-        
+
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2" onClick={resetForm}>
@@ -220,7 +244,9 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Precio Promedio</p>
-                <p className="text-2xl font-bold">{formatCurrency(averagePrice, 'EUR', language as Language)}</p>
+                <p className="text-2xl font-bold">
+                  {formatCurrency(averagePrice, 'EUR', language as Language)}
+                </p>
               </div>
               <CurrencyDollar className="h-8 w-8 text-primary" />
             </div>
@@ -233,7 +259,10 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
               <div>
                 <p className="text-sm text-muted-foreground">Duración Promedio</p>
                 <p className="text-2xl font-bold">
-                  {services.length > 0 ? Math.round(services.reduce((sum, s) => sum + s.duration, 0) / services.length) : 0} min
+                  {services.length > 0
+                    ? Math.round(services.reduce((sum, s) => sum + s.duration, 0) / services.length)
+                    : 0}{' '}
+                  min
                 </p>
               </div>
               <Clock className="h-8 w-8 text-primary" />
@@ -245,15 +274,18 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
       {/* Filters and Search */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+          <MagnifyingGlass
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+            size={16}
+          />
           <Input
             placeholder={t('action.search') + ' servicios...'}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
-        
+
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <Sliders size={16} className="mr-2" />
@@ -261,7 +293,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las categorías</SelectItem>
-            {SERVICE_CATEGORIES.map((category) => (
+            {SERVICE_CATEGORIES.map(category => (
               <SelectItem key={category.id} value={category.id}>
                 <div className="flex items-center gap-2">
                   <div className={`w-3 h-3 rounded-full ${category.color}`} />
@@ -293,7 +325,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
       {/* Services Display */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service) => (
+          {filteredServices.map(service => (
             <ServiceCard
               key={service.id}
               service={service}
@@ -328,7 +360,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredServices.map((service) => {
+                {filteredServices.map(service => {
                   const categoryInfo = getCategoryInfo(service.category || 'other')
                   return (
                     <TableRow key={service.id}>
@@ -359,17 +391,13 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={service.is_active ? "default" : "secondary"}>
+                        <Badge variant={service.is_active ? 'default' : 'secondary'}>
                           {service.is_active ? 'Activo' : 'Inactivo'}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(service)}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(service)}>
                             <Pencil size={14} />
                           </Button>
                           <Button
@@ -387,7 +415,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
                 })}
               </TableBody>
             </Table>
-            
+
             {filteredServices.length === 0 && (
               <div className="text-center py-8">
                 <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -410,7 +438,9 @@ interface ServiceCardProps {
 }
 
 function ServiceCard({ service, onEdit, onDelete, language, t }: Readonly<ServiceCardProps>) {
-  const categoryInfo = SERVICE_CATEGORIES.find(cat => cat.id === (service.category || 'other')) || SERVICE_CATEGORIES.find(cat => cat.id === 'other')!
+  const categoryInfo =
+    SERVICE_CATEGORIES.find(cat => cat.id === (service.category || 'other')) ||
+    SERVICE_CATEGORIES.find(cat => cat.id === 'other')!
 
   return (
     <Card className="h-full">
@@ -421,17 +451,13 @@ function ServiceCard({ service, onEdit, onDelete, language, t }: Readonly<Servic
             <div className="flex items-center gap-2 mt-2">
               <div className={`w-3 h-3 rounded-full ${categoryInfo.color}`} />
               <Badge variant="outline">{categoryInfo.name}</Badge>
-              <Badge variant={service.is_active ? "default" : "secondary"}>
+              <Badge variant={service.is_active ? 'default' : 'secondary'}>
                 {service.is_active ? 'Activo' : 'Inactivo'}
               </Badge>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(service)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => onEdit(service)}>
               <Pencil size={14} />
             </Button>
             <Button
@@ -448,11 +474,9 @@ function ServiceCard({ service, onEdit, onDelete, language, t }: Readonly<Servic
       <CardContent>
         <div className="space-y-4">
           {service.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {service.description}
-            </p>
+            <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
           )}
-          
+
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock size={14} />
@@ -495,15 +519,21 @@ interface ServiceDialogProps {
   t: (key: string) => string
 }
 
-function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly<ServiceDialogProps>) {
+function ServiceDialog({
+  formData,
+  setFormData,
+  onSave,
+  isEditing,
+  t,
+}: Readonly<ServiceDialogProps>) {
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>
-          {isEditing ? t('services.edit') : t('services.new')}
-        </DialogTitle>
+        <DialogTitle>{isEditing ? t('services.edit') : t('services.new')}</DialogTitle>
         <DialogDescription>
-          {isEditing ? 'Actualiza la información del servicio' : 'Agrega un nuevo servicio a tu catálogo'}
+          {isEditing
+            ? 'Actualiza la información del servicio'
+            : 'Agrega un nuevo servicio a tu catálogo'}
         </DialogDescription>
       </DialogHeader>
 
@@ -511,13 +541,13 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="font-semibold">Información Básica</h3>
-          
+
           <div>
             <Label htmlFor="name">{t('services.name')}</Label>
             <Input
               id="name"
               value={formData.name || ''}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               placeholder="Nombre del servicio"
             />
           </div>
@@ -527,7 +557,7 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
             <Textarea
               id="description"
               value={formData.description || ''}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
               placeholder="Descripción detallada del servicio"
               rows={3}
             />
@@ -537,13 +567,13 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
             <Label htmlFor="category">{t('services.category')}</Label>
             <Select
               value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
+              onValueChange={value => setFormData({ ...formData, category: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
-                {SERVICE_CATEGORIES.map((category) => (
+                {SERVICE_CATEGORIES.map(category => (
                   <SelectItem key={category.id} value={category.id}>
                     <div className="flex items-center gap-2">
                       <div className={`w-3 h-3 rounded-full ${category.color}`} />
@@ -559,14 +589,14 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
         {/* Pricing and Duration */}
         <div className="space-y-4">
           <h3 className="font-semibold">Precio y Duración</h3>
-          
+
           <div>
             <Label htmlFor="duration">{t('services.duration')}</Label>
             <Input
               id="duration"
               type="number"
               value={formData.duration || ''}
-              onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
+              onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
               placeholder="60"
               min="15"
               step="15"
@@ -579,7 +609,7 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
               id="price"
               type="number"
               value={formData.price || ''}
-              onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+              onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
               placeholder="0.00"
               min="0"
               step="0.01"
@@ -592,7 +622,7 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
               id="max_participants"
               type="number"
               value={formData.max_participants || 1}
-              onChange={(e) => setFormData({ ...formData, max_participants: Number(e.target.value) })}
+              onChange={e => setFormData({ ...formData, max_participants: Number(e.target.value) })}
               min="1"
               max="50"
             />
@@ -603,7 +633,7 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
               <Switch
                 id="is_active"
                 checked={formData.is_active ?? true}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                onCheckedChange={checked => setFormData({ ...formData, is_active: checked })}
               />
               <Label htmlFor="is_active">Servicio activo</Label>
             </div>
@@ -612,7 +642,9 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
               <Switch
                 id="requires_preparation"
                 checked={formData.requires_preparation ?? false}
-                onCheckedChange={(checked) => setFormData({ ...formData, requires_preparation: checked })}
+                onCheckedChange={checked =>
+                  setFormData({ ...formData, requires_preparation: checked })
+                }
               />
               <Label htmlFor="requires_preparation">Requiere preparación</Label>
             </div>
@@ -621,7 +653,7 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
               <Switch
                 id="online_available"
                 checked={formData.online_available ?? false}
-                onCheckedChange={(checked) => setFormData({ ...formData, online_available: checked })}
+                onCheckedChange={checked => setFormData({ ...formData, online_available: checked })}
               />
               <Label htmlFor="online_available">Disponible online</Label>
             </div>
@@ -633,9 +665,7 @@ function ServiceDialog({ formData, setFormData, onSave, isEditing, t }: Readonly
         <Button variant="outline" onClick={() => {}}>
           {t('action.cancel')}
         </Button>
-        <Button onClick={onSave}>
-          {t('action.save')}
-        </Button>
+        <Button onClick={onSave}>{t('action.save')}</Button>
       </div>
     </DialogContent>
   )

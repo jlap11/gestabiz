@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { QrCode, Copy, Download, CheckCircle, Share2 } from 'lucide-react'
+import { CheckCircle, Copy, Download, QrCode, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
@@ -94,16 +94,16 @@ export function BusinessInvitationCard({ business, className }: BusinessInvitati
           <QrCode className="h-5 w-5" />
           {t('businessInvitationCard.title')}
         </CardTitle>
-        <CardDescription>
-          {t('businessInvitationCard.description')}
-        </CardDescription>
+        <CardDescription>{t('businessInvitationCard.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Invitation Code Display */}
         <div className="space-y-3">
           <div className="flex items-center justify-center p-6 bg-gradient-to-br from-violet-50 to-purple-100 dark:from-violet-950/30 dark:to-purple-900/30 rounded-lg border-2 border-dashed border-violet-300 dark:border-violet-700">
             <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground font-medium">{t('businessInvitationCard.yourCode')}</p>
+              <p className="text-sm text-muted-foreground font-medium">
+                {t('businessInvitationCard.yourCode')}
+              </p>
               <p className="text-4xl font-bold font-mono tracking-widest text-violet-600 dark:text-violet-400">
                 {invitationCode}
               </p>

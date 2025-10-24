@@ -149,13 +149,11 @@ describe('Mandatory Review Enforcement System', () => {
     expect(data).toBeDefined()
 
     // Filter appointments without reviews
-    const appointmentsWithoutReviews = data?.filter(
-      (apt) => !apt.reviews || apt.reviews.length === 0
-    )
+    const appointmentsWithoutReviews = data?.filter(apt => !apt.reviews || apt.reviews.length === 0)
 
     expect(appointmentsWithoutReviews).toBeDefined()
     expect(appointmentsWithoutReviews!.length).toBeGreaterThan(0)
-    expect(appointmentsWithoutReviews!.some((apt) => apt.id === testAppointmentId)).toBe(true)
+    expect(appointmentsWithoutReviews!.some(apt => apt.id === testAppointmentId)).toBe(true)
   })
 
   it('should prevent duplicate reviews for same appointment', async () => {
@@ -278,7 +276,8 @@ describe('Mandatory Review Enforcement System', () => {
       user_id: testClientId,
       appointment_id: aptId2,
       rating: 5,
-      comment: 'Excellent business! Clean facilities and great atmosphere. Highly recommended for everyone.',
+      comment:
+        'Excellent business! Clean facilities and great atmosphere. Highly recommended for everyone.',
       recommend: true,
       review_type: 'business',
     }
@@ -359,7 +358,7 @@ describe('Mandatory Review Enforcement System', () => {
     })
 
     // Wait for trigger to update
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Get business rating after
     const { data: afterBusiness } = await supabase
@@ -390,7 +389,8 @@ describe('Mandatory Review Enforcement System', () => {
       business_id: testBusinessId,
       user_id: newClient.user?.id,
       rating: 5,
-      comment: 'Trying to review without appointment. This should not be allowed under any circumstances.',
+      comment:
+        'Trying to review without appointment. This should not be allowed under any circumstances.',
       review_type: 'business',
     })
 

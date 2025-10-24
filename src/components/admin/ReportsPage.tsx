@@ -3,60 +3,67 @@
 // Página de reportes financieros con dashboard y exportación
 // ============================================================================
 
-import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { FileText } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { SuspenseFallback } from '@/components/ui/loading-spinner';
-import { useSupabaseData } from '@/hooks/useSupabaseData';
-import { usePreferredLocation } from '@/hooks/usePreferredLocation';
-import { Label } from '@/components/ui/label';
+import React, { Suspense, lazy, useEffect, useState } from 'react'
+import { FileText } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { SuspenseFallback } from '@/components/ui/loading-spinner'
+import { useSupabaseData } from '@/hooks/useSupabaseData'
+import { usePreferredLocation } from '@/hooks/usePreferredLocation'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { User } from '@/types/types';
+} from '@/components/ui/select'
+import type { User } from '@/types/types'
 
 // Lazy load dashboard pesado
 const EnhancedFinancialDashboard = lazy(() =>
   import('@/components/transactions/EnhancedFinancialDashboard').then(module => ({
-    default: module.EnhancedFinancialDashboard
+    default: module.EnhancedFinancialDashboard,
   }))
-);
+)
 
 interface ReportsPageProps {
-  businessId: string;
-  locationId?: string;
-  user: User;
+  businessId: string
+  locationId?: string
+  user: User
 }
 
-export function ReportsPage({ businessId, locationId: initialLocationId, user }: Readonly<ReportsPageProps>) {
-  const { t } = useLanguage();
-  const { locations, services, fetchLocations, fetchServices } = useSupabaseData({ user, autoFetch: false });
-  const { preferredLocationId } = usePreferredLocation(businessId);
-  
+export function ReportsPage({
+  businessId,
+  locationId: initialLocationId,
+  user,
+}: Readonly<ReportsPageProps>) {
+  const { t } = useLanguage()
+  const { locations, services, fetchLocations, fetchServices } = useSupabaseData({
+    user,
+    autoFetch: false,
+  })
+  const { preferredLocationId } = usePreferredLocation(businessId)
+
   // Estado local para sede seleccionada (inicia con preferida o prop)
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(
     initialLocationId || preferredLocationId || undefined
-  );
+  )
 
   useEffect(() => {
-    fetchLocations(businessId);
-    fetchServices(businessId);
-  }, [businessId, fetchLocations, fetchServices]);
-  
+    fetchLocations(businessId)
+    fetchServices(businessId)
+  }, [businessId, fetchLocations, fetchServices])
+
   // Actualizar si cambia la sede preferida y no hay selección manual
   useEffect(() => {
     if (!initialLocationId && preferredLocationId && !selectedLocationId) {
-      setSelectedLocationId(preferredLocationId);
+      setSelectedLocationId(preferredLocationId)
     }
-  }, [preferredLocationId, initialLocationId, selectedLocationId]);
-  
+  }, [preferredLocationId, initialLocationId, selectedLocationId])
+
   const handleLocationChange = (value: string) => {
-    setSelectedLocationId(value === 'all' ? undefined : value);
-  };
+    setSelectedLocationId(value === 'all' ? undefined : value)
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -65,19 +72,14 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
           <FileText className="h-6 w-6" />
           {t('admin.reports.title')}
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t('admin.reports.subtitle')}
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">{t('admin.reports.subtitle')}</p>
       </div>
 
       {/* Filtro de Sede */}
       <div className="flex items-center gap-4 p-4 bg-card border rounded-lg">
         <div className="flex-1 max-w-xs">
           <Label htmlFor="location-filter">{t('admin.reports.locationFilter')}</Label>
-          <Select
-            value={selectedLocationId || 'all'}
-            onValueChange={handleLocationChange}
-          >
+          <Select value={selectedLocationId || 'all'} onValueChange={handleLocationChange}>
             <SelectTrigger id="location-filter" className="mt-1">
               <SelectValue placeholder={t('admin.reports.allLocations')} />
             </SelectTrigger>
@@ -93,7 +95,8 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
         </div>
         {selectedLocationId && (
           <p className="text-sm text-muted-foreground">
-            {t('admin.reports.showing')} <span className="font-medium text-foreground">
+            {t('admin.reports.showing')}{' '}
+            <span className="font-medium text-foreground">
               {locations.find(l => l.id === selectedLocationId)?.name}
             </span>
           </p>
@@ -102,7 +105,7 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
 
       {/* Dashboard */}
       <Suspense fallback={<SuspenseFallback text={t('admin.reports.loading')} />}>
-        <EnhancedFinancialDashboard 
+        <EnhancedFinancialDashboard
           businessId={businessId}
           locationId={selectedLocationId}
           locations={locations}
@@ -110,5 +113,5 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
         />
       </Suspense>
     </div>
-  );
+  )
 }

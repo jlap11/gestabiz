@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useReducer, useMemo } from 'react'
+import React, { createContext, useContext, useMemo, useReducer } from 'react'
 import { toast } from 'sonner'
 
 interface AppState {
@@ -8,7 +8,7 @@ interface AppState {
   loadingStates: Record<string, boolean>
 }
 
-type AppAction = 
+type AppAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_LOADING_STATE'; payload: { key: string; loading: boolean } }
@@ -32,7 +32,7 @@ interface AppContextType extends AppState {
 const initialState: AppState = {
   isLoading: false,
   error: null,
-  loadingStates: {}
+  loadingStates: {},
 }
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -48,8 +48,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         loadingStates: {
           ...state.loadingStates,
-          [action.payload.key]: action.payload.loading
-        }
+          [action.payload.key]: action.payload.loading,
+        },
       }
     case 'CLEAR_LOADING_STATE': {
       const { [action.payload]: _removed, ...remaining } = state.loadingStates
@@ -67,27 +67,25 @@ const AppStateContext = createContext<AppContextType | undefined>(undefined)
 export function AppStateProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [state, dispatch] = useReducer(appReducer, initialState)
 
-  const contextValue = useMemo(() => ({
-    ...state,
-    setLoading: (loading: boolean) => dispatch({ type: 'SET_LOADING', payload: loading }),
-    setError: (error: string | null) => dispatch({ type: 'SET_ERROR', payload: error }),
-    clearError: () => dispatch({ type: 'CLEAR_ERROR' }),
-    setLoadingState: (key: string, loading: boolean) => 
-      dispatch({ type: 'SET_LOADING_STATE', payload: { key, loading } }),
-    clearLoadingState: (key: string) => 
-      dispatch({ type: 'CLEAR_LOADING_STATE', payload: key }),
-    clearAllLoading: () => dispatch({ type: 'CLEAR_ALL_LOADING' }),
-    isLoadingState: (key: string) => state.loadingStates[key] || false,
-    showErrorToast: (error: string) => toast.error(error),
-    showSuccessToast: (message: string) => toast.success(message),
-    showInfoToast: (message: string) => toast.info(message)
-  }), [state])
-
-  return (
-    <AppStateContext.Provider value={contextValue}>
-      {children}
-    </AppStateContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      setLoading: (loading: boolean) => dispatch({ type: 'SET_LOADING', payload: loading }),
+      setError: (error: string | null) => dispatch({ type: 'SET_ERROR', payload: error }),
+      clearError: () => dispatch({ type: 'CLEAR_ERROR' }),
+      setLoadingState: (key: string, loading: boolean) =>
+        dispatch({ type: 'SET_LOADING_STATE', payload: { key, loading } }),
+      clearLoadingState: (key: string) => dispatch({ type: 'CLEAR_LOADING_STATE', payload: key }),
+      clearAllLoading: () => dispatch({ type: 'CLEAR_ALL_LOADING' }),
+      isLoadingState: (key: string) => state.loadingStates[key] || false,
+      showErrorToast: (error: string) => toast.error(error),
+      showSuccessToast: (message: string) => toast.success(message),
+      showInfoToast: (message: string) => toast.info(message),
+    }),
+    [state]
   )
+
+  return <AppStateContext.Provider value={contextValue}>{children}</AppStateContext.Provider>
 }
 
 export function useAppState() {
@@ -115,17 +113,17 @@ export function useAsyncOperation() {
     try {
       setLoadingState(loadingKey, true)
       const result = await operation()
-      
+
       if (options?.successMessage) {
         showSuccessToast(options.successMessage)
       }
-      
+
       options?.onSuccess?.(result)
       return result
     } catch (error) {
-      const errorMessage = options?.errorMessage || 
-        (error instanceof Error ? error.message : 'Error desconocido')
-      
+      const errorMessage =
+        options?.errorMessage || (error instanceof Error ? error.message : 'Error desconocido')
+
       showErrorToast(errorMessage)
       options?.onError?.(error instanceof Error ? error : new Error(String(error)))
       return null

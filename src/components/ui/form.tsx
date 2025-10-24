@@ -1,16 +1,16 @@
-import { ComponentProps, useId, useMemo } from "react"
-import * as LabelPrimitive from "@radix-ui/react-label"
-import { Slot } from "@radix-ui/react-slot"
+import { ComponentProps, useId, useMemo } from 'react'
+import * as LabelPrimitive from '@radix-ui/react-label'
+import { Slot } from '@radix-ui/react-slot'
 import {
   Controller,
-  FormProvider,
   type ControllerProps,
   type FieldPath,
   type FieldValues,
-} from "react-hook-form"
+  FormProvider,
+} from 'react-hook-form'
 
-import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
+import { cn } from '@/lib/utils'
+import { Label } from '@/components/ui/label'
 
 const Form = FormProvider
 
@@ -21,7 +21,7 @@ type FormFieldContextValue<
   name: TName
 }
 
-import { useFormField, InternalFormContexts } from "./useFormField"
+import { InternalFormContexts, useFormField } from './useFormField'
 const { FormFieldContext, FormItemContext } = InternalFormContexts as unknown as {
   FormFieldContext: React.Context<FormFieldContextValue>
   FormItemContext: React.Context<{ id: string }>
@@ -45,32 +45,25 @@ const FormField = <
 
 // Provided by InternalFormContexts
 
-function FormItem({ className, ...props }: ComponentProps<"div">) {
+function FormItem({ className, ...props }: ComponentProps<'div'>) {
   const id = useId()
   const value = useMemo(() => ({ id }), [id])
 
   return (
     <FormItemContext.Provider value={value}>
-      <div
-        data-slot="form-item"
-        className={cn("grid gap-2", className)}
-        {...props}
-      />
+      <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
     </FormItemContext.Provider>
   )
 }
 
-function FormLabel({
-  className,
-  ...props
-}: ComponentProps<typeof LabelPrimitive.Root>) {
+function FormLabel({ className, ...props }: ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField()
 
   return (
     <Label
       data-slot="form-label"
       data-error={!!error}
-      className={cn("data-[error=true]:text-destructive", className)}
+      className={cn('data-[error=true]:text-destructive', className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -84,33 +77,29 @@ function FormControl({ ...props }: ComponentProps<typeof Slot>) {
     <Slot
       data-slot="form-control"
       id={formItemId}
-      aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
-      }
+      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
       aria-invalid={!!error}
       {...props}
     />
   )
 }
 
-function FormDescription({ className, ...props }: ComponentProps<"p">) {
+function FormDescription({ className, ...props }: ComponentProps<'p'>) {
   const { formDescriptionId } = useFormField()
 
   return (
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn('text-muted-foreground text-sm', className)}
       {...props}
     />
   )
 }
 
-function FormMessage({ className, ...props }: ComponentProps<"p">) {
+function FormMessage({ className, ...props }: ComponentProps<'p'>) {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : props.children
+  const body = error ? String(error?.message ?? '') : props.children
 
   if (!body) {
     return null
@@ -120,7 +109,7 @@ function FormMessage({ className, ...props }: ComponentProps<"p">) {
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-destructive text-sm", className)}
+      className={cn('text-destructive text-sm', className)}
       {...props}
     >
       {body}
@@ -128,12 +117,4 @@ function FormMessage({ className, ...props }: ComponentProps<"p">) {
   )
 }
 
-export {
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
-}
+export { Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField }

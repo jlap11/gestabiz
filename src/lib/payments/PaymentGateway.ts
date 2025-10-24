@@ -1,20 +1,20 @@
 /**
  * Payment Gateway Interface
- * 
+ *
  * Abstracción de proveedores de pago para separar lógica de negocio
  * de implementación específica (Stripe, Wompi, MercadoPago, etc.)
  */
 
 export type PlanType = 'inicio' | 'profesional' | 'empresarial' | 'corporativo'
 export type BillingCycle = 'monthly' | 'yearly'
-export type SubscriptionStatus = 
-  | 'active' 
-  | 'trialing' 
-  | 'past_due' 
-  | 'canceled' 
-  | 'suspended' 
-  | 'inactive' 
-  | 'expired' 
+export type SubscriptionStatus =
+  | 'active'
+  | 'trialing'
+  | 'past_due'
+  | 'canceled'
+  | 'suspended'
+  | 'inactive'
+  | 'expired'
   | 'paused'
 
 export interface CheckoutSessionParams {
@@ -99,7 +99,7 @@ export interface SubscriptionDashboard {
 
 /**
  * Payment Gateway Interface
- * 
+ *
  * Define el contrato que debe cumplir cualquier proveedor de pago
  */
 export interface IPaymentGateway {
@@ -141,7 +141,10 @@ export interface IPaymentGateway {
   /**
    * Validar si el negocio puede crear un recurso (locations, employees, etc.)
    */
-  validatePlanLimit(businessId: string, resource: string): Promise<{
+  validatePlanLimit(
+    businessId: string,
+    resource: string
+  ): Promise<{
     allowed: boolean
     current: number
     limit: number
@@ -151,7 +154,12 @@ export interface IPaymentGateway {
   /**
    * Aplicar código de descuento
    */
-  applyDiscountCode(businessId: string, code: string, planType: PlanType, amount: number): Promise<{
+  applyDiscountCode(
+    businessId: string,
+    code: string,
+    planType: PlanType,
+    amount: number
+  ): Promise<{
     isValid: boolean
     discountAmount: number
     finalAmount: number

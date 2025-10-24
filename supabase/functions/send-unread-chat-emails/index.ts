@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -22,7 +22,7 @@ interface ClientWithUnreadMessages {
   unread_messages: UnreadMessage[]
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -40,14 +40,16 @@ serve(async (req) => {
 
     const { data: unreadNotifications, error: notifError } = await supabase
       .from('in_app_notifications')
-      .select(`
+      .select(
+        `
         id,
         user_id,
         type,
         status,
         data,
         created_at
-      `)
+      `
+      )
       .eq('type', 'chat_message')
       .eq('status', 'unread')
       .lt('created_at', fifteenMinutesAgo) // Creado hace más de 15 minutos
@@ -61,20 +63,22 @@ serve(async (req) => {
     if (!unreadNotifications || unreadNotifications.length === 0) {
       console.log('[send-unread-chat-emails] ✅ No hay mensajes no leídos > 15 minutos')
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'No unread messages found',
-          emails_sent: 0
+          emails_sent: 0,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`[send-unread-chat-emails] 📊 Found ${unreadNotifications.length} unread notifications`)
+    console.log(
+      `[send-unread-chat-emails] 📊 Found ${unreadNotifications.length} unread notifications`
+    )
 
     // 2. Agrupar por user_id
     const groupedByUser = new Map<string, typeof unreadNotifications>()
-    
+
     for (const notif of unreadNotifications) {
       const userId = notif.user_id
       if (!groupedByUser.has(userId)) {
@@ -119,7 +123,9 @@ serve(async (req) => {
       const isEmployee = employeeLinks && employeeLinks.length > 0
 
       if (isAdmin || isEmployee) {
-        console.log(`[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} es admin/employee, omitiendo`)
+        console.log(
+          `[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} es admin/employee, omitiendo`
+        )
         continue
       }
 
@@ -134,20 +140,24 @@ serve(async (req) => {
 
       // Si tiene email_enabled = false, omitir
       if (preferences && !preferences.email_enabled) {
-        console.log(`[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} deshabilitó todos los emails`)
+        console.log(
+          `[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} deshabilitó todos los emails`
+        )
         continue
       }
 
       // Si tiene preferencia específica para chat_message con email = false, respetar
       const chatEmailPref = preferences?.notification_preferences?.chat_message?.email
       if (chatEmailPref === false) {
-        console.log(`[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} deshabilitó emails de chat`)
+        console.log(
+          `[send-unread-chat-emails] ⏭️ Usuario ${profile.full_name} deshabilitó emails de chat`
+        )
         continue
       }
 
       // Procesar notificaciones para extraer info de mensajes
       const unreadMessages: UnreadMessage[] = []
-      
+
       for (const notif of notifications) {
         const data = notif.data as any
         unreadMessages.push({
@@ -156,7 +166,7 @@ serve(async (req) => {
           sender_email: data.sender_email || '',
           message_content: notif.data?.message || data.message_preview || 'Nuevo mensaje',
           message_sent_at: notif.created_at,
-          unread_count: 1
+          unread_count: 1,
         })
       }
 
@@ -179,23 +189,25 @@ serve(async (req) => {
         user_id: userId,
         email: profile.email,
         full_name: profile.full_name || 'Usuario',
-        unread_messages: Array.from(groupedByConversation.values())
+        unread_messages: Array.from(groupedByConversation.values()),
       })
     }
 
     if (clientsToNotify.length === 0) {
       console.log('[send-unread-chat-emails] ✅ No hay clientes para notificar')
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'No clients to notify',
-          emails_sent: 0
+          emails_sent: 0,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`[send-unread-chat-emails] 📧 Enviando emails a ${clientsToNotify.length} clientes...`)
+    console.log(
+      `[send-unread-chat-emails] 📧 Enviando emails a ${clientsToNotify.length} clientes...`
+    )
 
     // 4. Enviar emails
     const emailResults = []
@@ -203,10 +215,10 @@ serve(async (req) => {
     for (const client of clientsToNotify) {
       try {
         const totalUnread = client.unread_messages.reduce((sum, msg) => sum + msg.unread_count, 0)
-        
+
         // Preparar HTML del email
         const emailHtml = generateEmailHtml(client.full_name, client.unread_messages, totalUnread)
-        
+
         // Enviar email usando send-notification edge function
         const { error: sendError } = await supabase.functions.invoke('send-notification', {
           body: {
@@ -217,61 +229,65 @@ serve(async (req) => {
             data: {
               unread_count: totalUnread,
               conversations: client.unread_messages.length,
-              preview: client.unread_messages[0].message_content
+              preview: client.unread_messages[0].message_content,
             },
             force_channels: ['email'],
             skip_preferences: false,
             action_url: `${Deno.env.get('APP_URL') || 'https://appointsync.app'}/chat`,
-            priority: 0
-          }
+            priority: 0,
+          },
         })
 
         if (sendError) {
-          console.error(`[send-unread-chat-emails] ❌ Error enviando email a ${client.email}:`, sendError)
+          console.error(
+            `[send-unread-chat-emails] ❌ Error enviando email a ${client.email}:`,
+            sendError
+          )
           emailResults.push({
             email: client.email,
             success: false,
-            error: sendError.message
+            error: sendError.message,
           })
         } else {
           console.log(`[send-unread-chat-emails] ✅ Email enviado a ${client.email}`)
-          
+
           // Marcar notificaciones como "email_sent" en data
           const notificationIds = unreadNotifications
             .filter(n => n.user_id === client.user_id)
             .map(n => n.id)
-          
+
           await supabase
             .from('in_app_notifications')
-            .update({ 
-              data: { 
+            .update({
+              data: {
                 ...client.unread_messages[0],
-                email_reminder_sent: true, 
-                email_sent_at: new Date().toISOString() 
-              }
+                email_reminder_sent: true,
+                email_sent_at: new Date().toISOString(),
+              },
             })
             .in('id', notificationIds)
 
           emailResults.push({
             email: client.email,
             success: true,
-            unread_count: totalUnread
+            unread_count: totalUnread,
           })
         }
-
       } catch (err: any) {
         console.error(`[send-unread-chat-emails] ❌ Error procesando cliente ${client.email}:`, err)
         emailResults.push({
           email: client.email,
           success: false,
-          error: err.message
+          error: err.message,
         })
       }
     }
 
     const successCount = emailResults.filter(r => r.success).length
 
-    console.log(`[send-unread-chat-emails] 🎉 Completado: ${successCount}/${clientsToNotify.length} emails enviados`)
+    console.log(
+      `[send-unread-chat-emails] 🎉 Completado: ${successCount}/${clientsToNotify.length} emails enviados`
+    )
 
     return new Response(
       JSON.stringify({
@@ -279,20 +295,16 @@ serve(async (req) => {
         message: `Sent ${successCount} emails`,
         emails_sent: successCount,
         total_clients: clientsToNotify.length,
-        results: emailResults
+        results: emailResults,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-
   } catch (error: any) {
     console.error('[send-unread-chat-emails] ❌ Error general:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })
 
@@ -300,13 +312,15 @@ serve(async (req) => {
  * Genera HTML del email con mensajes no leídos
  */
 function generateEmailHtml(
-  userName: string, 
-  messages: UnreadMessage[], 
+  userName: string,
+  messages: UnreadMessage[],
   totalUnread: number
 ): string {
   const appUrl = Deno.env.get('APP_URL') || 'https://appointsync.app'
-  
-  const messagesHtml = messages.map(msg => `
+
+  const messagesHtml = messages
+    .map(
+      msg => `
     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #0066cc;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <strong style="color: #0066cc; font-size: 16px;">${msg.sender_name}</strong>
@@ -315,14 +329,16 @@ function generateEmailHtml(
       <p style="color: #495057; margin: 8px 0; line-height: 1.5;">
         "${msg.message_content.substring(0, 150)}${msg.message_content.length > 150 ? '...' : ''}"
       </p>
-      <small style="color: #6c757d;">${new Date(msg.message_sent_at).toLocaleString('es-ES', { 
-        day: 'numeric', 
-        month: 'short', 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      <small style="color: #6c757d;">${new Date(msg.message_sent_at).toLocaleString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
       })}</small>
     </div>
-  `).join('')
+  `
+    )
+    .join('')
 
   return `
     <!DOCTYPE html>

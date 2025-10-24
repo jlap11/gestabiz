@@ -1,11 +1,11 @@
 /**
  * ReadReceipts Component - Indicadores de Estado de Lectura
- * 
+ *
  * Muestra checkmarks para indicar el estado de un mensaje:
  * - ✓ Enviado (gris)
  * - ✓✓ Entregado (gris)
  * - ✓✓ Leído (azul)
- * 
+ *
  * @author Gestabiz Team
  * @version 1.0.0
  * @date 2025-10-15
@@ -37,7 +37,7 @@ export function ReadReceipts({
   readBy,
   deliveredAt,
   sentAt,
-  size = 'sm'
+  size = 'sm',
 }: Readonly<ReadReceiptsProps>) {
   const { t } = useLanguage()
   // Solo mostrar receipts para mensajes propios
@@ -47,21 +47,27 @@ export function ReadReceipts({
 
   // Verificar si el mensaje ha sido leído por al menos un usuario
   const isRead = readBy.some(r => r.user_id !== currentUserId)
-  
+
   // Verificar si el mensaje ha sido entregado
   const isDelivered = deliveredAt !== null && deliveredAt !== undefined
 
   // Determinar tamaño del icono
   const iconSize = size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5'
-  
+
   return (
-    <div className="flex items-center gap-0.5" title={getTooltipText(isRead, isDelivered, sentAt, deliveredAt)}>
+    <div
+      className="flex items-center gap-0.5"
+      title={getTooltipText(isRead, isDelivered, sentAt, deliveredAt)}
+    >
       {isRead ? (
         // Leído - Doble check usando el color secundario para mayor contraste
         <CheckCheck className={cn(iconSize, 'text-[var(--color-secondary)]')} strokeWidth={2.5} />
       ) : isDelivered ? (
         // Entregado - Doble check gris oscuro (bien visible)
-        <CheckCheck className={cn(iconSize, 'text-gray-600 dark:text-gray-300')} strokeWidth={2.5} />
+        <CheckCheck
+          className={cn(iconSize, 'text-gray-600 dark:text-gray-300')}
+          strokeWidth={2.5}
+        />
       ) : (
         // Enviado - Single check gris medio (visible)
         <Check className={cn(iconSize, 'text-gray-500 dark:text-gray-400')} strokeWidth={2.5} />
@@ -83,15 +89,17 @@ function getTooltipText(
     return 'Leído'
   }
   if (isDelivered) {
-    const deliveredTime = deliveredAt ? new Date(deliveredAt).toLocaleTimeString('es', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    }) : ''
+    const deliveredTime = deliveredAt
+      ? new Date(deliveredAt).toLocaleTimeString('es', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : ''
     return `Entregado${deliveredTime ? ` a las ${deliveredTime}` : ''}`
   }
-  const sentTime = new Date(sentAt).toLocaleTimeString('es', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const sentTime = new Date(sentAt).toLocaleTimeString('es', {
+    hour: '2-digit',
+    minute: '2-digit',
   })
   return `Enviado a las ${sentTime}`
 }

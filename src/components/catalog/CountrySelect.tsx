@@ -2,28 +2,28 @@
  * Componente Select para Países con búsqueda integrada
  * Por defecto deshabilitado y apuntando a Colombia
  */
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { useCountries } from '@/hooks/useCatalogs';
-import { Search } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { useCountries } from '@/hooks/useCatalogs'
+import { Search } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface CountrySelectProps {
-  value?: string;
-  onChange?: (value: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  error?: string;
-  required?: boolean;
-  className?: string;
-  defaultToColombia?: boolean;
+  value?: string
+  onChange?: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  error?: string
+  required?: boolean
+  className?: string
+  defaultToColombia?: boolean
 }
 
 export function CountrySelect({
@@ -37,47 +37,41 @@ export function CountrySelect({
   defaultToColombia = true,
 }: CountrySelectProps) {
   const { t } = useLanguage()
-  const { countries, loading } = useCountries();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { countries, loading } = useCountries()
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Auto-seleccionar Colombia al cargar
   const colombiaCountry = useMemo(() => {
-    return countries.find(c => c.code === 'CO');
-  }, [countries]);
+    return countries.find(c => c.code === 'CO')
+  }, [countries])
 
   // Si defaultToColombia está activo y no hay valor, usar Colombia
   if (defaultToColombia && !value && colombiaCountry && onChange) {
-    onChange(colombiaCountry.id);
+    onChange(colombiaCountry.id)
   }
 
   // Filtrar países según búsqueda
   const filteredCountries = useMemo(() => {
-    if (!searchTerm.trim()) return countries;
+    if (!searchTerm.trim()) return countries
 
-    const search = searchTerm.toLowerCase();
+    const search = searchTerm.toLowerCase()
     return countries.filter(
       country =>
-        country.name.toLowerCase().includes(search) ||
-        country.code.toLowerCase().includes(search)
-    );
-  }, [countries, searchTerm]);
+        country.name.toLowerCase().includes(search) || country.code.toLowerCase().includes(search)
+    )
+  }, [countries, searchTerm])
 
   if (loading) {
     return (
       <div className="flex items-center gap-2 h-10 px-3 border border-border rounded-md bg-muted">
         <span className="text-sm text-muted-foreground">Cargando países...</span>
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-1">
-      <Select
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled}
-        required={required}
-      >
+      <Select value={value} onValueChange={onChange} disabled={disabled} required={required}>
         <SelectTrigger className={className}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -112,5 +106,5 @@ export function CountrySelect({
 
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
-  );
+  )
 }

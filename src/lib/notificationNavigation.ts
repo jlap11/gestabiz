@@ -34,7 +34,7 @@ function handleJobApplicationNavigation(
     destination: 'internal',
     path: vacancyId ? `/mis-empleos/vacante/${vacancyId}` : '/mis-empleos',
     modalType: 'vacancy_applications',
-    modalProps: vacancyId ? { vacancyId } : {}
+    modalProps: vacancyId ? { vacancyId } : {},
   }
 }
 
@@ -49,22 +49,20 @@ function handleAppointmentNavigation(
     destination: 'internal',
     path: appointmentId ? `/citas/${appointmentId}` : '/citas',
     modalType: 'appointment',
-    modalProps: appointmentId ? { appointmentId } : {}
+    modalProps: appointmentId ? { appointmentId } : {},
   }
 }
 
 /**
  * Maneja notificaciones de chat
  */
-function handleChatNavigation(
-  data: InAppNotification['data']
-): NotificationNavigationConfig {
+function handleChatNavigation(data: InAppNotification['data']): NotificationNavigationConfig {
   const conversationId = getDataId(data, 'conversation_id')
   return {
     destination: 'internal',
     path: conversationId ? `/chat/${conversationId}` : '/chat',
     modalType: 'chat',
-    modalProps: conversationId ? { conversationId } : {}
+    modalProps: conversationId ? { conversationId } : {},
   }
 }
 
@@ -79,22 +77,20 @@ function handleEmployeeRequestNavigation(
     destination: 'internal',
     path: requestId ? `/admin/empleados/solicitudes/${requestId}` : '/admin/empleados',
     modalType: 'employee_request',
-    modalProps: requestId ? { requestId } : {}
+    modalProps: requestId ? { requestId } : {},
   }
 }
 
 /**
  * Maneja notificaciones de reseñas
  */
-function handleReviewsNavigation(
-  data: InAppNotification['data']
-): NotificationNavigationConfig {
+function handleReviewsNavigation(data: InAppNotification['data']): NotificationNavigationConfig {
   const businessId = getDataId(data, 'business_id')
   return {
     destination: 'internal',
     path: businessId ? `/negocio/${businessId}/resenas` : '/negocios',
     modalType: 'reviews',
-    modalProps: businessId ? { businessId } : {}
+    modalProps: businessId ? { businessId } : {},
   }
 }
 
@@ -109,7 +105,7 @@ function handleAbsenceRequestNavigation(
     destination: 'internal',
     path: '/admin',
     modalType: 'absence_approval',
-    modalProps: absenceId ? { absenceId } : {}
+    modalProps: absenceId ? { absenceId } : {},
   }
 }
 
@@ -159,13 +155,13 @@ export function getNotificationNavigation(
   if (type?.startsWith('system_') && action_url) {
     return {
       destination: 'external',
-      path: action_url
+      path: action_url,
     }
   }
 
   // Default: sin navegación
   return {
-    destination: 'none'
+    destination: 'none',
   }
 }
 
@@ -214,42 +210,42 @@ export function handleNotificationNavigation(
 export function getNotificationTypeLabel(type: string): string {
   const labels: Record<string, string> = {
     // Aplicaciones
-    'job_application_new': 'Nueva aplicación',
-    'job_application_received': 'Aplicación recibida',
-    'job_application_accepted': 'Aplicación aceptada',
-    'job_application_rejected': 'Aplicación rechazada',
-    
+    job_application_new: 'Nueva aplicación',
+    job_application_received: 'Aplicación recibida',
+    job_application_accepted: 'Aplicación aceptada',
+    job_application_rejected: 'Aplicación rechazada',
+
     // Citas
-    'appointment_created': 'Cita creada',
-    'appointment_confirmed': 'Cita confirmada',
-    'appointment_cancelled': 'Cita cancelada',
-    'appointment_rescheduled': 'Cita reprogramada',
-    'appointment_reminder': 'Recordatorio de cita',
-    'reminder_24h': 'Recordatorio (24h)',
-    'reminder_1h': 'Recordatorio (1h)',
-    'reminder_15m': 'Recordatorio (15m)',
-    
+    appointment_created: 'Cita creada',
+    appointment_confirmed: 'Cita confirmada',
+    appointment_cancelled: 'Cita cancelada',
+    appointment_rescheduled: 'Cita reprogramada',
+    appointment_reminder: 'Recordatorio de cita',
+    reminder_24h: 'Recordatorio (24h)',
+    reminder_1h: 'Recordatorio (1h)',
+    reminder_15m: 'Recordatorio (15m)',
+
     // Chat
-    'chat_message': 'Nuevo mensaje',
-    'chat_message_received': 'Mensaje recibido',
-    
+    chat_message: 'Nuevo mensaje',
+    chat_message_received: 'Mensaje recibido',
+
     // Empleados
-    'employee_request_new': 'Nueva solicitud de empleado',
-    'employee_request_pending': 'Solicitud pendiente',
-    'employee_request_approved': 'Solicitud aprobada',
-    'employee_request_rejected': 'Solicitud rechazada',
-    
+    employee_request_new: 'Nueva solicitud de empleado',
+    employee_request_pending: 'Solicitud pendiente',
+    employee_request_approved: 'Solicitud aprobada',
+    employee_request_rejected: 'Solicitud rechazada',
+
     // Ausencias
-    'absence_request': 'Nueva solicitud de ausencia',
-    
+    absence_request: 'Nueva solicitud de ausencia',
+
     // Reseñas
-    'review_received': 'Nueva reseña',
-    'review_response_received': 'Respuesta a reseña',
-    
+    review_received: 'Nueva reseña',
+    review_response_received: 'Respuesta a reseña',
+
     // Sistema
-    'system_announcement': 'Anuncio del sistema',
-    'system_update': 'Actualización disponible',
-    'system_maintenance': 'Mantenimiento programado'
+    system_announcement: 'Anuncio del sistema',
+    system_update: 'Actualización disponible',
+    system_maintenance: 'Mantenimiento programado',
   }
 
   return labels[type] || type

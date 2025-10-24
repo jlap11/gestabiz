@@ -1,5 +1,19 @@
-import React, { useState, useEffect } from 'react'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff, Box } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import {
+  Box,
+  Briefcase,
+  BriefcaseBusiness,
+  Calculator,
+  Calendar,
+  CalendarOff,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  MapPin,
+  Shield,
+  ShoppingCart,
+  Users,
+} from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
@@ -19,7 +33,7 @@ import { AbsencesTab } from './AbsencesTab'
 import { ResourcesManager } from './ResourcesManager'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
-import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
+import type { Business, EmployeeHierarchy, User, UserRole } from '@/types/types'
 
 interface AdminDashboardProps {
   business: Business
@@ -34,17 +48,17 @@ interface AdminDashboardProps {
   user: User // Cambiar de opcional a requerido y usar tipo User completo
 }
 
-export function AdminDashboard({ 
-  business, 
-  businesses, 
-  onSelectBusiness, 
-  onCreateNew, 
+export function AdminDashboard({
+  business,
+  businesses,
+  onSelectBusiness,
+  onCreateNew,
   onUpdate,
   onLogout,
   currentRole,
   availableRoles,
   onRoleChange,
-  user
+  user,
 }: Readonly<AdminDashboardProps>) {
   const { t } = useLanguage()
   const [activePage, setActivePage] = useState('overview')
@@ -52,21 +66,21 @@ export function AdminDashboard({
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
   const [pageContext, setPageContext] = useState<Record<string, unknown>>({})
   const [chatConversationId, setChatConversationId] = useState<string | null>(null)
-  
+
   // Hooks para sede preferida y ubicaciones
   const { preferredLocationId, setPreferredLocation } = usePreferredLocation(business.id)
   const { locations, fetchLocations } = useSupabaseData({ user, autoFetch: false })
-  
+
   // Estado para nombre de la sede
   const [preferredLocationName, setPreferredLocationName] = useState<string | null>(null)
-  
+
   // Cargar ubicaciones y obtener nombre de la sede preferida
   useEffect(() => {
     if (business.id) {
       fetchLocations(business.id)
     }
   }, [business.id, fetchLocations])
-  
+
   useEffect(() => {
     if (preferredLocationId && locations.length > 0) {
       const location = locations.find(l => l.id === preferredLocationId)
@@ -119,69 +133,73 @@ export function AdminDashboard({
     {
       id: 'overview',
       label: t('adminDashboard.sidebar.overview'),
-      icon: <LayoutDashboard className="h-5 w-5" />
+      icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
       id: 'appointments',
       label: t('adminDashboard.sidebar.appointments'),
-      icon: <Calendar className="h-5 w-5" />
+      icon: <Calendar className="h-5 w-5" />,
     },
     {
       id: 'absences',
       label: t('adminDashboard.sidebar.absences'),
-      icon: <CalendarOff className="h-5 w-5" />
+      icon: <CalendarOff className="h-5 w-5" />,
     },
     {
       id: 'locations',
       label: t('adminDashboard.sidebar.locations'),
-      icon: <MapPin className="h-5 w-5" />
+      icon: <MapPin className="h-5 w-5" />,
     },
     {
       id: 'services',
       label: t('adminDashboard.sidebar.services'),
-      icon: <Briefcase className="h-5 w-5" />
+      icon: <Briefcase className="h-5 w-5" />,
     },
     // Tab de recursos (solo para negocios con recursos físicos)
-    ...(showResourcesTab ? [{
-      id: 'resources',
-      label: t('adminDashboard.sidebar.resources'),
-      icon: <Box className="h-5 w-5" />
-    }] : []),
+    ...(showResourcesTab
+      ? [
+          {
+            id: 'resources',
+            label: t('adminDashboard.sidebar.resources'),
+            icon: <Box className="h-5 w-5" />,
+          },
+        ]
+      : []),
     {
       id: 'employees',
       label: t('adminDashboard.sidebar.employees'),
-      icon: <Users className="h-5 w-5" />
+      icon: <Users className="h-5 w-5" />,
     },
     {
       id: 'recruitment',
       label: t('adminDashboard.sidebar.recruitment'),
-      icon: <BriefcaseBusiness className="h-5 w-5" />
+      icon: <BriefcaseBusiness className="h-5 w-5" />,
     },
     {
       id: 'quick-sales',
       label: t('adminDashboard.sidebar.quickSales'),
-      icon: <ShoppingCart className="h-5 w-5" />
+      icon: <ShoppingCart className="h-5 w-5" />,
     },
     {
       id: 'accounting',
       label: t('adminDashboard.sidebar.accounting'),
-      icon: <Calculator className="h-5 w-5" />
+      icon: <Calculator className="h-5 w-5" />,
     },
     {
       id: 'reports',
       label: t('adminDashboard.sidebar.reports'),
-      icon: <FileText className="h-5 w-5" />
+      icon: <FileText className="h-5 w-5" />,
     },
     {
       id: 'billing',
       label: t('adminDashboard.sidebar.billing'),
-      icon: <CreditCard className="h-5 w-5" />
+      icon: <CreditCard className="h-5 w-5" />,
     },
     {
       id: 'permissions',
       label: t('adminDashboard.sidebar.permissions'),
-      icon: <Shield className="h-5 w-5" />
-    }
+      icon: <Shield className="h-5 w-5" />,
+    },
   ]
 
   const renderContent = () => {
@@ -201,7 +219,7 @@ export function AdminDashboard({
       case 'employees':
         return (
           <>
-            <EmployeeManagementHierarchy 
+            <EmployeeManagementHierarchy
               businessId={business.id}
               onEmployeeSelect={(employee: EmployeeHierarchy) => {
                 setSelectedEmployee(employee)
@@ -216,8 +234,8 @@ export function AdminDashboard({
         )
       case 'recruitment':
         return (
-          <RecruitmentDashboard 
-            businessId={business.id} 
+          <RecruitmentDashboard
+            businessId={business.id}
             highlightedVacancyId={pageContext.vacancyId as string | undefined}
             onChatStarted={setChatConversationId}
           />
@@ -232,7 +250,7 @@ export function AdminDashboard({
         return <BillingDashboard businessId={business.id} />
       case 'permissions':
         return (
-          <PermissionsManager 
+          <PermissionsManager
             businessId={business.id}
             ownerId={business.owner_id}
             currentUserId={currentUser.id}
@@ -242,9 +260,9 @@ export function AdminDashboard({
       case 'profile':
         return (
           <div className="p-6">
-            <CompleteUnifiedSettings 
-              user={currentUser} 
-              onUserUpdate={(updatedUser) => {
+            <CompleteUnifiedSettings
+              user={currentUser}
+              onUserUpdate={updatedUser => {
                 setCurrentUser(updatedUser)
                 onUpdate?.()
               }}
@@ -277,16 +295,18 @@ export function AdminDashboard({
       availableLocations={locations.map(l => ({ id: l.id, name: l.name }))}
       chatConversationId={chatConversationId}
       onChatClose={() => setChatConversationId(null)}
-      user={currentUser ? {
-        id: currentUser.id,
-        name: currentUser.name,
-        email: currentUser.email,
-        avatar: currentUser.avatar_url
-      } : undefined}
+      user={
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              email: currentUser.email,
+              avatar: currentUser.avatar_url,
+            }
+          : undefined
+      }
     >
-      <div className="p-6">
-        {renderContent()}
-      </div>
+      <div className="p-6">{renderContent()}</div>
     </UnifiedLayout>
   )
 }

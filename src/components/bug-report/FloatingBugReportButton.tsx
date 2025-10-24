@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AlertCircle, X } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BugReportModal } from './BugReportModal'
 import { cn } from '@/lib/utils'
@@ -38,18 +38,17 @@ export function FloatingBugReportButton({ className }: FloatingBugReportButtonPr
         >
           {/* Icon Container */}
           <div className="relative flex items-center gap-2">
-            <AlertCircle 
-              className={cn(
-                'h-6 w-6 transition-transform duration-300',
-                isHovered && 'scale-110'
-              )} 
+            <AlertCircle
+              className={cn('h-6 w-6 transition-transform duration-300', isHovered && 'scale-110')}
             />
-            
+
             {/* Text Label - aparece en hover */}
             <span
               className={cn(
                 'font-semibold text-sm whitespace-nowrap transition-all duration-300',
-                isHovered ? 'opacity-100 w-auto max-w-[200px]' : 'opacity-0 w-0 max-w-0 overflow-hidden'
+                isHovered
+                  ? 'opacity-100 w-auto max-w-[200px]'
+                  : 'opacity-0 w-0 max-w-0 overflow-hidden'
               )}
             >
               Reportar Problema
@@ -90,10 +89,7 @@ export function FloatingBugReportButton({ className }: FloatingBugReportButtonPr
       </div>
 
       {/* Bug Report Modal */}
-      <BugReportModal 
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      />
+      <BugReportModal open={isOpen} onOpenChange={setIsOpen} />
     </>
   )
 }

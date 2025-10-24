@@ -1,11 +1,11 @@
 /**
  * BillingDashboard Component
- * 
+ *
  * Dashboard principal de facturación con resumen de suscripción,
  * uso del plan, métodos de pago e historial de pagos
  */
 
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,21 +13,21 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  CreditCard, 
-  Calendar, 
-  TrendingUp, 
+import {
   AlertCircle,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Download,
   ArrowLeft,
+  Calendar,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Download,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react'
 import { PlanUpgradeModal } from './PlanUpgradeModal'
 import { CancelSubscriptionModal } from './CancelSubscriptionModal'
 import { AddPaymentMethodModal } from './AddPaymentMethodModal'
-import { PricingPage } from '@/pages/PricingPage'
+const PricingPageLazy = lazy(() => import('@/pages/PricingPage').then(m => ({ default: m.PricingPage })))
 import type { SubscriptionStatus } from '@/lib/payments/PaymentGateway'
 
 interface BillingDashboardProps {
@@ -54,18 +54,21 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
   if (showPricingPage) {
     return (
       <div className="space-y-4">
-        <Button 
-          variant="ghost" 
-          onClick={() => setShowPricingPage(false)}
-          className="mb-4"
-        >
+        <Button variant="ghost" onClick={() => setShowPricingPage(false)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver al Dashboard
         </Button>
-        <PricingPage businessId={businessId} onClose={() => setShowPricingPage(false)} />
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }>
+          <PricingPageLazy businessId={businessId} onClose={() => setShowPricingPage(false)} />
+        </Suspense>
       </div>
     )
   }
+
 
   if (!dashboard?.subscription) {
     return (
@@ -76,9 +79,7 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
               <CheckCircle className="h-5 w-5 text-green-500" />
               {t('billing.freePlan')}
             </CardTitle>
-            <CardDescription>
-              {t('billing.freeplanDescription')}
-            </CardDescription>
+            <CardDescription>{t('billing.freeplanDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -93,12 +94,10 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
                   Hasta 3 citas por mes
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  1 empleado
+                  <CheckCircle className="h-4 w-4 text-green-500" />1 empleado
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  1 servicio
+                  <CheckCircle className="h-4 w-4 text-green-500" />1 servicio
                 </li>
               </ul>
             </div>
@@ -160,7 +159,9 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           <CardContent>
             <div className="text-2xl font-bold capitalize">{subscription.planType}</div>
             <p className="text-xs text-muted-foreground">
-              {subscription.billingCycle === 'monthly' ? t('billing.billingMonthly') : t('billing.billingAnnual')}
+              {subscription.billingCycle === 'monthly'
+                ? t('billing.billingMonthly')
+                : t('billing.billingAnnual')}
             </p>
             <div className="mt-2">{getStatusBadge(subscription.status)}</div>
           </CardContent>
@@ -199,9 +200,9 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
             ) : (
               <>
                 <div className="text-sm text-muted-foreground">Sin método de pago</div>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   className="mt-2"
                   onClick={() => setShowAddPaymentModal(true)}
                 >
@@ -224,8 +225,8 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           </CardHeader>
           <CardContent>
             <p className="text-sm">
-              Tu período de prueba termina el {formatDate(subscription.trialEndsAt)}.
-              Agrega un método de pago para continuar usando el servicio.
+              Tu período de prueba termina el {formatDate(subscription.trialEndsAt)}. Agrega un
+              método de pago para continuar usando el servicio.
             </p>
           </CardContent>
         </Card>
@@ -241,12 +242,12 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           </CardHeader>
           <CardContent>
             <p className="text-sm">
-              Tu último pago falló. Por favor actualiza tu método de pago para evitar
-              la suspensión del servicio.
+              Tu último pago falló. Por favor actualiza tu método de pago para evitar la suspensión
+              del servicio.
             </p>
-            <Button 
-              size="sm" 
-              variant="default" 
+            <Button
+              size="sm"
+              variant="default"
               className="mt-2"
               onClick={() => setShowAddPaymentModal(true)}
             >
@@ -266,12 +267,12 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           </CardHeader>
           <CardContent>
             <p className="text-sm">
-              Tu suscripción se cancelará el {formatDate(subscription.currentPeriodEnd)}.
-              Podrás seguir usando el servicio hasta esa fecha.
+              Tu suscripción se cancelará el {formatDate(subscription.currentPeriodEnd)}. Podrás
+              seguir usando el servicio hasta esa fecha.
             </p>
-            <Button 
-              size="sm" 
-              variant="default" 
+            <Button
+              size="sm"
+              variant="default"
               className="mt-2"
               onClick={() => {
                 // Reactivar suscripción
@@ -296,45 +297,42 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           <Card>
             <CardHeader>
               <CardTitle>{t('billing.usageMetrics')}</CardTitle>
-              <CardDescription>
-                {t('billing.monitorUsage')}
-              </CardDescription>
+              <CardDescription>{t('billing.monitorUsage')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {usageMetrics && Object.entries(usageMetrics).map(([key, value]) => {
-                const percentage = (value.current / value.limit) * 100
-                const isNearLimit = percentage >= 80
+              {usageMetrics &&
+                Object.entries(usageMetrics).map(([key, value]) => {
+                  const percentage = (value.current / value.limit) * 100
+                  const isNearLimit = percentage >= 80
 
-                return (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="capitalize font-medium">
-                        {key === 'locations' ? 'Sedes' : 
-                         key === 'employees' ? 'Empleados' :
-                         key === 'appointments' ? 'Citas' :
-                         key === 'clients' ? 'Clientes' :
-                         key === 'services' ? 'Servicios' : key}
-                      </span>
-                      <span className={isNearLimit ? 'text-yellow-600 font-semibold' : ''}>
-                        {value.current} / {value.limit}
-                      </span>
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="capitalize font-medium">
+                          {key === 'locations'
+                            ? 'Sedes'
+                            : key === 'employees'
+                              ? 'Empleados'
+                              : key === 'appointments'
+                                ? 'Citas'
+                                : key === 'clients'
+                                  ? 'Clientes'
+                                  : key === 'services'
+                                    ? 'Servicios'
+                                    : key}
+                        </span>
+                        <span className={isNearLimit ? 'text-yellow-600 font-semibold' : ''}>
+                          {value.current} / {value.limit}
+                        </span>
+                      </div>
+                      <Progress value={percentage} className={isNearLimit ? 'bg-yellow-100' : ''} />
                     </div>
-                    <Progress 
-                      value={percentage} 
-                      className={isNearLimit ? 'bg-yellow-100' : ''}
-                    />
-                  </div>
-                )
-              })}
+                  )
+                })}
 
               <div className="pt-4 space-x-2">
-                <Button onClick={() => setShowUpgradeModal(true)}>
-                  Actualizar Plan
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowCancelModal(true)}
-                >
+                <Button onClick={() => setShowUpgradeModal(true)}>Actualizar Plan</Button>
+                <Button variant="outline" onClick={() => setShowCancelModal(true)}>
                   Cancelar Suscripción
                 </Button>
               </div>
@@ -347,15 +345,13 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           <Card>
             <CardHeader>
               <CardTitle>Historial de Pagos</CardTitle>
-              <CardDescription>
-                Todos tus pagos y transacciones
-              </CardDescription>
+              <CardDescription>Todos tus pagos y transacciones</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentPayments.map((payment) => (
-                  <div 
-                    key={payment.id} 
+                {recentPayments.map(payment => (
+                  <div
+                    key={payment.id}
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div className="flex items-center gap-4">
@@ -367,33 +363,36 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
                         <Clock className="h-5 w-5 text-yellow-500" />
                       )}
                       <div>
-                        <p className="font-medium">
-                          {formatCurrency(payment.amount)}
-                        </p>
+                        <p className="font-medium">{formatCurrency(payment.amount)}</p>
                         <p className="text-sm text-muted-foreground">
                           {payment.paidAt ? formatDate(payment.paidAt) : 'Pendiente'}
                         </p>
                         {payment.failureReason && (
-                          <p className="text-sm text-red-500">
-                            {payment.failureReason}
-                          </p>
+                          <p className="text-sm text-red-500">{payment.failureReason}</p>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={
-                        payment.status === 'completed' ? 'default' :
-                        payment.status === 'failed' ? 'destructive' :
-                        'secondary'
-                      }>
-                        {payment.status === 'completed' ? 'Completado' :
-                         payment.status === 'failed' ? 'Fallido' :
-                         payment.status === 'refunded' ? 'Reembolsado' :
-                         'Pendiente'}
+                      <Badge
+                        variant={
+                          payment.status === 'completed'
+                            ? 'default'
+                            : payment.status === 'failed'
+                              ? 'destructive'
+                              : 'secondary'
+                        }
+                      >
+                        {payment.status === 'completed'
+                          ? 'Completado'
+                          : payment.status === 'failed'
+                            ? 'Fallido'
+                            : payment.status === 'refunded'
+                              ? 'Reembolsado'
+                              : 'Pendiente'}
                       </Badge>
                       {payment.invoiceUrl && (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={() => window.open(payment.invoiceUrl, '_blank')}
                         >
@@ -405,9 +404,7 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
                 ))}
 
                 {recentPayments.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
-                    No hay pagos registrados
-                  </p>
+                  <p className="text-center text-muted-foreground py-8">No hay pagos registrados</p>
                 )}
               </div>
             </CardContent>
@@ -419,13 +416,11 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           <Card>
             <CardHeader>
               <CardTitle>Métodos de Pago</CardTitle>
-              <CardDescription>
-                Administra tus tarjetas guardadas
-              </CardDescription>
+              <CardDescription>Administra tus tarjetas guardadas</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {paymentMethods.map((method) => (
-                <div 
+              {paymentMethods.map(method => (
+                <div
                   key={method.id}
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
@@ -440,14 +435,12 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
                       </p>
                     </div>
                   </div>
-                  {method.isActive && (
-                    <Badge variant="default">Predeterminada</Badge>
-                  )}
+                  {method.isActive && <Badge variant="default">Predeterminada</Badge>}
                 </div>
               ))}
 
               <Button
-                variant="outline" 
+                variant="outline"
                 className="w-full"
                 onClick={() => setShowAddPaymentModal(true)}
               >

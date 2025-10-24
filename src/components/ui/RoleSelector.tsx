@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Briefcase, Users, ShoppingCart } from 'lucide-react'
+import { Briefcase, ChevronDown, ShoppingCart, Users } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { UserRole, UserRoleAssignment } from '@/types/types'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 
 interface RoleSelectorProps {
   roles: UserRoleAssignment[]
@@ -57,22 +58,37 @@ export function RoleSelector({
   const employeeRoles = roles.filter(r => r.role === 'employee')
   const clientRoles = roles.filter(r => r.role === 'client')
 
-  console.log('[RoleSelector] Render - roles:', roles)
-  console.log('[RoleSelector] Render - activeRole:', activeRole)
-  console.log('[RoleSelector] Render - adminRoles:', adminRoles.length, 'employeeRoles:', employeeRoles.length, 'clientRoles:', clientRoles.length)
+  void logger.info('[RoleSelector] Render - roles', { component: 'RoleSelector', roles })
+  void logger.info('[RoleSelector] Render - activeRole', { component: 'RoleSelector', activeRole })
+  void logger.info('[RoleSelector] Render - counts', {
+    component: 'RoleSelector',
+    adminCount: adminRoles.length,
+    employeeCount: employeeRoles.length,
+    clientCount: clientRoles.length,
+  })
 
   const handleRoleSelect = (roleAssignment: UserRoleAssignment) => {
-    console.log('[RoleSelector] handleRoleSelect called with:', roleAssignment)
-    console.log('[RoleSelector] Calling onRoleChange with:', roleAssignment.role, roleAssignment.business_id || undefined)
+    void logger.info('[RoleSelector] handleRoleSelect', {
+      component: 'RoleSelector',
+      roleAssignment,
+    })
+    void logger.info('[RoleSelector] onRoleChange', {
+      component: 'RoleSelector',
+      role: roleAssignment.role,
+      businessId: roleAssignment.business_id || undefined,
+    })
     onRoleChange(roleAssignment.role, roleAssignment.business_id || undefined)
     setIsOpen(false)
   }
 
   return (
-    <DropdownMenu 
-      open={isOpen} 
-      onOpenChange={(open) => {
-        console.log('[RoleSelector] Dropdown state changed:', open)
+    <DropdownMenu
+      open={isOpen}
+      onOpenChange={open => {
+        void logger.info('[RoleSelector] Dropdown state changed', {
+          component: 'RoleSelector',
+          open,
+        })
         setIsOpen(open)
       }}
     >
@@ -108,10 +124,11 @@ export function RoleSelector({
             {t('roleSelector.admin')}
           </DropdownMenuLabel>
           {adminRoles.length > 0 ? (
-            adminRoles.map((roleAssignment) => {
+            adminRoles.map(roleAssignment => {
               const Icon = ROLE_CONFIG.admin.icon
-              const isActive = activeRole === 'admin' && activeBusiness?.id === roleAssignment.business_id
-              
+              const isActive =
+                activeRole === 'admin' && activeBusiness?.id === roleAssignment.business_id
+
               return (
                 <DropdownMenuItem
                   key={roleAssignment.id}
@@ -128,16 +145,14 @@ export function RoleSelector({
                       {roleAssignment.business_name}
                     </span>
                   </div>
-                  {isActive && (
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                  )}
+                  {isActive && <div className="h-2 w-2 rounded-full bg-primary" />}
                 </DropdownMenuItem>
               )
             })
           ) : (
             <DropdownMenuItem
               onClick={() => {
-                console.log('[RoleSelector] Direct onClick - Switching to admin (create business)')
+                void logger.info('[RoleSelector] Direct onClick - admin')
                 onRoleChange('admin', undefined)
                 setIsOpen(false)
               }}
@@ -161,10 +176,11 @@ export function RoleSelector({
             {t('roleSelector.employee')}
           </DropdownMenuLabel>
           {employeeRoles.length > 0 ? (
-            employeeRoles.map((roleAssignment) => {
+            employeeRoles.map(roleAssignment => {
               const Icon = ROLE_CONFIG.employee.icon
-              const isActive = activeRole === 'employee' && activeBusiness?.id === roleAssignment.business_id
-              
+              const isActive =
+                activeRole === 'employee' && activeBusiness?.id === roleAssignment.business_id
+
               return (
                 <DropdownMenuItem
                   key={roleAssignment.id}
@@ -181,16 +197,14 @@ export function RoleSelector({
                       {roleAssignment.business_name}
                     </span>
                   </div>
-                  {isActive && (
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                  )}
+                  {isActive && <div className="h-2 w-2 rounded-full bg-primary" />}
                 </DropdownMenuItem>
               )
             })
           ) : (
             <DropdownMenuItem
               onClick={() => {
-                console.log('[RoleSelector] Direct onClick - Switching to employee (join business)')
+                void logger.info('[RoleSelector] Direct onClick - employee')
                 onRoleChange('employee', undefined)
                 setIsOpen(false)
               }}
@@ -214,10 +228,10 @@ export function RoleSelector({
             <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">
               {t('roleSelector.client')}
             </DropdownMenuLabel>
-            {clientRoles.map((roleAssignment) => {
+            {clientRoles.map(roleAssignment => {
               const Icon = ROLE_CONFIG.client.icon
               const isActive = activeRole === 'client'
-              
+
               return (
                 <DropdownMenuItem
                   key={roleAssignment.id}
@@ -234,9 +248,7 @@ export function RoleSelector({
                       {t('roleSelector.bookServices')}
                     </span>
                   </div>
-                  {isActive && (
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                  )}
+                  {isActive && <div className="h-2 w-2 rounded-full bg-primary" />}
                 </DropdownMenuItem>
               )
             })}

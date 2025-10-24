@@ -1,6 +1,6 @@
 /**
  * Billing Components
- * 
+ *
  * Exports para componentes de facturación y suscripciones
  */
 

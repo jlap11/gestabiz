@@ -1,7 +1,7 @@
 /**
  * Brevo Email Service (Sendinblue)
  * Utility para envío de emails a través de Brevo SMTP
- * 
+ *
  * Configuración:
  * - SMTP Server: smtp-relay.brevo.com
  * - Port: 587
@@ -32,11 +32,11 @@ export async function sendBrevoEmail(params: BrevoEmailParams): Promise<BrevoEma
   const smtpPort = parseInt(Deno.env.get('BREVO_SMTP_PORT') || '587')
   const smtpUser = Deno.env.get('BREVO_SMTP_USER') || 'no-reply@gestabiz.com'
   const smtpPass = Deno.env.get('BREVO_SMTP_PASSWORD')
-  
+
   if (!smtpPass) {
-    return { 
-      success: false, 
-      error: 'BREVO_SMTP_PASSWORD not configured' 
+    return {
+      success: false,
+      error: 'BREVO_SMTP_PASSWORD not configured',
     }
   }
 
@@ -47,7 +47,7 @@ export async function sendBrevoEmail(params: BrevoEmailParams): Promise<BrevoEma
   try {
     // Usamos la API de Brevo en lugar de SMTP directo (más confiable en edge functions)
     const brevoApiKey = Deno.env.get('BREVO_API_KEY')
-    
+
     if (brevoApiKey) {
       // Usar API si está disponible (preferido)
       return await sendViaBrevoAPI(params, brevoApiKey, fromEmail, fromName)
@@ -57,9 +57,9 @@ export async function sendBrevoEmail(params: BrevoEmailParams): Promise<BrevoEma
     }
   } catch (error) {
     console.error('[Brevo] Error sending email:', error)
-    return { 
-      success: false, 
-      error: error.message || 'Unknown error sending email' 
+    return {
+      success: false,
+      error: error.message || 'Unknown error sending email',
     }
   }
 }
@@ -74,27 +74,27 @@ async function sendViaBrevoAPI(
   fromName: string
 ): Promise<BrevoEmailResponse> {
   const recipients = Array.isArray(params.to) ? params.to : [params.to]
-  
+
   const payload = {
     sender: {
       name: fromName,
-      email: fromEmail
+      email: fromEmail,
     },
     to: recipients.map(email => ({ email })),
     subject: params.subject,
     htmlContent: params.htmlBody,
     textContent: params.textBody || stripHtml(params.htmlBody),
-    ...(params.replyTo && { replyTo: { email: params.replyTo } })
+    ...(params.replyTo && { replyTo: { email: params.replyTo } }),
   }
 
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'Content-Type': 'application/json',
-      'api-key': apiKey
+      'api-key': apiKey,
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
@@ -103,10 +103,10 @@ async function sendViaBrevoAPI(
   }
 
   const data = await response.json()
-  
+
   return {
     success: true,
-    messageId: data.messageId
+    messageId: data.messageId,
   }
 }
 
@@ -126,10 +126,10 @@ async function sendViaSMTP(
   // En Deno Edge Functions no tenemos acceso directo a SMTP
   // Esta función está aquí como referencia, pero SIEMPRE usa la API
   console.warn('[Brevo] SMTP directo no soportado en Edge Functions, usa BREVO_API_KEY')
-  
+
   return {
     success: false,
-    error: 'SMTP directo no soportado. Configura BREVO_API_KEY para usar la API.'
+    error: 'SMTP directo no soportado. Configura BREVO_API_KEY para usar la API.',
   }
 }
 
@@ -407,7 +407,9 @@ export function createBasicEmailTemplate(
                 ${content}
             </div>
             
-            ${buttonText && buttonUrl ? `
+            ${
+              buttonText && buttonUrl
+                ? `
             <!-- CTA Button -->
             <div class="cta-container">
                 <a href="${buttonUrl}" class="cta-button">
@@ -427,13 +429,19 @@ export function createBasicEmailTemplate(
                     ${buttonUrl}
                 </a>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
-            ${additionalContent ? `
+            ${
+              additionalContent
+                ? `
             <div class="message" style="margin-top: 32px;">
                 ${additionalContent}
             </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
         
         <!-- Footer -->

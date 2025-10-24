@@ -11,10 +11,13 @@ export default function GoogleAuthCallback() {
 
         if (error) {
           // Send error to parent window
-          window.opener?.postMessage({
-            type: 'GOOGLE_AUTH_ERROR',
-            error: error
-          }, window.location.origin)
+          window.opener?.postMessage(
+            {
+              type: 'GOOGLE_AUTH_ERROR',
+              error: error,
+            },
+            window.location.origin
+          )
           window.close()
           return
         }
@@ -24,25 +27,25 @@ export default function GoogleAuthCallback() {
             // Check if Google credentials are configured
             const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
             const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET
-            
+
             if (!clientId || !clientSecret) {
               throw new Error('Google OAuth credentials not configured')
             }
-            
+
             const redirectUri = `${window.location.origin}/auth/google/callback`
 
             const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
               },
               body: new URLSearchParams({
                 client_id: clientId,
                 client_secret: clientSecret,
                 code: code,
                 grant_type: 'authorization_code',
-                redirect_uri: redirectUri
-              })
+                redirect_uri: redirectUri,
+              }),
             })
 
             if (!tokenResponse.ok) {
@@ -52,32 +55,41 @@ export default function GoogleAuthCallback() {
             const tokenData = await tokenResponse.json()
 
             // Send success to parent window
-            window.opener?.postMessage({
-              type: 'GOOGLE_AUTH_SUCCESS',
-              accessToken: tokenData.access_token,
-              refreshToken: tokenData.refresh_token,
-              expiresIn: tokenData.expires_in
-            }, window.location.origin)
+            window.opener?.postMessage(
+              {
+                type: 'GOOGLE_AUTH_SUCCESS',
+                accessToken: tokenData.access_token,
+                refreshToken: tokenData.refresh_token,
+                expiresIn: tokenData.expires_in,
+              },
+              window.location.origin
+            )
 
             window.close()
           } catch {
             // Send error to parent window
-            window.opener?.postMessage({
-              type: 'GOOGLE_AUTH_ERROR',
-              error: 'Failed to complete authentication'
-            }, window.location.origin)
+            window.opener?.postMessage(
+              {
+                type: 'GOOGLE_AUTH_ERROR',
+                error: 'Failed to complete authentication',
+              },
+              window.location.origin
+            )
             window.close()
           }
         } else {
           // No code parameter, just close
           window.close()
         }
-  } catch {
+      } catch {
         // Send error to parent window
-        window.opener?.postMessage({
-          type: 'GOOGLE_AUTH_ERROR',
-          error: 'Authentication callback error'
-        }, window.location.origin)
+        window.opener?.postMessage(
+          {
+            type: 'GOOGLE_AUTH_ERROR',
+            error: 'Authentication callback error',
+          },
+          window.location.origin
+        )
         window.close()
       }
     }

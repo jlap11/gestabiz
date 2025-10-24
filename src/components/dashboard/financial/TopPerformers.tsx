@@ -1,111 +1,115 @@
-import React, { useState, useEffect } from 'react';
-import { Trophy, Star, TrendingUp, Calendar, Award, Medal } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLanguage } from '@/contexts/LanguageContext';
-import supabase from '@/lib/supabase';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useState } from 'react'
+import { Award, Calendar, Medal, Star, TrendingUp, Trophy } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useLanguage } from '@/contexts/LanguageContext'
+import supabase from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import type { PostgrestError } from '@supabase/supabase-js'
 
 interface TopPerformersProps {
-  businessId: string;
-  locationId?: string;
+  businessId: string
+  locationId?: string
 }
 
 interface PerformerData {
-  id: string;
-  full_name: string;
-  avatar_url?: string;
-  email: string;
-  total_appointments: number;
-  completed_appointments: number;
-  total_revenue: number;
-  average_rating: number;
-  review_count: number;
-  completion_rate: number;
-  average_ticket: number;
+  id: string
+  full_name: string
+  avatar_url?: string
+  email: string
+  total_appointments: number
+  completed_appointments: number
+  total_revenue: number
+  average_rating: number
+  review_count: number
+  completion_rate: number
+  average_ticket: number
 }
 
-type Period = 'week' | 'month' | 'quarter' | 'year';
+type Period = 'week' | 'month' | 'quarter' | 'year'
 
-export function TopPerformers({
-  businessId,
-  locationId,
-}: Readonly<TopPerformersProps>) {
-  const { t, language } = useLanguage();
-  const [period, setPeriod] = useState<Period>('month');
-  const [performers, setPerformers] = useState<PerformerData[]>([]);
-  const [loading, setLoading] = useState(true);
+export function TopPerformers({ businessId, locationId }: Readonly<TopPerformersProps>) {
+  const { t, language } = useLanguage()
+  const [period, setPeriod] = useState<Period>('month')
+  const [performers, setPerformers] = useState<PerformerData[]>([])
+  const [loading, setLoading] = useState(true)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
       style: 'currency',
       currency: 'MXN',
       maximumFractionDigits: 0,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   const getDateRange = () => {
-    const end = new Date();
-    const start = new Date();
+    const end = new Date()
+    const start = new Date()
 
     switch (period) {
       case 'week':
-        start.setDate(end.getDate() - 7);
-        break;
+        start.setDate(end.getDate() - 7)
+        break
       case 'month':
-        start.setMonth(end.getMonth() - 1);
-        break;
+        start.setMonth(end.getMonth() - 1)
+        break
       case 'quarter':
-        start.setMonth(end.getMonth() - 3);
-        break;
+        start.setMonth(end.getMonth() - 3)
+        break
       case 'year':
-        start.setFullYear(end.getFullYear() - 1);
-        break;
+        start.setFullYear(end.getFullYear() - 1)
+        break
     }
 
     return {
       start: start.toISOString(),
       end: end.toISOString(),
-    };
-  };
+    }
+  }
 
   useEffect(() => {
     const fetchTopPerformers = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const { start, end } = getDateRange();
+        const { start, end } = getDateRange()
 
         // Fetch all employees for the business
         let employeeQuery = supabase
           .from('business_employees')
           .select('employee_id, profiles(id, full_name, avatar_url, email)')
-          .eq('business_id', businessId);
+          .eq('business_id', businessId)
 
         if (locationId) {
-          employeeQuery = employeeQuery.eq('location_id', locationId);
+          employeeQuery = employeeQuery.eq('location_id', locationId)
         }
 
-        const { data: employees, error: empError } = await employeeQuery as {
+        const { data: employees, error: empError } = (await employeeQuery) as {
           data: Array<{
-            employee_id: string;
+            employee_id: string
             profiles: {
-              id: string;
-              full_name: string;
-              avatar_url?: string;
-              email: string;
-            };
-          }> | null;
-          error: any;
-        };
-        if (empError) throw empError;
+              id: string
+              full_name: string
+              avatar_url?: string
+              email: string
+            }
+          }> | null
+          error: PostgrestError | null
+        }
+        if (empError) throw empError
 
         if (!employees || employees.length === 0) {
-          setPerformers([]);
-          setLoading(false);
-          return;
+          setPerformers([])
+          setLoading(false)
+          return
         }
 
-        const employeeIds = employees.map(e => e.employee_id);
+        const employeeIds = employees.map(e => e.employee_id)
 
         // Fetch appointments for these employees
         const { data: appointments, error: appError } = await supabase
@@ -114,9 +118,9 @@ export function TopPerformers({
           .eq('business_id', businessId)
           .in('employee_id', employeeIds)
           .gte('start_time', start)
-          .lte('start_time', end);
+          .lte('start_time', end)
 
-        if (appError) throw appError;
+        if (appError) throw appError
 
         // Fetch reviews for these employees
         const { data: reviews, error: revError } = await supabase
@@ -125,41 +129,40 @@ export function TopPerformers({
           .eq('business_id', businessId)
           .in('employee_id', employeeIds)
           .gte('created_at', start)
-          .lte('created_at', end);
+          .lte('created_at', end)
 
-        if (revError) throw revError;
+        if (revError) throw revError
 
         // Calculate metrics for each employee
-        // eslint-disable-next-line sonarjs/cognitive-complexity
         const performersData: PerformerData[] = employees.map(emp => {
-          const profile = emp.profiles;
-          
-          const empAppointments = appointments?.filter(a => a.employee_id === emp.employee_id) || [];
-          const completedAppointments = empAppointments.filter(a => a.status === 'completed');
-          const empReviews = reviews?.filter(r => r.employee_id === emp.employee_id) || [];
-          
+          const profile = emp.profiles
+
+          const empAppointments = appointments?.filter(a => a.employee_id === emp.employee_id) || []
+          const completedAppointments = empAppointments.filter(a => a.status === 'completed')
+          const empReviews = reviews?.filter(r => r.employee_id === emp.employee_id) || []
+
           // Calculate revenue
-          let totalRevenue = 0;
+          let totalRevenue = 0
           for (const appt of completedAppointments) {
-            const service = appt.service;
-            const price = Array.isArray(service) ? service[0]?.price : service?.price;
-            totalRevenue += price || 0;
+            const service = appt.service
+            const price = Array.isArray(service) ? service[0]?.price : service?.price
+            totalRevenue += price || 0
           }
-          
+
           // Calculate average rating
-          let averageRating = 0;
+          let averageRating = 0
           if (empReviews && empReviews.length > 0) {
-            const sumRatings = empReviews.reduce((sum, r) => sum + r.rating, 0);
-            averageRating = sumRatings / empReviews.length;
+            const sumRatings = empReviews.reduce((sum, r) => sum + r.rating, 0)
+            averageRating = sumRatings / empReviews.length
           }
 
-          const completionRate = empAppointments.length > 0
-            ? (completedAppointments.length / empAppointments.length) * 100
-            : 0;
+          const completionRate =
+            empAppointments.length > 0
+              ? (completedAppointments.length / empAppointments.length) * 100
+              : 0
 
-          const averageTicket = completedAppointments.length > 0
-            ? totalRevenue / completedAppointments.length
-            : 0;
+          const averageTicket =
+            completedAppointments.length > 0 ? totalRevenue / completedAppointments.length : 0
 
           return {
             id: emp.employee_id,
@@ -173,51 +176,51 @@ export function TopPerformers({
             review_count: empReviews.length,
             completion_rate: completionRate,
             average_ticket: averageTicket,
-          };
-        });
+          }
+        })
 
         // Sort by total revenue (descending) and take top 10
-        const sortedPerformers = [...performersData];
-        sortedPerformers.sort((a, b) => b.total_revenue - a.total_revenue);
-        const topTen = sortedPerformers.slice(0, 10);
+        const sortedPerformers = [...performersData]
+        sortedPerformers.sort((a, b) => b.total_revenue - a.total_revenue)
+        const topTen = sortedPerformers.slice(0, 10)
 
-        setPerformers(topTen);
+        setPerformers(topTen)
       } catch {
-        setPerformers([]);
+        setPerformers([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchTopPerformers();
+    fetchTopPerformers()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [businessId, locationId, period]);
+  }, [businessId, locationId, period])
 
   const getRankIcon = (index: number) => {
     switch (index) {
       case 0:
-        return <Trophy className="h-5 w-5 text-yellow-500" />;
+        return <Trophy className="h-5 w-5 text-yellow-500" />
       case 1:
-        return <Medal className="h-5 w-5 text-muted-foreground" />;
+        return <Medal className="h-5 w-5 text-muted-foreground" />
       case 2:
-        return <Award className="h-5 w-5 text-orange-600" />;
+        return <Award className="h-5 w-5 text-orange-600" />
       default:
-        return <span className="text-sm font-semibold text-muted-foreground">#{index + 1}</span>;
+        return <span className="text-sm font-semibold text-muted-foreground">#{index + 1}</span>
     }
-  };
+  }
 
   const getRankBadgeClass = (index: number) => {
     switch (index) {
       case 0:
-        return 'bg-yellow-100 border-yellow-300';
+        return 'bg-yellow-100 border-yellow-300'
       case 1:
-        return 'bg-gray-100 border-gray-300';
+        return 'bg-gray-100 border-gray-300'
       case 2:
-        return 'bg-orange-100 border-orange-300';
+        return 'bg-orange-100 border-orange-300'
       default:
-        return 'bg-muted border-muted-foreground/20';
+        return 'bg-muted border-muted-foreground/20'
     }
-  };
+  }
 
   return (
     <Card className="p-6">
@@ -234,7 +237,7 @@ export function TopPerformers({
           </div>
         </div>
 
-        <Select value={period} onValueChange={(value) => setPeriod(value as Period)}>
+        <Select value={period} onValueChange={value => setPeriod(value as Period)}>
           <SelectTrigger className="w-36">
             <SelectValue />
           </SelectTrigger>
@@ -249,12 +252,15 @@ export function TopPerformers({
 
       {loading && (
         <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map((skeletonId) => (
-            <div key={`skeleton-${skeletonId}`} className="h-20 bg-muted animate-pulse rounded-lg" />
+          {[1, 2, 3, 4, 5].map(skeletonId => (
+            <div
+              key={`skeleton-${skeletonId}`}
+              className="h-20 bg-muted animate-pulse rounded-lg"
+            />
           ))}
         </div>
       )}
-      
+
       {!loading && performers.length === 0 && (
         <div className="h-64 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
@@ -263,7 +269,7 @@ export function TopPerformers({
           </div>
         </div>
       )}
-      
+
       {!loading && performers.length > 0 && (
         <div className="space-y-3">
           {performers.map((performer, index) => (
@@ -275,9 +281,7 @@ export function TopPerformers({
               )}
             >
               {/* Rank */}
-              <div className="flex items-center justify-center w-10 h-10">
-                {getRankIcon(index)}
-              </div>
+              <div className="flex items-center justify-center w-10 h-10">{getRankIcon(index)}</div>
 
               {/* Avatar */}
               <div className="flex-shrink-0">
@@ -364,5 +368,5 @@ export function TopPerformers({
         </div>
       )}
     </Card>
-  );
+  )
 }

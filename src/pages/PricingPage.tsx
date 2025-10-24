@@ -3,9 +3,16 @@
 // Integra con create-checkout-session Edge Function
 
 import React, { useState } from 'react'
-import { Check, X, Sparkles, Building2, Rocket, Crown } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,11 +32,11 @@ interface PricingPageProps {
 
 export function PricingPage({ businessId: businessIdProp, onClose }: PricingPageProps = {}) {
   const { user } = useAuth()
-  
+
   // Get businessId from prop first, then fallback to user
   const businessId = businessIdProp || user?.id
   const { createCheckout, applyDiscount, isLoading } = useSubscription(businessId || '')
-  
+
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly')
   const [discountCode, setDiscountCode] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState<{
@@ -49,7 +56,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
   }
 
   const handleBillingCycleToggle = () => {
-    setBillingCycle((prev) => (prev === 'monthly' ? 'yearly' : 'monthly'))
+    setBillingCycle(prev => (prev === 'monthly' ? 'yearly' : 'monthly'))
     setAppliedDiscount(null) // Reset discount on cycle change
   }
 
@@ -62,7 +69,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
     try {
       // Validate discount code against selected plan and billing cycle
       const result = await applyDiscount(discountCode, 'inicio', 80000) // Example values
-      
+
       if (result.isValid) {
         setAppliedDiscount({
           code: discountCode,
@@ -98,7 +105,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
 
     try {
       await createCheckout(plan.id, billingCycle, appliedDiscount?.code)
-      
+
       // createCheckout redirects to Stripe/PayU Checkout automatically
     } catch {
       toast.error('Error al crear la sesión de pago')
@@ -108,7 +115,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
 
   const getPrice = (plan: Plan) => {
     if (plan.price === 0) return null // Custom pricing
-    
+
     const basePrice = billingCycle === 'monthly' ? plan.price : (plan.priceAnnual || 0) / 12
     const discount = appliedDiscount?.discount || 0
     const finalPrice = basePrice - discount
@@ -165,7 +172,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
               id="discount-code"
               placeholder="CODIGO2025"
               value={discountCode}
-              onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+              onChange={e => setDiscountCode(e.target.value.toUpperCase())}
               disabled={isLoading || !!appliedDiscount}
             />
             <Button
@@ -185,7 +192,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
 
         {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {PRICING_PLANS.map((plan) => {
+          {PRICING_PLANS.map(plan => {
             const price = getPrice(plan)
             const isProcessing = processingPlan === plan.id
             const isDisabled = plan.id !== 'inicio' && plan.id !== 'gratuito'
@@ -195,9 +202,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
               <Card
                 key={plan.id}
                 className={`relative flex flex-col ${
-                  plan.popular
-                    ? 'border-primary shadow-lg scale-105'
-                    : 'border-border'
+                  plan.popular ? 'border-primary shadow-lg scale-105' : 'border-border'
                 } ${isDisabled ? 'opacity-60' : ''}`}
               >
                 {plan.popular && (
@@ -205,7 +210,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
                     Más Popular
                   </Badge>
                 )}
-                
+
                 {isDisabled && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted-foreground">
                     Próximamente
@@ -214,9 +219,7 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
 
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                      {plan.icon}
-                    </div>
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary">{plan.icon}</div>
                     <CardTitle>{plan.name}</CardTitle>
                   </div>
                   <CardDescription>{plan.description}</CardDescription>
@@ -251,14 +254,16 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
 
                   {/* Features List */}
                   <ul className="space-y-3">
-                    {plan.features.map((feature) => (
+                    {plan.features.map(feature => (
                       <li key={feature.name} className="flex items-start gap-2">
                         {feature.included ? (
                           <Check className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                         ) : (
                           <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                         )}
-                        <span className={feature.included ? 'text-foreground' : 'text-muted-foreground'}>
+                        <span
+                          className={feature.included ? 'text-foreground' : 'text-muted-foreground'}
+                        >
                           {feature.name}
                         </span>
                       </li>
@@ -271,7 +276,12 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
                     className="w-full"
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => handleSelectPlan(plan)}
-                    disabled={isPlanGratuito || isDisabled || isProcessing || (isLoading && processingPlan !== null)}
+                    disabled={
+                      isPlanGratuito ||
+                      isDisabled ||
+                      isProcessing ||
+                      (isLoading && processingPlan !== null)
+                    }
                   >
                     {isProcessing ? 'Procesando...' : plan.cta}
                   </Button>
@@ -288,28 +298,29 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
             <div>
               <h3 className="font-semibold mb-2">¿Puedo cambiar de plan en cualquier momento?</h3>
               <p className="text-muted-foreground">
-                Sí, puedes actualizar o cambiar tu plan en cualquier momento. Los upgrades son prorrateados y
-                los downgrades toman efecto al final del período actual.
+                Sí, puedes actualizar o cambiar tu plan en cualquier momento. Los upgrades son
+                prorrateados y los downgrades toman efecto al final del período actual.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">¿Hay período de prueba gratuito?</h3>
               <p className="text-muted-foreground">
-                El plan Inicio incluye 14 días de prueba gratis. Puedes cancelar en cualquier momento sin cargo.
+                El plan Inicio incluye 14 días de prueba gratis. Puedes cancelar en cualquier
+                momento sin cargo.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">¿Qué métodos de pago aceptan?</h3>
               <p className="text-muted-foreground">
-                Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express)
-                a través de Stripe, nuestro procesador de pagos seguro.
+                Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard,
+                American Express) a través de Stripe, nuestro procesador de pagos seguro.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">¿Puedo cancelar mi suscripción?</h3>
               <p className="text-muted-foreground">
-                Sí, puedes cancelar tu suscripción en cualquier momento desde tu dashboard. No hay penalidades
-                ni costos ocultos.
+                Sí, puedes cancelar tu suscripción en cualquier momento desde tu dashboard. No hay
+                penalidades ni costos ocultos.
               </p>
             </div>
           </div>

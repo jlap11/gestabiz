@@ -4,12 +4,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Building, UserPlus, MagnifyingGlass as Search, MapPin } from '@phosphor-icons/react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Building, MapPin, MagnifyingGlass as Search, UserPlus } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { User, Business } from '@/types'
+import { Business, User } from '@/types'
 
 interface EmployeeRequest {
   id: string
@@ -33,10 +39,17 @@ interface EmployeeRequestAccessProps {
   onClose: () => void
 }
 
-export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<EmployeeRequestAccessProps>) {
+export default function EmployeeRequestAccess({
+  user,
+  open,
+  onClose,
+}: Readonly<EmployeeRequestAccessProps>) {
   const { t } = useLanguage()
   const [businesses] = useKV<Business[]>('businesses', [])
-  const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>(`employee-requests-all`, [])
+  const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>(
+    `employee-requests-all`,
+    []
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
@@ -44,18 +57,17 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
   const [step, setStep] = useState<'search' | 'request'>('search')
 
   // Filter businesses based on search term
-  const filteredBusinesses = businesses.filter(business =>
-    business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (business.city?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (business.address?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+  const filteredBusinesses = businesses.filter(
+    business =>
+      business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (business.city?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (business.address?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   )
 
   // Check if user already has a pending request for a business
   const hasPendingRequest = (businessId: string) => {
-    return employeeRequests.some(req => 
-      req.user_id === user.id && 
-      req.business_id === businessId && 
-      req.status === 'pending'
+    return employeeRequests.some(
+      req => req.user_id === user.id && req.business_id === businessId && req.status === 'pending'
     )
   }
 
@@ -78,25 +90,27 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
       const newRequest: EmployeeRequest = {
         id: `request-${Date.now()}`,
         user_id: user.id,
-  user_name: user.name,
+        user_name: user.name,
         user_email: user.email,
         user_avatar: user.avatar_url,
         business_id: selectedBusiness.id,
         business_name: selectedBusiness.name,
         requested_at: new Date().toISOString(),
         message: message.trim(),
-        status: 'pending'
+        status: 'pending',
       }
 
       // Add to global requests and business-specific requests
-  const updatedRequests = [...employeeRequests, newRequest]
-  const key = `employee-requests-${selectedBusiness.id}`
-  const businessRequestsRaw = localStorage.getItem(key)
-  const businessRequests = businessRequestsRaw ? JSON.parse(businessRequestsRaw) as EmployeeRequest[] : []
-  const updatedBusinessRequests = [...businessRequests, newRequest]
+      const updatedRequests = [...employeeRequests, newRequest]
+      const key = `employee-requests-${selectedBusiness.id}`
+      const businessRequestsRaw = localStorage.getItem(key)
+      const businessRequests = businessRequestsRaw
+        ? (JSON.parse(businessRequestsRaw) as EmployeeRequest[])
+        : []
+      const updatedBusinessRequests = [...businessRequests, newRequest]
 
-  setEmployeeRequests(updatedRequests)
-  localStorage.setItem(key, JSON.stringify(updatedBusinessRequests))
+      setEmployeeRequests(updatedRequests)
+      localStorage.setItem(key, JSON.stringify(updatedBusinessRequests))
 
       toast.success(t('employee.requestSubmitted'))
       onClose()
@@ -104,7 +118,7 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
       setSelectedBusiness(null)
       setMessage('')
       setSearchTerm('')
-  } catch {
+    } catch {
       toast.error(t('employee.requestError'))
     } finally {
       setIsLoading(false)
@@ -126,10 +140,11 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
             {step === 'search' ? t('employee.findBusiness') : t('employee.requestToJoin')}
           </DialogTitle>
           <DialogDescription>
-            {step === 'search' 
+            {step === 'search'
               ? t('employee.findBusinessDescription')
-              : t('employee.requestToJoinDescription', { businessName: selectedBusiness?.name || '' })
-            }
+              : t('employee.requestToJoinDescription', {
+                  businessName: selectedBusiness?.name || '',
+                })}
           </DialogDescription>
         </DialogHeader>
 
@@ -143,7 +158,7 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
                 <Input
                   id="business-search"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   placeholder={t('employee.searchPlaceholder')}
                   className="pl-10"
                 />
@@ -154,9 +169,9 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {searchTerm.length >= 2 ? (
                 filteredBusinesses.length > 0 ? (
-                  filteredBusinesses.map((business) => (
-                    <Card 
-                      key={business.id} 
+                  filteredBusinesses.map(business => (
+                    <Card
+                      key={business.id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={() => handleSelectBusiness(business)}
                     >
@@ -236,13 +251,11 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
               <Textarea
                 id="request-message"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={e => setMessage(e.target.value)}
                 placeholder={t('employee.requestMessagePlaceholder')}
                 rows={4}
               />
-              <p className="text-xs text-muted-foreground">
-                {t('employee.requestMessageNote')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('employee.requestMessageNote')}</p>
             </div>
 
             {/* Action Buttons */}
@@ -250,11 +263,7 @@ export default function EmployeeRequestAccess({ user, open, onClose }: Readonly<
               <Button variant="outline" onClick={handleBack} className="flex-1">
                 {t('action.back')}
               </Button>
-              <Button 
-                onClick={handleSubmitRequest} 
-                disabled={isLoading}
-                className="flex-1"
-              >
+              <Button onClick={handleSubmitRequest} disabled={isLoading} className="flex-1">
                 {isLoading ? t('employee.submitting') : t('employee.submitRequest')}
               </Button>
             </div>

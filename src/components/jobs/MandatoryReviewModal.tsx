@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -6,29 +6,29 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Star, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle, CheckCircle, Loader2, Star } from 'lucide-react'
+import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase'
 
 interface PendingReview {
-  appointment_id: string;
-  business_id: string;
-  business_name: string;
-  service_name: string;
-  completed_at: string;
-  employee_name?: string;
+  appointment_id: string
+  business_id: string
+  business_name: string
+  service_name: string
+  completed_at: string
+  employee_name?: string
 }
 
 interface MandatoryReviewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onReviewSubmitted?: () => void;
-  userId: string;
+  isOpen: boolean
+  onClose: () => void
+  onReviewSubmitted?: () => void
+  userId: string
 }
 
 export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
@@ -37,28 +37,29 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
   onReviewSubmitted,
   userId,
 }) => {
-  const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([]);
-  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [recommend, setRecommend] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [fetchingReviews, setFetchingReviews] = useState(true);
+  const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([])
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
+  const [rating, setRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
+  const [comment, setComment] = useState('')
+  const [recommend, setRecommend] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [fetchingReviews, setFetchingReviews] = useState(true)
 
   // Fetch pending reviews on mount
   useEffect(() => {
     const fetchPendingReviews = async () => {
-      if (!isOpen || !userId) return;
+      if (!isOpen || !userId) return
 
       try {
-        setFetchingReviews(true);
+        setFetchingReviews(true)
 
         // Fetch appointments that need reviews
         const { data, error } = await supabase
           .from('appointments')
-          .select(`
+          .select(
+            `
             id,
             business_id,
             service_id,
@@ -67,25 +68,26 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
             business:businesses!inner(name),
             service:services(name),
             employee:profiles(full_name)
-          `)
+          `
+          )
           .eq('client_id', userId)
           .eq('status', 'completed')
           .is('review_id', null)
           .order('completed_at', { ascending: false })
-          .limit(10);
+          .limit(10)
 
-        if (error) throw error;
+        if (error) throw error
 
-        const reviews: PendingReview[] = (data || []).map((appointment) => {
-          const business = Array.isArray(appointment.business) 
-            ? appointment.business[0] 
-            : appointment.business;
+        const reviews: PendingReview[] = (data || []).map(appointment => {
+          const business = Array.isArray(appointment.business)
+            ? appointment.business[0]
+            : appointment.business
           const service = Array.isArray(appointment.service)
             ? appointment.service[0]
-            : appointment.service;
+            : appointment.service
           const employee = Array.isArray(appointment.employee)
             ? appointment.employee[0]
-            : appointment.employee;
+            : appointment.employee
 
           return {
             appointment_id: appointment.id,
@@ -94,61 +96,61 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
             service_name: service?.name || 'Servicio',
             completed_at: appointment.completed_at,
             employee_name: employee?.full_name,
-          };
-        });
+          }
+        })
 
-        setPendingReviews(reviews);
+        setPendingReviews(reviews)
 
         if (reviews.length === 0) {
           // No pending reviews, close modal
-          onClose();
-          toast.info('No tienes citas pendientes de review');
+          onClose()
+          toast.info('No tienes citas pendientes de review')
         }
       } catch (err) {
-        const error = err as Error;
+        const error = err as Error
         toast.error('Error al cargar reviews pendientes', {
           description: error.message,
-        });
+        })
       } finally {
-        setFetchingReviews(false);
+        setFetchingReviews(false)
       }
-    };
+    }
 
-    fetchPendingReviews();
-  }, [isOpen, userId, onClose]);
+    fetchPendingReviews()
+  }, [isOpen, userId, onClose])
 
   // Reset form when review changes
   useEffect(() => {
-    setRating(0);
-    setHoverRating(0);
-    setComment('');
-    setRecommend(null);
-    setValidationError(null);
-  }, [currentReviewIndex]);
+    setRating(0)
+    setHoverRating(0)
+    setComment('')
+    setRecommend(null)
+    setValidationError(null)
+  }, [currentReviewIndex])
 
-  const currentReview = pendingReviews[currentReviewIndex];
-  const hasMoreReviews = currentReviewIndex < pendingReviews.length - 1;
-  const isLastReview = currentReviewIndex === pendingReviews.length - 1;
+  const currentReview = pendingReviews[currentReviewIndex]
+  const hasMoreReviews = currentReviewIndex < pendingReviews.length - 1
+  const isLastReview = currentReviewIndex === pendingReviews.length - 1
 
   const handleSubmitReview = async () => {
     try {
-      setLoading(true);
-      setValidationError(null);
+      setLoading(true)
+      setValidationError(null)
 
       // Validations
       if (rating === 0) {
-        setValidationError('Debes seleccionar una calificación');
-        return;
+        setValidationError('Debes seleccionar una calificación')
+        return
       }
 
       if (comment.trim().length < 50) {
-        setValidationError('El comentario debe tener al menos 50 caracteres');
-        return;
+        setValidationError('El comentario debe tener al menos 50 caracteres')
+        return
       }
 
       if (recommend === null) {
-        setValidationError('Debes indicar si recomendarías este negocio');
-        return;
+        setValidationError('Debes indicar si recomendarías este negocio')
+        return
       }
 
       // Create review
@@ -163,58 +165,58 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           is_visible: true,
         })
         .select()
-        .single();
+        .single()
 
-      if (reviewError) throw reviewError;
+      if (reviewError) throw reviewError
 
       // Update appointment with review_id
       const { error: updateError } = await supabase
         .from('appointments')
         .update({ review_id: reviewData.id })
-        .eq('id', currentReview.appointment_id);
+        .eq('id', currentReview.appointment_id)
 
-      if (updateError) throw updateError;
+      if (updateError) throw updateError
 
-      toast.success('Review enviada exitosamente');
+      toast.success('Review enviada exitosamente')
 
       // Move to next review or close
       if (hasMoreReviews) {
-        setCurrentReviewIndex((prev) => prev + 1);
+        setCurrentReviewIndex(prev => prev + 1)
       } else {
         // All reviews completed
-        onReviewSubmitted?.();
-        onClose();
+        onReviewSubmitted?.()
+        onClose()
         toast.success('¡Todas las reviews completadas!', {
           description: 'Gracias por tu feedback',
-        });
+        })
       }
     } catch (err) {
-      const error = err as Error;
+      const error = err as Error
       toast.error('Error al enviar review', {
         description: error.message,
-      });
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSkipReview = () => {
     if (hasMoreReviews) {
-      setCurrentReviewIndex((prev) => prev + 1);
-      toast.info('Review omitida, puedes dejarla después');
+      setCurrentReviewIndex(prev => prev + 1)
+      toast.info('Review omitida, puedes dejarla después')
     } else {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
     return date.toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    });
-  };
+    })
+  }
 
   if (fetchingReviews) {
     return (
@@ -225,16 +227,16 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           </div>
         </DialogContent>
       </Dialog>
-    );
+    )
   }
 
   if (!currentReview) {
-    return null;
+    return null
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}} modal>
-      <DialogContent className="max-w-2xl" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl" onInteractOutside={e => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -280,7 +282,7 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           <div className="space-y-2">
             <Label>Calificación *</Label>
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1, 2, 3, 4, 5].map(star => (
                 <button
                   key={star}
                   type="button"
@@ -314,19 +316,18 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           {/* Comment */}
           <div className="space-y-2">
             <Label htmlFor="review-comment">
-              Comentario * <span className="text-xs text-muted-foreground">(mínimo 50 caracteres)</span>
+              Comentario *{' '}
+              <span className="text-xs text-muted-foreground">(mínimo 50 caracteres)</span>
             </Label>
             <Textarea
               id="review-comment"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={e => setComment(e.target.value)}
               placeholder="Cuéntanos sobre tu experiencia con este negocio..."
               className="min-h-[120px] resize-y"
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground">
-              {comment.length} / 50 caracteres
-            </p>
+            <p className="text-xs text-muted-foreground">{comment.length} / 50 caracteres</p>
           </div>
 
           {/* Recommendation */}
@@ -369,10 +370,10 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
               type="button"
               variant="ghost"
               onClick={() => {
-                onClose();
+                onClose()
                 // Callback para indicar "recordar luego"
                 if (onReviewSubmitted) {
-                  onReviewSubmitted();
+                  onReviewSubmitted()
                 }
               }}
               disabled={loading}
@@ -398,9 +399,7 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
                     Enviando...
                   </>
                 ) : (
-                  <>
-                    {hasMoreReviews ? 'Siguiente Review' : 'Enviar y Finalizar'}
-                  </>
+                  <>{hasMoreReviews ? 'Siguiente Review' : 'Enviar y Finalizar'}</>
                 )}
               </Button>
             </div>
@@ -408,5 +407,5 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

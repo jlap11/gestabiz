@@ -3,17 +3,20 @@
 Este documento define un plan táctico y ordenado para resolver los TODO/FIXME identificados en el repositorio. Incluye prioridades, dependencias, estimaciones, criterios de aceptación, riesgos y checklist de despliegue.
 
 ## Objetivo
+
 - Resolver los TODO/FIXME prioritarios que impactan UX, confiabilidad y operación.
 - Mantener coherencia con el esquema y RLS de Supabase.
 - Asegurar pruebas, documentación y telemetry donde tenga sentido.
 
 ## Priorización
+
 1. Críticos: Notificaciones/emails, ajustes de pagos, filtros `is_active` en empleos.
 2. Alta: Chat (`is_pinned`, typing indicators), Appointment Wizard preselección.
 3. Media: Expertise en perfil, cálculo de almacenamiento real (billing).
 4. Baja: Actualizaciones de tipos y mejoras menores.
 
 ## Fase 0 — Preparación (DB y entorno)
+
 - Migraciones creadas:
   - `is_pinned` en `public.conversation_members` (índice y backfill).
   - `is_active` en `public.business_employees` (índice y backfill).
@@ -24,7 +27,8 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Criterio de aceptación: migraciones aplicadas sin errores y reflejadas en el esquema.
 
 ## Notificaciones y Emails (Crítico)
-- Estado: TODO para enviar emails en edge functions: 
+
+- Estado: TODO para enviar emails en edge functions:
   - `supabase/functions/cancel-appointments-on-emergency-absence/index.ts`
   - `supabase/functions/stripe-webhook/index.ts`
   - `supabase/functions/send-notification/index.ts`
@@ -40,6 +44,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: límites del proveedor, plantillas no traducidas; mitigación con fallback simple.
 
 ## Chat — `is_pinned`, Typing Indicators y Tipos (Alta)
+
 - Estado: TODO en `src/components/chat/ConversationList.tsx`, `ChatWindow.tsx`, `ChatLayout.tsx`.
 - Cambios:
   - Persistir `is_pinned` en `public.conversation_members` con update permitido por RLS.
@@ -52,6 +57,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: desincronización de presence; mitigación con timeouts y heartbeats.
 
 ## Empleos Activos — Filtro `is_active` (Crítico)
+
 - Estado: TODO en `src/components/employee/MyEmploymentsEnhanced.tsx`.
 - Cambios:
   - Consultas filtradas por `is_active=true`.
@@ -62,6 +68,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: incoherencias por caché; invalidación en hooks y React Query.
 
 ## Perfil — Expertise (Media)
+
 - Estado: TODO en `src/components/user/UserProfile.tsx`.
 - Cambios:
   - Campo(s) de expertise (enum/array) en UI y persistencia en perfil/empleado.
@@ -72,6 +79,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: desalineación de modelo; decidir contrato y documentarlo.
 
 ## Cliente — Appointment Wizard Preselección (Alta)
+
 - Estado: TODO en `src/components/client/ClientDashboard.tsx`.
 - Cambios:
   - Propagar `service_id`/`business_id` al abrir wizard.
@@ -82,6 +90,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: rutas no deterministas; centralizar state.
 
 ## Billing — Cálculo de Almacenamiento Real (Media)
+
 - Estado: TODO en `supabase/migrations/20251015000002_billing_rpc_functions.sql`.
 - Cambios:
   - Completar función RPC para sumar tamaño de objetos en storage por espacio/empresa.
@@ -92,6 +101,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: performance; agregar índices o paginación.
 
 ## Pagos — Ajustes y Métodos (Crítico–Media)
+
 - Estado: comentarios sobre métodos de pago, webhooks.
 - Cambios:
   - Revisar `supabase/functions/stripe-webhook/index.ts` y flujos de notificación.
@@ -102,16 +112,19 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Riesgos: reintentos webhooks; usar claves idempotencia y logs.
 
 ## Tipos y Contratos (Baja)
+
 - Estado: TODOs de actualización de tipos (chat y globales).
 - Cambios: regenerar tipos (`src/types/supabase.gen.ts`), sincronizar tipos locales.
 - Estimación: 0.5 día.
 - Aceptación: compilación limpia y tipos consistentes.
 
 ## RLS y Seguridad (Baja)
+
 - Revisión de impacto por nuevas columnas (`is_pinned`, `is_active`).
 - Confirmación: políticas vigentes cubren updates por miembros/owners.
 
 ## Documentación y Testing
+
 - Doc: actualizar README y `/docs` con nuevos comportamientos.
 - Testing:
   - Unit: hooks y componentes afectados.
@@ -119,6 +132,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
   - E2E: flujos de chat, empleo, wizard.
 
 ## Secuencia Recomendada
+
 1. Fase 0: aplicar migraciones y preparar entorno.
 2. Notificaciones/emails.
 3. Chat (`is_pinned` + typing).
@@ -130,6 +144,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 9. Tipos, RLS, documentación y pruebas finales.
 
 ## Checklist de Despliegue
+
 - `npx supabase db push` aplicado.
 - Variables de entorno de email y pagos configuradas.
 - Pruebas verdes (unit/integración/E2E donde aplique).
@@ -137,6 +152,7 @@ Este documento define un plan táctico y ordenado para resolver los TODO/FIXME i
 - Monitoreo/logs en edge functions habilitado.
 
 ## Referencias de Archivos
+
 - Chat: `src/components/chat/*`, `src/hooks/useChat.ts`, `src/hooks/useMessages.ts`.
 - Empleados: `src/components/employee/MyEmploymentsEnhanced.tsx`.
 - Cliente: `src/components/client/ClientDashboard.tsx`.

@@ -1,35 +1,48 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Phone, Mail, Globe, Star, Clock, ChevronRight } from 'lucide-react';
-import { useBusinessProfileData } from '@/hooks/useBusinessProfileData';
-import { useGeolocation } from '@/hooks/useGeolocation';
-import { useAuth } from '@/hooks/useAuth';
-import { usePageMeta } from '@/hooks/usePageMeta';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ReviewList } from '@/components/reviews/ReviewList';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom'
+import {
+  ArrowLeft,
+  Calendar,
+  ChevronRight,
+  Clock,
+  Globe,
+  Mail,
+  MapPin,
+  Phone,
+  Star,
+} from 'lucide-react'
+import { useBusinessProfileData } from '@/hooks/useBusinessProfileData'
+import { useGeolocation } from '@/hooks/useGeolocation'
+import { useAuth } from '@/hooks/useAuth'
+import { usePageMeta } from '@/hooks/usePageMeta'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { ReviewList } from '@/components/reviews/ReviewList'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { useEffect } from 'react'
 
 export default function PublicBusinessProfile() {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const analytics = useAnalytics();
-  
+  const { slug } = useParams<{ slug: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const analytics = useAnalytics()
+
   // Geolocation for distance calculation
-  const geoState = useGeolocation({ requestOnMount: true });
-  
+  const geoState = useGeolocation({ requestOnMount: true })
+
   // Fetch business data by slug
   const { business, isLoading, error } = useBusinessProfileData({
     slug,
-    userLocation: geoState.latitude && geoState.longitude ? {
-      latitude: geoState.latitude,
-      longitude: geoState.longitude
-    } : undefined
-  });
+    userLocation:
+      geoState.latitude && geoState.longitude
+        ? {
+            latitude: geoState.latitude,
+            longitude: geoState.longitude,
+          }
+        : undefined,
+  })
 
   // Track profile view when business data loads
   useEffect(() => {
@@ -39,9 +52,9 @@ export default function PublicBusinessProfile() {
         businessName: business.name,
         slug: business.slug,
         category: business.category as string | undefined,
-      });
+      })
     }
-  }, [business, analytics]);
+  }, [business, analytics])
 
   // Handle booking action
   const handleBookAppointment = (serviceId?: string, locationId?: string, employeeId?: string) => {
@@ -50,24 +63,90 @@ export default function PublicBusinessProfile() {
       businessId: business?.id || '',
       serviceId,
       source: 'profile',
-    });
+    })
 
     if (!user) {
       // Save intended action and redirect to login
-      const redirect = `/negocio/${slug}`;
-      const params = new URLSearchParams();
-      params.set('redirect', redirect);
-      if (serviceId) params.set('serviceId', serviceId);
-      if (locationId) params.set('locationId', locationId);
-      if (employeeId) params.set('employeeId', employeeId);
-      
-      navigate(`/login?${params.toString()}`);
-      return;
+      const redirect = `/negocio/${slug}`
+      const params = new URLSearchParams()
+      params.set('redirect', redirect)
+      if (serviceId) params.set('serviceId', serviceId)
+      if (locationId) params.set('locationId', locationId)
+      if (employeeId) params.set('employeeId', employeeId)
+
+      navigate(`/login?${params.toString()}`)
+      return
     }
 
     // User is authenticated, navigate to app with preselection
-    navigate(`/app?businessId=${business?.id}&serviceId=${serviceId || ''}&locationId=${locationId || ''}&employeeId=${employeeId || ''}`);
-  };
+    navigate(
+      `/app?businessId=${business?.id}&serviceId=${serviceId || ''}&locationId=${locationId || ''}&employeeId=${employeeId || ''}`
+    )
+  }
+
+  // Build SEO meta tags (unconditional)
+  const pageTitle =
+    business?.meta_title ??
+    (business?.name ? `${business.name} - AppointSync Pro` : 'AppointSync Pro')
+  const pageDescription =
+    business?.meta_description ??
+    business?.description ??
+    (business?.name ? `Reserva citas en ${business.name}` : 'Reserva citas y administra tu negocio')
+  const ogImage = business?.og_image_url ?? business?.banner_url ?? business?.logo_url
+  const canonicalUrl = business?.slug
+    ? `${globalThis.location.origin}/negocio/${business.slug}`
+    : globalThis.location.origin
+
+  // Use the custom meta tag hook (always called)
+  usePageMeta({
+    title: pageTitle,
+    description: pageDescription,
+    keywords: business?.meta_keywords?.join(', '),
+    ogImage: ogImage || undefined,
+    ogTitle: pageTitle,
+    ogDescription: pageDescription,
+    canonical: canonicalUrl,
+  })
+
+  // Handle JSON-LD structured data (guarded)
+  useEffect(() => {
+    if (!business) return
+    const script = document.createElement('script')
+    script.type = 'application/ld+json'
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: business.name,
+      description: business.description,
+      image: ogImage,
+      url: canonicalUrl,
+      telephone: business.phone,
+      email: business.email,
+      address: business.locations[0]
+        ? {
+            '@type': 'PostalAddress',
+            streetAddress: business.locations[0].address,
+            addressLocality: business.locations[0].city,
+            addressRegion: business.locations[0].state,
+            postalCode: business.locations[0].postal_code,
+            addressCountry: business.locations[0].country,
+          }
+        : undefined,
+      aggregateRating:
+        business.reviewCount > 0
+          ? {
+              '@type': 'AggregateRating',
+              ratingValue: business.rating.toFixed(1),
+              reviewCount: business.reviewCount,
+            }
+          : undefined,
+    })
+    document.head.appendChild(script)
+
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script)
+    }
+  }, [business, ogImage, canonicalUrl])
 
   if (isLoading) {
     return (
@@ -77,7 +156,7 @@ export default function PublicBusinessProfile() {
           <p className="text-muted-foreground">Cargando información del negocio...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !business) {
@@ -94,59 +173,10 @@ export default function PublicBusinessProfile() {
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
-  // Build SEO meta tags
-  const pageTitle = business.meta_title || `${business.name} - AppointSync Pro`;
-  const pageDescription = business.meta_description || business.description || `Reserva citas en ${business.name}`;
-  const ogImage = business.og_image_url || business.banner_url || business.logo_url;
-  const canonicalUrl = `${globalThis.location.origin}/negocio/${business.slug}`;
-
-  // Use the custom meta tag hook
-  usePageMeta({
-    title: pageTitle,
-    description: pageDescription,
-    keywords: business.meta_keywords?.join(', '),
-    ogImage: ogImage || undefined,
-    ogTitle: pageTitle,
-    ogDescription: pageDescription,
-    canonical: canonicalUrl,
-  });
-
-  // Handle JSON-LD structured data
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": business.name,
-      "description": business.description,
-      "image": ogImage,
-      "url": canonicalUrl,
-      "telephone": business.phone,
-      "email": business.email,
-      "address": business.locations[0] ? {
-        "@type": "PostalAddress",
-        "streetAddress": business.locations[0].address,
-        "addressLocality": business.locations[0].city,
-        "addressRegion": business.locations[0].state,
-        "postalCode": business.locations[0].postal_code,
-        "addressCountry": business.locations[0].country
-      } : undefined,
-      "aggregateRating": business.reviewCount > 0 ? {
-        "@type": "AggregateRating",
-        "ratingValue": business.rating.toFixed(1),
-        "reviewCount": business.reviewCount
-      } : undefined
-    });
-    document.head.appendChild(script);
-    
-    return () => {
-      if (script.parentNode) script.parentNode.removeChild(script);
-    };
-  }, [business, ogImage, canonicalUrl]);
+  // SEO hooks moved above to comply with rules-of-hooks
 
   return (
     <>
@@ -206,7 +236,7 @@ export default function PublicBusinessProfile() {
                 )}
                 {business.subcategories && business.subcategories.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {business.subcategories.map((subcat) => (
+                    {business.subcategories.map(subcat => (
                       <Badge key={subcat.name} variant="secondary">
                         {subcat.name}
                       </Badge>
@@ -233,13 +263,15 @@ export default function PublicBusinessProfile() {
                 {business.phone && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4" />
-                    <a 
-                      href={`tel:${business.phone}`} 
+                    <a
+                      href={`tel:${business.phone}`}
                       className="hover:text-primary"
-                      onClick={() => analytics.trackContactClick({
-                        businessId: business.id,
-                        contactType: 'phone',
-                      })}
+                      onClick={() =>
+                        analytics.trackContactClick({
+                          businessId: business.id,
+                          contactType: 'phone',
+                        })
+                      }
                     >
                       {business.phone}
                     </a>
@@ -248,13 +280,15 @@ export default function PublicBusinessProfile() {
                 {business.email && (
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    <a 
-                      href={`mailto:${business.email}`} 
+                    <a
+                      href={`mailto:${business.email}`}
                       className="hover:text-primary"
-                      onClick={() => analytics.trackContactClick({
-                        businessId: business.id,
-                        contactType: 'email',
-                      })}
+                      onClick={() =>
+                        analytics.trackContactClick({
+                          businessId: business.id,
+                          contactType: 'email',
+                        })
+                      }
                     >
                       {business.email}
                     </a>
@@ -263,14 +297,15 @@ export default function PublicBusinessProfile() {
                 {business.website && (
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <a 
-                      href={business.website} 
+                    <a
+                      href={business.website}
                       target="_blank"
-                      onClick={() => analytics.trackContactClick({
-                        businessId: business.id,
-                        contactType: 'email', // Use 'email' as closest match for website
-                      })}
- 
+                      onClick={() =>
+                        analytics.trackContactClick({
+                          businessId: business.id,
+                          contactType: 'email', // Use 'email' as closest match for website
+                        })
+                      }
                       rel="noopener noreferrer"
                       className="hover:text-primary"
                     >
@@ -285,9 +320,7 @@ export default function PublicBusinessProfile() {
           {/* Description */}
           {business.description && (
             <div className="mb-8">
-              <p className="text-muted-foreground leading-relaxed">
-                {business.description}
-              </p>
+              <p className="text-muted-foreground leading-relaxed">{business.description}</p>
             </div>
           )}
 
@@ -318,18 +351,13 @@ export default function PublicBusinessProfile() {
                           ${service.price.toLocaleString('es-CO')}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {service.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
                           <span>{service.duration} min</span>
                         </div>
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleBookAppointment(service.id)}
-                        >
+                        <Button size="sm" onClick={() => handleBookAppointment(service.id)}>
                           Reservar
                           <ChevronRight className="w-4 h-4 ml-1" />
                         </Button>
@@ -355,7 +383,8 @@ export default function PublicBusinessProfile() {
                         <div className="flex items-start gap-2 text-muted-foreground">
                           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                           <span>
-                            {location.address}, {location.city}, {location.state} {location.postal_code}
+                            {location.address}, {location.city}, {location.state}{' '}
+                            {location.postal_code}
                           </span>
                         </div>
                         {location.phone && (
@@ -371,22 +400,30 @@ export default function PublicBusinessProfile() {
                             <p className="font-medium text-xs mb-2">Horario de atención:</p>
                             <div className="space-y-1 text-xs">
                               {Object.entries(location.business_hours).map(([day, hours]) => {
-                                const hoursData = hours as { open?: string; close?: string; closed?: boolean };
+                                const hoursData = hours as {
+                                  open?: string
+                                  close?: string
+                                  closed?: boolean
+                                }
                                 return (
                                   <div key={day} className="flex justify-between">
                                     <span className="capitalize">{day}:</span>
-                                    <span className={hoursData.closed ? 'text-muted-foreground' : ''}>
-                                      {hoursData.closed ? 'Cerrado' : `${hoursData.open} - ${hoursData.close}`}
+                                    <span
+                                      className={hoursData.closed ? 'text-muted-foreground' : ''}
+                                    >
+                                      {hoursData.closed
+                                        ? 'Cerrado'
+                                        : `${hoursData.open} - ${hoursData.close}`}
                                     </span>
                                   </div>
-                                );
+                                )
                               })}
                             </div>
                           </div>
                         )}
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="w-full mt-4"
                         onClick={() => handleBookAppointment(undefined, location.id)}
                       >
@@ -417,7 +454,8 @@ export default function PublicBusinessProfile() {
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                            {employee.first_name[0]}{employee.last_name[0]}
+                            {employee.first_name[0]}
+                            {employee.last_name[0]}
                           </div>
                         )}
                         <div className="flex-1">
@@ -430,7 +468,9 @@ export default function PublicBusinessProfile() {
                           {employee.review_count && employee.review_count > 0 && (
                             <div className="flex items-center gap-1 mt-1">
                               <Star className="w-3 h-3 fill-primary text-primary" />
-                              <span className="text-xs font-medium">{employee.rating?.toFixed(1)}</span>
+                              <span className="text-xs font-medium">
+                                {employee.rating?.toFixed(1)}
+                              </span>
                               <span className="text-xs text-muted-foreground">
                                 ({employee.review_count})
                               </span>
@@ -445,15 +485,15 @@ export default function PublicBusinessProfile() {
                       )}
                       {employee.specializations && employee.specializations.length > 0 && (
                         <div className="flex flex-wrap gap-1 mb-3">
-                          {employee.specializations.slice(0, 3).map((spec) => (
+                          {employee.specializations.slice(0, 3).map(spec => (
                             <Badge key={spec} variant="outline" className="text-xs">
                               {spec}
                             </Badge>
                           ))}
                         </div>
                       )}
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className="w-full"
                         onClick={() => handleBookAppointment(undefined, undefined, employee.id)}
                       >
@@ -468,9 +508,7 @@ export default function PublicBusinessProfile() {
             {/* Reviews Tab */}
             <TabsContent value="resenas" className="mt-6">
               <div className="max-h-[600px] overflow-y-auto">
-                <ReviewList
-                  businessId={business.id}
-                />
+                <ReviewList businessId={business.id} />
               </div>
             </TabsContent>
           </Tabs>
@@ -479,11 +517,7 @@ export default function PublicBusinessProfile() {
         {/* Footer CTA */}
         <div className="sticky bottom-0 border-t border-border bg-card/95 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => handleBookAppointment()}
-            >
+            <Button size="lg" className="w-full" onClick={() => handleBookAppointment()}>
               <Calendar className="w-5 h-5 mr-2" />
               Reservar cita ahora
             </Button>
@@ -491,5 +525,5 @@ export default function PublicBusinessProfile() {
         </div>
       </div>
     </>
-  );
+  )
 }

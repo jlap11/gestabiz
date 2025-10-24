@@ -4,8 +4,8 @@
  * Solo accesible por Administradores
  */
 
-import React, { useState, useEffect } from 'react'
-import { DollarSign, User, Package, MapPin, CreditCard, Check, X } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Check, CreditCard, DollarSign, MapPin, Package, User, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -110,25 +110,27 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
       // Employees
       const { data: employeesData, error: employeesError } = await supabase
         .from('business_employees')
-        .select(`
+        .select(
+          `
           employee_id,
           profiles!business_employees_employee_id_fkey (
             id,
             full_name
           )
-        `)
+        `
+        )
         .eq('business_id', businessId)
         .eq('status', 'approved')
 
       if (employeesError) throw employeesError
-      
-      const employeesList = employeesData?.map((emp: any) => ({
-        id: emp.profiles.id,
-        full_name: emp.profiles.full_name || 'Sin nombre',
-      })) || []
-      
-      setEmployees(employeesList)
 
+      const employeesList =
+        employeesData?.map((emp: any) => ({
+          id: emp.profiles.id,
+          full_name: emp.profiles.full_name || 'Sin nombre',
+        })) || []
+
+      setEmployees(employeesList)
     } catch (error: any) {
       console.error('Error fetching data:', error)
       toast.error(t('admin.quickSale.loadDataError') + ': ' + error.message)
@@ -229,7 +231,6 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
       setNotes('')
 
       if (onSuccess) onSuccess()
-
     } catch (error: any) {
       console.error('Error creating quick sale:', error)
       toast.error(t('admin.quickSale.saleRegistrationError') + ': ' + error.message)
@@ -266,7 +267,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
               <Input
                 id="clientName"
                 value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
+                onChange={e => setClientName(e.target.value)}
                 placeholder={t('common.placeholders.clientName')}
                 required
               />
@@ -278,7 +279,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 id="clientPhone"
                 type="tel"
                 value={clientPhone}
-                onChange={(e) => setClientPhone(e.target.value)}
+                onChange={e => setClientPhone(e.target.value)}
                 placeholder={t('common.placeholders.clientPhone')}
               />
             </div>
@@ -291,7 +292,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
               <Input
                 id="clientDocument"
                 value={clientDocument}
-                onChange={(e) => setClientDocument(e.target.value)}
+                onChange={e => setClientDocument(e.target.value)}
                 placeholder={t('common.placeholders.clientDocument')}
               />
             </div>
@@ -302,7 +303,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 id="clientEmail"
                 type="email"
                 value={clientEmail}
-                onChange={(e) => setClientEmail(e.target.value)}
+                onChange={e => setClientEmail(e.target.value)}
                 placeholder={t('common.placeholders.clientEmail')}
               />
             </div>
@@ -319,7 +320,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 <SelectValue placeholder={t('common.placeholders.selectService')} />
               </SelectTrigger>
               <SelectContent>
-                {services.map((service) => (
+                {services.map(service => (
                   <SelectItem key={service.id} value={service.id}>
                     {service.name} - ${service.price.toLocaleString('es-CO')} COP
                   </SelectItem>
@@ -340,7 +341,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                   <SelectValue placeholder={t('common.placeholders.selectLocation')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {locations.map((location) => (
+                  {locations.map(location => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
                     </SelectItem>
@@ -356,7 +357,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                   <SelectValue placeholder={t('common.placeholders.selectEmployee')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {employees.map((employee) => (
+                  {employees.map(employee => (
                     <SelectItem key={employee.id} value={employee.id}>
                       {employee.full_name}
                     </SelectItem>
@@ -376,7 +377,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                 step="100"
                 min="0"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={e => setAmount(e.target.value)}
                 placeholder={t('common.placeholders.amount')}
                 required
               />
@@ -410,7 +411,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
             <Textarea
               id="notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={e => setNotes(e.target.value)}
               placeholder={t('common.placeholders.notes')}
               rows={2}
             />
@@ -418,11 +419,7 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

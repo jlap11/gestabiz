@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea'
 // Removed unused Select imports
 import { Badge } from '@/components/ui/badge'
-import { Building, MagnifyingGlass as Search, MapPin, Clock } from '@phosphor-icons/react'
+import { Building, Clock, MapPin, MagnifyingGlass as Search } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { Business, User, EmployeeRequest } from '@/types'
+import { Business, EmployeeRequest, User } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -30,20 +30,22 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
   // Filter out businesses where user is already owner or has requested to join
   const availableBusinesses = businesses.filter(business => {
     if (business.owner_id === user.id) return false
-    
-    const hasExistingRequest = employeeRequests.some(request => 
-      request.business_id === business.id && 
-      request.user_id === user.id && 
-      (request.status === 'pending' || request.status === 'approved')
+
+    const hasExistingRequest = employeeRequests.some(
+      request =>
+        request.business_id === business.id &&
+        request.user_id === user.id &&
+        (request.status === 'pending' || request.status === 'approved')
     )
-    
+
     return !hasExistingRequest
   })
 
-  const filteredBusinesses = availableBusinesses.filter(business =>
-    business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.city?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBusinesses = availableBusinesses.filter(
+    business =>
+      business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      business.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      business.city?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleSelectBusiness = (business: Business) => {
@@ -62,11 +64,11 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
         business_id: selectedBusiness.id,
         message: message.trim(),
         status: 'pending',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       }
 
       await setEmployeeRequests(prev => [...prev, newRequest])
-      
+
       toast.success(t('employee.join.request_sent_success'))
       setSelectedBusiness(null)
       setMessage('')
@@ -83,22 +85,21 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
     const today = new Date().getDay() // 0 = Sunday, 1 = Monday, etc.
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
     const currentDay = dayNames[today] as keyof Business['business_hours']
-    
+
     const hours = business.business_hours[currentDay]
-    
+
     if (hours.closed) {
       return t('business.hours.closed')
     }
-    
+
     return `${hours.open} - ${hours.close}`
   }
 
   // hasExistingRequest helper not used in render
 
   const getRequestStatus = (businessId: string) => {
-    const request = employeeRequests.find(request => 
-      request.business_id === businessId && 
-      request.user_id === user.id
+    const request = employeeRequests.find(
+      request => request.business_id === businessId && request.user_id === user.id
     )
     return request?.status
   }
@@ -114,16 +115,14 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
                 <Building className="h-5 w-5" />
                 {t('employee.join.title')}
               </CardTitle>
-              <CardDescription>
-                {t('employee.join.description')}
-              </CardDescription>
+              <CardDescription>{t('employee.join.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   placeholder={t('employee.join.search_placeholder')}
                   className="flex-1"
                 />
@@ -133,11 +132,14 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
 
           {/* Business List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredBusinesses.map((business) => {
+            {filteredBusinesses.map(business => {
               const requestStatus = getRequestStatus(business.id)
-              
+
               return (
-                <Card key={business.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                <Card
+                  key={business.id}
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
@@ -147,13 +149,18 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
                             {t(`business.categories.${business.category}`)}
                           </Badge>
                         </div>
-                        {requestStatus && (() => {
-                          let variant: 'outline' | 'default' | 'destructive'
-                          if (requestStatus === 'pending') variant = 'outline'
-                          else if (requestStatus === 'approved') variant = 'default'
-                          else variant = 'destructive'
-                          return <Badge variant={variant} className="text-xs">{t(`employee.requests.status.${requestStatus}`)}</Badge>
-                        })()}
+                        {requestStatus &&
+                          (() => {
+                            let variant: 'outline' | 'default' | 'destructive'
+                            if (requestStatus === 'pending') variant = 'outline'
+                            else if (requestStatus === 'approved') variant = 'default'
+                            else variant = 'destructive'
+                            return (
+                              <Badge variant={variant} className="text-xs">
+                                {t(`employee.requests.status.${requestStatus}`)}
+                              </Badge>
+                            )
+                          })()}
                       </div>
 
                       {business.description && (
@@ -176,7 +183,7 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
                       </div>
 
                       {!requestStatus && (
-                        <Button 
+                        <Button
                           onClick={() => handleSelectBusiness(business)}
                           className="w-full mt-4"
                           size="sm"
@@ -196,10 +203,14 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
               <CardContent className="text-center py-12">
                 <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">
-                  {searchTerm ? t('employee.join.no_results_title') : t('employee.join.no_businesses_title')}
+                  {searchTerm
+                    ? t('employee.join.no_results_title')
+                    : t('employee.join.no_businesses_title')}
                 </h3>
                 <p className="text-muted-foreground">
-                  {searchTerm ? t('employee.join.no_results_description') : t('employee.join.no_businesses_description')}
+                  {searchTerm
+                    ? t('employee.join.no_results_description')
+                    : t('employee.join.no_businesses_description')}
                 </p>
               </CardContent>
             </Card>
@@ -242,34 +253,27 @@ export default function JoinBusiness({ user, onRequestSent }: JoinBusinessProps)
 
             {/* Message */}
             <div className="space-y-2">
-              <Label htmlFor="message">
-                {t('employee.join.message_label')}
-              </Label>
+              <Label htmlFor="message">{t('employee.join.message_label')}</Label>
               <Textarea
                 id="message"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={e => setMessage(e.target.value)}
                 placeholder={t('employee.join.message_placeholder')}
                 rows={4}
               />
-              <p className="text-xs text-muted-foreground">
-                {t('employee.join.message_hint')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('employee.join.message_hint')}</p>
             </div>
 
             {/* Actions */}
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setSelectedBusiness(null)}
                 disabled={isSubmitting}
               >
                 {t('common.cancel')}
               </Button>
-              <Button 
-                onClick={handleSubmitRequest}
-                disabled={isSubmitting}
-              >
+              <Button onClick={handleSubmitRequest} disabled={isSubmitting}>
                 {isSubmitting ? t('employee.join.sending') : t('employee.join.send_request')}
               </Button>
             </div>

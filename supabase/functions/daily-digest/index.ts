@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders })
   }
@@ -20,10 +20,12 @@ serve(async (req) => {
     // Get all users who have daily digest enabled
     const { data: users, error: usersError } = await supabaseClient
       .from('notification_settings')
-      .select(`
+      .select(
+        `
         user_id,
         users (email, name, timezone)
-      `)
+      `
+      )
       .eq('daily_digest', true)
 
     if (usersError) {
@@ -42,10 +44,12 @@ serve(async (req) => {
         // Get today's appointments
         const { data: todayAppointments } = await supabaseClient
           .from('appointments')
-          .select(`
+          .select(
+            `
             *,
             clients (name, email, phone)
-          `)
+          `
+          )
           .eq('user_id', userSettings.user_id)
           .gte('start_datetime', today.toISOString().split('T')[0])
           .lt('start_datetime', tomorrow.toISOString().split('T')[0])
@@ -58,10 +62,12 @@ serve(async (req) => {
 
         const { data: tomorrowAppointments } = await supabaseClient
           .from('appointments')
-          .select(`
+          .select(
+            `
             *,
             clients (name, email, phone)
-          `)
+          `
+          )
           .eq('user_id', userSettings.user_id)
           .gte('start_datetime', tomorrow.toISOString().split('T')[0])
           .lt('start_datetime', dayAfterTomorrow.toISOString().split('T')[0])
@@ -79,7 +85,7 @@ serve(async (req) => {
         const emailSent = await sendDigestEmail({
           to: user.email,
           subject: `📅 Resumen Diario - ${today.toLocaleDateString('es-ES')}`,
-          html: digestHtml
+          html: digestHtml,
         })
 
         results.push({
@@ -87,15 +93,14 @@ serve(async (req) => {
           email: user.email,
           status: emailSent ? 'sent' : 'failed',
           todayCount: todayAppointments?.length || 0,
-          tomorrowCount: tomorrowAppointments?.length || 0
+          tomorrowCount: tomorrowAppointments?.length || 0,
         })
-
       } catch (error) {
         console.error(`Error processing digest for user ${userSettings.user_id}:`, error)
         results.push({
           userId: userSettings.user_id,
           status: 'failed',
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -104,36 +109,39 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         processed: results.length,
-        results
+        results,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error in daily-digest function:', error)
-    
+
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 500,
       }
     )
   }
 })
 
-function generateDailyDigest(userName: string, todayAppointments: any[], tomorrowAppointments: any[]): string {
+function generateDailyDigest(
+  userName: string,
+  todayAppointments: any[],
+  tomorrowAppointments: any[]
+): string {
   const today = new Date().toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 
   const tomorrow = new Date()
@@ -142,7 +150,7 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 
   return `
@@ -159,19 +167,23 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
             🕐 Hoy - ${today}
           </h2>
           
-          ${todayAppointments.length === 0 ? `
+          ${
+            todayAppointments.length === 0
+              ? `
             <div style="background-color: #F1F5F9; padding: 20px; border-radius: 8px; text-align: center; color: #64748B;">
               <p style="margin: 0;">No tienes citas programadas para hoy</p>
               <p style="margin: 10px 0 0 0; font-size: 14px;">¡Disfruta tu día libre! 🌟</p>
             </div>
-          ` : `
+          `
+              : `
             <div style="background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-              ${todayAppointments.map((apt, index) => {
-                const time = new Date(apt.start_datetime).toLocaleTimeString('es-ES', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })
-                return `
+              ${todayAppointments
+                .map((apt, index) => {
+                  const time = new Date(apt.start_datetime).toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                  return `
                   <div style="padding: 15px; ${index < todayAppointments.length - 1 ? 'border-bottom: 1px solid #E2E8F0;' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                       <div style="flex: 1;">
@@ -187,9 +199,11 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
                     </div>
                   </div>
                 `
-              }).join('')}
+                })
+                .join('')}
             </div>
-          `}
+          `
+          }
         </div>
 
         <!-- Tomorrow's Appointments -->
@@ -198,18 +212,22 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
             🌅 Mañana - ${tomorrowFormatted}
           </h2>
           
-          ${tomorrowAppointments.length === 0 ? `
+          ${
+            tomorrowAppointments.length === 0
+              ? `
             <div style="background-color: #F1F5F9; padding: 20px; border-radius: 8px; text-align: center; color: #64748B;">
               <p style="margin: 0;">No tienes citas programadas para mañana</p>
             </div>
-          ` : `
+          `
+              : `
             <div style="background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-              ${tomorrowAppointments.map((apt, index) => {
-                const time = new Date(apt.start_datetime).toLocaleTimeString('es-ES', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })
-                return `
+              ${tomorrowAppointments
+                .map((apt, index) => {
+                  const time = new Date(apt.start_datetime).toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                  return `
                   <div style="padding: 15px; ${index < tomorrowAppointments.length - 1 ? 'border-bottom: 1px solid #E2E8F0;' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                       <div style="flex: 1;">
@@ -225,9 +243,11 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
                     </div>
                   </div>
                 `
-              }).join('')}
+                })
+                .join('')}
             </div>
-          `}
+          `
+          }
         </div>
 
         <!-- Summary Stats -->
@@ -252,10 +272,14 @@ function generateDailyDigest(userName: string, todayAppointments: any[], tomorro
   `
 }
 
-async function sendDigestEmail(emailData: { to: string; subject: string; html: string }): Promise<boolean> {
+async function sendDigestEmail(emailData: {
+  to: string
+  subject: string
+  html: string
+}): Promise<boolean> {
   try {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    
+
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY not configured')
       return false
@@ -264,7 +288,7 @@ async function sendDigestEmail(emailData: { to: string; subject: string; html: s
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -284,7 +308,6 @@ async function sendDigestEmail(emailData: { to: string; subject: string; html: s
     const result = await response.json()
     console.log('Digest email sent successfully:', result.id)
     return true
-
   } catch (error) {
     console.error('Error sending digest email:', error)
     return false

@@ -1,42 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import React, { useEffect, useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
-  Plus,
-  X,
-  Save,
-  Loader2,
-  Briefcase,
+  AlertCircle,
   Award,
+  Briefcase,
+  Calendar,
+  DollarSign,
   Languages,
   Link as LinkIcon,
-  DollarSign,
-  Calendar,
-  AlertCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { useEmployeeProfile, type Certification } from '@/hooks/useEmployeeProfile';
+  Loader2,
+  Plus,
+  Save,
+  X,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { type Certification, useEmployeeProfile } from '@/hooks/useEmployeeProfile'
 
 interface EmployeeProfileSettingsProps {
-  userId: string;
+  userId: string
 }
 
 export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = ({ userId }) => {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
   const {
     profile,
     loading,
@@ -47,69 +47,71 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
     removeSpecialization,
     addLanguage,
     removeLanguage,
-  } = useEmployeeProfile(userId);
+  } = useEmployeeProfile(userId)
 
   // Form state
-  const [professionalSummary, setProfessionalSummary] = useState('');
-  const [yearsOfExperience, setYearsOfExperience] = useState<number>(0);
-  const [preferredWorkType, setPreferredWorkType] = useState<'full_time' | 'part_time' | 'contract' | 'flexible'>('full_time');
-  const [availableForHire, setAvailableForHire] = useState(true);
-  const [expectedSalaryMin, setExpectedSalaryMin] = useState<number>(0);
-  const [expectedSalaryMax, setExpectedSalaryMax] = useState<number>(0);
-  const [portfolioUrl, setPortfolioUrl] = useState('');
-  const [linkedinUrl, setLinkedinUrl] = useState('');
-  const [githubUrl, setGithubUrl] = useState('');
+  const [professionalSummary, setProfessionalSummary] = useState('')
+  const [yearsOfExperience, setYearsOfExperience] = useState<number>(0)
+  const [preferredWorkType, setPreferredWorkType] = useState<
+    'full_time' | 'part_time' | 'contract' | 'flexible'
+  >('full_time')
+  const [availableForHire, setAvailableForHire] = useState(true)
+  const [expectedSalaryMin, setExpectedSalaryMin] = useState<number>(0)
+  const [expectedSalaryMax, setExpectedSalaryMax] = useState<number>(0)
+  const [portfolioUrl, setPortfolioUrl] = useState('')
+  const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [githubUrl, setGithubUrl] = useState('')
 
   // New item inputs
-  const [newSpecialization, setNewSpecialization] = useState('');
-  const [newLanguage, setNewLanguage] = useState('');
-  const [showCertificationForm, setShowCertificationForm] = useState(false);
+  const [newSpecialization, setNewSpecialization] = useState('')
+  const [newLanguage, setNewLanguage] = useState('')
+  const [showCertificationForm, setShowCertificationForm] = useState(false)
 
   // Certification form state
-  const [certName, setCertName] = useState('');
-  const [certIssuer, setCertIssuer] = useState('');
-  const [certIssueDate, setCertIssueDate] = useState('');
-  const [certExpiryDate, setCertExpiryDate] = useState('');
-  const [certCredentialId, setCertCredentialId] = useState('');
-  const [certCredentialUrl, setCertCredentialUrl] = useState('');
+  const [certName, setCertName] = useState('')
+  const [certIssuer, setCertIssuer] = useState('')
+  const [certIssueDate, setCertIssueDate] = useState('')
+  const [certExpiryDate, setCertExpiryDate] = useState('')
+  const [certCredentialId, setCertCredentialId] = useState('')
+  const [certCredentialUrl, setCertCredentialUrl] = useState('')
 
-  const [saving, setSaving] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Load profile data into form
   useEffect(() => {
     if (profile) {
-      setProfessionalSummary(profile.professional_summary || '');
-      setYearsOfExperience(profile.years_of_experience || 0);
-      setPreferredWorkType(profile.preferred_work_type || 'full_time');
-      setAvailableForHire(profile.available_for_hire ?? true);
-      setExpectedSalaryMin(profile.expected_salary_min || 0);
-      setExpectedSalaryMax(profile.expected_salary_max || 0);
-      setPortfolioUrl(profile.portfolio_url || '');
-      setLinkedinUrl(profile.linkedin_url || '');
-      setGithubUrl(profile.github_url || '');
+      setProfessionalSummary(profile.professional_summary || '')
+      setYearsOfExperience(profile.years_of_experience || 0)
+      setPreferredWorkType(profile.preferred_work_type || 'full_time')
+      setAvailableForHire(profile.available_for_hire ?? true)
+      setExpectedSalaryMin(profile.expected_salary_min || 0)
+      setExpectedSalaryMax(profile.expected_salary_max || 0)
+      setPortfolioUrl(profile.portfolio_url || '')
+      setLinkedinUrl(profile.linkedin_url || '')
+      setGithubUrl(profile.github_url || '')
     }
-  }, [profile]);
+  }, [profile])
 
   const handleSaveProfile = async () => {
     try {
-      setSaving(true);
-      setValidationError(null);
+      setSaving(true)
+      setValidationError(null)
 
       // Validations
       if (professionalSummary.trim().length < 50) {
-        setValidationError(t('jobsUI.professionalSummaryMinLength'));
-        return;
+        setValidationError(t('jobsUI.professionalSummaryMinLength'))
+        return
       }
 
       if (yearsOfExperience < 0 || yearsOfExperience > 50) {
-        setValidationError('Los años de experiencia deben estar entre 0 y 50');
-        return;
+        setValidationError('Los años de experiencia deben estar entre 0 y 50')
+        return
       }
 
       if (expectedSalaryMin > 0 && expectedSalaryMax > 0 && expectedSalaryMin > expectedSalaryMax) {
-        setValidationError('El salario mínimo no puede ser mayor que el máximo');
-        return;
+        setValidationError('El salario mínimo no puede ser mayor que el máximo')
+        return
       }
 
       await updateProfile({
@@ -122,47 +124,47 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
         portfolio_url: portfolioUrl.trim() || undefined,
         linkedin_url: linkedinUrl.trim() || undefined,
         github_url: githubUrl.trim() || undefined,
-      });
+      })
 
-      toast.success('Perfil actualizado exitosamente');
+      toast.success('Perfil actualizado exitosamente')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message || 'Error al actualizar perfil');
+      const err = error as Error
+      toast.error(err.message || 'Error al actualizar perfil')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleAddSpecialization = async () => {
-    if (!newSpecialization.trim()) return;
-    
+    if (!newSpecialization.trim()) return
+
     try {
-      await addSpecialization(newSpecialization.trim());
-      setNewSpecialization('');
-      toast.success('Especialización agregada');
+      await addSpecialization(newSpecialization.trim())
+      setNewSpecialization('')
+      toast.success('Especialización agregada')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message);
+      const err = error as Error
+      toast.error(err.message)
     }
-  };
+  }
 
   const handleAddLanguage = async () => {
-    if (!newLanguage.trim()) return;
-    
+    if (!newLanguage.trim()) return
+
     try {
-      await addLanguage(newLanguage.trim());
-      setNewLanguage('');
-      toast.success('Idioma agregado');
+      await addLanguage(newLanguage.trim())
+      setNewLanguage('')
+      toast.success('Idioma agregado')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message);
+      const err = error as Error
+      toast.error(err.message)
     }
-  };
+  }
 
   const handleAddCertification = async () => {
     if (!certName.trim() || !certIssuer.trim() || !certIssueDate) {
-      toast.error('Nombre, emisor y fecha de emisión son requeridos');
-      return;
+      toast.error('Nombre, emisor y fecha de emisión son requeridos')
+      return
     }
 
     try {
@@ -173,67 +175,67 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
         expiry_date: certExpiryDate || undefined,
         credential_id: certCredentialId.trim() || undefined,
         credential_url: certCredentialUrl.trim() || undefined,
-      });
+      })
 
       // Reset form
-      setCertName('');
-      setCertIssuer('');
-      setCertIssueDate('');
-      setCertExpiryDate('');
-      setCertCredentialId('');
-      setCertCredentialUrl('');
-      setShowCertificationForm(false);
-      toast.success('Certificación agregada');
+      setCertName('')
+      setCertIssuer('')
+      setCertIssueDate('')
+      setCertExpiryDate('')
+      setCertCredentialId('')
+      setCertCredentialUrl('')
+      setShowCertificationForm(false)
+      toast.success('Certificación agregada')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message);
+      const err = error as Error
+      toast.error(err.message)
     }
-  };
+  }
 
   const handleRemoveSpecialization = async (spec: string) => {
     try {
-      await removeSpecialization(spec);
-      toast.success('Especialización eliminada');
+      await removeSpecialization(spec)
+      toast.success('Especialización eliminada')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message);
+      const err = error as Error
+      toast.error(err.message)
     }
-  };
+  }
 
   const handleRemoveLanguage = async (lang: string) => {
     try {
-      await removeLanguage(lang);
-      toast.success('Idioma eliminado');
+      await removeLanguage(lang)
+      toast.success('Idioma eliminado')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message);
+      const err = error as Error
+      toast.error(err.message)
     }
-  };
+  }
 
   const handleRemoveCertification = async (certId: string) => {
     try {
-      await removeCertification(certId);
-      toast.success('Certificación eliminada');
+      await removeCertification(certId)
+      toast.success('Certificación eliminada')
     } catch (error) {
-      const err = error as Error;
-      toast.error(err.message);
+      const err = error as Error
+      toast.error(err.message)
     }
-  };
+  }
 
   const formatSalary = (amount: number): string => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    );
+    )
   }
 
   return (
@@ -270,7 +272,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
             <Textarea
               id="professional-summary"
               value={professionalSummary}
-              onChange={(e) => setProfessionalSummary(e.target.value)}
+              onChange={e => setProfessionalSummary(e.target.value)}
               placeholder="Describe tu experiencia, habilidades y lo que te hace único como profesional..."
               className="min-h-[120px] resize-y"
             />
@@ -289,13 +291,16 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
                 min={0}
                 max={50}
                 value={yearsOfExperience}
-                onChange={(e) => setYearsOfExperience(Number(e.target.value))}
+                onChange={e => setYearsOfExperience(Number(e.target.value))}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="work-type">Tipo de Trabajo Preferido</Label>
-              <Select value={preferredWorkType} onValueChange={(v) => setPreferredWorkType(v as typeof preferredWorkType)}>
+              <Select
+                value={preferredWorkType}
+                onValueChange={v => setPreferredWorkType(v as typeof preferredWorkType)}
+              >
                 <SelectTrigger id="work-type">
                   <SelectValue />
                 </SelectTrigger>
@@ -315,7 +320,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
               type="checkbox"
               id="available-for-hire"
               checked={availableForHire}
-              onChange={(e) => setAvailableForHire(e.target.checked)}
+              onChange={e => setAvailableForHire(e.target.checked)}
               className="rounded border-gray-300"
             />
             <Label htmlFor="available-for-hire" className="cursor-pointer">
@@ -332,7 +337,9 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
             <DollarSign className="h-5 w-5" />
             Expectativas Salariales
           </CardTitle>
-          <CardDescription>Opcional: Ayuda a los empleadores a hacerte ofertas adecuadas</CardDescription>
+          <CardDescription>
+            Opcional: Ayuda a los empleadores a hacerte ofertas adecuadas
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -343,7 +350,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
                 type="number"
                 min={0}
                 value={expectedSalaryMin}
-                onChange={(e) => setExpectedSalaryMin(Number(e.target.value))}
+                onChange={e => setExpectedSalaryMin(Number(e.target.value))}
                 placeholder="2000000"
               />
               {expectedSalaryMin > 0 && (
@@ -358,7 +365,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
                 type="number"
                 min={0}
                 value={expectedSalaryMax}
-                onChange={(e) => setExpectedSalaryMax(Number(e.target.value))}
+                onChange={e => setExpectedSalaryMax(Number(e.target.value))}
                 placeholder="5000000"
               />
               {expectedSalaryMax > 0 && (
@@ -397,8 +404,8 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
             <Input
               placeholder="Ej: Desarrollo Web, Marketing Digital..."
               value={newSpecialization}
-              onChange={(e) => setNewSpecialization(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddSpecialization()}
+              onChange={e => setNewSpecialization(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleAddSpecialization()}
             />
             <Button onClick={handleAddSpecialization} size="sm">
               <Plus className="h-4 w-4" />
@@ -435,8 +442,8 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
             <Input
               placeholder="Ej: Español, Inglés..."
               value={newLanguage}
-              onChange={(e) => setNewLanguage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddLanguage()}
+              onChange={e => setNewLanguage(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleAddLanguage()}
             />
             <Button onClick={handleAddLanguage} size="sm">
               <Plus className="h-4 w-4" />
@@ -475,39 +482,45 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
                   <Input
                     placeholder="Nombre de la certificación *"
                     value={certName}
-                    onChange={(e) => setCertName(e.target.value)}
+                    onChange={e => setCertName(e.target.value)}
                   />
                   <Input
                     placeholder="Emisor *"
                     value={certIssuer}
-                    onChange={(e) => setCertIssuer(e.target.value)}
+                    onChange={e => setCertIssuer(e.target.value)}
                   />
                   <Input
                     type="date"
                     placeholder="Fecha de emisión *"
                     value={certIssueDate}
-                    onChange={(e) => setCertIssueDate(e.target.value)}
+                    onChange={e => setCertIssueDate(e.target.value)}
                   />
                   <Input
                     type="date"
                     placeholder="Fecha de vencimiento"
                     value={certExpiryDate}
-                    onChange={(e) => setCertExpiryDate(e.target.value)}
+                    onChange={e => setCertExpiryDate(e.target.value)}
                   />
                   <Input
                     placeholder="ID de credencial"
                     value={certCredentialId}
-                    onChange={(e) => setCertCredentialId(e.target.value)}
+                    onChange={e => setCertCredentialId(e.target.value)}
                   />
                   <Input
                     placeholder="URL de credencial"
                     value={certCredentialUrl}
-                    onChange={(e) => setCertCredentialUrl(e.target.value)}
+                    onChange={e => setCertCredentialUrl(e.target.value)}
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleAddCertification} size="sm">Guardar</Button>
-                  <Button variant="outline" size="sm" onClick={() => setShowCertificationForm(false)}>
+                  <Button onClick={handleAddCertification} size="sm">
+                    Guardar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCertificationForm(false)}
+                  >
                     Cancelar
                   </Button>
                 </div>
@@ -526,7 +539,9 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                       <span>Emisión: {new Date(cert.issue_date).toLocaleDateString()}</span>
                       {cert.expiry_date && (
-                        <span>• Vencimiento: {new Date(cert.expiry_date).toLocaleDateString()}</span>
+                        <span>
+                          • Vencimiento: {new Date(cert.expiry_date).toLocaleDateString()}
+                        </span>
                       )}
                     </div>
                     {cert.credential_url && (
@@ -571,7 +586,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
               type="url"
               placeholder="https://tu-portfolio.com"
               value={portfolioUrl}
-              onChange={(e) => setPortfolioUrl(e.target.value)}
+              onChange={e => setPortfolioUrl(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -581,7 +596,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
               type="url"
               placeholder="https://linkedin.com/in/tu-perfil"
               value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
+              onChange={e => setLinkedinUrl(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -591,7 +606,7 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
               type="url"
               placeholder="https://github.com/tu-usuario"
               value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
+              onChange={e => setGithubUrl(e.target.value)}
             />
           </div>
         </CardContent>
@@ -616,5 +631,5 @@ export const EmployeeProfileSettings: React.FC<EmployeeProfileSettingsProps> = (
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,16 +1,6 @@
 import React from 'react'
 import { Platform } from 'react-native'
 
-// Import mobile scanner only on React Native
-// Import web scanner only on web
-const QRScannerMobile = Platform.OS !== 'web' 
-  ? require('./mobile/QRScanner').QRScanner 
-  : null
-
-const QRScannerWebComponent = Platform.OS === 'web'
-  ? require('./ui/QRScannerWeb').QRScannerWeb
-  : null
-
 interface BusinessInvitationQRData {
   type: 'business_invitation'
   business_id: string
@@ -32,13 +22,21 @@ interface QRScannerProps {
  */
 export function QRScanner(props: Readonly<QRScannerProps>) {
   // On mobile platforms
-  if (Platform.OS !== 'web' && QRScannerMobile) {
-    return <QRScannerMobile {...props} />
+  if (Platform.OS !== 'web') {
+    return (
+      <React.Suspense fallback={null}>
+        <QRScannerMobile {...props} />
+      </React.Suspense>
+    )
   }
 
   // On web
-  if (Platform.OS === 'web' && QRScannerWebComponent) {
-    return <QRScannerWebComponent {...props} />
+  if (Platform.OS === 'web') {
+    return (
+      <React.Suspense fallback={null}>
+        <QRScannerWebComponent {...props} />
+      </React.Suspense>
+    )
   }
 
   // Fallback (should never happen)

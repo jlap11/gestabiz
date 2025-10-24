@@ -1,20 +1,20 @@
 /**
  * PayUGateway.ts
- * 
+ *
  * Implementación de IPaymentGateway para PayU Latam
  * Documentación: https://developers.payulatam.com/
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
-  IPaymentGateway,
-  SubscriptionDashboard,
+  CancelSubscriptionParams,
   CheckoutSessionParams,
   CheckoutSessionResult,
-  UpdateSubscriptionParams,
-  CancelSubscriptionParams,
-  SubscriptionInfo,
+  IPaymentGateway,
   PlanType,
+  SubscriptionDashboard,
+  SubscriptionInfo,
+  UpdateSubscriptionParams,
 } from './PaymentGateway'
 import { PaymentGatewayError } from './PaymentGateway'
 
@@ -40,7 +40,7 @@ export class PayUGateway implements IPaymentGateway {
 
   async createCheckoutSession(params: CheckoutSessionParams): Promise<CheckoutSessionResult> {
     try {
-      const { data, error} = await this.supabase.functions.invoke('payu-create-checkout', {
+      const { data, error } = await this.supabase.functions.invoke('payu-create-checkout', {
         body: params,
       })
       if (error) throw new PaymentGatewayError(error.message, 'checkout_error')

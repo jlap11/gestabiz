@@ -110,14 +110,11 @@ export function EmployeeListView({
   // =====================================================
 
   const renderSortButton = (field: SortField, label: string) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => handleSort(field)}
-      className="gap-1 h-8"
-    >
+    <Button variant="ghost" size="sm" onClick={() => handleSort(field)} className="gap-1 h-8">
       {label}
-      <ArrowUpDown className={`h-3 w-3 ${sortField === field ? 'text-primary' : 'text-muted-foreground'}`} />
+      <ArrowUpDown
+        className={`h-3 w-3 ${sortField === field ? 'text-primary' : 'text-muted-foreground'}`}
+      />
     </Button>
   )
 
@@ -139,10 +136,7 @@ export function EmployeeListView({
     return (
       <div key={employeeId}>
         {/* MAIN ROW */}
-        <div
-          className="relative"
-          style={{ paddingLeft: `${depth * 2}rem` }}
-        >
+        <div className="relative" style={{ paddingLeft: `${depth * 2}rem` }}>
           {/* EXPAND TOGGLE */}
           {hasSubordinates && (
             <Button
@@ -202,7 +196,9 @@ export function EmployeeListView({
     <div className="space-y-4">
       {/* SORT CONTROLS */}
       <div className="flex items-center gap-2 pb-3 border-b">
-        <span className="text-sm font-medium text-muted-foreground">{t('admin.employeeListView.sortBy')}</span>
+        <span className="text-sm font-medium text-muted-foreground">
+          {t('admin.employeeListView.sortBy')}
+        </span>
         <div className="flex items-center gap-1">
           {renderSortButton('name', t('admin.employeeListView.name'))}
           {renderSortButton('level', t('admin.employeeListView.level'))}

@@ -3,7 +3,7 @@
 // Vista principal del módulo de gestión de permisos
 // =====================================================
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,17 +28,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { OwnerBadge, OwnerListBadge } from '@/components/ui/owner-badge'
-import { 
-  Shield, 
-  Search, 
-  UserPlus, 
-  Edit, 
-  Trash2, 
+import {
   Crown,
-  Users,
-  UserCheck,
+  Edit,
   FileText,
   History,
+  Search,
+  Shield,
+  Trash2,
+  UserCheck,
+  UserPlus,
+  Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -69,22 +69,22 @@ interface UserWithRoles {
 // COMPONENTE PRINCIPAL
 // =====================================================
 
-export function PermissionsManager({ 
-  businessId, 
-  ownerId, 
-  currentUserId 
+export function PermissionsManager({
+  businessId,
+  ownerId,
+  currentUserId,
 }: Readonly<PermissionsManagerProps>) {
   const { t } = useLanguage()
-  const { 
-    businessRoles, 
+  const {
+    businessRoles,
     userPermissions,
     isOwner: currentUserIsOwner,
     checkPermission,
     isLoading,
-  } = usePermissions({ 
-    userId: currentUserId, 
-    businessId, 
-    ownerId 
+  } = usePermissions({
+    userId: currentUserId,
+    businessId,
+    ownerId,
   })
 
   // Estados
@@ -117,7 +117,8 @@ export function PermissionsManager({
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       // Filtro de búsqueda
-      const matchesSearch = !searchQuery || 
+      const matchesSearch =
+        !searchQuery ||
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase())
 
@@ -130,7 +131,6 @@ export function PermissionsManager({
 
   // Manejar selección de usuario
   const handleSelectUser = (user: UserWithRoles) => {
-    
     console.log('Selected user:', user)
   }
 
@@ -143,9 +143,7 @@ export function PermissionsManager({
             <Shield className="h-5 w-5 text-destructive" />
             Acceso Denegado
           </CardTitle>
-          <CardDescription>
-            No tienes permisos para ver esta sección
-          </CardDescription>
+          <CardDescription>No tienes permisos para ver esta sección</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -157,12 +155,8 @@ export function PermissionsManager({
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Gestión de Permisos
-            </h2>
-            {currentUserIsOwner && (
-              <OwnerBadge isOwner={true} variant="compact" />
-            )}
+            <h2 className="text-3xl font-bold tracking-tight">Gestión de Permisos</h2>
+            {currentUserIsOwner && <OwnerBadge isOwner={true} variant="compact" />}
           </div>
           <p className="text-muted-foreground">
             Administra roles, permisos y accesos de usuarios en tu negocio
@@ -201,7 +195,7 @@ export function PermissionsManager({
             <CardHeader>
               <CardTitle>Usuarios del Negocio</CardTitle>
               <CardDescription>
-                {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''} 
+                {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''}
                 {roleFilter !== 'all' && ` con rol ${roleFilter}`}
               </CardDescription>
             </CardHeader>
@@ -213,12 +207,12 @@ export function PermissionsManager({
                   <Input
                     placeholder="Buscar por nombre o email..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={e => setSearchQuery(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Select 
-                  value={roleFilter} 
+                <Select
+                  value={roleFilter}
                   onValueChange={(v: string) => setRoleFilter(v as 'all' | 'admin' | 'employee')}
                 >
                   <SelectTrigger className="w-[180px]">
@@ -234,17 +228,15 @@ export function PermissionsManager({
 
               {/* Tabla de usuarios */}
               {isLoading && (
-                <div className="text-center py-8 text-muted-foreground">
-                  Cargando usuarios...
-                </div>
+                <div className="text-center py-8 text-muted-foreground">Cargando usuarios...</div>
               )}
-              
+
               {!isLoading && filteredUsers.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   No se encontraron usuarios
                 </div>
               )}
-              
+
               {!isLoading && filteredUsers.length > 0 && (
                 <div className="rounded-md border">
                   <Table>
@@ -259,7 +251,7 @@ export function PermissionsManager({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredUsers.map((user) => (
+                      {filteredUsers.map(user => (
                         <TableRow key={user.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
@@ -272,13 +264,9 @@ export function PermissionsManager({
                               <div>
                                 <div className="flex items-center gap-2">
                                   <p className="font-medium">{user.name}</p>
-                                  {user.is_owner && (
-                                    <OwnerListBadge isOwner={true} />
-                                  )}
+                                  {user.is_owner && <OwnerListBadge isOwner={true} />}
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {user.email}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
                               </div>
                             </div>
                           </TableCell>
@@ -290,8 +278,8 @@ export function PermissionsManager({
                           <TableCell>
                             {user.employee_type && (
                               <Badge variant="outline">
-                                {user.employee_type === 'service_provider' 
-                                  ? 'Presta servicios' 
+                                {user.employee_type === 'service_provider'
+                                  ? 'Presta servicios'
                                   : 'Staff soporte'}
                               </Badge>
                             )}
@@ -305,10 +293,11 @@ export function PermissionsManager({
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge 
+                            <Badge
                               variant={user.is_active ? 'default' : 'destructive'}
                               className={cn(
-                                user.is_active && 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20'
+                                user.is_active &&
+                                  'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20'
                               )}
                             >
                               {user.is_active ? 'Activo' : 'Inactivo'}
@@ -348,50 +337,38 @@ export function PermissionsManager({
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Usuarios
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{users.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Activos en el negocio
-                </p>
+                <p className="text-xs text-muted-foreground">Activos en el negocio</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Administradores
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Administradores</CardTitle>
                 <Crown className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
                   {users.filter(u => u.role === 'admin').length}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Con permisos elevados
-                </p>
+                <p className="text-xs text-muted-foreground">Con permisos elevados</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Empleados
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Empleados</CardTitle>
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
                   {users.filter(u => u.role === 'employee').length}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Trabajando activamente
-                </p>
+                <p className="text-xs text-muted-foreground">Trabajando activamente</p>
               </CardContent>
             </Card>
           </div>
@@ -402,14 +379,10 @@ export function PermissionsManager({
           <Card>
             <CardHeader>
               <CardTitle>Editor de Permisos</CardTitle>
-              <CardDescription>
-                Gestiona permisos individuales por usuario
-              </CardDescription>
+              <CardDescription>Gestiona permisos individuales por usuario</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Componente PermissionEditor en desarrollo...
-              </p>
+              <p className="text-muted-foreground">Componente PermissionEditor en desarrollo...</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -419,9 +392,7 @@ export function PermissionsManager({
           <Card>
             <CardHeader>
               <CardTitle>Plantillas de Permisos</CardTitle>
-              <CardDescription>
-                Plantillas predefinidas y personalizadas
-              </CardDescription>
+              <CardDescription>Plantillas predefinidas y personalizadas</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
@@ -436,14 +407,10 @@ export function PermissionsManager({
           <Card>
             <CardHeader>
               <CardTitle>Historial de Cambios</CardTitle>
-              <CardDescription>
-                Auditoría de modificaciones en permisos
-              </CardDescription>
+              <CardDescription>Auditoría de modificaciones en permisos</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Componente AuditLog en desarrollo...
-              </p>
+              <p className="text-muted-foreground">Componente AuditLog en desarrollo...</p>
             </CardContent>
           </Card>
         </TabsContent>

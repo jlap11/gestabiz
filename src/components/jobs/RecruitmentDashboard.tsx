@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Plus, Briefcase, History } from 'lucide-react'
+import { Briefcase, History, Plus } from 'lucide-react'
 import { VacancyList } from './VacancyList'
 import { ApplicationsManagement } from './ApplicationsManagement'
 import { CreateVacancy } from './CreateVacancy'
@@ -13,7 +13,11 @@ interface RecruitmentDashboardProps {
   onChatStarted?: (conversationId: string) => void // Callback para pasar al componente padre
 }
 
-export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatStarted }: Readonly<RecruitmentDashboardProps>) {
+export function RecruitmentDashboard({
+  businessId,
+  highlightedVacancyId,
+  onChatStarted,
+}: Readonly<RecruitmentDashboardProps>) {
   const [activeTab, setActiveTab] = useState('vacancies')
   const [showCreateVacancy, setShowCreateVacancy] = useState(false)
   const [selectedVacancyId, setSelectedVacancyId] = useState<string | null>(null)
@@ -68,8 +72,8 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatS
             Volver a Vacantes
           </Button>
         </div>
-        <ApplicationsManagement 
-          businessId={businessId} 
+        <ApplicationsManagement
+          businessId={businessId}
           vacancyId={selectedVacancyId}
           onChatStarted={onChatStarted}
         />
@@ -111,9 +115,7 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatS
           <Card>
             <CardHeader>
               <CardTitle>Vacantes Laborales</CardTitle>
-              <CardDescription>
-                Gestiona las posiciones abiertas en tu negocio
-              </CardDescription>
+              <CardDescription>Gestiona las posiciones abiertas en tu negocio</CardDescription>
             </CardHeader>
             <CardContent>
               <VacancyList
@@ -131,9 +133,7 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatS
           <Card>
             <CardHeader>
               <CardTitle>Historial de Contrataciones</CardTitle>
-              <CardDescription>
-                Revisa vacantes cerradas y candidatos contratados
-              </CardDescription>
+              <CardDescription>Revisa vacantes cerradas y candidatos contratados</CardDescription>
             </CardHeader>
             <CardContent>
               <VacancyList

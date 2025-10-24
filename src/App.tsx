@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { APP_CONFIG } from '@/constants'
@@ -32,7 +32,9 @@ const queryClient = new QueryClient({
 })
 
 // Lazy load other components
-const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
+const LandingPage = lazy(() =>
+  import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage }))
+)
 const AuthScreen = lazy(() => import('@/components/auth/AuthScreen'))
 const PublicBusinessProfile = lazy(() => import('@/pages/PublicBusinessProfile'))
 
@@ -63,7 +65,7 @@ function ProtectedRoute({ children }: Readonly<{ children: React.ReactNode }>) {
 function AuthenticatedApp() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
-  
+
   if (!user) {
     return <Navigate to="/login" replace />
   }
@@ -84,10 +86,38 @@ function AuthenticatedApp() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Suspense fallback={<AppLoader />}><LandingPage /></Suspense>} />
-      <Route path="/login" element={<Suspense fallback={<AppLoader />}><AuthScreen /></Suspense>} />
-      <Route path="/business/:id" element={<Suspense fallback={<AppLoader />}><PublicBusinessProfile /></Suspense>} />
-      <Route path="/app" element={<ProtectedRoute><AuthenticatedApp /></ProtectedRoute>} />
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={<AppLoader />}>
+            <LandingPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <Suspense fallback={<AppLoader />}>
+            <AuthScreen />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/business/:id"
+        element={
+          <Suspense fallback={<AppLoader />}>
+            <PublicBusinessProfile />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedApp />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
@@ -124,4 +154,3 @@ function App() {
 }
 
 export default App
-

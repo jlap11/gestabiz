@@ -3,37 +3,37 @@
 // Página completa de contabilidad con tabs para Configuración y Transacciones
 // ============================================================================
 
-import React, { useState, Suspense, lazy } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, FileText, Settings } from 'lucide-react';
-import { SuspenseFallback } from '@/components/ui/loading-spinner';
-import { useTransactions } from '@/hooks/useTransactions';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { toast } from 'sonner';
+import React, { Suspense, lazy, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Calculator, FileText, Settings } from 'lucide-react'
+import { SuspenseFallback } from '@/components/ui/loading-spinner'
+import { useTransactions } from '@/hooks/useTransactions'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { toast } from 'sonner'
 
 // Lazy load componentes pesados
-const TaxConfiguration = lazy(() => 
+const TaxConfiguration = lazy(() =>
   import('@/components/accounting/TaxConfiguration').then(module => ({
-    default: module.TaxConfiguration
+    default: module.TaxConfiguration,
   }))
-);
+)
 
 const EnhancedTransactionForm = lazy(() =>
   import('@/components/transactions/EnhancedTransactionForm').then(module => ({
-    default: module.EnhancedTransactionForm
+    default: module.EnhancedTransactionForm,
   }))
-);
+)
 
 interface AccountingPageProps {
-  businessId: string;
-  onUpdate?: () => void;
+  businessId: string
+  onUpdate?: () => void
 }
 
 export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPageProps>) {
-  const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('config');
-  const { createFiscalTransaction } = useTransactions();
+  const { t } = useLanguage()
+  const [activeTab, setActiveTab] = useState('config')
+  const { createFiscalTransaction } = useTransactions()
 
   return (
     <div className="space-y-6">
@@ -43,9 +43,7 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
           <Calculator className="h-6 w-6" />
           {t('accounting.title')}
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t('accounting.subtitle')}
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">{t('accounting.subtitle')}</p>
       </div>
 
       {/* Tabs */}
@@ -66,15 +64,11 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
           <Card>
             <CardHeader>
               <CardTitle>{t('accounting.sections.taxConfig')}</CardTitle>
-              <CardDescription>
-                {t('accounting.sections.configDescription')}
-              </CardDescription>
+              <CardDescription>{t('accounting.sections.configDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Suspense fallback={<SuspenseFallback text={t('accounting.sections.taxConfig')} />}>
-                <TaxConfiguration 
-                  businessId={businessId}
-                />
+                <TaxConfiguration businessId={businessId} />
               </Suspense>
             </CardContent>
           </Card>
@@ -85,15 +79,15 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
           <Card>
             <CardHeader>
               <CardTitle>{t('accounting.sections.transactions')}</CardTitle>
-              <CardDescription>
-                {t('accounting.sections.transactionDescription')}
-              </CardDescription>
+              <CardDescription>{t('accounting.sections.transactionDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<SuspenseFallback text={t('accounting.sections.transactions')} />}>
-                <EnhancedTransactionForm 
+              <Suspense
+                fallback={<SuspenseFallback text={t('accounting.sections.transactions')} />}
+              >
+                <EnhancedTransactionForm
                   businessId={businessId}
-                  onSubmit={async (transaction) => {
+                  onSubmit={async transaction => {
                     try {
                       await createFiscalTransaction({
                         business_id: businessId,
@@ -109,12 +103,12 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
                         employee_id: transaction.employee_id,
                         transaction_date: transaction.transaction_date,
                         payment_method: transaction.payment_method,
-                      });
-                      toast.success(t('accounting.messages.saved'));
-                      onUpdate?.();
+                      })
+                      toast.success(t('accounting.messages.saved'))
+                      onUpdate?.()
                     } catch (error) {
-                      toast.error(t('accounting.messages.error'));
-                      throw error;
+                      toast.error(t('accounting.messages.error'))
+                      throw error
                     }
                   }}
                   onCancel={() => {
@@ -137,7 +131,9 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-foreground">{t('accounting.cards.vatValue')}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t('accounting.cards.vatSubtitle')}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('accounting.cards.vatSubtitle')}
+            </p>
           </CardContent>
         </Card>
 
@@ -149,7 +145,9 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-foreground">{t('accounting.cards.icaValue')}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t('accounting.cards.icaSubtitle')}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('accounting.cards.icaSubtitle')}
+            </p>
           </CardContent>
         </Card>
 
@@ -160,11 +158,15 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">{t('accounting.cards.withholdingValue')}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t('accounting.cards.withholdingSubtitle')}</p>
+            <p className="text-2xl font-bold text-foreground">
+              {t('accounting.cards.withholdingValue')}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('accounting.cards.withholdingSubtitle')}
+            </p>
           </CardContent>
         </Card>
       </div>
     </div>
-  );
+  )
 }

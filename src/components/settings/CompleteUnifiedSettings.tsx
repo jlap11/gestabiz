@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -6,11 +6,24 @@ import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { User } from '@/types'
 import { useKV } from '@/lib/useKV'
@@ -19,30 +32,30 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { toast } from 'sonner'
 import UserProfile from './UserProfile'
 import { NotificationSettings } from './NotificationSettings'
-import { 
-  User as UserIcon, 
-  Bell, 
-  Palette, 
-  Globe, 
-  Moon,
-  Sun,
-  Monitor,
-  Briefcase,
-  UserCircle,
-  ShoppingCart,
-  Plus,
-  X,
-  FloppyDisk as Save,
-  CircleNotch as Loader2,
+import {
+  Warning as AlertCircle,
   Medal as Award,
+  Bell,
+  Briefcase,
+  Buildings as Building2,
+  Calendar,
+  CurrencyDollar as DollarSign,
+  Globe,
   Translate as Languages,
   Link as LinkIcon,
-  CurrencyDollar as DollarSign,
-  Calendar,
-  Warning as AlertCircle,
-  Buildings as Building2
+  CircleNotch as Loader2,
+  Monitor,
+  Moon,
+  Palette,
+  Plus,
+  FloppyDisk as Save,
+  ShoppingCart,
+  Sun,
+  UserCircle,
+  User as UserIcon,
+  X,
 } from '@phosphor-icons/react'
-import { useEmployeeProfile, type Certification } from '@/hooks/useEmployeeProfile'
+import { type Certification, useEmployeeProfile } from '@/hooks/useEmployeeProfile'
 import { supabase } from '@/lib/supabase'
 import type { Business } from '@/types/types'
 import { PhoneInput } from '@/components/ui/PhoneInput'
@@ -57,12 +70,12 @@ interface CompleteUnifiedSettingsProps {
   business?: Business // Para admin
 }
 
-export default function CompleteUnifiedSettings({ 
-  user, 
-  onUserUpdate, 
-  currentRole, 
+export default function CompleteUnifiedSettings({
+  user,
+  onUserUpdate,
+  currentRole,
   businessId,
-  business 
+  business,
 }: CompleteUnifiedSettingsProps) {
   const { t, language, setLanguage } = useLanguage()
   const { theme, setTheme } = useTheme()
@@ -70,8 +83,10 @@ export default function CompleteUnifiedSettings({
 
   // Helper para obtener info del tema actual
   const getThemeInfo = () => {
-    if (theme === 'light') return { label: 'Claro', classes: 'bg-yellow-100 text-yellow-600', icon: Sun }
-    if (theme === 'dark') return { label: 'Oscuro', classes: 'bg-blue-100 text-blue-600', icon: Moon }
+    if (theme === 'light')
+      return { label: 'Claro', classes: 'bg-yellow-100 text-yellow-600', icon: Sun }
+    if (theme === 'dark')
+      return { label: 'Oscuro', classes: 'bg-blue-100 text-blue-600', icon: Moon }
     return { label: 'Sistema', classes: 'bg-primary/10 text-primary', icon: Monitor }
   }
 
@@ -83,12 +98,10 @@ export default function CompleteUnifiedSettings({
       const updatedUser = {
         ...user,
         language: newLanguage,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
-      await setUsers(prev => 
-        prev.map(u => u.id === user.id ? updatedUser : u)
-      )
+      await setUsers(prev => prev.map(u => (u.id === user.id ? updatedUser : u)))
 
       setLanguage(newLanguage)
       onUserUpdate(updatedUser)
@@ -103,18 +116,34 @@ export default function CompleteUnifiedSettings({
   const tabs = [
     { value: 'general', label: t('settings.tabs.general'), icon: <Palette className="h-4 w-4" /> },
     { value: 'profile', label: t('settings.tabs.profile'), icon: <UserIcon className="h-4 w-4" /> },
-    { value: 'notifications', label: t('settings.tabs.notifications'), icon: <Bell className="h-4 w-4" /> },
+    {
+      value: 'notifications',
+      label: t('settings.tabs.notifications'),
+      icon: <Bell className="h-4 w-4" />,
+    },
   ]
 
   // Pestaña específica por rol
   const getRoleSpecificTab = () => {
     switch (currentRole) {
       case 'admin':
-        return { value: 'role-specific', label: t('settings.tabs.businessPreferences'), icon: <Briefcase className="h-4 w-4" /> }
+        return {
+          value: 'role-specific',
+          label: t('settings.tabs.businessPreferences'),
+          icon: <Briefcase className="h-4 w-4" />,
+        }
       case 'employee':
-        return { value: 'role-specific', label: t('settings.tabs.employeePreferences'), icon: <UserCircle className="h-4 w-4" /> }
+        return {
+          value: 'role-specific',
+          label: t('settings.tabs.employeePreferences'),
+          icon: <UserCircle className="h-4 w-4" />,
+        }
       case 'client':
-        return { value: 'role-specific', label: t('settings.tabs.clientPreferences'), icon: <ShoppingCart className="h-4 w-4" /> }
+        return {
+          value: 'role-specific',
+          label: t('settings.tabs.clientPreferences'),
+          icon: <ShoppingCart className="h-4 w-4" />,
+        }
       default:
         return null
     }
@@ -126,10 +155,10 @@ export default function CompleteUnifiedSettings({
   }
 
   // Agregar pestaña Zona Peligrosa al final
-  tabs.push({ 
-    value: 'danger-zone', 
-    label: t('settings.tabs.dangerZone'), 
-    icon: <AlertCircle className="h-4 w-4" /> 
+  tabs.push({
+    value: 'danger-zone',
+    label: t('settings.tabs.dangerZone'),
+    icon: <AlertCircle className="h-4 w-4" />,
   })
 
   return (
@@ -137,14 +166,15 @@ export default function CompleteUnifiedSettings({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{t('settings.title')}</h2>
-          <p className="text-muted-foreground">
-            {t('settings.subtitle')}
-          </p>
+          <p className="text-muted-foreground">{t('settings.subtitle')}</p>
         </div>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+        <TabsList
+          className="grid w-full"
+          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+        >
           {tabs.map(tab => (
             <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-2">
               {tab.icon}
@@ -161,9 +191,7 @@ export default function CompleteUnifiedSettings({
                 <Palette className="h-5 w-5" />
                 {t('settings.themeSection.title')}
               </CardTitle>
-              <CardDescription>
-                {t('settings.themeSection.subtitle')}
-              </CardDescription>
+              <CardDescription>{t('settings.themeSection.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Theme Selection */}
@@ -177,45 +205,50 @@ export default function CompleteUnifiedSettings({
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { 
-                      value: 'light', 
-                      label: t('settings.themeSection.themes.light.label'), 
+                    {
+                      value: 'light',
+                      label: t('settings.themeSection.themes.light.label'),
                       icon: <Sun className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.light.description')
+                      description: t('settings.themeSection.themes.light.description'),
                     },
-                    { 
-                      value: 'dark', 
-                      label: t('settings.themeSection.themes.dark.label'), 
+                    {
+                      value: 'dark',
+                      label: t('settings.themeSection.themes.dark.label'),
                       icon: <Moon className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.dark.description')
+                      description: t('settings.themeSection.themes.dark.description'),
                     },
-                    { 
-                      value: 'system', 
-                      label: t('settings.themeSection.themes.system.label'), 
+                    {
+                      value: 'system',
+                      label: t('settings.themeSection.themes.system.label'),
                       icon: <Monitor className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.system.description')
-                    }
-                  ].map((themeOption) => (
+                      description: t('settings.themeSection.themes.system.description'),
+                    },
+                  ].map(themeOption => (
                     <button
                       key={themeOption.value}
                       onClick={() => setTheme(themeOption.value as 'light' | 'dark' | 'system')}
                       className={`
                         flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
-                        ${theme === themeOption.value 
-                          ? 'border-primary bg-primary/5 shadow-sm' 
-                          : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                        ${
+                          theme === themeOption.value
+                            ? 'border-primary bg-primary/5 shadow-sm'
+                            : 'border-border hover:border-primary/50 hover:bg-muted/30'
                         }
                       `}
                     >
-                      <div className={`
+                      <div
+                        className={`
                         p-3 rounded-full
                         ${theme === themeOption.value ? 'bg-primary text-primary-foreground' : 'bg-muted'}
-                      `}>
+                      `}
+                      >
                         {themeOption.icon}
                       </div>
                       <div className="text-center">
                         <p className="font-semibold text-sm">{themeOption.label}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{themeOption.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {themeOption.description}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -229,7 +262,7 @@ export default function CompleteUnifiedSettings({
                       {t('settings.themeSection.currentTheme', { theme: themeInfo.label })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {theme === 'system' 
+                      {theme === 'system'
                         ? t('settings.themeSection.systemThemeNote')
                         : t('settings.themeSection.changeAnytime')}
                     </p>
@@ -284,15 +317,11 @@ export default function CompleteUnifiedSettings({
 
         {/* PREFERENCIAS ESPECÍFICAS DEL ROL */}
         <TabsContent value="role-specific" className="space-y-6">
-          {currentRole === 'admin' && business && (
-            <AdminRolePreferences business={business} />
-          )}
+          {currentRole === 'admin' && business && <AdminRolePreferences business={business} />}
           {currentRole === 'employee' && (
             <EmployeeRolePreferences userId={user.id} businessId={businessId} />
           )}
-          {currentRole === 'client' && (
-            <ClientRolePreferences />
-          )}
+          {currentRole === 'client' && <ClientRolePreferences />}
         </TabsContent>
 
         {/* ZONA PELIGROSA - Para todos los roles */}
@@ -330,7 +359,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
   const [activeSubTab, setActiveSubTab] = useState<'info' | 'notifications' | 'tracking'>('info')
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -405,9 +434,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           <Card>
             <CardHeader>
               <CardTitle>{t('settings.businessInfo.basicInfo.title')}</CardTitle>
-              <CardDescription>
-                {t('settings.businessInfo.subtitle')}
-              </CardDescription>
+              <CardDescription>{t('settings.businessInfo.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -415,18 +442,20 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
+                  onChange={e => handleChange('name', e.target.value)}
                   placeholder={t('settings.businessInfo.basicInfo.namePlaceholder')}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="description">{t('settings.businessInfo.basicInfo.descriptionLabel')}</Label>
+                <Label htmlFor="description">
+                  {t('settings.businessInfo.basicInfo.descriptionLabel')}
+                </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
+                  onChange={e => handleChange('description', e.target.value)}
                   placeholder={t('settings.businessInfo.basicInfo.descriptionPlaceholder')}
                   rows={4}
                 />
@@ -438,16 +467,14 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           <Card>
             <CardHeader>
               <CardTitle>{t('settings.businessInfo.contactInfo.title')}</CardTitle>
-              <CardDescription>
-                {t('settings.businessInfo.subtitle')}
-              </CardDescription>
+              <CardDescription>{t('settings.businessInfo.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="phone">{t('settings.businessInfo.contactInfo.phoneLabel')}</Label>
                 <PhoneInput
                   value={formData.phone}
-                  onChange={(value) => handleChange('phone', value)}
+                  onChange={value => handleChange('phone', value)}
                   prefix={phonePrefix}
                   onPrefixChange={setPhonePrefix}
                   placeholder={t('settings.businessInfo.contactInfo.phonePlaceholder')}
@@ -460,18 +487,20 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
+                  onChange={e => handleChange('email', e.target.value)}
                   placeholder={t('settings.businessInfo.contactInfo.emailPlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="website">{t('settings.businessInfo.contactInfo.websiteLabel')}</Label>
+                <Label htmlFor="website">
+                  {t('settings.businessInfo.contactInfo.websiteLabel')}
+                </Label>
                 <Input
                   id="website"
                   type="url"
                   value={formData.website}
-                  onChange={(e) => handleChange('website', e.target.value)}
+                  onChange={e => handleChange('website', e.target.value)}
                   placeholder={t('settings.businessInfo.contactInfo.websitePlaceholder')}
                 />
               </div>
@@ -482,17 +511,17 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           <Card>
             <CardHeader>
               <CardTitle>{t('settings.businessInfo.addressInfo.title')}</CardTitle>
-              <CardDescription>
-                {t('settings.businessInfo.subtitle')}
-              </CardDescription>
+              <CardDescription>{t('settings.businessInfo.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="address">{t('settings.businessInfo.addressInfo.addressLabel')}</Label>
+                <Label htmlFor="address">
+                  {t('settings.businessInfo.addressInfo.addressLabel')}
+                </Label>
                 <Input
                   id="address"
                   value={formData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
+                  onChange={e => handleChange('address', e.target.value)}
                   placeholder={t('settings.businessInfo.addressInfo.addressPlaceholder')}
                 />
               </div>
@@ -503,7 +532,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   <Input
                     id="city"
                     value={formData.city}
-                    onChange={(e) => handleChange('city', e.target.value)}
+                    onChange={e => handleChange('city', e.target.value)}
                     placeholder={t('settings.businessInfo.addressInfo.cityPlaceholder')}
                   />
                 </div>
@@ -513,7 +542,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                   <Input
                     id="state"
                     value={formData.state}
-                    onChange={(e) => handleChange('state', e.target.value)}
+                    onChange={e => handleChange('state', e.target.value)}
                     placeholder={t('settings.businessInfo.addressInfo.statePlaceholder')}
                   />
                 </div>
@@ -525,17 +554,17 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           <Card>
             <CardHeader>
               <CardTitle>{t('settings.businessInfo.legalInfo.title')}</CardTitle>
-              <CardDescription>
-                {t('settings.businessInfo.subtitle')}
-              </CardDescription>
+              <CardDescription>{t('settings.businessInfo.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="legal_name">{t('settings.businessInfo.legalInfo.legalNameLabel')}</Label>
+                <Label htmlFor="legal_name">
+                  {t('settings.businessInfo.legalInfo.legalNameLabel')}
+                </Label>
                 <Input
                   id="legal_name"
                   value={formData.legal_name}
-                  onChange={(e) => handleChange('legal_name', e.target.value)}
+                  onChange={e => handleChange('legal_name', e.target.value)}
                   placeholder={t('settings.businessInfo.legalInfo.legalNamePlaceholder')}
                 />
               </div>
@@ -545,7 +574,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
                 <Input
                   id="tax_id"
                   value={formData.tax_id}
-                  onChange={(e) => handleChange('tax_id', e.target.value)}
+                  onChange={e => handleChange('tax_id', e.target.value)}
                   placeholder={t('settings.businessInfo.legalInfo.taxIdPlaceholder')}
                 />
               </div>
@@ -556,14 +585,14 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
           <Card>
             <CardHeader>
               <CardTitle>{t('settings.businessInfo.operationSettings.title')}</CardTitle>
-              <CardDescription>
-                {t('settings.businessInfo.subtitle')}
-              </CardDescription>
+              <CardDescription>{t('settings.businessInfo.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.allowOnlineBooking.label')}</Label>
+                  <Label className="text-base font-medium">
+                    {t('settings.businessInfo.operationSettings.allowOnlineBooking.label')}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.businessInfo.operationSettings.allowOnlineBooking.description')}
                   </p>
@@ -573,7 +602,9 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.autoConfirm.label')}</Label>
+                  <Label className="text-base font-medium">
+                    {t('settings.businessInfo.operationSettings.autoConfirm.label')}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.businessInfo.operationSettings.autoConfirm.description')}
                   </p>
@@ -583,7 +614,9 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.autoReminders.label')}</Label>
+                  <Label className="text-base font-medium">
+                    {t('settings.businessInfo.operationSettings.autoReminders.label')}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.businessInfo.operationSettings.autoReminders.description')}
                   </p>
@@ -593,25 +626,21 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
               <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label className="text-base font-medium">{t('settings.businessInfo.operationSettings.showPrices.label')}</Label>
+                  <Label className="text-base font-medium">
+                    {t('settings.businessInfo.operationSettings.showPrices.label')}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.businessInfo.operationSettings.showPrices.description')}
                   </p>
                 </div>
                 <Switch defaultChecked />
               </div>
-
-
             </CardContent>
           </Card>
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="bg-primary hover:bg-primary/90"
-            >
+            <Button type="submit" disabled={isSaving} className="bg-primary hover:bg-primary/90">
               <Save className="h-4 w-4 mr-2" />
               {isSaving ? t('common.actions.saving') : t('common.actions.save')}
             </Button>
@@ -623,9 +652,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
         <BusinessNotificationSettings businessId={business.id} />
       )}
 
-      {activeSubTab === 'tracking' && (
-        <NotificationTracking businessId={business.id} />
-      )}
+      {activeSubTab === 'tracking' && <NotificationTracking businessId={business.id} />}
     </>
   )
 }
@@ -655,7 +682,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
   // Form state
   const [professionalSummary, setProfessionalSummary] = useState('')
   const [yearsOfExperience, setYearsOfExperience] = useState<number>(0)
-  const [preferredWorkType, setPreferredWorkType] = useState<'full_time' | 'part_time' | 'contract' | 'flexible'>('full_time')
+  const [preferredWorkType, setPreferredWorkType] = useState<
+    'full_time' | 'part_time' | 'contract' | 'flexible'
+  >('full_time')
   const [availableForHire, setAvailableForHire] = useState(true)
   const [expectedSalaryMin, setExpectedSalaryMin] = useState<number>(0)
   const [expectedSalaryMax, setExpectedSalaryMax] = useState<number>(0)
@@ -741,7 +770,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
       setAllowClientMessages(newValue)
       toast.success(
-        newValue 
+        newValue
           ? t('settings.employeePrefs.messages.allowClientMessages.successEnabled')
           : t('settings.employeePrefs.messages.allowClientMessages.successDisabled')
       )
@@ -799,7 +828,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
   const handleAddSpecialization = async () => {
     if (!newSpecialization.trim()) return
-    
+
     try {
       await addSpecialization(newSpecialization.trim())
       setNewSpecialization('')
@@ -812,7 +841,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
   const handleAddLanguage = async () => {
     if (!newLanguage.trim()) return
-    
+
     try {
       await addLanguage(newLanguage.trim())
       setNewLanguage('')
@@ -916,27 +945,26 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <UserCircle className="h-5 w-5" />
             {t('settings.employeePrefs.availability.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.employeePrefs.availability.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.employeePrefs.availability.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">{t('settings.employeePrefs.availability.availableForHire.label')}</Label>
+              <Label className="text-base font-medium">
+                {t('settings.employeePrefs.availability.availableForHire.label')}
+              </Label>
               <p className="text-sm text-muted-foreground">
                 {t('settings.employeePrefs.availability.availableForHire.description')}
               </p>
             </div>
-            <Switch 
-              checked={availableForHire} 
-              onCheckedChange={setAvailableForHire}
-            />
+            <Switch checked={availableForHire} onCheckedChange={setAvailableForHire} />
           </div>
 
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">{t('settings.employeePrefs.availability.notifyAssignments.label')}</Label>
+              <Label className="text-base font-medium">
+                {t('settings.employeePrefs.availability.notifyAssignments.label')}
+              </Label>
               <p className="text-sm text-muted-foreground">
                 {t('settings.employeePrefs.availability.notifyAssignments.description')}
               </p>
@@ -946,7 +974,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">{t('settings.employeePrefs.availability.reminders.label')}</Label>
+              <Label className="text-base font-medium">
+                {t('settings.employeePrefs.availability.reminders.label')}
+              </Label>
               <p className="text-sm text-muted-foreground">
                 {t('settings.employeePrefs.availability.reminders.description')}
               </p>
@@ -957,7 +987,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">{t('settings.employeePrefs.schedule.title')}</Label>
+            <Label className="text-base font-medium">
+              {t('settings.employeePrefs.schedule.title')}
+            </Label>
             <p className="text-sm text-muted-foreground">
               {t('settings.employeePrefs.schedule.description')}
             </p>
@@ -969,8 +1001,8 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                 t('settings.employeePrefs.schedule.days.thursday'),
                 t('settings.employeePrefs.schedule.days.friday'),
                 t('settings.employeePrefs.schedule.days.saturday'),
-                t('settings.employeePrefs.schedule.days.sunday')
-              ].map((day) => (
+                t('settings.employeePrefs.schedule.days.sunday'),
+              ].map(day => (
                 <div key={day} className="flex items-center gap-4 p-3 border rounded-lg">
                   <Switch defaultChecked={!day.includes('Domingo')} />
                   <span className="w-24 font-medium">{day}</span>
@@ -982,7 +1014,11 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                       <SelectContent>
                         {Array.from({ length: 24 }, (_, i) => {
                           const hour = i.toString().padStart(2, '0')
-                          return <SelectItem key={i} value={`${hour}:00`}>{hour}:00</SelectItem>
+                          return (
+                            <SelectItem key={i} value={`${hour}:00`}>
+                              {hour}:00
+                            </SelectItem>
+                          )
                         })}
                       </SelectContent>
                     </Select>
@@ -994,7 +1030,11 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                       <SelectContent>
                         {Array.from({ length: 24 }, (_, i) => {
                           const hour = i.toString().padStart(2, '0')
-                          return <SelectItem key={i} value={`${hour}:00`}>{hour}:00</SelectItem>
+                          return (
+                            <SelectItem key={i} value={`${hour}:00`}>
+                              {hour}:00
+                            </SelectItem>
+                          )
                         })}
                       </SelectContent>
                     </Select>
@@ -1013,20 +1053,20 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Bell className="h-5 w-5" />
             {t('settings.employeePrefs.messages.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.employeePrefs.messages.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.employeePrefs.messages.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium">{t('settings.employeePrefs.messages.allowClientMessages.label')}</Label>
+              <Label className="text-base font-medium">
+                {t('settings.employeePrefs.messages.allowClientMessages.label')}
+              </Label>
               <p className="text-sm text-muted-foreground">
                 {t('settings.employeePrefs.messages.allowClientMessages.description')}
               </p>
             </div>
-            <Switch 
-              checked={allowClientMessages} 
+            <Switch
+              checked={allowClientMessages}
               onCheckedChange={handleMessagePreferenceToggle}
               disabled={loadingMessagePref}
             />
@@ -1041,7 +1081,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Briefcase className="h-5 w-5" />
             {t('settings.employeePrefs.professionalInfo.title')}
           </CardTitle>
-          <CardDescription>{t('settings.employeePrefs.professionalInfo.description')}</CardDescription>
+          <CardDescription>
+            {t('settings.employeePrefs.professionalInfo.description')}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Resumen Profesional */}
@@ -1052,13 +1094,15 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Textarea
               id="professional-summary"
               value={professionalSummary}
-              onChange={(e) => setProfessionalSummary(e.target.value)}
+              onChange={e => setProfessionalSummary(e.target.value)}
               placeholder={t('settings.employeePrefs.professionalInfo.summaryPlaceholder')}
               className="min-h-[120px] resize-y"
             />
             {professionalSummary.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                {t('settings.employeePrefs.professionalInfo.minCharacters', { count: professionalSummary.length.toString() })}
+                {t('settings.employeePrefs.professionalInfo.minCharacters', {
+                  count: professionalSummary.length.toString(),
+                })}
               </p>
             )}
           </div>
@@ -1066,28 +1110,43 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
           {/* Años de Experiencia */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="years-experience">{t('settings.employeePrefs.professionalInfo.yearsExperienceLabel')}</Label>
+              <Label htmlFor="years-experience">
+                {t('settings.employeePrefs.professionalInfo.yearsExperienceLabel')}
+              </Label>
               <Input
                 id="years-experience"
                 type="number"
                 min={0}
                 max={50}
                 value={yearsOfExperience}
-                onChange={(e) => setYearsOfExperience(Number(e.target.value))}
+                onChange={e => setYearsOfExperience(Number(e.target.value))}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="work-type">{t('settings.employeePrefs.professionalInfo.workTypeLabel')}</Label>
-              <Select value={preferredWorkType} onValueChange={(v) => setPreferredWorkType(v as typeof preferredWorkType)}>
+              <Label htmlFor="work-type">
+                {t('settings.employeePrefs.professionalInfo.workTypeLabel')}
+              </Label>
+              <Select
+                value={preferredWorkType}
+                onValueChange={v => setPreferredWorkType(v as typeof preferredWorkType)}
+              >
                 <SelectTrigger id="work-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="full_time">{t('settings.employeePrefs.professionalInfo.workTypes.fullTime')}</SelectItem>
-                  <SelectItem value="part_time">{t('settings.employeePrefs.professionalInfo.workTypes.partTime')}</SelectItem>
-                  <SelectItem value="contract">{t('settings.employeePrefs.professionalInfo.workTypes.contract')}</SelectItem>
-                  <SelectItem value="flexible">{t('settings.employeePrefs.professionalInfo.workTypes.flexible')}</SelectItem>
+                  <SelectItem value="full_time">
+                    {t('settings.employeePrefs.professionalInfo.workTypes.fullTime')}
+                  </SelectItem>
+                  <SelectItem value="part_time">
+                    {t('settings.employeePrefs.professionalInfo.workTypes.partTime')}
+                  </SelectItem>
+                  <SelectItem value="contract">
+                    {t('settings.employeePrefs.professionalInfo.workTypes.contract')}
+                  </SelectItem>
+                  <SelectItem value="flexible">
+                    {t('settings.employeePrefs.professionalInfo.workTypes.flexible')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1113,7 +1172,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                 type="number"
                 min={0}
                 value={expectedSalaryMin}
-                onChange={(e) => setExpectedSalaryMin(Number(e.target.value))}
+                onChange={e => setExpectedSalaryMin(Number(e.target.value))}
                 placeholder={t('settings.employeePrefs.salary.minPlaceholder')}
               />
               {expectedSalaryMin > 0 && (
@@ -1128,7 +1187,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                 type="number"
                 min={0}
                 value={expectedSalaryMax}
-                onChange={(e) => setExpectedSalaryMax(Number(e.target.value))}
+                onChange={e => setExpectedSalaryMax(Number(e.target.value))}
                 placeholder={t('settings.employeePrefs.salary.maxPlaceholder')}
               />
               {expectedSalaryMax > 0 && (
@@ -1146,11 +1205,13 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Award className="h-5 w-5" />
             {t('settings.employeePrefs.specializations.title')}
           </CardTitle>
-          <CardDescription>{t('settings.employeePrefs.specializations.description')}</CardDescription>
+          <CardDescription>
+            {t('settings.employeePrefs.specializations.description')}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            {profile?.specializations?.map((spec) => (
+            {profile?.specializations?.map(spec => (
               <Badge key={spec} variant="secondary" className="text-sm">
                 {spec}
                 <button
@@ -1167,8 +1228,8 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Input
               placeholder={t('settings.employeePrefs.specializations.placeholder')}
               value={newSpecialization}
-              onChange={(e) => setNewSpecialization(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddSpecialization()}
+              onChange={e => setNewSpecialization(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleAddSpecialization()}
             />
             <Button onClick={handleAddSpecialization} size="sm">
               <Plus className="h-4 w-4" />
@@ -1188,7 +1249,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            {profile?.languages?.map((lang) => (
+            {profile?.languages?.map(lang => (
               <Badge key={lang} variant="outline" className="text-sm">
                 {lang}
                 <button
@@ -1205,8 +1266,8 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
             <Input
               placeholder={t('settings.employeePrefs.languages.placeholder')}
               value={newLanguage}
-              onChange={(e) => setNewLanguage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddLanguage()}
+              onChange={e => setNewLanguage(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleAddLanguage()}
             />
             <Button onClick={handleAddLanguage} size="sm">
               <Plus className="h-4 w-4" />
@@ -1224,7 +1285,9 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                 <Calendar className="h-5 w-5" />
                 {t('settings.employeePrefs.certifications.title')}
               </CardTitle>
-              <CardDescription>{t('settings.employeePrefs.certifications.description')}</CardDescription>
+              <CardDescription>
+                {t('settings.employeePrefs.certifications.description')}
+              </CardDescription>
             </div>
             <Button
               variant="outline"
@@ -1245,39 +1308,47 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                   <Input
                     placeholder={t('settings.employeePrefs.certifications.namePlaceholder')}
                     value={certName}
-                    onChange={(e) => setCertName(e.target.value)}
+                    onChange={e => setCertName(e.target.value)}
                   />
                   <Input
                     placeholder={t('settings.employeePrefs.certifications.issuerPlaceholder')}
                     value={certIssuer}
-                    onChange={(e) => setCertIssuer(e.target.value)}
+                    onChange={e => setCertIssuer(e.target.value)}
                   />
                   <Input
                     type="date"
                     placeholder={t('settings.employeePrefs.certifications.issueDatePlaceholder')}
                     value={certIssueDate}
-                    onChange={(e) => setCertIssueDate(e.target.value)}
+                    onChange={e => setCertIssueDate(e.target.value)}
                   />
                   <Input
                     type="date"
                     placeholder={t('settings.employeePrefs.certifications.expiryDatePlaceholder')}
                     value={certExpiryDate}
-                    onChange={(e) => setCertExpiryDate(e.target.value)}
+                    onChange={e => setCertExpiryDate(e.target.value)}
                   />
                   <Input
                     placeholder={t('settings.employeePrefs.certifications.credentialIdPlaceholder')}
                     value={certCredentialId}
-                    onChange={(e) => setCertCredentialId(e.target.value)}
+                    onChange={e => setCertCredentialId(e.target.value)}
                   />
                   <Input
-                    placeholder={t('settings.employeePrefs.certifications.credentialUrlPlaceholder')}
+                    placeholder={t(
+                      'settings.employeePrefs.certifications.credentialUrlPlaceholder'
+                    )}
                     value={certCredentialUrl}
-                    onChange={(e) => setCertCredentialUrl(e.target.value)}
+                    onChange={e => setCertCredentialUrl(e.target.value)}
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleAddCertification} size="sm">{t('common.actions.save')}</Button>
-                  <Button variant="outline" size="sm" onClick={() => setShowCertificationForm(false)}>
+                  <Button onClick={handleAddCertification} size="sm">
+                    {t('common.actions.save')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCertificationForm(false)}
+                  >
                     {t('common.actions.cancel')}
                   </Button>
                 </div>
@@ -1294,9 +1365,15 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
                     <h4 className="font-semibold">{cert.name}</h4>
                     <p className="text-sm text-muted-foreground">{cert.issuer}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                      <span>{t('settings.employeePrefs.certifications.issuedLabel')}: {new Date(cert.issue_date).toLocaleDateString()}</span>
+                      <span>
+                        {t('settings.employeePrefs.certifications.issuedLabel')}:{' '}
+                        {new Date(cert.issue_date).toLocaleDateString()}
+                      </span>
                       {cert.expiry_date && (
-                        <span>• {t('settings.employeePrefs.certifications.expiresLabel')}: {new Date(cert.expiry_date).toLocaleDateString()}</span>
+                        <span>
+                          • {t('settings.employeePrefs.certifications.expiresLabel')}:{' '}
+                          {new Date(cert.expiry_date).toLocaleDateString()}
+                        </span>
                       )}
                     </div>
                     {cert.credential_url && (
@@ -1335,13 +1412,15 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="portfolio-url">{t('settings.employeePrefs.links.portfolioLabel')}</Label>
+            <Label htmlFor="portfolio-url">
+              {t('settings.employeePrefs.links.portfolioLabel')}
+            </Label>
             <Input
               id="portfolio-url"
               type="url"
               placeholder={t('settings.employeePrefs.links.portfolioPlaceholder')}
               value={portfolioUrl}
-              onChange={(e) => setPortfolioUrl(e.target.value)}
+              onChange={e => setPortfolioUrl(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -1351,7 +1430,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
               type="url"
               placeholder={t('settings.employeePrefs.links.linkedinPlaceholder')}
               value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
+              onChange={e => setLinkedinUrl(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -1361,7 +1440,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
               type="url"
               placeholder={t('settings.employeePrefs.links.githubPlaceholder')}
               value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
+              onChange={e => setGithubUrl(e.target.value)}
             />
           </div>
         </CardContent>
@@ -1394,7 +1473,7 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 // ============================================
 function ClientRolePreferences() {
   const { t } = useLanguage()
-  
+
   return (
     <div className="space-y-6">
       <Card>
@@ -1403,15 +1482,15 @@ function ClientRolePreferences() {
             <ShoppingCart className="h-5 w-5" />
             {t('settings.clientPrefs.bookingPrefs.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.clientPrefs.bookingPrefs.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.clientPrefs.bookingPrefs.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.reminders.label')}</Label>
+                <Label className="text-base font-medium">
+                  {t('settings.clientPrefs.bookingPrefs.reminders.label')}
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   {t('settings.clientPrefs.bookingPrefs.reminders.description')}
                 </p>
@@ -1421,7 +1500,9 @@ function ClientRolePreferences() {
 
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.emailConfirmation.label')}</Label>
+                <Label className="text-base font-medium">
+                  {t('settings.clientPrefs.bookingPrefs.emailConfirmation.label')}
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   {t('settings.clientPrefs.bookingPrefs.emailConfirmation.description')}
                 </p>
@@ -1431,7 +1512,9 @@ function ClientRolePreferences() {
 
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.promotions.label')}</Label>
+                <Label className="text-base font-medium">
+                  {t('settings.clientPrefs.bookingPrefs.promotions.label')}
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   {t('settings.clientPrefs.bookingPrefs.promotions.description')}
                 </p>
@@ -1441,7 +1524,9 @@ function ClientRolePreferences() {
 
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div className="space-y-0.5">
-                <Label className="text-base font-medium">{t('settings.clientPrefs.bookingPrefs.savePayment.label')}</Label>
+                <Label className="text-base font-medium">
+                  {t('settings.clientPrefs.bookingPrefs.savePayment.label')}
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   {t('settings.clientPrefs.bookingPrefs.savePayment.description')}
                 </p>
@@ -1453,7 +1538,9 @@ function ClientRolePreferences() {
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">{t('settings.clientPrefs.advanceTime.title')}</Label>
+            <Label className="text-base font-medium">
+              {t('settings.clientPrefs.advanceTime.title')}
+            </Label>
             <p className="text-sm text-muted-foreground">
               {t('settings.clientPrefs.advanceTime.description')}
             </p>
@@ -1462,11 +1549,21 @@ function ClientRolePreferences() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">{t('settings.clientPrefs.advanceTime.options.oneHour')}</SelectItem>
-                <SelectItem value="2">{t('settings.clientPrefs.advanceTime.options.twoHours')}</SelectItem>
-                <SelectItem value="4">{t('settings.clientPrefs.advanceTime.options.fourHours')}</SelectItem>
-                <SelectItem value="24">{t('settings.clientPrefs.advanceTime.options.oneDay')}</SelectItem>
-                <SelectItem value="48">{t('settings.clientPrefs.advanceTime.options.twoDays')}</SelectItem>
+                <SelectItem value="1">
+                  {t('settings.clientPrefs.advanceTime.options.oneHour')}
+                </SelectItem>
+                <SelectItem value="2">
+                  {t('settings.clientPrefs.advanceTime.options.twoHours')}
+                </SelectItem>
+                <SelectItem value="4">
+                  {t('settings.clientPrefs.advanceTime.options.fourHours')}
+                </SelectItem>
+                <SelectItem value="24">
+                  {t('settings.clientPrefs.advanceTime.options.oneDay')}
+                </SelectItem>
+                <SelectItem value="48">
+                  {t('settings.clientPrefs.advanceTime.options.twoDays')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1474,15 +1571,23 @@ function ClientRolePreferences() {
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">{t('settings.clientPrefs.paymentMethods.title')}</Label>
+            <Label className="text-base font-medium">
+              {t('settings.clientPrefs.paymentMethods.title')}
+            </Label>
             <Select defaultValue="card">
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="card">{t('settings.clientPrefs.paymentMethods.options.card')}</SelectItem>
-                <SelectItem value="cash">{t('settings.clientPrefs.paymentMethods.options.cash')}</SelectItem>
-                <SelectItem value="transfer">{t('settings.clientPrefs.paymentMethods.options.transfer')}</SelectItem>
+                <SelectItem value="card">
+                  {t('settings.clientPrefs.paymentMethods.options.card')}
+                </SelectItem>
+                <SelectItem value="cash">
+                  {t('settings.clientPrefs.paymentMethods.options.cash')}
+                </SelectItem>
+                <SelectItem value="transfer">
+                  {t('settings.clientPrefs.paymentMethods.options.transfer')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1490,7 +1595,9 @@ function ClientRolePreferences() {
           <Separator />
 
           <div className="space-y-3">
-            <Label className="text-base font-medium">{t('settings.clientPrefs.serviceHistory.title')}</Label>
+            <Label className="text-base font-medium">
+              {t('settings.clientPrefs.serviceHistory.title')}
+            </Label>
             <div className="p-4 bg-muted/30 rounded-lg">
               <p className="text-sm text-muted-foreground">
                 {t('settings.clientPrefs.serviceHistory.completedServices', { count: '0' })}
@@ -1562,7 +1669,7 @@ function DangerZone({ user }: DangerZoneProps) {
       // - Registra deactivated_at con timestamp
       // - Cancela todas las citas futuras pendientes
       const { error } = await supabase.rpc('deactivate_user_account', {
-        user_id_param: user.id
+        user_id_param: user.id,
       })
 
       if (error) throw error
@@ -1571,21 +1678,21 @@ function DangerZone({ user }: DangerZoneProps) {
       await supabase.auth.signOut()
 
       toast.success(t('settings.dangerZone.delete.successTitle'), {
-        description: t('settings.dangerZone.delete.successDescription')
+        description: t('settings.dangerZone.delete.successDescription'),
       })
-      
+
       // Limpiar localStorage
       localStorage.clear()
-      
+
       // Redirigir al login después de 2 segundos
       setTimeout(() => {
         window.location.href = '/login'
       }, 2000)
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t('settings.dangerZone.delete.unknownError')
+      const errorMessage =
+        error instanceof Error ? error.message : t('settings.dangerZone.delete.unknownError')
       toast.error(t('settings.dangerZone.delete.errorTitle'), {
-        description: errorMessage
+        description: errorMessage,
       })
       setIsDeleting(false)
     }
@@ -1599,27 +1706,30 @@ function DangerZone({ user }: DangerZoneProps) {
             <AlertCircle className="h-5 w-5" />
             {t('settings.dangerZone.title')}
           </CardTitle>
-          <CardDescription>
-            {t('settings.dangerZone.description')}
-          </CardDescription>
+          <CardDescription>{t('settings.dangerZone.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>{t('settings.dangerZone.warning.label')}:</strong> {t('settings.dangerZone.warning.message')}
+              <strong>{t('settings.dangerZone.warning.label')}:</strong>{' '}
+              {t('settings.dangerZone.warning.message')}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-4">
             <div>
-              <h4 className="text-base font-semibold mb-2">{t('settings.dangerZone.deactivate.title')}</h4>
+              <h4 className="text-base font-semibold mb-2">
+                {t('settings.dangerZone.deactivate.title')}
+              </h4>
               <p className="text-sm text-muted-foreground mb-4">
                 {t('settings.dangerZone.deactivate.subtitle')}
               </p>
-              
+
               <div className="bg-muted/30 rounded-lg p-4 mb-4">
-                <p className="text-sm font-medium mb-2">{t('settings.dangerZone.deactivate.whatHappens')}</p>
+                <p className="text-sm font-medium mb-2">
+                  {t('settings.dangerZone.deactivate.whatHappens')}
+                </p>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                   <li>{t('settings.dangerZone.deactivate.consequences.markedInactive')}</li>
                   <li>{t('settings.dangerZone.deactivate.consequences.sessionClosed')}</li>
@@ -1637,11 +1747,7 @@ function DangerZone({ user }: DangerZoneProps) {
                 </div>
               </div>
 
-              <Button 
-                variant="destructive" 
-                onClick={handleOpenDeleteDialog}
-                className="w-full"
-              >
+              <Button variant="destructive" onClick={handleOpenDeleteDialog} className="w-full">
                 <AlertCircle className="h-4 w-4 mr-2" />
                 {t('settings.dangerZone.deactivate.button')}
               </Button>
@@ -1656,10 +1762,12 @@ function DangerZone({ user }: DangerZoneProps) {
           <DialogHeader>
             <DialogTitle className="text-destructive flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
-              {deleteStep === 1 ? t('settings.dangerZone.delete.step1Title') : t('settings.dangerZone.delete.step2Title')}
+              {deleteStep === 1
+                ? t('settings.dangerZone.delete.step1Title')
+                : t('settings.dangerZone.delete.step2Title')}
             </DialogTitle>
             <DialogDescription>
-              {deleteStep === 1 
+              {deleteStep === 1
                 ? t('settings.dangerZone.delete.step1Description')
                 : t('settings.dangerZone.delete.step2Description')}
             </DialogDescription>
@@ -1683,7 +1791,7 @@ function DangerZone({ user }: DangerZoneProps) {
                   type="email"
                   placeholder={t('settings.dangerZone.delete.emailPlaceholder')}
                   value={confirmEmail}
-                  onChange={(e) => setConfirmEmail(e.target.value)}
+                  onChange={e => setConfirmEmail(e.target.value)}
                   className="w-full"
                 />
               </div>
@@ -1692,12 +1800,9 @@ function DangerZone({ user }: DangerZoneProps) {
                 <Checkbox
                   id="understand"
                   checked={understandConsequences}
-                  onCheckedChange={(checked) => setUnderstandConsequences(checked as boolean)}
+                  onCheckedChange={checked => setUnderstandConsequences(checked as boolean)}
                 />
-                <label
-                  htmlFor="understand"
-                  className="text-sm leading-tight cursor-pointer"
-                >
+                <label htmlFor="understand" className="text-sm leading-tight cursor-pointer">
                   {t('settings.dangerZone.delete.understandCheckbox')}
                 </label>
               </div>
@@ -1715,14 +1820,15 @@ function DangerZone({ user }: DangerZoneProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-text">
-                  {t('settings.dangerZone.delete.typeExactly')}: <code className="bg-muted px-2 py-1 rounded">DESACTIVAR CUENTA</code>
+                  {t('settings.dangerZone.delete.typeExactly')}:{' '}
+                  <code className="bg-muted px-2 py-1 rounded">DESACTIVAR CUENTA</code>
                 </Label>
                 <Input
                   id="confirm-text"
                   type="text"
                   placeholder={t('settings.dangerZone.delete.confirmPlaceholder')}
                   value={confirmText}
-                  onChange={(e) => setConfirmText(e.target.value)}
+                  onChange={e => setConfirmText(e.target.value)}
                   className="w-full font-mono"
                 />
               </div>
@@ -1732,10 +1838,20 @@ function DangerZone({ user }: DangerZoneProps) {
                   {t('settings.dangerZone.delete.confirmDetails')}:
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>⚠️ {t('settings.dangerZone.delete.accountLabel')}: {user.email}</li>
-                  <li>⚠️ {t('settings.dangerZone.delete.profileLabel')}: {user.name}</li>
-                  <li>⚠️ {t('settings.dangerZone.delete.rolesLabel')}: {user.roles?.length || 0} {t('settings.dangerZone.delete.activeLabel')}</li>
-                  <li>⚠️ {t('settings.dangerZone.delete.appointmentsLabel')}: {t('settings.dangerZone.delete.cancelledAuto')}</li>
+                  <li>
+                    ⚠️ {t('settings.dangerZone.delete.accountLabel')}: {user.email}
+                  </li>
+                  <li>
+                    ⚠️ {t('settings.dangerZone.delete.profileLabel')}: {user.name}
+                  </li>
+                  <li>
+                    ⚠️ {t('settings.dangerZone.delete.rolesLabel')}: {user.roles?.length || 0}{' '}
+                    {t('settings.dangerZone.delete.activeLabel')}
+                  </li>
+                  <li>
+                    ⚠️ {t('settings.dangerZone.delete.appointmentsLabel')}:{' '}
+                    {t('settings.dangerZone.delete.cancelledAuto')}
+                  </li>
                 </ul>
                 <div className="mt-3 pt-3 border-t border-border">
                   <p className="text-xs font-medium text-green-600 dark:text-green-400">
@@ -1760,8 +1876,7 @@ function DangerZone({ user }: DangerZoneProps) {
                 variant="destructive"
                 onClick={handleProceedToStep2}
                 disabled={
-                  confirmEmail.toLowerCase() !== user.email.toLowerCase() ||
-                  !understandConsequences
+                  confirmEmail.toLowerCase() !== user.email.toLowerCase() || !understandConsequences
                 }
                 className="w-full sm:w-auto"
               >

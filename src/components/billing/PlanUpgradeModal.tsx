@@ -1,12 +1,13 @@
 /**
  * PlanUpgradeModal Component
- * 
+ *
  * Modal para actualizar el plan de suscripción (upgrade/downgrade)
  */
 
 import { useState } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAsync } from '@/hooks/useAsync'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { CheckCircle, Loader2 } from 'lucide-react'
-import type { PlanType, BillingCycle } from '@/lib/payments/PaymentGateway'
+import type { BillingCycle, PlanType } from '@/lib/payments/PaymentGateway'
 
 interface PlanUpgradeModalProps {
   businessId: string
@@ -53,7 +54,13 @@ const PLANS = {
     name: 'Corporativo',
     monthly: 0,
     yearly: 0,
-    features: ['Sedes ilimitadas', 'Empleados ilimitados', 'Citas ilimitadas', 'Clientes ilimitados', 'Servicios ilimitados'],
+    features: [
+      'Sedes ilimitadas',
+      'Empleados ilimitados',
+      'Citas ilimitadas',
+      'Clientes ilimitados',
+      'Servicios ilimitados',
+    ],
   },
 }
 
@@ -68,7 +75,7 @@ export function PlanUpgradeModal({
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(currentPlan)
   const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(currentCycle)
   const [discountCode, setDiscountCode] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitReq = useAsync<void>()
 
   const { updatePlan, applyDiscount } = useSubscription(businessId)
 
@@ -91,8 +98,7 @@ export function PlanUpgradeModal({
       return
     }
 
-    setIsSubmitting(true)
-    try {
+    await submitReq.run(async () => {
       // Aplicar código de descuento si existe
       if (discountCode) {
         const amount = PLANS[selectedPlan][selectedCycle]
@@ -102,11 +108,7 @@ export function PlanUpgradeModal({
       // Actualizar plan
       await updatePlan(selectedPlan, selectedCycle)
       onSuccess()
-    } catch (error) {
-      console.error('Error updating plan:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    })
   }
 
   const isUpgrade = () => {
@@ -122,7 +124,8 @@ export function PlanUpgradeModal({
         <DialogHeader>
           <DialogTitle>{t('billing.upgradePlan')}</DialogTitle>
           <DialogDescription>
-            {isUpgrade() ? t('billing.upgradePlanDescription') : t('billing.changePlanDescription')} {t('billing.adjustPlanNeeds')}
+            {isUpgrade() ? t('billing.upgradePlanDescription') : t('billing.changePlanDescription')}{' '}
+            {t('billing.adjustPlanNeeds')}
           </DialogDescription>
         </DialogHeader>
 
@@ -132,7 +135,7 @@ export function PlanUpgradeModal({
             <Label>{t('billing.billingCycle')}</Label>
             <RadioGroup
               value={selectedCycle}
-              onValueChange={(value) => setSelectedCycle(value as BillingCycle)}
+              onValueChange={value => setSelectedCycle(value as BillingCycle)}
               className="flex gap-4"
             >
               <div className="flex items-center space-x-2">
@@ -152,7 +155,7 @@ export function PlanUpgradeModal({
 
           {/* Grid de planes */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {(Object.keys(PLANS) as PlanType[]).map((planKey) => {
+            {(Object.keys(PLANS) as PlanType[]).map(planKey => {
               const plan = PLANS[planKey]
               const isCurrent = planKey === currentPlan && selectedCycle === currentCycle
               const isSelected = planKey === selectedPlan
@@ -170,7 +173,7 @@ export function PlanUpgradeModal({
                       Actual
                     </div>
                   )}
-                  
+
                   <h3 className="text-lg font-semibold mb-2">{plan.name}</h3>
                   <div className="text-2xl font-bold mb-4">
                     {getPrice(planKey, selectedCycle)}
@@ -201,7 +204,7 @@ export function PlanUpgradeModal({
               id="discount"
               placeholder="Ej: LAUNCH2025"
               value={discountCode}
-              onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+              onChange={e => setDiscountCode(e.target.value.toUpperCase())}
             />
           </div>
 
@@ -221,17 +224,16 @@ export function PlanUpgradeModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <Button variant="outline" onClick={onClose} disabled={submitReq.status === 'pending'}>
             {t('common.actions.cancel')}
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={
-              isSubmitting || 
-              (selectedPlan === currentPlan && selectedCycle === currentCycle)
+              submitReq.status === 'pending' || (selectedPlan === currentPlan && selectedCycle === currentCycle)
             }
           >
-            {isSubmitting ? (
+            {submitReq.status === 'pending' ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {t('billing.updatingPlan')}

@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
   public: {
@@ -314,7 +308,11 @@ export interface Database {
           id: string
           created_at: string
           user_id: string
-          type: 'appointment_reminder' | 'appointment_cancelled' | 'appointment_confirmed' | 'system'
+          type:
+            | 'appointment_reminder'
+            | 'appointment_cancelled'
+            | 'appointment_confirmed'
+            | 'system'
           title: string
           message: string
           appointment_id: string | null
@@ -328,7 +326,11 @@ export interface Database {
           id?: string
           created_at?: string
           user_id: string
-          type: 'appointment_reminder' | 'appointment_cancelled' | 'appointment_confirmed' | 'system'
+          type:
+            | 'appointment_reminder'
+            | 'appointment_cancelled'
+            | 'appointment_confirmed'
+            | 'system'
           title: string
           message: string
           appointment_id?: string | null
@@ -342,7 +344,11 @@ export interface Database {
           id?: string
           created_at?: string
           user_id?: string
-          type?: 'appointment_reminder' | 'appointment_cancelled' | 'appointment_confirmed' | 'system'
+          type?:
+            | 'appointment_reminder'
+            | 'appointment_cancelled'
+            | 'appointment_confirmed'
+            | 'system'
           title?: string
           message?: string
           appointment_id?: string | null

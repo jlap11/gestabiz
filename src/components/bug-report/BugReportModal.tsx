@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { useBugReports, type BugReportSeverity } from '@/hooks/useBugReports'
-import { AlertCircle, Upload, X, FileIcon, Loader2 } from 'lucide-react'
+import { type BugReportSeverity, useBugReports } from '@/hooks/useBugReports'
+import { AlertCircle, FileIcon, Loader2, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface BugReportModalProps {
@@ -33,26 +33,26 @@ const SEVERITY_CONFIG = {
     label: 'Baja',
     description: 'Problema menor que no afecta el uso',
     color: 'bg-green-500/20 text-green-700 border-green-500/50',
-    icon: '🟢'
+    icon: '🟢',
   },
   medium: {
     label: 'Media',
     description: 'Problema que afecta algunas funciones',
     color: 'bg-yellow-500/20 text-yellow-700 border-yellow-500/50',
-    icon: '🟡'
+    icon: '🟡',
   },
   high: {
     label: 'Alta',
     description: 'Problema grave que impide usar funciones importantes',
     color: 'bg-orange-500/20 text-orange-700 border-orange-500/50',
-    icon: '🟠'
+    icon: '🟠',
   },
   critical: {
     label: 'Crítica',
     description: 'Error bloqueante que impide usar la aplicación',
     color: 'bg-red-500/20 text-red-700 border-red-500/50',
-    icon: '🔴'
-  }
+    icon: '🔴',
+  },
 }
 
 const MAX_FILES = 5
@@ -66,13 +66,13 @@ const ALLOWED_TYPES = [
   'video/quicktime',
   'video/webm',
   'application/pdf',
-  'text/plain'
+  'text/plain',
 ]
 
 export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
   const { t } = useLanguage()
   const { createBugReport, loading } = useBugReports()
-  
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [stepsToReproduce, setStepsToReproduce] = useState('')
@@ -82,7 +82,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || [])
-    
+
     // Validar número de archivos
     if (files.length + selectedFiles.length > MAX_FILES) {
       toast.error(`Máximo ${MAX_FILES} archivos permitidos`)
@@ -145,7 +145,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
         description: description.trim(),
         stepsToReproduce: stepsToReproduce.trim() || undefined,
         severity,
-        category: category.trim() || undefined
+        category: category.trim() || undefined,
       },
       files.length > 0 ? files : undefined
     )
@@ -158,7 +158,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
       setSeverity('medium')
       setFiles([])
       setCategory('')
-      
+
       // Cerrar modal
       onOpenChange(false)
     }
@@ -179,8 +179,8 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             Reportar un Problema
           </DialogTitle>
           <DialogDescription>
-            Ayúdanos a mejorar reportando errores o problemas que encuentres en la aplicación.
-            Tu reporte será enviado a nuestro equipo de soporte.
+            Ayúdanos a mejorar reportando errores o problemas que encuentres en la aplicación. Tu
+            reporte será enviado a nuestro equipo de soporte.
           </DialogDescription>
         </DialogHeader>
 
@@ -193,7 +193,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               placeholder="Ej: Error al guardar cita"
               maxLength={255}
               required
@@ -209,7 +209,10 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             <Label htmlFor="severity" className="text-base font-semibold">
               Severidad *
             </Label>
-            <Select value={severity} onValueChange={(value) => setSeverity(value as BugReportSeverity)}>
+            <Select
+              value={severity}
+              onValueChange={value => setSeverity(value as BugReportSeverity)}
+            >
               <SelectTrigger id="severity">
                 <SelectValue />
               </SelectTrigger>
@@ -227,7 +230,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
                 ))}
               </SelectContent>
             </Select>
-            
+
             {/* Badge visual de severidad */}
             <Badge className={SEVERITY_CONFIG[severity].color}>
               {SEVERITY_CONFIG[severity].icon} {SEVERITY_CONFIG[severity].label}
@@ -266,7 +269,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               placeholder="Describe detalladamente qué sucedió, qué esperabas que sucediera y cualquier información relevante..."
               rows={4}
               required
@@ -285,7 +288,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             <Textarea
               id="steps"
               value={stepsToReproduce}
-              onChange={(e) => setStepsToReproduce(e.target.value)}
+              onChange={e => setStepsToReproduce(e.target.value)}
               placeholder="1. Ve a la página de citas&#10;2. Haz clic en 'Nueva Cita'&#10;3. Completa el formulario&#10;4. El error aparece al hacer clic en 'Guardar'"
               rows={4}
               className="resize-none font-mono text-sm"
@@ -297,9 +300,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
 
           {/* Upload de archivos */}
           <div className="space-y-2">
-            <Label className="text-base font-semibold">
-              Evidencias (Opcional)
-            </Label>
+            <Label className="text-base font-semibold">Evidencias (Opcional)</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
               <input
                 type="file"
@@ -318,9 +319,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
               >
                 <Upload className="h-10 w-10 text-muted-foreground" />
                 <div>
-                  <p className="font-medium text-foreground">
-                    Haz clic para subir archivos
-                  </p>
+                  <p className="font-medium text-foreground">Haz clic para subir archivos</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Capturas de pantalla, videos, logs, etc.
                   </p>
@@ -346,9 +345,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
                       <FileIcon className="h-5 w-5 text-primary flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{file.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatFileSize(file.size)}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                       </div>
                     </div>
                     <Button
@@ -368,9 +365,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
 
           {/* Info adicional */}
           <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-semibold text-foreground">
-              ℹ️ Información Técnica
-            </p>
+            <p className="text-sm font-semibold text-foreground">ℹ️ Información Técnica</p>
             <p className="text-xs text-muted-foreground">
               Se capturará automáticamente información sobre tu navegador, dispositivo y la página
               donde ocurrió el problema para ayudarnos a diagnosticarlo.
@@ -387,10 +382,7 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || !title.trim() || !description.trim()}
-            >
+            <Button type="submit" disabled={loading || !title.trim() || !description.trim()}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

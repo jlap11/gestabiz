@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useMemo } from 'react'
-import { User, Permission, UserRole } from '@/types'
-import { userHasPermission, getRolePermissions, ROLE_DESCRIPTIONS } from '@/lib/permissions'
+import { Permission, User, UserRole } from '@/types'
+import { ROLE_DESCRIPTIONS, getRolePermissions, userHasPermission } from '@/lib/permissions'
 
 export function usePermissions(user: User | null) {
   const permissions = useMemo(() => {
@@ -16,7 +16,7 @@ export function usePermissions(user: User | null) {
         isAdmin: false,
         isEmployee: false,
         isClient: false,
-        roleDescription: ''
+        roleDescription: '',
       }
     }
 
@@ -28,28 +28,28 @@ export function usePermissions(user: User | null) {
     const isClient = activeRole === 'client'
 
     return {
-      hasPermission: (permission: Permission) => 
+      hasPermission: (permission: Permission) =>
         userHasPermission(activeRole, user.permissions, permission),
-      
+
       rolePermissions,
-      
-      canRead: (resource: string) => 
+
+      canRead: (resource: string) =>
         userHasPermission(activeRole, user.permissions, `read_${resource}` as Permission),
-      
-      canWrite: (resource: string) => 
+
+      canWrite: (resource: string) =>
         userHasPermission(activeRole, user.permissions, `write_${resource}` as Permission),
-      
-      canDelete: (resource: string) => 
+
+      canDelete: (resource: string) =>
         userHasPermission(activeRole, user.permissions, `delete_${resource}` as Permission),
-      
-      canManage: (resource: string) => 
+
+      canManage: (resource: string) =>
         userHasPermission(activeRole, user.permissions, `manage_${resource}` as Permission),
-      
+
       isAdmin,
       isEmployee,
       isClient,
-      
-      roleDescription: ROLE_DESCRIPTIONS[activeRole] || ''
+
+      roleDescription: ROLE_DESCRIPTIONS[activeRole] || '',
     }
   }, [user])
 
@@ -59,14 +59,14 @@ export function usePermissions(user: User | null) {
 // Hook for business-specific permissions
 export function useBusinessPermissions(user: User | null, businessId?: string) {
   const basePermissions = usePermissions(user)
-  
+
   const businessPermissions = useMemo(() => {
     if (!user || !businessId) {
       return {
         ...basePermissions,
         canAccessBusiness: false,
         isBusinessOwner: false,
-        isBusinessMember: false
+        isBusinessMember: false,
       }
     }
 
@@ -78,7 +78,7 @@ export function useBusinessPermissions(user: User | null, businessId?: string) {
       ...basePermissions,
       canAccessBusiness,
       isBusinessOwner,
-      isBusinessMember
+      isBusinessMember,
     }
   }, [user, businessId, basePermissions])
 
@@ -88,13 +88,13 @@ export function useBusinessPermissions(user: User | null, businessId?: string) {
 // Hook for location-specific permissions
 export function useLocationPermissions(user: User | null, locationId?: string) {
   const basePermissions = usePermissions(user)
-  
+
   const locationPermissions = useMemo(() => {
     if (!user || !locationId) {
       return {
         ...basePermissions,
         canAccessLocation: false,
-        isLocationAssigned: false
+        isLocationAssigned: false,
       }
     }
 
@@ -104,7 +104,7 @@ export function useLocationPermissions(user: User | null, locationId?: string) {
     return {
       ...basePermissions,
       canAccessLocation,
-      isLocationAssigned
+      isLocationAssigned,
     }
   }, [user, locationId, basePermissions])
 
@@ -129,7 +129,7 @@ export function PermissionGuard({
   businessId,
   locationId,
   fallback = null,
-  children
+  children,
 }: Readonly<PermissionGuardProps>) {
   const permissions = usePermissions(user)
   const businessPermissions = useBusinessPermissions(user, businessId)
@@ -162,21 +162,31 @@ export function PermissionGuard({
 export function useNavigationPermissions(user: User | null) {
   const permissions = usePermissions(user)
 
-  return useMemo(() => ({
-    showDashboard: true, // Everyone can see dashboard
-    showAppointments: permissions.canRead('appointments'),
-    showClients: permissions.canRead('clients'),
-    showEmployees: permissions.canRead('employees') || permissions.isAdmin,
-    showReports: permissions.canRead('reports') || permissions.isAdmin,
-    showBusiness: permissions.canRead('business') || permissions.canWrite('business') || permissions.isAdmin,
-    showLocations: permissions.canRead('locations') || permissions.canWrite('locations') || permissions.isAdmin,
-    showServices: permissions.canRead('services'),
-    showSettings: true, // Everyone can see their own settings
-    showAnalytics: permissions.canRead('reports') || permissions.isAdmin,
-    canCreateAppointments: permissions.canWrite('appointments'),
-    canManageUsers: permissions.canWrite('employees') || permissions.canDelete('employees') || permissions.isAdmin,
-    canManageSettings: permissions.hasPermission('manage_settings') || permissions.isAdmin,
-    canViewRecurringClients: true, // Available to all business users
-    canSendWhatsApp: permissions.isAdmin || permissions.isEmployee
-  }), [permissions])
+  return useMemo(
+    () => ({
+      showDashboard: true, // Everyone can see dashboard
+      showAppointments: permissions.canRead('appointments'),
+      showClients: permissions.canRead('clients'),
+      showEmployees: permissions.canRead('employees') || permissions.isAdmin,
+      showReports: permissions.canRead('reports') || permissions.isAdmin,
+      showBusiness:
+        permissions.canRead('business') || permissions.canWrite('business') || permissions.isAdmin,
+      showLocations:
+        permissions.canRead('locations') ||
+        permissions.canWrite('locations') ||
+        permissions.isAdmin,
+      showServices: permissions.canRead('services'),
+      showSettings: true, // Everyone can see their own settings
+      showAnalytics: permissions.canRead('reports') || permissions.isAdmin,
+      canCreateAppointments: permissions.canWrite('appointments'),
+      canManageUsers:
+        permissions.canWrite('employees') ||
+        permissions.canDelete('employees') ||
+        permissions.isAdmin,
+      canManageSettings: permissions.hasPermission('manage_settings') || permissions.isAdmin,
+      canViewRecurringClients: true, // Available to all business users
+      canSendWhatsApp: permissions.isAdmin || permissions.isEmployee,
+    }),
+    [permissions]
+  )
 }

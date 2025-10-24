@@ -96,6 +96,7 @@ En el Dashboard de Supabase:
 5. Guardar
 
 Expresión cron:
+
 ```
 */15 * * * *
 │   │ │ │ │
@@ -225,7 +226,7 @@ WHERE type = 'chat_message'
   AND created_at > NOW() - INTERVAL '7 days';
 
 -- Clientes que más emails de recordatorio reciben
-SELECT 
+SELECT
   p.full_name,
   p.email,
   COUNT(*) as reminder_count

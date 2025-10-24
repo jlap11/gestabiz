@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { BusinessSubcategory, BusinessCategory } from '@/types/types'
+import { BusinessCategory, BusinessSubcategory } from '@/types/types'
 
 interface UseBusinessSubcategoriesReturn {
   subcategories: BusinessSubcategory[]
@@ -34,10 +34,12 @@ export function useBusinessSubcategories(
 
       const { data, error: fetchError } = await supabase
         .from('business_subcategories')
-        .select(`
+        .select(
+          `
           *,
           subcategory:business_categories!subcategory_id(*)
-        `)
+        `
+        )
         .eq('business_id', businessId)
 
       if (fetchError) {
@@ -62,12 +64,10 @@ export function useBusinessSubcategories(
         return false
       }
 
-      const { error: insertError } = await supabase
-        .from('business_subcategories')
-        .insert({
-          business_id: businessId,
-          subcategory_id: subcategoryId,
-        })
+      const { error: insertError } = await supabase.from('business_subcategories').insert({
+        business_id: businessId,
+        subcategory_id: subcategoryId,
+      })
 
       if (insertError) {
         throw insertError

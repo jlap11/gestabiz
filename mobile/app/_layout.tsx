@@ -55,8 +55,10 @@ export default function RootLayout() {
     const initializeApp = async () => {
       try {
         // Check if user is already logged in
-        const { data: { session } } = await supabase.auth.getSession()
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
         // Set up auth state listener
         supabase.auth.onAuthStateChange((event, session) => {
           console.log('Auth state changed:', event, session?.user?.email)
@@ -99,27 +101,21 @@ export default function RootLayout() {
                   },
                 }}
               >
-                <Stack.Screen 
-                  name="(auth)" 
-                  options={{ headerShown: false }} 
-                />
-                <Stack.Screen 
-                  name="(tabs)" 
-                  options={{ headerShown: false }} 
-                />
-                <Stack.Screen 
-                  name="appointment/[id]" 
-                  options={{ 
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="appointment/[id]"
+                  options={{
                     title: 'Detalles de Cita',
-                    presentation: 'modal' 
-                  }} 
+                    presentation: 'modal',
+                  }}
                 />
-                <Stack.Screen 
-                  name="client/[id]" 
-                  options={{ 
+                <Stack.Screen
+                  name="client/[id]"
+                  options={{
                     title: 'Detalles del Cliente',
-                    presentation: 'modal' 
-                  }} 
+                    presentation: 'modal',
+                  }}
                 />
               </Stack>
             </NotificationProvider>

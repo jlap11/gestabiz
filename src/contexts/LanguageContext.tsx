@@ -6,8 +6,16 @@ import { translations } from '@/lib/translations'
 export type Language = 'es' | 'en'
 
 // Helper to get nested translation value with safe typing
-function getNestedValue<T extends Record<string, unknown>>(obj: T, path: string): string | undefined {
-  return path.split('.').reduce<unknown>((current, key) => (current as Record<string, unknown> | undefined)?.[key], obj) as string | undefined
+function getNestedValue<T extends Record<string, unknown>>(
+  obj: T,
+  path: string
+): string | undefined {
+  return path
+    .split('.')
+    .reduce<unknown>(
+      (current, key) => (current as Record<string, unknown> | undefined)?.[key],
+      obj
+    ) as string | undefined
 }
 
 interface LanguageContextType {
@@ -22,25 +30,29 @@ export function LanguageProvider({ children }: Readonly<{ children: React.ReactN
   const [language, setLanguage] = useKV<Language>('user-language', 'es')
 
   // Translation function with memoization
-  const t = useMemo(() => (key: string, params?: Record<string, string>): string => {
-    const translation = getNestedValue(translations[language], key)
-    
-    if (!translation) {
-      // Return key instead of logging in production
-      return key
-    }
+  const t = useMemo(
+    () =>
+      (key: string, params?: Record<string, string>): string => {
+        const translation = getNestedValue(translations[language], key)
 
-    let text = translation
+        if (!translation) {
+          // Return key instead of logging in production
+          return key
+        }
 
-    // Replace parameters if provided
-    if (params) {
-      Object.entries(params).forEach(([param, value]) => {
-        text = text.replace(new RegExp(`{{${param}}}`, 'g'), value)
-      })
-    }
+        let text = translation
 
-    return text
-  }, [language])
+        // Replace parameters if provided
+        if (params) {
+          Object.entries(params).forEach(([param, value]) => {
+            text = text.replace(new RegExp(`{{${param}}}`, 'g'), value)
+          })
+        }
+
+        return text
+      },
+    [language]
+  )
 
   // Update document language
   useEffect(() => {
@@ -48,11 +60,7 @@ export function LanguageProvider({ children }: Readonly<{ children: React.ReactN
   }, [language])
 
   const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t])
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  )
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {

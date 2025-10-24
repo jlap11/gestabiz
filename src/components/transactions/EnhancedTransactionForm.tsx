@@ -1,49 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { DollarSign, Calendar, Tag, FileText, CreditCard, Calculator, Info } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useEffect, useState } from 'react'
+import { Calculator, Calendar, CreditCard, DollarSign, FileText, Info, Tag } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { ButtonSpinner } from '@/components/ui/loading-spinner';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTaxCalculation } from '@/hooks/useTaxCalculation';
-import { formatCOP } from '@/lib/accounting/colombiaTaxes';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import type { TransactionType, TransactionCategory } from '@/types/types';
-import type { TaxType } from '@/types/accounting.types';
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { ButtonSpinner } from '@/components/ui/loading-spinner'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useTaxCalculation } from '@/hooks/useTaxCalculation'
+import { formatCOP } from '@/lib/accounting/colombiaTaxes'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import type { TransactionCategory, TransactionType } from '@/types/types'
+import type { TaxType } from '@/types/accounting.types'
 
 interface EnhancedTransactionFormProps {
-  businessId: string;
-  locationId?: string;
-  onSubmit: (transaction: EnhancedTransactionFormData) => Promise<void>;
-  onCancel?: () => void;
-  defaultType?: TransactionType;
+  businessId: string
+  locationId?: string
+  onSubmit: (transaction: EnhancedTransactionFormData) => Promise<void>
+  onCancel?: () => void
+  defaultType?: TransactionType
 }
 
 export interface EnhancedTransactionFormData {
-  type: TransactionType;
-  category: TransactionCategory;
-  subtotal: number;
-  tax_type: TaxType;
-  tax_rate: number;
-  tax_amount: number;
-  total_amount: number;
-  currency: string;
-  description?: string;
-  transaction_date: string;
-  payment_method?: string;
-  employee_id?: string;
-  appointment_id?: string;
+  type: TransactionType
+  category: TransactionCategory
+  subtotal: number
+  tax_type: TaxType
+  tax_rate: number
+  tax_amount: number
+  total_amount: number
+  currency: string
+  description?: string
+  transaction_date: string
+  payment_method?: string
+  employee_id?: string
+  appointment_id?: string
 }
 
 const INCOME_CATEGORIES: TransactionCategory[] = [
@@ -53,7 +53,7 @@ const INCOME_CATEGORIES: TransactionCategory[] = [
   'package',
   'tip',
   'other_income',
-];
+]
 
 const EXPENSE_CATEGORIES: TransactionCategory[] = [
   'salary',
@@ -68,7 +68,7 @@ const EXPENSE_CATEGORIES: TransactionCategory[] = [
   'insurance',
   'training',
   'other_expense',
-];
+]
 
 const PAYMENT_METHODS = [
   'cash',
@@ -77,7 +77,7 @@ const PAYMENT_METHODS = [
   'bank_transfer',
   'digital_wallet',
   'check',
-];
+]
 
 export function EnhancedTransactionForm({
   businessId,
@@ -86,9 +86,9 @@ export function EnhancedTransactionForm({
   onCancel,
   defaultType = 'income',
 }: EnhancedTransactionFormProps) {
-  const { t } = useLanguage();
-  const { config, calculateTaxes } = useTaxCalculation(businessId);
-  
+  const { t } = useLanguage()
+  const { config, calculateTaxes } = useTaxCalculation(businessId)
+
   const [formData, setFormData] = useState<EnhancedTransactionFormData>({
     type: defaultType,
     category: defaultType === 'income' ? 'appointment_payment' : 'salary',
@@ -101,11 +101,11 @@ export function EnhancedTransactionForm({
     description: '',
     transaction_date: new Date().toISOString().split('T')[0],
     payment_method: 'cash',
-  });
+  })
 
-  const [autoCalculateTaxes, setAutoCalculateTaxes] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCalculating, setIsCalculating] = useState(false);
+  const [autoCalculateTaxes, setAutoCalculateTaxes] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCalculating, setIsCalculating] = useState(false)
 
   // Calcular impuestos automáticamente con debounce
   useEffect(() => {
@@ -114,49 +114,49 @@ export function EnhancedTransactionForm({
       setFormData(prev => ({
         ...prev,
         total_amount: prev.subtotal + prev.tax_amount,
-      }));
-      return;
+      }))
+      return
     }
 
     if (formData.subtotal <= 0) {
-      return;
+      return
     }
 
     // Debounce de 300ms para evitar cálculos excesivos
-    setIsCalculating(true);
+    setIsCalculating(true)
     const timeoutId = setTimeout(() => {
       try {
-        const taxes = calculateTaxes(formData.subtotal, formData.tax_type);
-        const totalRate = (taxes.total_tax / formData.subtotal);
+        const taxes = calculateTaxes(formData.subtotal, formData.tax_type)
+        const totalRate = taxes.total_tax / formData.subtotal
         setFormData(prev => ({
           ...prev,
           tax_rate: totalRate,
           tax_amount: taxes.total_tax,
           total_amount: taxes.total_amount,
-        }));
+        }))
       } finally {
-        setIsCalculating(false);
+        setIsCalculating(false)
       }
-    }, 300);
+    }, 300)
 
     return () => {
-      clearTimeout(timeoutId);
-      setIsCalculating(false);
-    };
-  }, [formData.subtotal, formData.tax_type, autoCalculateTaxes, calculateTaxes]);
+      clearTimeout(timeoutId)
+      setIsCalculating(false)
+    }
+  }, [formData.subtotal, formData.tax_type, autoCalculateTaxes, calculateTaxes])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (formData.subtotal <= 0) {
-      toast.error(t('admin.transactionValidation.subtotalRequired'));
-      return;
+      toast.error(t('admin.transactionValidation.subtotalRequired'))
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      await onSubmit(formData);
-      toast.success(t('transactions.submitSuccess'));
+      await onSubmit(formData)
+      toast.success(t('transactions.submitSuccess'))
       // Reset form
       setFormData({
         type: defaultType,
@@ -170,33 +170,33 @@ export function EnhancedTransactionForm({
         description: '',
         transaction_date: new Date().toISOString().split('T')[0],
         payment_method: 'cash',
-      });
+      })
     } catch {
-      toast.error(t('transactions.errors.submitFailed'));
+      toast.error(t('transactions.errors.submitFailed'))
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleTypeChange = (type: TransactionType) => {
     setFormData(prev => ({
       ...prev,
       type,
       category: type === 'income' ? 'appointment_payment' : 'salary',
-    }));
-  };
+    }))
+  }
 
-  const categories = formData.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories = formData.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
 
   // Info sobre configuración fiscal
-  const hasTaxConfig = !!config;
+  const hasTaxConfig = !!config
   const getTaxRegimeLabel = () => {
-    if (!config) return 'No configurado';
-    if (config.tax_regime === 'simple') return 'Simplificado';
-    if (config.tax_regime === 'common') return 'Común';
-    return 'Especial';
-  };
-  const taxRegimeLabel = getTaxRegimeLabel();
+    if (!config) return 'No configurado'
+    if (config.tax_regime === 'simple') return 'Simplificado'
+    if (config.tax_regime === 'common') return 'Común'
+    return 'Especial'
+  }
+  const taxRegimeLabel = getTaxRegimeLabel()
 
   return (
     <Card className="p-6 bg-card">
@@ -204,7 +204,9 @@ export function EnhancedTransactionForm({
         {/* Title */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">{t('transactions.newTransaction')}</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              {t('transactions.newTransaction')}
+            </h3>
             <p className="text-sm text-muted-foreground mt-1">
               Transacción con cálculo automático de impuestos
             </p>
@@ -226,7 +228,8 @@ export function EnhancedTransactionForm({
                   Configuración Fiscal No Encontrada
                 </p>
                 <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
-                  Configure los impuestos de su negocio para calcular IVA, ICA y retención automáticamente.
+                  Configure los impuestos de su negocio para calcular IVA, ICA y retención
+                  automáticamente.
                 </p>
               </div>
             </div>
@@ -241,7 +244,7 @@ export function EnhancedTransactionForm({
               type="button"
               onClick={() => handleTypeChange('income')}
               className={cn(
-                "p-4 border-2 rounded-lg text-left transition-all",
+                'p-4 border-2 rounded-lg text-left transition-all',
                 formData.type === 'income'
                   ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                   : 'border-border hover:border-green-300'
@@ -251,16 +254,14 @@ export function EnhancedTransactionForm({
                 <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
                 <span className="font-medium text-foreground">Ingreso</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Ventas, servicios, cobros
-              </p>
+              <p className="text-xs text-muted-foreground">Ventas, servicios, cobros</p>
             </button>
 
             <button
               type="button"
               onClick={() => handleTypeChange('expense')}
               className={cn(
-                "p-4 border-2 rounded-lg text-left transition-all",
+                'p-4 border-2 rounded-lg text-left transition-all',
                 formData.type === 'expense'
                   ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
                   : 'border-border hover:border-red-300'
@@ -270,9 +271,7 @@ export function EnhancedTransactionForm({
                 <DollarSign className="h-5 w-5 text-red-600 dark:text-red-400" />
                 <span className="font-medium text-foreground">Egreso</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Gastos, compras, pagos
-              </p>
+              <p className="text-xs text-muted-foreground">Gastos, compras, pagos</p>
             </button>
           </div>
         </div>
@@ -287,7 +286,7 @@ export function EnhancedTransactionForm({
             </Label>
             <Select
               value={formData.category}
-              onValueChange={(value) =>
+              onValueChange={value =>
                 setFormData(prev => ({ ...prev, category: value as TransactionCategory }))
               }
             >
@@ -309,7 +308,7 @@ export function EnhancedTransactionForm({
             <Label htmlFor="currency">Moneda</Label>
             <Select
               value={formData.currency}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+              onValueChange={value => setFormData(prev => ({ ...prev, currency: value }))}
             >
               <SelectTrigger id="currency">
                 <SelectValue />
@@ -352,7 +351,7 @@ export function EnhancedTransactionForm({
                 step="0.01"
                 min="0"
                 value={formData.subtotal}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData(prev => ({ ...prev, subtotal: parseFloat(e.target.value) || 0 }))
                 }
                 placeholder="0.00"
@@ -368,7 +367,7 @@ export function EnhancedTransactionForm({
                 <Label htmlFor="tax_type">Tipo de Impuesto</Label>
                 <Select
                   value={formData.tax_type}
-                  onValueChange={(value) =>
+                  onValueChange={value =>
                     setFormData(prev => ({ ...prev, tax_type: value as TaxType }))
                   }
                   disabled={isCalculating}
@@ -400,7 +399,7 @@ export function EnhancedTransactionForm({
                     min="0"
                     max="100"
                     value={formData.tax_rate}
-                    onChange={(e) =>
+                    onChange={e =>
                       setFormData(prev => ({ ...prev, tax_rate: parseFloat(e.target.value) || 0 }))
                     }
                     className="bg-background"
@@ -414,8 +413,11 @@ export function EnhancedTransactionForm({
                     step="0.01"
                     min="0"
                     value={formData.tax_amount}
-                    onChange={(e) =>
-                      setFormData(prev => ({ ...prev, tax_amount: parseFloat(e.target.value) || 0 }))
+                    onChange={e =>
+                      setFormData(prev => ({
+                        ...prev,
+                        tax_amount: parseFloat(e.target.value) || 0,
+                      }))
                     }
                     className="bg-background"
                   />
@@ -474,9 +476,7 @@ export function EnhancedTransactionForm({
               id="transaction_date"
               type="date"
               value={formData.transaction_date}
-              onChange={(e) =>
-                setFormData(prev => ({ ...prev, transaction_date: e.target.value }))
-              }
+              onChange={e => setFormData(prev => ({ ...prev, transaction_date: e.target.value }))}
               required
               className="bg-background"
             />
@@ -490,9 +490,7 @@ export function EnhancedTransactionForm({
             </Label>
             <Select
               value={formData.payment_method}
-              onValueChange={(value) =>
-                setFormData(prev => ({ ...prev, payment_method: value }))
-              }
+              onValueChange={value => setFormData(prev => ({ ...prev, payment_method: value }))}
             >
               <SelectTrigger id="payment_method">
                 <SelectValue />
@@ -512,16 +510,13 @@ export function EnhancedTransactionForm({
         <div className="space-y-2">
           <Label htmlFor="description">
             <FileText className="h-4 w-4 inline mr-2" />
-            Descripción{' '}
-            <span className="text-muted-foreground font-normal">
-              (opcional)
-            </span>
+            Descripción <span className="text-muted-foreground font-normal">(opcional)</span>
           </Label>
           <Textarea
             id="description"
             placeholder={t('common.placeholders.transactionDetails')}
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
             rows={3}
             maxLength={500}
             className="bg-background"
@@ -541,17 +536,12 @@ export function EnhancedTransactionForm({
             {isSubmitting ? t('common.actions.saving') : t('common.actions.save')}
           </Button>
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               {t('common.actions.cancel')}
             </Button>
           )}
         </div>
       </form>
     </Card>
-  );
+  )
 }

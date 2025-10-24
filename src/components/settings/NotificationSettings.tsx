@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -29,9 +29,21 @@ interface NotificationPreferences {
 
 const NOTIFICATION_TYPES = [
   { key: 'appointment_reminder', label: 'notifications.types.appointmentReminder', icon: Clock },
-  { key: 'appointment_confirmation', label: 'notifications.types.appointmentConfirmation', icon: Check },
-  { key: 'appointment_cancellation', label: 'notifications.types.appointmentCancellation', icon: X },
-  { key: 'appointment_rescheduled', label: 'notifications.types.appointmentRescheduled', icon: Clock },
+  {
+    key: 'appointment_confirmation',
+    label: 'notifications.types.appointmentConfirmation',
+    icon: Check,
+  },
+  {
+    key: 'appointment_cancellation',
+    label: 'notifications.types.appointmentCancellation',
+    icon: X,
+  },
+  {
+    key: 'appointment_rescheduled',
+    label: 'notifications.types.appointmentRescheduled',
+    icon: Clock,
+  },
   { key: 'security_alert', label: 'notifications.types.securityAlert', icon: Bell },
 ]
 
@@ -92,7 +104,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, t])
 
   useEffect(() => {
     loadPreferences()
@@ -103,18 +115,17 @@ export function NotificationSettings({ userId }: { userId: string }) {
 
     try {
       setSaving(true)
-      const { error } = await supabase
-        .from('user_notification_preferences')
-        .upsert({
-          user_id: userId,
-          ...preferences,
-          updated_at: new Date().toISOString(),
-        })
+      const { error } = await supabase.from('user_notification_preferences').upsert({
+        user_id: userId,
+        ...preferences,
+        updated_at: new Date().toISOString(),
+      })
 
       if (error) throw error
 
       toast.success(t('common.messages.saveSuccess'), {
-        description: t('notifications.preferencesSaved') || 'Your notification preferences have been updated'
+        description:
+          t('notifications.preferencesSaved') || 'Your notification preferences have been updated',
       })
     } catch {
       toast.error(t('common.messages.saveError'))
@@ -142,7 +153,11 @@ export function NotificationSettings({ userId }: { userId: string }) {
       notification_preferences: {
         ...preferences.notification_preferences,
         [notifType]: {
-          ...(preferences.notification_preferences[notifType] || { email: false, sms: false, whatsapp: false }),
+          ...(preferences.notification_preferences[notifType] || {
+            email: false,
+            sms: false,
+            whatsapp: false,
+          }),
           [channel]: enabled,
         },
       },
@@ -190,7 +205,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <Switch
               id="email-channel"
               checked={preferences.email_enabled}
-              onCheckedChange={(checked) => updateChannelEnabled('email', checked)}
+              onCheckedChange={checked => updateChannelEnabled('email', checked)}
             />
           </div>
 
@@ -210,7 +225,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <Switch
               id="sms-channel"
               checked={preferences.sms_enabled}
-              onCheckedChange={(checked) => updateChannelEnabled('sms', checked)}
+              onCheckedChange={checked => updateChannelEnabled('sms', checked)}
             />
           </div>
 
@@ -230,7 +245,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <Switch
               id="whatsapp-channel"
               checked={preferences.whatsapp_enabled}
-              onCheckedChange={(checked) => updateChannelEnabled('whatsapp', checked)}
+              onCheckedChange={checked => updateChannelEnabled('whatsapp', checked)}
             />
           </div>
         </div>
@@ -240,7 +255,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">{t('notifications.types.title')}</h3>
         <div className="space-y-4">
-          {NOTIFICATION_TYPES.map((type) => {
+          {NOTIFICATION_TYPES.map(type => {
             const Icon = type.icon
             const prefs = preferences.notification_preferences[type.key] || {
               email: false,
@@ -259,31 +274,39 @@ export function NotificationSettings({ userId }: { userId: string }) {
                     <input
                       type="checkbox"
                       checked={prefs.email}
-                      onChange={(e) => updateNotificationChannel(type.key, 'email', e.target.checked)}
+                      onChange={e => updateNotificationChannel(type.key, 'email', e.target.checked)}
                       disabled={!preferences.email_enabled}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-muted-foreground">{t('notifications.channels.email')}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t('notifications.channels.email')}
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={prefs.sms}
-                      onChange={(e) => updateNotificationChannel(type.key, 'sms', e.target.checked)}
+                      onChange={e => updateNotificationChannel(type.key, 'sms', e.target.checked)}
                       disabled={!preferences.sms_enabled}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-muted-foreground">{t('notifications.channels.sms')}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t('notifications.channels.sms')}
+                    </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={prefs.whatsapp}
-                      onChange={(e) => updateNotificationChannel(type.key, 'whatsapp', e.target.checked)}
+                      onChange={e =>
+                        updateNotificationChannel(type.key, 'whatsapp', e.target.checked)
+                      }
                       disabled={!preferences.whatsapp_enabled}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm text-muted-foreground">{t('notifications.channels.whatsapp')}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t('notifications.channels.whatsapp')}
+                    </span>
                   </label>
                 </div>
                 {type.key !== NOTIFICATION_TYPES[NOTIFICATION_TYPES.length - 1]?.key && (
@@ -301,7 +324,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
           <h3 className="text-lg font-semibold">{t('notifications.doNotDisturb.title')}</h3>
           <Switch
             checked={preferences.do_not_disturb_enabled}
-            onCheckedChange={(checked) =>
+            onCheckedChange={checked =>
               setPreferences({ ...preferences, do_not_disturb_enabled: checked })
             }
           />
@@ -314,7 +337,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
                 id="dnd-start"
                 type="time"
                 value={preferences.do_not_disturb_start}
-                onChange={(e) =>
+                onChange={e =>
                   setPreferences({ ...preferences, do_not_disturb_start: e.target.value })
                 }
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
@@ -326,7 +349,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
                 id="dnd-end"
                 type="time"
                 value={preferences.do_not_disturb_end}
-                onChange={(e) =>
+                onChange={e =>
                   setPreferences({ ...preferences, do_not_disturb_end: e.target.value })
                 }
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
@@ -345,7 +368,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <Switch
               id="daily-digest"
               checked={preferences.daily_digest_enabled}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 setPreferences({ ...preferences, daily_digest_enabled: checked })
               }
             />
@@ -357,7 +380,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
                 id="digest-time"
                 type="time"
                 value={preferences.daily_digest_time}
-                onChange={(e) =>
+                onChange={e =>
                   setPreferences({ ...preferences, daily_digest_time: e.target.value })
                 }
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
@@ -372,7 +395,7 @@ export function NotificationSettings({ userId }: { userId: string }) {
             <Switch
               id="weekly-summary"
               checked={preferences.weekly_summary_enabled}
-              onCheckedChange={(checked) =>
+              onCheckedChange={checked =>
                 setPreferences({ ...preferences, weekly_summary_enabled: checked })
               }
             />
@@ -383,8 +406,11 @@ export function NotificationSettings({ userId }: { userId: string }) {
               <select
                 id="summary-day"
                 value={preferences.weekly_summary_day}
-                onChange={(e) =>
-                  setPreferences({ ...preferences, weekly_summary_day: Number.parseInt(e.target.value) })
+                onChange={e =>
+                  setPreferences({
+                    ...preferences,
+                    weekly_summary_day: Number.parseInt(e.target.value),
+                  })
                 }
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
               >

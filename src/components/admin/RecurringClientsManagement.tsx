@@ -1,25 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  WhatsappLogo, 
-  Users, 
-  TrendUp, 
-  TrendDown, 
+import {
   CalendarX,
-  Phone,
+  CurrencyDollar,
   EnvelopeSimple,
-  CurrencyDollar
+  Phone,
+  TrendDown,
+  TrendUp,
+  Users,
+  WhatsappLogo,
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@/lib/useKV'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { formatDate, formatCurrency } from '@/lib/i18n'
-import { Client, Appointment, User } from '@/types'
+import { formatCurrency, formatDate } from '@/lib/i18n'
+import { Appointment, Client, User } from '@/types'
 
 interface RecurringClientsManagementProps {
   user: User
@@ -48,50 +48,56 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
 
   // Calculate client analytics
   useEffect(() => {
-    const analytics: ClientAnalytics[] = clients.map(client => {
-      const clientAppointments = appointments.filter(apt => 
-        apt.client_id === client.id && apt.status === 'completed'
-      )
-      
-      const totalAppointments = clientAppointments.length
-      const lastAppointment = clientAppointments.length > 0 
-        ? new Date(Math.max(...clientAppointments.map(apt => new Date(apt.start_time).getTime())))
-        : null
-      
-      const daysSinceLastVisit = lastAppointment 
-        ? Math.floor((Date.now() - lastAppointment.getTime()) / (1000 * 60 * 60 * 24))
-        : Infinity
-      
-      const totalSpent = clientAppointments.reduce((sum, apt) => sum + (apt.price || 0), 0)
-      const averageSpend = totalAppointments > 0 ? totalSpent / totalAppointments : 0
-      
-      const isRecurring = totalAppointments >= 3
-      
-      let status: 'active' | 'inactive' | 'at_risk' = 'inactive'
-      if (daysSinceLastVisit <= 30) status = 'active'
-      else if (daysSinceLastVisit <= 90 && isRecurring) status = 'at_risk'
-      else status = 'inactive'
+    const analytics: ClientAnalytics[] = clients
+      .map(client => {
+        const clientAppointments = appointments.filter(
+          apt => apt.client_id === client.id && apt.status === 'completed'
+        )
 
-      return {
-        id: client.id,
-        client,
-        totalAppointments,
-        lastAppointment,
-        daysSinceLastVisit,
-        averageSpend,
-        totalSpent,
-        isRecurring,
-        status
-      }
-    }).sort((a, b) => b.totalAppointments - a.totalAppointments)
+        const totalAppointments = clientAppointments.length
+        const lastAppointment =
+          clientAppointments.length > 0
+            ? new Date(
+                Math.max(...clientAppointments.map(apt => new Date(apt.start_time).getTime()))
+              )
+            : null
+
+        const daysSinceLastVisit = lastAppointment
+          ? Math.floor((Date.now() - lastAppointment.getTime()) / (1000 * 60 * 60 * 24))
+          : Infinity
+
+        const totalSpent = clientAppointments.reduce((sum, apt) => sum + (apt.price || 0), 0)
+        const averageSpend = totalAppointments > 0 ? totalSpent / totalAppointments : 0
+
+        const isRecurring = totalAppointments >= 3
+
+        let status: 'active' | 'inactive' | 'at_risk' = 'inactive'
+        if (daysSinceLastVisit <= 30) status = 'active'
+        else if (daysSinceLastVisit <= 90 && isRecurring) status = 'at_risk'
+        else status = 'inactive'
+
+        return {
+          id: client.id,
+          client,
+          totalAppointments,
+          lastAppointment,
+          daysSinceLastVisit,
+          averageSpend,
+          totalSpent,
+          isRecurring,
+          status,
+        }
+      })
+      .sort((a, b) => b.totalAppointments - a.totalAppointments)
 
     setClientAnalytics(analytics)
   }, [clients, appointments])
 
   const filteredClients = clientAnalytics.filter(analytics => {
-    const matchesSearch = analytics.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         analytics.client.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+    const matchesSearch =
+      analytics.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      analytics.client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+
     switch (activeTab) {
       case 'active':
         return matchesSearch && analytics.status === 'active' && analytics.isRecurring
@@ -104,15 +110,14 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
     }
   })
 
-
   const sendWhatsAppMessage = async (client: Client, type: 'follow_up' | 'welcome') => {
     setSendingMessage(client.id)
-    
+
     try {
       // Simulate sending WhatsApp message
       await new Promise(resolve => setTimeout(resolve, 1500))
       // Here you'd call WhatsApp Business API using the proper template/message
-      
+
       toast.success(t('recurring.message_sent'))
     } catch {
       toast.error(t('message.error'))
@@ -125,7 +130,7 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
     total: clientAnalytics.filter(c => c.isRecurring).length,
     active: clientAnalytics.filter(c => c.status === 'active' && c.isRecurring).length,
     atRisk: clientAnalytics.filter(c => c.status === 'at_risk').length,
-    inactive: clientAnalytics.filter(c => c.status === 'inactive' && c.isRecurring).length
+    inactive: clientAnalytics.filter(c => c.status === 'inactive' && c.isRecurring).length,
   }
 
   return (
@@ -137,11 +142,11 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
             Gestiona la relación con tus clientes más valiosos
           </p>
         </div>
-        
+
         <Input
           placeholder={t('action.search') + ' clientes...'}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
           className="sm:w-80"
         />
       </div>
@@ -216,10 +221,10 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
 
         <TabsContent value="active" className="space-y-4">
           <div className="grid gap-4">
-            {filteredClients.map((analytics) => (
-              <ClientCard 
-                key={analytics.id} 
-                analytics={analytics} 
+            {filteredClients.map(analytics => (
+              <ClientCard
+                key={analytics.id}
+                analytics={analytics}
                 onSendWhatsApp={sendWhatsAppMessage}
                 sendingMessage={sendingMessage}
                 language={language}
@@ -239,10 +244,10 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
 
         <TabsContent value="at_risk" className="space-y-4">
           <div className="grid gap-4">
-            {filteredClients.map((analytics) => (
-              <ClientCard 
-                key={analytics.id} 
-                analytics={analytics} 
+            {filteredClients.map(analytics => (
+              <ClientCard
+                key={analytics.id}
+                analytics={analytics}
                 onSendWhatsApp={sendWhatsAppMessage}
                 sendingMessage={sendingMessage}
                 language={language}
@@ -263,10 +268,10 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
 
         <TabsContent value="inactive" className="space-y-4">
           <div className="grid gap-4">
-            {filteredClients.map((analytics) => (
-              <ClientCard 
-                key={analytics.id} 
-                analytics={analytics} 
+            {filteredClients.map(analytics => (
+              <ClientCard
+                key={analytics.id}
+                analytics={analytics}
                 onSendWhatsApp={sendWhatsAppMessage}
                 sendingMessage={sendingMessage}
                 language={language}
@@ -300,23 +305,38 @@ interface ClientCardProps {
   showFollowUpAction?: boolean
 }
 
-function ClientCard({ 
-  analytics, 
-  onSendWhatsApp, 
-  sendingMessage, 
-  language, 
-  t, 
-  showFollowUpAction = false 
+function ClientCard({
+  analytics,
+  onSendWhatsApp,
+  sendingMessage,
+  language,
+  t,
+  showFollowUpAction = false,
 }: Readonly<ClientCardProps>) {
   const { client } = analytics
-  
+
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
   const renderClientStatusBadge = (status: string) => {
-    if (status === 'active') return <Badge variant="default" className="bg-green-500">{t('recurring.active')}</Badge>
-    if (status === 'at_risk') return <Badge variant="secondary" className="bg-yellow-500 text-black">En Riesgo</Badge>
+    if (status === 'active')
+      return (
+        <Badge variant="default" className="bg-green-500">
+          {t('recurring.active')}
+        </Badge>
+      )
+    if (status === 'at_risk')
+      return (
+        <Badge variant="secondary" className="bg-yellow-500 text-black">
+          En Riesgo
+        </Badge>
+      )
     if (status === 'inactive') return <Badge variant="destructive">{t('recurring.inactive')}</Badge>
     return null
   }
@@ -334,7 +354,7 @@ function ClientCard({
                 {getInitials(client.name)}
               </AvatarFallback>
             </Avatar>
-            
+
             <div className="space-y-2">
               <div>
                 <h3 className="font-semibold text-foreground">{client.name}</h3>
@@ -353,7 +373,7 @@ function ClientCard({
                   )}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">{t('recurring.total_visits')}: </span>
@@ -361,7 +381,9 @@ function ClientCard({
                 </div>
                 <div>
                   <span className="text-muted-foreground">{t('recurring.average_spend')}: </span>
-                  <span className="font-medium">{formatCurrency(analytics.averageSpend, 'EUR', language)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(analytics.averageSpend, 'EUR', language)}
+                  </span>
                 </div>
                 {analytics.lastAppointment && (
                   <div>
@@ -372,7 +394,7 @@ function ClientCard({
                   </div>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {renderClientStatusBadge(analytics.status)}
                 {analytics.daysSinceLastVisit > 30 && analytics.daysSinceLastVisit < Infinity && (
@@ -383,7 +405,7 @@ function ClientCard({
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <div className="text-right text-sm">
               <div className="font-medium flex items-center gap-1">
@@ -392,7 +414,7 @@ function ClientCard({
               </div>
               <div className="text-muted-foreground">Total gastado</div>
             </div>
-            
+
             {(showFollowUpAction || analytics.status === 'at_risk') && client.whatsapp && (
               <Button
                 variant="outline"

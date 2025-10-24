@@ -17,7 +17,7 @@ class BackgroundService {
 
   setupEventListeners() {
     // Handle extension installation
-    chrome.runtime.onInstalled.addListener((details) => {
+    chrome.runtime.onInstalled.addListener(details => {
       if (details.reason === 'install') {
         this.handleFirstInstall()
       }
@@ -30,12 +30,12 @@ class BackgroundService {
     })
 
     // Handle alarm events
-    chrome.alarms.onAlarm.addListener((alarm) => {
+    chrome.alarms.onAlarm.addListener(alarm => {
       this.handleAlarm(alarm)
     })
 
     // Handle notification clicks
-    chrome.notifications.onClicked.addListener((notificationId) => {
+    chrome.notifications.onClicked.addListener(notificationId => {
       this.handleNotificationClick(notificationId)
     })
   }
@@ -43,17 +43,17 @@ class BackgroundService {
   setupAlarms() {
     // Clear existing alarms
     chrome.alarms.clearAll()
-    
+
     // Set up periodic check for appointments (every 15 minutes)
     chrome.alarms.create('checkAppointments', {
       delayInMinutes: 1,
-      periodInMinutes: 15
+      periodInMinutes: 15,
     })
   }
 
   setupNotifications() {
     // Request notification permission
-    chrome.notifications.getPermissionLevel((level) => {
+    chrome.notifications.getPermissionLevel(level => {
       if (level !== 'granted') {
         console.log('Notification permission not granted')
       }
@@ -63,11 +63,11 @@ class BackgroundService {
   handleFirstInstall() {
     // Open the web app on first install
     chrome.tabs.create({ url: APP_URL })
-    
+
     // Set up initial storage
     chrome.storage.local.set({
       extensionInstalled: true,
-      lastNotificationCheck: Date.now()
+      lastNotificationCheck: Date.now(),
     })
   }
 
@@ -115,8 +115,8 @@ class BackgroundService {
     // Parse notification ID to extract appointment information
     if (notificationId.startsWith('appointment-')) {
       const appointmentId = notificationId.replace('appointment-', '')
-      chrome.tabs.create({ 
-        url: `${APP_URL}/appointments/${appointmentId}` 
+      chrome.tabs.create({
+        url: `${APP_URL}/appointments/${appointmentId}`,
       })
     } else {
       chrome.tabs.create({ url: APP_URL })
@@ -149,12 +149,15 @@ class BackgroundService {
       const lastCheck = lastNotificationCheck || 0
 
       // Fetch upcoming appointments
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-appointments?user_id=${userSession.id}`, {
-        headers: {
-          'Authorization': `Bearer ${userSession.access_token}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `${SUPABASE_URL}/functions/v1/sync-appointments?user_id=${userSession.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userSession.access_token}`,
+            'Content-Type': 'application/json',
+          },
         }
-      })
+      )
 
       if (!response.ok) {
         throw new Error('Failed to fetch appointments')
@@ -174,14 +177,16 @@ class BackgroundService {
         // Show notification for appointments within the next hour
         if (timeUntilAppointment > 0 && timeUntilAppointment <= notificationThreshold) {
           const notificationId = `appointment-${appointment.id}`
-          
+
           // Check if we've already shown this notification
           const notificationKey = `notification-${appointment.id}-${appointmentTime.getTime()}`
-          const { [notificationKey]: alreadyNotified } = await chrome.storage.local.get([notificationKey])
-          
+          const { [notificationKey]: alreadyNotified } = await chrome.storage.local.get([
+            notificationKey,
+          ])
+
           if (!alreadyNotified) {
             await this.showAppointmentNotification(appointment, timeUntilAppointment)
-            
+
             // Mark this notification as sent
             await chrome.storage.local.set({ [notificationKey]: true })
           }
@@ -192,7 +197,6 @@ class BackgroundService {
       await chrome.storage.local.set({ lastNotificationCheck: now.getTime() })
 
       return appointments
-
     } catch (error) {
       console.error('Error checking appointments:', error)
       return []
@@ -201,7 +205,7 @@ class BackgroundService {
 
   async showAppointmentNotification(appointment, timeUntil) {
     const timeText = this.formatTimeUntil(timeUntil)
-    
+
     const notificationOptions = {
       type: 'basic',
       iconUrl: 'icons/icon48.png',
@@ -210,16 +214,13 @@ class BackgroundService {
       contextMessage: appointment.client_name ? `Client: ${appointment.client_name}` : '',
       priority: 1,
       requireInteraction: true,
-      buttons: [
-        { title: 'View Details' },
-        { title: 'Dismiss' }
-      ]
+      buttons: [{ title: 'View Details' }, { title: 'Dismiss' }],
     }
 
     const notificationId = `appointment-${appointment.id}`
-    
-    return new Promise((resolve) => {
-      chrome.notifications.create(notificationId, notificationOptions, (id) => {
+
+    return new Promise(resolve => {
+      chrome.notifications.create(notificationId, notificationOptions, id => {
         console.log('Notification created:', id)
         resolve(id)
       })
@@ -232,11 +233,11 @@ class BackgroundService {
       iconUrl: 'icons/icon48.png',
       title: notification.title,
       message: notification.message,
-      priority: notification.priority || 0
+      priority: notification.priority || 0,
     }
 
-    return new Promise((resolve) => {
-      chrome.notifications.create(notificationOptions, (id) => {
+    return new Promise(resolve => {
+      chrome.notifications.create(notificationOptions, id => {
         resolve(id)
       })
     })

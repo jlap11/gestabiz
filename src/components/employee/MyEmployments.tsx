@@ -1,82 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, Mail, Phone, CheckCircle2, Clock, Briefcase, Crown, Plus } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
-import supabase from '@/lib/supabase';
+import React, { useEffect, useState } from 'react'
+import {
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  Clock,
+  Crown,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
+import supabase from '@/lib/supabase'
 
 interface MyEmploymentsProps {
-  employeeId: string;
-  onJoinBusiness?: () => void;
+  employeeId: string
+  onJoinBusiness?: () => void
 }
 
 interface BusinessWithRole {
-  id: string;
-  name: string;
-  description?: string;
-  logo_url?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  isOwner: boolean;
-  role?: string;
+  id: string
+  name: string
+  description?: string
+  logo_url?: string
+  phone?: string
+  email?: string
+  address?: string
+  city?: string
+  state?: string
+  isOwner: boolean
+  role?: string
 }
 
 export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps) {
-  const [showPrevious, setShowPrevious] = useState(false);
-  const [businessesWithRoles, setBusinessesWithRoles] = useState<BusinessWithRole[]>([]);
-  const { businesses, loading, error } = useEmployeeBusinesses(employeeId, true);
+  const [showPrevious, setShowPrevious] = useState(false)
+  const [businessesWithRoles, setBusinessesWithRoles] = useState<BusinessWithRole[]>([])
+  const { businesses, loading, error } = useEmployeeBusinesses(employeeId, true)
 
   // Enriquecer negocios con información de roles
   useEffect(() => {
     const enrichBusinesses = async () => {
       if (businesses.length === 0) {
-        setBusinessesWithRoles([]);
-        return;
+        setBusinessesWithRoles([])
+        return
       }
 
       const enriched = await Promise.all(
-        businesses.map(async (business) => {
+        businesses.map(async business => {
           // Verificar si es owner
           const { data: ownerData } = await supabase
             .from('businesses')
             .select('owner_id')
             .eq('id', business.id)
-            .single();
+            .single()
 
-          const isOwner = ownerData?.owner_id === employeeId;
+          const isOwner = ownerData?.owner_id === employeeId
 
           // Si no es owner, obtener rol de business_employees
-          let role = 'Empleado';
+          let role = 'Empleado'
           if (!isOwner) {
             const { data: employeeData } = await supabase
               .from('business_employees')
               .select('role')
               .eq('business_id', business.id)
               .eq('employee_id', employeeId)
-              .single();
+              .single()
 
-            role = employeeData?.role || 'Empleado';
+            role = employeeData?.role || 'Empleado'
           } else {
-            role = 'Propietario';
+            role = 'Propietario'
           }
 
           return {
             ...business,
             isOwner,
-            role
-          };
+            role,
+          }
         })
-      );
+      )
 
-      setBusinessesWithRoles(enriched);
-    };
+      setBusinessesWithRoles(enriched)
+    }
 
-    enrichBusinesses();
-  }, [businesses, employeeId]);
+    enrichBusinesses()
+  }, [businesses, employeeId])
 
   if (loading) {
     return (
@@ -85,7 +95,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -97,17 +107,17 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   // Separar empleos activos y anteriores (simulado por ahora)
-  
-  const activeEmployments = businessesWithRoles;
-  const previousEmployments: typeof businessesWithRoles = [];
+
+  const activeEmployments = businessesWithRoles
+  const previousEmployments: typeof businessesWithRoles = []
 
   // Contar propietarios y empleados
-  const ownedCount = activeEmployments.filter(b => b.isOwner).length;
-  const employeeCount = activeEmployments.filter(b => !b.isOwner).length;
+  const ownedCount = activeEmployments.filter(b => b.isOwner).length
+  const employeeCount = activeEmployments.filter(b => !b.isOwner).length
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -205,7 +215,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {activeEmployments.map((business) => (
+            {activeEmployments.map(business => (
               <Card key={business.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-3">
@@ -234,7 +244,10 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
                     </div>
                     <div className="flex flex-col gap-1">
                       {business.isOwner ? (
-                        <Badge variant="default" className="flex-shrink-0 bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400">
+                        <Badge
+                          variant="default"
+                          className="flex-shrink-0 bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400"
+                        >
                           <Crown className="h-3 w-3 mr-1" />
                           Propietario
                         </Badge>
@@ -276,11 +289,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-3 border-t">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 min-h-[44px]"
-                    >
+                    <Button variant="outline" size="sm" className="flex-1 min-h-[44px]">
                       Ver Detalles
                     </Button>
                     <Button
@@ -314,7 +323,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
             </Card>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {previousEmployments.map((business) => (
+              {previousEmployments.map(business => (
                 <Card key={business.id} className="opacity-75">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-3">
@@ -342,11 +351,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full min-h-[44px]"
-                    >
+                    <Button variant="outline" size="sm" className="w-full min-h-[44px]">
                       Ver Historial
                     </Button>
                   </CardContent>
@@ -357,5 +362,5 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -72,7 +72,19 @@ export function usePageMeta({
       }
       canonicalLink.href = canonical
     }
-  }, [title, description, keywords, ogImage, ogTitle, ogDescription, twitterCard, twitterTitle, twitterDescription, twitterImage, canonical])
+  }, [
+    title,
+    description,
+    keywords,
+    ogImage,
+    ogTitle,
+    ogDescription,
+    twitterCard,
+    twitterTitle,
+    twitterDescription,
+    twitterImage,
+    canonical,
+  ])
 }
 
 function setMetaTag(name: string, content: string) {

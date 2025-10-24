@@ -1,19 +1,19 @@
 /**
  * Stripe Payment Gateway Implementation
- * 
+ *
  * Implementación del gateway de pagos usando Stripe
  * Conecta con Edge Functions de Supabase
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
-  IPaymentGateway,
+  CancelSubscriptionParams,
   CheckoutSessionParams,
   CheckoutSessionResult,
-  UpdateSubscriptionParams,
-  CancelSubscriptionParams,
-  SubscriptionInfo,
+  IPaymentGateway,
   SubscriptionDashboard,
+  SubscriptionInfo,
+  UpdateSubscriptionParams,
 } from './PaymentGateway'
 import { PaymentGatewayError } from './PaymentGateway'
 
@@ -25,7 +25,9 @@ export class StripeGateway implements IPaymentGateway {
    */
   async createCheckoutSession(params: CheckoutSessionParams): Promise<CheckoutSessionResult> {
     try {
-      const { data: { session } } = await this.supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await this.supabase.auth.getSession()
       if (!session) {
         throw new PaymentGatewayError('Not authenticated', 'auth_required', 401)
       }
@@ -115,7 +117,9 @@ export class StripeGateway implements IPaymentGateway {
    */
   private async manageSubscription(body: any): Promise<SubscriptionInfo> {
     try {
-      const { data: { session } } = await this.supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await this.supabase.auth.getSession()
       if (!session) {
         throw new PaymentGatewayError('Not authenticated', 'auth_required', 401)
       }
@@ -177,7 +181,10 @@ export class StripeGateway implements IPaymentGateway {
   /**
    * Validar límites del plan
    */
-  async validatePlanLimit(businessId: string, resource: string): Promise<{
+  async validatePlanLimit(
+    businessId: string,
+    resource: string
+  ): Promise<{
     allowed: boolean
     current: number
     limit: number
@@ -190,11 +197,7 @@ export class StripeGateway implements IPaymentGateway {
       })
 
       if (error) {
-        throw new PaymentGatewayError(
-          'Failed to validate plan limits',
-          'validation_error',
-          500
-        )
+        throw new PaymentGatewayError('Failed to validate plan limits', 'validation_error', 500)
       }
 
       return data as {
@@ -236,11 +239,7 @@ export class StripeGateway implements IPaymentGateway {
       })
 
       if (error) {
-        throw new PaymentGatewayError(
-          'Failed to apply discount code',
-          'discount_error',
-          500
-        )
+        throw new PaymentGatewayError('Failed to apply discount code', 'discount_error', 500)
       }
 
       return {

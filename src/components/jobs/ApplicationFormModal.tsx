@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -6,37 +6,41 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle, FileText, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useJobApplications } from '@/hooks/useJobApplications';
-import { useScheduleConflicts, type ScheduleConflict, type WorkSchedule } from '@/hooks/useScheduleConflicts';
-import { ScheduleConflictAlert } from './ScheduleConflictAlert';
-import { CustomDateInput } from '@/components/ui/custom-date-input';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertTriangle, FileText, Loader2, X } from 'lucide-react'
+import { toast } from 'sonner'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useJobApplications } from '@/hooks/useJobApplications'
+import {
+  type ScheduleConflict,
+  type WorkSchedule,
+  useScheduleConflicts,
+} from '@/hooks/useScheduleConflicts'
+import { ScheduleConflictAlert } from './ScheduleConflictAlert'
+import { CustomDateInput } from '@/components/ui/custom-date-input'
 
 // Flexible vacancy type that accepts both JobVacancy and MatchingVacancy
 interface VacancyForApplication {
-  id: string;
-  title: string;
-  business_id?: string;
-  salary_min?: number;
-  salary_max?: number;
-  currency?: string;
-  work_schedule?: Record<string, { start: string; end: string }>;
+  id: string
+  title: string
+  business_id?: string
+  salary_min?: number
+  salary_max?: number
+  currency?: string
+  work_schedule?: Record<string, { start: string; end: string }>
 }
 
 interface ApplicationFormModalProps {
-  vacancy: VacancyForApplication | null;
-  userId: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
+  vacancy: VacancyForApplication | null
+  userId: string
+  isOpen: boolean
+  onClose: () => void
+  onSuccess?: () => void
 }
 
 export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
@@ -46,95 +50,95 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { t } = useLanguage();
-  const { createApplication, loading: submitting } = useJobApplications({ businessId: undefined });
-  const { checkConflict, loading: checkingConflicts } = useScheduleConflicts();
+  const { t } = useLanguage()
+  const { createApplication, loading: submitting } = useJobApplications({ businessId: undefined })
+  const { checkConflict, loading: checkingConflicts } = useScheduleConflicts()
 
-  const [coverLetter, setCoverLetter] = useState('');
-  const [expectedSalary, setExpectedSalary] = useState<number | undefined>();
-  const [availabilityDate, setAvailabilityDate] = useState('');
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [scheduleConflicts, setScheduleConflicts] = useState<ScheduleConflict[]>([]);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [coverLetter, setCoverLetter] = useState('')
+  const [expectedSalary, setExpectedSalary] = useState<number | undefined>()
+  const [availabilityDate, setAvailabilityDate] = useState('')
+  const [cvFile, setCvFile] = useState<File | null>(null)
+  const [scheduleConflicts, setScheduleConflicts] = useState<ScheduleConflict[]>([])
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Convertir schedule de la vacante al formato WorkSchedule
   const convertToWorkSchedule = (
     schedule?: Record<string, { start: string; end: string }>
   ): WorkSchedule | null => {
-    if (!schedule) return null;
-    
-    const workSchedule: WorkSchedule = {};
+    if (!schedule) return null
+
+    const workSchedule: WorkSchedule = {}
     for (const [day, times] of Object.entries(schedule)) {
       workSchedule[day] = {
         enabled: true,
         start_time: times.start,
         end_time: times.end,
-      };
+      }
     }
-    return workSchedule;
-  };
+    return workSchedule
+  }
 
   // Verificar conflictos de horario cuando se abre el modal
   useEffect(() => {
     const checkScheduleConflicts = async () => {
       if (!vacancy?.work_schedule || !isOpen) {
-        setScheduleConflicts([]);
-        return;
+        setScheduleConflicts([])
+        return
       }
 
       try {
-        const workSchedule = convertToWorkSchedule(vacancy.work_schedule);
-        if (!workSchedule) return;
+        const workSchedule = convertToWorkSchedule(vacancy.work_schedule)
+        if (!workSchedule) return
 
-        const result = await checkConflict(workSchedule);
-        setScheduleConflicts(result.conflicts);
+        const result = await checkConflict(workSchedule)
+        setScheduleConflicts(result.conflicts)
       } catch (error) {
         // Error already handled by hook
-        setScheduleConflicts([]);
+        setScheduleConflicts([])
       }
-    };
+    }
 
     if (isOpen && vacancy) {
-      checkScheduleConflicts();
+      checkScheduleConflicts()
     }
-  }, [isOpen, vacancy, checkConflict]);
+  }, [isOpen, vacancy, checkConflict])
 
   // Reset form cuando se cierra
   useEffect(() => {
     if (!isOpen) {
-      setCoverLetter('');
-      setExpectedSalary(undefined);
-      setAvailabilityDate('');
-      setCvFile(null);
-      setScheduleConflicts([]);
-      setValidationError(null);
+      setCoverLetter('')
+      setExpectedSalary(undefined)
+      setAvailabilityDate('')
+      setCvFile(null)
+      setScheduleConflicts([])
+      setValidationError(null)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     // Validaciones
-    setValidationError(null);
-    
+    setValidationError(null)
+
     if (!vacancy) {
-      setValidationError('No se pudo cargar la información de la vacante');
-      return;
+      setValidationError('No se pudo cargar la información de la vacante')
+      return
     }
 
     if (!vacancy.id) {
-      setValidationError('ID de vacante es requerido');
-      return;
+      setValidationError('ID de vacante es requerido')
+      return
     }
 
     if (coverLetter.trim().length < 50) {
-      setValidationError('La carta de presentación debe tener al menos 50 caracteres');
-      return;
+      setValidationError('La carta de presentación debe tener al menos 50 caracteres')
+      return
     }
 
     if (expectedSalary && expectedSalary < 0) {
-      setValidationError(t('jobsUI.salaryMustBePositive'));
-      return;
+      setValidationError(t('jobsUI.salaryMustBePositive'))
+      return
     }
 
     if (vacancy.salary_max && expectedSalary && expectedSalary > vacancy.salary_max) {
@@ -144,22 +148,22 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
           currency: 'COP',
           minimumFractionDigits: 0,
         }).format(vacancy.salary_max)})`
-      );
-      return;
+      )
+      return
     }
 
     if (!availabilityDate) {
-      setValidationError('Debes indicar tu fecha de disponibilidad');
-      return;
+      setValidationError('Debes indicar tu fecha de disponibilidad')
+      return
     }
 
-    const availDate = new Date(availabilityDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const availDate = new Date(availabilityDate)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
     if (availDate < today) {
-      setValidationError('La fecha de disponibilidad no puede ser en el pasado');
-      return;
+      setValidationError('La fecha de disponibilidad no puede ser en el pasado')
+      return
     }
 
     try {
@@ -169,31 +173,31 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
         expected_salary: expectedSalary,
         available_from: availabilityDate,
         cv_file: cvFile || undefined,
-      });
+      })
 
       if (application) {
-        toast.success('Aplicación enviada exitosamente');
-        onClose();
-        onSuccess?.();
+        toast.success('Aplicación enviada exitosamente')
+        onClose()
+        onSuccess?.()
       }
     } catch (err) {
-      const error = err as Error;
-      toast.error(error.message || t('admin.jobApplications.formError'));
+      const error = err as Error
+      toast.error(error.message || t('admin.jobApplications.formError'))
     }
-  };
+  }
 
-  if (!vacancy) return null;
+  if (!vacancy) return null
 
   const formatSalary = (amount?: number): string => {
-    if (!amount) return '';
+    if (!amount) return ''
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
-  const minDate = new Date().toISOString().split('T')[0];
+  const minDate = new Date().toISOString().split('T')[0]
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -232,7 +236,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
             <Textarea
               id="cover-letter"
               value={coverLetter}
-              onChange={(e) => setCoverLetter(e.target.value)}
+              onChange={e => setCoverLetter(e.target.value)}
               placeholder={t('common.placeholders.applicationLetter')}
               className="min-h-[150px] resize-y"
               required
@@ -255,9 +259,12 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                 inputMode="numeric"
                 className="pl-7"
                 value={expectedSalary ? expectedSalary.toLocaleString('es-CO') : ''}
-                onChange={(e) => {
-                  const value = e.target.value.split('').filter(char => /\d/.test(char)).join('');
-                  setExpectedSalary(value ? Number(value) : undefined);
+                onChange={e => {
+                  const value = e.target.value
+                    .split('')
+                    .filter(char => /\d/.test(char))
+                    .join('')
+                  setExpectedSalary(value ? Number(value) : undefined)
                 }}
                 placeholder="1.000.000"
               />
@@ -293,26 +300,26 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                   id="cv-file"
                   type="file"
                   accept=".pdf,.docx"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
+                  onChange={e => {
+                    const file = e.target.files?.[0]
                     if (file) {
                       // Validate file type
-                      const fileExt = file.name.split('.').pop()?.toLowerCase();
+                      const fileExt = file.name.split('.').pop()?.toLowerCase()
                       if (!fileExt || !['pdf', 'docx'].includes(fileExt)) {
-                        toast.error(t('admin.jobApplications.fileTypeError'));
-                        e.target.value = '';
-                        return;
+                        toast.error(t('admin.jobApplications.fileTypeError'))
+                        e.target.value = ''
+                        return
                       }
-                      
+
                       // Validate file size (5MB max)
-                      const maxSize = 5 * 1024 * 1024;
+                      const maxSize = 5 * 1024 * 1024
                       if (file.size > maxSize) {
-                        toast.error(t('admin.jobApplications.fileSizeError'));
-                        e.target.value = '';
-                        return;
+                        toast.error(t('admin.jobApplications.fileSizeError'))
+                        e.target.value = ''
+                        return
                       }
-                      
-                      setCvFile(file);
+
+                      setCvFile(file)
                     }
                   }}
                   className="cursor-pointer"
@@ -323,16 +330,16 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setCvFile(null);
-                      const input = document.getElementById('cv-file') as HTMLInputElement;
-                      if (input) input.value = '';
+                      setCvFile(null)
+                      const input = document.getElementById('cv-file') as HTMLInputElement
+                      if (input) input.value = ''
                     }}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              
+
               {cvFile && (
                 <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                   <FileText className="h-4 w-4 text-muted-foreground" />
@@ -342,7 +349,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                   </span>
                 </div>
               )}
-              
+
               <p className="text-xs text-muted-foreground">
                 Formatos permitidos: PDF, DOCX • Tamaño máximo: 5MB
               </p>
@@ -367,5 +374,5 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
         </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

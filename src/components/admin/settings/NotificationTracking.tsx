@@ -1,28 +1,45 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { 
-  Bell, 
-  Mail, 
-  MessageSquare, 
-  Phone, 
-  CheckCircle, 
-  XCircle, 
+import {
+  AlertCircle,
+  Bell,
+  CheckCircle,
   Clock,
   Download,
   Filter,
-  TrendingUp,
+  Mail,
+  MessageSquare,
+  Phone,
   Send,
-  AlertCircle
+  TrendingUp,
+  XCircle,
 } from 'lucide-react'
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 interface NotificationTrackingProps {
   businessId: string
@@ -74,7 +91,7 @@ const NOTIFICATION_TYPES = {
   job_application_new: 'Nueva Aplicación',
   job_application_status: 'Estado de Aplicación',
   job_application_interview: 'Entrevista Programada',
-  system_alert: 'Alerta del Sistema'
+  system_alert: 'Alerta del Sistema',
 } as const
 
 const COLORS = {
@@ -83,7 +100,7 @@ const COLORS = {
   whatsapp: '#22c55e',
   sent: '#10b981',
   failed: '#ef4444',
-  pending: '#f59e0b'
+  pending: '#f59e0b',
 }
 
 export function NotificationTracking({ businessId }: Readonly<NotificationTrackingProps>) {
@@ -97,7 +114,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
     pending: 0,
     byChannel: { email: 0, sms: 0, whatsapp: 0 },
     byType: {},
-    successRate: 0
+    successRate: 0,
   })
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
@@ -119,7 +136,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
     const byChannel = {
       email: data.filter(log => log.channel === 'email').length,
       sms: data.filter(log => log.channel === 'sms').length,
-      whatsapp: data.filter(log => log.channel === 'whatsapp').length
+      whatsapp: data.filter(log => log.channel === 'whatsapp').length,
     }
 
     const byType: Record<string, number> = {}
@@ -136,7 +153,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
       pending,
       byChannel,
       byType,
-      successRate
+      successRate,
     })
   }, [])
 
@@ -195,9 +212,9 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
     // Búsqueda por email o teléfono
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(log => 
-        log.recipient_email?.toLowerCase().includes(query) ||
-        log.recipient_phone?.includes(query)
+      filtered = filtered.filter(
+        log =>
+          log.recipient_email?.toLowerCase().includes(query) || log.recipient_phone?.includes(query)
       )
     }
 
@@ -234,38 +251,41 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
         'Estado',
         'Error',
         'Reintentos',
-        'ID Externo'
+        'ID Externo',
       ]
 
       const rows = filteredLogs.map(log => [
         new Date(log.created_at).toLocaleString('es-MX'),
-        NOTIFICATION_TYPES[log.notification_type as keyof typeof NOTIFICATION_TYPES] || log.notification_type,
+        NOTIFICATION_TYPES[log.notification_type as keyof typeof NOTIFICATION_TYPES] ||
+          log.notification_type,
         log.channel.toUpperCase(),
         log.recipient_email || log.recipient_phone || 'N/A',
         log.status.toUpperCase(),
         log.error_message || '',
         log.retry_count.toString(),
-        log.external_id || ''
+        log.external_id || '',
       ])
 
       const csv = [
         headers.join(','),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
       ].join('\n')
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
-      
+
       link.setAttribute('href', url)
       link.setAttribute('download', `notificaciones_${new Date().toISOString().split('T')[0]}.csv`)
       link.style.visibility = 'hidden'
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
 
-      toast.success(t('admin.notificationTracking.exportSuccess', { count: filteredLogs.length.toString() }))
+      toast.success(
+        t('admin.notificationTracking.exportSuccess', { count: filteredLogs.length.toString() })
+      )
     } catch {
       toast.error(t('admin.notificationTracking.exportError'))
     } finally {
@@ -303,19 +323,19 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
   const channelChartData = [
     { name: 'Email', value: stats.byChannel.email, color: COLORS.email },
     { name: 'SMS', value: stats.byChannel.sms, color: COLORS.sms },
-    { name: 'WhatsApp', value: stats.byChannel.whatsapp, color: COLORS.whatsapp }
+    { name: 'WhatsApp', value: stats.byChannel.whatsapp, color: COLORS.whatsapp },
   ]
 
   const statusChartData = [
     { name: 'Enviados', value: stats.sent, color: COLORS.sent },
     { name: 'Fallidos', value: stats.failed, color: COLORS.failed },
-    { name: 'Pendientes', value: stats.pending, color: COLORS.pending }
+    { name: 'Pendientes', value: stats.pending, color: COLORS.pending },
   ]
 
   const typeChartData = Object.entries(stats.byType)
     .map(([type, count]) => ({
       name: NOTIFICATION_TYPES[type as keyof typeof NOTIFICATION_TYPES] || type,
-      count
+      count,
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
@@ -403,7 +423,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {channelChartData.map((entry) => (
+                  {channelChartData.map(entry => (
                     <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
@@ -430,7 +450,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {statusChartData.map((entry) => (
+                  {statusChartData.map(entry => (
                     <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
@@ -448,10 +468,17 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={typeChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 10 }}
+                  stroke="hsl(var(--muted-foreground))"
+                />
                 <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                  }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                 />
                 <Bar dataKey="count" fill="hsl(var(--primary))" />
@@ -474,11 +501,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                 Filtra las notificaciones por criterios específicos
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearFilters}
-            >
+            <Button variant="outline" size="sm" onClick={clearFilters}>
               Limpiar
             </Button>
           </div>
@@ -524,7 +547,9 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="all">{t('common.filters.all')}</SelectItem>
                   {Object.entries(NOTIFICATION_TYPES).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -535,7 +560,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
               <Input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onChange={e => setDateFrom(e.target.value)}
                 className="bg-background border-border text-foreground"
               />
             </div>
@@ -545,7 +570,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
               <Input
                 type="date"
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={e => setDateTo(e.target.value)}
                 className="bg-background border-border text-foreground"
               />
             </div>
@@ -555,7 +580,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
               <Input
                 placeholder="Email o teléfono"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
@@ -588,12 +613,24 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Fecha</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Tipo</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Canal</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Destinatario</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Estado</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Error</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                    Fecha
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                    Tipo
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                    Canal
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                    Destinatario
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                    Estado
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                    Error
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -604,7 +641,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((log) => (
+                  filteredLogs.map(log => (
                     <tr key={log.id} className="border-b border-border hover:bg-muted/50">
                       <td className="py-3 px-4 text-sm text-foreground">
                         {new Date(log.created_at).toLocaleString('es-MX', {
@@ -612,11 +649,13 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                           month: '2-digit',
                           year: 'numeric',
                           hour: '2-digit',
-                          minute: '2-digit'
+                          minute: '2-digit',
                         })}
                       </td>
                       <td className="py-3 px-4 text-sm text-foreground">
-                        {NOTIFICATION_TYPES[log.notification_type as keyof typeof NOTIFICATION_TYPES] || log.notification_type}
+                        {NOTIFICATION_TYPES[
+                          log.notification_type as keyof typeof NOTIFICATION_TYPES
+                        ] || log.notification_type}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
@@ -628,8 +667,8 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                         {log.recipient_email || log.recipient_phone || 'N/A'}
                       </td>
                       <td className="py-3 px-4">
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className={`
                             flex items-center gap-1 w-fit
                             ${log.status === 'sent' ? 'border-green-500/50 text-green-500' : ''}

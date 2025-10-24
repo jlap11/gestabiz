@@ -47,7 +47,7 @@ interface ManageSubscriptionRequest {
   cancellationReason?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
@@ -65,7 +65,10 @@ serve(async (req) => {
     })
 
     // Verificar autenticación
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     if (authError || !user) {
       return new Response('Unauthorized', { status: 401 })
     }
@@ -136,13 +139,13 @@ serve(async (req) => {
   } catch (err) {
     console.error('[ManageSubscription] Error:', err)
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: err instanceof Error ? err.message : 'Unknown error',
         type: err instanceof Stripe.errors.StripeError ? err.type : 'unknown',
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
       }
     )
   }
@@ -173,10 +176,12 @@ async function handleUpdate(
 
   // Actualizar item de suscripción
   const updatedSubscription = await stripe.subscriptions.update(plan.stripe_subscription_id, {
-    items: [{
-      id: subscription.items.data[0].id,
-      price: newPriceId,
-    }],
+    items: [
+      {
+        id: subscription.items.data[0].id,
+        price: newPriceId,
+      },
+    ],
     proration_behavior: 'always_invoice', // Prorateo inmediato
     metadata: {
       business_id: businessId,
@@ -247,9 +252,11 @@ async function handleCancel(
 
   const updatedSubscription = await stripe.subscriptions.update(plan.stripe_subscription_id, {
     cancel_at_period_end: cancelAtPeriodEnd,
-    cancellation_details: cancellationReason ? {
-      comment: cancellationReason,
-    } : undefined,
+    cancellation_details: cancellationReason
+      ? {
+          comment: cancellationReason,
+        }
+      : undefined,
   })
 
   // Si cancelación inmediata
@@ -267,10 +274,7 @@ async function handleCancel(
     updateData.cancellation_reason = cancellationReason || 'user_canceled'
   }
 
-  await supabase
-    .from('business_plans')
-    .update(updateData)
-    .eq('business_id', businessId)
+  await supabase.from('business_plans').update(updateData).eq('business_id', businessId)
 
   // Registrar evento
   await supabase.from('subscription_events').insert({
@@ -303,7 +307,7 @@ async function handleCancel(
 
   return {
     success: true,
-    message: cancelAtPeriodEnd 
+    message: cancelAtPeriodEnd
       ? 'Subscription will be canceled at the end of the billing period'
       : 'Subscription canceled immediately',
     subscription: {

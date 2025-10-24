@@ -1,13 +1,19 @@
-import { ComponentProps, forwardRef, useState, useEffect, useRef, useMemo } from "react"
-import DatePicker from "react-datepicker"
-import { format, parse } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarDays } from "lucide-react"
-import { cn } from "@/lib/utils"
-import "react-datepicker/dist/react-datepicker.css"
+import { ComponentProps, forwardRef, useEffect, useMemo, useRef, useState } from 'react'
+import DatePicker from 'react-datepicker'
+import { format, parse } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { CalendarDays } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import 'react-datepicker/dist/react-datepicker.css'
 
 // Extracted PopperContainer component
-const PopperContainer = ({ children, popperRef }: { children: React.ReactNode, popperRef: React.RefObject<HTMLDivElement | null> }) => (
+const PopperContainer = ({
+  children,
+  popperRef,
+}: {
+  children: React.ReactNode
+  popperRef: React.RefObject<HTMLDivElement | null>
+}) => (
   <div
     ref={popperRef}
     style={{
@@ -15,7 +21,7 @@ const PopperContainer = ({ children, popperRef }: { children: React.ReactNode, p
       background: 'hsl(var(--background))',
       borderRadius: '8px',
       padding: '0',
-      display: 'block'
+      display: 'block',
     }}
   >
     {children}
@@ -23,65 +29,80 @@ const PopperContainer = ({ children, popperRef }: { children: React.ReactNode, p
 )
 
 // Factory function for popper container to avoid inline component warnings
-const createPopperContainer = (popperRef: React.RefObject<HTMLDivElement | null>) => 
-  (props: { children: React.ReactNode }) => <PopperContainer popperRef={popperRef}>{props.children}</PopperContainer>
+const createPopperContainer =
+  (popperRef: React.RefObject<HTMLDivElement | null>) => (props: { children: React.ReactNode }) => (
+    <PopperContainer popperRef={popperRef}>{props.children}</PopperContainer>
+  )
 
-interface CustomDateInputProps extends Omit<ComponentProps<"input">, "type" | "value" | "onChange"> {
-    label?: string
-    error?: string
-    value?: string
-    onChange?: (value: string) => void
-    min?: string
-    max?: string
-    disabledDates?: string[] // Fechas en formato YYYY-MM-DD que deben estar deshabilitadas
-    holidayTooltip?: (date: Date) => string | null // Función para mostrar tooltip de festivo
+interface CustomDateInputProps
+  extends Omit<ComponentProps<'input'>, 'type' | 'value' | 'onChange'> {
+  label?: string
+  error?: string
+  value?: string
+  onChange?: (value: string) => void
+  min?: string
+  max?: string
+  disabledDates?: string[] // Fechas en formato YYYY-MM-DD que deben estar deshabilitadas
+  holidayTooltip?: (date: Date) => string | null // Función para mostrar tooltip de festivo
 }
 
 const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
-    ({ className, label, error, value, onChange, min, max, disabledDates = [], holidayTooltip, ...props }, ref) => {
-        const [selectedDate, setSelectedDate] = useState<Date | null>(
-            value ? parse(value, 'yyyy-MM-dd', new Date()) : null
-        )
-        const popperRef = useRef<HTMLDivElement>(null)
+  (
+    {
+      className,
+      label,
+      error,
+      value,
+      onChange,
+      min,
+      max,
+      disabledDates = [],
+      holidayTooltip,
+      ...props
+    },
+    ref
+  ) => {
+    const [selectedDate, setSelectedDate] = useState<Date | null>(
+      value ? parse(value, 'yyyy-MM-dd', new Date()) : null
+    )
+    const popperRef = useRef<HTMLDivElement>(null)
 
-        useEffect(() => {
+    useEffect(() => {
       setSelectedDate(value ? parse(value, 'yyyy-MM-dd', new Date()) : null)
     }, [value])
 
+    const handleDateChange = (date: Date | null) => {
+      setSelectedDate(date)
+      if (onChange) {
+        onChange(date ? format(date, 'yyyy-MM-dd') : '')
+      }
+    }
 
+    const minDate = min ? parse(min, 'yyyy-MM-dd', new Date()) : undefined
+    const maxDate = max ? parse(max, 'yyyy-MM-dd', new Date()) : undefined
 
-        const handleDateChange = (date: Date | null) => {
-            setSelectedDate(date)
-            if (onChange) {
-                onChange(date ? format(date, 'yyyy-MM-dd') : '')
-            }
-        }
+    // Función para filtrar fechas deshabilitadas (festivos + fin de semana)
+    const filterDate = (date: Date): boolean => {
+      const dateStr = format(date, 'yyyy-MM-dd')
+      // Si está en la lista de fechas deshabilitadas, retornar false (inhabilitar)
+      return !disabledDates.includes(dateStr)
+    }
 
-        const minDate = min ? parse(min, 'yyyy-MM-dd', new Date()) : undefined
-        const maxDate = max ? parse(max, 'yyyy-MM-dd', new Date()) : undefined
-        
-        // Función para filtrar fechas deshabilitadas (festivos + fin de semana)
-        const filterDate = (date: Date): boolean => {
-          const dateStr = format(date, 'yyyy-MM-dd');
-          // Si está en la lista de fechas deshabilitadas, retornar false (inhabilitar)
-          return !disabledDates.includes(dateStr);
-        };
-        
-        // Memoize the popper container function to prevent re-creation on every render
-        const popperContainerFn = useMemo(() => createPopperContainer(popperRef), [popperRef])
+    // Memoize the popper container function to prevent re-creation on every render
+    const popperContainerFn = useMemo(() => createPopperContainer(popperRef), [popperRef])
 
-        // Inject CSS styles into document head
-        useEffect(() => {
-            const styleId = 'react-datepicker-custom-styles'
-            // Remover estilo antiguo si existe
-            const existingStyle = document.getElementById(styleId)
-            if (existingStyle) {
-                existingStyle.remove()
-            }
-            
-            const style = document.createElement('style')
-            style.id = styleId
-            style.textContent = `
+    // Inject CSS styles into document head
+    useEffect(() => {
+      const styleId = 'react-datepicker-custom-styles'
+      // Remover estilo antiguo si existe
+      const existingStyle = document.getElementById(styleId)
+      if (existingStyle) {
+        existingStyle.remove()
+      }
+
+      const style = document.createElement('style')
+      style.id = styleId
+      style.textContent = `
           .react-datepicker-wrapper {
             width: 100%;
             background: hsl(var(--background)) !important;
@@ -285,10 +306,10 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
             display: none;
           }
         `
-                document.head.appendChild(style)
-        }, [])
+      document.head.appendChild(style)
+    }, [])
 
-        return (
+    return (
       <div ref={ref} className="space-y-2">
         {label && (
           <label
@@ -312,36 +333,32 @@ const CustomDateInput = forwardRef<HTMLDivElement, CustomDateInputProps>(
             autoComplete="off"
             className={cn(
               // Base styles
-              "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
+              'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm',
               // Text and placeholder styles
-              "text-foreground placeholder:text-muted-foreground",
+              'text-foreground placeholder:text-muted-foreground',
               // Focus styles
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               // Disabled styles
-              "disabled:cursor-not-allowed disabled:opacity-50",
+              'disabled:cursor-not-allowed disabled:opacity-50',
               // Hover and transition effects
-              "transition-colors hover:border-primary/60",
+              'transition-colors hover:border-primary/60',
               // Error styles
-              error && "border-destructive focus-visible:ring-destructive",
-              "pr-10", // Space for icon
+              error && 'border-destructive focus-visible:ring-destructive',
+              'pr-10', // Space for icon
               className
             )}
             popperClassName="z-50"
             popperContainer={popperContainerFn}
           />
           {/* Custom calendar icon */}
-          <CalendarDays
-            className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none"
-          />
+          <CalendarDays className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
-        )
-    }
+    )
+  }
 )
 
-CustomDateInput.displayName = "CustomDateInput"
+CustomDateInput.displayName = 'CustomDateInput'
 
 export { CustomDateInput }

@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx'
+import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { REGEX_PATTERNS } from '@/constants'
 
@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 
 // Date formatting utilities
 export const formatDate = (
-  dateStr: string, 
+  dateStr: string,
   locale: string = 'en-US',
   options?: Intl.DateTimeFormatOptions
 ) => {
@@ -18,7 +18,7 @@ export const formatDate = (
     weekday: 'short',
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   }
   return date.toLocaleDateString(locale, options || defaultOptions)
 }
@@ -26,11 +26,11 @@ export const formatDate = (
 export const formatTime = (timeStr: string, format24h: boolean = false) => {
   const [hours, minutes] = timeStr.split(':')
   const hour24 = parseInt(hours)
-  
+
   if (format24h) {
     return `${hour24.toString().padStart(2, '0')}:${minutes}`
   }
-  
+
   let hour12 = hour24
   if (hour24 === 0) {
     hour12 = 12
@@ -52,20 +52,20 @@ export const formatDateTime = (dateStr: string, timeStr?: string, locale: string
 
 export const formatDateRange = (startDate: string, endDate?: string, locale: string = 'en-US') => {
   const start = new Date(startDate)
-  
+
   if (!endDate) {
     return formatDate(startDate, locale)
   }
-  
+
   const end = new Date(endDate)
-  
+
   if (start.getFullYear() === end.getFullYear()) {
     if (start.getMonth() === end.getMonth()) {
       return `${start.toLocaleDateString(locale, { month: 'short' })} ${start.getDate()}-${end.getDate()}, ${start.getFullYear()}`
     }
     return `${start.toLocaleDateString(locale, { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}, ${start.getFullYear()}`
   }
-  
+
   return `${formatDate(startDate, locale)} - ${formatDate(endDate, locale)}`
 }
 
@@ -129,48 +129,48 @@ export const validatePostalCode = (postalCode: string) => {
 
 // Time utilities
 export const generateTimeSlots = (
-  startHour = 6, 
-  endHour = 22, 
+  startHour = 6,
+  endHour = 22,
   intervalMinutes = 30,
   format24h = false
 ) => {
   const slots: Array<{ value: string; label: string }> = []
-  
+
   for (let hour = startHour; hour <= endHour; hour++) {
     for (let minute = 0; minute < 60; minute += intervalMinutes) {
       if (hour === endHour && minute > 0) break
-      
+
       const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
       slots.push({
         value: timeStr,
-        label: formatTime(timeStr, format24h)
+        label: formatTime(timeStr, format24h),
       })
     }
   }
-  
+
   return slots
 }
 
 export const getAppointmentDuration = (startTime: string, endTime: string) => {
   const [startHour, startMinute] = startTime.split(':').map(Number)
   const [endHour, endMinute] = endTime.split(':').map(Number)
-  
+
   const startMinutes = startHour * 60 + startMinute
   const endMinutes = endHour * 60 + endMinute
-  
+
   const durationMinutes = endMinutes - startMinutes
-  
+
   if (durationMinutes < 60) {
     return `${durationMinutes}m`
   }
-  
+
   const hours = Math.floor(durationMinutes / 60)
   const minutes = durationMinutes % 60
-  
+
   if (minutes === 0) {
     return `${hours}h`
   }
-  
+
   return `${hours}h ${minutes}m`
 }
 
@@ -225,16 +225,12 @@ export const truncate = (str: string, length: number, suffix = '...') => {
  * Formatea moneda en formato colombiano (COP)
  * Formato: $30.000 (punto para miles, sin decimales)
  */
-export const formatCurrency = (
-  amount: number, 
-  currency = 'COP', 
-  locale = 'es-CO'
-) => {
+export const formatCurrency = (amount: number, currency = 'COP', locale = 'es-CO') => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(amount)
 }
 
@@ -245,15 +241,15 @@ export const formatCurrency = (
 export const formatNumber = (num: number, locale = 'es-CO') => {
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(num)
 }
 
 export const formatPercentage = (value: number, locale = 'es-ES') => {
-  return new Intl.NumberFormat(locale, { 
+  return new Intl.NumberFormat(locale, {
     style: 'percent',
     minimumFractionDigits: 1,
-    maximumFractionDigits: 1
+    maximumFractionDigits: 1,
   }).format(value / 100)
 }
 
@@ -263,15 +259,18 @@ export const roundToDecimals = (num: number, decimals = 2) => {
 
 // Array utilities
 export const groupBy = <T, K extends PropertyKey>(
-  array: T[], 
+  array: T[],
   key: (item: T) => K
 ): Record<K, T[]> => {
-  return array.reduce<Record<K, T[]>>((groups, item) => {
-    const group = key(item)
-    groups[group] = groups[group] || []
-    groups[group].push(item)
-    return groups
-  }, {} as Record<K, T[]>)
+  return array.reduce<Record<K, T[]>>(
+    (groups, item) => {
+      const group = key(item)
+      groups[group] = groups[group] || []
+      groups[group].push(item)
+      return groups
+    },
+    {} as Record<K, T[]>
+  )
 }
 
 export const unique = <T>(array: T[]): T[] => {
@@ -282,7 +281,7 @@ export const sortBy = <T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 
   return [...array].sort((a, b) => {
     const aVal = a[key]
     const bVal = b[key]
-    
+
     if (aVal < bVal) return direction === 'asc' ? -1 : 1
     if (aVal > bVal) return direction === 'asc' ? 1 : -1
     return 0
@@ -306,12 +305,12 @@ export const storage = {
   get: <T>(key: string, defaultValue?: T): T | null => {
     try {
       const item = localStorage.getItem(key)
-  return item ? JSON.parse(item) : (defaultValue ?? null)
+      return item ? JSON.parse(item) : (defaultValue ?? null)
     } catch {
-  return defaultValue ?? null
+      return defaultValue ?? null
     }
   },
-  
+
   set: <T>(key: string, value: T): void => {
     try {
       localStorage.setItem(key, JSON.stringify(value))
@@ -319,7 +318,7 @@ export const storage = {
       // Handle quota exceeded or other errors silently
     }
   },
-  
+
   remove: (key: string): void => {
     try {
       localStorage.removeItem(key)
@@ -327,14 +326,14 @@ export const storage = {
       // Handle errors silently
     }
   },
-  
+
   clear: (): void => {
     try {
       localStorage.clear()
     } catch {
       // Handle errors silently
     }
-  }
+  },
 }
 
 // URL utilities
@@ -356,10 +355,7 @@ export const removeQueryParam = (param: string): void => {
 }
 
 // Error handling utilities
-export const safeExecute = async <T>(
-  fn: () => Promise<T>,
-  fallback?: T
-): Promise<T | null> => {
+export const safeExecute = async <T>(fn: () => Promise<T>, fallback?: T): Promise<T | null> => {
   try {
     return await fn()
   } catch {
@@ -385,7 +381,7 @@ export const retryAsync = async <T>(
 
 // File utilities
 export const getFileExtension = (filename: string): string => {
-  return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2)
+  return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2)
 }
 
 export const isImageFile = (filename: string): boolean => {
@@ -395,11 +391,11 @@ export const isImageFile = (filename: string): boolean => {
 
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes'
-  
+
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
@@ -415,7 +411,7 @@ export function extractTimeZoneParts(date: Date, timeZone: string = DEFAULT_TIME
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     })
 
     const [datePart, timePart] = dateString.split(', ')
@@ -456,7 +452,15 @@ export function getTimeZoneParts(date: Date, timeZone: string) {
 export function getDayOfWeekInTZ(date: Date, timeZone: string): number {
   try {
     const weekday = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(date)
-    const DAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+    const DAY_MAP: Record<string, number> = {
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
+    }
     return DAY_MAP[weekday as keyof typeof DAY_MAP] ?? date.getDay()
   } catch {
     return date.getDay()

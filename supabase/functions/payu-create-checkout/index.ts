@@ -24,7 +24,7 @@ interface CheckoutRequest {
   discountCode?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   try {
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 })
@@ -141,12 +141,9 @@ serve(async (req) => {
     )
   } catch (error) {
     console.error('PayU Checkout Error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 })

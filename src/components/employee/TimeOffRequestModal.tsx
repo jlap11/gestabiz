@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react'
+import { AlertCircle, Calendar } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -7,29 +7,29 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CustomDateInput } from '@/components/ui/custom-date-input';
-import { TimeOffType } from '@/hooks/useEmployeeTimeOff';
-import { useLanguage } from '@/contexts/LanguageContext';
+} from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { CustomDateInput } from '@/components/ui/custom-date-input'
+import { TimeOffType } from '@/hooks/useEmployeeTimeOff'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface TimeOffRequestModalProps {
-  open: boolean;
-  onClose: () => void;
-  businessId: string;
-  businessName: string;
-  defaultType?: TimeOffType;
-  onSubmit: (type: TimeOffType, startDate: string, endDate: string, notes: string) => Promise<void>;
+  open: boolean
+  onClose: () => void
+  businessId: string
+  businessName: string
+  defaultType?: TimeOffType
+  onSubmit: (type: TimeOffType, startDate: string, endDate: string, notes: string) => Promise<void>
 }
 
 export function TimeOffRequestModal({
@@ -38,27 +38,27 @@ export function TimeOffRequestModal({
   businessId,
   businessName,
   defaultType = 'vacation',
-  onSubmit
+  onSubmit,
 }: Readonly<TimeOffRequestModalProps>) {
   const { t } = useLanguage()
-  const [type, setType] = useState<TimeOffType>(defaultType);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [type, setType] = useState<TimeOffType>(defaultType)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [notes, setNotes] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Calcular días totales
   const calculateDays = (): number => {
-    if (!startDate || !endDate) return 0;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = end.getTime() - start.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return Math.max(diffDays, 0);
-  };
+    if (!startDate || !endDate) return 0
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const diffTime = end.getTime() - start.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+    return Math.max(diffDays, 0)
+  }
 
-  const totalDays = calculateDays();
+  const totalDays = calculateDays()
 
   // Labels para tipos
   const typeLabels: Record<TimeOffType, string> = {
@@ -66,65 +66,65 @@ export function TimeOffRequestModal({
     sick_leave: 'Ausencia Médica',
     personal: 'Permiso Personal',
     emergency: 'Emergencia',
-    other: 'Otro'
-  };
+    other: 'Otro',
+  }
 
   // Validar formulario
   const validateForm = (): string | null => {
-    if (!type) return t('common.validation.selectRequestType');
-    if (!startDate) return t('common.validation.selectStartDate');
-    if (!endDate) return t('common.validation.selectEndDate');
-    
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
+    if (!type) return t('common.validation.selectRequestType')
+    if (!startDate) return t('common.validation.selectStartDate')
+    if (!endDate) return t('common.validation.selectEndDate')
+
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+
     if (end < start) {
-      return 'La fecha de fin debe ser posterior a la fecha de inicio';
+      return 'La fecha de fin debe ser posterior a la fecha de inicio'
     }
-    
+
     if (totalDays > 365) {
-      return t('common.validation.requestTooLong');
+      return t('common.validation.requestTooLong')
     }
-    
-    return null;
-  };
+
+    return null
+  }
 
   const handleSubmit = async () => {
-    setError(null);
-    
-    const validationError = validateForm();
+    setError(null)
+
+    const validationError = validateForm()
     if (validationError) {
-      setError(validationError);
-      return;
+      setError(validationError)
+      return
     }
 
     try {
-      setLoading(true);
-      await onSubmit(type, startDate, endDate, notes);
-      
+      setLoading(true)
+      await onSubmit(type, startDate, endDate, notes)
+
       // Reset form
-      setType(defaultType);
-      setStartDate('');
-      setEndDate('');
-      setNotes('');
-      setError(null);
-      
-      onClose();
+      setType(defaultType)
+      setStartDate('')
+      setEndDate('')
+      setNotes('')
+      setError(null)
+
+      onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.messages.saveError'));
+      setError(err instanceof Error ? err.message : t('common.messages.saveError'))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    setType(defaultType);
-    setStartDate('');
-    setEndDate('');
-    setNotes('');
-    setError(null);
-    onClose();
-  };
+    setType(defaultType)
+    setStartDate('')
+    setEndDate('')
+    setNotes('')
+    setError(null)
+    onClose()
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
@@ -135,8 +135,8 @@ export function TimeOffRequestModal({
             Solicitar Tiempo Libre
           </DialogTitle>
           <DialogDescription>
-            Envía una solicitud de ausencia para <strong>{businessName}</strong>. 
-            Tu gerente revisará y aprobará la solicitud.
+            Envía una solicitud de ausencia para <strong>{businessName}</strong>. Tu gerente
+            revisará y aprobará la solicitud.
           </DialogDescription>
         </DialogHeader>
 
@@ -152,7 +152,7 @@ export function TimeOffRequestModal({
           {/* Tipo de Solicitud */}
           <div className="space-y-2">
             <Label htmlFor="type">Tipo de Solicitud *</Label>
-            <Select value={type} onValueChange={(value) => setType(value as TimeOffType)}>
+            <Select value={type} onValueChange={value => setType(value as TimeOffType)}>
               <SelectTrigger id="type" className="min-h-[44px]">
                 <SelectValue placeholder={t('common.validation.selectType')} />
               </SelectTrigger>
@@ -172,7 +172,7 @@ export function TimeOffRequestModal({
               id="startDate"
               label="Fecha de Inicio *"
               value={startDate}
-              onChange={(value) => setStartDate(value)}
+              onChange={value => setStartDate(value)}
               min={new Date().toISOString().split('T')[0]}
             />
 
@@ -180,7 +180,7 @@ export function TimeOffRequestModal({
               id="endDate"
               label="Fecha de Fin *"
               value={endDate}
-              onChange={(value) => setEndDate(value)}
+              onChange={value => setEndDate(value)}
               min={startDate || new Date().toISOString().split('T')[0]}
             />
           </div>
@@ -189,7 +189,10 @@ export function TimeOffRequestModal({
           {totalDays > 0 && (
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
               <p className="text-sm font-medium text-foreground">
-                Total de días solicitados: <strong>{totalDays} día{totalDays > 1 ? 's' : ''}</strong>
+                Total de días solicitados:{' '}
+                <strong>
+                  {totalDays} día{totalDays > 1 ? 's' : ''}
+                </strong>
               </p>
               {totalDays > 30 && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -207,7 +210,7 @@ export function TimeOffRequestModal({
             <Textarea
               id="notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={e => setNotes(e.target.value)}
               placeholder={t('common.placeholders.availabilityNotes')}
               rows={4}
               className="resize-none"
@@ -219,7 +222,7 @@ export function TimeOffRequestModal({
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                Para ausencias médicas prolongadas (más de 3 días), es posible que necesites 
+                Para ausencias médicas prolongadas (más de 3 días), es posible que necesites
                 presentar un certificado médico.
               </AlertDescription>
             </Alert>
@@ -257,5 +260,5 @@ export function TimeOffRequestModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

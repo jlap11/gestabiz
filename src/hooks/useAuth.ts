@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { User as SupabaseUser, Session } from '@supabase/supabase-js'
+import { useCallback, useEffect, useState } from 'react'
+import { Session, User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { User } from '@/types'
 import { toast } from 'sonner'
@@ -29,7 +29,7 @@ export function useAuth() {
     user: null,
     session: null,
     loading: true,
-    error: null
+    error: null,
   })
 
   // Convert Supabase User to our User type
@@ -42,14 +42,16 @@ export function useAuth() {
           email: 'demo@example.com',
           name: 'Demo User',
           avatar_url: undefined,
-          roles: [{ 
-            id: 'demo-role-1', 
-            user_id: 'demo-user-id',
-            role: 'admin', 
-            business_id: null,
-            is_active: true,
-            created_at: new Date().toISOString()
-          }],
+          roles: [
+            {
+              id: 'demo-role-1',
+              user_id: 'demo-user-id',
+              role: 'admin',
+              business_id: null,
+              is_active: true,
+              created_at: new Date().toISOString(),
+            },
+          ],
           activeRole: 'admin',
           role: 'admin', // Legacy support
           phone: '+1234567890',
@@ -66,10 +68,10 @@ export function useAuth() {
             reminder_1h: true,
             reminder_15m: false,
             daily_digest: false,
-            weekly_report: false
+            weekly_report: false,
           },
           permissions: [],
-          timezone: 'America/Mexico_City'
+          timezone: 'America/Mexico_City',
         }
       }
 
@@ -80,7 +82,8 @@ export function useAuth() {
         .eq('id', supabaseUser.id)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 = no rows returned
         return null
       }
 
@@ -104,7 +107,7 @@ export function useAuth() {
 
         // Build roles array dynamically
         const calculatedRoles: import('@/types').UserRoleAssignment[] = []
-        
+
         // Everyone has CLIENT role
         calculatedRoles.push({
           id: 'client-role',
@@ -112,7 +115,7 @@ export function useAuth() {
           role: 'client' as import('@/types').UserRole,
           business_id: null,
           is_active: true,
-          created_at: profile.created_at
+          created_at: profile.created_at,
         })
 
         // Add ADMIN role if owns businesses
@@ -124,7 +127,7 @@ export function useAuth() {
             business_id: ownedBusinesses[0].id,
             business_name: ownedBusinesses[0].name,
             is_active: true,
-            created_at: profile.created_at
+            created_at: profile.created_at,
           })
         }
 
@@ -139,7 +142,7 @@ export function useAuth() {
             business_id: employeeRelations[0].business_id,
             business_name: biz?.name,
             is_active: true,
-            created_at: profile.created_at
+            created_at: profile.created_at,
           })
         }
 
@@ -154,10 +157,12 @@ export function useAuth() {
           avatar_url: profile.avatar_url,
           roles: calculatedRoles,
           activeRole,
-          activeBusiness: activeRoleAssignment?.business_id ? {
-            id: activeRoleAssignment.business_id,
-            name: activeRoleAssignment.business_name || ''
-          } : undefined,
+          activeBusiness: activeRoleAssignment?.business_id
+            ? {
+                id: activeRoleAssignment.business_id,
+                name: activeRoleAssignment.business_name || '',
+              }
+            : undefined,
           role: activeRole, // Legacy support
           business_id: activeRoleAssignment?.business_id || undefined, // Legacy support
           phone: profile.phone,
@@ -174,32 +179,33 @@ export function useAuth() {
             reminder_1h: true,
             reminder_15m: false,
             daily_digest: false,
-            weekly_report: false
+            weekly_report: false,
           },
           permissions: [],
-          timezone: 'America/Mexico_City'
+          timezone: 'America/Mexico_City',
         }
       }
 
       // If no profile exists, create one
-      const newProfile: import('@/types/database').Database['public']['Tables']['profiles']['Insert'] = {
-        id: supabaseUser.id,
-        email: supabaseUser.email!,
-        full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email!.split('@')[0],
-        avatar_url: supabaseUser.user_metadata?.avatar_url || null,
-        role: 'client' as const,
-        phone: null,
-        settings: {
-          language: 'es',
-          theme: 'dark',
-          notifications: {
-            email: true,
-            push: true,
-            whatsapp: false
-          }
-        } as unknown as import('@/types/database').Json,
-        is_active: true
-      }
+      const newProfile: import('@/types/database').Database['public']['Tables']['profiles']['Insert'] =
+        {
+          id: supabaseUser.id,
+          email: supabaseUser.email!,
+          full_name: supabaseUser.user_metadata?.full_name || supabaseUser.email!.split('@')[0],
+          avatar_url: supabaseUser.user_metadata?.avatar_url || null,
+          role: 'client' as const,
+          phone: null,
+          settings: {
+            language: 'es',
+            theme: 'dark',
+            notifications: {
+              email: true,
+              push: true,
+              whatsapp: false,
+            },
+          } as unknown as import('@/types/database').Json,
+          is_active: true,
+        }
 
       const { data: createdProfile, error: createError } = await supabase
         .from('profiles')
@@ -220,14 +226,16 @@ export function useAuth() {
         email: createdProfile.email,
         name: createdProfile.full_name || '',
         avatar_url: createdProfile.avatar_url,
-        roles: [{
-          id: 'initial-client-role',
-          user_id: createdProfile.id,
-          role: 'client',
-          business_id: null,
-          is_active: true,
-          created_at: createdProfile.created_at
-        }],
+        roles: [
+          {
+            id: 'initial-client-role',
+            user_id: createdProfile.id,
+            role: 'client',
+            business_id: null,
+            is_active: true,
+            created_at: createdProfile.created_at,
+          },
+        ],
         activeRole: 'client',
         role: 'client', // Legacy support
         phone: createdProfile.phone,
@@ -244,12 +252,12 @@ export function useAuth() {
           reminder_1h: true,
           reminder_15m: false,
           daily_digest: false,
-          weekly_report: false
+          weekly_report: false,
         },
         permissions: [],
-        timezone: 'America/Mexico_City'
+        timezone: 'America/Mexico_City',
       }
-  } catch {
+    } catch {
       // Error converting user - return null
       return null
     }
@@ -261,8 +269,11 @@ export function useAuth() {
 
     async function getInitialSession() {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+
         if (error) {
           // Error getting initial session
           setState(prev => ({ ...prev, loading: false, error: error.message }))
@@ -276,18 +287,18 @@ export function useAuth() {
             user,
             session,
             loading: false,
-            error: null
+            error: null,
           }))
         } else if (mounted) {
           setState(prev => ({ ...prev, loading: false }))
         }
-  } catch {
+      } catch {
         // Error in getInitialSession
         if (mounted) {
-          setState(prev => ({ 
-            ...prev, 
-            loading: false, 
-    error: 'Unknown error' 
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Unknown error',
           }))
         }
       }
@@ -296,30 +307,30 @@ export function useAuth() {
     getInitialSession()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
 
-        if (session?.user) {
-          const user = await convertToUser(session.user)
-          setState(prev => ({
-            ...prev,
-            user,
-            session,
-            loading: false,
-            error: null
-          }))
-        } else {
-          setState(prev => ({
-            ...prev,
-            user: null,
-            session: null,
-            loading: false,
-            error: null
-          }))
-        }
+      if (session?.user) {
+        const user = await convertToUser(session.user)
+        setState(prev => ({
+          ...prev,
+          user,
+          session,
+          loading: false,
+          error: null,
+        }))
+      } else {
+        setState(prev => ({
+          ...prev,
+          user: null,
+          session: null,
+          loading: false,
+          error: null,
+        }))
       }
-    )
+    })
 
     return () => {
       mounted = false
@@ -328,215 +339,222 @@ export function useAuth() {
   }, [convertToUser])
 
   // Sign up with email and password
-  const signUp = useCallback(async (data: SignUpData) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }))
+  const signUp = useCallback(
+    async (data: SignUpData) => {
+      try {
+        setState(prev => ({ ...prev, loading: true, error: null }))
 
-      const { data: authData, error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.full_name || '',
-            phone: data.phone || ''
-          }
-        }
-      })
-
-      if (error) {
-        // Parse error message to provide better UX
-        let userMessage = error.message
-        
-        // Improve error messages
-        if (error.message.includes('already registered')) {
-          userMessage = 'Este correo electrónico ya está registrado. Intenta iniciar sesión.'
-        } else if (error.message.includes('Password')) {
-          userMessage = 'La contraseña no cumple con los requisitos de seguridad. Debe tener al menos 6 caracteres.'
-        } else if (error.message.includes('invalid')) {
-          userMessage = 'Los datos proporcionados no son válidos. Verifica tu información.'
-        }
-        
-        logger.error('Sign up failed', error, {
-          component: 'useAuth',
-          operation: 'signUp',
+        const { data: authData, error } = await supabase.auth.signUp({
           email: data.email,
-          errorCode: error.code,
-          userMessage
-        });
-        setState(prev => ({ ...prev, loading: false, error: userMessage }))
-        toast.error(userMessage)
-        return { success: false, error: userMessage }
-      }
+          password: data.password,
+          options: {
+            data: {
+              full_name: data.full_name || '',
+              phone: data.phone || '',
+            },
+          },
+        })
 
-      // If user was created successfully
-      if (authData.user) {
-        // If there's a session (email confirmation disabled), create profile and log in
-        if (authData.session) {
-          // Create profile in profiles table
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
+        if (error) {
+          // Parse error message to provide better UX
+          let userMessage = error.message
+
+          // Improve error messages
+          if (error.message.includes('already registered')) {
+            userMessage = 'Este correo electrónico ya está registrado. Intenta iniciar sesión.'
+          } else if (error.message.includes('Password')) {
+            userMessage =
+              'La contraseña no cumple con los requisitos de seguridad. Debe tener al menos 6 caracteres.'
+          } else if (error.message.includes('invalid')) {
+            userMessage = 'Los datos proporcionados no son válidos. Verifica tu información.'
+          }
+
+          logger.error('Sign up failed', error, {
+            component: 'useAuth',
+            operation: 'signUp',
+            email: data.email,
+            errorCode: error.code,
+            userMessage,
+          })
+          setState(prev => ({ ...prev, loading: false, error: userMessage }))
+          toast.error(userMessage)
+          return { success: false, error: userMessage }
+        }
+
+        // If user was created successfully
+        if (authData.user) {
+          // If there's a session (email confirmation disabled), create profile and log in
+          if (authData.session) {
+            // Create profile in profiles table
+            const { error: profileError } = await supabase.from('profiles').insert({
               id: authData.user.id,
               email: authData.user.email,
               full_name: data.full_name || '',
               phone: data.phone || '',
               role: 'client', // Default role
-              is_active: true
+              is_active: true,
             })
 
-          if (profileError) {
-            // Profile might already exist (duplicate signup attempt)
-            if (profileError.code !== '23505') { // 23505 = unique violation
-              logger.error('Profile creation failed during signup', profileError, {
-                component: 'useAuth',
-                operation: 'signUp.createProfile',
-                userId: authData.user.id,
-                email: data.email,
-              });
-              toast.error('Error al crear perfil de usuario')
-              setState(prev => ({ ...prev, loading: false }))
-              return { success: false, error: profileError.message }
+            if (profileError) {
+              // Profile might already exist (duplicate signup attempt)
+              if (profileError.code !== '23505') {
+                // 23505 = unique violation
+                logger.error('Profile creation failed during signup', profileError, {
+                  component: 'useAuth',
+                  operation: 'signUp.createProfile',
+                  userId: authData.user.id,
+                  email: data.email,
+                })
+                toast.error('Error al crear perfil de usuario')
+                setState(prev => ({ ...prev, loading: false }))
+                return { success: false, error: profileError.message }
+              }
             }
+
+            // Convert to User and update state
+            const user = await convertToUser(authData.user)
+            setState(prev => ({
+              ...prev,
+              user,
+              session: authData.session,
+              loading: false,
+              error: null,
+            }))
+
+            // Log successful signup
+            await logger.logLogin({
+              email: data.email,
+              status: 'success',
+              method: 'password',
+              userId: authData.user.id,
+              userAgent: navigator.userAgent,
+              metadata: { action: 'signup', needsEmailConfirmation: false },
+            })
+
+            toast.success(`¡Bienvenido, ${data.full_name || data.email}!`)
+            return { success: true, needsEmailConfirmation: false }
+          } else {
+            // Email confirmation is required
+            toast.success('Revisa tu email para confirmar tu cuenta')
+            setState(prev => ({ ...prev, loading: false }))
+            return { success: true, needsEmailConfirmation: true }
+          }
+        }
+
+        setState(prev => ({ ...prev, loading: false }))
+        return { success: false, error: 'No se pudo crear el usuario' }
+      } catch (error) {
+        logger.error('Unexpected error during signup', error as Error, {
+          component: 'useAuth',
+          operation: 'signUp',
+          email: data.email,
+        })
+        const message = 'Error desconocido'
+        setState(prev => ({ ...prev, loading: false, error: message }))
+        toast.error(message)
+        return { success: false, error: message }
+      }
+    },
+    [convertToUser]
+  )
+
+  // Sign in with email and password
+  const signIn = useCallback(
+    async (data: SignInData) => {
+      try {
+        setState(prev => ({ ...prev, loading: true, error: null }))
+
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        })
+
+        if (error) {
+          // Parse error message to provide better UX
+          let userMessage = error.message
+          let logMessage = error.message
+
+          // Improve error messages
+          if (error.message.includes('Invalid login credentials')) {
+            userMessage =
+              'Correo electrónico o contraseña incorrectos. Verifica tus datos e intenta de nuevo.'
+            logMessage = 'Invalid credentials provided'
+          } else if (error.message.includes('Email not confirmed')) {
+            userMessage = 'Por favor confirma tu correo electrónico antes de iniciar sesión.'
+            logMessage = 'Email not confirmed'
+          } else if (error.message.includes('User not found')) {
+            userMessage = 'No existe una cuenta con este correo electrónico.'
+            logMessage = 'User not found'
+          } else if (error.message.includes('too many requests')) {
+            userMessage = 'Demasiados intentos de inicio de sesión. Intenta más tarde.'
+            logMessage = 'Too many login attempts'
           }
 
-          // Convert to User and update state
+          logger.error('Sign in failed', error, {
+            component: 'useAuth',
+            operation: 'signIn',
+            email: data.email,
+            errorCode: error.code,
+            userMessage,
+          })
+          await logger.logLogin({
+            email: data.email,
+            status: 'failure',
+            method: 'password',
+            userAgent: navigator.userAgent,
+            metadata: { errorMessage: logMessage },
+          })
+          setState(prev => ({ ...prev, loading: false, error: userMessage }))
+          toast.error(userMessage)
+          return { success: false, error: userMessage }
+        }
+
+        if (authData.user) {
           const user = await convertToUser(authData.user)
           setState(prev => ({
             ...prev,
             user,
             session: authData.session,
             loading: false,
-            error: null
+            error: null,
           }))
-          
-          // Log successful signup
+
+          // Log successful login
           await logger.logLogin({
             email: data.email,
             status: 'success',
             method: 'password',
             userId: authData.user.id,
             userAgent: navigator.userAgent,
-            metadata: { action: 'signup', needsEmailConfirmation: false }
-          });
-          
-          toast.success(`¡Bienvenido, ${data.full_name || data.email}!`)
-          return { success: true, needsEmailConfirmation: false }
-        } else {
-          // Email confirmation is required
-          toast.success('Revisa tu email para confirmar tu cuenta')
-          setState(prev => ({ ...prev, loading: false }))
-          return { success: true, needsEmailConfirmation: true }
+            metadata: { action: 'signin' },
+          })
+
+          toast.success(`¡Bienvenido, ${user?.name || data.email}!`)
+          return { success: true, user }
         }
-      }
 
-      setState(prev => ({ ...prev, loading: false }))
-      return { success: false, error: 'No se pudo crear el usuario' }
-  } catch (error) {
-      logger.error('Unexpected error during signup', error as Error, {
-        component: 'useAuth',
-        operation: 'signUp',
-        email: data.email,
-      });
-      const message = 'Error desconocido'
-      setState(prev => ({ ...prev, loading: false, error: message }))
-      toast.error(message)
-      return { success: false, error: message }
-    }
-  }, [convertToUser])
-
-  // Sign in with email and password
-  const signIn = useCallback(async (data: SignInData) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }))
-
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password
-      })
-
-      if (error) {
-        // Parse error message to provide better UX
-        let userMessage = error.message
-        let logMessage = error.message
-        
-        // Improve error messages
-        if (error.message.includes('Invalid login credentials')) {
-          userMessage = 'Correo electrónico o contraseña incorrectos. Verifica tus datos e intenta de nuevo.'
-          logMessage = 'Invalid credentials provided'
-        } else if (error.message.includes('Email not confirmed')) {
-          userMessage = 'Por favor confirma tu correo electrónico antes de iniciar sesión.'
-          logMessage = 'Email not confirmed'
-        } else if (error.message.includes('User not found')) {
-          userMessage = 'No existe una cuenta con este correo electrónico.'
-          logMessage = 'User not found'
-        } else if (error.message.includes('too many requests')) {
-          userMessage = 'Demasiados intentos de inicio de sesión. Intenta más tarde.'
-          logMessage = 'Too many login attempts'
-        }
-        
-        logger.error('Sign in failed', error, {
+        return { success: false, error: 'No se pudo autenticar' }
+      } catch (error) {
+        logger.error('Unexpected error during signin', error as Error, {
           component: 'useAuth',
           operation: 'signIn',
           email: data.email,
-          errorCode: error.code,
-          userMessage
-        });
+        })
         await logger.logLogin({
           email: data.email,
           status: 'failure',
           method: 'password',
           userAgent: navigator.userAgent,
-          metadata: { errorMessage: logMessage }
-        });
-        setState(prev => ({ ...prev, loading: false, error: userMessage }))
-        toast.error(userMessage)
-        return { success: false, error: userMessage }
+          metadata: { errorMessage: 'Unknown error' },
+        })
+        const message = 'Error desconocido'
+        setState(prev => ({ ...prev, loading: false, error: message }))
+        toast.error(message)
+        return { success: false, error: message }
       }
-
-      if (authData.user) {
-        const user = await convertToUser(authData.user)
-        setState(prev => ({
-          ...prev,
-          user,
-          session: authData.session,
-          loading: false,
-          error: null
-        }))
-        
-        // Log successful login
-        await logger.logLogin({
-          email: data.email,
-          status: 'success',
-          method: 'password',
-          userId: authData.user.id,
-          userAgent: navigator.userAgent,
-          metadata: { action: 'signin' }
-        });
-        
-        toast.success(`¡Bienvenido, ${user?.name || data.email}!`)
-        return { success: true, user }
-      }
-
-      return { success: false, error: 'No se pudo autenticar' }
-  } catch (error) {
-      logger.error('Unexpected error during signin', error as Error, {
-        component: 'useAuth',
-        operation: 'signIn',
-        email: data.email,
-      });
-      await logger.logLogin({
-        email: data.email,
-        status: 'failure',
-        method: 'password',
-        userAgent: navigator.userAgent,
-        metadata: { errorMessage: 'Unknown error' }
-      });
-      const message = 'Error desconocido'
-      setState(prev => ({ ...prev, loading: false, error: message }))
-      toast.error(message)
-      return { success: false, error: message }
-    }
-  }, [convertToUser])
+    },
+    [convertToUser]
+  )
 
   // Sign in with Google
   const signInWithGoogle = useCallback(async () => {
@@ -546,8 +564,8 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`
-        }
+          redirectTo: `${window.location.origin}/app`,
+        },
       })
 
       if (error) {
@@ -555,7 +573,7 @@ export function useAuth() {
           component: 'useAuth',
           operation: 'signInWithGoogle',
           errorCode: error.code,
-        });
+        })
         setState(prev => ({ ...prev, loading: false, error: error.message }))
         toast.error(error.message)
         return { success: false, error: error.message }
@@ -567,7 +585,7 @@ export function useAuth() {
       logger.error('Unexpected error during Google OAuth', error as Error, {
         component: 'useAuth',
         operation: 'signInWithGoogle',
-      });
+      })
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
@@ -578,9 +596,9 @@ export function useAuth() {
   // Sign out
   const signOut = useCallback(async () => {
     try {
-      const currentEmail = state.user?.email;
-      const currentUserId = state.user?.id;
-      
+      const currentEmail = state.user?.email
+      const currentUserId = state.user?.id
+
       setState(prev => ({ ...prev, loading: true }))
 
       const { error } = await supabase.auth.signOut()
@@ -590,7 +608,7 @@ export function useAuth() {
           component: 'useAuth',
           operation: 'signOut',
           userId: currentUserId,
-        });
+        })
         setState(prev => ({ ...prev, loading: false, error: error.message }))
         toast.error(error.message)
         return { success: false, error: error.message }
@@ -604,8 +622,8 @@ export function useAuth() {
           method: 'password',
           userId: currentUserId,
           userAgent: navigator.userAgent,
-          metadata: { action: 'signout' }
-        });
+          metadata: { action: 'signout' },
+        })
       }
 
       setState(prev => ({
@@ -613,17 +631,17 @@ export function useAuth() {
         user: null,
         session: null,
         loading: false,
-        error: null
+        error: null,
       }))
 
       toast.success('Sesión cerrada correctamente')
       return { success: true }
-  } catch (error) {
+    } catch (error) {
       logger.error('Unexpected error during sign out', error as Error, {
         component: 'useAuth',
         operation: 'signOut',
         userId: state.user?.id,
-      });
+      })
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
@@ -637,7 +655,7 @@ export function useAuth() {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
+        redirectTo: `${window.location.origin}/auth/reset-password`,
       })
 
       if (error) {
@@ -649,7 +667,7 @@ export function useAuth() {
       setState(prev => ({ ...prev, loading: false }))
       toast.success('Revisa tu email para restablecer tu contraseña')
       return { success: true }
-  } catch {
+    } catch {
       const message = 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
@@ -658,58 +676,61 @@ export function useAuth() {
   }, [])
 
   // Update user profile
-  const updateProfile = useCallback(async (updates: Partial<User>) => {
-    if (!state.user) return { success: false, error: 'No user logged in' }
+  const updateProfile = useCallback(
+    async (updates: Partial<User>) => {
+      if (!state.user) return { success: false, error: 'No user logged in' }
 
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }))
+      try {
+        setState(prev => ({ ...prev, loading: true, error: null }))
 
-    const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: updates.name,
-          avatar_url: updates.avatar_url,
-          phone: updates.phone,
-      // Nota: actualizar role desde cliente solo es seguro en modo demo; en prod usar Edge Function
-      ...(updates.role ? { role: updates.role } : {}),
-          settings: {
-            language: updates.language,
-            theme: 'dark', // Keep current theme
-            notifications: updates.notification_preferences
-          },
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', state.user.id)
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: updates.name,
+            avatar_url: updates.avatar_url,
+            phone: updates.phone,
+            // Nota: actualizar role desde cliente solo es seguro en modo demo; en prod usar Edge Function
+            ...(updates.role ? { role: updates.role } : {}),
+            settings: {
+              language: updates.language,
+              theme: 'dark', // Keep current theme
+              notifications: updates.notification_preferences,
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', state.user.id)
 
-      if (error) {
-        setState(prev => ({ ...prev, loading: false, error: error.message }))
-        toast.error(error.message)
-        return { success: false, error: error.message }
+        if (error) {
+          setState(prev => ({ ...prev, loading: false, error: error.message }))
+          toast.error(error.message)
+          return { success: false, error: error.message }
+        }
+
+        // Update local state
+        const updatedUser: User = {
+          ...state.user,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        }
+
+        setState(prev => ({
+          ...prev,
+          user: updatedUser,
+          loading: false,
+          error: null,
+        }))
+
+        toast.success('Perfil actualizado correctamente')
+        return { success: true, user: updatedUser }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido'
+        setState(prev => ({ ...prev, loading: false, error: message }))
+        toast.error(message)
+        return { success: false, error: message }
       }
-
-      // Update local state
-  const updatedUser: User = {
-        ...state.user,
-        ...updates,
-        updated_at: new Date().toISOString()
-      }
-
-      setState(prev => ({
-        ...prev,
-        user: updatedUser,
-        loading: false,
-        error: null
-      }))
-
-      toast.success('Perfil actualizado correctamente')
-      return { success: true, user: updatedUser }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido'
-      setState(prev => ({ ...prev, loading: false, error: message }))
-      toast.error(message)
-      return { success: false, error: message }
-    }
-  }, [state.user])
+    },
+    [state.user]
+  )
 
   return {
     user: state.user,
@@ -721,6 +742,6 @@ export function useAuth() {
     signInWithGoogle,
     signOut,
     resetPassword,
-    updateProfile
+    updateProfile,
   }
 }

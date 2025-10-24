@@ -4,18 +4,18 @@
 // Fecha: 13 de Octubre de 2025
 // =====================================================
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { createElement, ReactNode } from 'react'
+import { ReactNode, createElement } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { supabase } from '@/lib/supabase'
 import {
   BusinessRole,
-  UserPermission,
-  PermissionTemplate,
-  PermissionAuditLog,
   Permission,
+  PermissionAuditLog,
+  PermissionTemplate,
+  UserPermission,
 } from '@/types/types'
 
 // =====================================================
@@ -148,9 +148,7 @@ describe('usePermissions - Queries', () => {
     it('obtiene roles del usuario correctamente', async () => {
       const mockRole = createMockBusinessRole()
 
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([mockRole]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockRole]) as never)
 
       const { result } = renderHook(
         () =>
@@ -172,9 +170,7 @@ describe('usePermissions - Queries', () => {
     })
 
     it('retorna array vacío si no hay roles', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([]) as never)
 
       const { result } = renderHook(
         () =>
@@ -228,9 +224,7 @@ describe('usePermissions - Queries', () => {
     it('obtiene permisos del usuario correctamente', async () => {
       const mockPermission = createMockUserPermission()
 
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([mockPermission]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockPermission]) as never)
 
       const { result } = renderHook(
         () =>
@@ -378,13 +372,15 @@ describe('usePermissions - Queries', () => {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue({ 
-                data: [{
-                  ...mockAuditLog,
-                  user: { id: 'user-123', name: 'Test User', email: 'test@test.com' },
-                  performed_by_user: { id: 'owner-123', name: 'Owner', email: 'owner@test.com' },
-                }], 
-                error: null 
+              limit: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    ...mockAuditLog,
+                    user: { id: 'user-123', name: 'Test User', email: 'test@test.com' },
+                    performed_by_user: { id: 'owner-123', name: 'Owner', email: 'owner@test.com' },
+                  },
+                ],
+                error: null,
               }),
             }),
           }),
@@ -447,7 +443,7 @@ describe('usePermissions - Queries', () => {
       const mockOrder = mockEq?.order.mock.results[0]?.value as {
         limit: ReturnType<typeof vi.fn>
       }
-      
+
       expect(mockOrder.limit).toHaveBeenCalledWith(500)
     })
   })
@@ -464,9 +460,7 @@ describe('usePermissions - Verificaciones', () => {
 
   describe('checkPermission', () => {
     it('retorna true para owner', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([]) as never)
 
       const { result } = renderHook(
         () =>
@@ -489,13 +483,11 @@ describe('usePermissions - Verificaciones', () => {
     })
 
     it('retorna true si usuario tiene el permiso', async () => {
-      const mockPermission = createMockUserPermission({ 
-        permission: 'write_appointments' 
+      const mockPermission = createMockUserPermission({
+        permission: 'write_appointments',
       })
 
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([mockPermission]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockPermission]) as never)
 
       const { result } = renderHook(
         () =>
@@ -518,9 +510,7 @@ describe('usePermissions - Verificaciones', () => {
     })
 
     it('retorna false si usuario no tiene el permiso', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([]) as never)
 
       const { result } = renderHook(
         () =>
@@ -544,13 +534,11 @@ describe('usePermissions - Verificaciones', () => {
 
   describe('checkAnyPermission', () => {
     it('retorna true si tiene al menos uno de los permisos', async () => {
-      const mockPermission = createMockUserPermission({ 
-        permission: 'read_appointments' 
+      const mockPermission = createMockUserPermission({
+        permission: 'read_appointments',
       })
 
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([mockPermission]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockPermission]) as never)
 
       const { result } = renderHook(
         () =>
@@ -566,18 +554,13 @@ describe('usePermissions - Verificaciones', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const check = result.current.checkAnyPermission([
-        'read_appointments',
-        'write_appointments',
-      ])
+      const check = result.current.checkAnyPermission(['read_appointments', 'write_appointments'])
       expect(check.hasPermission).toBe(true)
       expect(check.reason).toBe('Permiso otorgado')
     })
 
     it('retorna false si no tiene ninguno de los permisos', async () => {
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([]) as never)
 
       const { result } = renderHook(
         () =>
@@ -609,9 +592,7 @@ describe('usePermissions - Verificaciones', () => {
         createMockUserPermission({ id: 'p2', permission: 'write_appointments' }),
       ]
 
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery(mockPermissions) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery(mockPermissions) as never)
 
       const { result } = renderHook(
         () =>
@@ -627,22 +608,17 @@ describe('usePermissions - Verificaciones', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const check = result.current.checkAllPermissions([
-        'read_appointments',
-        'write_appointments',
-      ])
+      const check = result.current.checkAllPermissions(['read_appointments', 'write_appointments'])
       expect(check.hasPermission).toBe(true)
       expect(check.reason).toBe('Todos los permisos otorgados')
     })
 
     it('retorna false si falta algún permiso', async () => {
-      const mockPermission = createMockUserPermission({ 
-        permission: 'read_appointments' 
+      const mockPermission = createMockUserPermission({
+        permission: 'read_appointments',
       })
 
-      vi.mocked(supabase.from).mockReturnValue(
-        mockSupabaseQuery([mockPermission]) as never
-      )
+      vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockPermission]) as never)
 
       const { result } = renderHook(
         () =>
@@ -658,10 +634,7 @@ describe('usePermissions - Verificaciones', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const check = result.current.checkAllPermissions([
-        'read_appointments',
-        'write_appointments',
-      ])
+      const check = result.current.checkAllPermissions(['read_appointments', 'write_appointments'])
       expect(check.hasPermission).toBe(false)
       expect(check.reason).toBe('Faltan permisos')
     })
@@ -717,9 +690,9 @@ describe('usePermissions - Mutations', () => {
       vi.mocked(supabase.from).mockReturnValue({
         insert: vi.fn().mockReturnValue({
           select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ 
-              data: null, 
-              error: { message: 'Error de base de datos' } 
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Error de base de datos' },
             }),
           }),
         }),
@@ -956,9 +929,7 @@ describe('usePermissions - Roles y Verificaciones', () => {
   })
 
   it('identifica correctamente al owner', async () => {
-    vi.mocked(supabase.from).mockReturnValue(
-      mockSupabaseQuery([]) as never
-    )
+    vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([]) as never)
 
     const { result } = renderHook(
       () =>
@@ -982,9 +953,7 @@ describe('usePermissions - Roles y Verificaciones', () => {
   it('identifica correctamente rol de admin', async () => {
     const mockRole = createMockBusinessRole({ role: 'admin' })
 
-    vi.mocked(supabase.from).mockReturnValue(
-      mockSupabaseQuery([mockRole]) as never
-    )
+    vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockRole]) as never)
 
     const { result } = renderHook(
       () =>
@@ -1005,14 +974,12 @@ describe('usePermissions - Roles y Verificaciones', () => {
   })
 
   it('identifica correctamente rol de employee', async () => {
-    const mockRole = createMockBusinessRole({ 
+    const mockRole = createMockBusinessRole({
       role: 'employee',
       employee_type: 'service_provider',
     })
 
-    vi.mocked(supabase.from).mockReturnValue(
-      mockSupabaseQuery([mockRole]) as never
-    )
+    vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockRole]) as never)
 
     const { result } = renderHook(
       () =>
@@ -1034,14 +1001,12 @@ describe('usePermissions - Roles y Verificaciones', () => {
   })
 
   it('identifica employee que NO puede ofrecer servicios', async () => {
-    const mockRole = createMockBusinessRole({ 
+    const mockRole = createMockBusinessRole({
       role: 'employee',
       employee_type: 'support_staff',
     })
 
-    vi.mocked(supabase.from).mockReturnValue(
-      mockSupabaseQuery([mockRole]) as never
-    )
+    vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery([mockRole]) as never)
 
     const { result } = renderHook(
       () =>
@@ -1067,9 +1032,7 @@ describe('usePermissions - Roles y Verificaciones', () => {
       createMockUserPermission({ id: 'p2', permission: 'write_appointments' }),
     ]
 
-    vi.mocked(supabase.from).mockReturnValue(
-      mockSupabaseQuery(mockPermissions) as never
-    )
+    vi.mocked(supabase.from).mockReturnValue(mockSupabaseQuery(mockPermissions) as never)
 
     const { result } = renderHook(
       () =>

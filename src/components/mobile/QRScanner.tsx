@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Camera, CameraType } from 'expo-camera'
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import type { BarCodeScanningResult } from 'expo-camera'
@@ -34,7 +34,7 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
     try {
       const { status } = await Camera.requestCameraPermissionsAsync()
       setHasPermission(status === 'granted')
-      
+
       if (status !== 'granted') {
         Alert.alert(
           'Permiso de Cámara',
@@ -50,7 +50,7 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
 
   const handleBarCodeScanned = ({ type, data }: BarCodeScanningResult) => {
     if (scanned) return
-    
+
     setScanned(true)
 
     try {
@@ -65,25 +65,21 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
         qrData.invitation_code
       ) {
         // Valid invitation QR
-        Alert.alert(
-          'Código Escaneado',
-          `¿Deseas unirte a "${qrData.business_name}"?`,
-          [
-            {
-              text: 'Cancelar',
-              style: 'cancel',
-              onPress: () => {
-                setScanned(false)
-              },
+        Alert.alert('Código Escaneado', `¿Deseas unirte a "${qrData.business_name}"?`, [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+            onPress: () => {
+              setScanned(false)
             },
-            {
-              text: 'Confirmar',
-              onPress: () => {
-                onScan(qrData)
-              },
+          },
+          {
+            text: 'Confirmar',
+            onPress: () => {
+              onScan(qrData)
             },
-          ]
-        )
+          },
+        ])
       } else {
         throw new Error('Formato de QR inválido')
       }
@@ -125,7 +121,8 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Permiso Denegado</Text>
           <Text style={styles.errorMessage}>
-            No tenemos acceso a tu cámara. Por favor habilita el permiso en la configuración de tu dispositivo.
+            No tenemos acceso a tu cámara. Por favor habilita el permiso en la configuración de tu
+            dispositivo.
           </Text>
           <TouchableOpacity style={styles.closeButton} onPress={onCancel}>
             <Text style={styles.closeButtonText}>Cerrar</Text>
@@ -162,9 +159,7 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
             <View style={[styles.corner, styles.cornerBottomLeft]} />
             <View style={[styles.corner, styles.cornerBottomRight]} />
           </View>
-          <Text style={styles.scanText}>
-            Coloca el código QR dentro del marco
-          </Text>
+          <Text style={styles.scanText}>Coloca el código QR dentro del marco</Text>
         </View>
 
         {/* Bottom Controls */}
@@ -174,16 +169,11 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
             onPress={toggleFlash}
           >
             <Zap color={flashEnabled ? '#fbbf24' : 'white'} size={24} />
-            <Text style={styles.flashButtonText}>
-              {flashEnabled ? 'Flash ON' : 'Flash OFF'}
-            </Text>
+            <Text style={styles.flashButtonText}>{flashEnabled ? 'Flash ON' : 'Flash OFF'}</Text>
           </TouchableOpacity>
 
           {scanned && (
-            <TouchableOpacity
-              style={styles.rescanButton}
-              onPress={() => setScanned(false)}
-            >
+            <TouchableOpacity style={styles.rescanButton} onPress={() => setScanned(false)}>
               <Text style={styles.rescanButtonText}>Escanear de Nuevo</Text>
             </TouchableOpacity>
           )}

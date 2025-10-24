@@ -8,24 +8,24 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useDocumentTypes } from '@/hooks/useCatalogs';
+} from '@/components/ui/select'
+import { useDocumentTypes } from '@/hooks/useCatalogs'
 
 interface DocumentTypeSelectProps {
-  countryId?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-  error?: string;
-  required?: boolean;
-  className?: string;
+  countryId?: string
+  value?: string
+  onChange?: (value: string) => void
+  disabled?: boolean
+  placeholder?: string
+  error?: string
+  required?: boolean
+  className?: string
   /**
    * Si forCompany=true, solo muestra NIT
    * Si forCompany=false, muestra todos EXCEPTO NIT
    * Si undefined, muestra todos
    */
-  forCompany?: boolean;
+  forCompany?: boolean
 }
 
 export function DocumentTypeSelect({
@@ -39,11 +39,11 @@ export function DocumentTypeSelect({
   className = '',
   forCompany,
 }: DocumentTypeSelectProps) {
-  const { documentTypes, loading } = useDocumentTypes(countryId, forCompany);
+  const { documentTypes, loading } = useDocumentTypes(countryId, forCompany)
   // Ensure stable alphabetical order by name (locale 'es')
-  const sortedDocumentTypes = documentTypes.slice().sort((a, b) =>
-    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
-  );
+  const sortedDocumentTypes = documentTypes
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }))
 
   if (!countryId) {
     return (
@@ -52,7 +52,7 @@ export function DocumentTypeSelect({
           <SelectValue placeholder="Primero seleccione un país" />
         </SelectTrigger>
       </Select>
-    );
+    )
   }
 
   if (loading) {
@@ -60,7 +60,7 @@ export function DocumentTypeSelect({
       <div className="flex items-center gap-2 h-10 px-3 border border-border rounded-md bg-muted">
         <span className="text-sm text-muted-foreground">Cargando tipos...</span>
       </div>
-    );
+    )
   }
 
   return (
@@ -91,5 +91,5 @@ export function DocumentTypeSelect({
 
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
-  );
+  )
 }

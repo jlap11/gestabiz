@@ -1,7 +1,7 @@
 // Supabase Edge Function: Google Calendar Sync
 // Deploy with: supabase functions deploy google-calendar-sync
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -36,7 +36,7 @@ interface GoogleCalendarEvent {
   }
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -71,13 +71,13 @@ serve(async (req) => {
     let accessToken = syncSettings.access_token
     if (syncSettings.token_expires_at && new Date(syncSettings.token_expires_at) <= new Date()) {
       accessToken = await refreshGoogleToken(syncSettings.refresh_token)
-      
+
       // Update the access token in database
       await supabaseClient
         .from('calendar_sync_settings')
         .update({
           access_token: accessToken,
-          token_expires_at: new Date(Date.now() + 3600000).toISOString() // 1 hour from now
+          token_expires_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
         })
         .eq('id', syncSettings.id)
     }
@@ -86,7 +86,7 @@ serve(async (req) => {
       exported: 0,
       imported: 0,
       conflicts: 0,
-      errors: []
+      errors: [],
     }
 
     // Export appointments to Google Calendar
@@ -125,7 +125,7 @@ serve(async (req) => {
     // Update sync settings
     const updateData: any = {
       last_sync: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     }
 
     if (results.errors.length > 0) {
@@ -134,30 +134,26 @@ serve(async (req) => {
       updateData.sync_errors = []
     }
 
-    await supabaseClient
-      .from('calendar_sync_settings')
-      .update(updateData)
-      .eq('id', syncSettings.id)
+    await supabaseClient.from('calendar_sync_settings').update(updateData).eq('id', syncSettings.id)
 
     return new Response(
       JSON.stringify({
         success: true,
         results,
-        message: `Sync completed: ${results.exported} exported, ${results.imported} imported, ${results.conflicts} conflicts`
+        message: `Sync completed: ${results.exported} exported, ${results.imported} imported, ${results.conflicts} conflicts`,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Google Calendar sync error:', error)
 
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -174,14 +170,14 @@ async function refreshGoogleToken(refreshToken: string): Promise<string> {
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({
       client_id: clientId!,
       client_secret: clientSecret!,
       refresh_token: refreshToken,
-      grant_type: 'refresh_token'
-    })
+      grant_type: 'refresh_token',
+    }),
   })
 
   if (!response.ok) {
@@ -222,27 +218,33 @@ async function exportAppointmentsToGoogle(
           appointment.notes ? `\nNotes: ${appointment.notes}` : '',
           `\nClient: ${appointment.client_name}`,
           appointment.client_email ? `Email: ${appointment.client_email}` : '',
-          appointment.client_phone ? `Phone: ${appointment.client_phone}` : ''
-        ].filter(Boolean).join('\n'),
+          appointment.client_phone ? `Phone: ${appointment.client_phone}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n'),
         start: {
           dateTime: appointment.start_time,
-          timeZone: 'America/New_York' // Should come from user settings
+          timeZone: 'America/New_York', // Should come from user settings
         },
         end: {
           dateTime: appointment.end_time,
-          timeZone: 'America/New_York'
+          timeZone: 'America/New_York',
         },
         location: appointment.location,
-        attendees: appointment.client_email ? [{
-          email: appointment.client_email,
-          displayName: appointment.client_name
-        }] : undefined,
+        attendees: appointment.client_email
+          ? [
+              {
+                email: appointment.client_email,
+                displayName: appointment.client_name,
+              },
+            ]
+          : undefined,
         extendedProperties: {
           private: {
             appointmentId: appointment.id,
-            source: 'Gestabiz'
-          }
-        }
+            source: 'Gestabiz',
+          },
+        },
       }
 
       let googleEventId = appointment.google_calendar_event_id
@@ -254,10 +256,10 @@ async function exportAppointmentsToGoogle(
           {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
             },
-            body: JSON.stringify(googleEvent)
+            body: JSON.stringify(googleEvent),
           }
         )
 
@@ -279,10 +281,10 @@ async function exportAppointmentsToGoogle(
           {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
             },
-            body: JSON.stringify(googleEvent)
+            body: JSON.stringify(googleEvent),
           }
         )
 
@@ -324,16 +326,16 @@ async function importEventsFromGoogle(
     timeMin,
     timeMax,
     singleEvents: 'true',
-    orderBy: 'startTime'
+    orderBy: 'startTime',
   })
 
   const response = await fetch(
     `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events?${params.toString()}`,
     {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
     }
   )
 
@@ -379,15 +381,13 @@ async function importEventsFromGoogle(
 
       if (conflictingAppointments && conflictingAppointments.length > 0) {
         // Create conflict record
-        await supabaseClient
-          .from('sync_conflicts')
-          .insert({
-            user_id: userId,
-            calendar_event_id: event.id,
-            conflict_type: 'time_conflict',
-            remote_data: event,
-            created_at: new Date().toISOString()
-          })
+        await supabaseClient.from('sync_conflicts').insert({
+          user_id: userId,
+          calendar_event_id: event.id,
+          conflict_type: 'time_conflict',
+          remote_data: event,
+          created_at: new Date().toISOString(),
+        })
 
         conflicts++
         continue
@@ -396,7 +396,7 @@ async function importEventsFromGoogle(
       // Extract client info from event
       const attendee = event.attendees?.[0]
       const description = event.description || ''
-      
+
       const clientMatch = description.match(/Client:\s*(.+?)(?:\n|$)/)
       const emailMatch = description.match(/Email:\s*(.+?)(?:\n|$)/)
       const phoneMatch = description.match(/Phone:\s*(.+?)(?:\n|$)/)
@@ -419,7 +419,7 @@ async function importEventsFromGoogle(
         google_calendar_event_id: event.id,
         reminder_sent: false,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       }
 
       const { error: insertError } = await supabaseClient

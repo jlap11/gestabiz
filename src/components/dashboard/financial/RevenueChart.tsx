@@ -1,41 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, Calendar } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react'
+import { Calendar, TrendingUp } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useLanguage } from '@/contexts/LanguageContext';
-import supabase from '@/lib/supabase';
-import { cn } from '@/lib/utils';
+} from '@/components/ui/select'
+import { useLanguage } from '@/contexts/LanguageContext'
+import supabase from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 interface RevenueChartProps {
-  businessId: string;
-  locationId?: string;
+  businessId: string
+  locationId?: string
   dateRange?: {
-    start: string;
-    end: string;
-  };
+    start: string
+    end: string
+  }
 }
 
 interface DataPoint {
-  date: string;
-  income: number;
-  expenses: number;
-  profit: number;
+  date: string
+  income: number
+  expenses: number
+  profit: number
 }
 
-export function RevenueChart({
-  businessId,
-  locationId,
-}: Readonly<RevenueChartProps>) {
-  const { t, language } = useLanguage();
-  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
-  const [data, setData] = useState<DataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
+export function RevenueChart({ businessId, locationId }: Readonly<RevenueChartProps>) {
+  const { t, language } = useLanguage()
+  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week')
+  const [data, setData] = useState<DataPoint[]>([])
+  const [loading, setLoading] = useState(true)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
@@ -43,46 +40,46 @@ export function RevenueChart({
       currency: 'MXN',
       notation: 'compact',
       maximumFractionDigits: 1,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr)
     switch (period) {
       case 'day':
         return new Intl.DateTimeFormat(language === 'es' ? 'es-MX' : 'en-US', {
           month: 'short',
           day: 'numeric',
-        }).format(date);
+        }).format(date)
       case 'week':
-        return `${t('financial.week')} ${Math.ceil(date.getDate() / 7)}`;
+        return `${t('financial.week')} ${Math.ceil(date.getDate() / 7)}`
       case 'month':
         return new Intl.DateTimeFormat(language === 'es' ? 'es-MX' : 'en-US', {
           month: 'short',
-        }).format(date);
+        }).format(date)
       default:
-        return dateStr;
+        return dateStr
     }
-  };
+  }
 
   useEffect(() => {
     const fetchRevenueData = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
         // Calculate date range based on period
-        const end = new Date();
-        const start = new Date();
-        
+        const end = new Date()
+        const start = new Date()
+
         switch (period) {
           case 'day':
-            start.setDate(start.getDate() - 30); // Last 30 days
-            break;
+            start.setDate(start.getDate() - 30) // Last 30 days
+            break
           case 'week':
-            start.setDate(start.getDate() - 84); // Last 12 weeks
-            break;
+            start.setDate(start.getDate() - 84) // Last 12 weeks
+            break
           case 'month':
-            start.setMonth(start.getMonth() - 12); // Last 12 months
-            break;
+            start.setMonth(start.getMonth() - 12) // Last 12 months
+            break
         }
 
         let query = supabase
@@ -91,50 +88,50 @@ export function RevenueChart({
           .eq('business_id', businessId)
           .gte('transaction_date', start.toISOString().split('T')[0])
           .lte('transaction_date', end.toISOString().split('T')[0])
-          .order('transaction_date');
+          .order('transaction_date')
 
         if (locationId) {
-          query = query.eq('location_id', locationId);
+          query = query.eq('location_id', locationId)
         }
 
-        const { data: transactions, error } = await query;
+        const { data: transactions, error } = await query
 
-        if (error) throw error;
+        if (error) throw error
 
         // Group data by period
-        const groupedData: Record<string, { income: number; expenses: number }> = {};
+        const groupedData: Record<string, { income: number; expenses: number }> = {}
 
         transactions?.forEach(transaction => {
-          const date = new Date(transaction.transaction_date);
-          let key: string;
+          const date = new Date(transaction.transaction_date)
+          let key: string
 
           switch (period) {
             case 'day':
-              key = transaction.transaction_date;
-              break;
+              key = transaction.transaction_date
+              break
             case 'week': {
-              const weekStart = new Date(date);
-              weekStart.setDate(date.getDate() - date.getDay());
-              key = weekStart.toISOString().split('T')[0];
-              break;
+              const weekStart = new Date(date)
+              weekStart.setDate(date.getDate() - date.getDay())
+              key = weekStart.toISOString().split('T')[0]
+              break
             }
             case 'month':
-              key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
-              break;
+              key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`
+              break
             default:
-              key = transaction.transaction_date;
+              key = transaction.transaction_date
           }
 
           if (!groupedData[key]) {
-            groupedData[key] = { income: 0, expenses: 0 };
+            groupedData[key] = { income: 0, expenses: 0 }
           }
 
           if (transaction.type === 'income') {
-            groupedData[key].income += transaction.amount;
+            groupedData[key].income += transaction.amount
           } else {
-            groupedData[key].expenses += transaction.amount;
+            groupedData[key].expenses += transaction.amount
           }
-        });
+        })
 
         // Convert to array and calculate profit
         const chartData: DataPoint[] = Object.entries(groupedData)
@@ -145,25 +142,22 @@ export function RevenueChart({
             profit: values.income - values.expenses,
           }))
           .sort((a, b) => a.date.localeCompare(b.date))
-          .slice(-12); // Show last 12 periods
+          .slice(-12) // Show last 12 periods
 
-        setData(chartData);
+        setData(chartData)
       } catch {
-        setData([]);
+        setData([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchRevenueData();
-  }, [businessId, locationId, period]);
+    fetchRevenueData()
+  }, [businessId, locationId, period])
 
   // Calculate chart dimensions and scales
-  const maxValue = Math.max(
-    ...data.map(d => Math.max(d.income, d.expenses)),
-    1000
-  );
-  const chartHeight = 300;
+  const maxValue = Math.max(...data.map(d => Math.max(d.income, d.expenses)), 1000)
+  const chartHeight = 300
 
   return (
     <Card className="p-6">
@@ -179,7 +173,7 @@ export function RevenueChart({
             </p>
           </div>
         </div>
-        <Select value={period} onValueChange={(value) => setPeriod(value as typeof period)}>
+        <Select value={period} onValueChange={value => setPeriod(value as typeof period)}>
           <SelectTrigger className="w-36">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue />
@@ -214,7 +208,7 @@ export function RevenueChart({
           <div className="text-muted-foreground">{t('common.loading')}...</div>
         </div>
       ) : null}
-      
+
       {!loading && data.length === 0 && (
         <div className="h-[300px] flex items-center justify-center">
           <div className="text-center text-muted-foreground">
@@ -238,7 +232,7 @@ export function RevenueChart({
           {/* Chart area */}
           <div className="ml-16 h-full relative border-l border-b border-muted">
             {/* Grid lines */}
-            {[0, 25, 50, 75, 100].map((percent) => (
+            {[0, 25, 50, 75, 100].map(percent => (
               <div
                 key={percent}
                 className="absolute w-full border-t border-muted/30"
@@ -248,10 +242,10 @@ export function RevenueChart({
 
             {/* Bars */}
             <div className="absolute inset-0 flex items-end justify-around gap-1 px-2">
-              {data.map((point) => {
-                const incomeHeight = (point.income / maxValue) * 100;
-                const expensesHeight = (point.expenses / maxValue) * 100;
-                const profitHeight = Math.abs(point.profit / maxValue) * 100;
+              {data.map(point => {
+                const incomeHeight = (point.income / maxValue) * 100
+                const expensesHeight = (point.expenses / maxValue) * 100
+                const profitHeight = Math.abs(point.profit / maxValue) * 100
 
                 return (
                   <div key={point.date} className="flex-1 flex items-end justify-center gap-0.5">
@@ -300,14 +294,14 @@ export function RevenueChart({
                       </div>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
 
           {/* X-axis labels */}
           <div className="ml-16 mt-2 flex justify-around text-xs text-muted-foreground">
-            {data.map((point) => (
+            {data.map(point => (
               <div key={`label-${point.date}`} className="flex-1 text-center truncate">
                 {formatDate(point.date)}
               </div>
@@ -333,15 +327,19 @@ export function RevenueChart({
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">{t('financial.netProfit')}</p>
-            <p className={cn(
-              'text-xl font-bold',
-              data.reduce((sum, d) => sum + d.profit, 0) >= 0 ? 'text-blue-600' : 'text-orange-600'
-            )}>
+            <p
+              className={cn(
+                'text-xl font-bold',
+                data.reduce((sum, d) => sum + d.profit, 0) >= 0
+                  ? 'text-blue-600'
+                  : 'text-orange-600'
+              )}
+            >
               {formatCurrency(data.reduce((sum, d) => sum + d.profit, 0))}
             </p>
           </div>
         </div>
       )}
     </Card>
-  );
+  )
 }

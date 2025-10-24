@@ -1,24 +1,19 @@
-import React, { useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { X, Download, ZoomIn, ZoomOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import React, { useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { Download, X, ZoomIn, ZoomOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 interface ImagePreviewProps {
-  src: string;
-  alt: string;
-  className?: string;
+  src: string
+  alt: string
+  className?: string
 }
 
 /**
  * ImagePreview Component
- * 
+ *
  * Preview de imagen con modal full-screen:
  * - Thumbnail clickeable
  * - Modal con imagen ampliada
@@ -28,53 +23,53 @@ interface ImagePreviewProps {
  */
 export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps>) {
   const { t } = useLanguage()
-  const [isOpen, setIsOpen] = useState(false);
-  const [zoom, setZoom] = useState(100);
+  const [isOpen, setIsOpen] = useState(false)
+  const [zoom, setZoom] = useState(100)
 
   /**
    * Download image
    */
   const handleDownload = async () => {
     try {
-      const response = await fetch(src);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = alt || 'image.jpg';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const response = await fetch(src)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = alt || 'image.jpg'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
     } catch {
       // Error silencioso (el navegador abrirá la imagen en nueva tab si falla)
-      window.open(src, '_blank');
+      window.open(src, '_blank')
     }
-  };
+  }
 
   /**
    * Zoom in
    */
   const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev + 25, 200));
-  };
+    setZoom(prev => Math.min(prev + 25, 200))
+  }
 
   /**
    * Zoom out
    */
   const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 25, 50));
-  };
+    setZoom(prev => Math.max(prev - 25, 50))
+  }
 
   /**
    * Reset zoom when opening
    */
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
+    setIsOpen(open)
     if (open) {
-      setZoom(100);
+      setZoom(100)
     }
-  };
+  }
 
   return (
     <>
@@ -88,13 +83,8 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
           className
         )}
       >
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-        
+        <img src={src} alt={alt} className="w-full h-full object-cover" loading="lazy" />
+
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
           <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -119,9 +109,7 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
                   >
                     <ZoomOut className="h-4 w-4" />
                   </Button>
-                  <span className="text-xs font-medium min-w-[3ch] text-center">
-                    {zoom}%
-                  </span>
+                  <span className="text-xs font-medium min-w-[3ch] text-center">{zoom}%</span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -144,11 +132,7 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
                 </Button>
 
                 {/* Close button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsOpen(false)}
-                >
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -161,9 +145,9 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
               <img
                 src={src}
                 alt={alt}
-                style={{ 
+                style={{
                   width: `${zoom}%`,
-                  maxWidth: 'none'
+                  maxWidth: 'none',
                 }}
                 className="object-contain"
               />
@@ -172,5 +156,5 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

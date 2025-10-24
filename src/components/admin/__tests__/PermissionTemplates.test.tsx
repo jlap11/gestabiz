@@ -3,12 +3,12 @@
 // Gestión de plantillas de permisos (sistema y custom)
 // =====================================================
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PermissionTemplates } from '../PermissionTemplates'
 import * as usePermissionsModule from '@/hooks/usePermissions-v2'
-import type { PermissionTemplate, Permission } from '@/types/types'
+import type { Permission, PermissionTemplate } from '@/types/types'
 
 // =====================================================
 // MOCKS
@@ -42,9 +42,7 @@ afterEach(() => {
 // HELPERS
 // =====================================================
 
-function createMockTemplate(
-  overrides: Partial<PermissionTemplate> = {}
-): PermissionTemplate {
+function createMockTemplate(overrides: Partial<PermissionTemplate> = {}): PermissionTemplate {
   return {
     id: `template-${Date.now()}`,
     business_id: 'business-123',
@@ -105,18 +103,12 @@ function renderWithProviders(ui: React.ReactElement) {
 describe('PermissionTemplates - Render y Estados', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(
-      mockUsePermissions()
-    )
+    vi.mocked(usePermissionsModule.usePermissions).mockReturnValue(mockUsePermissions())
   })
 
   it('renderiza tabs de Sistema y Personalizadas', () => {
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     expect(screen.getByRole('tab', { name: /Plantillas del Sistema/i })).toBeInTheDocument()
@@ -129,11 +121,7 @@ describe('PermissionTemplates - Render y Estados', () => {
     )
 
     const { container } = renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Debe haber un spinner de carga (Loader2 con clase animate-spin)
@@ -147,11 +135,7 @@ describe('PermissionTemplates - Render y Estados', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     expect(screen.getByText(/No hay plantillas del sistema disponibles/i)).toBeInTheDocument()
@@ -163,11 +147,7 @@ describe('PermissionTemplates - Render y Estados', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -211,11 +191,7 @@ describe('PermissionTemplates - Plantillas del Sistema', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     expect(screen.getByText('Gerente')).toBeInTheDocument()
@@ -234,11 +210,7 @@ describe('PermissionTemplates - Plantillas del Sistema', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Badge "Sistema" está dentro de la card de la plantilla "Gerente"
@@ -259,11 +231,7 @@ describe('PermissionTemplates - Plantillas del Sistema', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Debe tener botón "Aplicar Plantilla"
@@ -291,11 +259,7 @@ describe('PermissionTemplates - Plantillas del Sistema', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     expect(screen.getByText(/3 permisos incluidos/i)).toBeInTheDocument()
@@ -326,11 +290,7 @@ describe('PermissionTemplates - Plantillas Personalizadas', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -352,11 +312,7 @@ describe('PermissionTemplates - Plantillas Personalizadas', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -374,11 +330,7 @@ describe('PermissionTemplates - Plantillas Personalizadas', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -401,11 +353,7 @@ describe('PermissionTemplates - Plantillas Personalizadas', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -432,11 +380,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
 
   it('abre modal al hacer click en "Nueva Plantilla"', async () => {
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -457,11 +401,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
 
   it('modal contiene campos de nombre, descripción y rol', async () => {
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom y abrir modal
@@ -472,7 +412,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
 
     // Esperar a que el modal esté abierto y buscar campos dentro del dialog
     const dialog = await screen.findByRole('dialog')
-    
+
     await waitFor(() => {
       expect(within(dialog).getByLabelText(/Nombre de la plantilla/i)).toBeInTheDocument()
     })
@@ -493,11 +433,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Abrir modal
@@ -526,9 +462,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
 
     // Esperar a que aparezca un checkbox de permiso
     const permissionCheckboxes = await screen.findAllByRole('checkbox')
-    const firstPermissionCheckbox = permissionCheckboxes.find(
-      (cb) => cb.id?.startsWith('new-')
-    )
+    const firstPermissionCheckbox = permissionCheckboxes.find(cb => cb.id?.startsWith('new-'))
     if (firstPermissionCheckbox) {
       await userEvent.click(firstPermissionCheckbox)
     }
@@ -553,11 +487,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
     const { toast } = await import('sonner')
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Abrir modal
@@ -584,11 +514,7 @@ describe('PermissionTemplates - Modal Crear Plantilla', () => {
     const { toast } = await import('sonner')
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Abrir modal
@@ -638,11 +564,7 @@ describe('PermissionTemplates - Eliminar Plantilla', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -679,11 +601,7 @@ describe('PermissionTemplates - Eliminar Plantilla', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -725,11 +643,7 @@ describe('PermissionTemplates - Eliminar Plantilla', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -770,11 +684,7 @@ describe('PermissionTemplates - Restricciones de Permisos', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom
@@ -805,11 +715,7 @@ describe('PermissionTemplates - Restricciones de Permisos', () => {
     )
 
     renderWithProviders(
-      <PermissionTemplates
-        businessId="business-123"
-        ownerId="owner-456"
-        currentUserId="user-789"
-      />
+      <PermissionTemplates businessId="business-123" ownerId="owner-456" currentUserId="user-789" />
     )
 
     // Cambiar a tab Custom

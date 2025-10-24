@@ -1,6 +1,6 @@
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
-import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness'
 
 interface ScheduleStatusBadgeProps {
@@ -60,7 +60,8 @@ export function ScheduleStatusBadge({ employeeId, className }: ScheduleStatusBad
           </div>
           {result.business_name && (
             <div className="text-xs text-muted-foreground">
-              Negocio activo: <span className="font-medium text-foreground">{result.business_name}</span>
+              Negocio activo:{' '}
+              <span className="font-medium text-foreground">{result.business_name}</span>
             </div>
           )}
         </div>

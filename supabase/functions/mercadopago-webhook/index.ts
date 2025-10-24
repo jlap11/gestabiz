@@ -1,9 +1,9 @@
 /**
  * MercadoPago Webhook Edge Function
- * 
+ *
  * Procesa notificaciones IPN de MercadoPago
  * Actualiza estado de suscripción en Supabase
- * 
+ *
  * Flujo:
  * 1. MercadoPago envía POST con notificación
  * 2. Extrae payment_id y type de query params o body
@@ -13,13 +13,13 @@
  * 6. Actualiza/crea business_plan
  * 7. Actualiza subscription_payments
  * 8. Crea evento en subscription_events
- * 
+ *
  * Documentación: https://www.mercadopago.com.ar/developers/es/docs/subscriptions/integration-configuration/ipn
- * 
+ *
  * Tipos de notificación:
  * - payment: Pago creado/actualizado
  * - merchant_order: Orden creada/actualizada
- * 
+ *
  * Estados de pago MercadoPago:
  * - approved: Pago aprobado
  * - pending: Pendiente
@@ -28,7 +28,7 @@
  * - refunded: Reembolsado
  * - charged_back: Contracargo
  * - cancelled: Cancelado
- * 
+ *
  * @author GitHub Copilot
  * @date 2025-10-17
  */
@@ -84,7 +84,7 @@ const PLAN_LIMITS = {
   },
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async req => {
   try {
     // CORS headers
     if (req.method === 'OPTIONS') {
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     // Fetch payment details from MercadoPago API
     const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${id}`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     })
 
@@ -174,25 +174,28 @@ Deno.serve(async (req) => {
     // Upsert business_plan
     const { data: businessPlan, error: businessPlanError } = await supabase
       .from('business_plan')
-      .upsert({
-        business_id: businessId,
-        plan_type: planType,
-        billing_cycle: billingCycle,
-        status: subscriptionStatus,
-        current_period_start: currentPeriodStart.toISOString(),
-        current_period_end: currentPeriodEnd.toISOString(),
-        amount: payment.transaction_amount,
-        currency: payment.currency_id,
-        max_locations: limits.max_locations,
-        max_employees: limits.max_employees,
-        max_services: limits.max_services,
-        max_monthly_appointments: limits.max_monthly_appointments,
-        payment_gateway: 'mercadopago',
-        gateway_subscription_id: payment.id.toString(),
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'business_id',
-      })
+      .upsert(
+        {
+          business_id: businessId,
+          plan_type: planType,
+          billing_cycle: billingCycle,
+          status: subscriptionStatus,
+          current_period_start: currentPeriodStart.toISOString(),
+          current_period_end: currentPeriodEnd.toISOString(),
+          amount: payment.transaction_amount,
+          currency: payment.currency_id,
+          max_locations: limits.max_locations,
+          max_employees: limits.max_employees,
+          max_services: limits.max_services,
+          max_monthly_appointments: limits.max_monthly_appointments,
+          payment_gateway: 'mercadopago',
+          gateway_subscription_id: payment.id.toString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'business_id',
+        }
+      )
       .select()
       .single()
 
@@ -207,7 +210,12 @@ Deno.serve(async (req) => {
     const { error: paymentUpdateError } = await supabase
       .from('subscription_payments')
       .update({
-        status: payment.status === 'approved' ? 'completed' : payment.status === 'rejected' ? 'failed' : 'pending',
+        status:
+          payment.status === 'approved'
+            ? 'completed'
+            : payment.status === 'rejected'
+              ? 'failed'
+              : 'pending',
         paid_at: payment.status === 'approved' ? new Date().toISOString() : null,
         failure_reason: payment.status_detail,
         metadata: {
@@ -225,19 +233,18 @@ Deno.serve(async (req) => {
     }
 
     // Create subscription event
-    const { error: eventError } = await supabase
-      .from('subscription_events')
-      .insert({
-        business_id: businessId,
-        event_type: subscriptionStatus === 'active' ? 'subscription_activated' : 'payment_status_changed',
-        event_data: {
-          payment_id: payment.id,
-          status: payment.status,
-          amount: payment.transaction_amount,
-          currency: payment.currency_id,
-          gateway: 'mercadopago',
-        },
-      })
+    const { error: eventError } = await supabase.from('subscription_events').insert({
+      business_id: businessId,
+      event_type:
+        subscriptionStatus === 'active' ? 'subscription_activated' : 'payment_status_changed',
+      event_data: {
+        payment_id: payment.id,
+        status: payment.status,
+        amount: payment.transaction_amount,
+        currency: payment.currency_id,
+        gateway: 'mercadopago',
+      },
+    })
 
     if (eventError) {
       console.error('Error creating subscription event:', eventError)
@@ -257,15 +264,15 @@ Deno.serve(async (req) => {
     )
   } catch (error) {
     console.error('Webhook Error:', error)
-    
+
     // Capture error to Sentry
     captureEdgeFunctionError(error as Error, {
       functionName: 'mercadopago-webhook',
-      operation: 'handleWebhook'
+      operation: 'handleWebhook',
     })
-    
+
     await flushSentry()
-    
+
     return new Response(
       JSON.stringify({
         error: (error as Error).message,

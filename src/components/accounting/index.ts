@@ -1,6 +1,6 @@
-export { IncomeVsExpenseChart } from './IncomeVsExpenseChart';
-export { CategoryPieChart } from './CategoryPieChart';
-export { MonthlyTrendChart } from './MonthlyTrendChart';
-export { LocationBarChart } from './LocationBarChart';
-export { EmployeeRevenueChart } from './EmployeeRevenueChart';
-export { TaxConfiguration } from './TaxConfiguration';
+export { IncomeVsExpenseChart } from './IncomeVsExpenseChart'
+export { CategoryPieChart } from './CategoryPieChart'
+export { MonthlyTrendChart } from './MonthlyTrendChart'
+export { LocationBarChart } from './LocationBarChart'
+export { EmployeeRevenueChart } from './EmployeeRevenueChart'
+export { TaxConfiguration } from './TaxConfiguration'

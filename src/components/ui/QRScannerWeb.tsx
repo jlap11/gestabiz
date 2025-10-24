@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { X, Camera, AlertCircle } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { AlertCircle, Camera, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import jsQR from 'jsqr'
+import { logger } from '@/lib/logger'
 
 interface QRScannerWebProps {
   onScan: (data: BusinessInvitationQRData) => void
@@ -37,12 +38,12 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
     return () => {
       stopCamera()
     }
-  }, [isOpen])
+  }, [isOpen, startCamera, stopCamera])
 
-  const startCamera = async () => {
+  const startCamera = React.useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }, // Use back camera on mobile
+        video: { facingMode: 'environment' },
       })
 
       streamRef.current = stream
@@ -57,13 +58,13 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
       setScanning(true)
       requestAnimationFrame(scanQRCode)
     } catch (err) {
-      console.error('Error accessing camera:', err)
+      void logger.error('Error accessing camera', err, { component: 'QRScannerWeb' })
       setHasPermission(false)
       setError('No se pudo acceder a la cámara. Por favor verifica los permisos.')
     }
-  }
+  }, [scanQRCode])
 
-  const stopCamera = () => {
+  const stopCamera = React.useCallback(() => {
     setScanning(false)
 
     if (animationFrameRef.current) {
@@ -79,9 +80,9 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
     if (videoRef.current) {
       videoRef.current.srcObject = null
     }
-  }
+  }, [])
 
-  const scanQRCode = () => {
+  const scanQRCode = React.useCallback(() => {
     if (!scanning || !videoRef.current || !canvasRef.current) {
       return
     }
@@ -95,17 +96,13 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
       return
     }
 
-    // Set canvas size to match video
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
-    // Draw video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-    // Get image data
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
 
-    // Scan for QR code
     const code = jsQR(imageData.data, imageData.width, imageData.height, {
       inversionAttempts: 'dontInvert',
     })
@@ -113,37 +110,41 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
     if (code) {
       handleQRCodeDetected(code.data)
     } else {
-      // Continue scanning
       animationFrameRef.current = requestAnimationFrame(scanQRCode)
     }
-  }
+  }, [scanning])
 
-  const handleQRCodeDetected = (data: string) => {
-    setScanning(false)
+  const handleQRCodeDetected = React.useCallback(
+    (data: string) => {
+      setScanning(false)
 
-    try {
-      const qrData: BusinessInvitationQRData = JSON.parse(data)
+      try {
+        const qrData: BusinessInvitationQRData = JSON.parse(data)
 
-      if (
-        qrData.type === 'business_invitation' &&
-        qrData.business_id &&
-        qrData.business_name &&
-        qrData.invitation_code
-      ) {
-        onScan(qrData)
-        stopCamera()
-      } else {
-        throw new Error('Formato de QR inválido')
+        if (
+          qrData.type === 'business_invitation' &&
+          qrData.business_id &&
+          qrData.business_name &&
+          qrData.invitation_code
+        ) {
+          onScan(qrData)
+          stopCamera()
+        } else {
+          throw new Error('Formato de QR inválido')
+        }
+      } catch {
+        setError(
+          'El código QR escaneado no es válido. Por favor escanea un código de invitación válido.'
+        )
+        setTimeout(() => {
+          setError(null)
+          setScanning(true)
+          requestAnimationFrame(scanQRCode)
+        }, 3000)
       }
-    } catch {
-      setError('El código QR escaneado no es válido. Por favor escanea un código de invitación válido.')
-      setTimeout(() => {
-        setError(null)
-        setScanning(true)
-        requestAnimationFrame(scanQRCode)
-      }, 3000)
-    }
-  }
+    },
+    [onScan, stopCamera, scanQRCode]
+  )
 
   if (!isOpen) {
     return null
@@ -157,11 +158,7 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
           <Camera className="h-6 w-6" />
           Escanear Código QR
         </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onCancel}
-        >
+        <Button variant="ghost" size="icon" onClick={onCancel}>
           <X className="h-6 w-6" />
         </Button>
       </div>
@@ -170,9 +167,7 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
       <div className="flex-1 relative overflow-hidden">
         {hasPermission === null && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-foreground text-center px-6">
-              Solicitando permiso de cámara...
-            </p>
+            <p className="text-foreground text-center px-6">Solicitando permiso de cámara...</p>
           </div>
         )}
 
@@ -180,11 +175,10 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
           <div className="absolute inset-0 flex items-center justify-center p-6">
             <div className="max-w-md text-center">
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-4">
-                Permiso Denegado
-              </h3>
+              <h3 className="text-xl font-bold text-foreground mb-4">Permiso Denegado</h3>
               <p className="text-muted-foreground mb-6">
-                No tenemos acceso a tu cámara. Por favor habilita el permiso en la configuración de tu navegador.
+                No tenemos acceso a tu cámara. Por favor habilita el permiso en la configuración de
+                tu navegador.
               </p>
               <Button onClick={onCancel} variant="default">
                 Cerrar
@@ -224,9 +218,7 @@ export function QRScannerWeb({ onScan, onCancel, isOpen }: Readonly<QRScannerWeb
             {/* Instructions */}
             <div className="absolute bottom-20 left-0 right-0 flex justify-center">
               <div className="bg-black/60 backdrop-blur-sm px-6 py-3 rounded-lg">
-                <p className="text-foreground text-center">
-                  Coloca el código QR dentro del marco
-                </p>
+                <p className="text-foreground text-center">Coloca el código QR dentro del marco</p>
               </div>
             </div>
           </>

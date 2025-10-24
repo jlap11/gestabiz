@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
     // Get current time
@@ -25,7 +25,8 @@ serve(async (req) => {
     // Get pending notifications that are due to be sent
     const { data: notifications, error } = await supabaseClient
       .from('notifications')
-      .select(`
+      .select(
+        `
         *,
         appointments!inner(
           id,
@@ -45,7 +46,8 @@ serve(async (req) => {
           business_id,
           notification_preferences
         )
-      `)
+      `
+      )
       .eq('status', 'pending')
       .lte('scheduled_for', now.toISOString())
       .limit(50) // Process in batches
@@ -60,7 +62,7 @@ serve(async (req) => {
       processed: 0,
       sent: 0,
       failed: 0,
-      errors: [] as string[]
+      errors: [] as string[],
     }
 
     if (!notifications || notifications.length === 0) {
@@ -68,9 +70,9 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           message: 'No notifications to process',
-          results
+          results,
         }),
-        { 
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         }
@@ -80,7 +82,7 @@ serve(async (req) => {
     // Process each notification
     for (const notification of notifications) {
       results.processed++
-      
+
       try {
         let sent = false
         const appointment = notification.appointments
@@ -88,26 +90,32 @@ serve(async (req) => {
 
         // Check if user has this notification type enabled
         const prefs = user.notification_preferences || {}
-        
+
         if (notification.delivery_method === 'email') {
-          const emailEnabled = prefs.email && 
-            (notification.type.includes('reminder') ? prefs.reminder_24h || prefs.reminder_1h : true)
-          
+          const emailEnabled =
+            prefs.email &&
+            (notification.type.includes('reminder')
+              ? prefs.reminder_24h || prefs.reminder_1h
+              : true)
+
           if (emailEnabled && appointment.client_email) {
             // Send email notification
-            const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                to: appointment.client_email,
-                subject: notification.title,
-                html: formatEmailHtml(notification, appointment),
-                text: notification.message
-              })
-            })
+            const emailResponse = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: appointment.client_email,
+                  subject: notification.title,
+                  html: formatEmailHtml(notification, appointment),
+                  text: notification.message,
+                }),
+              }
+            )
 
             if (emailResponse.ok) {
               sent = true
@@ -117,22 +125,28 @@ serve(async (req) => {
             }
           }
         } else if (notification.delivery_method === 'whatsapp') {
-          const whatsappEnabled = prefs.whatsapp && 
-            (notification.type.includes('reminder') ? prefs.reminder_24h || prefs.reminder_1h : true)
-          
+          const whatsappEnabled =
+            prefs.whatsapp &&
+            (notification.type.includes('reminder')
+              ? prefs.reminder_24h || prefs.reminder_1h
+              : true)
+
           if (whatsappEnabled && appointment.client_whatsapp) {
             // Send WhatsApp notification
-            const whatsappResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                to: appointment.client_whatsapp,
-                message: formatWhatsAppMessage(notification, appointment)
-              })
-            })
+            const whatsappResponse = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: appointment.client_whatsapp,
+                  message: formatWhatsAppMessage(notification, appointment),
+                }),
+              }
+            )
 
             if (whatsappResponse.ok) {
               sent = true
@@ -149,7 +163,7 @@ serve(async (req) => {
           .update({
             status: sent ? 'sent' : 'failed',
             sent_at: sent ? now.toISOString() : null,
-            error_message: sent ? null : 'Delivery method not enabled or contact info missing'
+            error_message: sent ? null : 'Delivery method not enabled or contact info missing',
           })
           .eq('id', notification.id)
 
@@ -161,19 +175,20 @@ serve(async (req) => {
           results.sent++
         } else {
           results.failed++
-          results.errors.push(`Notification ${notification.id}: delivery not enabled or contact missing`)
+          results.errors.push(
+            `Notification ${notification.id}: delivery not enabled or contact missing`
+          )
         }
-
       } catch (error) {
         results.failed++
         results.errors.push(`Notification ${notification.id}: ${error.message}`)
-        
+
         // Update notification with error
         await supabaseClient
           .from('notifications')
           .update({
             status: 'failed',
-            error_message: error.message
+            error_message: error.message,
           })
           .eq('id', notification.id)
       }
@@ -188,23 +203,22 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Notifications processed successfully',
-        results
+        results,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error processing notifications:', error)
-    
+
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       }
@@ -259,9 +273,12 @@ function formatEmailHtml(notification: any, appointment: any): string {
 
 function formatWhatsAppMessage(notification: any, appointment: any): string {
   const date = new Date(appointment.start_time).toLocaleDateString('es-ES')
-  const time = new Date(appointment.start_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+  const time = new Date(appointment.start_time).toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
   const service = appointment.services?.name || appointment.title
-  
+
   return `${notification.message}
 
 📅 *Detalles de tu cita:*
@@ -281,13 +298,15 @@ async function generateFollowUpNotifications(supabaseClient: any): Promise<void>
 
     const { data: inactiveClients, error } = await supabaseClient
       .from('clients')
-      .select(`
+      .select(
+        `
         *,
         businesses!inner(
           id,
           users!inner(id, notification_preferences)
         )
-      `)
+      `
+      )
       .eq('status', 'active')
       .eq('is_recurring', true)
       .lt('last_appointment', thirtyDaysAgo.toISOString())
@@ -313,34 +332,30 @@ async function generateFollowUpNotifications(supabaseClient: any): Promise<void>
 
       // Create WhatsApp follow-up if enabled
       if (businessUser.notification_preferences?.whatsapp && client.whatsapp) {
-        await supabaseClient
-          .from('notifications')
-          .insert({
-            user_id: businessUser.id,
-            business_id: client.business_id,
-            type: 'follow_up',
-            title: 'Seguimiento Cliente Inactivo',
-            message: followUpMessage,
-            scheduled_for: new Date().toISOString(),
-            delivery_method: 'whatsapp',
-            status: 'pending'
-          })
+        await supabaseClient.from('notifications').insert({
+          user_id: businessUser.id,
+          business_id: client.business_id,
+          type: 'follow_up',
+          title: 'Seguimiento Cliente Inactivo',
+          message: followUpMessage,
+          scheduled_for: new Date().toISOString(),
+          delivery_method: 'whatsapp',
+          status: 'pending',
+        })
       }
 
       // Create email follow-up if enabled
       if (businessUser.notification_preferences?.email && client.email) {
-        await supabaseClient
-          .from('notifications')
-          .insert({
-            user_id: businessUser.id,
-            business_id: client.business_id,
-            type: 'follow_up',
-            title: 'Te extrañamos - ¡Agenda tu próxima cita!',
-            message: followUpMessage,
-            scheduled_for: new Date().toISOString(),
-            delivery_method: 'email',
-            status: 'pending'
-          })
+        await supabaseClient.from('notifications').insert({
+          user_id: businessUser.id,
+          business_id: client.business_id,
+          type: 'follow_up',
+          title: 'Te extrañamos - ¡Agenda tu próxima cita!',
+          message: followUpMessage,
+          scheduled_for: new Date().toISOString(),
+          delivery_method: 'email',
+          status: 'pending',
+        })
       }
     }
   } catch (error) {

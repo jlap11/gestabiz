@@ -1,7 +1,7 @@
 // Supabase Edge Function: sync-appointments
 // File: supabase/functions/sync-appointments/index.ts
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -25,10 +25,10 @@ serve(async (req) => {
     const userId = url.searchParams.get('user_id')
 
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'user_id parameter is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'user_id parameter is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     switch (method) {
@@ -45,30 +45,28 @@ serve(async (req) => {
 
         if (error) throw error
 
-        return new Response(
-          JSON.stringify({ success: true, appointments }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return new Response(JSON.stringify({ success: true, appointments }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
 
       case 'POST':
         // Create new appointment
         const appointmentData = await req.json()
-        
+
         const { data: newAppointment, error: createError } = await supabase
           .from('appointments')
           .insert({
             ...appointmentData,
-            user_id: userId
+            user_id: userId,
           })
           .select()
           .single()
 
         if (createError) throw createError
 
-        return new Response(
-          JSON.stringify({ success: true, appointment: newAppointment }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return new Response(JSON.stringify({ success: true, appointment: newAppointment }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
 
       case 'PUT':
         // Update appointment
@@ -92,23 +90,21 @@ serve(async (req) => {
 
         if (updateError) throw updateError
 
-        return new Response(
-          JSON.stringify({ success: true, appointment: updatedAppointment }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return new Response(JSON.stringify({ success: true, appointment: updatedAppointment }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
 
       default:
-        return new Response(
-          JSON.stringify({ error: 'Method not allowed' }),
-          { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+          status: 405,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
     }
-
   } catch (error) {
     console.error('Error in sync-appointments function:', error)
-    return new Response(
-      JSON.stringify({ error: error.message, success: false }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ error: error.message, success: false }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

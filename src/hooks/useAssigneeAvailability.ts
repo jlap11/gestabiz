@@ -4,10 +4,10 @@ import supabase from '@/lib/supabase'
 
 /**
  * Hook unificado para validar disponibilidad de EMPLEADOS o RECURSOS
- * 
+ *
  * Fecha: 21 de Octubre de 2025
  * Parte del sistema de Modelo de Negocio Flexible
- * 
+ *
  * Este hook reemplaza la lógica duplicada entre:
  * - Validación de disponibilidad de empleados (appointments con employee_id)
  * - Validación de disponibilidad de recursos (appointments con resource_id)
@@ -105,7 +105,7 @@ export function useAssigneeAvailability({
             endTime,
             excludeAppointmentId
           )
-          
+
           return {
             isAvailable: conflicts.length === 0,
             conflictingAppointments: conflicts,
@@ -113,13 +113,15 @@ export function useAssigneeAvailability({
         }
 
         // RPC exitoso
-        const conflicts = isAvailable ? [] : await getConflictingAppointments(
-          employeeId,
-          undefined,
-          startTime,
-          endTime,
-          excludeAppointmentId
-        )
+        const conflicts = isAvailable
+          ? []
+          : await getConflictingAppointments(
+              employeeId,
+              undefined,
+              startTime,
+              endTime,
+              excludeAppointmentId
+            )
 
         return {
           isAvailable: isAvailable as boolean,
@@ -150,14 +152,16 @@ async function getConflictingAppointments(
 
   let query = supabase
     .from('appointments')
-    .select(`
+    .select(
+      `
       id,
       start_time,
       end_time,
       status,
       client:profiles!appointments_client_id_fkey(full_name),
       service:services(name)
-    `)
+    `
+    )
     .in('status', ['pending', 'confirmed'])
     .lt('start_time', endTime.toISOString())
     .gt('end_time', startTime.toISOString())
@@ -193,7 +197,7 @@ async function getConflictingAppointments(
  */
 export function useIsAssigneeAvailable(params: UseAssigneeAvailabilityParams) {
   const { data, isLoading } = useAssigneeAvailability(params)
-  
+
   return {
     isAvailable: data?.isAvailable ?? true, // Default a true mientras carga
     isLoading,

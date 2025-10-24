@@ -1,34 +1,26 @@
-import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { 
-  MapPin, 
-  Briefcase, 
-  DollarSign, 
-  Users, 
-  Clock,
-  Home,
-  Star
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
-import type { JobVacancy } from '@/hooks/useJobVacancies';
-import type { MatchingVacancy } from '@/hooks/useMatchingVacancies';
+import React from 'react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Briefcase, Clock, DollarSign, Home, MapPin, Star, Users } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { es } from 'date-fns/locale'
+import type { JobVacancy } from '@/hooks/useJobVacancies'
+import type { MatchingVacancy } from '@/hooks/useMatchingVacancies'
 
 // Union type que acepta ambos formatos
 type VacancyWithExtras = (JobVacancy | MatchingVacancy) & {
-  match_score?: number;
-  business_name?: string;
-  experience_level?: 'junior' | 'mid' | 'senior';
-};
+  match_score?: number
+  business_name?: string
+  experience_level?: 'junior' | 'mid' | 'senior'
+}
 
 interface VacancyCardProps {
-  vacancy: VacancyWithExtras;
-  onApply: (vacancyId: string) => void;
-  onViewDetails: (vacancyId: string) => void;
-  showMatchScore?: boolean;
+  vacancy: VacancyWithExtras
+  onApply: (vacancyId: string) => void
+  onViewDetails: (vacancyId: string) => void
+  showMatchScore?: boolean
 }
 
 export const VacancyCard: React.FC<VacancyCardProps> = ({
@@ -51,22 +43,22 @@ export const VacancyCard: React.FC<VacancyCardProps> = ({
     published_at,
     benefits,
     match_score,
-  } = vacancy;
+  } = vacancy
 
   // Compatibilidad con ambos formatos de remote
-  const isRemote = 'is_remote' in vacancy ? vacancy.is_remote : vacancy.remote_allowed;
+  const isRemote = 'is_remote' in vacancy ? vacancy.is_remote : vacancy.remote_allowed
 
   // Calcular disponibilidad de posiciones
-  const positionsAvailable = number_of_positions - (applications_count || 0);
-  const isFullyBooked = positionsAvailable <= 0;
+  const positionsAvailable = number_of_positions - (applications_count || 0)
+  const isFullyBooked = positionsAvailable <= 0
 
   // Determinar color del match score
   const getMatchScoreColor = (score: number): string => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-blue-600 dark:text-blue-400';
-    if (score >= 40) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-gray-600 dark:text-gray-400';
-  };
+    if (score >= 80) return 'text-green-600 dark:text-green-400'
+    if (score >= 60) return 'text-blue-600 dark:text-blue-400'
+    if (score >= 40) return 'text-yellow-600 dark:text-yellow-400'
+    return 'text-gray-600 dark:text-gray-400'
+  }
 
   // Formatear salario
   const formatSalary = (min?: number, max?: number): string => {
@@ -74,33 +66,31 @@ export const VacancyCard: React.FC<VacancyCardProps> = ({
       style: 'currency',
       currency: 'COP',
       minimumFractionDigits: 0,
-    });
+    })
 
     if (min && max) {
-      return `${formatter.format(min)} - ${formatter.format(max)}`;
+      return `${formatter.format(min)} - ${formatter.format(max)}`
     }
     if (min) {
-      return `Desde ${formatter.format(min)}`;
+      return `Desde ${formatter.format(min)}`
     }
-    return 'Salario a convenir';
-  };
+    return 'Salario a convenir'
+  }
 
   // Formatear tiempo transcurrido
   const timeAgo = published_at
     ? formatDistanceToNow(new Date(published_at), { addSuffix: true, locale: es })
-    : '';
+    : ''
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <CardTitle className="text-lg font-semibold line-clamp-2">
-              {title}
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold line-clamp-2">{title}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">{business_name}</p>
           </div>
-          
+
           {/* Match Score Badge */}
           {showMatchScore && match_score !== undefined && (
             <div className="flex flex-col items-end gap-1">
@@ -192,21 +182,13 @@ export const VacancyCard: React.FC<VacancyCardProps> = ({
       </CardContent>
 
       <CardFooter className="flex gap-2">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => onViewDetails(id)}
-        >
+        <Button variant="outline" className="flex-1" onClick={() => onViewDetails(id)}>
           Ver Detalles
         </Button>
-        <Button
-          className="flex-1"
-          onClick={() => onApply(id)}
-          disabled={isFullyBooked}
-        >
+        <Button className="flex-1" onClick={() => onApply(id)} disabled={isFullyBooked}>
           {isFullyBooked ? 'Completo' : 'Aplicar'}
         </Button>
       </CardFooter>
     </Card>
-  );
-};
+  )
+}

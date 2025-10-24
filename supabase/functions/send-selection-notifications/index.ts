@@ -3,39 +3,39 @@
 // Descripción: Envía notificaciones de proceso de selección
 // =====================================================
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface SelectionNotificationPayload {
-  type: 'started' | 'selected' | 'not_selected';
-  application_id: string;
-  vacancy_id: string;
-  vacancy_title: string;
-  business_id: string;
-  business_name: string;
-  user_id?: string;
-  user_email?: string;
-  user_name?: string;
-  selected_user_id?: string;
-  selected_user_email?: string;
-  selected_user_name?: string;
-  rejected_candidates?: Array<{
-    user_id: string;
-    user_email: string;
-    user_name: string;
-  }>;
-  vacancy_filled?: boolean;
 }
 
-serve(async (req) => {
+interface SelectionNotificationPayload {
+  type: 'started' | 'selected' | 'not_selected'
+  application_id: string
+  vacancy_id: string
+  vacancy_title: string
+  business_id: string
+  business_name: string
+  user_id?: string
+  user_email?: string
+  user_name?: string
+  selected_user_id?: string
+  selected_user_email?: string
+  selected_user_name?: string
+  rejected_candidates?: Array<{
+    user_id: string
+    user_email: string
+    user_name: string
+  }>
+  vacancy_filled?: boolean
+}
+
+serve(async req => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -47,22 +47,22 @@ serve(async (req) => {
           persistSession: false,
         },
       }
-    );
+    )
 
-    const payload: SelectionNotificationPayload = await req.json();
-    const { type, vacancy_title, business_name } = payload;
+    const payload: SelectionNotificationPayload = await req.json()
+    const { type, vacancy_title, business_name } = payload
 
-    console.log('Processing selection notification:', { type, vacancy_title });
+    console.log('Processing selection notification:', { type, vacancy_title })
 
     // Procesar según tipo de notificación
     switch (type) {
       case 'started':
-        await sendSelectionStartedNotification(supabaseClient, payload);
-        break;
-      
+        await sendSelectionStartedNotification(supabaseClient, payload)
+        break
+
       case 'selected':
-        await sendSelectedNotification(supabaseClient, payload);
-        
+        await sendSelectedNotification(supabaseClient, payload)
+
         // Notificar a los rechazados si existen
         if (payload.rejected_candidates && payload.rejected_candidates.length > 0) {
           for (const candidate of payload.rejected_candidates) {
@@ -71,37 +71,31 @@ serve(async (req) => {
               user_id: candidate.user_id,
               user_email: candidate.user_email,
               user_name: candidate.user_name,
-            });
+            })
           }
         }
-        break;
-      
+        break
+
       case 'not_selected':
-        await sendNotSelectedNotification(supabaseClient, payload);
-        break;
-      
+        await sendNotSelectedNotification(supabaseClient, payload)
+        break
+
       default:
-        throw new Error(`Tipo de notificación desconocido: ${type}`);
+        throw new Error(`Tipo de notificación desconocido: ${type}`)
     }
 
-    return new Response(
-      JSON.stringify({ success: true, message: 'Notificaciones enviadas' }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify({ success: true, message: 'Notificaciones enviadas' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
   } catch (error) {
-    console.error('Error en send-selection-notifications:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    );
+    console.error('Error en send-selection-notifications:', error)
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    })
   }
-});
+})
 
 /**
  * Notificación: Proceso de selección iniciado
@@ -110,7 +104,16 @@ async function sendSelectionStartedNotification(
   supabase: any,
   payload: SelectionNotificationPayload
 ) {
-  const { user_id, user_email, user_name, vacancy_title, business_name, application_id, vacancy_id, business_id } = payload;
+  const {
+    user_id,
+    user_email,
+    user_name,
+    vacancy_title,
+    business_name,
+    application_id,
+    vacancy_id,
+    business_id,
+  } = payload
 
   // 1. Crear notificación in-app
   await supabase.from('in_app_notifications').insert({
@@ -126,7 +129,7 @@ async function sendSelectionStartedNotification(
       business_name,
     },
     read: false,
-  });
+  })
 
   // 2. Registrar en notification_log
   await supabase.from('notification_log').insert({
@@ -139,7 +142,7 @@ async function sendSelectionStartedNotification(
       business_name,
       application_id,
     },
-  });
+  })
 
   // 3. Preparar email HTML
   const emailHtml = `
@@ -201,16 +204,19 @@ async function sendSelectionStartedNotification(
   </div>
 </body>
 </html>
-  `;
+  `
 
   // 4. Enviar email (si está configurado AWS SES)
   if (Deno.env.get('AWS_ACCESS_KEY_ID')) {
     try {
       // Aquí iría la lógica de AWS SES
       // Por ahora solo lo registramos
-      console.log('Email to send:', { to: user_email, subject: `🎉 Proceso de Selección - ${vacancy_title}` });
+      console.log('Email to send:', {
+        to: user_email,
+        subject: `🎉 Proceso de Selección - ${vacancy_title}`,
+      })
     } catch (error) {
-      console.error('Error enviando email:', error);
+      console.error('Error enviando email:', error)
     }
   }
 }
@@ -218,11 +224,17 @@ async function sendSelectionStartedNotification(
 /**
  * Notificación: Candidato seleccionado como empleado
  */
-async function sendSelectedNotification(
-  supabase: any,
-  payload: SelectionNotificationPayload
-) {
-  const { selected_user_id, selected_user_email, selected_user_name, vacancy_title, business_name, application_id, vacancy_id, business_id } = payload;
+async function sendSelectedNotification(supabase: any, payload: SelectionNotificationPayload) {
+  const {
+    selected_user_id,
+    selected_user_email,
+    selected_user_name,
+    vacancy_title,
+    business_name,
+    application_id,
+    vacancy_id,
+    business_id,
+  } = payload
 
   // 1. Crear notificación in-app
   await supabase.from('in_app_notifications').insert({
@@ -238,7 +250,7 @@ async function sendSelectedNotification(
       business_name,
     },
     read: false,
-  });
+  })
 
   // 2. Registrar en notification_log
   await supabase.from('notification_log').insert({
@@ -251,7 +263,7 @@ async function sendSelectedNotification(
       business_name,
       application_id,
     },
-  });
+  })
 
   // 3. Email HTML
   const emailHtml = `
@@ -313,19 +325,28 @@ async function sendSelectedNotification(
   </div>
 </body>
 </html>
-  `;
+  `
 
-  console.log('Email to send:', { to: selected_user_email, subject: `🎊 ¡Has sido seleccionado! - ${vacancy_title}` });
+  console.log('Email to send:', {
+    to: selected_user_email,
+    subject: `🎊 ¡Has sido seleccionado! - ${vacancy_title}`,
+  })
 }
 
 /**
  * Notificación: Candidato no seleccionado
  */
-async function sendNotSelectedNotification(
-  supabase: any,
-  payload: SelectionNotificationPayload
-) {
-  const { user_id, user_email, user_name, vacancy_title, business_name, application_id, vacancy_id, business_id } = payload;
+async function sendNotSelectedNotification(supabase: any, payload: SelectionNotificationPayload) {
+  const {
+    user_id,
+    user_email,
+    user_name,
+    vacancy_title,
+    business_name,
+    application_id,
+    vacancy_id,
+    business_id,
+  } = payload
 
   // 1. Crear notificación in-app
   await supabase.from('in_app_notifications').insert({
@@ -341,7 +362,7 @@ async function sendNotSelectedNotification(
       business_name,
     },
     read: false,
-  });
+  })
 
   // 2. Registrar en notification_log
   await supabase.from('notification_log').insert({
@@ -354,7 +375,7 @@ async function sendNotSelectedNotification(
       business_name,
       application_id,
     },
-  });
+  })
 
   // 3. Email HTML
   const emailHtml = `
@@ -403,7 +424,10 @@ async function sendNotSelectedNotification(
   </div>
 </body>
 </html>
-  `;
+  `
 
-  console.log('Email to send:', { to: user_email, subject: `Actualización de tu aplicación - ${vacancy_title}` });
+  console.log('Email to send:', {
+    to: user_email,
+    subject: `Actualización de tu aplicación - ${vacancy_title}`,
+  })
 }

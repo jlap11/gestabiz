@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AlertTriangle, XCircle } from 'lucide-react';
+import React, { useState } from 'react'
+import { AlertTriangle, XCircle } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -7,20 +7,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ConfirmEndEmploymentDialogProps {
-  open: boolean;
-  onClose: () => void;
-  businessName: string;
-  onConfirm: () => Promise<void>;
-  upcomingCount?: number;
-  onGoToAgenda?: () => void;
+  open: boolean
+  onClose: () => void
+  businessName: string
+  onConfirm: () => Promise<void>
+  upcomingCount?: number
+  onGoToAgenda?: () => void
 }
 
 export function ConfirmEndEmploymentDialog({
@@ -28,39 +27,39 @@ export function ConfirmEndEmploymentDialog({
   onClose,
   businessName,
   onConfirm,
-  upcomingCount
+  upcomingCount,
 }: Readonly<ConfirmEndEmploymentDialogProps>) {
-  const { t } = useLanguage();
-  const [confirmed, setConfirmed] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage()
+  const [confirmed, setConfirmed] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleConfirm = async () => {
     if (!confirmed) {
-      setError('Debes confirmar marcando la casilla');
-      return;
+      setError('Debes confirmar marcando la casilla')
+      return
     }
 
     try {
-      setLoading(true);
-      setError(null);
-      await onConfirm();
-      
+      setLoading(true)
+      setError(null)
+      await onConfirm()
+
       // Reset
-      setConfirmed(false);
-      onClose();
+      setConfirmed(false)
+      onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al finalizar el empleo');
+      setError(err instanceof Error ? err.message : 'Error al finalizar el empleo')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    setConfirmed(false);
-    setError(null);
-    onClose();
-  };
+    setConfirmed(false)
+    setError(null)
+    onClose()
+  }
 
   return (
     <AlertDialog open={open} onOpenChange={handleCancel}>
@@ -74,7 +73,7 @@ export function ConfirmEndEmploymentDialog({
             <p className="text-foreground font-medium">
               Esta acción marcará tu vínculo laboral como finalizado. Ten en cuenta lo siguiente:
             </p>
-            
+
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
                 <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
@@ -95,7 +94,10 @@ export function ConfirmEndEmploymentDialog({
               {typeof upcomingCount === 'number' && upcomingCount > 0 && (
                 <li className="flex items-start gap-2">
                   <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                  <span>Tienes {upcomingCount} citas futuras pendientes; primero cancélalas o reasígnalas</span>
+                  <span>
+                    Tienes {upcomingCount} citas futuras pendientes; primero cancélalas o
+                    reasígnalas
+                  </span>
                 </li>
               )}
             </ul>
@@ -103,9 +105,8 @@ export function ConfirmEndEmploymentDialog({
             <Alert variant="destructive" className="mt-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                <strong>Nota importante:</strong> Solo un administrador del negocio podrá 
-                reactivar tu empleo si deseas volver. Esta acción quedará registrada en tu 
-                historial laboral.
+                <strong>Nota importante:</strong> Solo un administrador del negocio podrá reactivar
+                tu empleo si deseas volver. Esta acción quedará registrada en tu historial laboral.
               </AlertDescription>
             </Alert>
           </AlertDialogDescription>
@@ -125,9 +126,9 @@ export function ConfirmEndEmploymentDialog({
             <Checkbox
               id="confirm-end"
               checked={confirmed}
-              onCheckedChange={(checked) => {
-                setConfirmed(checked === true);
-                setError(null);
+              onCheckedChange={checked => {
+                setConfirmed(checked === true)
+                setError(null)
               }}
               className="mt-1"
             />
@@ -135,8 +136,8 @@ export function ConfirmEndEmploymentDialog({
               htmlFor="confirm-end"
               className="text-sm font-medium leading-relaxed cursor-pointer select-none"
             >
-              Confirmo que entiendo las consecuencias y quiero finalizar mi vínculo laboral 
-              con <strong>{businessName}</strong>
+              Confirmo que entiendo las consecuencias y quiero finalizar mi vínculo laboral con{' '}
+              <strong>{businessName}</strong>
             </label>
           </div>
 
@@ -170,5 +171,5 @@ export function ConfirmEndEmploymentDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
+  )
 }

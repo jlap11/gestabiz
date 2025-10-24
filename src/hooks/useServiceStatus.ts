@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
@@ -23,7 +23,7 @@ export function useServiceStatus() {
     lastChecked: null,
     error: null,
   })
-  
+
   const [wasDown, setWasDown] = useState(false)
 
   const checkHealth = useCallback(async () => {
@@ -37,7 +37,7 @@ export function useServiceStatus() {
     try {
       // Check 1: Auth service (fast check)
       const authPromise = supabase.auth.getSession()
-      const authTimeout = new Promise((_, reject) => 
+      const authTimeout = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Auth timeout')), 5000)
       )
 
@@ -53,7 +53,7 @@ export function useServiceStatus() {
       // Check 2: Database access (simple query)
       if (authStatus === 'operational') {
         const dbPromise = supabase.from('profiles').select('count', { count: 'exact', head: true })
-        const dbTimeout = new Promise((_, reject) => 
+        const dbTimeout = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Database timeout')), 5000)
         )
 
@@ -93,7 +93,6 @@ export function useServiceStatus() {
         supabaseStatus = 'down'
         error = 'No pudimos conectarnos. Estamos verificando el problema.'
       }
-
     } catch (err) {
       supabaseStatus = 'down'
       authStatus = 'down'
@@ -103,7 +102,7 @@ export function useServiceStatus() {
       logger.fatal('Service health check failed completely', err as Error, {
         component: 'useServiceStatus',
         operation: 'checkHealth',
-      });
+      })
     }
 
     // Detectar si Supabase se recuperó después de estar caído
@@ -117,7 +116,7 @@ export function useServiceStatus() {
         window.location.reload()
       }, 2000)
     }
-    
+
     // Actualizar el estado "wasDown" para la próxima verificación
     if (supabaseStatus === 'down' && !wasDown) {
       setWasDown(true)

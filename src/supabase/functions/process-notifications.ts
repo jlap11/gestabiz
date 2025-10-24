@@ -2,7 +2,7 @@
 // Deploy with: supabase functions deploy process-notifications
 // This function should be called periodically (e.g., every 5 minutes) using a cron job
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -10,7 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -27,7 +27,8 @@ serve(async (req) => {
     const now = new Date().toISOString()
     const { data: pendingNotifications, error: fetchError } = await supabaseClient
       .from('notifications')
-      .select(`
+      .select(
+        `
         id,
         appointment_id,
         type,
@@ -44,7 +45,8 @@ serve(async (req) => {
             notification_preferences
           )
         )
-      `)
+      `
+      )
       .eq('status', 'pending')
       .lte('scheduled_for', now)
       .limit(50) // Process max 50 notifications per run
@@ -79,14 +81,14 @@ serve(async (req) => {
             .from('notifications')
             .update({
               status: 'cancelled',
-              error_message: 'User has disabled this notification type'
+              error_message: 'User has disabled this notification type',
             })
             .eq('id', notification.id)
 
           results.push({
             notificationId: notification.id,
             status: 'cancelled',
-            reason: 'User preference disabled'
+            reason: 'User preference disabled',
           })
           continue
         }
@@ -94,23 +96,26 @@ serve(async (req) => {
         // Process based on delivery method
         if (notification.delivery_method === 'email') {
           // Call the email reminder function
-          const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email-reminder`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              notificationId: notification.id,
-              appointmentId: notification.appointment_id
-            })
-          })
+          const emailResponse = await fetch(
+            `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email-reminder`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                notificationId: notification.id,
+                appointmentId: notification.appointment_id,
+              }),
+            }
+          )
 
           if (emailResponse.ok) {
             results.push({
               notificationId: notification.id,
               status: 'sent',
-              method: 'email'
+              method: 'email',
             })
           } else {
             const error = await emailResponse.text()
@@ -118,7 +123,7 @@ serve(async (req) => {
               notificationId: notification.id,
               status: 'failed',
               method: 'email',
-              error: error
+              error: error,
             })
           }
         } else if (notification.delivery_method === 'push') {
@@ -137,7 +142,7 @@ serve(async (req) => {
             notificationId: notification.id,
             status: 'sent',
             method: 'push',
-            note: 'Push notifications not implemented yet'
+            note: 'Push notifications not implemented yet',
           })
         } else if (notification.delivery_method === 'browser') {
           // For browser notifications, we'll mark as sent
@@ -153,26 +158,25 @@ serve(async (req) => {
           results.push({
             notificationId: notification.id,
             status: 'sent',
-            method: 'browser'
+            method: 'browser',
           })
         }
-
       } catch (error) {
         console.error(`Failed to process notification ${notification.id}:`, error)
-        
+
         // Mark notification as failed
         await supabaseClient
           .from('notifications')
           .update({
             status: 'failed',
-            error_message: error.message
+            error_message: error.message,
           })
           .eq('id', notification.id)
 
         results.push({
           notificationId: notification.id,
           status: 'failed',
-          error: error.message
+          error: error.message,
         })
       }
     }
@@ -180,7 +184,7 @@ serve(async (req) => {
     // Clean up old processed notifications (older than 30 days)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    
+
     const { error: cleanupError } = await supabaseClient
       .from('notifications')
       .delete()
@@ -196,21 +200,20 @@ serve(async (req) => {
         success: true,
         processed: results.length,
         results: results,
-        message: `Processed ${results.length} notifications`
+        message: `Processed ${results.length} notifications`,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error processing notifications:', error)
 
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: error.message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

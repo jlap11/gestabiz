@@ -25,184 +25,184 @@ const NOTIFICATION_ROLE_MAP: Record<string, RoleNavigationConfig> = {
   // ========================================
   // ADMIN ROLE - Notificaciones de negocio
   // ========================================
-  'job_application_new': {
+  job_application_new: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'recruitment', // Cambiado de 'vacancies' a 'recruitment'
-    context: {} // vacancy_id se añade dinámicamente
+    context: {}, // vacancy_id se añade dinámicamente
   },
-  'job_application_received': {
+  job_application_received: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'recruitment', // Cambiado de 'vacancies' a 'recruitment'
-    context: {}
+    context: {},
   },
-  'employee_request_new': {
+  employee_request_new: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'employees',
-    context: {}
+    context: {},
   },
-  'employee_request_pending': {
+  employee_request_pending: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'employees',
-    context: {}
+    context: {},
   },
-  'review_received': {
+  review_received: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'reviews',
-    context: {}
+    context: {},
   },
-  'business_verification_approved': {
+  business_verification_approved: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'settings',
-    context: {}
+    context: {},
   },
-  'business_verification_rejected': {
+  business_verification_rejected: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'settings',
-    context: {}
+    context: {},
   },
-  'absence_request': {
+  absence_request: {
     requiredRole: 'admin',
     path: '/admin',
     page: 'absences',
-    context: {}
+    context: {},
   },
 
   // ========================================
   // EMPLOYEE ROLE - Notificaciones de empleado
   // ========================================
-  'employee_request_approved': {
+  employee_request_approved: {
     requiredRole: 'employee',
     path: '/employee',
     page: 'dashboard',
-    context: {}
+    context: {},
   },
-  'employee_request_rejected': {
+  employee_request_rejected: {
     requiredRole: 'employee',
     path: '/employee',
     page: 'dashboard',
-    context: {}
+    context: {},
   },
-  'job_application_accepted': {
+  job_application_accepted: {
     requiredRole: 'employee',
     path: '/employee',
     page: 'applications',
-    context: {}
+    context: {},
   },
-  'job_application_rejected': {
+  job_application_rejected: {
     requiredRole: 'employee',
     path: '/employee',
     page: 'applications',
-    context: {}
+    context: {},
   },
-  'shift_assigned': {
+  shift_assigned: {
     requiredRole: 'employee',
     path: '/employee',
     page: 'schedule',
-    context: {}
+    context: {},
   },
-  'shift_cancelled': {
+  shift_cancelled: {
     requiredRole: 'employee',
     path: '/employee',
     page: 'schedule',
-    context: {}
+    context: {},
   },
 
   // ========================================
   // CLIENT ROLE - Notificaciones de cliente
   // ========================================
-  'appointment_created': {
+  appointment_created: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'appointment_confirmed': {
+  appointment_confirmed: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'appointment_cancelled': {
+  appointment_cancelled: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'appointment_rescheduled': {
+  appointment_rescheduled: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'appointment_reminder': {
+  appointment_reminder: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'reminder_24h': {
+  reminder_24h: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'reminder_1h': {
+  reminder_1h: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
-  'reminder_15m': {
+  reminder_15m: {
     requiredRole: 'client',
     path: '/client',
     page: 'appointments',
-    context: {}
+    context: {},
   },
 
   // ========================================
   // COMPARTIDAS - Se decide por contexto
   // ========================================
-  'chat_message': {
+  chat_message: {
     requiredRole: 'client', // Default, se ajusta dinámicamente
     path: '/client',
     page: 'chat',
-    context: {}
+    context: {},
   },
-  'chat_message_received': {
+  chat_message_received: {
     requiredRole: 'client', // Default, se ajusta dinámicamente
     path: '/client',
     page: 'chat',
-    context: {}
+    context: {},
   },
 
   // ========================================
   // SISTEMA - No requieren cambio de rol
   // ========================================
-  'system_announcement': {
+  system_announcement: {
     requiredRole: 'client', // Cualquier rol puede verlo
     path: '/client',
     page: 'notifications',
-    context: {}
+    context: {},
   },
-  'system_update': {
+  system_update: {
     requiredRole: 'client',
     path: '/client',
     page: 'notifications',
-    context: {}
+    context: {},
   },
-  'system_maintenance': {
+  system_maintenance: {
     requiredRole: 'client',
     path: '/client',
     page: 'notifications',
-    context: {}
-  }
+    context: {},
+  },
 }
 
 /**
@@ -212,7 +212,7 @@ export function getNotificationRoleConfig(
   notification: InAppNotification
 ): RoleNavigationConfig | null {
   const config = NOTIFICATION_ROLE_MAP[notification.type]
-  
+
   if (!config) {
     console.warn(`No role mapping found for notification type: ${notification.type}`)
     return null
@@ -221,7 +221,7 @@ export function getNotificationRoleConfig(
   // Clonar config para no mutar el original
   const roleConfig: RoleNavigationConfig = {
     ...config,
-    context: { ...config.context }
+    context: { ...config.context },
   }
 
   // Añadir IDs relevantes al contexto desde notification.data
@@ -249,22 +249,17 @@ export function getNotificationRoleConfig(
 /**
  * Determina si se necesita cambiar de rol para navegar
  */
-export function needsRoleSwitch(
-  notification: InAppNotification,
-  currentRole: UserRole
-): boolean {
+export function needsRoleSwitch(notification: InAppNotification, currentRole: UserRole): boolean {
   const config = getNotificationRoleConfig(notification)
   if (!config) return false
-  
+
   return config.requiredRole !== currentRole
 }
 
 /**
  * Obtiene el rol requerido para una notificación
  */
-export function getRequiredRole(
-  notification: InAppNotification
-): UserRole | null {
+export function getRequiredRole(notification: InAppNotification): UserRole | null {
   const config = getNotificationRoleConfig(notification)
   return config?.requiredRole || null
 }
@@ -273,19 +268,15 @@ export function getRequiredRole(
  * Verifica si un usuario tiene acceso a un rol específico
  * (esto debería integrarse con tu sistema de roles existente)
  */
-export function userHasRole(
-  userId: string,
-  role: UserRole,
-  userRoles?: UserRole[]
-): boolean {
+export function userHasRole(userId: string, role: UserRole, userRoles?: UserRole[]): boolean {
   // Si se pasan los roles del usuario, verificar
   if (userRoles) {
     return userRoles.includes(role)
   }
-  
+
   // Por defecto, todos tienen acceso a client
   if (role === 'client') return true
-  
+
   // Para admin y employee, se necesita verificar en BD
   // Esta función debería integrarse con useUserRoles
   return true // Temporal - implementar verificación real
@@ -320,7 +311,7 @@ export async function handleNotificationWithRoleSwitch(
 ): Promise<void> {
   try {
     const config = getNotificationRoleConfig(notification)
-    
+
     if (!config) {
       throw new Error(`No navigation config for notification type: ${notification.type}`)
     }
@@ -336,15 +327,15 @@ export async function handleNotificationWithRoleSwitch(
     if (requiredRole !== currentRole) {
       // eslint-disable-next-line no-console
       console.log(`🔄 Switching role from ${currentRole} to ${requiredRole}`)
-      
+
       // Guardar navegación pendiente en sessionStorage para que persista tras re-render
       const pendingNavigation = {
         page,
         context,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
       sessionStorage.setItem('pending-navigation', JSON.stringify(pendingNavigation))
-      
+
       // Cambiar rol (esto causará re-render del layout)
       await switchRole(requiredRole)
 
@@ -377,8 +368,8 @@ export function getRoleLabel(role: UserRole, locale: 'es' | 'en' = 'es'): string
   const labels: Record<UserRole, Record<string, string>> = {
     admin: { es: 'Administrador', en: 'Administrator' },
     employee: { es: 'Empleado', en: 'Employee' },
-    client: { es: 'Cliente', en: 'Client' }
+    client: { es: 'Cliente', en: 'Client' },
   }
-  
+
   return labels[role]?.[locale] || role
 }

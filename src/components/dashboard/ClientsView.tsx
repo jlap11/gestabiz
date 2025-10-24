@@ -6,8 +6,17 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Plus, User, EnvelopeSimple as Mail, Phone, Building, PencilSimple, Trash, ArrowLeft } from '@phosphor-icons/react'
-import { User as UserType, Client, Appointment } from '@/types'
+import {
+  ArrowLeft,
+  Building,
+  EnvelopeSimple as Mail,
+  PencilSimple,
+  Phone,
+  Plus,
+  Trash,
+  User,
+} from '@phosphor-icons/react'
+import { Appointment, Client, User as UserType } from '@/types'
 import { toast } from 'sonner'
 
 interface ClientsViewProps {
@@ -27,10 +36,11 @@ export default function ClientsView({ user }: ClientsViewProps) {
   const [phone, setPhone] = useState('')
   const [company, setCompany] = useState('')
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.company?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClients = clients.filter(
+    client =>
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.company?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getClientAppointmentCount = (clientId: string) => {
@@ -67,7 +77,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                 name: name.trim(),
                 email: email.trim() || undefined,
                 phone: phone.trim() || undefined,
-                company: company.trim() || undefined
+                company: company.trim() || undefined,
               }
             : client
         )
@@ -88,7 +98,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
         tags: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        created_by: user.id
+        created_by: user.id,
       }
       setClients(current => [...current, newClient])
       toast.success('Client added successfully')
@@ -108,7 +118,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
 
   const handleDelete = (clientId: string) => {
     const clientAppointments = appointments.filter(apt => apt.clientId === clientId)
-    
+
     if (clientAppointments.length > 0) {
       toast.error('Cannot delete client with existing appointments')
       return
@@ -143,7 +153,9 @@ export default function ClientsView({ user }: ClientsViewProps) {
               {editingClient ? 'Edit Client' : 'Add New Client'}
             </h2>
             <p className="text-muted-foreground">
-              {editingClient ? 'Update client information' : 'Add a new client to your contact list'}
+              {editingClient
+                ? 'Update client information'
+                : 'Add a new client to your contact list'}
             </p>
           </div>
         </div>
@@ -164,7 +176,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                   <Input
                     id="name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={e => setName(e.target.value)}
                     placeholder="Client full name"
                     required
                   />
@@ -176,7 +188,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     placeholder="client@example.com"
                   />
                 </div>
@@ -187,7 +199,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                     id="phone"
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={e => setPhone(e.target.value)}
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
@@ -197,7 +209,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                   <Input
                     id="company"
                     value={company}
-                    onChange={(e) => setCompany(e.target.value)}
+                    onChange={e => setCompany(e.target.value)}
                     placeholder="Company name"
                   />
                 </div>
@@ -207,9 +219,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                 <Button type="button" variant="outline" onClick={resetForm}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingClient ? 'Update Client' : 'Add Client'}
-                </Button>
+                <Button type="submit">{editingClient ? 'Update Client' : 'Add Client'}</Button>
               </div>
             </form>
           </CardContent>
@@ -224,9 +234,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Clients</h2>
-          <p className="text-muted-foreground">
-            Manage your client contact information
-          </p>
+          <p className="text-muted-foreground">Manage your client contact information</p>
         </div>
         <Button onClick={() => setShowForm(true)}>
           <Plus size={16} className="mr-2" />
@@ -240,7 +248,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
           <Input
             placeholder="Search clients..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -254,10 +262,9 @@ export default function ClientsView({ user }: ClientsViewProps) {
               {clients.length === 0 ? 'No clients yet' : 'No clients found'}
             </h3>
             <p className="text-muted-foreground mb-6">
-              {clients.length === 0 
-                ? "Add your first client to start scheduling appointments." 
-                : "Try adjusting your search terms."
-              }
+              {clients.length === 0
+                ? 'Add your first client to start scheduling appointments.'
+                : 'Try adjusting your search terms.'}
             </p>
             {clients.length === 0 && (
               <Button onClick={() => setShowForm(true)}>
@@ -269,7 +276,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredClients.map((client) => {
+          {filteredClients.map(client => {
             const appointmentCount = getClientAppointmentCount(client.id)
             const upcomingCount = getClientUpcomingAppointments(client.id)
 
@@ -287,9 +294,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold text-lg">{client.name}</h3>
                           {upcomingCount > 0 && (
-                            <Badge variant="secondary">
-                              {upcomingCount} upcoming
-                            </Badge>
+                            <Badge variant="secondary">{upcomingCount} upcoming</Badge>
                           )}
                         </div>
                         <div className="space-y-1">
@@ -321,11 +326,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(client)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(client)}>
                         <PencilSimple size={16} />
                       </Button>
                       <Button

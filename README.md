@@ -13,12 +13,14 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 ## 🚀 Características Principales
 
 ### 👥 Sistema de Roles Dinámicos
+
 - **ADMIN**: Gestión completa del negocio
 - **EMPLOYEE**: Gestión de citas, servicios y horarios
 - **CLIENT**: Reserva de citas y reviews
 - Un usuario puede tener múltiples roles simultáneamente
 
 ### 💳 Sistema de Pagos Completo
+
 - Integración con **Stripe**
 - 4 planes de suscripción (Free, Basic, Pro, Enterprise)
 - Facturación mensual y anual con descuentos
@@ -26,12 +28,14 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 - Webhooks para sincronización automática
 
 ### 📊 Sistema Contable Colombiano
+
 - Cálculo automático de IVA, ICA y Retención en la Fuente
 - Reportes fiscales y contables
 - Transacciones con clasificación fiscal
 - Exports a PDF/CSV/Excel
 
 ### 🔔 Notificaciones Multicanal
+
 - **Email**: Brevo (Sendinblue) - 300 emails/día gratis
 - **SMS**: AWS SNS (opcional)
 - **WhatsApp**: WhatsApp Business API
@@ -39,6 +43,7 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 - 17 tipos de notificaciones
 
 ### 🔍 Búsqueda Avanzada
+
 - Full-text search con PostgreSQL
 - Búsqueda fuzzy con trigram
 - 6 algoritmos de ordenamiento
@@ -46,12 +51,14 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 - Optimización con vistas materializadas
 
 ### ⭐ Sistema de Reviews Anónimas
+
 - Reviews por servicio y profesional
 - Validación: solo clientes con citas completadas
 - Respuestas del negocio
 - Distribución de ratings y estadísticas
 
 ### 🏢 Gestión de Negocios
+
 - Múltiples sedes por negocio
 - Servicios por empleado y sede
 - Sistema jerárquico de categorías (15 principales, ~60 subcategorías)
@@ -63,6 +70,7 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 ## 🛠️ Stack Tecnológico
 
 ### Frontend
+
 - **React 18.3.1** + **TypeScript 5.7.2**
 - **Vite 6.3.5** (build tool)
 - **Tailwind CSS 4.1.11** (estilos)
@@ -71,6 +79,7 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 - **Zustand** (state management)
 
 ### Backend
+
 - **Supabase** (PostgreSQL + Auth + Storage + Edge Functions)
 - **Row Level Security (RLS)** para seguridad
 - **Edge Functions** (Deno) para lógica serverless
@@ -80,6 +89,7 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
   - `uuid-ossp` (UUIDs)
 
 ### Integraciones
+
 - **Stripe** (pagos y suscripciones)
 - **Brevo** (emails transaccionales - 300/día gratis)
 - **AWS SNS** (SMS - opcional)
@@ -91,17 +101,20 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 ## 📦 Instalación y Configuración
 
 ### Pre-requisitos
+
 - Node.js 18+ y npm 9+
 - Cuenta en [Supabase](https://supabase.com)
 - (Opcional) Cuentas en Stripe, AWS, WhatsApp Business API
 
 ### 1. Clonar Repositorio
+
 ```bash
 git clone https://github.com/TI-Turing/Gestabiz.git
 cd Gestabiz
 ```
 
 ### 2. Instalar Dependencias
+
 ```bash
 npm install
 ```
@@ -154,23 +167,28 @@ Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
 ### Opción 1: Vercel (Recomendado)
 
 **Guía rápida** (5 minutos):
+
 - Ver **[VERCEL_QUICK_START.md](./VERCEL_QUICK_START.md)**
 
 **Guía completa** (troubleshooting, dominios, etc.):
+
 - Ver **[DEPLOY_VERCEL.md](./DEPLOY_VERCEL.md)**
 
 **Tu configuración personalizada**:
+
 - Ver **[CONFIGURACION_VERCEL_PERSONALIZADA.md](./CONFIGURACION_VERCEL_PERSONALIZADA.md)**
 
 ### Opción 2: Otros Proveedores
 
 La app es una SPA estándar de Vite, compatible con:
+
 - **Netlify**
 - **Cloudflare Pages**
 - **AWS Amplify**
 - **Firebase Hosting**
 
 Configuración:
+
 - **Build Command**: `npm run build`
 - **Output Directory**: `dist`
 - **Node Version**: 18+
@@ -215,6 +233,7 @@ npm run lint
 ## 📚 Documentación
 
 ### Guías de Usuario
+
 - **Sistema de Roles**: `DYNAMIC_ROLES_SYSTEM.md`
 - **Sistema de Pagos**: `SISTEMA_PAGOS_RESUMEN_FINAL.md`
 - **Sistema de Notificaciones**: `SISTEMA_NOTIFICACIONES_COMPLETO.md`
@@ -222,12 +241,14 @@ npm run lint
 - **Sistema Contable**: `SISTEMA_CONTABLE_FASE_4_COMPLETADA.md`
 
 ### Guías Técnicas
+
 - **Integración Supabase**: `SUPABASE_INTEGRATION_GUIDE.md`
 - **Optimización de Búsqueda**: `OPTIMIZACION_BUSQUEDA_COMPLETADO.md`
 - **Base de Datos**: `DATABASE_REDESIGN_ANALYSIS.md`
 - **Categorías**: `SISTEMA_CATEGORIAS_RESUMEN.md`
 
 ### Desarrollo
+
 - **Copilot Instructions**: `.github/copilot-instructions.md`
 
 ---
@@ -263,17 +284,21 @@ Gestabiz/
 ## 🔐 Seguridad
 
 ### Row Level Security (RLS)
+
 Todas las tablas tienen políticas RLS activas:
+
 - Solo admins ven datos de su negocio
 - Empleados solo ven sus asignaciones
 - Clientes solo ven sus propias citas
 
 ### Variables de Entorno
+
 - ✅ `VITE_SUPABASE_ANON_KEY`: Segura para exponer (protegida por RLS)
 - ❌ `VITE_SUPABASE_SERVICE_ROLE_KEY`: NUNCA en frontend
 - ❌ API keys privadas: Solo en Edge Functions
 
 ### HTTPS
+
 - Supabase: HTTPS automático
 - Vercel: Certificados SSL gratuitos
 
@@ -288,6 +313,7 @@ Todas las tablas tienen políticas RLS activas:
 5. Abre un Pull Request
 
 ### Convenciones de Código
+
 - **TypeScript**: Tipos explícitos siempre
 - **React**: Componentes funcionales con hooks
 - **Estilos**: Tailwind CSS con utility classes
@@ -298,6 +324,7 @@ Todas las tablas tienen políticas RLS activas:
 ## 📝 Changelog
 
 ### v1.0.0 (Octubre 2025)
+
 - ✅ Sistema de roles dinámicos
 - ✅ Sistema de pagos con Stripe
 - ✅ Sistema contable colombiano
@@ -319,6 +346,7 @@ MIT License - Ver [LICENSE](./LICENSE) para más detalles.
 ## 👨‍💻 Autor
 
 **Jose Luis Avila**
+
 - Email: jlap.11@hotmail.com
 - GitHub: [@jlap11](https://github.com/jlap11)
 - Organización: [TI-Turing](https://github.com/TI-Turing)

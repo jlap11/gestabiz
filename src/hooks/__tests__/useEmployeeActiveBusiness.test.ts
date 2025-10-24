@@ -9,7 +9,7 @@
 // ============================================================================
 
 import { renderHook, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useEmployeeActiveBusiness } from '../useEmployeeActiveBusiness'
 import { supabase } from '@/lib/supabase'
 
@@ -58,24 +58,30 @@ describe('useEmployeeActiveBusiness', () => {
     ]
 
     // 1a llamada: business_employees
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: employeeBusinesses, error: null }),
-        }),
-      }),
-    } as any))
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: employeeBusinesses, error: null }),
+            }),
+          }),
+        }) as any
+    )
 
     // 2a llamada: work_schedules (sin registros)
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
           }),
-        }),
-      }),
-    } as any))
+        }) as any
+    )
 
     const { result } = renderHook(() => useEmployeeActiveBusiness('emp-1'))
 
@@ -98,24 +104,30 @@ describe('useEmployeeActiveBusiness', () => {
     const activeSchedule = [{ start_time: '00:00', end_time: '23:59', is_working: true }]
 
     // 1a llamada: business_employees
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: employeeBusinesses, error: null }),
-        }),
-      }),
-    } as any))
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: employeeBusinesses, error: null }),
+            }),
+          }),
+        }) as any
+    )
 
     // 2a llamada: work_schedules (activo)
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue({ data: activeSchedule, error: null }),
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                limit: vi.fn().mockResolvedValue({ data: activeSchedule, error: null }),
+              }),
+            }),
           }),
-        }),
-      }),
-    } as any))
+        }) as any
+    )
 
     const { result } = renderHook(() => useEmployeeActiveBusiness('emp-2'))
 
@@ -138,24 +150,30 @@ describe('useEmployeeActiveBusiness', () => {
     const narrowSchedule = [{ start_time: '00:00', end_time: '00:01', is_working: true }]
 
     // 1a llamada: business_employees
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: employeeBusinesses, error: null }),
-        }),
-      }),
-    } as any))
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: employeeBusinesses, error: null }),
+            }),
+          }),
+        }) as any
+    )
 
     // 2a llamada: work_schedules (fuera de rango)
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue({ data: narrowSchedule, error: null }),
+    vi.mocked(supabase.from).mockImplementationOnce(
+      () =>
+        ({
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                limit: vi.fn().mockResolvedValue({ data: narrowSchedule, error: null }),
+              }),
+            }),
           }),
-        }),
-      }),
-    } as any))
+        }) as any
+    )
 
     const { result } = renderHook(() => useEmployeeActiveBusiness('emp-3'))
 
@@ -166,4 +184,3 @@ describe('useEmployeeActiveBusiness', () => {
     })
   })
 })
-

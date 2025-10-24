@@ -23,7 +23,7 @@ interface BugReportEmailRequest {
   affectedPage?: string
 }
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -51,7 +51,7 @@ serve(async (req) => {
       browserVersion,
       deviceType,
       screenResolution,
-      affectedPage
+      affectedPage,
     } = body
 
     // Validaciones
@@ -85,7 +85,7 @@ serve(async (req) => {
       low: { emoji: '🟢', color: '#10b981', label: 'Baja' },
       medium: { emoji: '🟡', color: '#f59e0b', label: 'Media' },
       high: { emoji: '🟠', color: '#f97316', label: 'Alta' },
-      critical: { emoji: '🔴', color: '#ef4444', label: 'Crítica' }
+      critical: { emoji: '🔴', color: '#ef4444', label: 'Crítica' },
     }
 
     const config = severityConfig[severity] || severityConfig.medium
@@ -170,7 +170,9 @@ ${description}
             </td>
           </tr>
 
-          ${stepsToReproduce ? `
+          ${
+            stepsToReproduce
+              ? `
           <!-- Steps to Reproduce -->
           <tr>
             <td style="padding: 0 40px 24px 40px;">
@@ -184,7 +186,9 @@ ${stepsToReproduce}
               </div>
             </td>
           </tr>
-          ` : ''}
+          `
+              : ''
+          }
 
           <!-- Technical Details -->
           <tr>
@@ -193,7 +197,9 @@ ${stepsToReproduce}
                 ⚙️ Detalles Técnicos
               </h3>
               <table style="width: 100%; border-collapse: collapse;">
-                ${affectedPage ? `
+                ${
+                  affectedPage
+                    ? `
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
                     <span style="color: #6b7280; font-size: 13px;">📄 Página Afectada:</span>
@@ -202,8 +208,12 @@ ${stepsToReproduce}
                     <span style="color: #1f2937; font-size: 13px; font-weight: 500;">${affectedPage}</span>
                   </td>
                 </tr>
-                ` : ''}
-                ${browserVersion ? `
+                `
+                    : ''
+                }
+                ${
+                  browserVersion
+                    ? `
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
                     <span style="color: #6b7280; font-size: 13px;">🌐 Navegador:</span>
@@ -212,8 +222,12 @@ ${stepsToReproduce}
                     <span style="color: #1f2937; font-size: 13px; font-weight: 500;">${browserVersion}</span>
                   </td>
                 </tr>
-                ` : ''}
-                ${deviceType ? `
+                `
+                    : ''
+                }
+                ${
+                  deviceType
+                    ? `
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
                     <span style="color: #6b7280; font-size: 13px;">📱 Dispositivo:</span>
@@ -222,8 +236,12 @@ ${stepsToReproduce}
                     <span style="color: #1f2937; font-size: 13px; font-weight: 500;">${deviceType}</span>
                   </td>
                 </tr>
-                ` : ''}
-                ${screenResolution ? `
+                `
+                    : ''
+                }
+                ${
+                  screenResolution
+                    ? `
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
                     <span style="color: #6b7280; font-size: 13px;">🖥️ Resolución:</span>
@@ -232,7 +250,9 @@ ${stepsToReproduce}
                     <span style="color: #1f2937; font-size: 13px; font-weight: 500;">${screenResolution}</span>
                   </td>
                 </tr>
-                ` : ''}
+                `
+                    : ''
+                }
                 <tr>
                   <td style="padding: 8px 0;">
                     <span style="color: #6b7280; font-size: 13px;">📎 Evidencias Adjuntas:</span>
@@ -312,7 +332,7 @@ Este email fue generado automáticamente por el sistema de reporte de bugs de Ge
       htmlBody: htmlBody,
       textBody: textBody,
       fromEmail: 'no-reply@gestabiz.com',
-      fromName: 'Gestabiz Bug Reporter'
+      fromName: 'Gestabiz Bug Reporter',
     })
 
     // Actualizar log de notificaciones si existe
@@ -324,8 +344,8 @@ Este email fue generado automáticamente por el sistema de reporte de bugs de Ge
           sent_at: new Date().toISOString(),
           metadata: {
             ...bugReport,
-            brevo_message_id: emailResult.messageId
-          }
+            brevo_message_id: emailResult.messageId,
+          },
         })
         .eq('metadata->bug_report_id', bugReportId)
         .eq('notification_type', 'bug_report_created')
@@ -335,21 +355,20 @@ Este email fue generado automáticamente por el sistema de reporte de bugs de Ge
       JSON.stringify({
         success: true,
         messageId: emailResult.messageId,
-        message: 'Bug report email sent successfully'
+        message: 'Bug report email sent successfully',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error sending bug report email:', error)
-    
+
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Unknown error occurred'
+        error: error.message || 'Unknown error occurred',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

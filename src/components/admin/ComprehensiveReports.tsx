@@ -1,26 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { User, BusinessAnalytics, ReportFilters, Appointment, Client } from '@/types'
+import { Appointment, BusinessAnalytics, Client, ReportFilters, User } from '@/types'
 import { useKV } from '@/lib/useKV'
-import { 
+import {
+  AlertTriangle,
   BarChart3,
+  Calendar,
+  Clock,
+  DollarSign,
+  MessageSquare,
+  Star,
   TrendingUp,
   Users,
-  Calendar,
-  DollarSign,
-  Clock,
-  Star,
-  AlertTriangle,
-  MessageSquare,
 } from 'lucide-react'
-import { format, subWeeks, subMonths, subYears, parseISO } from 'date-fns'
+import { format, parseISO, subMonths, subWeeks, subYears } from 'date-fns'
 import { toast } from 'sonner'
-import { es as esLocale, enUS } from 'date-fns/locale'
+import { enUS, es as esLocale } from 'date-fns/locale'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatCurrency } from '@/lib/i18n'
 
@@ -68,8 +74,8 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
     date_range: {
       start: format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
       end: format(new Date(), 'yyyy-MM-dd'),
-      preset: 'month'
-    }
+      preset: 'month',
+    },
   })
   const [selectedTab, setSelectedTab] = useState('overview')
   const [isLoading, setIsLoading] = useState(false)
@@ -77,11 +83,11 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
   // Generate comprehensive analytics
   const generateAnalytics = useCallback(() => {
     setIsLoading(true)
-    
+
     try {
       const startDate = new Date(filters.date_range.start)
       const endDate = new Date(filters.date_range.end)
-      
+
       // Filter appointments by date range
       const filteredAppointments = appointments.filter(apt => {
         const aptDate = new Date(apt.start_time)
@@ -90,10 +96,14 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
       // Basic metrics
       const totalAppointments = filteredAppointments.length
-      const completedAppointments = filteredAppointments.filter(apt => apt.status === 'completed').length
-      const cancelledAppointments = filteredAppointments.filter(apt => apt.status === 'cancelled').length
+      const completedAppointments = filteredAppointments.filter(
+        apt => apt.status === 'completed'
+      ).length
+      const cancelledAppointments = filteredAppointments.filter(
+        apt => apt.status === 'cancelled'
+      ).length
       const noShowAppointments = filteredAppointments.filter(apt => apt.status === 'no_show').length
-      
+
       // Revenue calculations
       const totalRevenue = filteredAppointments
         .filter(apt => apt.status === 'completed')
@@ -117,19 +127,20 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
             total_appointments: 0,
             completed_appointments: 0,
             revenue: 0,
-            efficiency_rate: 0
+            efficiency_rate: 0,
           })
         }
-        
+
         const stats = employeeStats.get(employeeId)!
         stats.total_appointments++
         if (apt.status === 'completed') {
           stats.completed_appointments++
           stats.revenue += apt.price || 0
         }
-        stats.efficiency_rate = stats.total_appointments > 0 
-          ? (stats.completed_appointments / stats.total_appointments) * 100 
-          : 0
+        stats.efficiency_rate =
+          stats.total_appointments > 0
+            ? (stats.completed_appointments / stats.total_appointments) * 100
+            : 0
       })
 
       // Peak hours analysis
@@ -151,7 +162,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         .slice(0, 10)
 
       // Popular services
-      const serviceStats = new Map<string, { count: number, revenue: number }>()
+      const serviceStats = new Map<string, { count: number; revenue: number }>()
       filteredAppointments.forEach(apt => {
         const serviceName = apt.title
         if (!serviceStats.has(serviceName)) {
@@ -174,10 +185,10 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         .filter(client => client.is_recurring)
         .map(client => {
           const lastAppointment = client.last_appointment ? new Date(client.last_appointment) : null
-          const daysSince = lastAppointment 
+          const daysSince = lastAppointment
             ? Math.floor((new Date().getTime() - lastAppointment.getTime()) / (1000 * 60 * 60 * 24))
             : 999
-          
+
           let status: 'active' | 'at_risk' | 'lost' = 'active'
           if (daysSince > 90) status = 'lost'
           else if (daysSince > 30) status = 'at_risk'
@@ -190,7 +201,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
             days_since_last: daysSince,
             total_appointments: client.total_appointments,
             status,
-            whatsapp: client.whatsapp
+            whatsapp: client.whatsapp,
           }
         })
         .sort((a, b) => {
@@ -212,13 +223,13 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           completed: completedAppointments,
           cancelled: cancelledAppointments,
           no_show: noShowAppointments,
-          revenue: totalRevenue
+          revenue: totalRevenue,
         },
         clients: {
           total: clients.length,
           new: newClients,
           returning: uniqueClients - newClients,
-          lost: recurringClientsAnalysis.filter(c => c.status === 'lost').length
+          lost: recurringClientsAnalysis.filter(c => c.status === 'lost').length,
         },
         employees: Array.from(employeeStats.values()).map(e => ({
           id: e.employee_id,
@@ -226,14 +237,14 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           appointments_total: e.total_appointments,
           appointments_completed: e.completed_appointments,
           revenue: e.revenue,
-          efficiency_rate: e.efficiency_rate
+          efficiency_rate: e.efficiency_rate,
         })),
         services: popularServices.map(s => ({
           id: s.service.toLowerCase().replace(/\s+/g, '-'),
           name: s.service,
           bookings: s.count,
           revenue: s.revenue,
-          average_price: s.count > 0 ? s.revenue / s.count : 0
+          average_price: s.count > 0 ? s.revenue / s.count : 0,
         })),
         locations: [],
         peak_hours: peakHours,
@@ -243,13 +254,13 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           last_appointment: rc.last_appointment,
           days_since_last: rc.days_since_last,
           total_appointments: rc.total_appointments,
-          status: rc.status
-        }))
+          status: rc.status,
+        })),
       }
 
       setAnalytics(analyticsData)
     } catch (error) {
-    toast.error(t('admin.comprehensiveReports.errors.generate_failed'))
+      toast.error(t('admin.comprehensiveReports.errors.generate_failed'))
       throw error
     } finally {
       setIsLoading(false)
@@ -281,13 +292,13 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
         return
     }
 
-  setFilters({
+    setFilters({
       ...filters,
       date_range: {
         start: format(start, 'yyyy-MM-dd'),
         end: format(now, 'yyyy-MM-dd'),
-    preset
-      }
+        preset,
+      },
     })
   }
 
@@ -298,7 +309,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
     }
 
     const message = t('admin.comprehensiveReports.whatsapp.message_template', { name: client.name })
-    
+
     // In a real implementation, this would call your WhatsApp API
     const whatsappUrl = `https://wa.me/${client.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
@@ -314,26 +325,34 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'at_risk': return 'bg-yellow-100 text-yellow-800'
-      case 'lost': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'at_risk':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'lost':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getStatusIcon = (status: RecurringStatus) => {
     switch (status) {
-      case 'active': return <Star className="h-4 w-4" />
-      case 'at_risk': return <AlertTriangle className="h-4 w-4" />
-      case 'lost': return <Users className="h-4 w-4" />
-      default: return null
+      case 'active':
+        return <Star className="h-4 w-4" />
+      case 'at_risk':
+        return <AlertTriangle className="h-4 w-4" />
+      case 'lost':
+        return <Users className="h-4 w-4" />
+      default:
+        return null
     }
   }
 
   const getStatusLabel = (status: RecurringStatus) => {
-  if (status === 'active') return t('admin.comprehensiveReports.status.active')
-  if (status === 'at_risk') return t('admin.comprehensiveReports.status.at_risk')
-  return t('admin.comprehensiveReports.status.lost')
+    if (status === 'active') return t('admin.comprehensiveReports.status.active')
+    if (status === 'at_risk') return t('admin.comprehensiveReports.status.at_risk')
+    return t('admin.comprehensiveReports.status.lost')
   }
 
   if (!analytics) {
@@ -355,7 +374,7 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           <h1 className="text-3xl font-bold">{t('admin.comprehensiveReports.title')}</h1>
           <p className="text-muted-foreground">{t('admin.comprehensiveReports.subtitle')}</p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <Select value={filters.date_range.preset} onValueChange={handlePresetChange}>
             <SelectTrigger className="w-40">
@@ -368,10 +387,12 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
               <SelectItem value="year">{t('reports.last_year')}</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Button variant="outline" onClick={generateAnalytics} disabled={isLoading}>
             <BarChart3 className="h-4 w-4 mr-2" />
-            {isLoading ? t('admin.comprehensiveReports.actions.updating') : t('admin.comprehensiveReports.actions.update')}
+            {isLoading
+              ? t('admin.comprehensiveReports.actions.updating')
+              : t('admin.comprehensiveReports.actions.update')}
           </Button>
         </div>
       </div>
@@ -380,7 +401,9 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.comprehensiveReports.metrics.total_appointments')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('admin.comprehensiveReports.metrics.total_appointments')}
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -393,13 +416,23 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.comprehensiveReports.metrics.revenue')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('admin.comprehensiveReports.metrics.revenue')}
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(analytics.appointments.revenue, 'EUR', language)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(analytics.appointments.revenue, 'EUR', language)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {t('admin.comprehensiveReports.metrics.average')}: {formatCurrency((analytics.appointments.revenue / Math.max(analytics.appointments.completed, 1)), 'EUR', language)} {t('appointments.appointment_details').toLowerCase()}
+              {t('admin.comprehensiveReports.metrics.average')}:{' '}
+              {formatCurrency(
+                analytics.appointments.revenue / Math.max(analytics.appointments.completed, 1),
+                'EUR',
+                language
+              )}{' '}
+              {t('appointments.appointment_details').toLowerCase()}
             </p>
           </CardContent>
         </Card>
@@ -419,14 +452,19 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('admin.comprehensiveReports.metrics.completion_rate')}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('admin.comprehensiveReports.metrics.completion_rate')}
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {analytics.appointments.total > 0 
-                ? ((analytics.appointments.completed / analytics.appointments.total) * 100).toFixed(1)
-                : 0}%
+              {analytics.appointments.total > 0
+                ? ((analytics.appointments.completed / analytics.appointments.total) * 100).toFixed(
+                    1
+                  )
+                : 0}
+              %
             </div>
             <p className="text-xs text-muted-foreground">
               {analytics.appointments.cancelled} {t('appointments.cancelled')}
@@ -450,17 +488,19 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
             <Card>
               <CardHeader>
                 <CardTitle>{t('reports.appointments_by_status')}</CardTitle>
-                <CardDescription>{t('admin.comprehensiveReports.descriptions.by_status')}</CardDescription>
+                <CardDescription>
+                  {t('admin.comprehensiveReports.descriptions.by_status')}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{t('appointments.completed')}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-green-500 h-2 rounded-full"
-                        style={{ 
-                          width: `${(analytics.appointments.completed / Math.max(analytics.appointments.total, 1)) * 100}%` 
+                        style={{
+                          width: `${(analytics.appointments.completed / Math.max(analytics.appointments.total, 1)) * 100}%`,
                         }}
                       />
                     </div>
@@ -471,10 +511,10 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                   <span className="text-sm">{t('appointments.cancelled')}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-red-500 h-2 rounded-full"
-                        style={{ 
-                          width: `${(analytics.appointments.cancelled / Math.max(analytics.appointments.total, 1)) * 100}%` 
+                        style={{
+                          width: `${(analytics.appointments.cancelled / Math.max(analytics.appointments.total, 1)) * 100}%`,
                         }}
                       />
                     </div>
@@ -485,10 +525,10 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                   <span className="text-sm">{t('appointments.no_show')}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-20 bg-muted rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-orange-500 h-2 rounded-full"
-                        style={{ 
-                          width: `${(analytics.appointments.no_show / Math.max(analytics.appointments.total, 1)) * 100}%` 
+                        style={{
+                          width: `${(analytics.appointments.no_show / Math.max(analytics.appointments.total, 1)) * 100}%`,
                         }}
                       />
                     </div>
@@ -501,11 +541,15 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
             <Card>
               <CardHeader>
                 <CardTitle>{t('admin.comprehensiveReports.cards.client_analysis')}</CardTitle>
-                <CardDescription>{t('admin.comprehensiveReports.descriptions.client_metrics')}</CardDescription>
+                <CardDescription>
+                  {t('admin.comprehensiveReports.descriptions.client_metrics')}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">{t('admin.comprehensiveReports.labels.active_clients')}</span>
+                  <span className="text-sm">
+                    {t('admin.comprehensiveReports.labels.active_clients')}
+                  </span>
                   <span className="text-lg font-bold text-green-600">
                     {recurringClients.filter(c => c.status === 'active').length}
                   </span>
@@ -524,11 +568,18 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('admin.comprehensiveReports.labels.retention_rate')}</span>
+                  <span className="text-sm font-medium">
+                    {t('admin.comprehensiveReports.labels.retention_rate')}
+                  </span>
                   <span className="text-lg font-bold text-primary">
-                    {analytics.clients.total > 0 
-                      ? (((analytics.clients.total - analytics.clients.lost) / analytics.clients.total) * 100).toFixed(1)
-                      : 0}%
+                    {analytics.clients.total > 0
+                      ? (
+                          ((analytics.clients.total - analytics.clients.lost) /
+                            analytics.clients.total) *
+                          100
+                        ).toFixed(1)
+                      : 0}
+                    %
                   </span>
                 </div>
               </CardContent>
@@ -540,19 +591,25 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           <Card>
             <CardHeader>
               <CardTitle>{t('admin.comprehensiveReports.cards.peak_hours')}</CardTitle>
-              <CardDescription>{t('admin.comprehensiveReports.descriptions.peak_hours')}</CardDescription>
+              <CardDescription>
+                {t('admin.comprehensiveReports.descriptions.peak_hours')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {analytics.peak_hours.slice(0, 10).map((peak, index) => (
-                  <div key={`${peak.day_of_week}-${peak.hour}`} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={`${peak.day_of_week}-${peak.hour}`}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
                         <span className="text-sm font-bold text-primary">#{index + 1}</span>
                       </div>
                       <div>
                         <p className="font-medium">
-                          {getDayName(peak.day_of_week)} {t('admin.comprehensiveReports.labels.at')} {peak.hour.toString().padStart(2, '0')}:00
+                          {getDayName(peak.day_of_week)} {t('admin.comprehensiveReports.labels.at')}{' '}
+                          {peak.hour.toString().padStart(2, '0')}:00
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {peak.appointment_count} {t('appointments.title').toLowerCase()}
@@ -574,12 +631,17 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           <Card>
             <CardHeader>
               <CardTitle>{t('reports.employee_performance')}</CardTitle>
-              <CardDescription>{t('admin.comprehensiveReports.descriptions.employee_performance')}</CardDescription>
+              <CardDescription>
+                {t('admin.comprehensiveReports.descriptions.employee_performance')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {analytics.employees.map((employee, index) => (
-                  <div key={employee.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={employee.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
                         <span className="text-sm font-bold text-primary">#{index + 1}</span>
@@ -587,14 +649,18 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       <div>
                         <p className="font-medium">{employee.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {employee.appointments_completed} {t('common.of') ?? 'de'} {employee.appointments_total} {t('appointments.completed')}
+                          {employee.appointments_completed} {t('common.of') ?? 'de'}{' '}
+                          {employee.appointments_total} {t('appointments.completed')}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">{formatCurrency(employee.revenue, 'EUR', language)}</p>
+                      <p className="font-bold">
+                        {formatCurrency(employee.revenue, 'EUR', language)}
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        {employee.efficiency_rate.toFixed(1)}% {t('admin.comprehensiveReports.labels.efficiency')}
+                        {employee.efficiency_rate.toFixed(1)}%{' '}
+                        {t('admin.comprehensiveReports.labels.efficiency')}
                       </p>
                     </div>
                   </div>
@@ -608,12 +674,17 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           <Card>
             <CardHeader>
               <CardTitle>{t('reports.top_services')}</CardTitle>
-              <CardDescription>{t('admin.comprehensiveReports.descriptions.top_services')}</CardDescription>
+              <CardDescription>
+                {t('admin.comprehensiveReports.descriptions.top_services')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {analytics.services.map((service, index) => (
-                  <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div
+                    key={service.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center justify-center w-10 h-10 bg-accent/10 rounded-full">
                         <span className="text-sm font-bold text-accent">#{index + 1}</span>
@@ -626,9 +697,12 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">{formatCurrency(service.revenue, 'EUR', language)}</p>
+                      <p className="font-bold">
+                        {formatCurrency(service.revenue, 'EUR', language)}
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        {formatCurrency(service.average_price, 'EUR', language)} {t('admin.comprehensiveReports.labels.average_short')}
+                        {formatCurrency(service.average_price, 'EUR', language)}{' '}
+                        {t('admin.comprehensiveReports.labels.average_short')}
                       </p>
                     </div>
                   </div>
@@ -642,12 +716,17 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
           <Card>
             <CardHeader>
               <CardTitle>{t('admin.comprehensiveReports.cards.recurring_clients')}</CardTitle>
-              <CardDescription>{t('admin.comprehensiveReports.descriptions.recurring_clients')}</CardDescription>
+              <CardDescription>
+                {t('admin.comprehensiveReports.descriptions.recurring_clients')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recurringClients.slice(0, 20).map((client) => (
-                  <div key={client.id} className="flex items-center justify-between p-4 border rounded-lg">
+                {recurringClients.slice(0, 20).map(client => (
+                  <div
+                    key={client.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(client.status)}
@@ -658,7 +737,13 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       <div>
                         <p className="font-medium">{client.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {client.total_appointments} {t('appointments.title').toLowerCase()} • {t('admin.comprehensiveReports.labels.last_visit')}: {client.last_appointment ? format(parseISO(client.last_appointment), 'dd/MM/yyyy', { locale: dfLocale }) : t('admin.clientManagement.never')}
+                          {client.total_appointments} {t('appointments.title').toLowerCase()} •{' '}
+                          {t('admin.comprehensiveReports.labels.last_visit')}:{' '}
+                          {client.last_appointment
+                            ? format(parseISO(client.last_appointment), 'dd/MM/yyyy', {
+                                locale: dfLocale,
+                              })
+                            : t('admin.clientManagement.never')}
                         </p>
                       </div>
                     </div>
@@ -666,17 +751,18 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
                       <span className="text-sm text-muted-foreground">
                         {client.days_since_last} {t('admin.comprehensiveReports.labels.days')}
                       </span>
-                      {(client.status === 'at_risk' || client.status === 'lost') && client.whatsapp && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => sendWhatsAppMessage(client)}
-                          className="ml-2"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-1" />
-                          {t('clients.send_whatsapp')}
-                        </Button>
-                      )}
+                      {(client.status === 'at_risk' || client.status === 'lost') &&
+                        client.whatsapp && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => sendWhatsAppMessage(client)}
+                            className="ml-2"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            {t('clients.send_whatsapp')}
+                          </Button>
+                        )}
                     </div>
                   </div>
                 ))}

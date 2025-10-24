@@ -5,6 +5,7 @@
 A partir de octubre 2025, toda la aplicación utiliza **Brevo (Sendinblue)** como proveedor de emails transaccionales.
 
 ### Razones del cambio:
+
 - ✅ Plan gratuito generoso: 300 emails/día
 - ✅ API más simple y confiable en Edge Functions
 - ✅ Sin configuración compleja de AWS
@@ -46,14 +47,17 @@ npx supabase secrets set SUPPORT_EMAIL=soporte@gestabiz.com
 ## Archivos Modificados
 
 ### 1. Utilidad Compartida
+
 **Archivo**: `supabase/functions/_shared/brevo.ts`
 
 Nuevo módulo con funciones:
+
 - `sendBrevoEmail()`: Envía emails usando API de Brevo
 - `createBasicEmailTemplate()`: Template HTML base para Gestabiz
 - `isValidEmail()`: Validador de emails
 
 ### 2. Edge Functions Actualizadas
+
 - ✅ `send-notification/index.ts`: Función principal de notificaciones
 - ✅ `send-bug-report-email/index.ts`: Reportes de bugs
 
@@ -64,6 +68,7 @@ Todas las demás funciones que envían emails lo hacen a través de `send-notifi
 ## Uso en Código
 
 ### Enviar Email Básico
+
 ```typescript
 import { sendBrevoEmail } from '../_shared/brevo.ts'
 
@@ -71,7 +76,7 @@ const result = await sendBrevoEmail({
   to: 'usuario@example.com',
   subject: 'Bienvenido a Gestabiz',
   htmlBody: '<h1>Hola!</h1><p>Gracias por registrarte.</p>',
-  textBody: 'Hola! Gracias por registrarte.'
+  textBody: 'Hola! Gracias por registrarte.',
 })
 
 if (result.success) {
@@ -82,6 +87,7 @@ if (result.success) {
 ```
 
 ### Usar Template Básico
+
 ```typescript
 import { sendBrevoEmail, createBasicEmailTemplate } from '../_shared/brevo.ts'
 
@@ -95,7 +101,7 @@ const htmlBody = createBasicEmailTemplate(
 await sendBrevoEmail({
   to: 'cliente@example.com',
   subject: 'Cita Confirmada',
-  htmlBody: htmlBody
+  htmlBody: htmlBody,
 })
 ```
 
@@ -130,13 +136,13 @@ npx supabase secrets unset SES_FROM_EMAIL
 
 ## Límites del Plan Gratuito de Brevo
 
-| Característica | Límite |
-|---------------|--------|
-| Emails/día | 300 |
-| Emails/mes | 9,000 |
-| Lista de contactos | Ilimitada |
-| Templates | Ilimitados |
-| API calls | Ilimitadas |
+| Característica     | Límite     |
+| ------------------ | ---------- |
+| Emails/día         | 300        |
+| Emails/mes         | 9,000      |
+| Lista de contactos | Ilimitada  |
+| Templates          | Ilimitados |
+| API calls          | Ilimitadas |
 
 **Nota**: Para más de 300 emails/día, considera actualizar a un plan de pago ($25/mes por 20,000 emails).
 
@@ -145,6 +151,7 @@ npx supabase secrets unset SES_FROM_EMAIL
 ## Monitoreo
 
 Puedes monitorear el envío de emails en:
+
 - **Brevo Dashboard**: https://app.brevo.com/statistics/email
 - **Logs de Edge Functions**: Supabase Dashboard → Edge Functions → Logs
 
@@ -153,18 +160,23 @@ Puedes monitorear el envío de emails en:
 ## Troubleshooting
 
 ### Error: "BREVO_API_KEY not configured"
+
 **Solución**: Asegúrate de haber configurado el secret en Supabase:
+
 ```powershell
 npx supabase secrets set BREVO_API_KEY=your-api-key
 ```
 
 ### Error: "Brevo API error: 401"
+
 **Solución**: Tu API Key es inválida o ha expirado. Genera una nueva en Brevo Dashboard.
 
 ### Error: "Brevo API error: 403"
+
 **Solución**: Tu API Key no tiene permisos para enviar emails. Ve a Brevo Dashboard → Settings → API Keys y asegúrate de que tenga el permiso "Send emails".
 
 ### Error: "Daily limit exceeded"
+
 **Solución**: Has alcanzado el límite de 300 emails/día. Espera hasta mañana o actualiza a un plan de pago.
 
 ---
@@ -172,9 +184,10 @@ npx supabase secrets set BREVO_API_KEY=your-api-key
 ## Contacto
 
 Para cualquier duda sobre la configuración de Brevo, contacta al equipo de TI-Turing:
+
 - Email: soporte@gestabiz.com
 - GitHub: https://github.com/TI-Turing/appointsync-pro
 
 ---
 
-*Última actualización: 22 de octubre de 2025*
+_Última actualización: 22 de octubre de 2025_

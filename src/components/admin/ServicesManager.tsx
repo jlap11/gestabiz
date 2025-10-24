@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import {
-  Briefcase,
-  Plus,
-  Edit,
-  Trash2,
-  DollarSign,
-  Clock,
-  MapPin,
-  Users,
-  X,
-} from 'lucide-react'
+import { Briefcase, Clock, DollarSign, Edit, MapPin, Plus, Trash2, Users, X } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -75,7 +65,7 @@ const initialFormData: Omit<Service, 'id' | 'created_at' | 'updated_at' | 'busin
 }
 
 export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) {
-  const { t } = useLanguage();
+  const { t } = useLanguage()
   const [services, setServices] = useState<Service[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -98,7 +88,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
   // Limpiar formato y obtener número
   const parseFormattedPrice = (value: string): number => {
     const cleaned = value.replace(/[^\d]/g, '')
-  return cleaned === '' ? 0 : Number.parseInt(cleaned)
+    return cleaned === '' ? 0 : Number.parseInt(cleaned)
   }
 
   const fetchData = React.useCallback(async () => {
@@ -125,14 +115,16 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       // Fetch employees (IMPORTANTE: business_employees usa employee_id NO user_id)
       const { data: employeesData, error: employeesError } = await supabase
         .from('business_employees')
-        .select(`
+        .select(
+          `
           id,
           employee_id,
           profiles:employee_id (
             full_name,
             email
           )
-        `)
+        `
+        )
         .eq('business_id', businessId)
 
       if (employeesError) throw employeesError
@@ -172,8 +164,8 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
         .select('employee_id')
         .eq('service_id', serviceId)
 
-      setSelectedLocations(locationAssignments?.map((a) => a.location_id) || [])
-      setSelectedEmployees(employeeAssignments?.map((a) => a.employee_id) || [])
+      setSelectedLocations(locationAssignments?.map(a => a.location_id) || [])
+      setSelectedEmployees(employeeAssignments?.map(a => a.employee_id) || [])
     } catch {
       toast.error(t('admin.serviceValidation.assignError'))
     }
@@ -217,7 +209,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
   }
 
   const handleChange = (field: keyof typeof formData, value: string | number | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handlePriceChange = (value: string) => {
@@ -225,7 +217,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
     setPriceDisplay(value)
     // Actualizar formData con valor numérico
     const numericValue = parseFormattedPrice(value)
-    setFormData((prev) => ({ ...prev, price: numericValue }))
+    setFormData(prev => ({ ...prev, price: numericValue }))
   }
 
   const handlePriceBlur = () => {
@@ -234,18 +226,14 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
   }
 
   const handleToggleLocation = (locationId: string) => {
-    setSelectedLocations((prev) =>
-      prev.includes(locationId)
-        ? prev.filter((id) => id !== locationId)
-        : [...prev, locationId]
+    setSelectedLocations(prev =>
+      prev.includes(locationId) ? prev.filter(id => id !== locationId) : [...prev, locationId]
     )
   }
 
   const handleToggleEmployee = (employeeId: string) => {
-    setSelectedEmployees((prev) =>
-      prev.includes(employeeId)
-        ? prev.filter((id) => id !== employeeId)
-        : [...prev, employeeId]
+    setSelectedEmployees(prev =>
+      prev.includes(employeeId) ? prev.filter(id => id !== employeeId) : [...prev, employeeId]
     )
   }
 
@@ -334,9 +322,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
               .upload(filePath, file)
 
             if (!uploadError) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('service-images')
-                .getPublicUrl(filePath)
+              const {
+                data: { publicUrl },
+              } = supabase.storage.from('service-images').getPublicUrl(filePath)
               uploadedUrls.push(publicUrl)
             }
           }
@@ -356,7 +344,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       // Update location assignments
       await supabase.from('location_services').delete().eq('service_id', serviceId)
       if (selectedLocations.length > 0) {
-        const locationAssignments = selectedLocations.map((locId) => ({
+        const locationAssignments = selectedLocations.map(locId => ({
           location_id: locId,
           service_id: serviceId,
         }))
@@ -366,7 +354,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       // Update employee assignments
       await supabase.from('employee_services').delete().eq('service_id', serviceId)
       if (selectedEmployees.length > 0) {
-        const employeeAssignments = selectedEmployees.map((empId) => ({
+        const employeeAssignments = selectedEmployees.map(empId => ({
           employee_id: empId,
           service_id: serviceId,
         }))
@@ -392,7 +380,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
   const handleImageUploaded = (urls: string[]) => {
     if (urls.length > 0) {
-      setFormData((prev) => ({ ...prev, image_url: urls[0] }))
+      setFormData(prev => ({ ...prev, image_url: urls[0] }))
     }
   }
 
@@ -407,10 +395,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       await supabase.from('employee_services').delete().eq('service_id', serviceId)
 
       // Delete service
-      const { error } = await supabase
-        .from('services')
-        .delete()
-        .eq('id', serviceId)
+      const { error } = await supabase.from('services').delete().eq('id', serviceId)
 
       if (error) throw error
       toast.success(t('admin.serviceValidation.deleteSuccess'))
@@ -433,9 +418,11 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       {/* Header - Responsive */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">{t('admin.services.title')}</h2>
-            <p className="text-muted-foreground text-xs sm:text-sm">{t('admin.services.subtitle')}</p>
-          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+            {t('admin.services.title')}
+          </h2>
+          <p className="text-muted-foreground text-xs sm:text-sm">{t('admin.services.subtitle')}</p>
+        </div>
         <Button
           onClick={() => handleOpenDialog()}
           className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
@@ -451,23 +438,28 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
         <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
             <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
-            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{t('admin.services.noServicesTitle')}</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+              {t('admin.services.noServicesTitle')}
+            </h3>
             <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
               {t('admin.services.noServicesDesc')}
             </p>
-                    <Button
-                      onClick={() => handleOpenDialog()}
-                      className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('admin.actions.createFirstService')}
-                    </Button>
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {t('admin.actions.createFirstService')}
+            </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {services.map((service) => (
-            <Card key={service.id} className="bg-card border-border hover:border-border/80 transition-colors">
+          {services.map(service => (
+            <Card
+              key={service.id}
+              className="bg-card border-border hover:border-border/80 transition-colors"
+            >
               <CardHeader className="p-3 sm:p-6">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -478,7 +470,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                         className="w-full h-28 sm:h-32 object-cover rounded-lg mb-2 sm:mb-3"
                       />
                     )}
-                    <CardTitle className="text-foreground text-base sm:text-lg truncate">{service.name}</CardTitle>
+                    <CardTitle className="text-foreground text-base sm:text-lg truncate">
+                      {service.name}
+                    </CardTitle>
                     {!service.is_active && (
                       <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
                         {t('common.states.inactive')}
@@ -507,7 +501,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
               </CardHeader>
               <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
                 {service.description && (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{service.description}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                    {service.description}
+                  </p>
                 )}
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
                   <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400 flex-shrink-0" />
@@ -517,7 +513,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 </div>
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
                   <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" />
-                  <span className="text-muted-foreground">{service.duration_minutes} {t('common.time.minutes')}</span>
+                  <span className="text-muted-foreground">
+                    {service.duration_minutes} {t('common.time.minutes')}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -542,11 +540,13 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="text-sm sm:text-base">{t('admin.services.nameLabel')}</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">
+                {t('admin.services.nameLabel')}
+              </Label>
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
+                onChange={e => handleChange('name', e.target.value)}
                 placeholder={t('admin.services.namePlaceholder')}
                 required
                 className="min-h-[44px]"
@@ -555,11 +555,13 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
             {/* Description */}
             <div>
-              <Label htmlFor="description" className="text-sm sm:text-base">{t('admin.services.descriptionLabel')}</Label>
+              <Label htmlFor="description" className="text-sm sm:text-base">
+                {t('admin.services.descriptionLabel')}
+              </Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
+                onChange={e => handleChange('description', e.target.value)}
                 placeholder={t('admin.services.descriptionPlaceholder')}
                 rows={3}
                 className="min-h-[88px]"
@@ -569,19 +571,23 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
             {/* Duration & Price - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="duration_minutes" className="text-sm sm:text-base">{t('admin.services.durationLabel')}</Label>
+                <Label htmlFor="duration_minutes" className="text-sm sm:text-base">
+                  {t('admin.services.durationLabel')}
+                </Label>
                 <Input
                   id="duration_minutes"
                   type="number"
                   min="1"
                   value={formData.duration_minutes}
-                  onChange={(e) => handleChange('duration_minutes', parseInt(e.target.value) || 0)}
+                  onChange={e => handleChange('duration_minutes', parseInt(e.target.value) || 0)}
                   required
                   className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="price" className="text-sm sm:text-base">{t('admin.services.priceLabel')}</Label>
+                <Label htmlFor="price" className="text-sm sm:text-base">
+                  {t('admin.services.priceLabel')}
+                </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
                     $
@@ -590,7 +596,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                     id="price"
                     type="text"
                     value={priceDisplay}
-                    onChange={(e) => handlePriceChange(e.target.value)}
+                    onChange={e => handlePriceChange(e.target.value)}
                     onBlur={handlePriceBlur}
                     placeholder="0"
                     className="pl-8 min-h-[44px]"
@@ -606,9 +612,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
             {/* Image Upload (OPCIONAL) */}
             <div>
               <Label>{t('admin.services.imageLabel')}</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                {t('admin.services.imageDesc')}
-              </p>
+              <p className="text-xs text-muted-foreground mb-2">{t('admin.services.imageDesc')}</p>
               {formData.image_url ? (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2">
                   <img
@@ -627,7 +631,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                  ) : pendingImageFiles.length > 0 ? (
+              ) : pendingImageFiles.length > 0 ? (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2 bg-muted">
                   <img
                     src={URL.createObjectURL(pendingImageFiles[0])}
@@ -648,7 +652,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                   maxFiles={1}
                   maxSizeMB={5}
                   onUploadComplete={handleImageUploaded}
-                  onUploadError={(error) => toast.error(error)}
+                  onUploadError={error => toast.error(error)}
                   folderPath={`services/${editingService.id}`}
                 />
               ) : (
@@ -657,8 +661,10 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                   maxFiles={1}
                   maxSizeMB={5}
                   delayedUpload={true}
-                  onFileSelected={(files) => setPendingImageFiles(Array.isArray(files) ? files : [files])}
-                  onUploadError={(error) => toast.error(error)}
+                  onFileSelected={files =>
+                    setPendingImageFiles(Array.isArray(files) ? files : [files])
+                  }
+                  onUploadError={error => toast.error(error)}
                   folderPath="temp"
                 />
               )}
@@ -669,7 +675,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
               <div>
                 <Label className="mb-2 block">{t('admin.services.availableAtLocations')}</Label>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
-                  {locations.map((location) => (
+                  {locations.map(location => (
                     <div key={location.id} className="flex items-center gap-2">
                       <Checkbox
                         id={`location-${location.id}`}
@@ -699,7 +705,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
               <div>
                 <Label className="mb-2 block">{t('admin.services.providedBy')}</Label>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
-                  {employees.map((employee) => (
+                  {employees.map(employee => (
                     <div key={employee.id} className="flex items-center gap-2">
                       <Checkbox
                         id={`employee-${employee.id}`}
@@ -711,7 +717,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                         className="text-sm text-foreground cursor-pointer flex items-center gap-2"
                       >
                         <Users className="h-3 w-3 text-muted-foreground" />
-                        {employee.profiles?.full_name || employee.profiles?.email || t('admin.services.noName')}
+                        {employee.profiles?.full_name ||
+                          employee.profiles?.email ||
+                          t('admin.services.noName')}
                       </label>
                     </div>
                   ))}
@@ -724,7 +732,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
               <Checkbox
                 id="is_active"
                 checked={formData.is_active}
-                onCheckedChange={(checked) => handleChange('is_active', checked as boolean)}
+                onCheckedChange={checked => handleChange('is_active', checked as boolean)}
               />
               <Label htmlFor="is_active" className="cursor-pointer">
                 {t('admin.services.activeLabel')}

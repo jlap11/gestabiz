@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
 
@@ -10,7 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -22,14 +22,15 @@ serve(async (req) => {
 
     // Obtener fecha/hora actual
     const now = new Date()
-    
+
     // Buscar citas que necesitan recordatorios
     // Buscaremos citas en las próximas 25 horas (para capturar recordatorios de 24h)
     const futureLimit = new Date(now.getTime() + 25 * 60 * 60 * 1000)
-    
+
     const { data: upcomingAppointments, error: appointmentsError } = await supabase
       .from('appointments')
-      .select(`
+      .select(
+        `
         id,
         business_id,
         employee_id,
@@ -46,7 +47,8 @@ serve(async (req) => {
         location:locations(id, name, address),
         client:profiles!client_id(id, full_name, email, phone, whatsapp),
         employee:profiles!employee_id(id, full_name, email, phone)
-      `)
+      `
+      )
       .in('status', ['pending', 'confirmed'])
       .gte('start_time', now.toISOString())
       .lte('start_time', futureLimit.toISOString())
@@ -73,7 +75,9 @@ serve(async (req) => {
 
         // Calcular tiempo hasta la cita (en minutos)
         const appointmentTime = new Date(appointment.start_time)
-        const minutesUntilAppointment = Math.floor((appointmentTime.getTime() - now.getTime()) / (1000 * 60))
+        const minutesUntilAppointment = Math.floor(
+          (appointmentTime.getTime() - now.getTime()) / (1000 * 60)
+        )
 
         // Verificar si algún tiempo de recordatorio coincide
         let shouldSendReminder = false
@@ -83,9 +87,12 @@ serve(async (req) => {
           // Permitir un margen de ±5 minutos
           if (Math.abs(minutesUntilAppointment - reminderMinutes) <= 5) {
             shouldSendReminder = true
-            reminderType = reminderMinutes >= 1440 ? '24 horas' : 
-                          reminderMinutes >= 60 ? '1 hora' : 
-                          `${reminderMinutes} minutos`
+            reminderType =
+              reminderMinutes >= 1440
+                ? '24 horas'
+                : reminderMinutes >= 60
+                  ? '1 hora'
+                  : `${reminderMinutes} minutos`
             break
           }
         }
@@ -128,17 +135,18 @@ serve(async (req) => {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric'
+                day: 'numeric',
               }),
               time: new Date(appointment.start_time).toLocaleTimeString('es-ES', {
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
               }),
-              location: appointment.location?.address || appointment.location?.name || 'Por confirmar',
+              location:
+                appointment.location?.address || appointment.location?.name || 'Por confirmar',
               service: appointment.service?.name || 'Servicio',
-              reminder_time: reminderType
-            }
-          }
+              reminder_time: reminderType,
+            },
+          },
         })
 
         if (clientNotificationResult.error) {
@@ -161,14 +169,13 @@ serve(async (req) => {
           client: appointment.client?.full_name,
           time_until: `${minutesUntilAppointment} minutos`,
           reminder_type: reminderType,
-          status: 'sent'
+          status: 'sent',
         })
-
       } catch (error) {
         results.push({
           appointment_id: appointment.id,
           status: 'failed',
-          error: (error as Error).message
+          error: (error as Error).message,
         })
       }
     }
@@ -180,33 +187,32 @@ serve(async (req) => {
         appointments_checked: upcomingAppointments?.length || 0,
         reminders_processed: remindersProcessed,
         reminders_sent: remindersSent,
-        results
+        results,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 200,
       }
     )
-
   } catch (error) {
     console.error('Error in process-reminders:', error)
-    
+
     // Capture error to Sentry
     captureEdgeFunctionError(error as Error, {
       functionName: 'process-reminders',
-      operation: 'main'
+      operation: 'main',
     })
-    
+
     await flushSentry()
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: (error as Error).message,
-        stack: (error as Error).stack
+        stack: (error as Error).stack,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 500,
       }
     )
   }
