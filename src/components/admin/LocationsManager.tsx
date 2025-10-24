@@ -96,7 +96,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
       if (error) throw error
       setLocations(data || [])
     } catch {
-      toast.error('Error al cargar las sedes')
+        toast.error(t('admin.locationActions.loadSeatError'))
     } finally {
       setIsLoading(false)
     }
@@ -145,7 +145,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
     e.preventDefault()
     
     if (!formData.name.trim()) {
-      toast.error('El nombre de la sede es requerido')
+      toast.error(t('admin.locationActions.seatNameRequired'))
       return
     }
 

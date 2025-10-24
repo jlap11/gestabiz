@@ -283,7 +283,7 @@ export function ClientDashboard({
   // Handle chat with professional from appointment details
   const handleStartChatWithProfessional = useCallback(async (professionalId: string, businessId?: string) => {
     if (!user?.id || !professionalId) {
-      toast.error('No se puede iniciar el chat en este momento')
+      toast.error(t('clientDashboard.chatInitError'))
       return
     }
     
@@ -312,7 +312,7 @@ export function ClientDashboard({
       }
     } catch (error) {
       console.error('Error al iniciar chat:', error)
-      toast.error('No se pudo iniciar el chat. Por favor, intenta de nuevo.')
+      toast.error(t('clientDashboard.chatError'))
     } finally {
       setIsStartingChat(false)
     }
@@ -349,7 +349,7 @@ export function ClientDashboard({
       setAppointments(refreshedAppointments)
     } catch (error) {
       console.error('Error al cancelar cita:', error)
-      toast.error('No se pudo cancelar la cita. Intenta de nuevo.')
+      toast.error(t('clientDashboard.cancelError'))
     }
   }, [user?.id, appointments])
 

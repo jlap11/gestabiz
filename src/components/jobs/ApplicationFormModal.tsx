@@ -178,7 +178,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
       }
     } catch (err) {
       const error = err as Error;
-      toast.error(error.message || 'Error al enviar aplicación');
+      toast.error(error.message || t('admin.jobApplications.formError'));
     }
   };
 
@@ -299,7 +299,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                       // Validate file type
                       const fileExt = file.name.split('.').pop()?.toLowerCase();
                       if (!fileExt || !['pdf', 'docx'].includes(fileExt)) {
-                        toast.error('Solo se permiten archivos PDF o DOCX');
+                        toast.error(t('admin.jobApplications.fileTypeError'));
                         e.target.value = '';
                         return;
                       }
@@ -307,7 +307,7 @@ export const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                       // Validate file size (5MB max)
                       const maxSize = 5 * 1024 * 1024;
                       if (file.size > maxSize) {
-                        toast.error('El archivo debe ser menor a 5MB');
+                        toast.error(t('admin.jobApplications.fileSizeError'));
                         e.target.value = '';
                         return;
                       }
