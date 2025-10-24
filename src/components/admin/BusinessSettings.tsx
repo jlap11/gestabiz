@@ -83,8 +83,8 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
       <div className="flex items-center gap-3">
         <Building2 className="h-8 w-8 text-primary" />
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Configuración del Negocio</h2>
-          <p className="text-muted-foreground text-sm">Actualiza la información de tu negocio</p>
+          <h2 className="text-2xl font-bold text-foreground">{t('admin.businessSettings.title')}</h2>
+          <p className="text-muted-foreground text-sm">{t('admin.businessSettings.subtitle')}</p>
         </div>
       </div>
 
@@ -118,30 +118,30 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         {/* Basic Information */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Información Básica</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Información general de tu negocio
-            </CardDescription>
-          </CardHeader>
+              <CardTitle className="text-foreground">{t('admin.businessSettings.basicInfo.title')}</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                {t('admin.businessSettings.basicInfo.description')}
+              </CardDescription>
+            </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Nombre del Negocio *</Label>
+              <Label htmlFor="name">{t('admin.businessSettings.nameLabel')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="Nombre de tu negocio"
+                placeholder={t('admin.businessSettings.namePlaceholder')}
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Descripción</Label>
+              <Label htmlFor="description">{t('admin.businessSettings.descriptionLabel')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Describe tu negocio"
+                placeholder={t('admin.businessSettings.descriptionPlaceholder')}
                 rows={4}
               />
             </div>
@@ -151,31 +151,31 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         {/* Contact Information */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Información de Contacto</CardTitle>
+            <CardTitle className="text-foreground">{t('admin.businessSettings.contact.title')}</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Cómo pueden contactarte tus clientes
+              {t('admin.businessSettings.contact.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="phone">Teléfono</Label>
+              <Label htmlFor="phone">{t('admin.businessSettings.contact.phoneLabel')}</Label>
               <PhoneInput
                 value={formData.phone}
                 onChange={(value) => handleChange('phone', value)}
                 prefix={phonePrefix}
                 onPrefixChange={setPhonePrefix}
-                placeholder="Número de teléfono"
+                placeholder={t('common.placeholders.phoneNumber')}
               />
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('admin.businessSettings.contact.emailLabel')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                placeholder="contacto@negocio.com"
+                placeholder={t('common.placeholders.email')}
               />
             </div>
 
@@ -195,40 +195,40 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         {/* Address Information */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Dirección</CardTitle>
+            <CardTitle className="text-foreground">{t('admin.businessSettings.address.title')}</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Ubicación principal de tu negocio
+              {t('admin.businessSettings.address.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="address">Dirección</Label>
+                <Label htmlFor="address">{t('admin.businessSettings.address.addressLabel')}</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
-                placeholder="Calle y número"
+                placeholder={t('admin.businessSettings.address.addressPlaceholder')}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="city">Ciudad</Label>
+                <Label htmlFor="city">{t('admin.businessSettings.address.cityLabel')}</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
-                  placeholder="Ciudad"
+                  placeholder={t('common.placeholders.city')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="state">Estado/Provincia</Label>
+                <Label htmlFor="state">{t('admin.businessSettings.address.stateLabel')}</Label>
                 <Input
                   id="state"
                   value={formData.state}
                   onChange={(e) => handleChange('state', e.target.value)}
-                  placeholder="Estado"
+                  placeholder={t('common.placeholders.state')}
                 />
               </div>
             </div>
@@ -238,29 +238,29 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
         {/* Legal Information */}
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Información Legal</CardTitle>
+            <CardTitle className="text-foreground">{t('admin.businessSettings.legal.title')}</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Datos fiscales y legales de tu negocio
+              {t('admin.businessSettings.legal.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="legal_name">Razón Social</Label>
+              <Label htmlFor="legal_name">{t('admin.businessSettings.legal.legalNameLabel')}</Label>
               <Input
                 id="legal_name"
                 value={formData.legal_name}
                 onChange={(e) => handleChange('legal_name', e.target.value)}
-                placeholder="Razón social o nombre legal"
+                placeholder={t('admin.businessSettings.legal.legalNamePlaceholder')}
               />
             </div>
 
             <div>
-              <Label htmlFor="tax_id">NIT / RFC / Tax ID</Label>
+              <Label htmlFor="tax_id">{t('admin.businessSettings.legal.taxIdLabel')}</Label>
               <Input
                 id="tax_id"
                 value={formData.tax_id}
                 onChange={(e) => handleChange('tax_id', e.target.value)}
-                placeholder="Número de identificación fiscal"
+                placeholder={t('admin.businessSettings.legal.taxIdPlaceholder')}
               />
             </div>
           </CardContent>
@@ -274,7 +274,7 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
             className="bg-primary hover:bg-primary/90"
           >
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+            {isSaving ? t('common.actions.saving') : t('common.actions.save')}
           </Button>
         </div>
       </form>

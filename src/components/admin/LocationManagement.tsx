@@ -296,7 +296,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                 </DialogTitle>
                 <DialogDescription>
                   {editingLocation 
-                    ? 'Edita la información de la ubicación'
+                    ? t('admin.locationManagement.editDescription')
                     : t('admin.actions.addNewLocation')
                   }
                 </DialogDescription>
@@ -305,85 +305,85 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
               <form onSubmit={handleLocationSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <Label htmlFor="location-name">Nombre de la Ubicación *</Label>
+                    <Label htmlFor="location-name">{t('admin.locationManagement.nameLabel')}</Label>
                     <Input
                       id="location-name"
                       value={locationForm.name}
                       onChange={(e) => setLocationForm({ ...locationForm, name: e.target.value })}
-                      placeholder="Ej: Sede Principal, Sucursal Norte"
+                      placeholder={t('admin.locationManagement.namePlaceholder')}
                       required
                     />
                   </div>
                   
                   <div className="col-span-2">
-                    <Label htmlFor="location-address">Dirección *</Label>
+                    <Label htmlFor="location-address">{t('admin.locationManagement.addressLabel')}</Label>
                     <Input
                       id="location-address"
                       value={locationForm.address}
                       onChange={(e) => setLocationForm({ ...locationForm, address: e.target.value })}
-                      placeholder="Calle, número, colonia"
+                      placeholder={t('admin.locationManagement.addressPlaceholder')}
                       required
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="location-city">Ciudad</Label>
+                    <Label htmlFor="location-city">{t('admin.locationManagement.cityLabel')}</Label>
                     <Input
                       id="location-city"
                       value={locationForm.city}
                       onChange={(e) => setLocationForm({ ...locationForm, city: e.target.value })}
-                      placeholder="Ciudad"
+                      placeholder={t('common.placeholders.city')}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="location-state">Estado/Provincia</Label>
+                    <Label htmlFor="location-state">{t('admin.locationManagement.stateLabel')}</Label>
                     <Input
                       id="location-state"
                       value={locationForm.state}
                       onChange={(e) => setLocationForm({ ...locationForm, state: e.target.value })}
-                      placeholder="Estado o Provincia"
+                      placeholder={t('common.placeholders.state')}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="location-country">País</Label>
+                    <Label htmlFor="location-country">{t('admin.locationManagement.countryLabel')}</Label>
                     <Input
                       id="location-country"
                       value={locationForm.country}
                       onChange={(e) => setLocationForm({ ...locationForm, country: e.target.value })}
-                      placeholder="País"
+                      placeholder={t('admin.locationManagement.countryPlaceholder')}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="location-postal">Código Postal</Label>
+                    <Label htmlFor="location-postal">{t('admin.locationManagement.postalLabel')}</Label>
                     <Input
                       id="location-postal"
                       value={locationForm.postal_code}
                       onChange={(e) => setLocationForm({ ...locationForm, postal_code: e.target.value })}
-                      placeholder="Código postal"
+                      placeholder={t('admin.locationManagement.postalPlaceholder')}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="location-phone">Teléfono</Label>
+                    <Label htmlFor="location-phone">{t('admin.locationManagement.phoneLabel')}</Label>
                     <Input
                       id="location-phone"
                       value={locationForm.phone}
                       onChange={(e) => setLocationForm({ ...locationForm, phone: e.target.value })}
-                      placeholder="+34 123 456 789"
+                      placeholder={t('admin.locationManagement.phonePlaceholder')}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="location-email">Email</Label>
+                    <Label htmlFor="location-email">{t('admin.locationManagement.emailLabel')}</Label>
                     <Input
                       id="location-email"
                       type="email"
                       value={locationForm.email}
                       onChange={(e) => setLocationForm({ ...locationForm, email: e.target.value })}
-                      placeholder="sede@negocio.com"
+                      placeholder={t('common.placeholders.email')}
                     />
                   </div>
                   
@@ -392,10 +392,10 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                       <Star className="h-5 w-5 text-yellow-500" />
                       <div>
                         <Label htmlFor="is-primary" className="text-base font-medium cursor-pointer">
-                          Sede Principal
+                          {t('admin.locationManagement.primaryLabel')}
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          Marcar esta ubicación como la sede principal del negocio
+                          {t('admin.locationManagement.primaryDescription')}
                         </p>
                       </div>
                     </div>
@@ -497,7 +497,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                 </DialogTitle>
                 <DialogDescription>
                   {editingService 
-                    ? 'Edita la información del servicio'
+                    ? t('admin.locationManagement.editServiceDescription')
                     : t('admin.actions.addNewService')
                   }
                 </DialogDescription>
@@ -506,13 +506,13 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
               <form onSubmit={handleServiceSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="service-name">{t('services.name')} *</Label>
-                  <Input
-                    id="service-name"
-                    value={serviceForm.name}
-                    onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
-                    placeholder="Ej: Limpieza dental, Consulta médica"
-                    required
-                  />
+                    <Input
+                      id="service-name"
+                      value={serviceForm.name}
+                      onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
+                      placeholder={t('admin.locationManagement.serviceNamePlaceholder')}
+                      required
+                    />
                 </div>
                 
                 <div>

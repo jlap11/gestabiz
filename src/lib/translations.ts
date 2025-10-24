@@ -2021,7 +2021,103 @@ export const translations = {
         phone: 'Phone',
         noCategory: 'No category',
         email: 'Email',
-      },
+        },
+
+        // Business Settings (Admin)
+        businessSettings: {
+          title: 'Business Settings',
+          subtitle: 'Update your business information',
+          businessNameRequired: 'Business name is required',
+          updateSuccess: 'Business settings updated successfully',
+          updateError: 'Error updating settings',
+          basicInfo: {
+            title: 'Basic Information',
+            description: 'General information about your business',
+          },
+          nameLabel: 'Business Name *',
+          namePlaceholder: 'Your business name',
+          descriptionLabel: 'Description',
+          descriptionPlaceholder: 'Describe your business',
+          contact: {
+            title: 'Contact Information',
+            description: 'How clients can contact you',
+            phoneLabel: 'Phone',
+            emailLabel: 'Email',
+            websiteLabel: 'Website',
+          },
+          address: {
+            title: 'Address',
+            description: 'Primary location of your business',
+            addressLabel: 'Address',
+            addressPlaceholder: 'Street and number',
+            cityLabel: 'City',
+            stateLabel: 'State',
+          },
+          legal: {
+            title: 'Legal Information',
+            description: 'Tax and legal details',
+            legalNameLabel: 'Legal Name',
+            legalNamePlaceholder: 'Legal name or business name',
+            taxIdLabel: 'Tax ID',
+            taxIdPlaceholder: 'Tax identification number',
+          },
+        },
+
+        // Location management (Admin)
+        locationManagement: {
+          title: 'Locations & Services',
+          subtitle: 'Manage your business locations and services',
+          editDescription: 'Edit location information',
+          nameLabel: 'Location Name *',
+          namePlaceholder: 'E.g: Main Branch, North Branch',
+          addressLabel: 'Address *',
+          addressPlaceholder: 'Street, number, neighborhood',
+          cityLabel: 'City',
+          stateLabel: 'State/Province',
+          countryLabel: 'Country',
+          countryPlaceholder: 'Country',
+          postalLabel: 'Postal Code',
+          postalPlaceholder: 'Postal code',
+          phoneLabel: 'Phone',
+          phonePlaceholder: '+1 555 123 4567',
+          emailLabel: 'Email',
+          primaryLabel: 'Primary Location',
+          primaryDescription: 'Mark this location as the primary business location',
+          serviceNamePlaceholder: 'E.g: Dental Cleaning, Medical Consultation',
+          editServiceDescription: 'Edit service information',
+          missingFields: 'Please fill required fields',
+          confirmDeleteLocation: 'Are you sure you want to delete this location?',
+        },
+
+        // Services (Admin)
+        services: {
+          title: 'Services',
+          subtitle: 'Manage the services you offer',
+          noServicesTitle: 'No services yet',
+          noServicesDesc: 'Add your first service so clients can book appointments',
+          nameLabel: 'Service Name *',
+          namePlaceholder: 'E.g: Haircut',
+          descriptionLabel: 'Description',
+          descriptionPlaceholder: 'Describe the service',
+          durationLabel: 'Duration (minutes) *',
+          priceLabel: 'Price *',
+          imageLabel: 'Service Image (Optional)',
+          imageDesc: 'You can upload an image to showcase the service',
+          availableAtLocations: 'Available at the following locations:',
+          selectAtLeastOneLocation: 'You must select at least one location',
+          providedBy: 'Provided by:',
+          activeLabel: 'Service active',
+        },
+
+        // Admin actions used across admin screens
+        actions: {
+          addNewLocation: 'Add new location',
+          addNewService: 'Add new service',
+          addService: 'Add Service',
+          createFirstService: 'Create first service',
+          confirmDeleteService: 'Are you sure you want to delete this service?',
+          confirmDeleteLocation: 'Are you sure you want to delete this location?',
+        },
 
     // Absence and Vacation System
     absences: {
@@ -4429,8 +4525,72 @@ export const translations = {
 
       // Business Settings
       businessSettings: {
+        title: 'Configuración del Negocio',
+        subtitle: 'Actualiza la información de tu negocio',
         businessNameRequired: 'El nombre del negocio es requerido',
+        updateSuccess: 'Configuración del negocio actualizada exitosamente',
         updateError: 'Error al actualizar la configuración',
+        basicInfo: {
+          title: 'Información Básica',
+          description: 'Información general de tu negocio',
+        },
+        nameLabel: 'Nombre del Negocio *',
+        namePlaceholder: 'Nombre de tu negocio',
+        descriptionLabel: 'Descripción',
+        descriptionPlaceholder: 'Describe tu negocio',
+        contact: {
+          title: 'Información de Contacto',
+          description: 'Cómo pueden contactarte tus clientes',
+          phoneLabel: 'Teléfono',
+          emailLabel: 'Email',
+          websiteLabel: 'Sitio Web',
+        },
+        address: {
+          title: 'Dirección',
+          description: 'Ubicación principal de tu negocio',
+          addressLabel: 'Dirección',
+          addressPlaceholder: 'Calle y número',
+          cityLabel: 'Ciudad',
+          stateLabel: 'Estado',
+        },
+        legal: {
+          title: 'Información Legal',
+          description: 'Datos fiscales y legales de tu negocio',
+          legalNameLabel: 'Razón Social',
+          legalNamePlaceholder: 'Razón social o nombre legal',
+          taxIdLabel: 'NIT / RFC / Tax ID',
+          taxIdPlaceholder: 'Número de identificación fiscal',
+        },
+      },
+
+      // Services (Admin)
+      services: {
+        title: 'Servicios',
+        subtitle: 'Gestiona los servicios que ofreces',
+        noServicesTitle: 'No hay servicios aún',
+        noServicesDesc: 'Agrega tu primer servicio para que los clientes puedan reservar citas',
+        nameLabel: 'Nombre del Servicio *',
+        namePlaceholder: 'Ej: Corte de Cabello',
+        descriptionLabel: 'Descripción',
+        descriptionPlaceholder: 'Describe el servicio',
+        durationLabel: 'Duración (minutos) *',
+        priceLabel: 'Precio *',
+        imageLabel: 'Imagen del Servicio (Opcional)',
+        imageDesc: 'Puedes subir una imagen para mostrar resultados o ejemplos del servicio',
+        availableAtLocations: 'Disponible en las siguientes sedes:',
+        selectAtLeastOneLocation: 'Debes seleccionar al menos una sede',
+        providedBy: 'Prestado por:',
+        activeLabel: 'Servicio activo',
+      },
+
+      // Admin actions used across admin screens
+      actions: {
+        addNewLocation: 'Agregar nueva sede',
+        addNewService: 'Agregar nuevo servicio',
+        addService: 'Agregar Servicio',
+        createFirstService: 'Crear primer servicio',
+        confirmDeleteService: '¿Estás seguro de que quieres eliminar este servicio?',
+        confirmDeleteLocation: '¿Estás seguro de que quieres eliminar esta ubicación?',
       },
 
       // Resources Manager
@@ -4481,6 +4641,8 @@ export const translations = {
         phone: 'Teléfono',
         email: 'Email',
       },
+
+      
 
       // Calendar & Appointments
       appointmentCalendar: {

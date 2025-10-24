@@ -98,7 +98,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
   // Limpiar formato y obtener número
   const parseFormattedPrice = (value: string): number => {
     const cleaned = value.replace(/[^\d]/g, '')
-    return cleaned === '' ? 0 : parseInt(cleaned)
+  return cleaned === '' ? 0 : Number.parseInt(cleaned)
   }
 
   const fetchData = React.useCallback(async () => {
@@ -152,7 +152,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
     } finally {
       setIsLoading(false)
     }
-  }, [businessId])
+  }, [businessId, t])
 
   useEffect(() => {
     fetchData()
@@ -375,10 +375,11 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
       await fetchData()
       handleCloseDialog()
-    } catch (error: any) {
+    } catch (error: unknown) {
       // eslint-disable-next-line no-console
       console.error('Error en handleSubmit:', error)
-      const errorMessage = error?.message || 'Error desconocido'
+      const err = error as { message?: string }
+      const errorMessage = err?.message || 'Error desconocido'
       toast.error(
         editingService 
           ? `Error al actualizar el servicio: ${errorMessage}` 
@@ -432,9 +433,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
       {/* Header - Responsive */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">Servicios</h2>
-          <p className="text-muted-foreground text-xs sm:text-sm">Gestiona los servicios que ofreces</p>
-        </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">{t('admin.services.title')}</h2>
+            <p className="text-muted-foreground text-xs sm:text-sm">{t('admin.services.subtitle')}</p>
+          </div>
         <Button
           onClick={() => handleOpenDialog()}
           className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
@@ -450,17 +451,17 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
         <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
             <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
-            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">No hay servicios aún</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{t('admin.services.noServicesTitle')}</h3>
             <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
-              Agrega tu primer servicio para que los clientes puedan reservar citas
+              {t('admin.services.noServicesDesc')}
             </p>
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t('admin.actions.createFirstService')}
-            </Button>
+                    <Button
+                      onClick={() => handleOpenDialog()}
+                      className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('admin.actions.createFirstService')}
+                    </Button>
           </CardContent>
         </Card>
       ) : (
@@ -541,12 +542,12 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="text-sm sm:text-base">Nombre del Servicio *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base">{t('admin.services.nameLabel')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="Ej: Corte de Cabello"
+                placeholder={t('admin.services.namePlaceholder')}
                 required
                 className="min-h-[44px]"
               />
@@ -554,12 +555,12 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
             {/* Description */}
             <div>
-              <Label htmlFor="description" className="text-sm sm:text-base">Descripción</Label>
+              <Label htmlFor="description" className="text-sm sm:text-base">{t('admin.services.descriptionLabel')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Describe el servicio"
+                placeholder={t('admin.services.descriptionPlaceholder')}
                 rows={3}
                 className="min-h-[88px]"
               />
@@ -568,7 +569,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
             {/* Duration & Price - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="duration_minutes" className="text-sm sm:text-base">Duración (minutos) *</Label>
+                <Label htmlFor="duration_minutes" className="text-sm sm:text-base">{t('admin.services.durationLabel')}</Label>
                 <Input
                   id="duration_minutes"
                   type="number"
@@ -580,7 +581,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 />
               </div>
               <div>
-                <Label htmlFor="price" className="text-sm sm:text-base">Precio *</Label>
+                <Label htmlFor="price" className="text-sm sm:text-base">{t('admin.services.priceLabel')}</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
                     $
@@ -604,9 +605,9 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
             {/* Image Upload (OPCIONAL) */}
             <div>
-              <Label>Imagen del Servicio (Opcional)</Label>
+              <Label>{t('admin.services.imageLabel')}</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Puedes subir una imagen para mostrar resultados o ejemplos del servicio
+                {t('admin.services.imageDesc')}
               </p>
               {formData.image_url ? (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2">
@@ -726,10 +727,12 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 onCheckedChange={(checked) => handleChange('is_active', checked as boolean)}
               />
               <Label htmlFor="is_active" className="cursor-pointer">
-                Servicio activo
+                {t('admin.services.activeLabel')}
               </Label>
             </div>
 
+            {/* compute submit label to avoid nested ternary in JSX */}
+            {/**/}
             <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <Button
                 variant="ghost"
@@ -744,7 +747,10 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
                 disabled={isSaving}
               >
-                {isSaving ? t('common.actions.saving') : editingService ? t('common.actions.update') : t('common.actions.create')}
+                {(() => {
+                  if (isSaving) return t('common.actions.saving')
+                  return editingService ? t('common.actions.update') : t('common.actions.create')
+                })()}
               </Button>
             </DialogFooter>
           </form>
