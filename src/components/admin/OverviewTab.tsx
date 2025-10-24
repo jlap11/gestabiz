@@ -155,69 +155,71 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
   if (!stats) {
     return (
       <div className="flex items-center justify-center p-12">
-        <p className="text-muted-foreground">No se pudieron cargar las estadísticas</p>
+        <p className="text-muted-foreground">{t('admin.overview.errorLoading')}</p>
       </div>
     )
   }
 
   const statCards = [
     {
-      title: 'Total Citas',
+      title: t('admin.overview.totalAppointments'),
       value: stats.totalAppointments,
       icon: Calendar,
       color: 'text-blue-400',
       bgColor: 'bg-blue-500/10',
     },
     {
-      title: 'Citas Hoy',
+      title: t('admin.overview.todayAppointments'),
       value: stats.todayAppointments,
       icon: Clock,
       color: 'text-violet-400',
       bgColor: 'bg-violet-500/10',
     },
     {
-      title: 'Próximas Citas',
+      title: t('admin.overview.upcomingAppointments'),
       value: stats.upcomingAppointments,
       icon: TrendingUp,
       color: 'text-green-400',
       bgColor: 'bg-green-500/10',
     },
     {
-      title: 'Completadas',
+      title: t('admin.overview.completedAppointments'),
       value: stats.completedAppointments,
       icon: CheckCircle,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-500/10',
     },
     {
-      title: 'Canceladas',
+      title: t('admin.overview.cancelledAppointments'),
       value: stats.cancelledAppointments,
       icon: XCircle,
       color: 'text-red-400',
       bgColor: 'bg-red-500/10',
     },
     {
-      title: 'Sedes',
+      title: t('admin.overview.locations'),
       value: stats.totalLocations,
       icon: MapPin,
       color: 'text-orange-400',
       bgColor: 'bg-orange-500/10',
     },
     {
-      title: 'Servicios',
+      title: t('admin.overview.services'),
       value: stats.totalServices,
       icon: Briefcase,
       color: 'text-pink-400',
       bgColor: 'bg-pink-500/10',
     },
     {
-      title: 'Empleados',
+      title: t('admin.overview.employees'),
       value: stats.totalEmployees,
       icon: Users,
       color: 'text-cyan-400',
       bgColor: 'bg-cyan-500/10',
     },
   ]
+
+  // brokenConfigMessage will be computed just before rendering the alert card
 
   return (
     <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
@@ -246,7 +248,7 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
           <CardHeader className="p-3 sm:p-4">
             <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
-              <span>Ingresos del Mes</span>
+              <span>{t('admin.overview.monthlyRevenue')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 sm:p-4 pt-0">
@@ -254,7 +256,7 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
               ${stats.monthlyRevenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-              Basado en citas completadas este mes
+              {t('admin.overview.monthlyRevenueNote')}
             </p>
           </CardContent>
         </Card>
@@ -263,7 +265,7 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-violet-400" />
-              Valor Promedio por Cita
+              {t('admin.overview.avgAppointmentValue')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -271,13 +273,14 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
               ${stats.averageAppointmentValue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Promedio de ingresos por cita completada
+              {t('admin.overview.avgAppointmentNote')}
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick Actions or Alerts */}
+      {/* helper removed - compute message inline below to avoid nested ternary linter */}
       {stats.totalLocations === 0 || stats.totalServices === 0 ? (
         <Card className="bg-amber-500/10 border-amber-500/20">
           <CardContent className="pt-6">
@@ -285,24 +288,24 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
               <AlertCircle className="h-5 w-5 text-amber-400 mt-0.5" />
               <div>
                 <h3 className="font-semibold text-foreground mb-1">
-                  Configuración Incompleta
+                  {t('admin.overview.brokenConfig.title')}
                 </h3>
                 <p className="text-sm text-foreground/90">
-                  {stats.totalLocations === 0 && stats.totalServices === 0
-                    ? 'Necesitas agregar sedes y servicios para empezar a recibir citas.'
-                    : stats.totalLocations === 0
-                    ? 'Necesitas agregar al menos una sede para tu negocio.'
-                    : 'Necesitas agregar servicios que ofrecer a tus clientes.'}
+                  {(() => {
+                    if (stats.totalLocations === 0 && stats.totalServices === 0) return t('admin.overview.brokenConfig.needBoth')
+                    if (stats.totalLocations === 0) return t('admin.overview.brokenConfig.needLocation')
+                    return t('admin.overview.brokenConfig.needServices')
+                  })()}
                 </p>
                 <div className="flex gap-2 mt-3">
                   {stats.totalLocations === 0 && (
                     <Badge variant="outline" className="border-amber-500/50 text-amber-300">
-                      Sin sedes
+                      {t('admin.overview.badge.noLocations')}
                     </Badge>
                   )}
                   {stats.totalServices === 0 && (
                     <Badge variant="outline" className="border-amber-500/50 text-amber-300">
-                      Sin servicios
+                      {t('admin.overview.badge.noServices')}
                     </Badge>
                   )}
                 </div>
@@ -315,23 +318,23 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
       {/* Business Info Summary */}
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">Información del Negocio</CardTitle>
+          <CardTitle className="text-foreground">{t('admin.overview.businessInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Nombre</p>
+              <p className="text-sm text-muted-foreground">{t('admin.overview.name')}</p>
               <p className="text-foreground font-medium">{business.name}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Categoría</p>
+              <p className="text-sm text-muted-foreground">{t('admin.overview.category')}</p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="secondary">{business.category?.name || 'Sin categoría'}</Badge>
+                <Badge variant="secondary">{business.category?.name || t('admin.overview.noCategory')}</Badge>
               </div>
             </div>
             {business.subcategories && business.subcategories.length > 0 && (
               <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground mb-2">Subcategorías</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('admin.overview.subcategories')}</p>
                 <div className="flex flex-wrap gap-2">
                   {business.subcategories.map((sub) => (
                     <Badge key={sub.id} variant="outline" className="border-border">
@@ -343,19 +346,19 @@ export function OverviewTab({ business }: Readonly<OverviewTabProps>) {
             )}
             {business.description && (
               <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">Descripción</p>
+                <p className="text-sm text-muted-foreground">{t('admin.overview.description')}</p>
                 <p className="text-foreground">{business.description}</p>
               </div>
             )}
             {business.phone && (
               <div>
-                <p className="text-sm text-muted-foreground">Teléfono</p>
+                <p className="text-sm text-muted-foreground">{t('admin.overview.phone')}</p>
                 <p className="text-foreground">{business.phone}</p>
               </div>
             )}
             {business.email && (
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-sm text-muted-foreground">{t('admin.overview.email')}</p>
                 <p className="text-foreground">{business.email}</p>
               </div>
             )}

@@ -1988,6 +1988,41 @@ export const translations = {
       },
     },
 
+      // Admin Overview
+      overview: {
+        errorLoading: 'Could not load statistics',
+        totalAppointments: 'Total Appointments',
+        todayAppointments: 'Appointments Today',
+        upcomingAppointments: 'Upcoming Appointments',
+        completedAppointments: 'Completed',
+        cancelledAppointments: 'Cancelled',
+        locations: 'Locations',
+        services: 'Services',
+        employees: 'Employees',
+        monthlyRevenue: 'Monthly Revenue',
+        monthlyRevenueNote: 'Based on completed appointments this month',
+        avgAppointmentValue: 'Average Appointment Value',
+        avgAppointmentNote: 'Average revenue per completed appointment',
+        brokenConfig: {
+          title: 'Incomplete configuration',
+          needBoth: 'You need to add locations and services to start receiving appointments.',
+          needLocation: 'You need to add at least one location for your business.',
+          needServices: 'You need to add services to offer to your customers.',
+        },
+        badge: {
+          noLocations: 'No locations',
+          noServices: 'No services',
+        },
+        businessInfo: 'Business Information',
+        name: 'Name',
+        category: 'Category',
+        subcategories: 'Subcategories',
+        description: 'Description',
+        phone: 'Phone',
+        noCategory: 'No category',
+        email: 'Email',
+      },
+
     // Absence and Vacation System
     absences: {
       title: 'Request Absence',
@@ -4410,6 +4445,41 @@ export const translations = {
         saveError: 'No se pudieron guardar las configuraciones',
         minutesInvalid: 'Ingrese un número de minutos válido',
         timeAlreadyExists: 'Este tiempo ya está en la lista',
+      },
+
+      // Admin Overview
+      overview: {
+        errorLoading: 'No se pudieron cargar las estadísticas',
+        totalAppointments: 'Total Citas',
+        todayAppointments: 'Citas Hoy',
+        upcomingAppointments: 'Próximas Citas',
+        completedAppointments: 'Completadas',
+        cancelledAppointments: 'Canceladas',
+        locations: 'Sedes',
+        services: 'Servicios',
+        employees: 'Empleados',
+        monthlyRevenue: 'Ingresos del Mes',
+        monthlyRevenueNote: 'Basado en citas completadas este mes',
+        avgAppointmentValue: 'Valor Promedio por Cita',
+        avgAppointmentNote: 'Promedio de ingresos por cita completada',
+        brokenConfig: {
+          title: 'Configuración Incompleta',
+          needBoth: 'Necesitas agregar sedes y servicios para empezar a recibir citas.',
+          needLocation: 'Necesitas agregar al menos una sede para tu negocio.',
+          needServices: 'Necesitas agregar servicios que ofrecer a tus clientes.',
+        },
+        badge: {
+          noLocations: 'Sin sedes',
+          noServices: 'Sin servicios',
+        },
+        businessInfo: 'Información del Negocio',
+        name: 'Nombre',
+        category: 'Categoría',
+        noCategory: 'Sin categoría',
+        subcategories: 'Subcategorías',
+        description: 'Descripción',
+        phone: 'Teléfono',
+        email: 'Email',
       },
 
       // Calendar & Appointments
