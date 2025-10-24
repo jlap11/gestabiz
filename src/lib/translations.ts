@@ -1969,6 +1969,27 @@ export const translations = {
       },
     },
 
+    // Billing Module
+    billing: {
+      securePayment: 'Secure Payment',
+      addPaymentMethod: 'Add Payment Method',
+      freePlan: 'Free Plan',
+      freeplanDescription: 'You are currently using the free plan with basic features',
+      currentPlan: 'Current Plan',
+      overduePayment: 'Overdue Payment',
+      statusActive: 'Active',
+      statusTrialing: 'Trial Period',
+      statusCanceled: 'Canceled',
+      statusSuspended: 'Suspended',
+      statusInactive: 'Inactive',
+      statusExpired: 'Expired',
+      statusPaused: 'Paused',
+      billingMonthly: 'Monthly',
+      billingAnnual: 'Annual',
+      usageMetrics: 'Resource Usage',
+      monitorUsage: 'Monitor your current plan usage',
+    },
+
     // Employee Dashboard
     employeeDashboard: {
       sidebar: {
@@ -3630,7 +3651,27 @@ export const translations = {
         exportCSV: 'Exportar CSV',
         completeLocationInfo: 'Completa la información de la nueva sede',
         addNewLocation: 'Agrega una nueva ubicación para tu negocio',
-        addNewService: 'Agrega un nuevo servicio'
+        addNewService: 'Agrega un nuevo servicio',
+        exporting: 'Exportando...'
+      },
+      billing: {
+        securePayment: 'Pago Seguro',
+        addPaymentMethod: 'Agregar Método de Pago',
+        freePlan: 'Plan Gratuito',
+        freeplanDescription: 'Actualmente estás usando el plan gratuito con funcionalidades básicas',
+        currentPlan: 'Plan Actual',
+        overduePayment: 'Pago Vencido',
+        statusActive: 'Activa',
+        statusTrialing: 'Período de Prueba',
+        statusCanceled: 'Cancelada',
+        statusSuspended: 'Suspendida',
+        statusInactive: 'Inactiva',
+        statusExpired: 'Expirada',
+        statusPaused: 'Pausada',
+        billingMonthly: 'Mensual',
+        billingAnnual: 'Anual',
+        usageMetrics: 'Uso de Recursos',
+        monitorUsage: 'Monitorea el uso de tu plan actual'
       },
       clientManagement: {
         search_placeholder: 'Buscar clientes por nombre, email o teléfono...',

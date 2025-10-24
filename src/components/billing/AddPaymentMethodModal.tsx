@@ -12,6 +12,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,8 @@ function PaymentForm({
   businessId, 
   onClose, 
   onSuccess 
-}: AddPaymentMethodModalProps) {
+}: Readonly<AddPaymentMethodModalProps>) {
+  const { t } = useLanguage()
   const stripe = useStripe()
   const elements = useElements()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -117,7 +119,7 @@ function PaymentForm({
         <div className="flex items-start gap-2">
           <Lock className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-blue-900 mb-1">Pago Seguro</p>
+            <p className="font-medium text-blue-900 mb-1">{t('billing.securePayment')}</p>
             <p className="text-blue-800">
               Tus datos de pago son procesados de forma segura por Stripe.
               No almacenamos información de tarjetas en nuestros servidores.
@@ -158,7 +160,8 @@ export function AddPaymentMethodModal({
   businessId,
   onClose,
   onSuccess,
-}: AddPaymentMethodModalProps) {
+}: Readonly<AddPaymentMethodModalProps>) {
+  const { t } = useLanguage()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -227,7 +230,7 @@ export function AddPaymentMethodModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Agregar Método de Pago</DialogTitle>
+          <DialogTitle>{t('billing.addPaymentMethod')}</DialogTitle>
           <DialogDescription>
             Agrega una tarjeta de crédito o débito de forma segura
           </DialogDescription>

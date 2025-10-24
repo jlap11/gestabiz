@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,7 @@ interface BillingDashboardProps {
 }
 
 export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>) {
+  const { t } = useLanguage()
   const { dashboard, isLoading, refresh } = useSubscription(businessId)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -72,10 +74,10 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              Plan Gratuito
+              {t('billing.freePlan')}
             </CardTitle>
             <CardDescription>
-              Actualmente estás usando el plan gratuito con funcionalidades básicas
+              {t('billing.freeplanDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -118,14 +120,14 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
 
   const getStatusBadge = (status: SubscriptionStatus) => {
     const badges = {
-      active: <Badge className="bg-green-500">Activa</Badge>,
-      trialing: <Badge className="bg-blue-500">Período de Prueba</Badge>,
-      past_due: <Badge className="bg-yellow-500">Pago Vencido</Badge>,
-      canceled: <Badge className="bg-red-500">Cancelada</Badge>,
-      suspended: <Badge className="bg-orange-500">Suspendida</Badge>,
-      inactive: <Badge className="bg-gray-500">Inactiva</Badge>,
-      expired: <Badge className="bg-red-700">Expirada</Badge>,
-      paused: <Badge className="bg-purple-500">Pausada</Badge>,
+      active: <Badge className="bg-green-500">{t('billing.statusActive')}</Badge>,
+      trialing: <Badge className="bg-blue-500">{t('billing.statusTrialing')}</Badge>,
+      past_due: <Badge className="bg-yellow-500">{t('billing.overduePayment')}</Badge>,
+      canceled: <Badge className="bg-red-500">{t('billing.statusCanceled')}</Badge>,
+      suspended: <Badge className="bg-orange-500">{t('billing.statusSuspended')}</Badge>,
+      inactive: <Badge className="bg-gray-500">{t('billing.statusInactive')}</Badge>,
+      expired: <Badge className="bg-red-700">{t('billing.statusExpired')}</Badge>,
+      paused: <Badge className="bg-purple-500">{t('billing.statusPaused')}</Badge>,
     }
     return badges[status] || <Badge>{status}</Badge>
   }
@@ -152,13 +154,13 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Plan Actual</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('billing.currentPlan')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold capitalize">{subscription.planType}</div>
             <p className="text-xs text-muted-foreground">
-              {subscription.billingCycle === 'monthly' ? 'Mensual' : 'Anual'}
+              {subscription.billingCycle === 'monthly' ? t('billing.billingMonthly') : t('billing.billingAnnual')}
             </p>
             <div className="mt-2">{getStatusBadge(subscription.status)}</div>
           </CardContent>
@@ -293,9 +295,9 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
         <TabsContent value="usage" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Uso de Recursos</CardTitle>
+              <CardTitle>{t('billing.usageMetrics')}</CardTitle>
               <CardDescription>
-                Monitorea el uso de tu plan actual
+                {t('billing.monitorUsage')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -444,13 +446,13 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
                 </div>
               ))}
 
-              <Button 
+              <Button
                 variant="outline" 
                 className="w-full"
                 onClick={() => setShowAddPaymentModal(true)}
               >
                 <CreditCard className="h-4 w-4 mr-2" />
-                Agregar Método de Pago
+                {t('billing.addPaymentMethod')}
               </Button>
             </CardContent>
           </Card>
