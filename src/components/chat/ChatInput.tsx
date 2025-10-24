@@ -246,11 +246,11 @@ export function ChatInput({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                  className="h-11 w-11 sm:h-9 sm:w-9 p-0 hover:bg-destructive hover:text-destructive-foreground min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                   onClick={() => handleRemoveAttachment(index)}
                   aria-label={`Eliminar archivo ${attachment.name}`}
                 >
-                  <X className="h-3 w-3" aria-hidden="true" />
+                  <X className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </div>
             ))}
@@ -276,7 +276,7 @@ export function ChatInput({
               <Paperclip className="h-5 w-5" aria-hidden="true" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent side="top" align="start" className="w-80 sm:w-96 p-0">
+          <PopoverContent side="top" align="start" className="w-[95vw] sm:w-96 p-0">
             <FileUpload
               conversationId={conversationId}
               messageId={`temp-${Date.now()}`}
@@ -322,7 +322,7 @@ export function ChatInput({
           onClick={handleSend}
           disabled={(!message.trim() && attachments.length === 0) || disabled || isSending}
           size="icon"
-          className="flex-shrink-0 h-10 w-10 sm:h-10 sm:w-10 min-h-[48px] min-w-[48px] sm:min-h-0 sm:min-w-0"
+          className="flex-shrink-0 h-11 w-11 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
           aria-label={isSending ? 'Enviando mensaje...' : 'Enviar mensaje'}
           aria-busy={isSending}
         >

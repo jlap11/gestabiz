@@ -1639,7 +1639,7 @@ export const AppointmentsCalendar: React.FC = () => {
                         >
                           {isLunch ? (
                             <div className="flex items-center justify-center h-full text-xs text-muted-foreground italic">
-                              Almuerzo
+                              {t('employeePrefs.schedule.lunchBreak')}
                             </div>
                           ) : (
                             <>
@@ -1682,7 +1682,7 @@ export const AppointmentsCalendar: React.FC = () => {
             <div className="bg-card border border-border rounded-lg p-4">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Clock className="h-5 w-5 text-blue-500" />
-                En Proceso ({activeAppointments.length})
+                {t('admin.appointmentCalendar.inProgressTitle', { count: activeAppointments.length })}
               </h3>
               <div className="space-y-2">
                 {activeAppointments.map(apt => (

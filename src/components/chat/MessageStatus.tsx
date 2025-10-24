@@ -39,8 +39,8 @@ export function MessageStatus({ message, currentUserId }: Readonly<MessageStatus
   // Estado: enviando (optimistic update)
   if (status === 'sending') {
     return (
-      <span className="text-muted-foreground/50 text-xs" title="Enviando...">
-        <Clock className="h-3 w-3 animate-spin" />
+      <span className="text-muted-foreground/50 text-xs" title="Enviando..." aria-label="Enviando">
+        <Clock className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" aria-hidden="true" />
       </span>
     )
   }
@@ -48,8 +48,8 @@ export function MessageStatus({ message, currentUserId }: Readonly<MessageStatus
   // Estado: error al enviar
   if (status === 'failed') {
     return (
-      <span className="text-destructive text-xs" title="Error al enviar">
-        <AlertCircle className="h-3 w-3" />
+      <span className="text-destructive text-xs" title="Error al enviar" aria-label="Error al enviar">
+        <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
       </span>
     )
   }
@@ -57,8 +57,8 @@ export function MessageStatus({ message, currentUserId }: Readonly<MessageStatus
   // Estado: leído (double check azul)
   if (status === 'read') {
     return (
-      <span className="text-blue-500 text-xs" title="Leído">
-        <CheckCheck className="h-3 w-3" />
+      <span className="text-blue-500 text-xs" title="Leído" aria-label="Leído">
+        <CheckCheck className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
       </span>
     )
   }
@@ -66,16 +66,16 @@ export function MessageStatus({ message, currentUserId }: Readonly<MessageStatus
   // Estado: entregado (double check gris)
   if (status === 'delivered') {
     return (
-      <span className="text-muted-foreground text-xs" title="Entregado">
-        <CheckCheck className="h-3 w-3" />
+      <span className="text-muted-foreground text-xs" title="Entregado" aria-label="Entregado">
+        <CheckCheck className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
       </span>
     )
   }
 
   // Estado: enviado (single check gris) - default
   return (
-    <span className="text-muted-foreground text-xs" title="Enviado">
-      <Check className="h-3 w-3" />
+    <span className="text-muted-foreground text-xs" title="Enviado" aria-label="Enviado">
+      <Check className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
     </span>
   )
 }

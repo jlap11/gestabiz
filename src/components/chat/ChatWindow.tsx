@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { MoreVertical, Phone, Search as SearchIcon, Video, ArrowLeft } from 'lucide-react'
+import { MoreVertical, Phone, Search as SearchIcon, Video, ArrowLeft, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -179,13 +179,13 @@ export function ChatWindow({
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="border-b bg-background p-3 sm:p-4 flex items-center justify-between">
+      <div className="border-b bg-background p-3 sm:p-4 pt-[env(safe-area-inset-top)] flex items-center justify-between">
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           {onBackToList && (
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden h-9 w-9 mr-1"
+              className="md:hidden h-11 w-11 sm:h-9 sm:w-9 mr-1"
               onClick={onBackToList}
               aria-label="Volver a lista"
             >
@@ -229,7 +229,7 @@ export function ChatWindow({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9"
+            className="h-11 w-11 sm:h-9 sm:w-9"
             onClick={() => {
               setIsSearchOpen(!isSearchOpen)
               if (isSearchOpen) {
@@ -246,11 +246,11 @@ export function ChatWindow({
           {/* Menú de opciones */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Opciones de conversación">
+              <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9" aria-label="Opciones de conversación">
                 <MoreVertical className="h-5 w-5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56 max-w-[95vw]">
               {onTogglePin && (
                 <DropdownMenuItem
                   onClick={() => onTogglePin(conversation.id, !(conversation as any).is_pinned)}
@@ -288,15 +288,26 @@ export function ChatWindow({
               placeholder="Buscar mensajes..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm sm:text-base bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
+              className="w-full pl-9 pr-12 py-2 text-sm sm:text-base bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
               autoFocus
               aria-label="Buscar mensajes en la conversación"
               aria-describedby={searchQuery ? 'search-results-count' : undefined}
             />
             {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-8 sm:w-8"
+                onClick={() => setSearchQuery('')}
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            )}
+            {searchQuery && (
               <output
                 id="search-results-count"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+                className="absolute right-14 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
                 aria-live="polite"
               >
                 {filteredMessages.length} resultado{filteredMessages.length !== 1 ? 's' : ''}
@@ -309,7 +320,7 @@ export function ChatWindow({
       {/* Mensajes */}
       <ScrollArea
         ref={scrollAreaRef}
-        className="flex-1 p-3 sm:p-4"
+        className="flex-1 p-3 sm:p-4 pb-[env(safe-area-inset-bottom)]"
         role="log"
         aria-label="Historial de mensajes"
         aria-live="polite"

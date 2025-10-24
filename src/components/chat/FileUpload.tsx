@@ -212,10 +212,10 @@ export function FileUpload({
    * Get icon for file type
    */
   const getFileIcon = (type: string) => {
-    if (type.startsWith('image/')) return <ImageIcon className="h-4 w-4" />
-    if (type === 'application/pdf') return <FileText className="h-4 w-4" />
-    if (type.includes('zip') || type.includes('rar')) return <Archive className="h-4 w-4" />
-    return <File className="h-4 w-4" />
+    if (type.startsWith('image/')) return <ImageIcon className="h-5 w-5 sm:h-4 sm:w-4" />
+    if (type === 'application/pdf') return <FileText className="h-5 w-5 sm:h-4 sm:w-4" />
+    if (type.includes('zip') || type.includes('rar')) return <Archive className="h-5 w-5 sm:h-4 sm:w-4" />
+    return <File className="h-5 w-5 sm:h-4 sm:w-4" />
   }
 
   /**
@@ -270,11 +270,11 @@ export function FileUpload({
             </Button>
           </div>
 
-          <div className="space-y-2 max-h-64 overflow-y-auto">
+          <div className="flex gap-2 pr-2 overflow-x-auto sm:overflow-y-auto sm:block sm:space-y-2 sm:max-h-64">
             {files.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-center gap-3 p-3 bg-muted rounded-lg"
+                className="flex items-center gap-3 p-3 bg-muted rounded-lg min-w-[240px] sm:min-w-0"
               >
                 {/* Icon */}
                 <div className="flex-shrink-0">{getFileIcon(file.type)}</div>
@@ -295,10 +295,12 @@ export function FileUpload({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 flex-shrink-0"
+                    className="h-8 w-8 sm:h-6 sm:w-6 flex-shrink-0 min-h-[40px] min-w-[40px] sm:min-h-0 sm:min-w-0"
                     onClick={() => removeFile(index)}
+                    aria-label={`Eliminar ${file.name}`}
+                    title={`Eliminar ${file.name}`}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
                   </Button>
                 )}
               </div>

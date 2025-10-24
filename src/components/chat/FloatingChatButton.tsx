@@ -100,7 +100,7 @@ export function FloatingChatButton({
 
       {/* Modal de Chat */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-end p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] md:p-6 md:pb-6">
+        <div className="fixed inset-0 z-50 flex items-end justify-end p-4 pt-[env(safe-area-inset-top)] pb-[calc(env(safe-area-inset-bottom)+1rem)] md:p-6 md:pb-6">
           {/* Overlay */}
           <div
             role="button"
@@ -125,7 +125,7 @@ export function FloatingChatButton({
             )}
           >
             {/* Header */}
-            <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between border-b">
+            <div className="bg-primary text-primary-foreground p-3 sm:p-4 pt-[env(safe-area-inset-top)] flex items-center justify-between border-b">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
                 <h3 className="font-semibold">Chat</h3>
@@ -134,7 +134,7 @@ export function FloatingChatButton({
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
-                className="h-10 w-10 sm:h-8 sm:w-8 p-0 text-primary-foreground hover:bg-primary-foreground/20"
+                className="h-11 w-11 sm:h-9 sm:w-9 p-0 text-primary-foreground hover:bg-primary-foreground/20"
                 aria-label="Cerrar chat"
               >
                 <X className="h-5 w-5" />

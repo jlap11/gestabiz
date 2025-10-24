@@ -80,8 +80,10 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
           'relative overflow-hidden rounded-lg cursor-pointer',
           'hover:opacity-90 transition-opacity',
           'focus:outline-none focus:ring-2 focus:ring-primary',
+          'group',
           className
         )}
+        aria-label={t('common.previewImage') || 'Ver imagen'}
       >
         <img src={src} alt={alt} className="w-full h-full object-cover" loading="lazy" />
 
@@ -93,19 +95,23 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
 
       {/* Full-screen modal */}
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-screen-lg w-full h-[90vh] p-0">
-          <DialogHeader className="p-4 pb-0">
+        <DialogContent
+          className="max-w-full sm:max-w-screen-lg w-full h-[94vh] sm:h-[90vh] p-0 sm:rounded-lg rounded-none pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+          aria-label={alt}
+        >
+          <DialogHeader className="p-3 sm:p-4 pb-0">
             <div className="flex items-center justify-between">
-              <DialogTitle className="truncate pr-4">{alt}</DialogTitle>
+              <DialogTitle className="truncate pr-4 text-sm sm:text-base">{alt}</DialogTitle>
               <div className="flex items-center gap-2">
                 {/* Zoom controls */}
                 <div className="flex items-center gap-1 bg-muted rounded-lg px-2 py-1">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-8 w-8 sm:h-6 sm:w-6"
                     onClick={handleZoomOut}
                     disabled={zoom <= 50}
+                    aria-label={t('common.zoomOut') || 'Alejar'}
                   >
                     <ZoomOut className="h-4 w-4" />
                   </Button>
@@ -113,9 +119,10 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-8 w-8 sm:h-6 sm:w-6"
                     onClick={handleZoomIn}
                     disabled={zoom >= 200}
+                    aria-label={t('common.zoomIn') || 'Acercar'}
                   >
                     <ZoomIn className="h-4 w-4" />
                   </Button>
@@ -127,12 +134,20 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
                   size="icon"
                   onClick={handleDownload}
                   title="Descargar imagen"
+                  className="h-8 w-8 sm:h-6 sm:w-6"
+                  aria-label={t('common.download') || 'Descargar'}
                 >
                   <Download className="h-4 w-4" />
                 </Button>
 
                 {/* Close button */}
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsOpen(false)}
+                  className="h-8 w-8 sm:h-6 sm:w-6"
+                  aria-label={t('common.close') || 'Cerrar'}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -140,7 +155,7 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
           </DialogHeader>
 
           {/* Image container */}
-          <div className="flex-1 overflow-auto p-4 bg-black/5">
+          <div className="flex-1 overflow-auto p-3 sm:p-4 bg-black/5">
             <div className="flex items-center justify-center min-h-full">
               <img
                 src={src}
@@ -149,7 +164,7 @@ export function ImagePreview({ src, alt, className }: Readonly<ImagePreviewProps
                   width: `${zoom}%`,
                   maxWidth: 'none',
                 }}
-                className="object-contain"
+                className="object-contain max-h-[60vh] sm:max-h-[75vh]"
               />
             </div>
           </div>

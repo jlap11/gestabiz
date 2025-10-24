@@ -222,11 +222,11 @@ export function MessageBubble({
           <div
             className={cn(
               'flex items-center gap-1 mt-1 transition-opacity',
-              // En móvil (touch), mostrar siempre con opacidad reducida
-              // En desktop (hover), mostrar al hacer hover
               'opacity-70 sm:opacity-0 sm:group-hover:opacity-100',
               isOwnMessage ? 'flex-row-reverse' : 'flex-row'
             )}
+            role="toolbar"
+            aria-label="Acciones del mensaje"
           >
             {/* Responder (todos los mensajes) */}
             {onReply && (

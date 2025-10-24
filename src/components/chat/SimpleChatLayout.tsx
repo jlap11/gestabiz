@@ -108,7 +108,7 @@ export function SimpleChatLayout({
     <div className="flex h-full">
       {!showChat && (
         <div className="w-full bg-card">
-          <div className="border-b border-border bg-card px-4 py-3">
+          <div className="border-b border-border bg-card p-3 sm:p-4 pt-[env(safe-area-inset-top)]">
             <h2 className="font-semibold text-lg">{t('chat.conversations')}</h2>
           </div>
 
@@ -124,7 +124,7 @@ export function SimpleChatLayout({
               </div>
             </div>
           ) : (
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto pb-[env(safe-area-inset-bottom)]">
               {[...conversations]
                 .sort((a, b) => {
                   const aPinned = (a as any).is_pinned === true
@@ -184,7 +184,7 @@ export function SimpleChatLayout({
                 onToggleMute={isMuted => toggleMuteConversation?.(activeConversation.id, isMuted)}
               />
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-[env(safe-area-inset-bottom)]">
                 {activeMessages.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
                     {t('chat.noMessagesPrompt')}
@@ -243,20 +243,18 @@ export function SimpleChatLayout({
                     type="text"
                     name="message"
                     placeholder={t('chat.inputPlaceholder')}
-                    className="flex-1 px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="flex-1 px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px]"
                     autoComplete="off"
                   />
-                  <Button type="submit" className="px-6">
+                  <Button type="submit" className="px-6 min-h-[44px] h-11">
                     {t('chat.send')}
                   </Button>
                 </form>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <p className="font-semibold mb-2">{t('chat.loadingConversation')}</p>
-              </div>
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              {t('chat.selectConversation')}
             </div>
           )}
         </div>
@@ -295,7 +293,7 @@ function ChatHeader({
   const isMuted = (activeConversation as any)?.is_muted === true
 
   return (
-    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3 justify-between">
+    <div className="border-b border-border bg-card p-3 sm:p-4 pt-[env(safe-area-inset-top)] flex items-center gap-3 justify-between">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={onBackToList} className="shrink-0 h-11 w-11 sm:h-9 sm:w-9" aria-label="Volver">
           <ArrowLeft className="h-5 w-5" />
@@ -330,10 +328,10 @@ function ChatHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => onTogglePin(!isPinned)}>
+        <Button variant="outline" size="sm" className="h-10 sm:h-8" onClick={() => onTogglePin(!isPinned)}>
           {isPinned ? 'Desfijar' : 'Fijar'}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => onToggleMute(!isMuted)}>
+        <Button variant="ghost" size="sm" className="h-10 sm:h-8" onClick={() => onToggleMute(!isMuted)}>
           {isMuted ? 'Quitar silencio' : 'Silenciar'}
         </Button>
       </div>

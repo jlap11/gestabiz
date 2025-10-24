@@ -169,7 +169,7 @@ export function ConversationList({
   return (
     <div className="flex flex-col h-full border-r bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-10 p-3 sm:p-4 border-b bg-background">
+      <div className="sticky top-0 z-10 p-3 sm:p-4 pt-[env(safe-area-inset-top)] border-b bg-background">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">{t('chat.conversations.title')}</h2>
           {totalUnreadCount > 0 && (
@@ -186,23 +186,25 @@ export function ConversationList({
             placeholder={t('chat.conversations.searchPlaceholder')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9 min-h-[40px]"
+            className="pl-9 pr-12 min-h-[44px]"
+            aria-label={t('chat.conversations.searchPlaceholder')}
           />
           {searchQuery && (
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-8 sm:w-8"
               onClick={() => setSearchQuery('')}
+              aria-label={t('chat.clear')}
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </Button>
           )}
         </div>
       </div>
 
       {/* Lista de conversaciones */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 pb-[env(safe-area-inset-bottom)]">
         {loading && sortedConversations.length === 0 && (
           <div className="p-8 text-center text-muted-foreground">
             {t('chat.conversations.loading')}

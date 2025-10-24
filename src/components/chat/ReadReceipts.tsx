@@ -51,26 +51,35 @@ export function ReadReceipts({
   // Verificar si el mensaje ha sido entregado
   const isDelivered = deliveredAt !== null && deliveredAt !== undefined
 
-  // Determinar tamaño del icono
-  const iconSize = size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5'
+  // Determinar tamaño del icono con clases responsivas
+  const iconSize =
+    size === 'sm'
+      ? 'h-3 w-3 sm:h-4 sm:w-4'
+      : size === 'md'
+      ? 'h-4 w-4 sm:h-5 sm:w-5'
+      : 'h-5 w-5 sm:h-6 sm:w-6'
+
+  const tooltip = getTooltipText(isRead, isDelivered, sentAt, deliveredAt)
 
   return (
     <div
       className="flex items-center gap-0.5"
-      title={getTooltipText(isRead, isDelivered, sentAt, deliveredAt)}
+      title={tooltip}
+      aria-label={tooltip}
     >
       {isRead ? (
         // Leído - Doble check usando el color secundario para mayor contraste
-        <CheckCheck className={cn(iconSize, 'text-[var(--color-secondary)]')} strokeWidth={2.5} />
+        <CheckCheck className={cn(iconSize, 'text-[var(--color-secondary)]')} strokeWidth={2.5} aria-hidden="true" />
       ) : isDelivered ? (
         // Entregado - Doble check gris oscuro (bien visible)
         <CheckCheck
           className={cn(iconSize, 'text-gray-600 dark:text-gray-300')}
           strokeWidth={2.5}
+          aria-hidden="true"
         />
       ) : (
         // Enviado - Single check gris medio (visible)
-        <Check className={cn(iconSize, 'text-gray-500 dark:text-gray-400')} strokeWidth={2.5} />
+        <Check className={cn(iconSize, 'text-gray-500 dark:text-gray-400')} strokeWidth={2.5} aria-hidden="true" />
       )}
     </div>
   )

@@ -198,7 +198,7 @@ export function ChatLayout({
   const totalUnreadCount = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       {/* Sidebar: Lista de conversaciones */}
       <div className={`${activeConversation ? 'hidden md:block' : 'block'} md:w-80 md:flex-shrink-0 w-full`}>
         <ConversationList
