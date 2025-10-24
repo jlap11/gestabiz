@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -14,7 +15,8 @@ interface GoogleCalendarIntegrationProps {
   user: User
 }
 
-export default function GoogleCalendarIntegration({ user }: GoogleCalendarIntegrationProps) {
+export default function GoogleCalendarIntegration({ user }: Readonly<GoogleCalendarIntegrationProps>) {
+  const { t } = useLanguage()
   const {
     syncSettings,
     isConnected,

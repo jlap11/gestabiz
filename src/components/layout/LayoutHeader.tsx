@@ -1,4 +1,5 @@
 import { User } from '@/types'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface LayoutHeaderProps {
   user: User
@@ -15,6 +16,7 @@ export default function LayoutHeader({
   roleSelector,
   actionButton,
 }: Readonly<LayoutHeaderProps>) {
+  const { t } = useLanguage()
   return (
     <div className="bg-card border-b border-border">
       <div className="px-6 py-4">
