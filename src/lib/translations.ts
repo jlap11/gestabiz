@@ -1939,6 +1939,24 @@ export const translations = {
         remindersDescription: 'Receive reminders about your appointments',
       },
 
+      // Admin Onboarding
+      adminOnboarding: {
+        nameRequired: 'Business name and category are required',
+        nitInvalid: 'Invalid NIT. Must be 9-10 digits',
+        cedInvalid: 'Invalid ID. Must be 6-10 digits',
+        nitVerifyError: 'Error verifying NIT/ID',
+        authError: 'Error verifying authentication. Please reload the page',
+        notAuthenticated: 'You are not authenticated. Please log in again',
+        userIdError: 'User ID not available. Please reload the page',
+        authCheckError: 'Authentication error. Please log out and log in again',
+      },
+
+      // Business Settings
+      businessSettings: {
+        businessNameRequired: 'Business name is required',
+        updateError: 'Error updating configuration',
+      },
+
       // Calendar & Appointments
       appointmentCalendar: {
         proposalLabel: 'Proposal (optional)',
@@ -1951,6 +1969,8 @@ export const translations = {
         successCancelled: 'Appointment cancelled successfully',
         errorCompleting: 'Error completing appointment',
         errorCancelling: 'Error cancelling appointment',
+        loadDataError: 'Error loading data',
+        errorMarkingNoShow: 'Error marking as no-show',
       },
     },
 
@@ -4346,6 +4366,24 @@ export const translations = {
         remindersDescription: 'Recibe recordatorios sobre tus citas',
       },
 
+      // Admin Onboarding
+      adminOnboarding: {
+        nameRequired: 'El nombre del negocio y categoría son requeridos',
+        nitInvalid: 'NIT inválido. Debe tener 9-10 dígitos',
+        cedInvalid: 'Cédula inválida. Debe tener 6-10 dígitos',
+        nitVerifyError: 'Error al verificar el NIT/Cédula',
+        authError: 'Error al verificar autenticación. Por favor recarga la página',
+        notAuthenticated: 'No estás autenticado. Por favor inicia sesión nuevamente',
+        userIdError: 'ID de usuario no disponible. Por favor recarga la página',
+        authCheckError: 'Error de autenticación. Por favor cierra sesión y vuelve a iniciar',
+      },
+
+      // Business Settings
+      businessSettings: {
+        businessNameRequired: 'El nombre del negocio es requerido',
+        updateError: 'Error al actualizar la configuración',
+      },
+
       // Calendar & Appointments
       appointmentCalendar: {
         proposalLabel: 'Propuesta (opcional)',
@@ -4358,6 +4396,8 @@ export const translations = {
         successCancelled: 'Cita cancelada exitosamente',
         errorCompleting: 'Error al completar la cita',
         errorCancelling: 'Error al cancelar la cita',
+        loadDataError: 'Error al cargar los datos',
+        errorMarkingNoShow: 'Error al marcar sin asistencia',
       },
     },
 

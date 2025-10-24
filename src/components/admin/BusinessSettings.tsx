@@ -44,7 +44,7 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
     e.preventDefault()
 
     if (!formData.name.trim()) {
-      toast.error('El nombre del negocio es requerido')
+      toast.error(t('admin.businessSettings.businessNameRequired'))
       return
     }
 
@@ -72,7 +72,7 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
       toast.success('Configuración actualizada exitosamente')
       if (onUpdate) onUpdate()
     } catch {
-      toast.error('Error al actualizar la configuración')
+      toast.error(t('admin.businessSettings.updateError'))
     } finally {
       setIsSaving(false)
     }

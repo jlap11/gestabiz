@@ -147,7 +147,7 @@ export function AdminOnboarding({
       if (sessionError) {
         // Session error: sessionData retrieval failed
         // console.error('[AdminOnboarding] Session error:', sessionError);
-        toast.error('Error al verificar autenticación. Por favor recarga la página.');
+        toast.error(t('admin.adminOnboarding.authError'));
         setIsLoading(false);
         return;
       }
@@ -155,7 +155,7 @@ export function AdminOnboarding({
       if (!sessionData?.session?.user) {
         // No active session found
         // console.error('[AdminOnboarding] No active session found');
-        toast.error('No estás autenticado. Por favor inicia sesión nuevamente.');
+        toast.error(t('admin.adminOnboarding.notAuthenticated'));
         setIsLoading(false);
         return;
       }
@@ -165,7 +165,7 @@ export function AdminOnboarding({
       if (!authenticatedUserId || !user?.id) {
         // Missing user ID
         // console.error('[AdminOnboarding] User ID missing', { authenticatedUserId, userPropId: user?.id });
-        toast.error('ID de usuario no disponible. Por favor recarga la página.');
+        toast.error(t('admin.adminOnboarding.userIdError'));
         setIsLoading(false);
         return;
       }
@@ -173,14 +173,14 @@ export function AdminOnboarding({
       if (authenticatedUserId !== user.id) {
         // User ID mismatch
         // console.error('[AdminOnboarding] User ID mismatch', { authenticatedUserId, userPropId: user.id });
-        toast.error('Error de autenticación. Por favor cierra sesión y vuelve a iniciar.');
+        toast.error(t('admin.adminOnboarding.authCheckError'));
         setIsLoading(false);
         return;
       }
 
       // Validate required fields
       if (!formData.name || !formData.category_id) {
-        toast.error('Nombre y categoría son obligatorios')
+        toast.error(t('admin.adminOnboarding.nameRequired'))
         setIsLoading(false)
         return
       }
@@ -191,13 +191,13 @@ export function AdminOnboarding({
         if (formData.legal_entity_type === 'company') {
           // NIT should be 9-10 digits
           if (!/^\d{9,10}$/.test(taxId)) {
-            toast.error('NIT inválido. Debe tener 9-10 dígitos')
+            toast.error(t('admin.adminOnboarding.nitInvalid'))
             return
           }
         } else {
           // Cédula should be 6-10 digits
           if (!/^\d{6,10}$/.test(taxId)) {
-            toast.error('Cédula inválida. Debe tener 6-10 dígitos')
+            toast.error(t('admin.adminOnboarding.cedInvalid'))
             return
           }
         }
@@ -210,7 +210,7 @@ export function AdminOnboarding({
           .maybeSingle()
         
         if (checkError) {
-          toast.error('Error al verificar el NIT/Cédula')
+          toast.error(t('admin.adminOnboarding.nitVerifyError'))
           return
         }
         

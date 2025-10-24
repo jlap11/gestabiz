@@ -708,14 +708,14 @@ export const AppointmentsCalendar: React.FC = () => {
         // cuando business.id esté disponible
       } catch (error) {
         console.error('Error al cargar datos del calendario de citas', error);
-        toast.error('Error al cargar los datos');
+        toast.error(t('admin.appointmentCalendar.loadDataError'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [user]); // Solo depende de user, no de fetchAppointments para evitar ciclos
+  }, [user, t]); // Solo depende de user y t, no de fetchAppointments para evitar ciclos
 
   // Fetch appointments cuando currentBusinessId o selectedDate cambian
   useEffect(() => {
@@ -824,7 +824,7 @@ export const AppointmentsCalendar: React.FC = () => {
         await fetchAppointments(currentBusinessId, selectedDate);
       }
     } catch {
-      toast.error('Error al marcar sin asistencia');
+      toast.error(t('admin.appointmentCalendar.errorMarkingNoShow'));
     }
   };
 
