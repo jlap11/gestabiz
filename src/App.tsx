@@ -17,6 +17,9 @@ import { initializeGA4 } from '@/lib/ga4'
 import { hasAnalyticsConsent } from '@/hooks/useAnalytics'
 import { CookieConsent } from '@/components/CookieConsent'
 
+// Eager load MainApp to avoid lazy import fetch issues in dev
+import MainApp from '@/components/MainApp'
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,10 +31,9 @@ const queryClient = new QueryClient({
   },
 })
 
-// Lazy load main application components
+// Lazy load other components
 const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })))
 const AuthScreen = lazy(() => import('@/components/auth/AuthScreen'))
-const MainApp = lazy(() => import('@/components/MainApp'))
 const PublicBusinessProfile = lazy(() => import('@/pages/PublicBusinessProfile'))
 
 // Loading component
@@ -47,20 +49,13 @@ function AppLoader() {
   )
 }
 
-// Protected Route wrapper para rutas autenticadas
+// Route components
 function ProtectedRoute({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const location = useLocation()
-
-  if (loading) {
-    return <AppLoader />
-  }
-
   if (!user) {
-    // Redirigir a login guardando la URL de origen
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
-
   return <>{children}</>
 }
 
@@ -87,29 +82,12 @@ function AuthenticatedApp() {
 }
 
 function AppRoutes() {
-  const navigate = useNavigate();
-  
   return (
     <Routes>
-      {/* Rutas públicas */}
-      <Route path="/" element={<LandingPage onNavigateToAuth={() => navigate('/login')} />} />
-      <Route path="/login" element={<AuthScreen onLoginSuccess={() => navigate('/app', { replace: true })} />} />
-      <Route path="/register" element={<AuthScreen onLoginSuccess={() => navigate('/app', { replace: true })} />} />
-      
-      {/* Perfil público de negocio - accesible sin autenticación */}
-      <Route path="/negocio/:slug" element={<PublicBusinessProfile />} />
-      
-      {/* Rutas protegidas - requieren autenticación */}
-      <Route
-        path="/app/*"
-        element={
-          <ProtectedRoute>
-            <AuthenticatedApp />
-          </ProtectedRoute>
-        }
-      />
-      
-      {/* Redirigir rutas no encontradas */}
+      <Route path="/" element={<Suspense fallback={<AppLoader />}><LandingPage /></Suspense>} />
+      <Route path="/login" element={<Suspense fallback={<AppLoader />}><AuthScreen /></Suspense>} />
+      <Route path="/business/:id" element={<Suspense fallback={<AppLoader />}><PublicBusinessProfile /></Suspense>} />
+      <Route path="/app" element={<ProtectedRoute><AuthenticatedApp /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
@@ -146,3 +124,4 @@ function App() {
 }
 
 export default App
+

@@ -12,19 +12,23 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface ConfirmEndEmploymentDialogProps {
   open: boolean;
   onClose: () => void;
   businessName: string;
   onConfirm: () => Promise<void>;
+  upcomingCount?: number;
+  onGoToAgenda?: () => void;
 }
 
 export function ConfirmEndEmploymentDialog({
   open,
   onClose,
   businessName,
-  onConfirm
+  onConfirm,
+  upcomingCount
 }: Readonly<ConfirmEndEmploymentDialogProps>) {
   const { t } = useLanguage();
   const [confirmed, setConfirmed] = useState(false);
@@ -88,6 +92,12 @@ export function ConfirmEndEmploymentDialog({
                 <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                 <span>Tus servicios asignados serán desactivados</span>
               </li>
+              {typeof upcomingCount === 'number' && upcomingCount > 0 && (
+                <li className="flex items-start gap-2">
+                  <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <span>Tienes {upcomingCount} citas futuras pendientes; primero cancélalas o reasígnalas</span>
+                </li>
+              )}
             </ul>
 
             <Alert variant="destructive" className="mt-4">

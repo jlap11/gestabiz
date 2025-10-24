@@ -238,3 +238,42 @@ export const appointmentDetailsService = {
     }
   },
 }
+
+export async function countUpcomingForEmployee(opts: {
+  businessId: string;
+  employeeId: string;
+  fromIso?: string;
+  statuses?: Array<'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>;
+  client?: typeof supabase;
+}): Promise<number> {
+  const {
+    businessId,
+    employeeId,
+    fromIso = new Date().toISOString(),
+    statuses = ['pending', 'confirmed'],
+    client = supabase,
+  } = opts;
+
+  let query = client
+    .from('appointments')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', businessId)
+    .eq('employee_id', employeeId);
+  if (statuses?.length) {
+    query = query.in('status', statuses);
+  }
+  const { count, error } = await query.gte('start_time', fromIso);
+  if (error) throw error;
+  return count || 0;
+}
+
+export async function hasUpcomingForEmployee(opts: {
+  businessId: string;
+  employeeId: string;
+  fromIso?: string;
+  statuses?: Array<'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'>;
+  client?: typeof supabase;
+}): Promise<boolean> {
+  const n = await countUpcomingForEmployee(opts);
+  return n > 0;
+}

@@ -185,16 +185,14 @@ export function ChatLayout({
    * Wrapper de toggleMute
    */
   const handleToggleMute = async (convId: string, isMuted: boolean) => {
-    await muteConversation(convId, isMuted);
+    await toggleMuteConversation(convId, isMuted);
   };
 
   /**
-   * Wrapper de togglePin (TODO: implementar en tabla)
+   * Wrapper de togglePin (implementado)
    */
-   
-  const handleTogglePin = async (_convId: string, _isPinned: boolean) => {
-    // TODO: Agregar campo is_pinned a conversation_members
-    console.log('Pin/unpin not implemented yet');
+  const handleTogglePin = async (convId: string, isPinned: boolean) => {
+    await togglePinConversation(convId, isPinned);
   };
 
   // Calcular total de mensajes sin leer

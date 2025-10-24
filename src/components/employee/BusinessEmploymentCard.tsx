@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, MapPin, Mail, Phone, Star, AlertTriangle, MoreVertical, Calendar, Briefcase, XCircle } from 'lucide-react';
+import { Building2, MapPin, Mail, Phone, Star, AlertTriangle, MoreVertical, Calendar, Briefcase, XCircle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ export interface EnhancedBusiness {
   role?: string | null;
   employee_type?: string | null;
   isOwner?: boolean;
+  is_active?: boolean; // agregado para filtrar y mostrar acciones de reactivación
 }
 
 interface BusinessEmploymentCardProps {
@@ -39,13 +40,15 @@ interface BusinessEmploymentCardProps {
   onViewDetails?: () => void; // Opcional - solo si el modal está implementado
   onRequestTimeOff: (type: 'vacation' | 'sick_leave' | 'personal') => void;
   onEndEmployment: () => void;
+  onReactivateEmployment?: () => void; // nuevo handler opcional
 }
 
 export function BusinessEmploymentCard({
   business,
   onViewDetails,
   onRequestTimeOff,
-  onEndEmployment
+  onEndEmployment,
+  onReactivateEmployment
 }: BusinessEmploymentCardProps) {
   
   // Determinar el cargo a mostrar
@@ -131,6 +134,17 @@ export function BusinessEmploymentCard({
                     )}
                   </Badge>
                 )}
+                
+                {/* Estado: Activo/Inactivo */}
+                {business.is_active === false ? (
+                  <Badge variant="outline" className="flex-shrink-0 bg-red-50 text-red-700 border-red-200">
+                    Inactivo
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="flex-shrink-0 bg-green-50 text-green-700 border-green-200">
+                    Activo
+                  </Badge>
+                )}
               </div>
               
               {/* Sede o Warning */}
@@ -195,18 +209,33 @@ export function BusinessEmploymentCard({
                 <span>Solicitar Permiso Personal</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={business.isOwner ? undefined : onEndEmployment}
-                disabled={business.isOwner}
-                className={business.isOwner 
-                  ? "cursor-not-allowed opacity-50" 
-                  : "text-destructive focus:text-destructive cursor-pointer"
-                }
-                title={business.isOwner ? "Los propietarios no pueden finalizar su empleo" : undefined}
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                <span>Marcar como Finalizado</span>
-              </DropdownMenuItem>
+              {business.is_active !== false ? (
+                <DropdownMenuItem 
+                  onClick={business.isOwner ? undefined : onEndEmployment}
+                  disabled={business.isOwner}
+                  className={business.isOwner 
+                    ? "cursor-not-allowed opacity-50" 
+                    : "text-destructive focus:text-destructive cursor-pointer"
+                  }
+                  title={business.isOwner ? "Los propietarios no pueden finalizar su empleo" : undefined}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  <span>Marcar como Finalizado</span>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={business.isOwner ? undefined : onReactivateEmployment}
+                  disabled={business.isOwner}
+                  className={business.isOwner 
+                    ? "cursor-not-allowed opacity-50" 
+                    : "text-green-700 focus:text-green-700 cursor-pointer"
+                  }
+                  title={business.isOwner ? "Los propietarios no necesitan reactivación" : undefined}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
+                  <span>Reactivar Empleo</span>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -780,15 +780,30 @@ export function useChat(userId: string | null) {
     if (!userId) return;
     
     try {
+      // Intentar con nueva tabla chat_participants
       const { error: updateError } = await supabase
         .from('chat_participants')
         .update({ is_pinned: isPinned })
         .eq('conversation_id', conversationId)
         .eq('user_id', userId);
+
+      if (updateError) {
+        const msg = (updateError.message || '').toLowerCase();
+        const needsFallback = msg.includes('relation') || msg.includes('does not exist') || msg.includes('column');
+        if (needsFallback) {
+          // Fallback a esquema anterior: conversation_members
+          const { error: fallbackError } = await supabase
+            .from('conversation_members')
+            .update({ is_pinned: isPinned })
+            .eq('conversation_id', conversationId)
+            .eq('user_id', userId);
+          if (fallbackError) throw fallbackError;
+        } else {
+          throw updateError;
+        }
+      }
       
-      if (updateError) throw updateError;
-      
-      // Update local state
+      // Actualizar estado local
       setConversations(prev =>
         prev.map(conv =>
           conv.id === conversationId

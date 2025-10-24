@@ -41,6 +41,8 @@ export function SimpleChatLayout({
     markMessagesAsRead,
     setActiveConversationId,
     fetchConversations,
++   togglePinConversation,
++   toggleMuteConversation,
   } = useChat(userId);
 
   // Contexto de notificaciones para suprimir notificaciones redundantes
@@ -205,38 +207,46 @@ export function SimpleChatLayout({
             </div>
           ) : (
             <div className="overflow-y-auto">
-              {conversations.map((conv) => {
-                const metadata = conv.metadata as { last_sender_id?: unknown } | undefined;
-                const metadataSenderId = typeof metadata?.last_sender_id === 'string' ? metadata.last_sender_id : undefined;
-                const lastSenderId = conv.last_message_sender_id ?? metadataSenderId ?? null;
-                const preview = conv.last_message_preview || 'Sin mensajes';
-                const isOwnLastMessage = lastSenderId === userId;
-                const displayPreview = conv.last_message_preview
-                  ? `${isOwnLastMessage ? 'Tu: ' : ''}${conv.last_message_preview}`
-                  : preview;
+              {([...conversations].sort((a, b) => {
+                const aPinned = a.is_pinned === true;
+                const bPinned = b.is_pinned === true;
+                if (aPinned && !bPinned) return -1;
+                if (!aPinned && bPinned) return 1;
+                const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+                const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+                return bTime - aTime;
+              })).map((conv) => {
+                 const metadata = conv.metadata as { last_sender_id?: unknown } | undefined;
+                 const metadataSenderId = typeof metadata?.last_sender_id === 'string' ? metadata.last_sender_id : undefined;
+                 const lastSenderId = conv.last_message_sender_id ?? metadataSenderId ?? null;
+                 const preview = conv.last_message_preview || 'Sin mensajes';
+                 const isOwnLastMessage = lastSenderId === userId;
+                 const displayPreview = conv.last_message_preview
+                   ? `${isOwnLastMessage ? 'Tu: ' : ''}${conv.last_message_preview}`
+                   : preview;
 
-                return (
-                  <button
-                    key={conv.id}
-                    onClick={() => handleSelectConversation(conv.id)}
-                    className="w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="font-semibold">
-                      {conv.other_user?.full_name || conv.title || 'Conversación'}
-                    </div>
-                    <div className="text-sm text-muted-foreground truncate">
-                      {displayPreview}
-                    </div>
-                    {conv.unread_count ? (
-                      <div className="mt-1">
-                        <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary rounded-full">
-                          {conv.unread_count}
-                        </span>
-                      </div>
-                    ) : null}
-                  </button>
-                );
-              })}
+                 return (
+                   <button
+                     key={conv.id}
+                     onClick={() => handleSelectConversation(conv.id)}
+                     className="w-full p-4 text-left border-b border-border hover:bg-muted/50 transition-colors"
+                   >
+                     <div className="font-semibold">
+                       {conv.other_user?.full_name || conv.title || 'Conversación'}
+                     </div>
+                     <div className="text-sm text-muted-foreground truncate">
+                       {displayPreview}
+                     </div>
+                     {conv.unread_count ? (
+                       <div className="mt-1">
+                         <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary rounded-full">
+                           {conv.unread_count}
+                         </span>
+                       </div>
+                     ) : null}
+                   </button>
+                 );
+               })}
             </div>
           )}
         </div>
@@ -251,6 +261,8 @@ export function SimpleChatLayout({
               <ChatHeader
                 activeConversation={activeConversation}
                 onBackToList={handleBackToList}
++               onTogglePin={(isPinned) => togglePinConversation(activeConversation.id, isPinned)}
++               onToggleMute={(isMuted) => toggleMuteConversation(activeConversation.id, isMuted)}
               />
 
               {/* Messages */}
@@ -350,74 +362,135 @@ export function SimpleChatLayout({
 /**
  * ChatHeader - Header del chat con avatar, nombre y negocio activo
  */
-interface ChatHeaderProps {
-  activeConversation: NonNullable<ReturnType<typeof useChat>['activeConversation']>;
-  onBackToList: () => void;
-}
+ interface ChatHeaderProps {
+   activeConversation: NonNullable<ReturnType<typeof useChat>['activeConversation']>;
+   onBackToList: () => void;
++  onTogglePin: (isPinned: boolean) => void;
++  onToggleMute: (isMuted: boolean) => void;
+ }
 
-function ChatHeader({ activeConversation, onBackToList }: ChatHeaderProps) {
-  const otherUserId = activeConversation.other_user?.id;
-  const activeBusiness = useEmployeeActiveBusiness(otherUserId);
+-function ChatHeader({ activeConversation, onBackToList }: ChatHeaderProps) {
++function ChatHeader({ activeConversation, onBackToList, onTogglePin, onToggleMute }: ChatHeaderProps) {
+   const otherUserId = activeConversation.other_user?.id;
+   const activeBusiness = useEmployeeActiveBusiness(otherUserId);
 
-  // Obtener iniciales para el avatar fallback
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return '?';
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
+   // Obtener iniciales para el avatar fallback
+   const getInitials = (name: string | null | undefined) => {
+     if (!name) return '?';
+     return name
+       .split(' ')
+       .map(word => word[0])
+       .join('')
+       .toUpperCase()
+       .substring(0, 2);
+   };
 
-  return (
-    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3">
-      {/* Botón Back */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onBackToList}
-        className="shrink-0"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
+   return (
+-    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3">
++    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3 justify-between">
+       {/* Botón Back */}
+-      <Button
+-        variant="ghost"
+-        size="icon"
+-        onClick={onBackToList}
+-        className="shrink-0"
+-      >
+-        <ArrowLeft className="h-5 w-5" />
+-      </Button>
+-
+-      {/* Avatar */}
+-      <Avatar className="h-10 w-10 shrink-0">
+-        <AvatarImage 
+-          src={activeConversation.other_user?.avatar_url || undefined} 
+-          alt={activeConversation.other_user?.full_name || 'Usuario'} 
+-        />
+-        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+-          {getInitials(activeConversation.other_user?.full_name)}
+-        </AvatarFallback>
+-      </Avatar>
+-
+-      {/* Info del usuario */}
+-      <div className="flex-1 min-w-0">
+-        <div className="font-semibold truncate">
+-          {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
+-        </div>
+-        
+-        {/* Mostrar negocio o estado según horario */}
+-        {activeBusiness.status === 'active' && activeBusiness.business_name ? (
+-          <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
+-            <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+-            {activeBusiness.business_name}
+-          </div>
+-        ) : activeBusiness.status === 'off-schedule' && activeBusiness.business_name ? (
+-          <div className="text-sm text-orange-600 dark:text-orange-400 truncate flex items-center gap-1.5">
+-            <Clock className="w-3.5 h-3.5" />
+-            Fuera de horario laboral
+-          </div>
+-        ) : activeBusiness.status === 'no-schedule' && activeBusiness.business_name ? (
+-          <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
+-            <Clock className="w-3.5 h-3.5" />
+-            {activeBusiness.business_name} (sin horario)
+-          </div>
+-        ) : null}
+-        {/* Si es cliente (not-employee), no mostrar nada adicional */}
+-      </div>
++      <div className="flex items-center gap-3">
++        <Button
++          variant="ghost"
++          size="icon"
++          onClick={onBackToList}
++          className="shrink-0"
++        >
++          <ArrowLeft className="h-5 w-5" />
++        </Button>
++        <Avatar className="h-10 w-10 shrink-0">
++          <AvatarImage 
++            src={activeConversation.other_user?.avatar_url || undefined} 
++            alt={activeConversation.other_user?.full_name || 'Usuario'} 
++          />
++          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
++            {getInitials(activeConversation.other_user?.full_name)}
++          </AvatarFallback>
++        </Avatar>
++        <div className="min-w-0">
++          <div className="font-semibold truncate">
++            {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
++          </div>
++          {activeBusiness.status === 'active' && activeBusiness.business_name ? (
++            <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
++              <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
++              {activeBusiness.business_name}
++            </div>
++          ) : activeBusiness.status === 'off-schedule' && activeBusiness.business_name ? (
++            <div className="text-sm text-orange-600 dark:text-orange-400 truncate flex items-center gap-1.5">
++              <Clock className="w-3.5 h-3.5" />
++              Fuera de horario laboral
++            </div>
++          ) : activeBusiness.status === 'no-schedule' && activeBusiness.business_name ? (
++            <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
++              <Clock className="w-3.5 h-3.5" />
++              {activeBusiness.business_name} (sin horario)
++            </div>
++          ) : null}
++        </div>
++      </div>
++      <div className="flex items-center gap-2">
++        <Button
++          variant="outline"
++          size="sm"
++          onClick={() => onTogglePin(!(activeConversation as any).is_pinned)}
++        >
++          {(activeConversation as any).is_pinned ? 'Desfijar' : 'Fijar'}
++        </Button>
++        <Button
++          variant="ghost"
++          size="sm"
++          onClick={() => onToggleMute(!(activeConversation as any).is_muted)}
++        >
++          {(activeConversation as any).is_muted ? 'Quitar silencio' : 'Silenciar'}
++        </Button>
++      </div>
+     </div>
+   );
+ }
 
-      {/* Avatar */}
-      <Avatar className="h-10 w-10 shrink-0">
-        <AvatarImage 
-          src={activeConversation.other_user?.avatar_url || undefined} 
-          alt={activeConversation.other_user?.full_name || 'Usuario'} 
-        />
-        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-          {getInitials(activeConversation.other_user?.full_name)}
-        </AvatarFallback>
-      </Avatar>
-
-      {/* Info del usuario */}
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold truncate">
-          {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
-        </div>
-        
-        {/* Mostrar negocio o estado según horario */}
-        {activeBusiness.status === 'active' && activeBusiness.business_name ? (
-          <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            {activeBusiness.business_name}
-          </div>
-        ) : activeBusiness.status === 'off-schedule' && activeBusiness.business_name ? (
-          <div className="text-sm text-orange-600 dark:text-orange-400 truncate flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5" />
-            Fuera de horario laboral
-          </div>
-        ) : activeBusiness.status === 'no-schedule' && activeBusiness.business_name ? (
-          <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5" />
-            {activeBusiness.business_name} (sin horario)
-          </div>
-        ) : null}
-        {/* Si es cliente (not-employee), no mostrar nada adicional */}
-      </div>
-    </div>
-  );
-}

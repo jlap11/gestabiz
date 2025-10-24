@@ -224,7 +224,20 @@ export function ChatWindow({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* TODO: Agregar pin/mute cuando ConversationMember fields estén en ConversationPreview */}
+              {onTogglePin && (
+                <DropdownMenuItem
+                  onClick={() => onTogglePin(conversation.id, !(conversation as any).is_pinned)}
+                >
+                  {(conversation as any).is_pinned ? 'Desfijar' : 'Fijar'} conversación
+                </DropdownMenuItem>
+              )}
+              {onToggleMute && (
+                <DropdownMenuItem
+                  onClick={() => onToggleMute(conversation.id, !(conversation as any).is_muted)}
+                >
+                  {(conversation as any).is_muted ? 'Quitar silencio' : 'Silenciar'} conversación
+                </DropdownMenuItem>
+              )}
               {onToggleArchive && (
                 <DropdownMenuItem
                   onClick={() => onToggleArchive(conversation.id, !conversation.is_archived)}
@@ -358,3 +371,4 @@ function getInputPlaceholder(editingMessageId: string | null, replyToMessage: Me
   }
   return 'Escribe un mensaje...';
 }
+

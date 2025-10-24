@@ -1276,6 +1276,7 @@ export const translations = {
 
     // Services
     services: {
+    // Admin - Services (preview alt moved into services block to avoid duplicate `admin` keys)
       title: 'Services',
       subtitle: 'Manage the services you offer',
       imageLabel: 'Service Image (Optional)',
@@ -1355,6 +1356,11 @@ export const translations = {
         addNewService: 'Add a new service'
       },
       
+      // Admin - Services small extras
+      services: {
+        previewAlt: 'Preview'
+      },
+
       clientManagement: {
         search_placeholder: 'Search clients by name, email or phone...',
         filter_by_status: 'Filter by status',
@@ -1403,16 +1409,11 @@ export const translations = {
         subtitle: 'Detailed analysis of your business performance',
         actions: { update: 'Refresh', updating: 'Refreshing...' },
         metrics: {
-          total_appointments: 'Total Appointments',
-          revenue: 'Revenue',
-          average: 'Average',
-          completion_rate: 'Completion Rate',
-          new_in_period: 'new this period'
-        },
         tabs: { summary: 'Summary' },
         descriptions: {
           by_status: 'Distribution by status in the selected period',
           client_metrics: 'Retention and growth metrics',
+          previewAlt: 'Preview',
           peak_hours: 'Days and hours with the most appointments scheduled',
           employee_performance: 'Productivity and efficiency statistics',
           top_services: 'Most demanded and profitable services',
@@ -2788,6 +2789,16 @@ export const translations = {
       chatWith: 'Chat with',
       location: 'Location',
       noLocation: 'No location',
+      conversations: {
+        title: 'Messages',
+        searchPlaceholder: 'Search conversations...',
+        loading: 'Loading conversations...',
+        noResults: 'No conversations found',
+        empty: 'No conversations',
+        noMessages: 'No messages',
+        user: 'User',
+        group: 'Group',
+      },
     },
 
     // UI Elements
@@ -3019,6 +3030,8 @@ export const translations = {
         madeIn: 'Hecho con ❤️ en Colombia 🇨🇴'
       }
     },
+
+    // Admin - Services (preview alt moved into services block to avoid duplicate `admin` keys)
 
     // Common - Traducciones comunes usadas en múltiples componentes
     common: {
@@ -4226,6 +4239,11 @@ export const translations = {
         addNewLocation: 'Agrega una nueva ubicación para tu negocio',
         addNewService: 'Agrega un nuevo servicio',
         exporting: 'Exportando...'
+      },
+      
+      // Admin - Services small extras
+      services: {
+        previewAlt: 'Vista previa'
       },
       
       billing: {
@@ -5611,4 +5629,4 @@ export const translations = {
       professionalSummaryMinLength: 'El resumen profesional debe tener al menos 50 caracteres',
     },
   }
-}
+};

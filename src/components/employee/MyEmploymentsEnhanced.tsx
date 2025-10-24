@@ -10,13 +10,15 @@ import { ConfirmEndEmploymentDialog } from './ConfirmEndEmploymentDialog';
 import { EmploymentDetailModal } from './EmploymentDetailModal';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
+import { countUpcomingForEmployee } from '@/lib/services/appointments';
 
 interface MyEmploymentsProps {
   employeeId: string;
   onJoinBusiness?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps) {
+export function MyEmployments({ employeeId, onJoinBusiness, onNavigate }: MyEmploymentsProps) {
   const [showPrevious, setShowPrevious] = useState(false);
   const [enrichedBusinesses, setEnrichedBusinesses] = useState<EnhancedBusiness[]>([]);
   const { businesses, loading, error } = useEmployeeBusinesses(employeeId, true);
@@ -32,6 +34,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
   const [selectedBusinessForEnd, setSelectedBusinessForEnd] = useState<{
     id: string;
     name: string;
+    upcomingCount?: number;
   } | null>(null);
 
   const [selectedBusinessForDetails, setSelectedBusinessForDetails] = useState<{
@@ -112,6 +115,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
               job_title: employeeData?.job_title || null,
               role: employeeData?.role || null,
               employee_type: employeeData?.employee_type || null,
+              is_active: employeeData?.is_active ?? true,
             };
           } catch {
             // Error enriching business - usar valores por defecto
@@ -126,6 +130,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
               job_title: null,
               role: null,
               employee_type: null,
+              is_active: true,
             };
           }
         })
@@ -165,47 +170,109 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
     );
   };
 
-  const handleEndEmployment = (businessId: string) => {
-    const business = enrichedBusinesses.find(b => b.id === businessId);
-    if (business) {
-      setSelectedBusinessForEnd({
-        id: businessId,
-        name: business.name
+  const handleEndEmployment = async (business: EnhancedBusiness) => {
+    try {
+      setEndDialogOpen(true);
+      // Preload upcoming appointments count
+      const upcomingCount = await countUpcomingForEmployee({
+        businessId: business.id,
+        employeeId: user?.id || '',
       });
+      setSelectedBusinessForEnd({ ...business, upcomingCount });
+    } catch (e) {
+      setSelectedBusinessForEnd({ ...business, upcomingCount: undefined });
     }
   };
 
   const handleConfirmEndEmployment = async () => {
     if (!selectedBusinessForEnd) return;
+    const businessId = selectedBusinessForEnd.id;
+    const employeeId = user?.id || '';
 
     try {
-      // Marcar como inactivo
+      const upcomingCount = await countUpcomingForEmployee({
+        businessId,
+        employeeId,
+      });
+      if (upcomingCount > 0) {
+        toast.error(
+          t('employee.endEmployment.blockedByUpcoming', {
+            count: upcomingCount,
+          })
+        );
+        return;
+      }
+    } catch (err) {
+      // If counting fails, be conservative and block to avoid orphaned appointments
+      toast.error(t('employee.endEmployment.errorCheckingAppointments'));
+      return;
+    }
+
+    // Bloqueo: verificar citas futuras del empleado en este negocio
+    const nowIso = new Date().toISOString();
+    const { count: upcomingCount, error: aptError } = await supabase
+      .from('appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', selectedBusinessForEnd.id)
+      .eq('employee_id', employeeId)
+      .in('status', ['pending', 'confirmed'])
+      .gte('start_time', nowIso);
+
+    if (aptError) throw aptError;
+    if ((upcomingCount || 0) > 0) {
+      const msg = 'No puedes finalizar: tienes citas futuras pendientes. Cancélalas o reasígnalas primero.';
+      toast.error(msg);
+      throw new Error(msg);
+    }
+
+    // Marcar como inactivo
+    const { error: updateError } = await supabase
+      .from('business_employees')
+      .update({
+        is_active: false,
+      })
+      .eq('business_id', selectedBusinessForEnd.id)
+      .eq('employee_id', employeeId);
+
+    if (updateError) throw updateError;
+
+    // Desactivar servicios
+    const { error: servicesError } = await supabase
+      .from('employee_services')
+      .update({ is_active: false })
+      .eq('business_id', selectedBusinessForEnd.id)
+      .eq('employee_id', employeeId);
+
+    if (servicesError) throw servicesError;
+
+    toast.success('Empleo finalizado correctamente');
+    
+    // Refrescar lista
+    window.location.reload();
+  };
+
+  const handleReactivateEmployment = async (businessId: string) => {
+    try {
       const { error: updateError } = await supabase
         .from('business_employees')
-        .update({
-          is_active: false,
-          termination_date: new Date().toISOString()
-        })
-        .eq('business_id', selectedBusinessForEnd.id)
+        .update({ is_active: true })
+        .eq('business_id', businessId)
         .eq('employee_id', employeeId);
 
       if (updateError) throw updateError;
 
-      // Desactivar servicios
       const { error: servicesError } = await supabase
         .from('employee_services')
-        .update({ is_active: false })
-        .eq('business_id', selectedBusinessForEnd.id)
+        .update({ is_active: true })
+        .eq('business_id', businessId)
         .eq('employee_id', employeeId);
 
       if (servicesError) throw servicesError;
 
-      toast.success('Empleo finalizado correctamente');
-      
-      // Refrescar lista
+      toast.success('Empleo reactivado correctamente');
       window.location.reload();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al finalizar empleo';
+      const errorMessage = err instanceof Error ? err.message : 'Error al reactivar empleo';
       toast.error(errorMessage);
       throw err;
     }
@@ -214,18 +281,20 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
   const handleViewDetails = (businessId: string) => {
     const business = enrichedBusinesses.find(b => b.id === businessId);
     if (business) {
-      setSelectedBusinessForDetails({
-        id: businessId,
-        name: business.name
-      });
+      setSelectedBusinessForDetails({ id: business.id, name: business.name });
     }
   };
 
   if (loading) {
     return (
-      <div className="p-4 sm:p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/3" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="h-24 bg-muted rounded" />
+            <div className="h-24 bg-muted rounded" />
+            <div className="h-24 bg-muted rounded" />
+          </div>
         </div>
       </div>
     );
@@ -233,28 +302,22 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-sm text-destructive">{error}</p>
-          </CardContent>
-        </Card>
+      <div className="p-6">
+        <div className="text-destructive">Error al cargar empleos: {error}</div>
       </div>
     );
   }
 
-  // Separar empleos activos y anteriores
-  const activeEmployments = enrichedBusinesses.filter(b => b.id); // TODO: Filtrar por is_active
-  const previousEmployments: EnhancedBusiness[] = [];
+  const activeEmployments = enrichedBusinesses.filter(b => b.is_active !== false);
+  const previousEmployments: EnhancedBusiness[] = enrichedBusinesses.filter(b => b.is_active === false);
 
-  // Contar propietarios y empleados
   const ownedCount = activeEmployments.filter(b => b.isOwner).length;
   const employeeCount = activeEmployments.filter(b => !b.isOwner).length;
 
   return (
     <>
       <div className="p-4 sm:p-6 space-y-6">
-        {/* Header */}
+        {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Mis Empleos</h2>
@@ -286,7 +349,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6">
@@ -331,7 +394,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
           </Card>
         </div>
 
-        {/* Active Employments */}
+        {/* Active Employments List */}
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-4">Vínculos Activos</h3>
           {activeEmployments.length === 0 ? (
@@ -355,13 +418,14 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
                   onViewDetails={() => handleViewDetails(business.id)}
                   onRequestTimeOff={(type) => handleRequestTimeOff(business.id, type)}
                   onEndEmployment={() => handleEndEmployment(business.id)}
+                  onReactivateEmployment={() => handleReactivateEmployment(business.id)}
                 />
               ))}
             </div>
           )}
         </div>
 
-        {/* Previous Employments (si hay) */}
+        {/* Previous Employments */}
         {showPrevious && previousEmployments.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-4">Empleos Anteriores</h3>
@@ -373,6 +437,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
                   onViewDetails={() => handleViewDetails(business.id)}
                   onRequestTimeOff={(type) => handleRequestTimeOff(business.id, type)}
                   onEndEmployment={() => handleEndEmployment(business.id)}
+                  onReactivateEmployment={() => handleReactivateEmployment(business.id)}
                 />
               ))}
             </div>
@@ -380,7 +445,6 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
         )}
       </div>
 
-      {/* Modales */}
       <TimeOffRequestModal
         open={!!selectedBusinessForTimeOff}
         onClose={() => setSelectedBusinessForTimeOff(null)}
@@ -395,6 +459,8 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
         onClose={() => setSelectedBusinessForEnd(null)}
         businessName={selectedBusinessForEnd?.name || ''}
         onConfirm={handleConfirmEndEmployment}
+        upcomingCount={selectedBusinessForEnd?.upcomingCount || 0}
+        onGoToAgenda={() => onNavigate?.('appointments')}
       />
 
       <EmploymentDetailModal

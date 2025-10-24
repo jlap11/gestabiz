@@ -63,8 +63,8 @@ export function ConversationList({
   // Ordenar: pinned primero, luego por último mensaje
   const sortedConversations = [...filteredConversations].sort((a, b) => {
     // Pinned primero (si el usuario tiene la conversación pinned)
-    const aPinned = a.members?.find(m => m.user_id)?.user_id ? false : false; // TODO: Agregar is_pinned
-    const bPinned = b.members?.find(m => m.user_id)?.user_id ? false : false; // TODO: Agregar is_pinned
+    const aPinned = a.is_pinned === true;
+    const bPinned = b.is_pinned === true;
     
     if (aPinned && !bPinned) return -1;
     if (!aPinned && bPinned) return 1;
@@ -75,92 +75,16 @@ export function ConversationList({
     return bTime - aTime;
   });
 
-  return (
-    <div className="flex flex-col h-full border-r bg-background">
-      {/* Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Mensajes</h2>
-          {totalUnreadCount > 0 && (
-            <Badge variant="default" className="rounded-full">
-              {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-            </Badge>
-          )}
-        </div>
-
-        {/* Búsqueda */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar conversaciones..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
-              onClick={() => setSearchQuery('')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Lista de conversaciones */}
-      <ScrollArea className="flex-1">
-        {loading && sortedConversations.length === 0 && (
-          <div className="p-8 text-center text-muted-foreground">
-            Cargando conversaciones...
-          </div>
-        )}
-        
-        {!loading && sortedConversations.length === 0 && (
-          <div className="p-8 text-center text-muted-foreground">
-            {searchQuery ? 'No se encontraron conversaciones' : 'No hay conversaciones'}
-          </div>
-        )}
-        
-        {sortedConversations.length > 0 && (
-          <div className="divide-y">
-            {sortedConversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                isActive={conversation.id === activeConversationId}
-                onClick={() => onSelectConversation(conversation.id)}
-              />
-            ))}
-          </div>
-        )}
-      </ScrollArea>
-    </div>
-  );
-}
-
-/**
- * ConversationItem Component
- * 
- * Item individual de conversación
- */
-interface ConversationItemProps {
-  conversation: ConversationPreview;
-  isActive: boolean;
-  onClick: () => void;
-}
-
 function ConversationItem({ conversation, isActive, onClick }: ConversationItemProps) {
+  const { t } = useLanguage();
   // Obtener título de la conversación
   const title =
     conversation.type === 'direct'
-      ? conversation.display_name || // Nombre personalizado o nombre del otro usuario
+        ? conversation.display_name || // Nombre personalizado o nombre del otro usuario
         conversation.other_user?.full_name ||
         conversation.other_user?.email ||
-        'Usuario'
-      : conversation.name || 'Grupo';
+        t('chat.conversations.user')
+      : conversation.name || t('chat.conversations.group');
 
   // Obtener iniciales para avatar
   const initials = title
@@ -188,9 +112,8 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
 
   const hasUnread = (conversation.unread_count || 0) > 0;
   
-  // Verificar si está pinned (desde members del usuario actual)
-  // TODO: Agregar campo is_pinned a conversation_members
-  const isPinned = false; // conversation.members?.some(m => m.is_pinned) || false;
+  // Verificar si está pinned
+  const isPinned = conversation.is_pinned === true;
 
   return (
     <button
@@ -214,8 +137,7 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
         {/* Título y timestamp */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            {/* TODO: Implementar is_pinned desde conversation_members */}
-            {false && (
+            {isPinned && (
               <Pin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
             )}
             {conversation.is_archived && (
@@ -245,7 +167,7 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
               hasUnread && 'font-medium text-foreground'
             )}
           >
-            {conversation.last_message_preview || 'Sin mensajes'}
+            {conversation.last_message_preview || t('chat.conversations.noMessages')}
           </p>
           {hasUnread && (
             <Badge variant="default" className="rounded-full h-5 min-w-[20px] px-1.5 text-xs">
@@ -256,4 +178,81 @@ function ConversationItem({ conversation, isActive, onClick }: ConversationItemP
       </div>
     </button>
   );
+}
+
+  return (
+    <div className="flex flex-col h-full border-r bg-background">
+      {/* Header */}
+      <div className="p-4 border-b">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">{t('chat.conversations.title')}</h2>
+          {totalUnreadCount > 0 && (
+            <Badge variant="default" className="rounded-full">
+              {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+            </Badge>
+          )}
+        </div>
+
+        {/* Búsqueda */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('chat.conversations.searchPlaceholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Lista de conversaciones */}
+      <ScrollArea className="flex-1">
+        {loading && sortedConversations.length === 0 && (
+          <div className="p-8 text-center text-muted-foreground">
+            {t('chat.conversations.loading')}
+          </div>
+        )}
+        
+        {!loading && sortedConversations.length === 0 && (
+          <div className="p-8 text-center text-muted-foreground">
+            {searchQuery ? t('chat.conversations.noResults') : t('chat.conversations.empty')}
+          </div>
+        )}
+        
+        {sortedConversations.length > 0 && (
+          <div className="divide-y">
+            {sortedConversations.map((conversation) => (
+              <ConversationItem
+                key={conversation.id}
+                conversation={conversation}
+                isActive={conversation.id === activeConversationId}
+                onClick={() => onSelectConversation(conversation.id)}
+              />
+            ))}
+          </div>
+        )}
+      </ScrollArea>
+    </div>
+  );
+}
+
+/**
+ * ConversationItem Component
+ * 
+ * Item individual de conversación
+ */
+interface ConversationItemProps {
+  conversation: ConversationPreview;
+  isActive: boolean;
+  onClick: () => void;
 }

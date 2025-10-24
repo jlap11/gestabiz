@@ -517,7 +517,7 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 </div>
                 <div className="flex items-center gap-2 text-xs sm:text-sm">
                   <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" />
-                  <span className="text-muted-foreground">{service.duration_minutes} minutos</span>
+                  <span className="text-muted-foreground">{service.duration_minutes} {t('common.time.minutes')}</span>
                 </div>
               </CardContent>
             </Card>
