@@ -144,7 +144,7 @@ export function EnhancedFinancialDashboard({
     : '0.0';
 
   const handleExportCSV = async () => {
-    const toastId = toast.loading('Exportando a CSV...');
+    const toastId = toast.loading(t('billing.csvLoading'));
     try {
       const report = await generateProfitAndLoss(reportFilters);
       // Convertir el reporte a array para exportar
@@ -163,14 +163,14 @@ export function EnhancedFinancialDashboard({
         { item: 'Utilidad Neta', monto: report.net_profit },
       ];
       exportToCSV(dataArray, `reporte_${period}`, { format: 'csv', delimiter: ';' });
-      toast.success('Reporte CSV exportado exitosamente', { id: toastId });
+      toast.success(t('billing.csvSuccess'), { id: toastId });
     } catch (error) {
-      toast.error(`Error al exportar CSV: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(t('billing.csvError', { error: error instanceof Error ? error.message : 'Error desconocido' }), { id: toastId });
     }
   };
 
   const handleExportExcel = async () => {
-    const toastId = toast.loading('Exportando a Excel...');
+    const toastId = toast.loading(t('billing.excelLoading'));
     try {
       const report = await generateProfitAndLoss(reportFilters);
       const dataArray = [
@@ -188,20 +188,20 @@ export function EnhancedFinancialDashboard({
         { item: 'Utilidad Neta', monto: report.net_profit },
       ];
       exportToExcel(dataArray, `Reporte_Financiero_${period}`, 'Reporte');
-      toast.success('Reporte Excel exportado exitosamente', { id: toastId });
+      toast.success(t('billing.excelSuccess'), { id: toastId });
     } catch (error) {
-      toast.error(`Error al exportar Excel: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(t('billing.excelError', { error: error instanceof Error ? error.message : 'Error desconocido' }), { id: toastId });
     }
   };
 
   const handleExportPDF = async () => {
-    const toastId = toast.loading('Generando PDF...');
+    const toastId = toast.loading(t('billing.pdfLoading'));
     try {
       const report = await generateProfitAndLoss(reportFilters);
       exportToPDF(report, report.business_name, `reporte_${period}.pdf`);
-      toast.success('Reporte PDF generado exitosamente', { id: toastId });
+      toast.success(t('billing.pdfSuccess'), { id: toastId });
     } catch (error) {
-      toast.error(`Error al generar PDF: ${error instanceof Error ? error.message : 'Error desconocido'}`, { id: toastId });
+      toast.error(t('billing.pdfError', { error: error instanceof Error ? error.message : 'Error desconocido' }), { id: toastId });
     }
   };
 

@@ -6,12 +6,13 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  text?: string;
-  className?: string;
-  fullScreen?: boolean;
+  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly text?: string;
+  readonly className?: string;
+  readonly fullScreen?: boolean;
 }
 
 const sizeClasses = {
@@ -26,7 +27,7 @@ export function LoadingSpinner({
   text,
   className,
   fullScreen = false,
-}: LoadingSpinnerProps) {
+}: readonly LoadingSpinnerProps) {
   const content = (
     <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
       <Loader2 className={cn('animate-spin text-primary', sizeClasses[size])} />
@@ -48,16 +49,18 @@ export function LoadingSpinner({
 }
 
 // Variante para Suspense fallback
-export function SuspenseFallback({ text = 'Cargando componente...' }: { text?: string }) {
+export function SuspenseFallback({ text }: { readonly text?: string }) {
+  const { t } = useLanguage()
+  const defaultText = text || t('common.loading.component')
   return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <LoadingSpinner size="lg" text={text} />
+      <LoadingSpinner size="lg" text={defaultText} />
     </div>
   );
 }
 
 // Variante inline para botones
-export function ButtonSpinner({ className }: { className?: string }) {
+export function ButtonSpinner({ className }: { readonly className?: string }) {
   return <Loader2 className={cn('h-4 w-4 animate-spin', className)} />;
 }
 

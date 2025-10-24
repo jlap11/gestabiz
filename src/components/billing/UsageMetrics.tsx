@@ -50,12 +50,12 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
   // Get status badge
   const getStatusBadge = (percentage: number) => {
     if (percentage >= 90) {
-      return <Badge variant="destructive">Crítico</Badge>
+      return <Badge variant="destructive">{t('billing.statusBadge.critical')}</Badge>
     }
     if (percentage >= 80) {
-      return <Badge variant="secondary" className="bg-yellow-500 text-yellow-950">Advertencia</Badge>
+      return <Badge variant="secondary" className="bg-yellow-500 text-yellow-950">{t('billing.statusBadge.warning')}</Badge>
     }
-    return <Badge variant="default">Normal</Badge>
+    return <Badge variant="default">{t('billing.statusBadge.normal')}</Badge>
   }
 
   // Calculate alerts
@@ -99,7 +99,7 @@ export function UsageMetrics({ usage, planName, billingCycle }: Readonly<UsageMe
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>{t('billing.upcomingLimits')}</AlertTitle>
           <AlertDescription>
-            Algunos recursos están cerca del límite de tu plan. Considera actualizar para evitar interrupciones.
+            {t('billing.alertDescription')}
           </AlertDescription>
         </Alert>
       )}

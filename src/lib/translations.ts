@@ -1787,6 +1787,52 @@ export const translations = {
         rating: 'Rating',
         revenue: 'Rev.',
       },
+      
+      // Service Management Actions
+      serviceActions: {
+        created: 'Service created successfully',
+        updated: 'Service updated successfully',
+        deleted: 'Service deleted successfully',
+        createError: 'Error creating service',
+        updateError: 'Error updating service',
+        deleteError: 'Error deleting service',
+        loadError: 'Error loading data',
+        assignError: 'Error loading assignments',
+      },
+      
+      // Location Management Actions
+      locationActions: {
+        created: 'Location created successfully',
+        updated: 'Location updated successfully',
+        deleted: 'Location deleted successfully',
+        createError: 'Error creating location',
+        updateError: 'Error updating location',
+        deleteError: 'Error deleting location',
+        loadError: 'Error loading locations',
+      },
+      
+      // Role & Permission Actions
+      roleActions: {
+        modified: 'Role modified successfully',
+        assigned: 'Role assigned successfully',
+        modifyError: 'Error assigning new role',
+        revokeError: 'Error revoking previous role',
+        assignError: 'Error assigning role',
+      },
+      
+      // Permission Templates
+      templateActions: {
+        created: 'Template created successfully',
+        deleted: 'Template deleted successfully',
+        createError: 'Error creating template',
+        deleteError: 'Error deleting template',
+      },
+      
+      // Audit & Tracking
+      auditActions: {
+        exported: 'Audit exported successfully',
+        exportError: 'Error exporting',
+      },
     },
 
     // Absence and Vacation System
@@ -2157,6 +2203,24 @@ export const translations = {
       cycleLabel: 'Cycle',
       alertCount: 'Alert',
       upcomingLimits: 'Upcoming Limits',
+      // Status badges
+      statusBadge: {
+        critical: 'Critical',
+        warning: 'Warning',
+        normal: 'Normal',
+      },
+      // Alert descriptions
+      alertDescription: 'Some resources are approaching your plan limits. Consider upgrading to avoid interruptions.',
+      // Export messages
+      csvLoading: 'Exporting to CSV...',
+      excelLoading: 'Exporting to Excel...',
+      pdfLoading: 'Generating PDF...',
+      csvSuccess: 'CSV report exported successfully',
+      excelSuccess: 'Excel report exported successfully',
+      pdfSuccess: 'PDF report generated successfully',
+      csvError: 'Error exporting CSV: {{error}}',
+      excelError: 'Error exporting Excel: {{error}}',
+      pdfError: 'Error generating PDF: {{error}}',
     },
 
     // Employee Dashboard
@@ -3901,7 +3965,25 @@ export const translations = {
         planLabel: 'Plan',
         cycleLabel: 'Ciclo',
         alertCount: 'Alerta',
-        upcomingLimits: 'Límites Próximos'
+        upcomingLimits: 'Límites Próximos',
+        // Status badges
+        statusBadge: {
+          critical: 'Crítico',
+          warning: 'Advertencia',
+          normal: 'Normal',
+        },
+        // Alert descriptions
+        alertDescription: 'Algunos recursos están cerca del límite de tu plan. Considera actualizar para evitar interrupciones.',
+        // Export messages
+        csvLoading: 'Exportando a CSV...',
+        excelLoading: 'Exportando a Excel...',
+        pdfLoading: 'Generando PDF...',
+        csvSuccess: 'Reporte CSV exportado exitosamente',
+        excelSuccess: 'Reporte Excel exportado exitosamente',
+        pdfSuccess: 'Reporte PDF generado exitosamente',
+        csvError: 'Error al exportar CSV: {{error}}',
+        excelError: 'Error al exportar Excel: {{error}}',
+        pdfError: 'Error al generar PDF: {{error}}',
       },
       clientManagement: {
         search_placeholder: 'Buscar clientes por nombre, email o teléfono...',
@@ -3992,7 +4074,53 @@ export const translations = {
         errors: {
           generate_failed: 'No se pudieron generar los reportes'
         }
-      }
+      },
+      
+      // Service Management Actions
+      serviceActions: {
+        created: 'Servicio creado exitosamente',
+        updated: 'Servicio actualizado exitosamente',
+        deleted: 'Servicio eliminado exitosamente',
+        createError: 'Error al crear servicio',
+        updateError: 'Error al actualizar servicio',
+        deleteError: 'Error al eliminar servicio',
+        loadError: 'Error al cargar datos',
+        assignError: 'Error al cargar asignaciones',
+      },
+      
+      // Location Management Actions
+      locationActions: {
+        created: 'Ubicación creada exitosamente',
+        updated: 'Ubicación actualizada exitosamente',
+        deleted: 'Ubicación eliminada exitosamente',
+        createError: 'Error al crear ubicación',
+        updateError: 'Error al actualizar ubicación',
+        deleteError: 'Error al eliminar ubicación',
+        loadError: 'Error al cargar las sedes',
+      },
+      
+      // Role & Permission Actions
+      roleActions: {
+        modified: 'Rol modificado exitosamente',
+        assigned: 'Rol asignado exitosamente',
+        modifyError: 'Error al asignar nuevo rol',
+        revokeError: 'Error al revocar rol anterior',
+        assignError: 'Error al asignar rol',
+      },
+      
+      // Permission Templates
+      templateActions: {
+        created: 'Plantilla creada exitosamente',
+        deleted: 'Plantilla eliminada exitosamente',
+        createError: 'Error al crear plantilla',
+        deleteError: 'Error al eliminar plantilla',
+      },
+      
+      // Audit & Tracking
+      auditActions: {
+        exported: 'Auditoría exportada exitosamente',
+        exportError: 'Error al exportar',
+      },
     },
 
     // Calendar

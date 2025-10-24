@@ -98,10 +98,10 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
 
       if (editingService) {
         setServices(prev => prev.map(service => service.id === editingService.id ? serviceData : service))
-        toast.success('Servicio actualizado exitosamente')
+        toast.success(t('admin.serviceActions.updated'))
       } else {
         setServices(prev => [...prev, serviceData])
-        toast.success('Servicio creado exitosamente')
+        toast.success(t('admin.serviceActions.created'))
       }
 
       setShowDialog(false)
@@ -132,7 +132,7 @@ export default function ServiceManagement({ user }: Readonly<ServiceManagementPr
   const handleDelete = async (serviceId: string) => {
     try {
       setServices(prev => prev.filter(service => service.id !== serviceId))
-      toast.success('Servicio eliminado exitosamente')
+      toast.success(t('admin.serviceActions.deleted'))
     } catch (error) {
       toast.error(t('message.error'))
       throw error
