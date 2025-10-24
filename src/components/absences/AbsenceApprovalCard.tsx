@@ -11,6 +11,7 @@
  */
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -45,6 +46,7 @@ const absenceTypeColors: Record<string, string> = {
 };
 
 export function AbsenceApprovalCard({ absence, onApprove, onReject, loading }: Readonly<AbsenceApprovalCardProps>) {
+  const { t } = useLanguage()
   const [showNotes, setShowNotes] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);

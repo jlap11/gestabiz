@@ -1,4 +1,5 @@
 import { Check, MapPin, Users, DollarSign } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useResourcesForService } from '@/hooks/useBusinessResources'
@@ -46,6 +47,7 @@ export function ResourceSelection({
   selectedResourceId,
   onSelect,
 }: Readonly<ResourceSelectionProps>) {
+  const { t } = useLanguage()
   const { data: resources, isLoading } = useResourcesForService(
     businessId,
     serviceId,
