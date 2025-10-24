@@ -115,7 +115,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
     const newLocation: Location = {
       id: `location-${Date.now()}`,
       business_id: business?.id || '',
-      name: 'Nueva Sede',
+      name: t('admin.actions.newLocation'),
       address: '',
       city: '',
       state: '',

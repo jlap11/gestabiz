@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -86,6 +87,7 @@ const COLORS = {
 }
 
 export function NotificationTracking({ businessId }: Readonly<NotificationTrackingProps>) {
+  const { t } = useLanguage()
   const [logs, setLogs] = useState<NotificationLog[]>([])
   const [filteredLogs, setFilteredLogs] = useState<NotificationLog[]>([])
   const [stats, setStats] = useState<Stats>({
@@ -490,7 +492,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
                   <SelectItem value="email">Email</SelectItem>
                   <SelectItem value="sms">SMS</SelectItem>
                   <SelectItem value="whatsapp">WhatsApp</SelectItem>
@@ -505,7 +507,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
                   <SelectItem value="sent">Enviado</SelectItem>
                   <SelectItem value="failed">Fallido</SelectItem>
                   <SelectItem value="pending">Pendiente</SelectItem>
@@ -520,7 +522,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="all">{t('common.filters.all')}</SelectItem>
                   {Object.entries(NOTIFICATION_TYPES).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
@@ -549,7 +551,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
             </div>
 
             <div>
-              <Label className="text-foreground">Buscar</Label>
+              <Label className="text-foreground">{t('common.actions.search')}</Label>
               <Input
                 placeholder="Email o teléfono"
                 value={searchQuery}
@@ -577,7 +579,7 @@ export function NotificationTracking({ businessId }: Readonly<NotificationTracki
               className="bg-primary hover:bg-primary/90"
             >
               <Download className="h-4 w-4 mr-2" />
-              {exporting ? 'Exportando...' : 'Exportar CSV'}
+              {exporting ? t('common.actions.exporting') : t('admin.actions.exportCSV')}
             </Button>
           </div>
         </CardHeader>

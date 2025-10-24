@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { Download, Filter, Calendar as CalendarIcon, User as UserIcon, Activity } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -80,6 +81,7 @@ const ACTION_CONFIG = {
 type ActionType = keyof typeof ACTION_CONFIG
 
 export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditLogProps>) {
+  const { t } = useLanguage()
   const { auditLog, isLoading } = usePermissions({
     userId: currentUserId,
     businessId,
@@ -228,7 +230,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
             disabled={!filteredLog || filteredLog.length === 0}
           >
             <Download className="h-4 w-4" />
-            Exportar CSV
+            {t('admin.actions.exportCSV')}
           </Button>
         </div>
       </CardHeader>
@@ -268,7 +270,7 @@ export function AuditLog({ businessId, ownerId, currentUserId }: Readonly<AuditL
             </Label>
             <Input
               id="user-filter"
-              placeholder="Buscar por nombre..."
+              placeholder={t('admin.actions.searchByName')}
               value={userFilter}
               onChange={(e) => setUserFilter(e.target.value)}
             />

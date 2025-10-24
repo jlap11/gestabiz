@@ -11,6 +11,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -73,7 +74,8 @@ const initialFormData: Omit<Service, 'id' | 'created_at' | 'updated_at' | 'busin
   is_active: true,
 }
 
-export function ServicesManager({ businessId }: ServicesManagerProps) {
+export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) {
+  const { t } = useLanguage();
   const [services, setServices] = useState<Service[]>([])
   const [locations, setLocations] = useState<Location[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -394,7 +396,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
   }
 
   const handleDelete = async (serviceId: string) => {
-    if (!confirm('¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.')) {
+    if (!confirm(t('admin.actions.confirmDeleteService'))) {
       return
     }
 
@@ -438,8 +440,8 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
         >
           <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Agregar Servicio</span>
-          <span className="sm:hidden">Nuevo Servicio</span>
+          <span className="hidden sm:inline">{t('admin.actions.addService')}</span>
+          <span className="sm:hidden">{t('admin.actions.newService')}</span>
         </Button>
       </div>
 
@@ -457,7 +459,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Crear Primer Servicio
+              {t('admin.actions.createFirstService')}
             </Button>
           </CardContent>
         </Card>
@@ -527,12 +529,12 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
         <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
-              {editingService ? 'Editar Servicio' : 'Crear Nuevo Servicio'}
+              {editingService ? t('admin.actions.editService') : t('admin.actions.createService')}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               {editingService
-                ? 'Actualiza la información del servicio'
-                : 'Completa la información del nuevo servicio'}
+                ? t('admin.actions.updateServiceInfo')
+                : t('admin.actions.completeServiceInfo')}
             </DialogDescription>
           </DialogHeader>
 
@@ -730,20 +732,19 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
 
             <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <Button
-                type="button"
                 variant="ghost"
                 onClick={handleCloseDialog}
                 disabled={isSaving}
                 className="min-h-[44px] w-full sm:w-auto"
               >
-                Cancelar
+                {t('common.actions.cancel')}
               </Button>
               <Button
                 type="submit"
                 className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
                 disabled={isSaving}
               >
-                {isSaving ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear'}
+                {isSaving ? t('common.actions.saving') : editingService ? t('common.actions.update') : t('common.actions.create')}
               </Button>
             </DialogFooter>
           </form>
