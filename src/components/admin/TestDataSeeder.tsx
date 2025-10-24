@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TestUser {
   email: string;
@@ -50,6 +51,7 @@ const testUsers: TestUser[] = [
 ];
 
 export function TestDataSeeder() {
+  const { t } = useLanguage();
   const [isCreating, setIsCreating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<{ success: number; errors: string[] }>({ success: 0, errors: [] });

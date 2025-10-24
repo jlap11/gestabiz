@@ -8,6 +8,7 @@
 import { ChevronDown, ChevronRight, Users } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 import type { EmployeeHierarchy } from '@/types'
 
@@ -83,8 +84,26 @@ export function HierarchyNode({
   depth = 0,
   className,
 }: Readonly<HierarchyNodeProps>) {
+  const { t } = useLanguage()
   const initials = getInitials(employee.full_name)
   const hasSubordinates = employee.direct_reports_count > 0
+
+  const getLevelLabelI18n = (level: number): string => {
+    switch (level) {
+      case 0:
+        return t('hierarchy.levels.owner')
+      case 1:
+        return t('hierarchy.levels.admin')
+      case 2:
+        return t('hierarchy.levels.manager')
+      case 3:
+        return t('hierarchy.levels.lead')
+      case 4:
+        return t('hierarchy.levels.staff')
+      default:
+        return `${t('hierarchy.levels.level')} ${level}`
+    }
+  }
 
   return (
     <div
@@ -130,7 +149,7 @@ export function HierarchyNode({
         {/* NIVEL */}
         <div className="flex items-center justify-between">
           <Badge variant="outline" className="text-xs bg-white/20 border-white/50 text-white">
-            {getLevelLabel(employee.hierarchy_level)}
+            {getLevelLabelI18n(employee.hierarchy_level)}
           </Badge>
           {hasSubordinates && (
             <div className="flex items-center gap-1 text-xs text-gray-300">
