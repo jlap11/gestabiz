@@ -1772,6 +1772,23 @@ export const translations = {
       },
     },
 
+    // Hierarchy System
+    hierarchy: {
+      levels: {
+        owner: 'Owner',
+        admin: 'Admin',
+        manager: 'Manager',
+        lead: 'Lead',
+        staff: 'Staff',
+        level: 'Level',
+      },
+      metrics: {
+        occupancy: 'Occup.',
+        rating: 'Rating',
+        revenue: 'Rev.',
+      },
+    },
+
     // Absence and Vacation System
     absences: {
       title: 'Request Absence',
@@ -4321,6 +4338,23 @@ export const translations = {
         rating: 'Rating',
         revenue: 'Revenue',
         noEmployees: 'No hay empleados para mostrar',
+      },
+    },
+
+    // Sistema de Jerarquía
+    hierarchy: {
+      levels: {
+        owner: 'Propietario',
+        admin: 'Administrador',
+        manager: 'Gerente',
+        lead: 'Líder',
+        staff: 'Personal',
+        level: 'Nivel',
+      },
+      metrics: {
+        occupancy: 'Ocup.',
+        rating: 'Rating',
+        revenue: 'Rev.',
       },
     },
 

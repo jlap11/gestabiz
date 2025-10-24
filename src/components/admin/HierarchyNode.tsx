@@ -46,23 +46,6 @@ const getLevelColor = (level: number): string => {
   }
 }
 
-const getLevelLabel = (level: number): string => {
-  switch (level) {
-    case 0:
-      return 'Owner'
-    case 1:
-      return 'Admin'
-    case 2:
-      return 'Manager'
-    case 3:
-      return 'Lead'
-    case 4:
-      return 'Staff'
-    default:
-      return `Nivel ${level}`
-  }
-}
-
 const getInitials = (name: string): string => {
   return name
     .split(' ')
@@ -162,7 +145,7 @@ export function HierarchyNode({
         {/* MÉTRICAS COMPACTAS */}
         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/20 text-xs">
           <div className="text-center">
-            <p className="text-gray-300">Ocup.</p>
+            <p className="text-gray-300">{t('hierarchy.metrics.occupancy')}</p>
             <p className="font-semibold text-white">
               {employee.occupancy_rate !== null && employee.occupancy_rate !== undefined
                 ? `${Number(employee.occupancy_rate).toFixed(0)}%`
@@ -170,7 +153,7 @@ export function HierarchyNode({
             </p>
           </div>
           <div className="text-center">
-            <p className="text-gray-300">Rating</p>
+            <p className="text-gray-300">{t('hierarchy.metrics.rating')}</p>
             <p className="font-semibold text-white">
               {employee.average_rating !== null && employee.average_rating !== undefined
                 ? `${Number(employee.average_rating).toFixed(1)} ⭐`
@@ -178,7 +161,7 @@ export function HierarchyNode({
             </p>
           </div>
           <div className="text-center">
-            <p className="text-gray-300">Rev.</p>
+            <p className="text-gray-300">{t('hierarchy.metrics.revenue')}</p>
             <p className="font-semibold text-white">
               {employee.gross_revenue !== null && employee.gross_revenue !== undefined
                 ? `$${(Number(employee.gross_revenue) / 1000).toFixed(0)}k`
