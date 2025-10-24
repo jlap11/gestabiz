@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 
 interface CreateUsersResponse {
@@ -19,6 +20,7 @@ interface CreateUsersResponse {
 }
 
 export function CreateTestUsers() {
+  const { t } = useLanguage();
   const [isCreating, setIsCreating] = useState(false);
   const [result, setResult] = useState<CreateUsersResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
