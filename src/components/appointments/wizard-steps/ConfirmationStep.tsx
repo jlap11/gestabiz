@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -45,7 +46,8 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
 export function ConfirmationStep({
   wizardData,
   onUpdateNotes,
-}: ConfirmationStepProps) {
+}: Readonly<ConfirmationStepProps>) {
+  const { t } = useLanguage()
   const { service, date, startTime, endTime, notes, location, employee } = wizardData;
 
   return (

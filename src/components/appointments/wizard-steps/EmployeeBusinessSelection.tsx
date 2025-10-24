@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Building2, Check, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
@@ -31,6 +32,7 @@ export function EmployeeBusinessSelection({
   selectedBusinessId,
   onSelectBusiness,
 }: Readonly<EmployeeBusinessSelectionProps>) {
+  const { t } = useLanguage()
   const { businesses, loading, error, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(
     employeeId,
     true // Incluir negocios donde es owner (independiente)

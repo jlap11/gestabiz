@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card } from '@/components/ui/card';
 import { Check, Building2 } from 'lucide-react';
 import { SearchBar } from '@/components/client/SearchBar';
@@ -29,6 +30,7 @@ export function BusinessSelection({
   preferredRegionName: propRegionName,
   onSelectBusiness,
 }: BusinessSelectionProps) {
+  const { t } = useLanguage()
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

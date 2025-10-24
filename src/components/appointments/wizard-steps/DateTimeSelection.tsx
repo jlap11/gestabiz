@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -104,7 +105,8 @@ export function DateTimeSelection({
   locationId,
   businessId,
   appointmentToEdit,
-}: DateTimeSelectionProps) {
+}: Readonly<DateTimeSelectionProps>) {
+  const { t } = useLanguage()
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [locationSchedule, setLocationSchedule] = useState<LocationSchedule | null>(null);
   const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule | null>(null);

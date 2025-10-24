@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { UserCircle2, Briefcase, Star, Loader2, Users, Ban, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ export function EmployeeSelection({
   onSelectEmployee,
   isPreselected = false
 }: Readonly<EmployeeSelectionProps>) {
+  const { t } = useLanguage()
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth(); // Usuario actual logueado
