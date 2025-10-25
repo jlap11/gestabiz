@@ -1279,6 +1279,7 @@ export const translations = {
         professionalServices: 'Service professional',
         searching: 'Searching...',
         searchBarLabel: 'Quick search',
+        resultsList: 'Search results list',
       },
       typeLabelsPlural: {
         service: 'Servicios',
@@ -1503,6 +1504,18 @@ export const translations = {
         completeLocationInfo: 'Complete the information of the new location',
         addNewLocation: 'Add a new location for your business',
         addNewService: 'Add a new service',
+      },
+
+      // Admin - Appointment Form translations (for messages referenced under admin.appointmentForm)
+      appointmentForm: {
+        clientNameRequired: 'Client name is required',
+        dateRequired: 'Date is required',
+        startTimeRequired: 'Start time is required',
+        serviceRequired: 'Service is required',
+        createdSuccess: 'Appointment created successfully',
+        updatedSuccess: 'Appointment updated successfully',
+        createError: 'Error creating appointment',
+        updateError: 'Error updating appointment',
       },
 
       // Admin - Services small extras
@@ -2974,6 +2987,8 @@ export const translations = {
         businessesMarked: 'businesses marked as favorites',
         tipDescription:
           'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
+    // Small label used in FavoritesList info card
+    tipLabel: 'Tip',
         // Accessibility / dynamic labels
         openProfileWithName: 'Open profile of {name}',
         ratingAria: '{rating} out of 5 stars',
@@ -4654,6 +4669,9 @@ export const translations = {
         selectResult: 'Seleccionar {name}',
         independentProfessional: 'Profesional independiente',
         professionalServices: 'Profesional de servicios',
+        searching: 'Buscando...',
+        searchBarLabel: 'Búsqueda rápida',
+        resultsList: 'Lista de resultados de búsqueda',
       },
       sorting: {
         relevance: 'Relevancia',
@@ -4867,6 +4885,8 @@ export const translations = {
         addNewService: 'Agrega un nuevo servicio',
         exporting: 'Exportando...',
       },
+
+
 
       // Admin - Services small extras
       services: {
@@ -6229,6 +6249,8 @@ export const translations = {
       businessesMarked: 'negocios marcados',
       tipDescription:
         'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
+      // Small label used in FavoritesList info card
+      tipLabel: 'Consejo',
       // Accessibility / dynamic labels
       openProfileWithName: 'Abrir perfil de {name}',
       ratingAria: '{rating} de 5 estrellas',

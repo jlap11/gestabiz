@@ -8,9 +8,9 @@ import {
   Sun,
   UserIcon,
   Bell,
-  Building2,
+  Buildings as Building2,
   UserCircle,
-  AlertCircle,
+  Warning as AlertCircle,
 } from '@phosphor-icons/react'
 import { User } from '@/types'
 import { useTheme } from '@/contexts'

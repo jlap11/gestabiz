@@ -1,7 +1,7 @@
 import React from 'react'
 import { User, Eye, EyeOff } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { formatTimeInColombia } from '@/lib/utils'
+import { formatTimeInColombia } from './calendarUtils'
 
 interface Employee {
   id: string
