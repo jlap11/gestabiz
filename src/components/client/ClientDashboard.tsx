@@ -655,7 +655,7 @@ export function ClientDashboard({
               {/* Columna izquierda: Citas (2/3 del ancho) */}
               <section className="lg:col-span-2" aria-labelledby="appointments-content-title">
                 <h2 id="appointments-content-title" className="sr-only">
-                  {viewMode === 'calendar' ? 'Vista de calendario de citas' : 'Lista de citas'}
+                  {viewMode === 'calendar' ? t('clientDashboard.accessible.calendarView') : t('clientDashboard.accessible.listView')}
                 </h2>
                 {/* Calendar View */}
                 {viewMode === 'calendar' ? (
@@ -678,7 +678,7 @@ export function ClientDashboard({
                         </CardContent>
                       </Card>
                     ) : (
-                      <div className="grid grid-cols-1 gap-3 sm:gap-4" role="list" aria-label="Lista de citas próximas">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4" role="list" aria-label={t('clientDashboard.upcomingListLabel')}>
                         {upcomingAppointments.map(appointment => (
                           <Card
                             key={appointment.id}
@@ -815,7 +815,7 @@ export function ClientDashboard({
 
               {/* Columna derecha: Sugerencias (1/3 del ancho) */}
               <aside className="lg:col-span-1" aria-labelledby="suggestions-title">
-                <h2 id="suggestions-title" className="sr-only">Sugerencias de negocios</h2>
+                <h2 id="suggestions-title" className="sr-only">{t('clientDashboard.suggestions.title')}</h2>
                 <BusinessSuggestions
                   userId={user?.id || ''}
                   preferredCityName={preferredCityName}

@@ -145,11 +145,11 @@ export function ChatWindow({
   // Empty state
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-muted/20">
-        <div className="text-center">
-          <div className="text-6xl mb-4">💬</div>
-          <h3 className="text-lg font-semibold mb-2">{t('chat.selectConversation.title')}</h3>
-          <p className="text-muted-foreground">{t('chat.selectConversation.subtitle')}</p>
+      <div className="flex-1 flex items-center justify-center bg-muted/20 p-4 sm:p-6">
+        <div className="text-center max-w-sm mx-auto">
+          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4" aria-hidden="true">💬</div>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">{t('chat.selectConversation.title')}</h3>
+          <p className="text-sm sm:text-base text-muted-foreground">{t('chat.selectConversation.subtitle')}</p>
         </div>
       </div>
     )
@@ -176,7 +176,7 @@ export function ChatWindow({
 
   return (
     <section 
-      className="flex flex-col h-full bg-background max-w-[100vw]"
+      className="flex flex-col h-full bg-background max-w-[100vw] overflow-hidden"
       role="region"
       aria-labelledby="chat-window-title"
       aria-live="polite"
@@ -185,25 +185,40 @@ export function ChatWindow({
         Ventana de conversación
       </h2>
 
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <header 
-        className="flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        className="flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 min-h-[60px] sm:min-h-[64px]"
         role="banner"
         aria-label="Información de la conversación"
       >
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          {/* Back button - Mobile only */}
+          {onBackToList && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBackToList}
+              className="lg:hidden min-h-[44px] min-w-[44px] h-10 w-10 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              aria-label="Volver a la lista de conversaciones"
+              title="Volver a la lista"
+            >
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+            </Button>
+          )}
+
           <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
             <AvatarImage src={otherUser?.avatar_url || ''} alt={`Avatar de ${otherUser?.full_name || 'Usuario'}`} />
-            <AvatarFallback className="text-xs sm:text-sm">
+            <AvatarFallback className="text-xs sm:text-sm font-medium">
               {otherUser?.full_name?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
+          
           <div className="min-w-0 flex-1">
-            <h3 className="font-medium text-sm sm:text-base truncate">
+            <h3 className="font-medium text-sm sm:text-base truncate leading-tight">
               {conversation.title || otherUser?.full_name || 'Usuario'}
             </h3>
             {otherUser && (
-              <p className="text-xs sm:text-sm text-muted-foreground truncate" aria-label={`Email: ${otherUser.email}`}>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate leading-tight" aria-label={`Email: ${otherUser.email}`}>
                 {otherUser.email}
               </p>
             )}
@@ -218,9 +233,9 @@ export function ChatWindow({
             disabled
             title={t('chat.callComingSoon')}
             aria-label={t('chat.callComingSoon')}
-            className="hidden sm:flex min-h-[44px] min-w-[44px] h-9 w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="hidden md:flex min-h-[44px] min-w-[44px] h-9 w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <Phone className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+            <Phone className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button
             variant="ghost"
@@ -228,16 +243,16 @@ export function ChatWindow({
             disabled
             title={t('chat.videoComingSoon')}
             aria-label={t('chat.videoComingSoon')}
-            className="hidden sm:flex min-h-[44px] min-w-[44px] h-9 w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="hidden md:flex min-h-[44px] min-w-[44px] h-9 w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <Video className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+            <Video className="h-4 w-4" aria-hidden="true" />
           </Button>
 
           {/* Botón búsqueda - toggle input */}
           <Button
             variant="ghost"
             size="icon"
-            className="min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="min-h-[44px] min-w-[44px] h-10 w-10 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
             onClick={() => {
               setIsSearchOpen(!isSearchOpen)
               if (isSearchOpen) {
@@ -249,7 +264,7 @@ export function ChatWindow({
             aria-expanded={isSearchOpen}
             aria-controls="search-bar"
           >
-            <SearchIcon className="h-5 w-5" aria-hidden="true" />
+            <SearchIcon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
           </Button>
 
           {/* Menú de opciones */}
@@ -258,16 +273,16 @@ export function ChatWindow({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" 
+                className="min-h-[44px] min-w-[44px] h-10 w-10 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation" 
                 aria-label="Opciones de conversación"
                 title="Opciones de conversación"
               >
-                <MoreVertical className="h-5 w-5" aria-hidden="true" />
+                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-56 max-w-[95vw]"
+              className="w-56 max-w-[95vw] text-sm sm:text-base"
               role="menu"
               aria-label="Menú de opciones de conversación"
             >
@@ -275,7 +290,7 @@ export function ChatWindow({
                 <DropdownMenuItem
                   onClick={() => onTogglePin(conversation.id, !(conversation as any).is_pinned)}
                   role="menuitem"
-                  className="focus:outline-none focus:bg-accent"
+                  className="focus:outline-none focus:bg-accent min-h-[44px] touch-manipulation"
                 >
                   {(conversation as any).is_pinned ? 'Desfijar' : 'Fijar'} conversación
                 </DropdownMenuItem>
@@ -284,7 +299,7 @@ export function ChatWindow({
                 <DropdownMenuItem
                   onClick={() => onToggleMute(conversation.id, !(conversation as any).is_muted)}
                   role="menuitem"
-                  className="focus:outline-none focus:bg-accent"
+                  className="focus:outline-none focus:bg-accent min-h-[44px] touch-manipulation"
                 >
                   {(conversation as any).is_muted ? 'Quitar silencio' : 'Silenciar'} conversación
                 </DropdownMenuItem>
@@ -292,7 +307,7 @@ export function ChatWindow({
               {onToggleArchive && (
                 <DropdownMenuItem
                   onClick={() => onToggleArchive(conversation.id, !conversation.is_archived)}
-                  className="text-destructive focus:outline-none focus:bg-accent"
+                  className="text-destructive focus:outline-none focus:bg-accent min-h-[44px] touch-manipulation"
                   role="menuitem"
                 >
                   {conversation.is_archived ? 'Desarchivar' : 'Archivar'} conversación
@@ -303,11 +318,11 @@ export function ChatWindow({
         </div>
       </header>
 
-      {/* Barra de búsqueda (condicional) */}
+      {/* Barra de búsqueda (condicional) - Mobile Optimized */}
       {isSearchOpen && (
         <section 
           id="search-bar"
-          className="border-b bg-muted/30 px-3 py-2 sm:px-4"
+          className="border-b bg-muted/30 px-3 py-2 sm:px-4 sm:py-3"
           role="search"
           aria-label="Búsqueda de mensajes"
         >
@@ -318,7 +333,7 @@ export function ChatWindow({
               placeholder="Buscar mensajes..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-12 py-2 text-sm sm:text-base bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
+              className="w-full pl-9 pr-20 py-3 text-sm sm:text-base bg-background border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px] touch-manipulation"
               autoFocus
               aria-label="Buscar mensajes en la conversación"
               aria-describedby={searchQuery ? 'search-results-count' : 'search-help'}
@@ -328,35 +343,35 @@ export function ChatWindow({
               Escribe para buscar mensajes en esta conversación
             </p>
             {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                onClick={() => setSearchQuery('')}
-                aria-label="Limpiar búsqueda"
-                title="Limpiar búsqueda"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </Button>
-            )}
-            {searchQuery && (
-              <output
-                id="search-results-count"
-                className="absolute right-14 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-muted-foreground"
-                aria-live="polite"
-                role="status"
-              >
-                {filteredMessages.length} resultado{filteredMessages.length !== 1 ? 's' : ''}
-              </output>
+              <>
+                <output
+                  id="search-results-count"
+                  className="absolute right-14 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-muted-foreground bg-background px-2 py-1 rounded"
+                  aria-live="polite"
+                  role="status"
+                >
+                  {filteredMessages.length}
+                </output>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] h-10 w-10 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Limpiar búsqueda"
+                  title="Limpiar búsqueda"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </>
             )}
           </div>
         </section>
       )}
 
-      {/* Mensajes */}
+      {/* Mensajes - Mobile Optimized */}
       <ScrollArea
         ref={scrollAreaRef}
-        className="flex-1 p-3 sm:p-4 pb-[env(safe-area-inset-bottom)]"
+        className="flex-1 p-3 sm:p-4 pb-[env(safe-area-inset-bottom)] overflow-hidden"
         role="log"
         aria-label="Historial de mensajes"
         aria-live="polite"
@@ -364,15 +379,19 @@ export function ChatWindow({
       >
         {loading && messages.length === 0 && (
           <div className="flex items-center justify-center h-full" role="status" aria-live="polite">
-            <p className="text-muted-foreground text-sm sm:text-base">Cargando mensajes...</p>
+            <div className="text-center">
+              <div className="animate-pulse w-8 h-8 bg-muted rounded-full mx-auto mb-3" aria-hidden="true"></div>
+              <p className="text-muted-foreground text-sm sm:text-base">Cargando mensajes...</p>
+            </div>
           </div>
         )}
 
         {!loading && messages.length === 0 && (
           <div className="flex items-center justify-center h-full" role="status">
-            <div className="text-center">
-              <div className="text-4xl mb-2" aria-hidden="true">👋</div>
-              <p className="text-muted-foreground text-sm sm:text-base">No hay mensajes. ¡Envía el primero!</p>
+            <div className="text-center max-w-sm mx-auto px-4">
+              <div className="text-4xl sm:text-5xl mb-3 sm:mb-4" aria-hidden="true">👋</div>
+              <h4 className="font-medium text-sm sm:text-base mb-2">¡Comienza la conversación!</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">No hay mensajes. ¡Envía el primero!</p>
             </div>
           </div>
         )}
@@ -380,17 +399,18 @@ export function ChatWindow({
         {/* Mostrar mensaje si hay búsqueda pero sin resultados */}
         {searchQuery && filteredMessages.length === 0 && messages.length > 0 && (
           <div className="flex items-center justify-center h-full" role="status" aria-live="polite">
-            <div className="text-center">
-              <div className="text-4xl mb-2" aria-hidden="true">🔍</div>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                No se encontraron mensajes con "{searchQuery}"
+            <div className="text-center max-w-sm mx-auto px-4">
+              <div className="text-4xl sm:text-5xl mb-3 sm:mb-4" aria-hidden="true">🔍</div>
+              <h4 className="font-medium text-sm sm:text-base mb-2">Sin resultados</h4>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                No se encontraron mensajes con "<span className="font-medium">{searchQuery}</span>"
               </p>
             </div>
           </div>
         )}
 
         {filteredMessages.length > 0 && (
-          <div className="space-y-3 sm:space-y-4" role="group" aria-label="Lista de mensajes">
+          <div className="space-y-2 sm:space-y-3" role="group" aria-label="Lista de mensajes">
             {filteredMessages.map(message => (
               <ChatComponentErrorBoundary key={message.id} componentName="MessageBubble">
                 <MessageBubble
@@ -417,8 +437,12 @@ export function ChatWindow({
         )}
       </ScrollArea>
 
-      {/* Input */}
-      <footer role="contentinfo" aria-label="Área de entrada de mensajes">
+      {/* Input - Mobile Optimized */}
+      <footer 
+        role="contentinfo" 
+        aria-label="Área de entrada de mensajes"
+        className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      >
         <ChatComponentErrorBoundary componentName="ChatInput">
           <ChatInput
             conversationId={conversation.id}
@@ -449,5 +473,3 @@ function getInputPlaceholder(
   }
   return 'Escribe un mensaje...'
 }
-
-

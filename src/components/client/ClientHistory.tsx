@@ -536,7 +536,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}{' '}
-              COP
+              {t('common.time.currency')}
             </div>
           </CardContent>
         </Card>
@@ -764,20 +764,25 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Service */}
             <Popover open={servicePopoverOpen} onOpenChange={setServicePopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between min-h-[44px]"
+                  aria-label={t('clientHistory.filters.service')}
+                  title={t('clientHistory.filters.service')}
+                >
                   {serviceFilters.length === 0
                     ? t('clientHistory.filters.service')
                     : `${serviceFilters.length} ${t('clientHistory.filters.service')}`}
                   <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2">
+              <PopoverContent className="w-56 p-2" align="start">
                 <div className="p-2 pb-0">
                   <Input
                     placeholder={t('clientHistory.placeholders.serviceSearch')}
                     value={serviceSearch}
                     onChange={e => setServiceSearch(e.target.value)}
-                    className="mb-2"
+                    className="mb-2 text-base"
                     autoFocus
                     aria-label={t('clientHistory.placeholders.serviceSearch')}
                     title={t('clientHistory.placeholders.serviceSearch')}
@@ -788,13 +793,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     <Checkbox
                       id="service-all"
                       checked={serviceFilters.length === 0}
-                      onCheckedChange={() => {
-                        setServiceFilters([])
-                        setServiceSearch('')
+                      onCheckedChange={checked => {
+                        if (checked) {
+                          setServiceFilters([])
+                        }
                       }}
                     />
-                    <label htmlFor="service-all" className="text-sm cursor-pointer">
-                      {t('clientHistory.filters.allServices')}
+                    <label htmlFor="service-all" className="text-sm cursor-pointer font-medium">
+                      {t('common.all')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -832,20 +838,25 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Category */}
             <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between min-h-[44px]"
+                  aria-label={t('clientHistory.filters.category')}
+                  title={t('clientHistory.filters.category')}
+                >
                   {categoryFilters.length === 0
                     ? t('clientHistory.filters.category')
                     : `${categoryFilters.length} ${t('clientHistory.filters.category')}`}
                   <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2">
+              <PopoverContent className="w-56 p-2" align="start">
                 <div className="p-2 pb-0">
                   <Input
                     placeholder={t('clientHistory.placeholders.categorySearch')}
                     value={categorySearch}
                     onChange={e => setCategorySearch(e.target.value)}
-                    className="mb-2"
+                    className="mb-2 text-base"
                     autoFocus
                     aria-label={t('clientHistory.placeholders.categorySearch')}
                     title={t('clientHistory.placeholders.categorySearch')}
@@ -856,13 +867,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     <Checkbox
                       id="category-all"
                       checked={categoryFilters.length === 0}
-                      onCheckedChange={() => {
-                        setCategoryFilters([])
-                        setCategorySearch('')
+                      onCheckedChange={checked => {
+                        if (checked) {
+                          setCategoryFilters([])
+                        }
                       }}
                     />
-                    <label htmlFor="category-all" className="text-sm cursor-pointer">
-                      {t('clientHistory.filters.allCategories')}
+                    <label htmlFor="category-all" className="text-sm cursor-pointer font-medium">
+                      {t('common.all')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -900,35 +912,43 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             {/* Employee */}
             <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-between min-h-[44px]"
+                  aria-label={t('clientHistory.filters.employee')}
+                  title={t('clientHistory.filters.employee')}
+                >
                   {employeeFilters.length === 0
                     ? t('clientHistory.filters.employee')
                     : `${employeeFilters.length} ${t('clientHistory.filters.employee')}`}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2">
+              <PopoverContent className="w-56 p-2" align="start">
                 <div className="p-2 pb-0">
-                    <Input
-                      placeholder={t('clientHistory.placeholders.employeeSearch')}
-                      value={employeeSearch}
-                      onChange={e => setEmployeeSearch(e.target.value)}
-                      className="mb-2"
-                      autoFocus
-                    />
+                  <Input
+                    placeholder={t('clientHistory.placeholders.employeeSearch')}
+                    value={employeeSearch}
+                    onChange={e => setEmployeeSearch(e.target.value)}
+                    className="mb-2 text-base"
+                    autoFocus
+                    aria-label={t('clientHistory.placeholders.employeeSearch')}
+                    title={t('clientHistory.placeholders.employeeSearch')}
+                  />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
                     <Checkbox
                       id="employee-all"
                       checked={employeeFilters.length === 0}
-                      onCheckedChange={() => {
-                        setEmployeeFilters([])
-                        setEmployeeSearch('')
+                      onCheckedChange={checked => {
+                        if (checked) {
+                          setEmployeeFilters([])
+                        }
                       }}
                     />
-                    <label htmlFor="employee-all" className="text-sm cursor-pointer">
-                      {t('clientHistory.filters.allEmployees')}
+                    <label htmlFor="employee-all" className="text-sm cursor-pointer font-medium">
+                      {t('common.all')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -965,7 +985,11 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
             {/* Price Range */}
             <Select value={priceRangeFilter} onValueChange={setPriceRangeFilter}>
-              <SelectTrigger className="min-h-[44px]" aria-label={t('common.placeholders.priceRange')} title={t('common.placeholders.priceRange')}>
+              <SelectTrigger 
+                className="min-h-[44px]" 
+                aria-label={t('common.placeholders.priceRange')} 
+                title={t('common.placeholders.priceRange')}
+              >
                 <SelectValue placeholder={t('common.placeholders.priceRange')} />
               </SelectTrigger>
               <SelectContent>
@@ -981,42 +1005,59 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       </Card>
 
       {/* Results Count */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
-          Mostrando {paginatedAppointments.length} de {filteredAppointments.length} citas (
-          {appointments.length} total)
+          {t('clientHistory.results.showing', {
+            visible: paginatedAppointments.length,
+            total: filteredAppointments.length,
+            totalAll: appointments.length,
+          })}
         </p>
       </div>
 
       {/* Appointments List */}
-      {filteredAppointments.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center" role="status" aria-live="polite">
-            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No se encontraron citas</h3>
-            <p className="text-muted-foreground">
-              {hasActiveFilters
-                ? 'Intenta ajustar los filtros para ver más resultados'
-                : 'Aún no tienes citas en tu historial'}
-            </p>
-          </CardContent>
+      {paginatedAppointments.length === 0 ? (
+        <Card className="p-8 text-center">
+          <div className="space-y-4">
+            <Calendar className="h-16 w-16 text-muted-foreground mx-auto" aria-hidden="true" />
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">
+                {t('clientHistory.messages.noAppointments')}
+              </h3>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                {t('clientHistory.messages.noAppointmentsDescription')}
+              </p>
+            </div>
+          </div>
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4" role="list" aria-label={t('clientHistory.appointmentsListLabel')}>
+          {/* Appointments Grid */}
+          <div className="space-y-4">
             {paginatedAppointments.map(appointment => (
-              <Card key={appointment.id} className="hover:shadow-md transition-shadow" role="listitem">
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                    {/* Left Section */}
+              <Card 
+                key={appointment.id} 
+                className="hover:shadow-md transition-shadow focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                tabIndex={0}
+                role="article"
+                aria-label={`${t('clientHistory.appointment.ariaLabel')} ${appointment.service?.name || appointment.title}`}
+              >
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    {/* Left Section - Main Info */}
                     <div className="flex-1 space-y-3">
-                      {/* Status and Business */}
-                      <div className="flex items-center gap-3 flex-wrap">
-                        {getStatusBadge(appointment.status)}
+                      {/* Status Badge */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant={getStatusVariant(appointment.status)}
+                          className="text-xs sm:text-sm px-2 py-1"
+                        >
+                          {getStatusLabel(appointment.status)}
+                        </Badge>
                         {appointment.business?.name && (
                           <div className="flex items-center gap-2 text-sm font-medium text-primary">
                             <Building2 className="h-4 w-4" aria-hidden="true" />
-                            {appointment.business.name}
+                            <span className="truncate">{appointment.business.name}</span>
                           </div>
                         )}
                       </div>
@@ -1025,16 +1066,16 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {appointment.service?.name && (
                         <div className="flex items-center gap-2">
                           <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
-                          <span className="font-semibold text-foreground text-lg">
+                          <span className="font-semibold text-foreground text-lg truncate">
                             {appointment.service.name}
                           </span>
                         </div>
                       )}
 
                       {/* Date and Time */}
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" aria-hidden="true" />
+                          <Calendar className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                           <span>
                             {format(new Date(appointment.start_time), "d 'de' MMMM, yyyy", {
                               locale: es,
@@ -1042,7 +1083,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" aria-hidden="true" />
+                          <Clock className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                           <span>
                             {format(new Date(appointment.start_time), 'HH:mm', { locale: es })} -{' '}
                             {format(new Date(appointment.end_time), 'HH:mm', { locale: es })}
@@ -1054,7 +1095,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {appointment.location?.name && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                          <span>{appointment.location.name}</span>
+                          <span className="truncate">{appointment.location.name}</span>
                         </div>
                       )}
 
@@ -1062,19 +1103,21 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {appointment.employee?.full_name && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <User className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                          <span>{appointment.employee.full_name}</span>
+                          <span className="truncate">{appointment.employee.full_name}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Right Section - Price */}
                     {(appointment.service?.price || appointment.price) && (
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-2 text-2xl font-bold text-foreground">
-                          <DollarSign className="h-6 w-6" aria-hidden="true" />
-                          {(appointment.service?.price || appointment.price || 0).toLocaleString(
-                            'es-MX'
-                          )}
+                      <div className="flex flex-row lg:flex-col items-center lg:items-end gap-2 lg:text-right">
+                        <div className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-foreground">
+                          <DollarSign className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+                          <span>
+                            {(appointment.service?.price || appointment.price || 0).toLocaleString(
+                              'es-MX'
+                            )}
+                          </span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {appointment.service?.currency || appointment.currency || 'MXN'}
@@ -1089,34 +1132,51 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg" role="navigation" aria-label="Paginación">
+            <div
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-card border border-border rounded-lg"
+              role="navigation"
+              aria-label={t('clientHistory.pagination.ariaLabel')}
+            >
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="min-h-[44px] min-w-[44px]"
-                aria-label="Anterior"
-                title="Anterior"
+                className="min-h-[44px] w-full sm:w-auto"
+                aria-label={t('common.actions.previous')}
+                title={t('common.actions.previous')}
               >
-                Anterior
+                {t('common.actions.previous')}
               </Button>
 
-              <div className="flex items-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className="min-h-[44px] min-w-[44px]"
-                    aria-label={`Ir a página ${page}`}
-                    title={`Ir a página ${page}`}
-                    aria-current={currentPage === page ? 'page' : undefined}
-                  >
-                    {page}
-                  </Button>
-                ))}
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let page;
+                  if (totalPages <= 5) {
+                    page = i + 1;
+                  } else if (currentPage <= 3) {
+                    page = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    page = totalPages - 4 + i;
+                  } else {
+                    page = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="min-h-[44px] min-w-[44px]"
+                      aria-label={t('clientHistory.pagination.goToPage', { page })}
+                      title={t('clientHistory.pagination.goToPage', { page })}
+                      aria-current={currentPage === page ? 'page' : undefined}
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
               </div>
 
               <Button
@@ -1124,17 +1184,17 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="min-h-[44px] min-w-[44px]"
-                aria-label="Siguiente"
-                title="Siguiente"
+                className="min-h-[44px] w-full sm:w-auto"
+                aria-label={t('common.actions.next')}
+                title={t('common.actions.next')}
               >
-                Siguiente
+                {t('common.actions.next')}
               </Button>
             </div>
           )}
 
           <div className="text-center text-sm text-muted-foreground">
-            Página {currentPage} de {totalPages}
+            {t('clientHistory.pagination.pageInfo', { current: currentPage, total: totalPages })}
           </div>
         </>
       )}
@@ -1142,3 +1202,4 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   )
 })
 
+

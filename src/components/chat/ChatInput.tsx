@@ -188,28 +188,28 @@ export function ChatInput({
     // Esc: cancelar reply
     if (e.key === 'Escape' && replyToMessage) {
       e.preventDefault()
-  onCancelReply?.()
-  announce(t('chat.input.replyCancelled'), 'polite')
+      onCancelReply?.()
+      announce(t('chat.input.replyCancelled'), 'polite')
       textareaRef.current?.focus()
     }
   }
 
   return (
-    <div className="border-t bg-background pb-[env(safe-area-inset-bottom)]">
+    <div className="border-t bg-background pb-[env(safe-area-inset-bottom)] max-w-[100vw] overflow-hidden">
       {/* Screen reader announcements */}
       <output className="sr-only" aria-live="polite" aria-atomic="true">
         {isSending && t('chat.input.sr.sending')}
         {attachments.length > 0 && t('chat.input.sr.attachments', { count: attachments.length })}
       </output>
 
-      {/* Preview de mensaje al que se responde */}
+      {/* Preview de mensaje al que se responde - Mobile Optimized */}
       {replyToMessage && (
-        <div className="px-3 py-2 sm:px-4 bg-muted/50 border-b flex items-start justify-between gap-2">
+        <div className="px-3 py-2 sm:px-4 bg-muted/50 border-b flex items-start justify-between gap-2 min-h-[60px] sm:min-h-[auto]">
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-muted-foreground mb-0.5">
+            <div className="text-xs sm:text-xs font-medium text-muted-foreground mb-1 leading-tight">
               {t('chat.input.replyingTo', { name: replyToMessage.sender?.full_name || t('chat.userAlt') })}
             </div>
-            <p className="text-sm text-foreground line-clamp-1">
+            <p className="text-sm sm:text-sm text-foreground line-clamp-2 sm:line-clamp-1 leading-tight">
               {replyToMessage.body || t('chat.input.emptyMessage')}
             </p>
           </div>
@@ -217,7 +217,7 @@ export function ChatInput({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 sm:h-6 sm:w-6 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex-shrink-0"
+              className="h-10 w-10 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
               onClick={onCancelReply}
               aria-label={t('chat.input.cancelReplyAria')}
               title={t('chat.input.cancelReplyTitle')}
@@ -228,31 +228,31 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Preview de attachments seleccionados */}
+      {/* Preview de attachments seleccionados - Mobile Optimized */}
       {attachments.length > 0 && (
         <div className="px-3 py-2 sm:px-4 bg-muted/30 border-b overflow-x-auto">
-          <div className="text-xs font-medium text-muted-foreground mb-2">
+          <div className="text-xs sm:text-xs font-medium text-muted-foreground mb-2 leading-tight">
             {t('chat.input.attachments', { count: attachments.length })}
           </div>
           <div className="flex flex-wrap gap-2">
             {attachments.map((attachment, index) => (
               <div
                 key={`${attachment.name}-${attachment.size}-${index}`}
-                className="flex items-center gap-2 px-2 py-1 bg-background border rounded-md text-sm"
+                className="flex items-center gap-2 px-2 py-1.5 sm:py-1 bg-background border rounded-lg text-sm min-h-[44px] sm:min-h-[auto] touch-manipulation"
               >
                 <FileIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="truncate max-w-[150px]">{attachment.name}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="truncate max-w-[120px] sm:max-w-[150px] text-xs sm:text-sm">{attachment.name}</span>
+                <span className="text-xs text-muted-foreground flex-shrink-0">
                   {formatFileSize(attachment.size)}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-11 w-11 sm:h-9 sm:w-9 p-0 hover:bg-destructive hover:text-destructive-foreground min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+                  className="h-8 w-8 sm:h-6 sm:w-6 p-0 hover:bg-destructive hover:text-destructive-foreground min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
                   onClick={() => handleRemoveAttachment(index)}
                   aria-label={t('chat.input.removeAttachmentAria', { name: attachment.name })}
                 >
-                  <X className="h-5 w-5" aria-hidden="true" />
+                  <X className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
                 </Button>
               </div>
             ))}
@@ -260,15 +260,15 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Input area */}
-      <div className="px-3 py-2 sm:px-4 sm:py-3 flex items-end gap-1 sm:gap-2">
-        {/* Botón adjuntar con Popover - oculto en móvil muy pequeño */}
+      {/* Input area - Mobile Optimized */}
+      <div className="px-3 py-3 sm:px-4 sm:py-3 flex items-end gap-2 sm:gap-2 min-h-[72px] sm:min-h-[auto]">
+        {/* Botón adjuntar con Popover - visible en tablet+ */}
         <Popover open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden sm:flex"
+              className="flex-shrink-0 h-10 w-10 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden md:flex focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
               disabled={disabled}
               title={t('chat.input.attachTitle')}
               aria-label={t('chat.input.attachAria')}
@@ -278,7 +278,7 @@ export function ChatInput({
               <Paperclip className="h-5 w-5" aria-hidden="true" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent side="top" align="start" className="w-[95vw] sm:w-96 p-0">
+          <PopoverContent side="top" align="start" className="w-[95vw] sm:w-96 p-0 max-w-[400px]">
             <FileUpload
               conversationId={conversationId}
               messageId={`temp-${Date.now()}`}
@@ -289,7 +289,7 @@ export function ChatInput({
           </PopoverContent>
         </Popover>
 
-        {/* Textarea */}
+        {/* Textarea - Mobile Optimized */}
         <Textarea
           ref={textareaRef}
           value={message}
@@ -298,8 +298,9 @@ export function ChatInput({
           placeholder={effectivePlaceholder}
           disabled={disabled || isSending}
           className={cn(
-            'min-h-[44px] sm:min-h-[40px] max-h-[120px] sm:max-h-[160px] resize-none text-base sm:text-sm leading-tight overflow-y-auto',
-            'focus-visible:ring-1'
+            'min-h-[48px] sm:min-h-[40px] max-h-[120px] sm:max-h-[160px] resize-none text-base sm:text-sm leading-relaxed sm:leading-tight overflow-y-auto',
+            'focus-visible:ring-1 touch-manipulation',
+            'px-3 py-3 sm:px-3 sm:py-2'
           )}
           rows={1}
           aria-label={t('chat.input.ariaLabel')}
@@ -311,7 +312,7 @@ export function ChatInput({
         <Button
           variant="ghost"
           size="icon"
-          className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden sm:flex"
+          className="flex-shrink-0 h-10 w-10 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 hidden lg:flex focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
           disabled={disabled}
           title={t('chat.input.emojisComingSoon')}
           aria-label={t('chat.input.emojisAria')}
@@ -324,16 +325,17 @@ export function ChatInput({
           onClick={handleSend}
           disabled={(!message.trim() && attachments.length === 0) || disabled || isSending}
           size="icon"
-          className="flex-shrink-0 h-11 w-11 sm:h-10 sm:w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+          className="flex-shrink-0 h-12 w-12 sm:h-10 sm:w-10 min-h-[48px] min-w-[48px] sm:min-h-0 sm:min-w-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-manipulation"
           aria-label={isSending ? t('chat.input.sr.sending') : t('chat.send')}
           aria-busy={isSending}
+          title={isSending ? t('chat.input.sr.sending') : t('chat.send')}
         >
-          <Send className="h-5 w-5" aria-hidden="true" />
+          <Send className="h-5 w-5 sm:h-5 sm:w-5" aria-hidden="true" />
         </Button>
       </div>
 
       {/* Hint de shortcuts - oculto en móvil */}
-      <div id="chat-input-hint" className="hidden sm:block px-4 pb-2 text-xs text-muted-foreground">
+      <div id="chat-input-hint" className="hidden lg:block px-4 pb-2 text-xs text-muted-foreground">
         {t('chat.input.hint')}
         {replyToMessage && (
           <>

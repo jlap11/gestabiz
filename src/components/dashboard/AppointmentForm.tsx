@@ -771,3 +771,4 @@ export default function LegacyAppointmentForm({
     </div>
   )
 }
+}

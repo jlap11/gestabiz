@@ -121,24 +121,38 @@ function NotificationItem({
     onNavigate(notification)
   }
 
+  const formatNotificationTime = (dateString: string) => {
+    return formatDistanceToNow(new Date(dateString), {
+      addSuffix: true,
+      locale: es,
+    })
+  }
+
   return (
-    <article className="relative group" role="listitem">
+    <article 
+      className="relative group transition-all duration-200 hover:shadow-sm" 
+      role="listitem"
+      aria-labelledby={`notification-title-${notification.id}`}
+      aria-describedby={`notification-body-${notification.id} notification-time-${notification.id}`}
+    >
       <button
         type="button"
         className={cn(
-          'relative w-full rounded-lg border border-transparent p-3 text-left transition-colors sm:p-4 hover:bg-muted/50 active:bg-muted/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]',
-          isUnread && 'bg-muted/30'
+          'relative w-full rounded-lg border border-transparent p-3 text-left transition-all duration-200 sm:p-4 hover:bg-muted/50 active:bg-muted/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] touch-manipulation',
+          isUnread && 'bg-muted/30 border-l-4 border-l-primary'
         )}
         onClick={handleClick}
-        aria-label={`${notification.title}. ${isUnread ? 'No leída' : 'Leída'}. ${formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: es })}`}
-        aria-describedby={`notification-body-${notification.id}`}
+        aria-label={`Notificación: ${notification.title}. ${isUnread ? 'No leída' : 'Leída'}. ${formatNotificationTime(notification.created_at)}`}
+        aria-pressed={!isUnread}
       >
-        <div className="flex items-start gap-2 sm:gap-3">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* Icono */}
           <div
             className={cn(
-              'flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center',
-              isUnread ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              'flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors duration-200',
+              isUnread 
+                ? 'bg-primary text-primary-foreground shadow-sm' 
+                : 'bg-muted text-muted-foreground'
             )}
             aria-hidden="true"
           >
@@ -146,17 +160,18 @@ function NotificationItem({
           </div>
 
           {/* Contenido */}
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
               <h4
+                id={`notification-title-${notification.id}`}
                 className={cn(
-                  'text-sm sm:text-base font-medium truncate',
+                  'text-sm sm:text-base font-medium leading-tight',
                   isUnread ? 'text-foreground' : 'text-muted-foreground'
                 )}
               >
                 {notification.title}
               </h4>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0 self-start">
                 <NotificationPriority priority={notification.priority} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -165,18 +180,19 @@ function NotificationItem({
                       variant="ghost"
                       size="icon"
                       onClick={event => event.stopPropagation()}
-                      className="h-8 w-8 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                      aria-label={t('notifications.moreActions')}
-                      title={t('notifications.moreActions')}
+                      className="h-8 w-8 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors duration-200"
+                      aria-label={`Más acciones para ${notification.title}`}
+                      title="Más acciones"
                     >
                       <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-44 bg-popover text-popover-foreground border-border"
+                    className="w-48 bg-popover text-popover-foreground border-border shadow-lg"
                     onCloseAutoFocus={event => event.preventDefault()}
                     role="menu"
+                    aria-label="Acciones de notificación"
                   >
                     {isUnread && (
                       <DropdownMenuItem
@@ -185,6 +201,7 @@ function NotificationItem({
                           onRead(notification.id)
                         }}
                         role="menuitem"
+                        className="focus:bg-muted/50"
                       >
                         <Check className="mr-2 h-4 w-4" aria-hidden="true" />
                         Marcar como leída
@@ -196,6 +213,7 @@ function NotificationItem({
                         onArchive(notification.id)
                       }}
                       role="menuitem"
+                      className="focus:bg-muted/50"
                     >
                       <Archive className="mr-2 h-4 w-4" aria-hidden="true" />
                       Archivar
@@ -205,7 +223,7 @@ function NotificationItem({
                         event.preventDefault()
                         onDelete(notification.id)
                       }}
-                      className="text-destructive focus:text-destructive"
+                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
                       role="menuitem"
                     >
                       <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -218,26 +236,40 @@ function NotificationItem({
 
             <p 
               id={`notification-body-${notification.id}`}
-              className="text-sm text-muted-foreground line-clamp-2"
+              className="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
             >
               {notification.body}
             </p>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
-              <time dateTime={notification.created_at}>
-                {formatDistanceToNow(new Date(notification.created_at), {
-                  addSuffix: true,
-                  locale: es,
-                })}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
+              <time 
+                id={`notification-time-${notification.id}`}
+                dateTime={notification.created_at}
+                className="text-muted-foreground"
+                aria-label={`Recibida ${formatNotificationTime(notification.created_at)}`}
+              >
+                {formatNotificationTime(notification.created_at)}
               </time>
               {isUnread && (
-                <Badge variant="secondary" className="h-5 text-xs w-fit">
+                <Badge 
+                  variant="secondary" 
+                  className="h-5 text-xs w-fit bg-primary/10 text-primary border-primary/20"
+                  aria-label="Notificación nueva"
+                >
                   Nuevo
                 </Badge>
               )}
             </div>
           </div>
         </div>
+
+        {/* Indicador visual de no leída */}
+        {isUnread && (
+          <div 
+            className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full"
+            aria-hidden="true"
+          />
+        )}
       </button>
     </article>
   )

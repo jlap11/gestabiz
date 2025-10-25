@@ -437,3 +437,4 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
       </Tabs>
     </main>
   )
+}

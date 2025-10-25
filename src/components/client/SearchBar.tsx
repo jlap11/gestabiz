@@ -261,15 +261,21 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   return (
     <div ref={searchBarRef} className={cn('relative w-full max-w-full sm:max-w-3xl', className)}>
       {/* Unified Search Bar - Mobile Responsive */}
-      <div className="relative flex items-center bg-background border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow" aria-busy={isSearching} role="search" aria-label={t('search.results.searchBarLabel')}>
+      <div 
+        className="relative flex items-center bg-background border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2" 
+        aria-busy={isSearching} 
+        role="search" 
+        aria-label={t('search.results.searchBarLabel')}
+      >
         {/* Search Type Selector - Mobile Responsive */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 hover:bg-accent rounded-l-lg transition-colors border-r border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px]"
+              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 hover:bg-accent rounded-l-lg transition-colors border-r border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px] touch-manipulation"
               aria-label={t('search.labels.searchTypeAria', { type: typeLabel })}
               title={typeLabel}
               aria-haspopup="menu"
+              aria-expanded="false"
             >
               <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline text-sm font-medium text-foreground whitespace-nowrap">
@@ -287,12 +293,14 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                   key={type}
                   onClick={() => handleSearchTypeChange(type)}
                   className={cn(
-                    'gap-2 cursor-pointer',
+                    'gap-2 cursor-pointer min-h-[44px] touch-manipulation',
                     isActive && 'bg-accent text-accent-foreground'
                   )}
+                  role="menuitem"
+                  aria-current={isActive ? 'true' : 'false'}
                 >
-                  <TypeIcon className="h-4 w-4" aria-hidden="true" />
-                  {t(`search.types.${type}`)}
+                  <TypeIcon className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                  <span className="text-sm sm:text-base">{t(`search.types.${type}`)}</span>
                 </DropdownMenuItem>
               )
             })}
@@ -301,21 +309,27 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
 
         {/* Search Input - Mobile Responsive */}
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" aria-hidden="true" />
+          <Search className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground pointer-events-none" aria-hidden="true" />
           <input
             type="text"
             placeholder={placeholder}
             aria-label={placeholder}
             title={placeholder}
             role="searchbox"
+            aria-autocomplete="list"
+            aria-expanded={showResults}
+            aria-controls="search-results"
             value={searchTerm}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
-            className="w-full py-2 sm:py-3 pl-8 sm:pl-12 pr-10 sm:pr-12 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-sm sm:text-base min-h-[44px]"
+            className="w-full py-2 sm:py-3 pl-8 sm:pl-12 pr-10 sm:pr-12 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-sm sm:text-base min-h-[44px] touch-manipulation"
           />
           {isSearching && (
-            <Loader2 className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground animate-spin" aria-hidden="true" />
+            <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" role="status" aria-label={t('search.results.searching')}>
+              <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground animate-spin" aria-hidden="true" />
+              <span className="sr-only">{t('search.results.searching')}</span>
+            </div>
           )}
         </div>
       </div>
@@ -323,6 +337,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
       {/* Results Dropdown - Mobile Full Width */}
       {showResults && (
         <div
+          id="search-results"
           className="absolute top-full mt-2 sm:mt-3 left-0 right-0 w-full bg-card border border-border rounded-lg shadow-xl z-50 max-h-[70vh] sm:max-h-[32rem] overflow-y-auto"
           role="listbox"
           aria-label={t('search.results.resultsList')}
@@ -330,21 +345,23 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
         >
           {results.length > 0 ? (
             <>
-              {results.map(result => {
+              {results.map((result, index) => {
                 const ResultIcon = searchTypeIconConfig[result.type]
                 return (
                   <button
                     key={result.id}
                     onClick={() => handleResultClick(result)}
-                    className="w-full flex items-start gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0 group min-h-[68px]"
+                    className="w-full flex items-start gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 hover:bg-accent focus:bg-accent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset transition-colors text-left border-b border-border last:border-b-0 group min-h-[68px] touch-manipulation"
                     role="option"
                     aria-label={t('search.results.selectResult', { name: result.name })}
+                    aria-selected="false"
+                    tabIndex={index === 0 ? 0 : -1}
                   >
-                    <div className="flex-shrink-0 mt-0.5 p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background transition-colors">
-                      <ResultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
+                    <div className="flex-shrink-0 mt-0.5 p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background group-focus:bg-background transition-colors">
+                      <ResultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary group-focus:text-primary transition-colors" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground truncate text-sm sm:text-base group-hover:text-primary transition-colors">
+                      <p className="font-semibold text-foreground truncate text-sm sm:text-base group-hover:text-primary group-focus:text-primary transition-colors">
                         {result.name}
                       </p>
                       {result.subtitle && (
@@ -354,7 +371,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                       )}
                       {result.location && (
                         <p className="text-[10px] sm:text-xs text-muted-foreground truncate mt-1 flex items-center gap-1">
-                          <span>📍</span>
+                          <span role="img" aria-label={t('common.labels.location')}>📍</span>
                           <span>{result.location}</span>
                         </p>
                       )}
@@ -366,7 +383,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
               {/* View More Button - Mobile Optimized */}
               <button
                 onClick={handleViewMore}
-                className="w-full px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-primary hover:bg-accent transition-colors text-center border-t-2 border-border hover:border-primary min-h-[48px]"
+                className="w-full px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-primary hover:bg-accent focus:bg-accent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset transition-colors text-center border-t-2 border-border hover:border-primary focus:border-primary min-h-[48px] touch-manipulation"
                 aria-label={t('search.results.viewAll')}
                 title={t('search.results.viewAll')}
               >
@@ -374,7 +391,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
               </button>
             </>
           ) : searchTerm.length >= 2 && !isSearching ? (
-            <div className="px-3 sm:px-5 py-6 sm:py-8 text-center text-muted-foreground">
+            <div className="px-3 sm:px-5 py-6 sm:py-8 text-center text-muted-foreground" role="status">
               <Search className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 sm:mb-3 opacity-40" aria-hidden="true" />
               <p className="text-xs sm:text-sm font-medium">{t('search.results.noResults')}</p>
               <p className="text-[10px] sm:text-xs mt-1">{t('search.results.tryDifferent')}</p>

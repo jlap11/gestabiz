@@ -12,7 +12,7 @@ import { APP_CONFIG } from '@/constants'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { toast } from 'sonner'
 import { useAnalytics } from '@/hooks/useAnalytics'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 interface AuthScreenProps {
   onLogin?: (user: User) => void
@@ -34,6 +34,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [inactiveEmail, setInactiveEmail] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -256,16 +257,18 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   // Show loading spinner during OAuth callback processing
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="text-center space-y-4" role="status" aria-live="polite">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4 sm:p-6">
+        <div className="text-center space-y-6 max-w-sm mx-auto" role="status" aria-live="polite">
           <div 
-            className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
+            className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"
             aria-hidden="true"
           ></div>
-          <h1 className="text-lg sm:text-xl font-semibold text-foreground">{APP_CONFIG.NAME}</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {t('auth.processingAuthentication') || 'Procesando autenticación...'}
-          </p>
+          <div className="space-y-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{APP_CONFIG.NAME}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              {t('auth.processingAuthentication') || 'Procesando autenticación...'}
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -273,14 +276,21 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
   if (showResetForm) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-card rounded-2xl p-6 sm:p-8 shadow-2xl">
-          <header className="text-center mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-2">{t('auth.resetPassword')}</h1>
-            <p className="text-muted-foreground text-sm">{t('auth.enterEmailFirst')}</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md bg-card rounded-3xl p-6 sm:p-8 shadow-2xl border border-border/50 backdrop-blur-sm">
+          <header className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <img
+                src={logoGestabiz}
+                alt={`${APP_CONFIG.NAME} Logo`}
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain"
+              />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">{t('auth.resetPassword')}</h1>
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{t('auth.enterEmailFirst')}</p>
           </header>
-          <form className="space-y-4 sm:space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div>
+          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <div className="space-y-2">
               <label htmlFor="reset-email" className="sr-only">
                 {t('auth.emailPlaceholder')}
               </label>
@@ -288,7 +298,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                 id="reset-email"
                 type="email"
                 placeholder={t('auth.emailPlaceholder')}
-                className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                className="w-full bg-background/50 border border-border/50 text-foreground placeholder:text-muted-foreground h-12 sm:h-14 rounded-xl px-4 text-base focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-all"
                 required
                 aria-describedby="reset-email-description"
               />
@@ -298,14 +308,14 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             </div>
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary/90 focus:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-colors"
+              className="w-full bg-primary hover:bg-primary/90 focus:bg-primary/90 text-primary-foreground font-semibold h-12 sm:h-14 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] text-base"
             >
               {t('auth.passwordResetSent')}
             </Button>
             <Button
               type="button"
               variant="ghost"
-              className="w-full text-muted-foreground hover:text-foreground focus:text-foreground"
+              className="w-full text-muted-foreground hover:text-foreground focus:text-foreground h-12 sm:h-14 rounded-xl transition-all text-base"
               onClick={() => setShowResetForm(false)}
             >
               {t('common.actions.back')}
@@ -318,44 +328,45 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
   return (
     <main 
-      className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden"
       role="main"
       aria-labelledby="auth-page-title"
     >
-      {/* Decorative gradient blurs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" aria-hidden="true"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" aria-hidden="true"></div>
+      {/* Enhanced decorative gradient blurs */}
+      <div className="absolute top-0 left-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" aria-hidden="true"></div>
+      <div className="absolute bottom-0 right-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" aria-hidden="true"></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 sm:w-[32rem] sm:h-[32rem] bg-primary/5 rounded-full blur-3xl" aria-hidden="true"></div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo and Title */}
-        <header className="text-center mb-6 sm:mb-8">
-          <div className="flex justify-center mb-4">
-            <img
-              src={logoGestabiz}
-              alt={`${APP_CONFIG.NAME} Logo`}
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain"
-            />
+        <header className="text-center mb-8 sm:mb-10">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <img
+                src={logoGestabiz}
+                alt={`${APP_CONFIG.NAME} Logo`}
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl object-contain shadow-lg"
+              />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent"></div>
+            </div>
           </div>
-          <h1 id="auth-page-title" className="text-3xl sm:text-4xl font-bold text-foreground mb-2">{APP_CONFIG.NAME}</h1>
-          <p className="text-muted-foreground text-sm sm:text-base mb-4">
+          <h1 id="auth-page-title" className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3 tracking-tight">{APP_CONFIG.NAME}</h1>
+          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 leading-relaxed max-w-sm mx-auto">
             {isSignUpMode ? t('auth.signUpDescription') : t('auth.signInDescription')}
           </p>
 
           {/* Service Status Badge */}
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-6">
             <ServiceStatusBadge variant="minimal" />
           </div>
         </header>
         
         {/* Login/SignUp Card */}
         <section 
-          className="bg-card rounded-2xl shadow-2xl backdrop-blur-xl border border-border overflow-hidden"
+          className="bg-card/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-border/50 overflow-hidden"
           aria-labelledby="auth-form-title"
         >
-          {/* Card Header with Back Button */}
-          <div className="px-2 pt-2 pb-6 flex items-center justify-start"></div>
-
-          <div className="px-6 sm:px-8 pb-6 sm:pb-8">
+          <div className="px-6 sm:px-8 py-8 sm:py-10">
             <h2 id="auth-form-title" className="sr-only">
               {isSignUpMode ? 'Formulario de registro' : 'Formulario de inicio de sesión'}
             </h2>
@@ -363,18 +374,18 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             {/* Error Banner */}
             {formError && (
               <div 
-                className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2"
+                className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2"
                 role="alert"
                 aria-live="polite"
               >
                 <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-destructive">{formError}</p>
+                  <p className="text-sm font-medium text-destructive leading-relaxed">{formError}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setFormError(null)}
-                  className="text-destructive/60 hover:text-destructive focus:text-destructive transition-colors text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-destructive/20 rounded"
+                  className="text-destructive/60 hover:text-destructive focus:text-destructive transition-colors text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-destructive/20 rounded-lg p-1 touch-manipulation"
                   aria-label={t('common.actions.close') || 'Cerrar mensaje de error'}
                 >
                   ×
@@ -382,11 +393,11 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               </div>
             )}
 
-            <form onSubmit={isSignUpMode ? handleSignUp : handleSignIn} className="space-y-4 sm:space-y-6">
+            <form onSubmit={isSignUpMode ? handleSignUp : handleSignIn} className="space-y-6">
               {/* Name Input (only for Sign Up) */}
               {isSignUpMode && (
                 <div className="space-y-2">
-                  <label htmlFor="name-input" className="sr-only">
+                  <label htmlFor="name-input" className="text-sm font-medium text-foreground">
                     {t('auth.namePlaceholder')}
                   </label>
                   <Input
@@ -395,7 +406,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                     placeholder={t('auth.namePlaceholder')}
                     value={formData.name}
                     onChange={e => handleInputChange('name', e.target.value)}
-                    className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                    className="w-full bg-background/50 border border-border/50 text-foreground placeholder:text-muted-foreground h-12 sm:h-14 rounded-xl px-4 text-base focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-all"
                     required
                     aria-describedby="name-description"
                   />
@@ -407,7 +418,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
               {/* Email Input */}
               <div className="space-y-2">
-                <label htmlFor="email-input" className="sr-only">
+                <label htmlFor="email-input" className="text-sm font-medium text-foreground">
                   {t('auth.emailPlaceholder')}
                 </label>
                 <Input
@@ -416,30 +427,40 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                   placeholder={t('auth.emailPlaceholder')}
                   value={formData.email}
                   onChange={e => handleInputChange('email', e.target.value)}
-                  className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                  className="w-full bg-background/50 border border-border/50 text-foreground placeholder:text-muted-foreground h-12 sm:h-14 rounded-xl px-4 text-base focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-all"
                   required
                   aria-describedby="email-description"
                 />
                 <p id="email-description" className="sr-only">
-                  Ingresa tu dirección de correo electrónico
+                  {isSignUpMode ? 'Ingresa tu dirección de email para crear tu cuenta' : 'Ingresa tu email registrado'}
                 </p>
               </div>
 
               {/* Password Input */}
               <div className="space-y-2">
-                <label htmlFor="password-input" className="sr-only">
+                <label htmlFor="password-input" className="text-sm font-medium text-foreground">
                   {t('auth.passwordPlaceholder')}
                 </label>
-                <Input
-                  id="password-input"
-                  type="password"
-                  placeholder={t('auth.passwordPlaceholder')}
-                  value={formData.password}
-                  onChange={e => handleInputChange('password', e.target.value)}
-                  className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
-                  required
-                  aria-describedby="password-description"
-                />
+                <div className="relative">
+                  <Input
+                    id="password-input"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t('auth.passwordPlaceholder')}
+                    value={formData.password}
+                    onChange={e => handleInputChange('password', e.target.value)}
+                    className="w-full bg-background/50 border border-border/50 text-foreground placeholder:text-muted-foreground h-12 sm:h-14 rounded-xl px-4 pr-12 text-base focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary transition-all"
+                    required
+                    aria-describedby="password-description"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground focus:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg p-1 touch-manipulation"
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
                 <p id="password-description" className="sr-only">
                   {isSignUpMode ? 'Crea una contraseña segura para tu cuenta' : 'Ingresa tu contraseña'}
                 </p>
@@ -447,22 +468,22 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
               {/* Remember me & Forgot password (only for Login) */}
               {!isSignUpMode && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
-                  <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm">
+                  <div className="flex items-center space-x-3">
                     <Checkbox
                       id="remember"
                       checked={rememberMe}
                       onCheckedChange={checked => setRememberMe(checked as boolean)}
-                      className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary w-5 h-5"
                     />
-                    <label htmlFor="remember" className="text-muted-foreground cursor-pointer">
+                    <label htmlFor="remember" className="text-muted-foreground cursor-pointer select-none">
                       {t('auth.rememberMe') || 'Remember me'}
                     </label>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowResetForm(true)}
-                    className="text-primary hover:text-primary/80 focus:text-primary/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1 py-1"
+                    className="text-primary hover:text-primary/80 focus:text-primary/80 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg px-2 py-1 touch-manipulation text-left sm:text-right"
                   >
                     {t('auth.forgotPassword')}
                   </button>
@@ -473,12 +494,17 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               <Button
                 type="submit"
                 disabled={isSigningIn}
-                className="w-full bg-primary hover:bg-primary/90 focus:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full bg-primary hover:bg-primary/90 focus:bg-primary/90 text-primary-foreground font-semibold h-12 sm:h-14 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20 text-base touch-manipulation"
                 aria-describedby="submit-button-description"
               >
                 {(() => {
                   if (isSigningIn) {
-                    return isSignUpMode ? t('auth.creatingAccount') : t('auth.signingIn')
+                    return (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        {isSignUpMode ? t('auth.creatingAccount') : t('auth.signingIn')}
+                      </div>
+                    )
                   }
                   return isSignUpMode ? t('auth.signUp') : t('auth.signIn')
                 })()}
@@ -488,12 +514,12 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               </p>
 
               {/* Divider */}
-              <div className="relative my-4 sm:my-6" role="separator" aria-label="O continúa con">
+              <div className="relative my-6" role="separator" aria-label="O continúa con">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
+                  <div className="w-full border-t border-border/50"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-card text-muted-foreground">
+                  <span className="px-4 bg-card text-muted-foreground font-medium">
                     {t('auth.orContinueWith')}
                   </span>
                 </div>
@@ -505,20 +531,20 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                 variant="outline"
                 onClick={handleGoogleSignIn}
                 disabled={isGoogleAuth}
-                className="w-full bg-background border-border hover:bg-muted focus:bg-muted text-foreground h-12 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full bg-background/50 border border-border/50 hover:bg-muted/50 focus:bg-muted/50 text-foreground h-12 sm:h-14 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 text-base touch-manipulation"
                 aria-describedby="google-button-description"
               >
                 {isGoogleAuth ? (
-                  <>
+                  <div className="flex items-center justify-center gap-2">
                     <div 
-                      className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" 
+                      className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" 
                       aria-hidden="true"
                     />
                     <span>{t('auth.redirectingToGoogle') || 'Redirigiendo a Google...'}</span>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                  <div className="flex items-center justify-center gap-3">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         fill="#4285F4"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -537,7 +563,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                       />
                     </svg>
                     <span>{t('auth.continueWithGoogle')}</span>
-                  </>
+                  </div>
                 )}
               </Button>
               <p id="google-button-description" className="sr-only">
@@ -546,7 +572,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             </form>
 
             {/* Sign up/Login toggle link */}
-            <div className="mt-4 sm:mt-6 text-center text-sm">
+            <div className="mt-6 sm:mt-8 text-center text-sm">
               <span className="text-muted-foreground">
                 {isSignUpMode ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
               </span>{' '}
@@ -556,8 +582,9 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                   setIsSignUpMode(!isSignUpMode)
                   setFormData({ email: '', password: '', name: '' })
                   setFormError(null)
+                  setShowPassword(false)
                 }}
-                className="text-primary hover:text-primary/80 focus:text-primary/80 font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-1 py-1"
+                className="text-primary hover:text-primary/80 focus:text-primary/80 font-semibold transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg px-2 py-1 touch-manipulation"
                 aria-describedby="toggle-mode-description"
               >
                 {isSignUpMode ? t('auth.signInHere') : t('auth.signUpHere')}

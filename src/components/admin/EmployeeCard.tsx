@@ -102,23 +102,28 @@ export function EmployeeCard({
   }
 
   // =====================================================
-  // RENDER COMPACT
+  // RENDER COMPACT - Mobile Optimized
   // =====================================================
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors">
-        <Avatar className="h-10 w-10">
+      <div 
+        className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors touch-manipulation min-h-[60px]"
+        role="button"
+        tabIndex={0}
+        aria-label={`Empleado ${employee.full_name}, ${employee.job_title || employee.employee_type}`}
+      >
+        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
           <AvatarImage src={employee.avatar_url || undefined} alt={employee.full_name} />
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="text-xs sm:text-sm">{initials}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{employee.full_name}</p>
-          <p className="text-sm text-muted-foreground truncate">
+          <p className="font-medium truncate text-sm sm:text-base">{employee.full_name}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">
             {employee.job_title || employee.employee_type}
           </p>
         </div>
-        <Badge className={getLevelBadgeColor(employee.hierarchy_level)}>
+        <Badge className={`${getLevelBadgeColor(employee.hierarchy_level)} text-xs flex-shrink-0`}>
           {getLevelLabel(employee.hierarchy_level, t)}
         </Badge>
       </div>
@@ -126,54 +131,68 @@ export function EmployeeCard({
   }
 
   // =====================================================
-  // RENDER FULL
+  // RENDER FULL - Mobile First Design
   // =====================================================
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
-        {/* AVATAR */}
-        <Avatar className="h-16 w-16">
+    <Card className="p-3 sm:p-4 hover:shadow-md transition-shadow duration-200 touch-manipulation">
+      <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+        {/* AVATAR - Responsive Size */}
+        <Avatar className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 mx-auto sm:mx-0">
           <AvatarImage src={employee.avatar_url || undefined} alt={employee.full_name} />
-          <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+          <AvatarFallback className="text-sm sm:text-lg">{initials}</AvatarFallback>
         </Avatar>
 
         {/* MAIN CONTENT */}
-        <div className="flex-1 min-w-0 space-y-3">
-          {/* HEADER */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-lg truncate">{employee.full_name}</h3>
+        <div className="flex-1 min-w-0 space-y-2 sm:space-y-3 w-full">
+          {/* HEADER - Mobile Optimized */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+            <div className="flex-1 min-w-0 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                <h3 className="font-semibold text-base sm:text-lg truncate">{employee.full_name}</h3>
                 {!employee.is_active && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs self-center sm:self-auto">
                     {t('employees.card.inactive')}
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground truncate">
                 {employee.job_title || employee.employee_type}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">{employee.email}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate">{employee.email}</p>
             </div>
 
-            {/* ACTIONS DROPDOWN */}
+            {/* ACTIONS DROPDOWN - Touch Friendly */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-9 w-9 sm:h-8 sm:w-8 p-0 self-center sm:self-start touch-manipulation"
+                  aria-label={`Acciones para ${employee.full_name}`}
+                >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onViewProfile?.(employee)}>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem 
+                  onClick={() => onViewProfile?.(employee)}
+                  className="cursor-pointer touch-manipulation min-h-[44px] sm:min-h-auto"
+                >
                   <Eye className="h-4 w-4 mr-2" />
                   {t('employees.card.viewProfile')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit?.(employee)}>
+                <DropdownMenuItem 
+                  onClick={() => onEdit?.(employee)}
+                  className="cursor-pointer touch-manipulation min-h-[44px] sm:min-h-auto"
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   {t('employees.card.edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onAssignSupervisor?.(employee)}>
+                <DropdownMenuItem 
+                  onClick={() => onAssignSupervisor?.(employee)}
+                  className="cursor-pointer touch-manipulation min-h-[44px] sm:min-h-auto"
+                >
                   <UserPlus className="h-4 w-4 mr-2" />
                   {t('employees.card.assignSupervisor')}
                 </DropdownMenuItem>
@@ -181,42 +200,47 @@ export function EmployeeCard({
             </DropdownMenu>
           </div>
 
-          {/* HIERARCHY INFO */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <HierarchyLevelSelector
-              currentLevel={employee.hierarchy_level}
-              employeeId={employeeId ?? ''}
-              employeeName={employee.full_name}
-              onLevelChange={handleLevelChange}
-              disabled={isUpdating}
-              size="sm"
-              variant="outline"
-            />
-            {employee.supervisor_name && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <User className="h-3 w-3" />
-                {t('employees.card.supervisor')}:{' '}
-                <span className="font-medium">{employee.supervisor_name}</span>
-              </div>
-            )}
-            {employee.direct_reports_count > 0 && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <User className="h-3 w-3" />
-                {employee.direct_reports_count} {t('employees.card.subordinates')}
-              </div>
-            )}
+          {/* HIERARCHY INFO - Mobile Responsive */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className="self-center sm:self-auto">
+              <HierarchyLevelSelector
+                currentLevel={employee.hierarchy_level}
+                employeeId={employeeId ?? ''}
+                employeeName={employee.full_name}
+                onLevelChange={handleLevelChange}
+                disabled={isUpdating}
+                size="sm"
+                variant="outline"
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-3 text-center sm:text-left">
+              {employee.supervisor_name && (
+                <div className="flex items-center justify-center sm:justify-start gap-1 text-xs text-muted-foreground">
+                  <User className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">
+                    {t('employees.card.supervisor')}: <span className="font-medium">{employee.supervisor_name}</span>
+                  </span>
+                </div>
+              )}
+              {employee.direct_reports_count > 0 && (
+                <div className="flex items-center justify-center sm:justify-start gap-1 text-xs text-muted-foreground">
+                  <User className="h-3 w-3 flex-shrink-0" />
+                  <span>{employee.direct_reports_count} {t('employees.card.subordinates')}</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* METRICS */}
-          <div className="grid grid-cols-3 gap-3 pt-2 border-t">
+          {/* METRICS - Mobile First Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t">
             {/* OCUPACIÓN */}
-            <div className="flex items-center gap-2">
-              <div className="rounded-full bg-blue-500/10 p-2">
+            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-0 rounded-lg sm:rounded-none bg-muted/30 sm:bg-transparent">
+              <div className="rounded-full bg-blue-500/10 p-2 flex-shrink-0">
                 <TrendingUp className="h-4 w-4 text-blue-600" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('employees.card.occupancy')}</p>
-                <p className="font-semibold">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground truncate">{t('employees.card.occupancy')}</p>
+                <p className="font-semibold text-sm sm:text-base">
                   {employee.occupancy_rate !== null && employee.occupancy_rate !== undefined
                     ? `${Number(employee.occupancy_rate).toFixed(0)}%`
                     : 'N/A'}
@@ -225,13 +249,13 @@ export function EmployeeCard({
             </div>
 
             {/* RATING */}
-            <div className="flex items-center gap-2">
-              <div className="rounded-full bg-yellow-500/10 p-2">
+            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-0 rounded-lg sm:rounded-none bg-muted/30 sm:bg-transparent">
+              <div className="rounded-full bg-yellow-500/10 p-2 flex-shrink-0">
                 <Star className="h-4 w-4 text-yellow-600" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('employees.card.rating')}</p>
-                <p className="font-semibold">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground truncate">{t('employees.card.rating')}</p>
+                <p className="font-semibold text-sm sm:text-base">
                   {employee.average_rating !== null && employee.average_rating !== undefined
                     ? `${Number(employee.average_rating).toFixed(1)} ⭐`
                     : 'N/A'}
@@ -240,13 +264,13 @@ export function EmployeeCard({
             </div>
 
             {/* REVENUE */}
-            <div className="flex items-center gap-2">
-              <div className="rounded-full bg-green-500/10 p-2">
+            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-0 rounded-lg sm:rounded-none bg-muted/30 sm:bg-transparent">
+              <div className="rounded-full bg-green-500/10 p-2 flex-shrink-0">
                 <DollarSign className="h-4 w-4 text-green-600" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{t('employees.card.revenue')}</p>
-                <p className="font-semibold">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground truncate">{t('employees.card.revenue')}</p>
+                <p className="font-semibold text-sm sm:text-base">
                   {employee.gross_revenue !== null && employee.gross_revenue !== undefined
                     ? `$${(Number(employee.gross_revenue) / 1000).toFixed(0)}k`
                     : 'N/A'}

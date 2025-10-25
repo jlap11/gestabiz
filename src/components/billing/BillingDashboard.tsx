@@ -32,112 +32,161 @@ import type { SubscriptionStatus } from '@/lib/payments/PaymentGateway'
 
 interface BillingDashboardProps {
   businessId: string
+  onBack?: () => void
 }
 
-export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>) {
+export function BillingDashboard({ businessId, onBack }: Readonly<BillingDashboardProps>) {
   const { t } = useLanguage()
-  const { dashboard, isLoading, refresh } = useSubscription(businessId)
+  const { dashboard, isLoading, error, refresh } = useSubscription(businessId)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false)
-  const [showPricingPage, setShowPricingPage] = useState(false)
 
   if (isLoading) {
     return (
-      <div 
-        className="flex items-center justify-center h-96"
-        role="status"
-        aria-label="Cargando información de facturación"
-      >
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  // Si usuario quiere ver planes, mostrar PricingPage inline
-  if (showPricingPage) {
-    return (
       <main 
-        className="space-y-4 max-w-[100vw]"
-        role="main"
-        aria-labelledby="pricing-page-title"
+        role="main" 
+        aria-labelledby="billing-dashboard-title" 
+        className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-w-[95vw] mx-auto"
       >
-        <h1 id="pricing-page-title" className="sr-only">Página de Precios</h1>
-        <Button 
-          variant="ghost" 
-          onClick={() => setShowPricingPage(false)} 
-          className="mb-4 min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          aria-label="Volver al Dashboard de Facturación"
-          title="Volver al Dashboard de Facturación"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
-          Volver al Dashboard
-        </Button>
-        <Suspense fallback={
-          <div 
-            className="flex items-center justify-center h-96"
-            role="status"
-            aria-label="Cargando página de precios"
-          >
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onBack}
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation"
+              aria-label={t('action.back')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div>
+            <h1 id="billing-dashboard-title" className="text-xl sm:text-2xl font-bold">
+              {t('billing.title')}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {t('billing.description')}
+            </p>
           </div>
-        }>
-          <PricingPageLazy businessId={businessId} onClose={() => setShowPricingPage(false)} />
-        </Suspense>
+        </div>
+
+        {/* Loading skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded"></div>
+                  <div className="h-3 bg-muted rounded w-2/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </main>
     )
   }
 
+  if (error) {
+    return (
+      <main 
+        role="main" 
+        aria-labelledby="billing-error-title" 
+        className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-w-[95vw] mx-auto"
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onBack}
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation"
+              aria-label={t('action.back')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div>
+            <h1 id="billing-error-title" className="text-xl sm:text-2xl font-bold">
+              {t('billing.title')}
+            </h1>
+          </div>
+        </div>
 
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <AlertCircle className="h-8 w-8 text-destructive flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-destructive text-base sm:text-lg">
+                  {t('billing.errorTitle')}
+                </h3>
+                <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                  {error.message || t('billing.errorDescription')}
+                </p>
+                <Button 
+                  onClick={refresh} 
+                  className="mt-3 min-h-[44px] text-sm sm:text-base touch-manipulation"
+                  size="sm"
+                >
+                  {t('action.retry')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
+
+  // Si no hay suscripción, mostrar página de precios
   if (!dashboard?.subscription) {
     return (
       <main 
-        className="space-y-6 max-w-[100vw]"
-        role="main"
-        aria-labelledby="free-plan-title"
+        role="main" 
+        aria-labelledby="no-subscription-title" 
+        className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-w-[95vw] mx-auto"
       >
-        <h1 id="free-plan-title" className="sr-only">Plan Gratuito</h1>
-        <Card className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />
-              {t('billing.freePlan')}
-            </CardTitle>
-            <CardDescription className="text-sm sm:text-base">{t('billing.freeplanDescription')}</CardDescription>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onBack}
+              className="h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation"
+              aria-label={t('action.back')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div>
+            <h1 id="no-subscription-title" className="text-xl sm:text-2xl font-bold">
+              {t('billing.title')}
+            </h1>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-lg sm:text-xl">{t('billing.noSubscription')}</CardTitle>
+            <CardDescription className="text-sm sm:text-base">
+              {t('billing.noSubscriptionDescription')}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 p-4 sm:p-6">
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm sm:text-base">Características incluidas:</h4>
-              <ul 
-                className="space-y-2 text-sm sm:text-base text-muted-foreground"
-                role="list"
-                aria-label="Características del plan gratuito"
-              >
-                <li className="flex items-center gap-2" role="listitem">
-                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  Registro de negocios básico
-                </li>
-                <li className="flex items-center gap-2" role="listitem">
-                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  Hasta 3 citas por mes
-                </li>
-                <li className="flex items-center gap-2" role="listitem">
-                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  1 empleado
-                </li>
-                <li className="flex items-center gap-2" role="listitem">
-                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  1 servicio
-                </li>
-              </ul>
-            </div>
-            <div className="pt-4 border-t">
-              <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                ¿Quieres desbloquear más funcionalidades? Actualiza al Plan Inicio
-              </p>
-              <Button 
-                onClick={() => setShowPricingPage(true)} 
-                className="w-full min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          <CardContent className="text-center">
+            <div className="space-y-4">
+              <Suspense fallback={<div className="h-32 animate-pulse bg-muted rounded" />}>
+                <PricingPageLazy />
+              </Suspense>
+              <Button
+                variant="outline"
+                onClick={onBack}
+                className="min-h-[44px] text-sm sm:text-base touch-manipulation"
                 aria-label="Ver detalles del Plan Inicio"
               >
                 Ver Plan Inicio
@@ -152,28 +201,38 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
   const { subscription, paymentMethods, recentPayments, upcomingInvoice, usageMetrics } = dashboard
 
   const getStatusBadge = (status: SubscriptionStatus) => {
-    const badges = {
-      active: <Badge className="bg-green-500 text-xs sm:text-sm">{t('billing.statusActive')}</Badge>,
-      trialing: <Badge className="bg-blue-500 text-xs sm:text-sm">{t('billing.statusTrialing')}</Badge>,
-      past_due: <Badge className="bg-yellow-500 text-xs sm:text-sm">{t('billing.overduePayment')}</Badge>,
-      canceled: <Badge className="bg-red-500 text-xs sm:text-sm">{t('billing.statusCanceled')}</Badge>,
-      suspended: <Badge className="bg-orange-500 text-xs sm:text-sm">{t('billing.statusSuspended')}</Badge>,
-      inactive: <Badge className="bg-gray-500 text-xs sm:text-sm">{t('billing.statusInactive')}</Badge>,
-      expired: <Badge className="bg-red-700 text-xs sm:text-sm">{t('billing.statusExpired')}</Badge>,
-      paused: <Badge className="bg-purple-500 text-xs sm:text-sm">{t('billing.statusPaused')}</Badge>,
+    const statusConfig = {
+      active: { variant: 'default' as const, label: t('billing.status.active') },
+      trialing: { variant: 'secondary' as const, label: t('billing.status.trialing') },
+      past_due: { variant: 'destructive' as const, label: t('billing.status.pastDue') },
+      canceled: { variant: 'outline' as const, label: t('billing.status.canceled') },
+      unpaid: { variant: 'destructive' as const, label: t('billing.status.unpaid') },
+      incomplete: { variant: 'destructive' as const, label: t('billing.status.incomplete') },
+      incomplete_expired: { variant: 'destructive' as const, label: t('billing.status.incompleteExpired') },
+      paused: { variant: 'secondary' as const, label: t('billing.status.paused') },
     }
-    return badges[status] || <Badge className="text-xs sm:text-sm">{status}</Badge>
+
+    const config = statusConfig[status] || statusConfig.active
+    return (
+      <Badge 
+        variant={config.variant} 
+        className="text-xs sm:text-sm"
+        aria-label={`Estado de suscripción: ${config.label}`}
+      >
+        {config.label}
+      </Badge>
+    )
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number, currency = 'COP') => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'COP',
+      currency,
       minimumFractionDigits: 0,
     }).format(amount)
   }
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'long',
@@ -183,504 +242,337 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
 
   return (
     <main 
-      className="space-y-6 max-w-[100vw]"
-      role="main"
-      aria-labelledby="billing-dashboard-title"
+      role="main" 
+      aria-labelledby="billing-dashboard-title" 
+      className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-w-[95vw] mx-auto"
     >
-      <h1 id="billing-dashboard-title" className="sr-only">Dashboard de Facturación</h1>
-      
-      {/* Header con información de suscripción */}
-      <section 
-        role="region" 
-        aria-labelledby="subscription-overview-title"
-        className="space-y-4"
-      >
-        <h2 id="subscription-overview-title" className="sr-only">Resumen de Suscripción</h2>
-        <div 
-          className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-          role="list"
-          aria-label="Información de suscripción"
-        >
-          <Card 
-            className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-            role="listitem"
-            tabIndex={0}
-            aria-labelledby="current-plan-title"
-            aria-describedby="current-plan-description"
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+        {onBack && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onBack}
+            className="h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation"
+            aria-label={t('action.back')}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-              <CardTitle 
-                id="current-plan-title"
-                className="text-sm font-medium"
-              >
-                {t('billing.currentPlan')}
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0">
-              <div 
-                className="text-xl sm:text-2xl font-bold capitalize"
-                aria-label={`Plan actual: ${subscription.planType}`}
-              >
-                {subscription.planType}
-              </div>
-              <p 
-                id="current-plan-description"
-                className="text-xs sm:text-sm text-muted-foreground"
-              >
-                {subscription.billingCycle === 'monthly'
-                  ? t('billing.billingMonthly')
-                  : t('billing.billingAnnual')}
-              </p>
-              <div className="mt-2">{getStatusBadge(subscription.status)}</div>
-            </CardContent>
-          </Card>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
+        <div className="flex-1">
+          <h1 id="billing-dashboard-title" className="text-xl sm:text-2xl font-bold">
+            {t('billing.title')}
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            {t('billing.description')}
+          </p>
+        </div>
+      </div>
 
-          <Card 
-            className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-            role="listitem"
-            tabIndex={0}
-            aria-labelledby="next-payment-title"
-            aria-describedby="next-payment-description"
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-              <CardTitle 
-                id="next-payment-title"
-                className="text-sm font-medium"
-              >
-                Próximo Pago
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0">
-              <div 
-                className="text-xl sm:text-2xl font-bold"
-                aria-label={`Monto del próximo pago: ${formatCurrency(upcomingInvoice?.amount || subscription.amount)}`}
-              >
-                {formatCurrency(upcomingInvoice?.amount || subscription.amount)}
+      {/* Subscription Overview - Mobile First */}
+      <section role="region" aria-labelledby="subscription-overview-title">
+        <h2 id="subscription-overview-title" className="sr-only">Resumen de suscripción</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Plan Actual */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <CardTitle className="text-lg sm:text-xl">Plan Actual</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">
+                    Tu suscripción activa
+                  </CardDescription>
+                </div>
+                {getStatusBadge(subscription.status)}
               </div>
-              <p 
-                id="next-payment-description"
-                className="text-xs sm:text-sm text-muted-foreground"
-              >
-                {formatDate(upcomingInvoice?.dueDate || subscription.currentPeriodEnd)}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 col-span-1 sm:col-span-2 lg:col-span-1"
-            role="listitem"
-            tabIndex={0}
-            aria-labelledby="payment-method-title"
-            aria-describedby="payment-method-description"
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-              <CardTitle 
-                id="payment-method-title"
-                className="text-sm font-medium"
-              >
-                Método de Pago
-              </CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0">
-              {paymentMethods.length > 0 ? (
-                <>
-                  <div 
-                    className="text-lg sm:text-2xl font-bold capitalize"
-                    aria-label={`Método de pago: ${paymentMethods[0].brand} terminada en ${paymentMethods[0].last4}`}
-                  >
-                    {paymentMethods[0].brand} •••• {paymentMethods[0].last4}
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="text-sm sm:text-base font-medium">
+                    Plan {subscription.planType.charAt(0).toUpperCase() + subscription.planType.slice(1)}
+                  </span>
+                  <span className="text-lg sm:text-xl font-bold">
+                    {formatCurrency(subscription.amount)}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /{subscription.billingCycle === 'monthly' ? 'mes' : 'año'}
+                    </span>
+                  </span>
+                </div>
+                
+                {subscription.currentPeriodEnd && (
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm text-muted-foreground">
+                    <span>Próximo pago:</span>
+                    <span className="font-medium">{formatDate(subscription.currentPeriodEnd)}</span>
                   </div>
-                  <p 
-                    id="payment-method-description"
-                    className="text-xs sm:text-sm text-muted-foreground"
-                  >
-                    Expira {paymentMethods[0].expMonth}/{paymentMethods[0].expYear}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="text-sm text-muted-foreground">Sin método de pago</div>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="flex-1 min-h-[44px] text-sm sm:text-base touch-manipulation"
+                  size="sm"
+                  aria-label="Actualizar plan de suscripción"
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  {t('billing.upgradePlan')}
+                </Button>
+                {subscription.status === 'active' && (
                   <Button
-                    size="sm"
                     variant="outline"
-                    className="mt-2 min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    onClick={() => setShowAddPaymentModal(true)}
-                    aria-label="Agregar método de pago"
+                    onClick={() => setShowCancelModal(true)}
+                    className="flex-1 min-h-[44px] text-sm sm:text-base touch-manipulation"
+                    size="sm"
+                    aria-label="Cancelar suscripción"
                   >
-                    Agregar
+                    {t('billing.cancelSubscription')}
                   </Button>
-                </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Próxima Factura */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg sm:text-xl">Próxima Factura</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Detalles del próximo cobro
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {upcomingInvoice ? (
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-sm sm:text-base text-muted-foreground">Monto:</span>
+                    <span className="text-lg sm:text-xl font-bold">
+                      {formatCurrency(upcomingInvoice.amount)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-sm sm:text-base text-muted-foreground">Fecha:</span>
+                    <span className="font-medium text-sm sm:text-base">
+                      {formatDate(upcomingInvoice.date)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>Se cobrará automáticamente</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm sm:text-base">No hay facturas pendientes</p>
+                </div>
               )}
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* Alertas */}
-      {subscription.status === 'trialing' && subscription.trialEndsAt && (
-        <Card 
-          className="border-blue-500 bg-blue-50 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-          role="alert"
-          aria-labelledby="trial-alert-title"
-        >
-          <CardHeader className="p-4 sm:p-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-500" aria-hidden="true" />
-              <CardTitle id="trial-alert-title" className="text-sm sm:text-base">Período de Prueba</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <p className="text-sm sm:text-base">
-              Tu período de prueba termina el {formatDate(subscription.trialEndsAt)}. Agrega un
-              método de pago para continuar usando el servicio.
-            </p>
-          </CardContent>
-        </Card>
+      {/* Usage Metrics - Mobile Responsive */}
+      {usageMetrics && (
+        <section role="region" aria-labelledby="usage-metrics-title">
+          <h2 id="usage-metrics-title" className="sr-only">Métricas de uso</h2>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg sm:text-xl">Uso del Plan</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Límites y uso actual de tu plan
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {Object.entries(usageMetrics).map(([key, metric]) => {
+                  const percentage = metric.limit > 0 ? (metric.current / metric.limit) * 100 : 0
+                  const isNearLimit = percentage >= 80
+                  
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <span className="text-sm font-medium capitalize">
+                          {key === 'locations' ? 'Ubicaciones' :
+                           key === 'employees' ? 'Empleados' :
+                           key === 'appointments' ? 'Citas' :
+                           key === 'clients' ? 'Clientes' :
+                           key === 'services' ? 'Servicios' : key}
+                        </span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">
+                          {metric.current} / {metric.limit}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={percentage} 
+                        className="h-2"
+                        aria-label={`Uso de ${key}: ${metric.current} de ${metric.limit}`}
+                      />
+                      {isNearLimit && (
+                        <div className="flex items-center gap-1 text-xs text-amber-600">
+                          <AlertCircle className="h-3 w-3" />
+                          <span>Cerca del límite</span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       )}
 
-      {subscription.status === 'past_due' && (
-        <Card 
-          className="border-yellow-500 bg-yellow-50 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-          role="alert"
-          aria-labelledby="past-due-alert-title"
-        >
-          <CardHeader className="p-4 sm:p-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-500" aria-hidden="true" />
-              <CardTitle id="past-due-alert-title" className="text-sm sm:text-base">Pago Vencido</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <p className="text-sm sm:text-base">
-              Tu último pago falló. Por favor actualiza tu método de pago para evitar la suspensión
-              del servicio.
-            </p>
-            <Button
-              size="sm"
-              variant="default"
-              className="mt-2 min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              onClick={() => setShowAddPaymentModal(true)}
-              aria-label="Actualizar método de pago para resolver el pago vencido"
-            >
-              Actualizar Método de Pago
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {subscription.canceledAt && subscription.status === 'active' && (
-        <Card 
-          className="border-orange-500 bg-orange-50 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-          role="alert"
-          aria-labelledby="cancellation-alert-title"
-        >
-          <CardHeader className="p-4 sm:p-6">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-500" aria-hidden="true" />
-              <CardTitle id="cancellation-alert-title" className="text-sm sm:text-base">Cancelación Programada</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <p className="text-sm sm:text-base">
-              Tu suscripción se cancelará el {formatDate(subscription.currentPeriodEnd)}. Podrás
-              seguir usando el servicio hasta esa fecha.
-            </p>
-            <Button
-              size="sm"
-              variant="default"
-              className="mt-2 min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              onClick={() => {
-                // Reactivar suscripción
-              }}
-              aria-label="Reactivar suscripción cancelada"
-            >
-              Reactivar Suscripción
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Tabs con contenido detallado */}
-      <section 
-        role="region" 
-        aria-labelledby="billing-details-title"
-      >
-        <h2 id="billing-details-title" className="sr-only">Detalles de Facturación</h2>
-        <Tabs defaultValue="usage" className="w-full">
-          <TabsList 
-            role="tablist"
-            aria-label="Opciones de detalles de facturación"
-            className="grid w-full grid-cols-1 sm:grid-cols-3"
-          >
+      {/* Tabs Section - Mobile Optimized */}
+      <section role="region" aria-labelledby="billing-details-title">
+        <h2 id="billing-details-title" className="sr-only">Detalles de facturación</h2>
+        
+        <Tabs defaultValue="payments" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-0">
             <TabsTrigger 
-              value="usage"
-              role="tab"
-              aria-selected="true"
-              aria-controls="usage-panel"
-              id="usage-tab"
-              className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm"
-            >
-              Uso del Plan
-            </TabsTrigger>
-            <TabsTrigger 
-              value="payments"
-              role="tab"
-              aria-selected="false"
-              aria-controls="payments-panel"
-              id="payments-tab"
-              className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm"
+              value="payments" 
+              className="min-h-[44px] text-sm sm:text-base touch-manipulation"
             >
               Historial de Pagos
             </TabsTrigger>
             <TabsTrigger 
-              value="methods"
-              role="tab"
-              aria-selected="false"
-              aria-controls="methods-panel"
-              id="methods-tab"
-              className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm"
+              value="methods" 
+              className="min-h-[44px] text-sm sm:text-base touch-manipulation"
             >
               Métodos de Pago
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab: Uso del Plan */}
-          <TabsContent 
-            value="usage" 
-            className="space-y-4"
-            role="tabpanel"
-            aria-labelledby="usage-tab"
-            id="usage-panel"
-            tabIndex={0}
-          >
-            <Card className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">{t('billing.usageMetrics')}</CardTitle>
-                <CardDescription className="text-sm sm:text-base">{t('billing.monitorUsage')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 p-4 sm:p-6">
-                {usageMetrics &&
-                  Object.entries(usageMetrics).map(([key, value]) => {
-                    const percentage = (value.current / value.limit) * 100
-                    const isNearLimit = percentage >= 80
-
-                    return (
-                      <div key={key} className="space-y-2">
-                        <div className="flex items-center justify-between text-sm sm:text-base">
-                          <span className="capitalize font-medium">
-                            {key === 'locations'
-                              ? 'Sedes'
-                              : key === 'employees'
-                                ? 'Empleados'
-                                : key === 'appointments'
-                                  ? 'Citas'
-                                  : key === 'clients'
-                                    ? 'Clientes'
-                                    : key === 'services'
-                                      ? 'Servicios'
-                                      : key}
-                          </span>
-                          <span 
-                            className={isNearLimit ? 'text-yellow-600 font-semibold' : ''}
-                            aria-label={`${value.current} de ${value.limit} ${key} utilizados`}
-                          >
-                            {value.current} / {value.limit}
-                          </span>
-                        </div>
-                        <Progress 
-                          value={percentage} 
-                          className={isNearLimit ? 'bg-yellow-100' : ''}
-                          aria-label={`Progreso de uso: ${percentage.toFixed(1)}%`}
-                        />
-                      </div>
-                    )
-                  })}
-
-                <div className="pt-4 space-y-2 sm:space-y-0 sm:space-x-2 sm:flex">
-                  <Button 
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="w-full sm:w-auto min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label="Actualizar plan de suscripción"
-                  >
-                    Actualizar Plan
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowCancelModal(true)}
-                    className="w-full sm:w-auto min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label="Cancelar suscripción actual"
-                  >
-                    Cancelar Suscripción
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Tab: Historial de Pagos */}
-          <TabsContent 
-            value="payments"
-            role="tabpanel"
-            aria-labelledby="payments-tab"
-            id="payments-panel"
-            tabIndex={0}
-          >
-            <Card className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-              <CardHeader className="p-4 sm:p-6">
+          <TabsContent value="payments" className="space-y-4">
+            <Card>
+              <CardHeader>
                 <CardTitle className="text-lg sm:text-xl">Historial de Pagos</CardTitle>
-                <CardDescription className="text-sm sm:text-base">Todos tus pagos y transacciones</CardDescription>
+                <CardDescription className="text-sm sm:text-base">
+                  Últimos pagos realizados
+                </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <div 
-                  className="space-y-4"
-                  role="list"
-                  aria-label="Lista de pagos realizados"
-                >
-                  {recentPayments.map(payment => (
-                    <div
-                      key={payment.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg space-y-2 sm:space-y-0 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                      role="listitem"
-                      tabIndex={0}
-                      aria-labelledby={`payment-${payment.id}-amount`}
-                      aria-describedby={`payment-${payment.id}-details`}
-                    >
-                      <div className="flex items-center gap-4">
-                        {payment.status === 'completed' ? (
-                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" aria-hidden="true" />
-                        ) : payment.status === 'failed' ? (
-                          <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" aria-hidden="true" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-yellow-500 flex-shrink-0" aria-hidden="true" />
-                        )}
-                        <div>
-                          <p 
-                            id={`payment-${payment.id}-amount`}
-                            className="font-medium text-sm sm:text-base"
-                            aria-label={`Monto del pago: ${formatCurrency(payment.amount)}`}
+              <CardContent>
+                {recentPayments && recentPayments.length > 0 ? (
+                  <div className="space-y-3">
+                    {recentPayments.map(payment => (
+                      <div
+                        key={payment.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-full p-2 bg-muted">
+                            {payment.status === 'completed' ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : payment.status === 'failed' ? (
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            ) : (
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm sm:text-base">
+                              {formatCurrency(payment.amount, payment.currency)}
+                            </p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              {formatDate(payment.paidAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <Badge
+                            variant={
+                              payment.status === 'completed'
+                                ? 'default'
+                                : payment.status === 'failed'
+                                  ? 'destructive'
+                                  : 'secondary'
+                            }
+                            className="text-xs sm:text-sm self-start sm:self-auto"
                           >
-                            {formatCurrency(payment.amount)}
-                          </p>
-                          <p 
-                            id={`payment-${payment.id}-details`}
-                            className="text-xs sm:text-sm text-muted-foreground"
-                          >
-                            {payment.paidAt ? formatDate(payment.paidAt) : 'Pendiente'}
-                          </p>
-                          {payment.failureReason && (
-                            <p className="text-xs sm:text-sm text-red-500">{payment.failureReason}</p>
+                            {payment.status === 'completed'
+                              ? 'Completado'
+                              : payment.status === 'failed'
+                                ? 'Fallido'
+                                : payment.status === 'refunded'
+                                  ? 'Reembolsado'
+                                  : 'Pendiente'}
+                          </Badge>
+                          {payment.invoiceUrl && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(payment.invoiceUrl, '_blank')}
+                              className="min-h-[44px] min-w-[44px] text-xs sm:text-sm touch-manipulation"
+                              aria-label="Descargar factura"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 self-start sm:self-center">
-                        <Badge
-                          variant={
-                            payment.status === 'completed'
-                              ? 'default'
-                              : payment.status === 'failed'
-                                ? 'destructive'
-                                : 'secondary'
-                          }
-                          className="text-xs sm:text-sm"
-                        >
-                          {payment.status === 'completed'
-                            ? 'Completado'
-                            : payment.status === 'failed'
-                              ? 'Fallido'
-                              : payment.status === 'refunded'
-                                ? 'Reembolsado'
-                                : 'Pendiente'}
-                        </Badge>
-                        {payment.invoiceUrl && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => window.open(payment.invoiceUrl, '_blank')}
-                            className="min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                            aria-label="Descargar factura"
-                            title="Descargar factura"
-                          >
-                            <Download className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  {recentPayments.length === 0 && (
-                    <p 
-                      className="text-center text-muted-foreground py-8 text-sm sm:text-base"
-                      role="status"
-                      aria-label="No hay pagos registrados en el historial"
-                    >
-                      No hay pagos registrados
-                    </p>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">No hay pagos registrados</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Tab: Métodos de Pago */}
-          <TabsContent 
-            value="methods"
-            role="tabpanel"
-            aria-labelledby="methods-tab"
-            id="methods-panel"
-            tabIndex={0}
-          >
-            <Card className="focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-              <CardHeader className="p-4 sm:p-6">
+          <TabsContent value="methods" className="space-y-4">
+            <Card>
+              <CardHeader>
                 <CardTitle className="text-lg sm:text-xl">Métodos de Pago</CardTitle>
-                <CardDescription className="text-sm sm:text-base">Administra tus tarjetas guardadas</CardDescription>
+                <CardDescription className="text-sm sm:text-base">
+                  Gestiona tus métodos de pago
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 p-4 sm:p-6">
-                <div 
-                  role="list"
-                  aria-label="Lista de métodos de pago guardados"
-                >
-                  {paymentMethods.map(method => (
-                    <div
-                      key={method.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg mb-4 space-y-2 sm:space-y-0 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                      role="listitem"
-                      tabIndex={0}
-                      aria-labelledby={`method-${method.id}-info`}
-                      aria-describedby={`method-${method.id}-expiry`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <CreditCard className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
-                        <div>
-                          <p 
-                            id={`method-${method.id}-info`}
-                            className="font-medium capitalize text-sm sm:text-base"
-                            aria-label={`Tarjeta ${method.brand} terminada en ${method.last4}`}
-                          >
-                            {method.brand} •••• {method.last4}
-                          </p>
-                          <p 
-                            id={`method-${method.id}-expiry`}
-                            className="text-xs sm:text-sm text-muted-foreground"
-                          >
-                            Expira {method.expMonth}/{method.expYear}
-                          </p>
+              <CardContent className="space-y-4">
+                {paymentMethods && paymentMethods.length > 0 ? (
+                  <div className="space-y-3">
+                    {paymentMethods.map(method => (
+                      <div
+                        key={method.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-full p-2 bg-muted">
+                            <CreditCard className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm sm:text-base">
+                              {method.brand?.toUpperCase()} •••• {method.last4}
+                            </p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              Expira {method.expMonth}/{method.expYear}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {method.isActive && (
+                            <Badge variant="secondary" className="text-xs sm:text-sm">
+                              Principal
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                      {method.isActive && (
-                        <Badge variant="default" className="text-xs sm:text-sm self-start sm:self-center">
-                          Predeterminada
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm sm:text-base">No hay métodos de pago configurados</p>
+                  </div>
+                )}
 
                 <Button
                   variant="outline"
-                  className="w-full min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="w-full min-h-[44px] text-sm sm:text-base touch-manipulation"
                   onClick={() => setShowAddPaymentModal(true)}
                   aria-label="Agregar nuevo método de pago"
                 >

@@ -202,7 +202,9 @@ export function BusinessSuggestions({
     <Card
       key={business.id}
       className={cn(
-        'cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]',
+        'cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'touch-manipulation select-none',
         isFavorite && 'border-primary border-2'
       )}
       onClick={() => onBusinessSelect?.(business.id)}
@@ -211,11 +213,12 @@ export function BusinessSuggestions({
       aria-label={t('businessSuggestions.openBusiness', { name: business.name })}
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
           onBusinessSelect?.(business.id)
         }
       }}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         <div className="space-y-3">
           {/* Logo y nombre */}
           <div className="flex items-start gap-3">
@@ -223,22 +226,24 @@ export function BusinessSuggestions({
               <img
                 src={business.logo_url}
                 alt={business.name}
-                className="w-12 h-12 rounded-lg object-cover border-2 border-border"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border-2 border-border flex-shrink-0"
               />
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border-2 border-primary/30">
-                <Building2 className="h-6 w-6 text-primary" aria-hidden="true" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center border-2 border-primary/30 flex-shrink-0">
+                <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" aria-hidden="true" />
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-foreground truncate">{business.name}</h4>
+              <h4 className="font-semibold text-foreground truncate text-sm sm:text-base leading-tight">
+                {business.name}
+              </h4>
             </div>
           </div>
 
           {/* Rating */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" aria-hidden="true" />
               <span className="text-sm font-semibold text-foreground">
                 {business.average_rating.toFixed(1)}
               </span>
@@ -256,14 +261,14 @@ export function BusinessSuggestions({
           )}
 
           {isFavorite && (
-            <Badge variant="default" className="w-full justify-center">
+            <Badge variant="default" className="w-full justify-center text-xs sm:text-sm py-1">
               {t('businessSuggestions.favoriteBadge')}
             </Badge>
           )}
 
           <Button
             variant={isFavorite ? 'default' : 'outline'}
-            className="w-full min-h-[44px] min-w-[44px]"
+            className="w-full min-h-[44px] min-w-[44px] text-sm sm:text-base touch-manipulation"
             onClick={e => {
               e.stopPropagation()
               onBusinessSelect?.(business.id)
@@ -280,18 +285,29 @@ export function BusinessSuggestions({
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Card className="max-w-[95vw] max-h-[90vh] overflow-auto" role="dialog" aria-modal="true" aria-label="Cargando sugerencias de negocios">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2" id="loading-title">
-              <TrendingUp className="h-5 w-5" aria-hidden="true" />
-              {t('businessSuggestions.title')}
+      <div className="space-y-4 px-2 sm:px-0">
+        <Card
+          className="w-full max-w-none sm:max-w-[95vw] max-h-[90vh] overflow-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('businessSuggestions.loadingAria')}
+        >
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2" id="loading-title">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" aria-hidden="true" />
+              <span className="truncate">{t('businessSuggestions.title')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Cargando sugerencias de negocios">
+            <div
+              className="flex flex-col items-center justify-center py-8 space-y-3"
+              role="status"
+              aria-live="polite"
+              aria-label={t('businessSuggestions.loadingAria')}
+            >
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" aria-hidden="true"></div>
-              <span className="sr-only">Cargando sugerencias de negocios...</span>
+              <span className="text-sm text-muted-foreground">{t('businessSuggestions.loadingScreen')}</span>
+              <span className="sr-only">{t('businessSuggestions.loadingAria')}</span>
             </div>
           </CardContent>
         </Card>
@@ -304,47 +320,44 @@ export function BusinessSuggestions({
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="max-w-[95vw] max-h-[90vh] overflow-auto">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2" id="business-suggestions-title">
-            <TrendingUp className="h-5 w-5" aria-hidden="true" />
-            {t('businessSuggestions.title')}
+    <div className="space-y-4 px-2 sm:px-0">
+      <Card className="w-full max-w-none sm:max-w-[95vw] max-h-[90vh] overflow-auto">
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2" id="business-suggestions-title">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">{t('businessSuggestions.title')}</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4" role="region" aria-labelledby="business-suggestions-title">
+        <CardContent className="space-y-4 sm:space-y-6" role="region" aria-labelledby="business-suggestions-title">
           {favoriteBusiness && (
-            <section className="space-y-2" aria-labelledby="favorite-section-title">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide" id="favorite-section-title">
+            <section className="space-y-3" aria-labelledby="favorite-section-title">
+              <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide" id="favorite-section-title">
                 {t('businessSuggestions.basedOnReviews')}
               </h3>
-              <div role="list" aria-label="Negocio favorito">
-                <div role="listitem">
-                  {renderBusinessCard(favoriteBusiness, true)}
-                </div>
+              <div role="list" aria-label={t('businessSuggestions.favoriteListAria')}>
+                <div role="listitem">{renderBusinessCard(favoriteBusiness, true)}</div>
               </div>
             </section>
           )}
 
           {displayedBusinesses.length > 0 && (
-            <section className="space-y-2" aria-labelledby="suggestions-section-title">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide" id="suggestions-section-title">
-                {t('businessSuggestions.inCity')} {preferredCityName || preferredRegionName}
+            <section className="space-y-3" aria-labelledby="suggestions-section-title">
+              <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide" id="suggestions-section-title">
+                <span className="block sm:inline">{t('businessSuggestions.inCity')}</span>{' '}
+                <span className="block sm:inline font-normal">{preferredCityName || preferredRegionName}</span>
               </h3>
-              <div className="space-y-3" role="list" aria-label="Negocios sugeridos">
+              <div className="space-y-3" role="list" aria-label={t('businessSuggestions.suggestedListAria')}>
                 {displayedBusinesses.map(business => (
-                  <div key={business.id} role="listitem">
-                    {renderBusinessCard(business, false)}
-                  </div>
+                  <div key={business.id} role="listitem">{renderBusinessCard(business, false)}</div>
                 ))}
               </div>
               {hasMoreBusinesses && (
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-4 min-h-[44px] min-w-[44px]" 
-                  onClick={handleLoadMore} 
-                  aria-label="Ver más negocios" 
-                  title="Ver más negocios"
+                <Button
+                  variant="outline"
+                  className="w-full mt-4 min-h-[44px] min-w-[44px] text-sm sm:text-base touch-manipulation"
+                  onClick={handleLoadMore}
+                  aria-label={t('businessSuggestions.viewMore')}
+                  title={t('businessSuggestions.viewMore')}
                 >
                   {t('businessSuggestions.viewMore')}
                 </Button>

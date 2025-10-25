@@ -443,64 +443,118 @@ function ServiceCard({ service, onEdit, onDelete, language, t }: Readonly<Servic
     SERVICE_CATEGORIES.find(cat => cat.id === 'other')!
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-lg">{service.name}</CardTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <div className={`w-3 h-3 rounded-full ${categoryInfo.color}`} />
-              <Badge variant="outline">{categoryInfo.name}</Badge>
-              <Badge variant={service.is_active ? 'default' : 'secondary'}>
+    <Card 
+      className="h-full transition-all duration-200 hover:shadow-md focus-within:ring-2 focus-within:ring-primary/20"
+      role="article"
+      aria-labelledby={`service-${service.id}-title`}
+      aria-describedby={`service-${service.id}-description`}
+    >
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <CardTitle 
+              id={`service-${service.id}-title`}
+              className="text-base sm:text-lg font-semibold truncate"
+            >
+              {service.name}
+            </CardTitle>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <div 
+                className={`w-3 h-3 rounded-full ${categoryInfo.color}`}
+                aria-hidden="true"
+              />
+              <Badge 
+                variant="outline" 
+                className="text-xs"
+                aria-label={`Categoría: ${categoryInfo.name}`}
+              >
+                {categoryInfo.name}
+              </Badge>
+              <Badge 
+                variant={service.is_active ? 'default' : 'secondary'}
+                className="text-xs"
+                aria-label={`Estado: ${service.is_active ? 'Activo' : 'Inactivo'}`}
+              >
                 {service.is_active ? 'Activo' : 'Inactivo'}
               </Badge>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(service)}>
-              <Pencil size={14} />
+          <div className="flex items-center gap-1 shrink-0">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onEdit(service)}
+              className="h-8 w-8 p-0 hover:bg-primary/10 focus:ring-2 focus:ring-primary/20"
+              aria-label={`Editar servicio ${service.name}`}
+            >
+              <Pencil size={14} aria-hidden="true" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onDelete(service.id)}
-              className="text-destructive hover:text-destructive"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 focus:ring-2 focus:ring-destructive/20"
+              aria-label={`Eliminar servicio ${service.name}`}
             >
-              <Trash size={14} />
+              <Trash size={14} aria-hidden="true" />
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <div className="space-y-4">
           {service.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
+            <p 
+              id={`service-${service.id}-description`}
+              className="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
+            >
+              {service.description}
+            </p>
           )}
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
             <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock size={14} />
-              <span>{service.duration} minutos</span>
+              <Clock size={14} aria-hidden="true" />
+              <span aria-label={`Duración: ${service.duration} minutos`}>
+                {service.duration} minutos
+              </span>
             </div>
             <div className="flex items-center gap-1 font-semibold text-primary">
-              <CurrencyDollar size={14} />
-              <span>{formatCurrency(service.price, 'EUR', language)}</span>
+              <CurrencyDollar size={14} aria-hidden="true" />
+              <span aria-label={`Precio: ${formatCurrency(service.price, 'EUR', language)}`}>
+                {formatCurrency(service.price, 'EUR', language)}
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="list" aria-label="Características del servicio">
             {service.online_available && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge 
+                variant="secondary" 
+                className="text-xs"
+                role="listitem"
+                aria-label="Disponible online"
+              >
                 Online
               </Badge>
             )}
             {service.requires_preparation && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge 
+                variant="secondary" 
+                className="text-xs"
+                role="listitem"
+                aria-label="Requiere preparación previa"
+              >
                 Requiere preparación
               </Badge>
             )}
             {(service.max_participants ?? 1) > 1 && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge 
+                variant="secondary" 
+                className="text-xs"
+                role="listitem"
+                aria-label={`Servicio grupal para ${service.max_participants} personas`}
+              >
                 Grupal ({service.max_participants} personas)
               </Badge>
             )}

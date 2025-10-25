@@ -1598,7 +1598,7 @@ export const AppointmentsCalendar: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </section>
 
       {/* Calendar Grid */}
       <section 

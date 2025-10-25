@@ -477,14 +477,19 @@ export const SearchResults = React.memo(function SearchResults({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-label={t('search.resultsPage.searching')}>
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-12" role="status" aria-live="polite">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" aria-hidden="true" />
-            <p className="text-lg font-medium text-foreground">
+      <div 
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" 
+        role="dialog" 
+        aria-modal="true" 
+        aria-label={t('search.resultsPage.searching')}
+      >
+        <Card className="w-full max-w-md mx-auto">
+          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4" role="status" aria-live="polite">
+            <Loader2 className="h-8 w-8 sm:h-12 sm:w-12 animate-spin text-primary mb-3 sm:mb-4" aria-hidden="true" />
+            <p className="text-base sm:text-lg font-medium text-foreground text-center">
               {t('search.resultsPage.searching')}
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2 text-center">
               "{searchTerm}" {t('search.resultsPage.in')} {getTypeLabel(searchType)}s
             </p>
           </CardContent>
@@ -494,13 +499,18 @@ export const SearchResults = React.memo(function SearchResults({
   }
 
   return (
-    <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t('search.resultsPage.title')}>
-      <div className="min-h-screen py-4 sm:py-8 px-3 sm:px-4">
-        <div className="max-w-6xl mx-auto">
+    <div 
+      className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-y-auto touch-pan-y" 
+      role="dialog" 
+      aria-modal="true" 
+      aria-label={t('search.resultsPage.title')}
+    >
+      <div className="min-h-screen py-2 sm:py-4 lg:py-8 px-2 sm:px-4">
+        <div className="max-w-7xl mx-auto">
           {/* Header - Mobile Responsive */}
-          <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
+          <div className="flex items-start justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 lg:mb-6 sticky top-0 bg-background/95 backdrop-blur-sm py-2 sm:py-3 z-10">
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-1 sm:mb-2 truncate">
+              <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground mb-1 truncate">
                 {t('search.resultsPage.title')}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground">
@@ -510,35 +520,37 @@ export const SearchResults = React.memo(function SearchResults({
                     ? 'search.resultsPage.resultsFor'
                     : 'search.resultsPage.resultsForPlural'
                 )}{' '}
-                "
-                <span className="font-semibold text-foreground truncate inline-block max-w-[150px] sm:max-w-none align-bottom">
+                "<span className="font-semibold text-foreground truncate inline-block max-w-[120px] sm:max-w-[200px] lg:max-w-none align-bottom">
                   {searchTerm}
-                </span>
-                " {t('search.resultsPage.in')} {getTypeLabel(searchType)}s
+                </span>" {t('search.resultsPage.in')} {getTypeLabel(searchType)}s
               </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 min-w-[44px] min-h-[44px]"
+              className="h-9 w-9 sm:h-10 sm:w-10 lg:h-12 lg:w-12 flex-shrink-0 min-w-[44px] min-h-[44px] touch-manipulation"
               aria-label={t('common.actions.close')}
               title={t('common.actions.close')}
             >
-              <X className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" aria-hidden="true" />
             </Button>
           </div>
 
           {/* Toolbar - Mobile Optimized */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4 lg:mb-6">
             <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-full sm:w-[280px] min-h-[44px]" aria-label={t('common.placeholders.sortBy')} title={t('common.placeholders.sortBy')}>
+              <SelectTrigger 
+                className="w-full sm:w-[260px] lg:w-[280px] min-h-[44px] touch-manipulation" 
+                aria-label={t('common.placeholders.sortBy')} 
+                title={t('common.placeholders.sortBy')}
+              >
                 <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" aria-hidden="true" />
                 <SelectValue placeholder={t('common.placeholders.sortBy')} />
               </SelectTrigger>
-              <SelectContent className="max-w-[95vw]">
+              <SelectContent className="max-w-[95vw] z-50">
                 {sortOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={option.value} className="min-h-[44px] touch-manipulation">
                     {option.label}
                   </SelectItem>
                 ))}
@@ -548,41 +560,42 @@ export const SearchResults = React.memo(function SearchResults({
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto"
+              className="gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto touch-manipulation"
               aria-label={t('search.filters.filters')}
               title={t('search.filters.filters')}
               aria-pressed={showFilters}
+              aria-expanded={showFilters}
             >
               <SlidersHorizontal className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline">{t('search.filters.filters')}</span>
               <span className="sm:hidden">{t('search.filters.filter')}</span>
               {showFilters && (
-                <Badge variant="secondary" className="ml-2 text-[10px]">
+                <Badge variant="secondary" className="ml-1 sm:ml-2 text-[10px] px-1.5 py-0.5">
                   {t('search.filters.active')}
                 </Badge>
               )}
             </Button>
 
             {!userLocation && (
-              <div className="flex-1 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 p-2 sm:p-0">
+              <div className="flex-1 text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5 sm:gap-2 p-2 sm:p-0 rounded-md bg-muted/50 sm:bg-transparent">
                 <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('search.filters.enableLocation')}</span>
-                <span className="sm:hidden">{t('search.filters.enableLocationShort')}</span>
+                <span className="sm:hidden text-[11px]">{t('search.filters.enableLocationShort')}</span>
               </div>
             )}
           </div>
 
           {/* Results Grid - Mobile Responsive */}
           {sortedResults.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 sm:py-16 px-4 text-center" role="status" aria-live="polite">
+            <Card className="mx-auto max-w-md">
+              <CardContent className="py-8 sm:py-12 lg:py-16 px-4 text-center" role="status" aria-live="polite">
                 <div className="mb-3 sm:mb-4">
                   {React.createElement(getTypeIcon(searchType), {
-                    className: 'h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-50',
+                    className: 'h-10 w-10 sm:h-12 sm:w-12 lg:h-16 lg:w-16 mx-auto text-muted-foreground opacity-50',
                     'aria-hidden': true,
                   })}
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+                <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-foreground mb-2">
                   {t('search.resultsPage.noResultsTitle')}
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">
@@ -591,13 +604,17 @@ export const SearchResults = React.memo(function SearchResults({
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" role="list" aria-label={t('search.resultsPage.listLabel')}>
-              {sortedResults.map(result => {
+            <div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5" 
+              role="list" 
+              aria-label={t('search.resultsPage.listLabel')}
+            >
+              {sortedResults.map((result, index) => {
                 const TypeIcon = getTypeIcon(result.type)
                 return (
                   <Card
                     key={result.id}
-                    className="hover:shadow-lg transition-all cursor-pointer group"
+                    className="hover:shadow-lg focus-within:shadow-lg transition-all cursor-pointer group hover:scale-[1.02] focus-within:scale-[1.02] touch-manipulation"
                     onClick={() => onResultClick(result)}
                     role="button"
                     tabIndex={0}
@@ -609,38 +626,43 @@ export const SearchResults = React.memo(function SearchResults({
                     }}
                     aria-label={`${t('search.resultsPage.openResult')} ${result.name}`}
                     title={`${t('search.resultsPage.openResult')} ${result.name}`}
+                    aria-describedby={`result-${result.id}-description`}
                   >
-                    <CardContent className="p-3 sm:p-5">
+                    <CardContent className="p-3 sm:p-4 lg:p-5">
                       {/* Image or Icon - Mobile Optimized */}
                       {result.imageUrl ? (
-                        <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden mb-3 sm:mb-4 bg-muted">
+                        <div className="w-full h-28 sm:h-32 lg:h-40 rounded-lg overflow-hidden mb-3 sm:mb-4 bg-muted">
                           <img
                             src={result.imageUrl}
-                            alt={result.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            alt={`${result.name} - ${getTypeLabel(result.type)}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-32 sm:h-40 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-3 sm:mb-4">
-                          <TypeIcon className="h-12 w-12 sm:h-16 sm:w-16 text-primary/40" aria-hidden="true" />
+                        <div className="w-full h-28 sm:h-32 lg:h-40 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-3 sm:mb-4 group-hover:from-primary/20 group-hover:to-secondary/20 transition-colors">
+                          <TypeIcon className="h-10 w-10 sm:h-12 sm:w-12 lg:h-16 lg:w-16 text-primary/40 group-hover:text-primary/60 transition-colors" aria-hidden="true" />
                         </div>
                       )}
 
                       {/* Content - Mobile Compact */}
-                      <div className="space-y-2 sm:space-y-3">
+                      <div className="space-y-2 sm:space-y-2.5 lg:space-y-3">
                         {/* Type Badge */}
-                        <Badge variant="secondary" className="text-[10px] sm:text-xs">
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs font-medium">
                           {getTypeLabel(result.type)}
                         </Badge>
 
                         {/* Name */}
-                        <h3 className="font-bold text-base sm:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        <h3 className="font-bold text-sm sm:text-base lg:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                           {result.name}
                         </h3>
 
                         {/* Description */}
                         {result.description && (
-                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                          <p 
+                            id={`result-${result.id}-description`}
+                            className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed"
+                          >
                             {result.description}
                           </p>
                         )}
@@ -649,13 +671,13 @@ export const SearchResults = React.memo(function SearchResults({
                         {result.business && (
                           <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                             <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
-                            <span className="truncate">{result.business.name}</span>
+                            <span className="truncate" title={result.business.name}>{result.business.name}</span>
                           </div>
                         )}
 
                         {/* Rating */}
                         {result.rating !== undefined && (
-                          <div className="flex items-center gap-2" aria-label={t('search.resultsPage.ratingLabel')}>
+                          <div className="flex items-center gap-2" aria-label={`${t('search.resultsPage.ratingLabel')}: ${result.rating.toFixed(1)} de 5`}>
                             <div className="flex items-center gap-1">
                               <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" aria-hidden="true" />
                               <span className="font-semibold text-foreground text-sm sm:text-base">
@@ -687,21 +709,22 @@ export const SearchResults = React.memo(function SearchResults({
                         {/* Location */}
                         {result.location?.city && (
                           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
-                            <span aria-hidden="true">📍</span> {result.location.city}
+                            <span aria-hidden="true">📍</span> 
+                            <span className="truncate" title={result.location.city}>{result.location.city}</span>
                           </div>
                         )}
 
                         {/* Price (for services) */}
                         {result.price !== undefined && (
                           <div className="pt-2 border-t border-border">
-                            <span className="text-base sm:text-lg font-bold text-primary">
-                              $
-                              {result.price.toLocaleString('es-CO', {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                              })}{' '}
-                              {t('search.resultsPage.currency')}
-                            </span>
+                            <span className="text-sm sm:text-base lg:text-lg font-bold text-primary">
+                                  {t('common.currencySymbol')}
+                                  {result.price.toLocaleString('es-CO', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  })}{' '}
+                                  <span className="text-xs sm:text-sm font-normal">{t('search.resultsPage.currency')}</span>
+                                </span>
                           </div>
                         )}
 
@@ -709,7 +732,7 @@ export const SearchResults = React.memo(function SearchResults({
                         {result.category && (
                           <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
                             <Tag className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
-                            <span className="truncate">{result.category}</span>
+                            <span className="truncate" title={result.category}>{result.category}</span>
                           </div>
                         )}
                       </div>
@@ -717,6 +740,22 @@ export const SearchResults = React.memo(function SearchResults({
                   </Card>
                 )
               })}
+            </div>
+          )}
+
+          {/* Scroll to top button for mobile */}
+          {sortedResults.length > 6 && (
+            <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-10">
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-shadow touch-manipulation"
+                aria-label={t('common.actions.scrollToTop')}
+                title={t('common.actions.scrollToTop')}
+              >
+                <ArrowUpDown className="h-5 w-5 rotate-180" aria-hidden="true" />
+              </Button>
             </div>
           )}
         </div>

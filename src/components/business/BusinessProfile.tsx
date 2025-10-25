@@ -386,370 +386,288 @@ export default function BusinessProfile({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="business-profile-title">
-      <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card flex flex-col">
-        {/* Header con banner - Mobile Responsive */}
-        <div className="relative">
-          {business.banner_url ? (
-            <img
-              src={business.banner_url}
-              alt={business.name}
-              className="w-full h-32 sm:h-40 lg:h-48 object-cover"
-            />
-          ) : (
-            <div className="w-full h-32 sm:h-40 lg:h-48 bg-gradient-to-r from-primary/20 to-secondary/20" />
-          )}
-
-          {/* Botones en header - Touch Optimized */}
-          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2 flex-wrap">
-            {/* Botón favorito */}
-            {user && (
-              <button
-                onClick={handleToggleFavorite}
-                className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label={isFavorite(businessId) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                title={isFavorite(businessId) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                aria-pressed={isFavorite(businessId)}
-              >
-                <Heart
-                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
-                    isFavorite(businessId) ? 'fill-primary text-primary' : 'text-foreground'
-                  }`}
-                  aria-hidden="true"
-                />
-              </button>
-            )}
-
-            {/* Botón cerrar */}
-            <button
-              onClick={onClose}
-              className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Cerrar perfil"
-              title="Cerrar"
-            >
-              <X className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-            </button>
-          </div>
-
-          {/* Logo y info básica - Mobile Compact */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-6">
-            <div className="flex items-end gap-2 sm:gap-4">
-              {business.logo_url && (
-                <img
-                  src={business.logo_url}
-                  alt={business.name}
-                  className="w-14 h-14 sm:w-20 sm:h-20 rounded-lg border-2 sm:border-4 border-background object-cover bg-background"
-                />
-              )}
-              <div className="flex-1 text-white min-w-0">
-                <h2 id="business-profile-title" className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 truncate">
-                  {business.name}
-                </h2>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-                  {business.category && (
-                    <Badge
-                      variant="secondary"
-                      className="bg-background/80 text-foreground text-[10px] sm:text-xs"
-                    >
-                      {business.category.name}
-                    </Badge>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" aria-hidden="true" />
-                    <span className="font-medium">{business.rating.toFixed(1)}</span>
-                    <span className="text-white/70">({business.reviewCount})</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="business-profile-title">
+      <Card className="w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
+          <h2 id="business-profile-title" className="text-lg sm:text-xl font-semibold truncate pr-2">
+            {business?.name || 'Cargando...'}
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="min-h-[44px] min-w-[44px] shrink-0"
+            aria-label="Cerrar perfil del negocio"
+            title="Cerrar"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </Button>
         </div>
 
-        {/* Contenido con scroll - Mobile Optimized */}
-        <div className="flex-1 overflow-auto">
-          {/* Información de contacto - Responsive Grid */}
-          <div className="p-3 sm:p-6 border-b border-border">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
-              {business.phone && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
-                  <span className="truncate">{business.phone}</span>
-                </div>
-              )}
-              {business.email && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
-                  <span className="truncate">{business.email}</span>
-                </div>
-              )}
-              {business.website && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
-                  <a
-                    href={business.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-primary truncate"
-                  >
-                    Sitio web
-                  </a>
-                </div>
-              )}
-              {business.subcategories && business.subcategories.length > 0 && (
-                <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground col-span-full">
-                  <span className="text-[10px] sm:text-xs">Especialidades:</span>
-                  <span className="text-[10px] sm:text-xs line-clamp-1">
-                    {business.subcategories.map(s => s.name).join(', ')}
-                  </span>
-                </div>
-              )}
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center h-64" role="status" aria-label="Cargando información del negocio">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="sr-only">Cargando...</span>
             </div>
-          </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-64 text-center p-4" role="alert">
+              <div>
+                <p className="text-destructive mb-2">Error al cargar el negocio</p>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
+            </div>
+          ) : !business ? (
+            <div className="flex items-center justify-center h-64" role="status">
+              <p className="text-muted-foreground">Negocio no encontrado</p>
+            </div>
+          ) : (
+            <Tabs defaultValue="services" className="w-full" orientation="horizontal">
+              <TabsList className="grid w-full grid-cols-4 h-auto p-1 gap-1 bg-muted/50" role="tablist">
+                <TabsTrigger 
+                  value="services" 
+                  className="text-xs sm:text-sm py-2 px-1 sm:px-3 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  role="tab"
+                  id="services-tab"
+                  aria-controls="tabpanel-services"
+                >
+                  Servicios
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="locations" 
+                  className="text-xs sm:text-sm py-2 px-1 sm:px-3 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  role="tab"
+                  id="locations-tab"
+                  aria-controls="tabpanel-locations"
+                >
+                  Ubicaciones
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="reviews" 
+                  className="text-xs sm:text-sm py-2 px-1 sm:px-3 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  role="tab"
+                  id="reviews-tab"
+                  aria-controls="tabpanel-reviews"
+                >
+                  Reseñas
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="about" 
+                  className="text-xs sm:text-sm py-2 px-1 sm:px-3 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  role="tab"
+                  id="about-tab"
+                  aria-controls="tabpanel-about"
+                >
+                  Acerca de
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Tabs - Mobile Scrollable */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="px-3 sm:px-6">
-            <TabsList aria-label="Secciones del perfil" className="grid w-full grid-cols-4 h-auto" role="tablist">
-              <TabsTrigger value="services" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Servicios" title="Servicios" role="tab" aria-selected={activeTab === 'services'} aria-controls="tabpanel-services">
-                <span className="hidden sm:inline">Servicios</span>
-                <span className="sm:hidden">Servs.</span>
-              </TabsTrigger>
-              <TabsTrigger value="locations" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Ubicaciones" title="Ubicaciones" role="tab" aria-selected={activeTab === 'locations'} aria-controls="tabpanel-locations">
-                <span className="hidden sm:inline">Ubicaciones</span>
-                <span className="sm:hidden">Ubic.</span>
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Reseñas" title="Reseñas" role="tab" aria-selected={activeTab === 'reviews'} aria-controls="tabpanel-reviews">
-                <span className="hidden sm:inline">Reseñas</span>
-                <span className="sm:hidden">Reviews</span>
-              </TabsTrigger>
-              <TabsTrigger value="about" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Acerca de" title="Acerca de" role="tab" aria-selected={activeTab === 'about'} aria-controls="tabpanel-about">
-                <span className="hidden sm:inline">Acerca de</span>
-                <span className="sm:hidden">Info</span>
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Tab: Servicios - Mobile Optimized */}
-            <TabsContent value="services" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6" role="tabpanel" id="tabpanel-services" aria-labelledby="services-tab">
-              {business.services.length === 0 ? (
-                <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm">
-                  No hay servicios disponibles
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {business.services.map(service => (
+              {/* Tab: Servicios */}
+              <TabsContent value="services" className="space-y-4 mt-4 sm:mt-6 px-3 sm:px-4" role="tabpanel" id="tabpanel-services" aria-labelledby="services-tab">
+                <div className="grid gap-3 sm:gap-4">
+                  {business.services.map((service) => (
                     <Card key={service.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between gap-2 sm:gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-base sm:text-lg mb-1 truncate">
-                            {service.name}
-                          </h3>
+                          <h3 className="font-medium text-sm sm:text-base truncate">{service.name}</h3>
                           {service.description && (
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
                               {service.description}
                             </p>
                           )}
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" aria-hidden="true" />
-                              <span>{formatDuration(service.duration)}</span>
-                            </div>
-                            {service.employee && (
-                              <div className="flex items-center gap-2">
-                                {service.employee.avatar_url ? (
-                                  <img
-                                    src={service.employee.avatar_url}
-                                    alt={service.employee.name}
-                                    className="w-5 h-5 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="text-xs">{service.employee.name[0]}</span>
-                                  </div>
-                                )}
-                                <span>{service.employee.name}</span>
-                              </div>
-                            )}
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+                              {service.duration} min
+                            </span>
+                            <span className="flex items-center gap-1 font-medium text-foreground">
+                              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+                              ${service.price}
+                            </span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-primary mb-2">
-                            {formatCurrency(service.price, 'MXN')}
-                          </p>
-                          <Button onClick={() => onBookAppointment?.(service.id)} size="sm" className="min-h-[44px] min-w-[44px]" aria-label="Agendar servicio" title="Agendar servicio">
-                            <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Agendar
-                          </Button>
-                        </div>
+                        <Button
+                          onClick={() => onBookAppointment?.(service.id)}
+                          size="sm"
+                          className="min-h-[44px] w-full sm:w-auto sm:min-w-[100px] shrink-0"
+                          aria-label={`Agendar ${service.name}`}
+                          title={`Agendar ${service.name}`}
+                        >
+                          <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
+                          <span className="hidden sm:inline">Agendar</span>
+                          <span className="sm:hidden">Agendar</span>
+                        </Button>
                       </div>
                     </Card>
                   ))}
                 </div>
-              )}
-            </TabsContent>
+              </TabsContent>
 
-            {/* Tab: Ubicaciones */}
-            <TabsContent value="locations" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-locations" aria-labelledby="locations-tab">
-              {business.locations.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No hay ubicaciones registradas
-                </p>
-              ) : (
-                <div className="grid gap-4">
-                  {business.locations.map(location => {
-                    const distance =
-                      location.latitude && location.longitude
-                        ? calculateDistance(location.latitude, location.longitude)
+              {/* Tab: Ubicaciones */}
+              <TabsContent value="locations" className="space-y-4 mt-4 sm:mt-6 px-3 sm:px-4" role="tabpanel" id="tabpanel-locations" aria-labelledby="locations-tab">
+                {business.locations.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" aria-hidden="true" />
+                    <p>No hay ubicaciones disponibles</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:gap-4">
+                    {business.locations.map((location) => {
+                      const distance = userLocation && location.latitude && location.longitude
+                        ? calculateDistance(
+                            userLocation.latitude,
+                            userLocation.longitude,
+                            location.latitude,
+                            location.longitude
+                          )
                         : null
 
-                    return (
-                      <Card key={location.id} className="p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-2">{location.name}</h3>
-                            <div className="space-y-2 text-sm text-muted-foreground">
-                              <div className="flex items-start gap-2">
-                                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                                <span>
-                                  {location.address}, {location.city}, {location.state}{' '}
-                                  {location.postal_code}
-                                </span>
+                      return (
+                        <Card key={location.id} className="p-3 sm:p-4">
+                          <div className="space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-sm sm:text-base">{location.name}</h3>
+                                <div className="flex items-start gap-2 mt-1">
+                                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
+                                  <p className="text-xs sm:text-sm text-muted-foreground">
+                                    {location.address}
+                                  </p>
+                                </div>
+                                {distance && (
+                                  <p className="text-xs sm:text-sm text-primary mt-1 font-medium">
+                                    A {distance.toFixed(1)} km de tu ubicación
+                                  </p>
+                                )}
                               </div>
-                              {location.phone && (
-                                <div className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4" aria-hidden="true" />
-                                  <span>{location.phone}</span>
-                                </div>
-                              )}
-                              {location.hours && (
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4" aria-hidden="true" />
-                                  <span>{formatHours(location.hours)}</span>
-                                </div>
-                              )}
-                              {distance !== null && (
-                                <div className="flex items-center gap-2 text-primary font-medium">
-                                  <MapPin className="h-4 w-4" aria-hidden="true" />
-                                  <span>{distance.toFixed(1)} km de tu ubicación</span>
-                                </div>
-                              )}
+                              <Button
+                                onClick={() => onBookAppointment?.(undefined, location.id)}
+                                size="sm"
+                                className="min-h-[44px] w-full sm:w-auto sm:min-w-[120px] shrink-0"
+                                aria-label="Agendar en esta ubicación"
+                                title="Agendar en esta ubicación"
+                              >
+                                <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
+                                Agendar aquí
+                              </Button>
                             </div>
+                            {location.latitude && location.longitude && (
+                              <div className="pt-2 border-t border-border">
+                                <a
+                                  href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs sm:text-sm text-primary hover:underline flex items-center gap-1 w-fit"
+                                  aria-label="Ver ubicación en Google Maps"
+                                >
+                                  Ver en Google Maps
+                                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+                                </a>
+                              </div>
+                            )}
                           </div>
-                          <Button
-                            onClick={() => onBookAppointment?.(undefined, location.id)}
-                            size="sm"
-                            className="min-h-[44px] min-w-[44px]"
-                            aria-label="Agendar en esta ubicación"
-                            title="Agendar en esta ubicación"
-                          >
-                            <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
-                            Agendar aquí
-                          </Button>
-                        </div>
-                        {location.latitude && location.longitude && (
-                          <div className="mt-4">
-                            <a
-                              href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:underline flex items-center gap-1"
-                            >
-                              Ver en Google Maps
-                              <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                            </a>
-                          </div>
-                        )}
-                      </Card>
-                    )
-                  })}
-                </div>
-              )}
-            </TabsContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
+              </TabsContent>
 
-            {/* Tab: Reseñas */}
-            <TabsContent value="reviews" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-reviews" aria-labelledby="reviews-tab">
-              {/* Formulario de nueva reseña */}
-              {canReview && showReviewForm && eligibleAppointmentId && (
-                <div className="mb-6">
-                  <ReviewForm
-                    appointmentId={eligibleAppointmentId}
-                    businessId={businessId}
-                    onSubmit={handleSubmitReview}
-                    onCancel={() => setShowReviewForm(false)}
-                  />
-                </div>
-              )}
+              {/* Tab: Reseñas */}
+              <TabsContent value="reviews" className="space-y-4 mt-4 sm:mt-6 px-3 sm:px-4" role="tabpanel" id="tabpanel-reviews" aria-labelledby="reviews-tab">
+                {/* Formulario de nueva reseña */}
+                {canReview && showReviewForm && eligibleAppointmentId && (
+                  <div className="mb-6">
+                    <ReviewForm
+                      appointmentId={eligibleAppointmentId}
+                      businessId={businessId}
+                      onSubmit={handleSubmitReview}
+                      onCancel={() => setShowReviewForm(false)}
+                    />
+                  </div>
+                )}
 
-              {/* Botón para mostrar formulario */}
-              {canReview && !showReviewForm && (
-                <div className="mb-6">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowReviewForm(true)}
-                    className="min-h-[44px] min-w-[44px]"
-                    aria-label="Abrir formulario de reseña"
-                    title="Dejar reseña"
-                  >
-                    Dejar reseña
-                  </Button>
-                </div>
-              )}
+                {/* Botón para mostrar formulario */}
+                {canReview && !showReviewForm && (
+                  <div className="mb-6">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowReviewForm(true)}
+                      className="min-h-[44px] w-full sm:w-auto"
+                      aria-label="Abrir formulario de reseña"
+                      title="Dejar reseña"
+                    >
+                      Dejar reseña
+                    </Button>
+                  </div>
+                )}
 
-              {/* Lista de reseñas */}
-              <ReviewList businessId={businessId} />
-            </TabsContent>
+                {/* Lista de reseñas */}
+                <ReviewList businessId={businessId} />
+              </TabsContent>
 
-            {/* Tab: Acerca de */}
-            <TabsContent value="about" className="mt-6" role="tabpanel" id="tabpanel-about" aria-labelledby="about-tab">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Descripción</h3>
-                  <p className="text-muted-foreground">
-                    {business.description || 'Sin descripción disponible'}
-                  </p>
-                </div>
+              {/* Tab: Acerca de */}
+              <TabsContent value="about" className="mt-4 sm:mt-6 px-3 sm:px-4" role="tabpanel" id="tabpanel-about" aria-labelledby="about-tab">
+                <div className="space-y-4 sm:space-y-6">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold mb-2">Descripción</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                      {business.description || 'Sin descripción disponible'}
+                    </p>
+                  </div>
 
-                <Separator />
+                  <Separator />
 
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">Información general</h3>
-                  <div className="grid gap-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Categoría</span>
-                      <span className="font-medium">
-                        {business.category?.name || 'No especificada'}
-                      </span>
-                    </div>
-                    {business.subcategories && business.subcategories.length > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Especialidades</span>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold mb-4">Información general</h3>
+                    <div className="grid gap-3 text-sm">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                        <span className="text-muted-foreground">Categoría</span>
                         <span className="font-medium">
-                          {business.subcategories.map(s => s.name).join(', ')}
+                          {business.category?.name || 'No especificada'}
                         </span>
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Servicios disponibles</span>
-                      <span className="font-medium">{business.services.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Ubicaciones</span>
-                      <span className="font-medium">{business.locations.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Calificación promedio</span>
-                      <span className="font-medium">{business.rating.toFixed(1)} ⭐</span>
+                      {business.subcategories && business.subcategories.length > 0 && (
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                          <span className="text-muted-foreground">Especialidades</span>
+                          <span className="font-medium text-right">
+                            {business.subcategories.map(s => s.name).join(', ')}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                        <span className="text-muted-foreground">Servicios disponibles</span>
+                        <span className="font-medium">{business.services.length}</span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                        <span className="text-muted-foreground">Ubicaciones</span>
+                        <span className="font-medium">{business.locations.length}</span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                        <span className="text-muted-foreground">Calificación promedio</span>
+                        <span className="font-medium">{business.rating.toFixed(1)} ⭐</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
 
         {/* Footer sticky con botones principales */}
-        <div className="border-t border-border p-4 bg-background space-y-3">
-          <Button onClick={() => onBookAppointment?.()} className="w-full min-h-[44px]" size="lg" aria-label="Agendar cita" title="Agendar cita">
-            <Calendar className="h-5 w-5 mr-2" aria-hidden="true" />
+        <div className="border-t border-border p-3 sm:p-4 bg-background space-y-3">
+          <Button 
+            onClick={() => onBookAppointment?.()} 
+            className="w-full min-h-[44px] text-sm sm:text-base" 
+            size="lg" 
+            aria-label="Agendar cita" 
+            title="Agendar cita"
+          >
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2" aria-hidden="true" />
             Agendar Cita
           </Button>
 
@@ -759,13 +677,13 @@ export default function BusinessProfile({
             </p>
             <Button
               onClick={() => setShowChatModal(true)}
-              className="w-full min-h-[44px]"
+              className="w-full min-h-[44px] text-sm sm:text-base"
               size="lg"
               variant="outline"
               aria-label="Iniciar chat"
               title="Iniciar chat"
             >
-              <MessageCircle className="h-5 w-5 mr-2" aria-hidden="true" />
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" aria-hidden="true" />
               Iniciar Chat
             </Button>
           </div>

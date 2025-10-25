@@ -307,6 +307,12 @@ export const translations = {
         from: 'from',
         until: 'until',
       },
+      // Short label strings used in multiple places
+      labels: {
+        location: 'Location',
+      },
+      // Currency symbol used in compact price displays
+      currencySymbol: '$',
     },
     // Landing Page
     landing: {
@@ -501,6 +507,12 @@ export const translations = {
         copyright: '© 2025 Gestabiz. All rights reserved.',
         madeIn: 'Made with ❤️ in Colombia 🇨🇴',
       },
+      // Short label strings used in multiple places
+      labels: {
+        location: 'Ubicación',
+      },
+      // Currency symbol used in compact price displays
+      currencySymbol: '$',
     },
 
     // Validations
@@ -2099,6 +2111,14 @@ export const translations = {
             week: 'Week',
             month: 'Month',
           },
+          accessible: {
+            calendarView: 'Calendar view of appointments',
+            listView: 'Appointments list view',
+          },
+          upcomingListLabel: 'Upcoming appointments list',
+          suggestions: {
+            title: 'Business suggestions',
+          },
           currency: 'COP',
         },
 
@@ -3033,6 +3053,10 @@ export const translations = {
         title: 'Popular Businesses',
         noSuggestions: 'No suggestions available',
         loading: 'Loading suggestions...',
+        loadingAria: 'Loading business suggestions',
+        loadingScreen: 'Loading business suggestions...',
+        favoriteListAria: 'Favorite business',
+        suggestedListAria: 'Suggested businesses',
         openBusiness: 'Open business {{name}}',
         favoriteBadge: 'Your favorite',
         bookAgain: 'Book again',
@@ -3086,10 +3110,16 @@ export const translations = {
             '1001-2000': '$1,001 - $2,000',
             '2001plus': '$2,001+',
           },
+          results: {
+            showing: 'Showing {visible} of {total} appointments ({totalAll} total)',
+          },
+          appointmentsListLabel: 'Appointments list',
           pagination: {
             previous: 'Previous',
             next: 'Next',
             pageInfo: 'Page {current} of {total}',
+            ariaLabel: 'Pagination',
+            goToPage: 'Go to page {page}',
           },
         },
 
@@ -5908,6 +5938,14 @@ export const translations = {
         week: 'Semana',
         month: 'Mes',
       },
+      accessible: {
+        calendarView: 'Vista de calendario de citas',
+        listView: 'Vista de lista de citas',
+      },
+      upcomingListLabel: 'Lista de citas próximas',
+      suggestions: {
+        title: 'Sugerencias de negocios',
+      },
       durationShort: 'Duración: {{minutes}} min',
       chatStarting: 'Iniciando chat...',
       reschedule: 'Reprogramar',
@@ -6113,6 +6151,10 @@ export const translations = {
       title: 'Negocios Populares',
       noSuggestions: 'Sin sugerencias disponibles',
       loading: 'Cargando sugerencias...',
+        loadingAria: 'Cargando sugerencias de negocios',
+        loadingScreen: 'Cargando sugerencias de negocios...',
+        favoriteListAria: 'Negocio favorito',
+        suggestedListAria: 'Negocios sugeridos',
       openBusiness: 'Abrir negocio {{name}}',
       favoriteBadge: 'Tu favorito',
       bookAgain: 'Reservar de nuevo',
@@ -6166,10 +6208,16 @@ export const translations = {
         '1001-2000': '$1,001 - $2,000',
         '2001plus': '$2,001+',
       },
+      results: {
+        showing: 'Mostrando {visible} de {total} citas ({totalAll} total)',
+      },
+      appointmentsListLabel: 'Lista de citas',
       pagination: {
         previous: 'Anterior',
         next: 'Siguiente',
         pageInfo: 'Página {current} de {total}',
+        ariaLabel: 'Paginación',
+        goToPage: 'Ir a la página {page}',
       },
     },
 

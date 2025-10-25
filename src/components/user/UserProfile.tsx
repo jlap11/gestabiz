@@ -341,8 +341,8 @@ export default function UserProfile({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Cargando perfil del profesional">
         <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-auto bg-card">
-          <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" role="status" aria-live="polite"></div>
+          <div className="flex items-center justify-center p-8 sm:p-12">
+            <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary" role="status" aria-live="polite"></div>
           </div>
         </Card>
       </div>
@@ -353,9 +353,9 @@ export default function UserProfile({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Error al cargar perfil">
         <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-auto bg-card">
-          <div className="p-8 text-center">
-            <p className="text-muted-foreground" role="alert">{t('userProfile.errors.loadError')}</p>
-            <Button onClick={onClose} className="mt-4 min-h-[44px] min-w-[44px]" aria-label="Cerrar modal" title="Cerrar">
+          <div className="p-6 sm:p-8 text-center">
+            <p className="text-muted-foreground mb-4" role="alert">{t('userProfile.errors.loadError')}</p>
+            <Button onClick={onClose} className="min-h-[44px] min-w-[44px]" aria-label="Cerrar modal" title="Cerrar">
               {t('userProfile.actions.close')}
             </Button>
           </div>
@@ -368,11 +368,11 @@ export default function UserProfile({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="user-profile-title">
       <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card flex flex-col">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-primary/20 to-secondary/20 p-8">
+        <div className="relative bg-gradient-to-r from-primary/20 to-secondary/20 p-4 sm:p-6 lg:p-8">
           {/* Botón cerrar */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors z-10 min-h-[44px] min-w-[44px]"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors z-10 min-h-[44px] min-w-[44px] touch-manipulation"
             aria-label="Cerrar perfil del profesional"
             title="Cerrar perfil del profesional"
           >
@@ -380,40 +380,40 @@ export default function UserProfile({
           </button>
 
           {/* Profile Info */}
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
             {/* Avatar */}
             {userData.avatar_url ? (
               <img
                 src={userData.avatar_url}
                 alt={userData.full_name}
-                className="w-24 h-24 rounded-full border-4 border-background object-cover"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-background object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-background flex items-center justify-center">
-                <span className="text-4xl font-bold text-primary">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 border-4 border-background flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl sm:text-4xl font-bold text-primary">
                   {userData.full_name[0]?.toUpperCase()}
                 </span>
               </div>
             )}
 
             {/* Name and Stats */}
-            <div className="flex-1">
-              <h2 id="user-profile-title" className="text-3xl font-bold text-foreground mb-2">{userData.full_name}</h2>
+            <div className="flex-1 text-center sm:text-left">
+              <h2 id="user-profile-title" className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{userData.full_name}</h2>
 
-              <div className="flex items-center gap-4 mb-3">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mb-3">
                 <div className="flex items-center gap-1">
-                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold text-foreground">
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold text-foreground text-sm sm:text-base">
                     {userData.rating.toFixed(1)}
                   </span>
-                  <span className="text-muted-foreground text-sm">({userData.reviewCount})</span>
+                  <span className="text-muted-foreground text-xs sm:text-sm">({userData.reviewCount})</span>
                 </div>
-                <Badge variant="secondary" className="flex items-center gap-1">
+                <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <Award className="h-3 w-3" />
                   {userData.totalAppointments} {t('userProfile.header.completedAppointments')}
                 </Badge>
                 {isEmployeeOfAnyBusiness && (
-                  <Badge variant="outline" className="flex items-center gap-1">
+                  <Badge variant="outline" className="flex items-center gap-1 text-xs">
                     <Briefcase className="h-3 w-3" />
                     {t('userProfile.header.verifiedProfessional')}
                   </Badge>
@@ -421,7 +421,7 @@ export default function UserProfile({
               </div>
 
               {userData.bio && (
-                <p className="text-sm text-muted-foreground line-clamp-2">{userData.bio}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2 max-w-md mx-auto sm:mx-0">{userData.bio}</p>
               )}
             </div>
           </div>
@@ -430,40 +430,64 @@ export default function UserProfile({
         {/* Contenido con scroll */}
         <div className="flex-1 overflow-auto">
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="px-6">
-            <TabsList className="grid w-full grid-cols-3" role="tablist" aria-label="Secciones del perfil del profesional">
-              <TabsTrigger value="services" role="tab" aria-selected={activeTab === 'services'} aria-controls="tabpanel-services">{t('userProfile.tabs.services')}</TabsTrigger>
-              <TabsTrigger value="experience" role="tab" aria-selected={activeTab === 'experience'} aria-controls="tabpanel-experience">{t('userProfile.tabs.experience')}</TabsTrigger>
-              <TabsTrigger value="reviews" role="tab" aria-selected={activeTab === 'reviews'} aria-controls="tabpanel-reviews">{t('userProfile.tabs.reviews')}</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4 sm:px-6">
+            <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6" role="tablist" aria-label="Secciones del perfil del profesional">
+              <TabsTrigger 
+                value="services" 
+                role="tab" 
+                aria-selected={activeTab === 'services'} 
+                aria-controls="tabpanel-services"
+                className="text-xs sm:text-sm min-h-[44px] touch-manipulation"
+              >
+                {t('userProfile.tabs.services')}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="experience" 
+                role="tab" 
+                aria-selected={activeTab === 'experience'} 
+                aria-controls="tabpanel-experience"
+                className="text-xs sm:text-sm min-h-[44px] touch-manipulation"
+              >
+                {t('userProfile.tabs.experience')}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reviews" 
+                role="tab" 
+                aria-selected={activeTab === 'reviews'} 
+                aria-controls="tabpanel-reviews"
+                className="text-xs sm:text-sm min-h-[44px] touch-manipulation"
+              >
+                {t('userProfile.tabs.reviews')}
+              </TabsTrigger>
             </TabsList>
 
             {/* Tab: Servicios */}
-            <TabsContent value="services" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-services" aria-labelledby="services-tab">
+            <TabsContent value="services" className="space-y-4" role="tabpanel" id="tabpanel-services" aria-labelledby="services-tab">
               {userData.services.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
                   {t('userProfile.services.noServices')}
                 </p>
               ) : (
                 <div className="grid gap-4" role="list" aria-label="Lista de servicios">
                   {userData.services.map(service => (
                     <Card key={service.id} className="p-4 hover:shadow-md transition-shadow" role="listitem">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-lg">{service.name}</h3>
+                      <div className="flex flex-col sm:flex-row items-start gap-4">
+                        <div className="flex-1 w-full">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                            <h3 className="font-semibold text-base sm:text-lg">{service.name}</h3>
                             {service.business && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs w-fit">
                                 <Building2 className="h-3 w-3 mr-1" aria-hidden="true" />
                                 {service.business.name}
                               </Badge>
                             )}
                           </div>
                           {service.description && (
-                            <p className="text-sm text-muted-foreground mb-2">
+                            <p className="text-sm text-muted-foreground mb-3">
                               {service.description}
                             </p>
                           )}
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" aria-hidden="true" />
                               <span>{formatDuration(service.duration)}</span>
@@ -475,14 +499,14 @@ export default function UserProfile({
                             )}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-primary mb-2">
+                        <div className="w-full sm:w-auto text-center sm:text-right">
+                          <p className="text-xl sm:text-2xl font-bold text-primary mb-2">
                             {formatCurrency(service.price, 'MXN')}
                           </p>
                           <Button
                             onClick={() => onBookAppointment?.(service.id, service.business_id)}
                             size="sm"
-                            className="min-h-[44px] min-w-[44px]"
+                            className="min-h-[44px] w-full sm:w-auto touch-manipulation"
                             aria-label={`Agendar cita para ${service.name}`}
                             title={`Agendar cita para ${service.name}`}
                           >
@@ -498,14 +522,14 @@ export default function UserProfile({
             </TabsContent>
 
             {/* Tab: Experiencia */}
-            <TabsContent value="experience" className="space-y-6 mt-6" role="tabpanel" id="tabpanel-experience" aria-labelledby="experience-tab">
+            <TabsContent value="experience" className="space-y-6" role="tabpanel" id="tabpanel-experience" aria-labelledby="experience-tab">
               {/* Businesses */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">
                   {t('userProfile.experience.businessesTitle')}
                 </h3>
                 {userData.businesses.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
+                  <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
                     {t('userProfile.experience.independentProfessional')}
                   </p>
                 ) : (
@@ -517,20 +541,22 @@ export default function UserProfile({
                             <img
                               src={business.logo_url}
                               alt={business.name}
-                              className="w-12 h-12 rounded-lg object-cover"
+                              className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <Building2 className="h-6 w-6 text-primary" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                             </div>
                           )}
-                          <div className="flex-1">
-                            <h4 className="font-semibold">{business.name}</h4>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-sm sm:text-base truncate">{business.name}</h4>
                             {(business.address || business.city) && (
-                              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {business.city}
-                                {business.state && `, ${business.state}`}
+                              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                                <MapPin className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">
+                                  {business.city}
+                                  {business.state && `, ${business.state}`}
+                                </span>
                               </p>
                             )}
                           </div>
@@ -546,36 +572,36 @@ export default function UserProfile({
               {/* Bio */}
               {userData.bio && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">
                     {t('userProfile.experience.aboutMe')}
                   </h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{userData.bio}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-wrap">{userData.bio}</p>
                 </div>
               )}
 
               {/* Stats */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">
                   {t('userProfile.experience.statistics')}
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <Card className="p-4 text-center">
-                    <Award className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <p className="text-2xl font-bold">{userData.totalAppointments}</p>
+                    <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-primary" />
+                    <p className="text-xl sm:text-2xl font-bold">{userData.totalAppointments}</p>
                     <p className="text-xs text-muted-foreground">
                       {t('userProfile.experience.stats.completedAppointments')}
                     </p>
                   </Card>
                   <Card className="p-4 text-center">
-                    <Star className="h-8 w-8 mx-auto mb-2 text-yellow-400 fill-yellow-400" />
-                    <p className="text-2xl font-bold">{userData.rating.toFixed(1)}</p>
+                    <Star className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-yellow-400 fill-yellow-400" />
+                    <p className="text-xl sm:text-2xl font-bold">{userData.rating.toFixed(1)}</p>
                     <p className="text-xs text-muted-foreground">
                       {t('userProfile.experience.stats.rating')}
                     </p>
                   </Card>
-                  <Card className="p-4 text-center">
-                    <Briefcase className="h-8 w-8 mx-auto mb-2 text-primary" />
-                    <p className="text-2xl font-bold">{userData.services.length}</p>
+                  <Card className="p-4 text-center sm:col-span-2 lg:col-span-1">
+                    <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-primary" />
+                    <p className="text-xl sm:text-2xl font-bold">{userData.services.length}</p>
                     <p className="text-xs text-muted-foreground">
                       {t('userProfile.experience.stats.services')}
                     </p>
@@ -585,7 +611,7 @@ export default function UserProfile({
             </TabsContent>
 
             {/* Tab: Reseñas */}
-            <TabsContent value="reviews" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-reviews" aria-labelledby="reviews-tab">
+            <TabsContent value="reviews" className="space-y-4" role="tabpanel" id="tabpanel-reviews" aria-labelledby="reviews-tab">
               {/* Formulario de nueva reseña */}
               {canReview && showReviewForm && eligibleAppointmentId && selectedBusinessId && (
                 <div className="mb-6">
@@ -606,7 +632,7 @@ export default function UserProfile({
                     variant="outline" 
                     size="sm" 
                     onClick={() => setShowReviewForm(true)}
-                    className="min-h-[44px] min-w-[44px]"
+                    className="min-h-[44px] w-full sm:w-auto touch-manipulation"
                     aria-label="Escribir una reseña"
                     title="Escribir una reseña"
                   >
@@ -628,7 +654,7 @@ export default function UserProfile({
         <div className="border-t border-border p-4 bg-background">
           <Button
             onClick={() => onBookAppointment?.()}
-            className="w-full min-h-[44px]"
+            className="w-full min-h-[44px] touch-manipulation"
             size="lg"
             disabled={!isEmployeeOfAnyBusiness}
             aria-label={isEmployeeOfAnyBusiness 
@@ -641,9 +667,11 @@ export default function UserProfile({
             }
           >
             <Calendar className="h-5 w-5 mr-2" aria-hidden="true" />
-            {isEmployeeOfAnyBusiness
-              ? t('userProfile.footer.scheduleWith', { name: userData.full_name })
-              : t('userProfile.footer.notAvailable')}
+            <span className="text-sm sm:text-base">
+              {isEmployeeOfAnyBusiness
+                ? t('userProfile.footer.scheduleWith', { name: userData.full_name })
+                : t('userProfile.footer.notAvailable')}
+            </span>
           </Button>
           {!isEmployeeOfAnyBusiness && (
             <p className="text-xs text-center text-muted-foreground mt-2">
