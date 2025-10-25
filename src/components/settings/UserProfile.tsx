@@ -238,30 +238,46 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
   }
 
   return (
-    <div className="space-y-6">
+    <main 
+      role="main" 
+      aria-labelledby="user-profile-title"
+      className="space-y-6 max-w-[95vw] mx-auto"
+    >
       {/* Header Card con Avatar */}
-      <div className="bg-card border border-border rounded-lg shadow-sm p-6 flex flex-col md:flex-row items-start md:items-center gap-6">
+      <section 
+        role="region" 
+        aria-labelledby="profile-header-title"
+        className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6"
+      >
+        <h2 id="profile-header-title" className="sr-only">Información del perfil de usuario</h2>
+        
         {/* Avatar con botón de upload */}
-        <div className="relative flex flex-col items-center">
+        <div className="relative flex flex-col items-center w-full md:w-auto">
           <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 p-1">
-            <Avatar key={formData.avatar_url} className="h-24 w-24 border-2 border-primary/20">
-              <AvatarImage src={formData.avatar_url} alt={formData.name} />
-              <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">
+            <Avatar key={formData.avatar_url} className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-primary/20">
+              <AvatarImage 
+                src={formData.avatar_url} 
+                alt={`Foto de perfil de ${formData.name}`}
+                loading="lazy"
+              />
+              <AvatarFallback className="text-xl sm:text-2xl font-semibold bg-primary/10 text-primary">
                 {getInitials(formData.name)}
               </AvatarFallback>
             </Avatar>
           </div>
           <label
-            className={`absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-2 shadow-md transition-all border-2 border-background ${
+            className={`absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-2 shadow-md transition-all border-2 border-background min-h-[44px] min-w-[44px] flex items-center justify-center ${
               isUploadingAvatar
                 ? 'opacity-50 cursor-not-allowed'
-                : 'cursor-pointer hover:bg-primary/90 hover:scale-105'
+                : 'cursor-pointer hover:bg-primary/90 hover:scale-105 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2'
             }`}
+            aria-label="Cambiar foto de perfil"
+            title="Cambiar foto de perfil"
           >
             {isUploadingAvatar ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              <Upload className="h-4 w-4" />
+              <Upload className="h-4 w-4" aria-hidden="true" />
             )}
             <input
               type="file"
@@ -269,36 +285,48 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
               onChange={handleAvatarUpload}
               disabled={isUploadingAvatar}
               className="hidden"
+              aria-describedby="avatar-upload-help"
             />
           </label>
+          <div id="avatar-upload-help" className="sr-only">
+            Selecciona una imagen para cambiar tu foto de perfil. Formatos soportados: PNG, JPEG, JPG, WebP
+          </div>
         </div>
 
         {/* Info del Usuario */}
         <div className="flex-1 w-full space-y-2">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <div>
-              <h3 className="text-2xl font-bold text-foreground">{user.name}</h3>
-              <p className="text-sm text-muted-foreground font-medium mt-1">@{formData.username}</p>
+            <div className="min-w-0 flex-1">
+              <h3 id="user-profile-title" className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                {user.name}
+              </h3>
+              <p className="text-sm text-muted-foreground font-medium mt-1 truncate">
+                @{formData.username}
+              </p>
             </div>
             <div className="text-left md:text-right">
               <span className="inline-flex items-center gap-1.5 text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-full border border-border">
-                <span>�</span>
+                <span aria-hidden="true">📅</span>
                 <span className="font-medium">{t('profile.joined_on')}:</span>
                 <span>{formatDate(user.created_at)}</span>
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Formulario de Edición */}
-      <div className="bg-card border border-border rounded-lg shadow-sm p-6">
-        <div className="space-y-6">
-          <h4 className="text-lg font-semibold text-foreground pb-2 border-b border-border">
+      <section 
+        role="region" 
+        aria-labelledby="profile-form-title"
+        className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6"
+      >
+        <form onSubmit={(e) => { e.preventDefault(); handleSaveProfile(); }} className="space-y-6">
+          <h4 id="profile-form-title" className="text-lg font-semibold text-foreground pb-2 border-b border-border">
             Información Personal
           </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
                 Nombre Completo
@@ -307,9 +335,14 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 id="name"
                 value={formData.name}
                 onChange={e => handleInputChange('name', e.target.value)}
-                className="w-full"
+                className="w-full min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 placeholder={t('common.placeholders.clientName')}
+                aria-describedby="name-help"
+                required
               />
+              <div id="name-help" className="sr-only">
+                Ingresa tu nombre completo como quieres que aparezca en tu perfil
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -317,21 +350,29 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 Nombre de Usuario
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <span 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                >
                   @
                 </span>
                 <Input
                   id="username"
                   value={formData.username}
                   onChange={e => handleInputChange('username', e.target.value)}
-                  className="w-full pl-8"
+                  className="w-full pl-8 min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   placeholder="usuario123"
+                  aria-describedby="username-help"
+                  required
                 />
+              </div>
+              <div id="username-help" className="sr-only">
+                Tu nombre de usuario único. Solo letras, números y puntos permitidos
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-sm font-medium">
                 Teléfono
@@ -341,9 +382,11 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                   value={phonePrefix}
                   onValueChange={handlePrefixChange}
                   disabled={isOAuthUser}
+                  aria-label="Código de país para teléfono"
+                  aria-describedby="phone-prefix-help"
                 >
                   <SelectTrigger
-                    className={`w-32 ${isOAuthUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-24 sm:w-32 min-h-[44px] ${isOAuthUser ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {(() => {
                       const sel = COUNTRY_CODES.find(c => c.code === phonePrefix)
@@ -351,9 +394,9 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                       return <span className="truncate text-sm">{`${flag} ${phonePrefix}`}</span>
                     })()}
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent role="listbox">
                     {COUNTRY_CODES.map(cc => (
-                      <SelectItem key={cc.code} value={cc.code}>
+                      <SelectItem key={cc.code} value={cc.code} role="option">
                         {cc.label}
                       </SelectItem>
                     ))}
@@ -365,10 +408,14 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                   value={(formData.phone || '').replace(/^\+\d{1,4}\s?/, '')}
                   onChange={e => handlePhoneChange(e.target.value)}
                   placeholder={COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}
-                  className="flex-1"
+                  className="flex-1 min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  aria-describedby="phone-help"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
+              <div id="phone-prefix-help" className="sr-only">
+                Selecciona el código de país para tu número de teléfono
+              </div>
+              <p id="phone-help" className="text-xs text-muted-foreground">
                 Ejemplo: {`${phonePrefix} ${COUNTRY_PHONE_EXAMPLES[phonePrefix] || '55 1234 5678'}`}
               </p>
             </div>
@@ -382,19 +429,30 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
                 type="email"
                 value={formData.email}
                 onChange={e => handleInputChange('email', e.target.value)}
-                className="w-full"
+                className="w-full min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 placeholder="usuario@ejemplo.com"
+                aria-describedby="email-help"
+                required
               />
+              <div id="email-help" className="sr-only">
+                Tu dirección de correo electrónico para notificaciones y comunicaciones
+              </div>
             </div>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-border">
-            <Button onClick={handleSaveProfile} disabled={isUpdating} className="min-w-32">
+            <Button 
+              type="submit"
+              disabled={isUpdating} 
+              className="min-w-32 min-h-[44px] w-full sm:w-auto"
+              aria-label={isUpdating ? 'Guardando cambios...' : 'Guardar cambios del perfil'}
+              title={isUpdating ? 'Guardando cambios...' : 'Guardar cambios del perfil'}
+            >
               {isUpdating ? 'Guardando...' : t('profile.save_changes')}
             </Button>
           </div>
-        </div>
-      </div>
+        </form>
+      </section>
 
       {/* Image Cropper Modal */}
       <ImageCropper
@@ -406,6 +464,6 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
         imageFile={selectedImageFile}
         onCropComplete={handleCroppedImageUpload}
       />
-    </div>
+    </main>
   )
 }

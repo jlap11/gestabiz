@@ -339,10 +339,10 @@ export default function UserProfile({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Cargando perfil del profesional">
+        <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-auto bg-card">
           <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" role="status" aria-live="polite"></div>
           </div>
         </Card>
       </div>
@@ -351,11 +351,11 @@ export default function UserProfile({
 
   if (!userData) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Error al cargar perfil">
+        <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-auto bg-card">
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">{t('userProfile.errors.loadError')}</p>
-            <Button onClick={onClose} className="mt-4">
+            <p className="text-muted-foreground" role="alert">{t('userProfile.errors.loadError')}</p>
+            <Button onClick={onClose} className="mt-4 min-h-[44px] min-w-[44px]" aria-label="Cerrar modal" title="Cerrar">
               {t('userProfile.actions.close')}
             </Button>
           </div>
@@ -365,16 +365,18 @@ export default function UserProfile({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden bg-card flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="user-profile-title">
+      <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card flex flex-col">
         {/* Header */}
         <div className="relative bg-gradient-to-r from-primary/20 to-secondary/20 p-8">
           {/* Botón cerrar */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors z-10"
+            className="absolute top-4 right-4 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors z-10 min-h-[44px] min-w-[44px]"
+            aria-label="Cerrar perfil del profesional"
+            title="Cerrar perfil del profesional"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
 
           {/* Profile Info */}
@@ -396,7 +398,7 @@ export default function UserProfile({
 
             {/* Name and Stats */}
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-foreground mb-2">{userData.full_name}</h2>
+              <h2 id="user-profile-title" className="text-3xl font-bold text-foreground mb-2">{userData.full_name}</h2>
 
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-1">
@@ -429,29 +431,29 @@ export default function UserProfile({
         <div className="flex-1 overflow-auto">
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="px-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="services">{t('userProfile.tabs.services')}</TabsTrigger>
-              <TabsTrigger value="experience">{t('userProfile.tabs.experience')}</TabsTrigger>
-              <TabsTrigger value="reviews">{t('userProfile.tabs.reviews')}</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3" role="tablist" aria-label="Secciones del perfil del profesional">
+              <TabsTrigger value="services" role="tab" aria-selected={activeTab === 'services'} aria-controls="tabpanel-services">{t('userProfile.tabs.services')}</TabsTrigger>
+              <TabsTrigger value="experience" role="tab" aria-selected={activeTab === 'experience'} aria-controls="tabpanel-experience">{t('userProfile.tabs.experience')}</TabsTrigger>
+              <TabsTrigger value="reviews" role="tab" aria-selected={activeTab === 'reviews'} aria-controls="tabpanel-reviews">{t('userProfile.tabs.reviews')}</TabsTrigger>
             </TabsList>
 
             {/* Tab: Servicios */}
-            <TabsContent value="services" className="space-y-4 mt-6">
+            <TabsContent value="services" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-services" aria-labelledby="services-tab">
               {userData.services.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   {t('userProfile.services.noServices')}
                 </p>
               ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-4" role="list" aria-label="Lista de servicios">
                   {userData.services.map(service => (
-                    <Card key={service.id} className="p-4 hover:shadow-md transition-shadow">
+                    <Card key={service.id} className="p-4 hover:shadow-md transition-shadow" role="listitem">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-lg">{service.name}</h3>
                             {service.business && (
                               <Badge variant="outline" className="text-xs">
-                                <Building2 className="h-3 w-3 mr-1" />
+                                <Building2 className="h-3 w-3 mr-1" aria-hidden="true" />
                                 {service.business.name}
                               </Badge>
                             )}
@@ -463,7 +465,7 @@ export default function UserProfile({
                           )}
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
+                              <Clock className="h-4 w-4" aria-hidden="true" />
                               <span>{formatDuration(service.duration)}</span>
                             </div>
                             {service.category && (
@@ -480,8 +482,11 @@ export default function UserProfile({
                           <Button
                             onClick={() => onBookAppointment?.(service.id, service.business_id)}
                             size="sm"
+                            className="min-h-[44px] min-w-[44px]"
+                            aria-label={`Agendar cita para ${service.name}`}
+                            title={`Agendar cita para ${service.name}`}
                           >
-                            <Calendar className="h-4 w-4 mr-2" />
+                            <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
                             {t('userProfile.services.schedule')}
                           </Button>
                         </div>
@@ -493,7 +498,7 @@ export default function UserProfile({
             </TabsContent>
 
             {/* Tab: Experiencia */}
-            <TabsContent value="experience" className="space-y-6 mt-6">
+            <TabsContent value="experience" className="space-y-6 mt-6" role="tabpanel" id="tabpanel-experience" aria-labelledby="experience-tab">
               {/* Businesses */}
               <div>
                 <h3 className="text-lg font-semibold mb-4">
@@ -580,7 +585,7 @@ export default function UserProfile({
             </TabsContent>
 
             {/* Tab: Reseñas */}
-            <TabsContent value="reviews" className="space-y-4 mt-6">
+            <TabsContent value="reviews" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-reviews" aria-labelledby="reviews-tab">
               {/* Formulario de nueva reseña */}
               {canReview && showReviewForm && eligibleAppointmentId && selectedBusinessId && (
                 <div className="mb-6">
@@ -597,7 +602,14 @@ export default function UserProfile({
               {/* Botón para mostrar formulario */}
               {canReview && !showReviewForm && (
                 <div className="mb-6">
-                  <Button variant="outline" size="sm" onClick={() => setShowReviewForm(true)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowReviewForm(true)}
+                    className="min-h-[44px] min-w-[44px]"
+                    aria-label="Escribir una reseña"
+                    title="Escribir una reseña"
+                  >
                     {t('userProfile.reviews.leaveReview')}
                   </Button>
                 </div>
@@ -616,11 +628,19 @@ export default function UserProfile({
         <div className="border-t border-border p-4 bg-background">
           <Button
             onClick={() => onBookAppointment?.()}
-            className="w-full"
+            className="w-full min-h-[44px]"
             size="lg"
             disabled={!isEmployeeOfAnyBusiness}
+            aria-label={isEmployeeOfAnyBusiness 
+              ? `Agendar cita con ${userData.full_name}` 
+              : 'Profesional no disponible para citas'
+            }
+            title={isEmployeeOfAnyBusiness 
+              ? `Agendar cita con ${userData.full_name}` 
+              : 'Profesional no disponible para citas'
+            }
           >
-            <Calendar className="h-5 w-5 mr-2" />
+            <Calendar className="h-5 w-5 mr-2" aria-hidden="true" />
             {isEmployeeOfAnyBusiness
               ? t('userProfile.footer.scheduleWith', { name: userData.full_name })
               : t('userProfile.footer.notAvailable')}

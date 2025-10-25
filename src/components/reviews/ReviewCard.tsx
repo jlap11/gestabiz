@@ -53,10 +53,11 @@ export function ReviewCard({
 
   const renderStars = (rating: number) => {
     return (
-      <div className="flex gap-0.5">
+      <div className="flex gap-0.5" aria-label={`${rating} de 5 estrellas`}>
         {[1, 2, 3, 4, 5].map(star => (
           <Star
             key={star}
+            aria-hidden="true"
             className={cn(
               'h-4 w-4',
               star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
@@ -108,8 +109,10 @@ export function ReviewCard({
                 size="sm"
                 onClick={() => onToggleVisibility(review.id, !review.is_visible)}
                 title={review.is_visible ? t('reviews.hide') : t('reviews.show')}
+                aria-label={review.is_visible ? t('reviews.hide') : t('reviews.show')}
+                className="min-h-[44px] min-w-[44px]"
               >
-                {review.is_visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {review.is_visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
               </Button>
             )}
             {onDelete && (
@@ -122,8 +125,10 @@ export function ReviewCard({
                   }
                 }}
                 title={t('reviews.delete')}
+                aria-label={t('reviews.delete')}
+                className="min-h-[44px] min-w-[44px]"
               >
-                <Trash2 className="h-4 w-4 text-destructive" />
+                <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
               </Button>
             )}
           </div>
@@ -168,12 +173,16 @@ export function ReviewCard({
             onChange={e => setResponseText(e.target.value)}
             rows={3}
             className="text-sm"
+            aria-label={t('reviews.responsePlaceholder')}
           />
           <div className="flex gap-2">
             <Button
               size="sm"
               onClick={handleSubmitResponse}
               disabled={!responseText.trim() || isSubmitting}
+              className="min-h-[44px] min-w-[44px]"
+              aria-label={t('reviews.submitResponse')}
+              title={t('reviews.submitResponse')}
             >
               {isSubmitting ? t('common.saving') : t('reviews.submitResponse')}
             </Button>
@@ -185,6 +194,9 @@ export function ReviewCard({
                 setResponseText('')
               }}
               disabled={isSubmitting}
+              className="min-h-[44px] min-w-[44px]"
+              aria-label={t('common.cancel')}
+              title={t('common.cancel')}
             >
               {t('common.cancel')}
             </Button>
@@ -198,9 +210,11 @@ export function ReviewCard({
           {onHelpful && (
             <button
               onClick={() => onHelpful(review.id)}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px] min-w-[44px]"
+              aria-label={t('reviews.helpful')}
+              title={t('reviews.helpful')}
             >
-              <ThumbsUp className="h-4 w-4" />
+              <ThumbsUp className="h-4 w-4" aria-hidden="true" />
               <span>
                 {t('reviews.helpful')} ({review.helpful_count || 0})
               </span>
@@ -209,8 +223,8 @@ export function ReviewCard({
         </div>
 
         {canRespond && !review.response && !isResponding && (
-          <Button variant="outline" size="sm" onClick={() => setIsResponding(true)}>
-            <MessageSquare className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={() => setIsResponding(true)} className="min-h-[44px] min-w-[44px]" aria-label={t('reviews.respond')} title={t('reviews.respond')}>
+            <MessageSquare className="h-4 w-4 mr-2" aria-hidden="true" />
             {t('reviews.respond')}
           </Button>
         )}

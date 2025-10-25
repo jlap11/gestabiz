@@ -360,10 +360,10 @@ export default function BusinessProfile({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Cargando perfil del negocio">
         <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
           <div className="flex items-center justify-center p-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" role="status" aria-live="polite"></div>
           </div>
         </Card>
       </div>
@@ -372,11 +372,11 @@ export default function BusinessProfile({
 
   if (!business) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Error al cargar perfil">
         <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">No se pudo cargar la información del negocio</p>
-            <Button onClick={onClose} className="mt-4">
+            <p className="text-muted-foreground" role="alert">No se pudo cargar la información del negocio</p>
+            <Button onClick={onClose} className="mt-4 min-h-[44px] min-w-[44px]" aria-label="Cerrar modal" title="Cerrar">
               Cerrar
             </Button>
           </div>
@@ -386,7 +386,7 @@ export default function BusinessProfile({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="business-profile-title">
       <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card flex flex-col">
         {/* Header con banner - Mobile Responsive */}
         <div className="relative">
@@ -442,7 +442,7 @@ export default function BusinessProfile({
                 />
               )}
               <div className="flex-1 text-white min-w-0">
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 truncate">
+                <h2 id="business-profile-title" className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 truncate">
                   {business.name}
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
@@ -508,27 +508,27 @@ export default function BusinessProfile({
 
           {/* Tabs - Mobile Scrollable */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="px-3 sm:px-6">
-            <TabsList className="grid w-full grid-cols-4 h-auto">
-              <TabsTrigger value="services" className="text-xs sm:text-sm py-2 sm:py-2.5">
+            <TabsList aria-label="Secciones del perfil" className="grid w-full grid-cols-4 h-auto" role="tablist">
+              <TabsTrigger value="services" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Servicios" title="Servicios" role="tab" aria-selected={activeTab === 'services'} aria-controls="tabpanel-services">
                 <span className="hidden sm:inline">Servicios</span>
                 <span className="sm:hidden">Servs.</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="text-xs sm:text-sm py-2 sm:py-2.5">
+              <TabsTrigger value="locations" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Ubicaciones" title="Ubicaciones" role="tab" aria-selected={activeTab === 'locations'} aria-controls="tabpanel-locations">
                 <span className="hidden sm:inline">Ubicaciones</span>
                 <span className="sm:hidden">Ubic.</span>
               </TabsTrigger>
-              <TabsTrigger value="reviews" className="text-xs sm:text-sm py-2 sm:py-2.5">
+              <TabsTrigger value="reviews" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Reseñas" title="Reseñas" role="tab" aria-selected={activeTab === 'reviews'} aria-controls="tabpanel-reviews">
                 <span className="hidden sm:inline">Reseñas</span>
                 <span className="sm:hidden">Reviews</span>
               </TabsTrigger>
-              <TabsTrigger value="about" className="text-xs sm:text-sm py-2 sm:py-2.5">
+              <TabsTrigger value="about" className="text-xs sm:text-sm py-2 sm:py-2.5 min-h-[44px] min-w-[44px]" aria-label="Acerca de" title="Acerca de" role="tab" aria-selected={activeTab === 'about'} aria-controls="tabpanel-about">
                 <span className="hidden sm:inline">Acerca de</span>
                 <span className="sm:hidden">Info</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Tab: Servicios - Mobile Optimized */}
-            <TabsContent value="services" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
+            <TabsContent value="services" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6" role="tabpanel" id="tabpanel-services" aria-labelledby="services-tab">
               {business.services.length === 0 ? (
                 <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm">
                   No hay servicios disponibles
@@ -587,7 +587,7 @@ export default function BusinessProfile({
             </TabsContent>
 
             {/* Tab: Ubicaciones */}
-            <TabsContent value="locations" className="space-y-4 mt-6">
+            <TabsContent value="locations" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-locations" aria-labelledby="locations-tab">
               {business.locations.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   No hay ubicaciones registradas
@@ -607,7 +607,7 @@ export default function BusinessProfile({
                             <h3 className="font-semibold text-lg mb-2">{location.name}</h3>
                             <div className="space-y-2 text-sm text-muted-foreground">
                               <div className="flex items-start gap-2">
-                                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                                 <span>
                                   {location.address}, {location.city}, {location.state}{' '}
                                   {location.postal_code}
@@ -615,19 +615,19 @@ export default function BusinessProfile({
                               </div>
                               {location.phone && (
                                 <div className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4" />
+                                  <Phone className="h-4 w-4" aria-hidden="true" />
                                   <span>{location.phone}</span>
                                 </div>
                               )}
                               {location.hours && (
                                 <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4" />
+                                  <Clock className="h-4 w-4" aria-hidden="true" />
                                   <span>{formatHours(location.hours)}</span>
                                 </div>
                               )}
                               {distance !== null && (
                                 <div className="flex items-center gap-2 text-primary font-medium">
-                                  <MapPin className="h-4 w-4" />
+                                  <MapPin className="h-4 w-4" aria-hidden="true" />
                                   <span>{distance.toFixed(1)} km de tu ubicación</span>
                                 </div>
                               )}
@@ -665,7 +665,7 @@ export default function BusinessProfile({
             </TabsContent>
 
             {/* Tab: Reseñas */}
-            <TabsContent value="reviews" className="space-y-4 mt-6">
+            <TabsContent value="reviews" className="space-y-4 mt-6" role="tabpanel" id="tabpanel-reviews" aria-labelledby="reviews-tab">
               {/* Formulario de nueva reseña */}
               {canReview && showReviewForm && eligibleAppointmentId && (
                 <div className="mb-6">
@@ -681,7 +681,14 @@ export default function BusinessProfile({
               {/* Botón para mostrar formulario */}
               {canReview && !showReviewForm && (
                 <div className="mb-6">
-                  <Button variant="outline" size="sm" onClick={() => setShowReviewForm(true)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReviewForm(true)}
+                    className="min-h-[44px] min-w-[44px]"
+                    aria-label="Abrir formulario de reseña"
+                    title="Dejar reseña"
+                  >
                     Dejar reseña
                   </Button>
                 </div>
@@ -692,7 +699,7 @@ export default function BusinessProfile({
             </TabsContent>
 
             {/* Tab: Acerca de */}
-            <TabsContent value="about" className="mt-6">
+            <TabsContent value="about" className="mt-6" role="tabpanel" id="tabpanel-about" aria-labelledby="about-tab">
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Descripción</h3>

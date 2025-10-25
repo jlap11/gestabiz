@@ -139,7 +139,7 @@ export function FiltersPanel({
       {/* BÚSQUEDA */}
       <div className="space-y-2">
         <Label htmlFor="search">{t('common.actions.search')}</Label>
-        <div className="relative" role="search" aria-label={t('common.actions.search)}>
+        <div className="relative" role="search" aria-label={t('common.actions.search')}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             id="search"

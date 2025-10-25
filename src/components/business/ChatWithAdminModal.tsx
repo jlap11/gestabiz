@@ -101,39 +101,42 @@ export default function ChatWithAdminModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
       <Card className="w-full max-w-2xl max-h-[80vh] flex flex-col bg-background">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
-            <h2 className="text-xl font-bold">{t('chat.startChat')}</h2>
+            <h2 id="chat-modal-title" className="text-xl font-bold">{t('chat.startChat')}</h2>
             <p className="text-sm text-muted-foreground mt-1">
               {isUserTheOwner
                 ? `${t('chat.administratorOf')} ${businessName}`
                 : `${t('chat.employeesOf')} ${businessName}`}
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 min-h-[44px] min-w-[44px]" aria-label="Cerrar modal" title="Cerrar modal">
+            <X className="h-5 w-5" aria-hidden="true" />
           </Button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+              <span className="sr-only">{t('chat.loading')}</span>
             </div>
           )}
 
           {error && (
-            <div className="text-center py-12">
+            <div className="text-center py-12" role="alert">
               <p className="text-destructive text-sm">{error}</p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => globalThis.location.reload()}
-                className="mt-4"
+                className="mt-4 min-h-[44px] min-w-[44px]"
+                aria-label={t('common.actions.retry')}
+                title={t('common.actions.retry')}
               >
                 {t('common.actions.retry')}
               </Button>
@@ -141,8 +144,8 @@ export default function ChatWithAdminModal({
           )}
 
           {!loading && !error && !admin && (
-            <div className="text-center py-12">
-              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <div className="text-center py-12" role="status" aria-live="polite">
+              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
               <p className="text-muted-foreground">{t('chat.noAvailability')}</p>
             </div>
           )}
@@ -179,46 +182,21 @@ export default function ChatWithAdminModal({
                       iniciar una conversación directamente.
                     </p>
                     <Button
-                      onClick={async () => {
-                        try {
-                          setCreatingChat(true)
-                          const conversationId = await createOrGetConversation({
-                            other_user_id: admin.user_id,
-                            business_id: businessId,
-                            initial_message: `Iniciando conversación como administrador de ${businessName}`,
-                          })
-
-                          if (conversationId) {
-                            toast.success('Conversación iniciada')
-                            // Cerrar el modal de chat
-                            onClose()
-                            // Cerrar el modal padre (BusinessProfile) si se proporcionó
-                            if (onCloseParent) {
-                              onCloseParent()
-                            }
-                            // Llamar al callback de chat iniciado con la conversationId
-                            onChatStarted(conversationId)
-                          }
-                        } catch (err) {
-                          // eslint-disable-next-line no-console
-                          console.error('Error starting chat:', err)
-                          toast.error('No se pudo iniciar el chat.')
-                        } finally {
-                          setCreatingChat(false)
-                        }
-                      }}
+                      onClick={() => handleStartChat(admin.user_id, admin.full_name)}
                       disabled={creatingChat}
                       size="lg"
-                      className="w-full"
+                      className="w-full min-h-[44px] min-w-[44px]"
+                      aria-label={`${t('chat.chatWith')} ${admin.full_name}`}
+                      title={`${t('chat.chatWith')} ${admin.full_name}`}
                     >
                       {creatingChat ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                           {t('chat.loading')}
                         </>
                       ) : (
                         <>
-                          <MessageCircle className="h-4 w-4 mr-2" />
+                          <MessageCircle className="h-4 w-4 mr-2" aria-hidden="true" />
                           {t('chat.chatWith')}
                         </>
                       )}
@@ -234,71 +212,76 @@ export default function ChatWithAdminModal({
                         {t('chat.availableEmployees')} ({employees.length})
                       </p>
 
-                      {employees.map(employee => {
-                        const isLoading =
-                          creatingChat && selectedEmployeeId === employee.employee_id
+                      <div role="list" aria-label={t('chat.availableEmployees')}>
+                        {employees.map(employee => {
+                          const isLoading =
+                            creatingChat && selectedEmployeeId === employee.employee_id
 
-                        return (
-                          <Card
-                            key={employee.employee_id}
-                            className="p-4 hover:shadow-md transition-shadow border-2"
-                          >
-                            <div className="flex items-center gap-4">
-                              {/* Employee Avatar */}
-                              <Avatar className="h-12 w-12 flex-shrink-0">
-                                <AvatarImage src={employee.avatar_url || undefined} />
-                                <AvatarFallback>
-                                  {employee.full_name
-                                    .split(' ')
-                                    .map(n => n[0])
-                                    .join('')
-                                    .toUpperCase()
-                                    .slice(0, 2)}
-                                </AvatarFallback>
-                              </Avatar>
+                          return (
+                            <Card
+                              key={employee.employee_id}
+                              className="p-4 hover:shadow-md transition-shadow border-2"
+                              role="listitem"
+                            >
+                              <div className="flex items-center gap-4">
+                                {/* Employee Avatar */}
+                                <Avatar className="h-12 w-12 flex-shrink-0">
+                                  <AvatarImage src={employee.avatar_url || undefined} />
+                                  <AvatarFallback>
+                                    {employee.full_name
+                                      .split(' ')
+                                      .map(n => n[0])
+                                      .join('')
+                                      .toUpperCase()
+                                      .slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
 
-                              {/* Employee Info */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h4 className="font-semibold text-base">{employee.full_name}</h4>
-                                  {employee.location_name && (
-                                    <span className="text-sm text-muted-foreground">
-                                      - {employee.location_name}
-                                    </span>
-                                  )}
+                                {/* Employee Info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h4 className="font-semibold text-base">{employee.full_name}</h4>
+                                    {employee.location_name && (
+                                      <span className="text-sm text-muted-foreground">
+                                        - {employee.location_name}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">{employee.email}</p>
                                 </div>
-                                <p className="text-xs text-muted-foreground">{employee.email}</p>
-                              </div>
 
-                              {/* Action Button */}
-                              <Button
-                                onClick={() =>
-                                  handleStartChat(employee.employee_id, employee.full_name)
-                                }
-                                disabled={creatingChat}
-                                size="sm"
-                                className="flex-shrink-0"
-                              >
-                                {isLoading ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    {t('chat.loading')}
-                                  </>
-                                ) : (
-                                  <>
-                                    <MessageCircle className="h-4 w-4 mr-2" />
-                                    {t('chat.chatWith')}
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </Card>
-                        )
-                      })}
+                                {/* Action Button */}
+                                <Button
+                                  onClick={() =>
+                                    handleStartChat(employee.employee_id, employee.full_name)
+                                  }
+                                  disabled={creatingChat}
+                                  size="sm"
+                                  className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                                  aria-label={`${t('chat.chatWith')} ${employee.full_name}`}
+                                  title={`${t('chat.chatWith')} ${employee.full_name}`}
+                                >
+                                  {isLoading ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                                      {t('chat.loading')}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <MessageCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+                                      {t('chat.chatWith')}
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </Card>
+                          )
+                        })}
+                      </div>
                     </>
                   ) : (
-                    <div className="text-center py-12">
-                      <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <div className="text-center py-12" role="status" aria-live="polite">
+                      <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
                       <p className="text-muted-foreground">{t('chat.noAvailability')}</p>
                     </div>
                   )}

@@ -60,22 +60,22 @@ const NotificationIcon = ({ type }: { type: string }) => {
     case 'reminder_24h':
     case 'reminder_1h':
     case 'reminder_15m':
-      return <Calendar className="h-4 w-4" />
+      return <Calendar className="h-4 w-4" aria-hidden="true" />
     case 'absence_request':
-      return <Calendar className="h-4 w-4" />
+      return <Calendar className="h-4 w-4" aria-hidden="true" />
     case 'employee_request_approved':
     case 'employee_request_rejected':
     case 'employee_request_pending':
-      return <Users className="h-4 w-4" />
+      return <Users className="h-4 w-4" aria-hidden="true" />
     case 'chat_message':
     case 'chat_message_received':
-      return <MessageCircle className="h-4 w-4" />
+      return <MessageCircle className="h-4 w-4" aria-hidden="true" />
     case 'system_announcement':
     case 'system_update':
     case 'system_maintenance':
-      return <AlertCircle className="h-4 w-4" />
+      return <AlertCircle className="h-4 w-4" aria-hidden="true" />
     default:
-      return <Bell className="h-4 w-4" />
+      return <Bell className="h-4 w-4" aria-hidden="true" />
   }
 }
 
@@ -122,15 +122,16 @@ function NotificationItem({
   }
 
   return (
-    <div className="relative group">
+    <article className="relative group" role="listitem">
       <button
         type="button"
         className={cn(
-          'relative w-full rounded-lg border border-transparent p-3 text-left transition-colors sm:p-4 hover:bg-muted/50 active:bg-muted/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
+          'relative w-full rounded-lg border border-transparent p-3 text-left transition-colors sm:p-4 hover:bg-muted/50 active:bg-muted/70 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]',
           isUnread && 'bg-muted/30'
         )}
         onClick={handleClick}
         aria-label={`${notification.title}. ${isUnread ? 'No leída' : 'Leída'}. ${formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: es })}`}
+        aria-describedby={`notification-body-${notification.id}`}
       >
         <div className="flex items-start gap-2 sm:gap-3">
           {/* Icono */}
@@ -139,6 +140,7 @@ function NotificationItem({
               'flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center',
               isUnread ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
             )}
+            aria-hidden="true"
           >
             <NotificationIcon type={notification.type} />
           </div>
@@ -146,15 +148,15 @@ function NotificationItem({
           {/* Contenido */}
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <p
+              <h4
                 className={cn(
-                  'text-sm sm:text-base font-medium',
+                  'text-sm sm:text-base font-medium truncate',
                   isUnread ? 'text-foreground' : 'text-muted-foreground'
                 )}
               >
                 {notification.title}
-              </p>
-              <div className="flex items-center gap-1">
+              </h4>
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <NotificationPriority priority={notification.priority} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -163,8 +165,9 @@ function NotificationItem({
                       variant="ghost"
                       size="icon"
                       onClick={event => event.stopPropagation()}
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      className="h-8 w-8 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-foreground focus:ring-2 focus:ring-primary focus:ring-offset-2"
                       aria-label={t('notifications.moreActions')}
+                      title={t('notifications.moreActions')}
                     >
                       <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>
@@ -173,6 +176,7 @@ function NotificationItem({
                     align="end"
                     className="w-44 bg-popover text-popover-foreground border-border"
                     onCloseAutoFocus={event => event.preventDefault()}
+                    role="menu"
                   >
                     {isUnread && (
                       <DropdownMenuItem
@@ -180,6 +184,7 @@ function NotificationItem({
                           event.preventDefault()
                           onRead(notification.id)
                         }}
+                        role="menuitem"
                       >
                         <Check className="mr-2 h-4 w-4" aria-hidden="true" />
                         Marcar como leída
@@ -190,6 +195,7 @@ function NotificationItem({
                         event.preventDefault()
                         onArchive(notification.id)
                       }}
+                      role="menuitem"
                     >
                       <Archive className="mr-2 h-4 w-4" aria-hidden="true" />
                       Archivar
@@ -200,6 +206,7 @@ function NotificationItem({
                         onDelete(notification.id)
                       }}
                       className="text-destructive focus:text-destructive"
+                      role="menuitem"
                     >
                       <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
                       Eliminar
@@ -209,17 +216,22 @@ function NotificationItem({
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground line-clamp-2">{notification.body}</p>
+            <p 
+              id={`notification-body-${notification.id}`}
+              className="text-sm text-muted-foreground line-clamp-2"
+            >
+              {notification.body}
+            </p>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
+              <time dateTime={notification.created_at}>
                 {formatDistanceToNow(new Date(notification.created_at), {
                   addSuffix: true,
                   locale: es,
                 })}
-              </span>
+              </time>
               {isUnread && (
-                <Badge variant="secondary" className="h-5 text-xs">
+                <Badge variant="secondary" className="h-5 text-xs w-fit">
                   Nuevo
                 </Badge>
               )}
@@ -227,7 +239,7 @@ function NotificationItem({
           </div>
         </div>
       </button>
-    </div>
+    </article>
   )
 }
 
@@ -349,16 +361,27 @@ export function NotificationCenter({
   }
 
   return (
-    <div className="flex flex-col h-[500px] sm:h-[550px] max-h-[90vh]">
+    <main 
+      className="flex flex-col h-[500px] sm:h-[550px] max-h-[90vh] max-w-[95vw]"
+      role="main"
+      aria-labelledby="notification-center-title"
+    >
+      <h1 id="notification-center-title" className="sr-only">
+        Centro de Notificaciones
+      </h1>
+      
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border flex-shrink-0">
+      <header 
+        className="flex items-center justify-between p-3 sm:p-4 border-b border-border flex-shrink-0"
+        role="banner"
+      >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Bell className="h-5 w-5 text-foreground flex-shrink-0" />
-          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
+          <Bell className="h-5 w-5 text-foreground flex-shrink-0" aria-hidden="true" />
+          <h2 className="font-semibold text-foreground text-sm sm:text-base truncate">
             Notificaciones
-          </h3>
+          </h2>
           {unreadCount > 0 && (
-            <Badge variant="secondary" className="text-xs flex-shrink-0">
+            <Badge variant="secondary" className="text-xs flex-shrink-0" aria-label={`${unreadCount} notificaciones no leídas`}>
               {unreadCount}
             </Badge>
           )}
@@ -370,9 +393,11 @@ export function NotificationCenter({
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
-              className="text-xs hidden sm:flex"
+              className="text-xs hidden sm:flex min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label="Marcar todas las notificaciones como leídas"
+              title="Marcar todas como leídas"
             >
-              <CheckCheck className="h-3.5 w-3.5 mr-1" />
+              <CheckCheck className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
               Marcar todas
             </Button>
           )}
@@ -381,24 +406,25 @@ export function NotificationCenter({
               variant="ghost"
               size="icon"
               onClick={markAllAsRead}
-              className="h-9 w-9 sm:hidden min-h-[44px] min-w-[44px]"
+              className="h-9 w-9 sm:hidden min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
               title={t('notifications.markAllAsRead')}
               aria-label={t('notifications.markAllAsRead')}
             >
-              <CheckCheck className="h-4 w-4" />
+              <CheckCheck className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
+            className="h-9 w-9 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 focus:ring-2 focus:ring-primary focus:ring-offset-2"
             onClick={onClose}
             aria-label={t('notifications.closeNotifications')}
+            title="Cerrar notificaciones"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
-      </div>
+      </header>
 
       {/* Tabs */}
       <Tabs
@@ -406,34 +432,71 @@ export function NotificationCenter({
         onValueChange={v => setActiveTab(v as typeof activeTab)}
         className="flex-1 flex flex-col"
       >
-        <TabsList className="w-full justify-start rounded-none border-b border-border px-4">
-          <TabsTrigger value="unread" className="relative">
+        <TabsList 
+          className="w-full justify-start rounded-none border-b border-border px-2 sm:px-4"
+          role="tablist"
+          aria-label="Filtros de notificaciones"
+        >
+          <TabsTrigger 
+            value="unread" 
+            className="relative text-xs sm:text-sm min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            role="tab"
+            aria-controls="unread-notifications"
+          >
             No leídas
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="ml-2 h-5 text-xs">
+              <Badge variant="secondary" className="ml-1 sm:ml-2 h-4 sm:h-5 text-xs" aria-hidden="true">
                 {unreadCount}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="all">Todas</TabsTrigger>
-          <TabsTrigger value="system">Sistema</TabsTrigger>
+          <TabsTrigger 
+            value="all"
+            className="text-xs sm:text-sm min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            role="tab"
+            aria-controls="all-notifications"
+          >
+            Todas
+          </TabsTrigger>
+          <TabsTrigger 
+            value="system"
+            className="text-xs sm:text-sm min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            role="tab"
+            aria-controls="system-notifications"
+          >
+            Sistema
+          </TabsTrigger>
         </TabsList>
 
         {/* Content */}
-        <TabsContent value={activeTab} className="flex-1 m-0">
+        <TabsContent 
+          value={activeTab} 
+          className="flex-1 m-0"
+          role="tabpanel"
+          id={`${activeTab}-notifications`}
+        >
           <ScrollArea className="h-full">
             {loading && (
-              <div className="flex items-center justify-center py-12">
+              <div 
+                className="flex items-center justify-center py-12"
+                role="status"
+                aria-label="Cargando notificaciones"
+              >
                 <div className="text-center space-y-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">Cargando...</p>
+                  <span className="sr-only">Cargando notificaciones, por favor espere</span>
                 </div>
               </div>
             )}
 
             {!loading && filteredNotifications.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 px-4">
-                <Bell className="h-12 w-12 text-muted-foreground mb-4" />
+              <div 
+                className="flex flex-col items-center justify-center py-12 px-4"
+                role="status"
+                aria-label="No hay notificaciones"
+              >
+                <Bell className="h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
                 <p className="text-sm font-medium text-foreground mb-1">No hay notificaciones</p>
                 <p className="text-xs text-muted-foreground text-center">
                   {activeTab === 'unread'
@@ -444,7 +507,11 @@ export function NotificationCenter({
             )}
 
             {!loading && filteredNotifications.length > 0 && (
-              <div className="divide-y divide-border">
+              <section 
+                className="divide-y divide-border"
+                role="list"
+                aria-label={`${filteredNotifications.length} notificaciones ${activeTab === 'unread' ? 'no leídas' : activeTab === 'system' ? 'del sistema' : 'totales'}`}
+              >
                 {filteredNotifications.map((notification, index) => (
                   <div key={notification.id}>
                     <NotificationItemErrorBoundary>
@@ -459,11 +526,11 @@ export function NotificationCenter({
                     {index < filteredNotifications.length - 1 && <Separator />}
                   </div>
                 ))}
-              </div>
+              </section>
             )}
           </ScrollArea>
         </TabsContent>
       </Tabs>
-    </div>
+    </main>
   )
 }

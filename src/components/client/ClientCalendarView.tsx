@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DEFAULT_TIME_ZONE, cn, extractTimeZoneParts } from '@/lib/utils'
 import type { Appointment } from '@/types'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type AppointmentWithRelations = Appointment & {
   business?: {
@@ -56,9 +57,9 @@ export function ClientCalendarView({
   onAppointmentClick,
   onCreateAppointment,
 }: ClientCalendarViewProps) {
+  const { t } = useLanguage()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>('month')
-  const [hoveredDay, setHoveredDay] = useState<string | null>(null)
 
   const navigatePrevious = () => {
     const newDate = new Date(currentDate)
@@ -139,42 +140,68 @@ export function ClientCalendarView({
     const d = new Date(currentDate)
     const appts = getAppointmentsForDate(d)
     return (
-      <div className="space-y-2">
-        {appts.map(a => (
-          <Card
-            key={a.id}
-            className="p-2 cursor-pointer"
-            onClick={() => onAppointmentClick?.(a)}
-            role="button"
-            aria-label={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
-            title={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
-          >
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold">{a.service?.name || a.title}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {formatTimeInTZ(a.start_time)}
+      <section 
+        role="region" 
+        aria-labelledby="day-view-title"
+        className="space-y-2"
+      >
+        <h4 id="day-view-title" className="sr-only">
+          {t('clientDashboard.calendar.dayViewTitle', {
+            date: d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+          })}
+        </h4>
+        <div role="list" aria-label={t('clientDashboard.calendar.appointmentsForDay')}>
+          {appts.map(a => (
+            <Card
+              key={a.id}
+              className="p-2 cursor-pointer hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px]"
+              onClick={() => onAppointmentClick?.(a)}
+              role="listitem"
+              tabIndex={0}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onAppointmentClick?.(a)
+                }
+              }}
+              aria-label={t('clientDashboard.calendar.openAppointmentAt', {
+                title: a.service?.name || a.title,
+                time: formatTimeInTZ(a.start_time),
+              })}
+              title={t('clientDashboard.calendar.openAppointmentAt', {
+                title: a.service?.name || a.title,
+                time: formatTimeInTZ(a.start_time),
+              })}
+            >
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold truncate">{a.service?.name || a.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatTimeInTZ(a.start_time)}
+                    </div>
                   </div>
+                  <Badge className="ml-2 flex-shrink-0">{a.status}</Badge>
                 </div>
-                <Badge>{a.status}</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
         {onCreateAppointment && (
           <div className="pt-2">
-            <Button
+              <Button
               onClick={() => onCreateAppointment(d)}
-              className="min-h-[44px] min-w-[44px]"
-              aria-label="Agregar cita"
-              title="Agregar cita"
+              className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
+              aria-label={t('clientDashboard.calendar.addAppointment')}
+              title={t('clientDashboard.calendar.addAppointment')}
             >
-              <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> Agregar cita
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> 
+              <span className="hidden sm:inline">{t('clientDashboard.calendar.addAppointment')}</span>
+              <span className="sm:hidden">{t('clientDashboard.calendar.addShort')}</span>
             </Button>
           </div>
         )}
-      </div>
+      </section>
     )
   }
 
@@ -185,34 +212,80 @@ export function ClientCalendarView({
       (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
     )
     return (
-      <div className="grid grid-cols-7 gap-2">
-        {days.map(d => (
-          <Card key={d.toISOString()} className="p-2">
-            <CardContent>
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-semibold">
-                  {d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
-                </div>
-                <Badge>{getAppointmentsForDate(d).length}</Badge>
-              </div>
-              <div className="space-y-1">
-                {getAppointmentsForDate(d).map(a => (
-                  <div
-                    key={a.id}
-                    className="text-xs truncate cursor-pointer"
-                    onClick={() => onAppointmentClick?.(a)}
-                    role="button"
-                    aria-label={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
-                    title={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
-                  >
-                    {a.service?.name || a.title} • {formatTimeInTZ(a.start_time)}
+      <section 
+        role="region" 
+        aria-labelledby="week-view-title"
+      >
+        <h4 id="week-view-title" className="sr-only">
+          {t('clientDashboard.calendar.weekViewTitle', {
+            start: String(start.getDate()),
+            end: String(days[6].getDate()),
+            monthYear: start.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
+          })}
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2" role="grid" aria-label={t('clientDashboard.calendar.weekGrid')}>
+          {days.map(d => (
+              <Card
+                key={d.toISOString()}
+                className="p-2 min-h-[120px]"
+                role="gridcell"
+                aria-label={(() => {
+                  const dateLabel = d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })
+                  const countStr = String(getAppointmentsForDate(d).length)
+                  const nowParts = extractTimeZoneParts(new Date(), DEFAULT_TIME_ZONE)
+                  const dayParts = extractTimeZoneParts(d, DEFAULT_TIME_ZONE)
+                  const isTodayLocal =
+                    dayParts.day === nowParts.day &&
+                    dayParts.month === nowParts.month &&
+                    dayParts.year === nowParts.year
+
+                  return t('clientDashboard.calendar.daySummary', {
+                    date: dateLabel,
+                    count: countStr,
+                    todaySuffix: isTodayLocal ? `, ${t('clientDashboard.calendar.todayShort')}` : '',
+                  })
+                })()}
+              >
+              <CardContent className="p-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs sm:text-sm font-semibold">
+                    {d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  <Badge variant="secondary" className="text-xs">{getAppointmentsForDate(d).length}</Badge>
+                </div>
+                <div className="space-y-1" role="list" aria-label={t('clientDashboard.calendar.appointmentsForDay')}>
+                  {getAppointmentsForDate(d).map(a => (
+                    <div
+                      key={a.id}
+                      className="text-xs truncate cursor-pointer p-1 rounded hover:bg-muted transition-colors focus:outline-none focus:ring-1 focus:ring-primary min-h-[24px] flex items-center"
+                      onClick={() => onAppointmentClick?.(a)}
+                      role="listitem"
+                      tabIndex={0}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          onAppointmentClick?.(a)
+                        }
+                      }}
+                      aria-label={t('clientDashboard.calendar.openAppointmentAt', {
+                        title: a.service?.name || a.title,
+                        time: formatTimeInTZ(a.start_time),
+                      })}
+                      title={t('clientDashboard.calendar.openAppointmentAt', {
+                        title: a.service?.name || a.title,
+                        time: formatTimeInTZ(a.start_time),
+                      })}
+                    >
+                      <span className="truncate">{a.service?.name || a.title}</span>
+                      <span className="hidden sm:inline"> • {formatTimeInTZ(a.start_time)}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
     )
   }
 
@@ -225,68 +298,126 @@ export function ClientCalendarView({
     )
 
     return (
-      <div className="grid grid-cols-7 gap-2">
-        {days.map(d => {
-          const appts = getAppointmentsForDate(d)
-          const nowParts = extractTimeZoneParts(new Date(), DEFAULT_TIME_ZONE)
-          const dayParts = extractTimeZoneParts(d, DEFAULT_TIME_ZONE)
-          const isToday =
-            dayParts.day === nowParts.day &&
-            dayParts.month === nowParts.month &&
-            dayParts.year === nowParts.year
+      <section 
+        role="region" 
+        aria-labelledby="month-view-title"
+      >
+        <h4 id="month-view-title" className="sr-only">
+          {t('clientDashboard.calendar.monthViewTitle', {
+            monthYear: start.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
+          })}
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2" role="grid" aria-label={t('clientDashboard.calendar.monthGrid')}>
+          {days.map(d => {
+            const appts = getAppointmentsForDate(d)
+            const nowParts = extractTimeZoneParts(new Date(), DEFAULT_TIME_ZONE)
+            const dayParts = extractTimeZoneParts(d, DEFAULT_TIME_ZONE)
+            const isToday =
+              dayParts.day === nowParts.day &&
+              dayParts.month === nowParts.month &&
+              dayParts.year === nowParts.year
 
-          return (
-            <Card
-              key={d.toISOString()}
-              className={cn('p-2', isToday && 'border-primary border-2 bg-primary/5')}
-            >
-              <CardContent>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold">
-                    {d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
-                  </div>
-                  <Badge>{appts.length}</Badge>
-                </div>
-                <div className="space-y-1">
-                  {appts.slice(0, 3).map(a => (
-                    <div
-                      key={a.id}
-                      className="text-xs truncate cursor-pointer"
-                      onClick={() => onAppointmentClick?.(a)}
-                    >
-                      {a.service?.name || a.title} • {formatTimeInTZ(a.start_time)}
-                    </div>
-                  ))}
-                  {appts.length > 3 && (
-                    <div className="text-xs text-muted-foreground">+{appts.length - 3} más</div>
-                  )}
-                </div>
-                {onCreateAppointment && (
-                  <div className="mt-2 flex justify-end">
-                    <Button size="sm" variant="outline" onClick={() => onCreateAppointment(d)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+            return (
+              <Card
+                key={d.toISOString()}
+                className={cn(
+                  'p-2 min-h-[100px] sm:min-h-[120px] transition-colors hover:shadow-md',
+                  isToday && 'border-primary border-2 bg-primary/5'
                 )}
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+                role="gridcell"
+                aria-selected={isToday}
+                aria-label={t('clientDashboard.calendar.daySummary', {
+                  date: d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }),
+                  count: String(appts.length),
+                  todaySuffix: isToday ? `, ${t('clientDashboard.calendar.todayShort')}` : '',
+                })}
+              >
+                <CardContent className="p-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs sm:text-sm font-semibold">
+                      {d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                    </div>
+                    <Badge variant="secondary" className="text-xs">{appts.length}</Badge>
+                  </div>
+                  <div className="space-y-1" role="list" aria-label={t('clientDashboard.calendar.appointmentsForDay')}>
+                    {appts.slice(0, 3).map(a => (
+                      <div
+                        key={a.id}
+                        className="text-xs truncate cursor-pointer p-1 rounded hover:bg-muted transition-colors focus:outline-none focus:ring-1 focus:ring-primary min-h-[20px] flex items-center"
+                        onClick={() => onAppointmentClick?.(a)}
+                        role="listitem"
+                        tabIndex={0}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            onAppointmentClick?.(a)
+                          }
+                        }}
+                        aria-label={t('clientDashboard.calendar.openAppointmentAt', {
+                          title: a.service?.name || a.title,
+                          time: formatTimeInTZ(a.start_time),
+                        })}
+                        title={t('clientDashboard.calendar.openAppointmentAt', {
+                          title: a.service?.name || a.title,
+                          time: formatTimeInTZ(a.start_time),
+                        })}
+                      >
+                        <span className="truncate">{a.service?.name || a.title}</span>
+                        <span className="hidden sm:inline"> • {formatTimeInTZ(a.start_time)}</span>
+                      </div>
+                    ))}
+                    {appts.length > 3 && (
+                      <div className="text-xs text-muted-foreground" aria-label={`${appts.length - 3} citas adicionales`}>
+                        {t('clientDashboard.calendar.moreCount', { count: String(appts.length - 3) })}
+                      </div>
+                    )}
+                  </div>
+                  {onCreateAppointment && (
+                    <div className="mt-2 flex justify-end">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => onCreateAppointment(d)} 
+                        className="min-h-[32px] min-w-[32px] p-1" 
+                        aria-label={t('clientDashboard.calendar.addAppointment')} 
+                        title={t('clientDashboard.calendar.addAppointment')}
+                      >
+                        <Plus className="h-3 w-3" aria-hidden="true" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      </section>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <section 
+      role="main" 
+      aria-labelledby="calendar-main-title"
+      className="space-y-4 max-w-[95vw] mx-auto"
+    >
+      <h2 id="calendar-main-title" className="sr-only">
+        Calendario de citas
+      </h2>
+      
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2" role="navigation" aria-label="Controles de navegación del calendario">
+        <nav 
+          className="flex flex-wrap items-center gap-2" 
+          role="navigation" 
+          aria-label={t('clientDashboard.calendar.controlsAria')}
+        >
           <Button
             variant="outline"
             size="sm"
             onClick={navigatePrevious}
             className="hover:bg-primary hover:text-primary-foreground hover:border-primary min-h-[44px] min-w-[44px]"
-            aria-label="Ir al período anterior"
-            title="Ir al período anterior"
+            aria-label={t('clientDashboard.calendar.prevPeriod')}
+            title={t('clientDashboard.calendar.prevPeriod')}
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
@@ -295,25 +426,32 @@ export function ClientCalendarView({
             size="sm"
             onClick={goToToday}
             className="hover:bg-primary hover:text-primary-foreground hover:border-primary min-h-[44px] min-w-[44px]"
-            aria-label="Ir a hoy"
-            title="Ir a hoy"
+            aria-label={t('clientDashboard.calendar.today')}
+            title={t('clientDashboard.calendar.today')}
           >
-            Hoy
+            <span className="hidden sm:inline">{t('clientDashboard.calendar.today')}</span>
+            <span className="sm:hidden">Hoy</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={navigateNext}
             className="hover:bg-primary hover:text-primary-foreground hover:border-primary min-h-[44px] min-w-[44px]"
-            aria-label="Ir al período siguiente"
-            title="Ir al período siguiente"
+            aria-label={t('clientDashboard.calendar.nextPeriod')}
+            title={t('clientDashboard.calendar.nextPeriod')}
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
-          <h3 className="text-lg font-semibold text-foreground ml-2">{getHeaderTitle()}</h3>
-        </div>
+          <h3 className="text-base sm:text-lg font-semibold text-foreground ml-2 truncate">
+            {getHeaderTitle()}
+          </h3>
+        </nav>
 
-        <div className="flex items-center gap-2">
+        <div 
+          className="flex flex-wrap items-center gap-2" 
+          role="group" 
+          aria-label={t('clientDashboard.calendar.viewMode')}
+        >
           <Button
             variant={view === 'day' ? 'default' : 'outline'}
             size="sm"
@@ -322,10 +460,12 @@ export function ClientCalendarView({
               view !== 'day' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary',
               'min-h-[44px] min-w-[44px]'
             )}
-            aria-label="Ver día"
-            title="Ver día"
+            aria-label={t('clientDashboard.calendar.day')}
+            aria-pressed={view === 'day'}
+            title={t('clientDashboard.calendar.day')}
           >
-            Día
+            <span className="hidden sm:inline">{t('clientDashboard.calendar.day')}</span>
+            <span className="sm:hidden">Día</span>
           </Button>
           <Button
             variant={view === 'week' ? 'default' : 'outline'}
@@ -335,10 +475,12 @@ export function ClientCalendarView({
               view !== 'week' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary',
               'min-h-[44px] min-w-[44px]'
             )}
-            aria-label="Ver semana"
-            title="Ver semana"
+            aria-label={t('clientDashboard.calendar.week')}
+            aria-pressed={view === 'week'}
+            title={t('clientDashboard.calendar.week')}
           >
-            Semana
+            <span className="hidden sm:inline">{t('clientDashboard.calendar.week')}</span>
+            <span className="sm:hidden">Sem</span>
           </Button>
           <Button
             variant={view === 'month' ? 'default' : 'outline'}
@@ -348,20 +490,21 @@ export function ClientCalendarView({
               view !== 'month' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary',
               'min-h-[44px] min-w-[44px]'
             )}
-            aria-label="Ver mes"
-            title="Ver mes"
+            aria-label={t('clientDashboard.calendar.month')}
+            aria-pressed={view === 'month'}
+            title={t('clientDashboard.calendar.month')}
           >
-            Mes
+            <span className="hidden sm:inline">{t('clientDashboard.calendar.month')}</span>
+            <span className="sm:hidden">Mes</span>
           </Button>
         </div>
       </div>
 
-      <div>
+      <div className="overflow-hidden">
         {view === 'day' && renderDayView()}
         {view === 'week' && renderWeekView()}
         {view === 'month' && renderMonthView()}
       </div>
-    </div>
+    </section>
   )
 }
-

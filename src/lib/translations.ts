@@ -270,6 +270,7 @@ export const translations = {
         weeks: 'weeks',
         month: 'month',
         months: 'months',
+      currency: 'COP',
         year: 'year',
         years: 'years',
         // Days of the week
@@ -1221,6 +1222,9 @@ export const translations = {
 
     // Search
     search: {
+      labels: {
+        searchTypeAria: 'Search type: {type}',
+      },
       types: {
         services: 'Services',
         businesses: 'Businesses',
@@ -1242,6 +1246,7 @@ export const translations = {
         locationNotSpecified: 'Location not specified',
         serviceCategory: 'Service category',
         userNoName: 'User without name',
+        selectResult: 'Select {name}',
         independentProfessional: 'Independent professional',
         professionalServices: 'Service professional',
       },
@@ -1266,6 +1271,9 @@ export const translations = {
         resultsForPlural: 'results for',
         in: 'in',
         searching: 'Searching for results...',
+        distanceUnit: 'km',
+        locationPin: '📍',
+        currency: 'COP',
         noResultsTitle: 'No results found',
         noResultsDescription: 'Try searching with other terms or change the search type',
         typeLabels: {
@@ -2066,6 +2074,32 @@ export const translations = {
           chatInitError: 'Unable to start chat at this time',
           chatError: 'Could not start chat. Please try again.',
           cancelError: 'Could not cancel appointment. Please try again.',
+          // UI strings added during i18n retrofit
+          editAppointmentInfo: 'Edit your appointment details and confirm changes',
+          chatInitialMessage: 'Hi! I have a few questions about my appointment.',
+          chatStarted: 'Chat started with the professional',
+          confirmCancelPrompt: 'Are you sure you want to cancel this appointment?',
+          cancelSuccess: 'Appointment cancelled successfully',
+          detailsTitle: 'Appointment details',
+          serviceLabel: 'Service',
+          dateLabel: 'Date',
+          timeLabel: 'Time',
+          professionalTitle: 'Professional attending you',
+          professionalRole: 'Professional',
+          // Calendar specific
+          calendar: {
+            openAppointmentAt: 'Open appointment {{title}} at {{time}}',
+            addAppointment: 'Add appointment',
+            moreCount: '+{{count}} more',
+            controlsAria: 'Calendar navigation controls',
+            prevPeriod: 'Go to previous period',
+            nextPeriod: 'Go to next period',
+            today: 'Today',
+            day: 'Day',
+            week: 'Week',
+            month: 'Month',
+          },
+          currency: 'COP',
         },
 
         // Appointment Form
@@ -2798,6 +2832,7 @@ export const translations = {
           location: 'Location',
           actions: 'Actions',
         },
+        durationShort: 'Duration: {{minutes}} min',
         // UI labels and buttons
         noProfilePhoto: 'No profile photo',
         locationAndAddress: 'Location & Address',
@@ -2831,6 +2866,10 @@ export const translations = {
         businessesMarked: 'businesses marked as favorites',
         tipDescription:
           'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
+        // Accessibility / dynamic labels
+        openProfileWithName: 'Open profile of {name}',
+        ratingAria: '{rating} out of 5 stars',
+        bookButtonWithName: 'Book appointment at {name}',
       },
 
       // City Selector
@@ -2994,10 +3033,65 @@ export const translations = {
         title: 'Popular Businesses',
         noSuggestions: 'No suggestions available',
         loading: 'Loading suggestions...',
+        openBusiness: 'Open business {{name}}',
+        favoriteBadge: 'Your favorite',
+        bookAgain: 'Book again',
+        bookNow: 'Book appointment',
         viewMore: 'View More',
         basedOnReviews: 'Based on your reviews',
         inCity: 'In',
       },
+
+        // Client History / Appointment History
+        clientHistory: {
+          stats: {
+            total: 'Total',
+            attended: 'Attended',
+            cancelled: 'Cancelled',
+            noShow: 'No-shows',
+            totalPaid: 'Total Paid',
+          },
+          filters: {
+            title: 'Filters',
+            status: 'Status',
+            business: 'Business',
+            location: 'Location',
+            service: 'Service',
+            category: 'Category',
+            employee: 'Employee',
+          },
+          placeholders: {
+            search: 'Search by business, service, professional or location...',
+            businessSearch: 'Search business...',
+            locationSearch: 'Search location...',
+            serviceSearch: 'Search service...',
+          },
+          status: {
+            completed: 'Attended',
+            cancelled: 'Cancelled',
+            no_show: 'No-show',
+            confirmed: 'Confirmed',
+            pending: 'Pending',
+            scheduled: 'Scheduled',
+          },
+          empty: {
+            noAppointments: 'No appointments found',
+            tryFilters: 'Try adjusting filters to see more results',
+            noHistory: "You don't have appointments in your history yet",
+          },
+          priceRanges: {
+            all: 'All prices',
+            '0-500': '$0 - $500',
+            '501-1000': '$501 - $1,000',
+            '1001-2000': '$1,001 - $2,000',
+            '2001plus': '$2,001+',
+          },
+          pagination: {
+            previous: 'Previous',
+            next: 'Next',
+            pageInfo: 'Page {current} of {total}',
+          },
+        },
 
       // Dashboard Overview
       dashboardOverview: {
@@ -4320,6 +4414,9 @@ export const translations = {
 
     // Search
     search: {
+      labels: {
+        searchTypeAria: 'Tipo de búsqueda: {type}',
+      },
       types: {
         services: 'Servicios',
         businesses: 'Negocios',
@@ -4341,6 +4438,7 @@ export const translations = {
         locationNotSpecified: 'Ubicación no especificada',
         serviceCategory: 'Categoría de servicios',
         userNoName: 'Usuario sin nombre',
+        selectResult: 'Seleccionar {name}',
         independentProfessional: 'Profesional independiente',
         professionalServices: 'Profesional de servicios',
       },
@@ -4365,6 +4463,9 @@ export const translations = {
         resultsForPlural: 'resultados para',
         in: 'en',
         searching: 'Buscando resultados...',
+        distanceUnit: 'km',
+        locationPin: '📍',
+        currency: 'COP',
         noResultsTitle: 'No se encontraron resultados',
         noResultsDescription: 'Intenta buscar con otros términos o cambia el tipo de búsqueda',
         typeLabels: {
@@ -5794,6 +5895,20 @@ export const translations = {
       estimatedDuration: 'Duración estimada: {{minutes}} minutos',
       chatWithProfessional: 'Chatear con el profesional',
       chatWithProfessionalAria: 'Chatear con el profesional',
+      // Traducciones para calendario
+      calendar: {
+        openAppointmentAt: 'Abrir cita {{title}} a las {{time}}',
+        addAppointment: 'Agregar cita',
+        moreCount: '+{{count}} más',
+        controlsAria: 'Controles de navegación del calendario',
+        prevPeriod: 'Ir al período anterior',
+        nextPeriod: 'Ir al período siguiente',
+        today: 'Hoy',
+        day: 'Día',
+        week: 'Semana',
+        month: 'Mes',
+      },
+      durationShort: 'Duración: {{minutes}} min',
       chatStarting: 'Iniciando chat...',
       reschedule: 'Reprogramar',
       rescheduleAria: 'Reprogramar cita',
@@ -5801,6 +5916,19 @@ export const translations = {
       cancelAppointmentAria: 'Cancelar cita',
       reviewReminder: 'Te recordaremos en 5 minutos. Tienes {{count}} reseña(s) pendiente(s).',
       thanksForReview: '¡Gracias por tu reseña!',
+  // UI strings added during i18n retrofit
+  editAppointmentInfo: 'Modifica los datos de tu cita y confirma los cambios',
+  chatInitialMessage: '¡Hola! Tengo algunas preguntas sobre mi cita.',
+  chatStarted: 'Chat iniciado con el profesional',
+  confirmCancelPrompt: '¿Estás seguro de que deseas cancelar esta cita?',
+  cancelSuccess: 'Cita cancelada exitosamente',
+  detailsTitle: 'Detalles de la cita',
+  serviceLabel: 'Servicio',
+  dateLabel: 'Fecha',
+  timeLabel: 'Hora',
+  professionalTitle: 'Profesional que te atenderá',
+  professionalRole: 'Profesional',
+  currency: 'COP',
     },
 
     // Favorites List
@@ -5818,6 +5946,10 @@ export const translations = {
       businessesMarked: 'negocios marcados',
       tipDescription:
         'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
+      // Accessibility / dynamic labels
+      openProfileWithName: 'Abrir perfil de {name}',
+      ratingAria: '{rating} de 5 estrellas',
+      bookButtonWithName: 'Reservar cita en {name}',
     },
 
     // City Selector
@@ -5981,9 +6113,64 @@ export const translations = {
       title: 'Negocios Populares',
       noSuggestions: 'Sin sugerencias disponibles',
       loading: 'Cargando sugerencias...',
+      openBusiness: 'Abrir negocio {{name}}',
+      favoriteBadge: 'Tu favorito',
+      bookAgain: 'Reservar de nuevo',
+      bookNow: 'Agendar cita',
       viewMore: 'Ver Más',
       basedOnReviews: 'Basado en tus reseñas',
       inCity: 'En',
+    },
+
+    // Client History / Appointment History
+    clientHistory: {
+      stats: {
+        total: 'Total',
+        attended: 'Asistidas',
+        cancelled: 'Canceladas',
+        noShow: 'Perdidas',
+        totalPaid: 'Total Pagado',
+      },
+      filters: {
+        title: 'Filtros',
+        status: 'Estado',
+        business: 'Negocio',
+        location: 'Sede',
+        service: 'Servicio',
+        category: 'Categoría',
+        employee: 'Empleado',
+      },
+      placeholders: {
+        search: 'Buscar por negocio, servicio, profesional o sede...',
+        businessSearch: 'Buscar negocio...',
+        locationSearch: 'Buscar sede...',
+        serviceSearch: 'Buscar servicio...',
+      },
+      status: {
+        completed: 'Asistida',
+        cancelled: 'Cancelada',
+        no_show: 'Perdida',
+        confirmed: 'Confirmada',
+        pending: 'Pendiente',
+        scheduled: 'Agendada',
+      },
+      empty: {
+        noAppointments: 'No se encontraron citas',
+        tryFilters: 'Intenta ajustar los filtros para ver más resultados',
+        noHistory: 'Aún no tienes citas en tu historial',
+      },
+      priceRanges: {
+        all: 'Todos los precios',
+        '0-500': '$0 - $500',
+        '501-1000': '$501 - $1,000',
+        '1001-2000': '$1,001 - $2,000',
+        '2001plus': '$2,001+',
+      },
+      pagination: {
+        previous: 'Anterior',
+        next: 'Siguiente',
+        pageInfo: 'Página {current} de {total}',
+      },
     },
 
     // Dashboard Overview

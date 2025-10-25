@@ -175,29 +175,37 @@ export function ChatWindow({
     .slice(0, 2)
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <section 
+      className="flex flex-col h-full bg-background max-w-[100vw]"
+      role="region"
+      aria-labelledby="chat-window-title"
+      aria-live="polite"
+    >
+      <h2 id="chat-window-title" className="sr-only">
+        Ventana de conversación
+      </h2>
+
       {/* Header */}
-      <div className="border-b bg-background p-3 sm:p-4 pt-[env(safe-area-inset-top)] flex items-center justify-between">
-        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-          {onBackToList && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden h-11 w-11 sm:h-9 sm:w-9 mr-1"
-              onClick={onBackToList}
-              aria-label="Volver a lista"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
-          <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
-            <AvatarImage src={otherUser?.avatar_url || undefined} alt={title} />
-            <AvatarFallback>{initials}</AvatarFallback>
+      <header 
+        className="flex items-center justify-between p-3 sm:p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        role="banner"
+        aria-label="Información de la conversación"
+      >
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+            <AvatarImage src={otherUser?.avatar_url || ''} alt={`Avatar de ${otherUser?.full_name || 'Usuario'}`} />
+            <AvatarFallback className="text-xs sm:text-sm">
+              {otherUser?.full_name?.charAt(0) || 'U'}
+            </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-sm sm:text-base truncate">{title}</h2>
-            {otherUser?.email && (
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{otherUser.email}</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium text-sm sm:text-base truncate">
+              {conversation.title || otherUser?.full_name || 'Usuario'}
+            </h3>
+            {otherUser && (
+              <p className="text-xs sm:text-sm text-muted-foreground truncate" aria-label={`Email: ${otherUser.email}`}>
+                {otherUser.email}
+              </p>
             )}
           </div>
         </div>
@@ -209,25 +217,27 @@ export function ChatWindow({
             size="icon"
             disabled
             title={t('chat.callComingSoon')}
-            className="hidden sm:flex h-9 w-9"
+            aria-label={t('chat.callComingSoon')}
+            className="hidden sm:flex min-h-[44px] min-w-[44px] h-9 w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Phone className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             disabled
             title={t('chat.videoComingSoon')}
-            className="hidden sm:flex h-9 w-9"
+            aria-label={t('chat.videoComingSoon')}
+            className="hidden sm:flex min-h-[44px] min-w-[44px] h-9 w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <Video className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Video className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
           </Button>
 
           {/* Botón búsqueda - toggle input */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 sm:h-9 sm:w-9"
+            className="min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             onClick={() => {
               setIsSearchOpen(!isSearchOpen)
               if (isSearchOpen) {
@@ -237,6 +247,7 @@ export function ChatWindow({
             title={isSearchOpen ? t('chat.search.close') : t('chat.search.open')}
             aria-label={isSearchOpen ? t('chat.search.close') : t('chat.search.open')}
             aria-expanded={isSearchOpen}
+            aria-controls="search-bar"
           >
             <SearchIcon className="h-5 w-5" aria-hidden="true" />
           </Button>
@@ -244,14 +255,27 @@ export function ChatWindow({
           {/* Menú de opciones */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9" aria-label="Opciones de conversación">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" 
+                aria-label="Opciones de conversación"
+                title="Opciones de conversación"
+              >
                 <MoreVertical className="h-5 w-5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 max-w-[95vw]">
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 max-w-[95vw]"
+              role="menu"
+              aria-label="Menú de opciones de conversación"
+            >
               {onTogglePin && (
                 <DropdownMenuItem
                   onClick={() => onTogglePin(conversation.id, !(conversation as any).is_pinned)}
+                  role="menuitem"
+                  className="focus:outline-none focus:bg-accent"
                 >
                   {(conversation as any).is_pinned ? 'Desfijar' : 'Fijar'} conversación
                 </DropdownMenuItem>
@@ -259,6 +283,8 @@ export function ChatWindow({
               {onToggleMute && (
                 <DropdownMenuItem
                   onClick={() => onToggleMute(conversation.id, !(conversation as any).is_muted)}
+                  role="menuitem"
+                  className="focus:outline-none focus:bg-accent"
                 >
                   {(conversation as any).is_muted ? 'Quitar silencio' : 'Silenciar'} conversación
                 </DropdownMenuItem>
@@ -266,7 +292,8 @@ export function ChatWindow({
               {onToggleArchive && (
                 <DropdownMenuItem
                   onClick={() => onToggleArchive(conversation.id, !conversation.is_archived)}
-                  className="text-destructive"
+                  className="text-destructive focus:outline-none focus:bg-accent"
+                  role="menuitem"
                 >
                   {conversation.is_archived ? 'Desarchivar' : 'Archivar'} conversación
                 </DropdownMenuItem>
@@ -274,11 +301,16 @@ export function ChatWindow({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+      </header>
 
       {/* Barra de búsqueda (condicional) */}
       {isSearchOpen && (
-        <div className="border-b bg-muted/30 px-3 py-2 sm:px-4">
+        <section 
+          id="search-bar"
+          className="border-b bg-muted/30 px-3 py-2 sm:px-4"
+          role="search"
+          aria-label="Búsqueda de mensajes"
+        >
           <div className="relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <input
@@ -289,30 +321,36 @@ export function ChatWindow({
               className="w-full pl-9 pr-12 py-2 text-sm sm:text-base bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
               autoFocus
               aria-label="Buscar mensajes en la conversación"
-              aria-describedby={searchQuery ? 'search-results-count' : undefined}
+              aria-describedby={searchQuery ? 'search-results-count' : 'search-help'}
+              title="Buscar mensajes en la conversación"
             />
+            <p id="search-help" className="sr-only">
+              Escribe para buscar mensajes en esta conversación
+            </p>
             {searchQuery && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-9 sm:w-9"
+                className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] h-11 w-11 sm:h-9 sm:w-9 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 onClick={() => setSearchQuery('')}
                 aria-label="Limpiar búsqueda"
+                title="Limpiar búsqueda"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </Button>
             )}
             {searchQuery && (
               <output
                 id="search-results-count"
-                className="absolute right-14 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+                className="absolute right-14 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-muted-foreground"
                 aria-live="polite"
+                role="status"
               >
                 {filteredMessages.length} resultado{filteredMessages.length !== 1 ? 's' : ''}
               </output>
             )}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Mensajes */}
@@ -322,28 +360,29 @@ export function ChatWindow({
         role="log"
         aria-label="Historial de mensajes"
         aria-live="polite"
+        tabIndex={0}
       >
         {loading && messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">Cargando mensajes...</p>
+          <div className="flex items-center justify-center h-full" role="status" aria-live="polite">
+            <p className="text-muted-foreground text-sm sm:text-base">Cargando mensajes...</p>
           </div>
         )}
 
         {!loading && messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-full" role="status">
             <div className="text-center">
-              <div className="text-4xl mb-2">👋</div>
-              <p className="text-muted-foreground">No hay mensajes. ¡Envía el primero!</p>
+              <div className="text-4xl mb-2" aria-hidden="true">👋</div>
+              <p className="text-muted-foreground text-sm sm:text-base">No hay mensajes. ¡Envía el primero!</p>
             </div>
           </div>
         )}
 
         {/* Mostrar mensaje si hay búsqueda pero sin resultados */}
         {searchQuery && filteredMessages.length === 0 && messages.length > 0 && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-full" role="status" aria-live="polite">
             <div className="text-center">
-              <div className="text-4xl mb-2">🔍</div>
-              <p className="text-muted-foreground">
+              <div className="text-4xl mb-2" aria-hidden="true">🔍</div>
+              <p className="text-muted-foreground text-sm sm:text-base">
                 No se encontraron mensajes con "{searchQuery}"
               </p>
             </div>
@@ -351,7 +390,7 @@ export function ChatWindow({
         )}
 
         {filteredMessages.length > 0 && (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4" role="group" aria-label="Lista de mensajes">
             {filteredMessages.map(message => (
               <ChatComponentErrorBoundary key={message.id} componentName="MessageBubble">
                 <MessageBubble
@@ -364,13 +403,13 @@ export function ChatWindow({
                 />
               </ChatComponentErrorBoundary>
             ))}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} aria-hidden="true" />
           </div>
         )}
 
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
-          <div className="mt-3 sm:mt-4">
+          <div className="mt-3 sm:mt-4" role="status" aria-live="polite" aria-label="Indicador de escritura">
             <ChatComponentErrorBoundary componentName="TypingIndicator">
               <TypingIndicator typingUsers={typingUsers} />
             </ChatComponentErrorBoundary>
@@ -379,17 +418,19 @@ export function ChatWindow({
       </ScrollArea>
 
       {/* Input */}
-      <ChatComponentErrorBoundary componentName="ChatInput">
-        <ChatInput
-          conversationId={conversation.id}
-          onSendMessage={handleSend}
-          onTypingChange={onTypingChange}
-          replyToMessage={replyToMessage}
-          onCancelReply={() => setReplyToMessage(null)}
-          placeholder={getInputPlaceholder(editingMessageId, replyToMessage)}
-        />
-      </ChatComponentErrorBoundary>
-    </div>
+      <footer role="contentinfo" aria-label="Área de entrada de mensajes">
+        <ChatComponentErrorBoundary componentName="ChatInput">
+          <ChatInput
+            conversationId={conversation.id}
+            onSendMessage={handleSend}
+            onTypingChange={onTypingChange}
+            replyToMessage={replyToMessage}
+            onCancelReply={() => setReplyToMessage(null)}
+            placeholder={getInputPlaceholder(editingMessageId, replyToMessage)}
+          />
+        </ChatComponentErrorBoundary>
+      </footer>
+    </section>
   )
 }
 

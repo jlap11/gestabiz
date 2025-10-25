@@ -267,7 +267,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
           <DropdownMenuTrigger asChild>
             <button
               className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 hover:bg-accent rounded-l-lg transition-colors border-r border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px]"
-              aria-label={`Tipo de búsqueda: ${typeLabel}`}
+              aria-label={t('search.labels.searchTypeAria', { type: typeLabel })}
               title={typeLabel}
               aria-haspopup="menu"
             >
@@ -338,7 +338,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                     onClick={() => handleResultClick(result)}
                     className="w-full flex items-start gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0 group min-h-[68px]"
                     role="option"
-                    aria-label={`Seleccionar ${result.name}`}
+                    aria-label={t('search.results.selectResult', { name: result.name })}
                   >
                     <div className="flex-shrink-0 mt-0.5 p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background transition-colors">
                       <ResultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />

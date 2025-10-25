@@ -201,9 +201,22 @@ export function ChatLayout({
   const totalUnreadCount = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
 
   return (
-    <div className="flex h-screen bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+    <main 
+      role="main" 
+      aria-labelledby="chat-layout-title"
+      className="flex h-screen bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] max-w-[100vw] overflow-hidden"
+    >
+      {/* Hidden heading for screen readers */}
+      <h1 id="chat-layout-title" className="sr-only">
+        Chat Interface
+      </h1>
+
       {/* Sidebar: Lista de conversaciones */}
-      <div className={`${activeConversation ? 'hidden md:block' : 'block'} md:w-80 md:flex-shrink-0 w-full`}>
+      <aside 
+        className={`${activeConversation ? 'hidden md:block' : 'block'} md:w-80 lg:w-96 md:flex-shrink-0 w-full border-r`}
+        role="complementary"
+        aria-label="Conversations list"
+      >
         <ConversationList
           conversations={conversations}
           activeConversationId={activeConversation?.id || null}
@@ -211,21 +224,33 @@ export function ChatLayout({
           totalUnreadCount={totalUnreadCount}
           loading={loading}
         />
-      </div>
+      </aside>
 
       {/* Contenido principal: Ventana de chat */}
-      <div className={`${activeConversation ? 'block' : 'hidden'} md:block flex-1 flex flex-col`}>
+      <section 
+        className={`${activeConversation ? 'block' : 'hidden'} md:block flex-1 flex flex-col min-w-0`}
+        role="region"
+        aria-label="Chat conversation"
+        aria-live="polite"
+      >
         {/* Error alert (si existe) */}
         {error && (
-          <Alert variant="destructive" className="rounded-none border-x-0 border-t-0">
-            <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
+          <Alert 
+            variant="destructive" 
+            className="rounded-none border-x-0 border-t-0 m-0"
+            role="alert"
+            aria-live="assertive"
+          >
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <AlertDescription className="flex items-center justify-between text-sm sm:text-base">
               <span>{error}</span>
               <button
                 onClick={() => {
                   /* Error se limpia automáticamente */
                 }}
-                className="text-sm underline hover:no-underline"
+                className="text-sm underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-destructive-foreground focus:ring-offset-2 min-h-[44px] min-w-[44px] px-2"
+                aria-label="Close error message"
+                title="Close error message"
               >
                 {t('common.actions.close')}
               </button>
@@ -251,7 +276,7 @@ export function ChatLayout({
             onBackToList={() => setActiveConversationId(null)}
           />
         </ChatErrorBoundary>
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }

@@ -83,20 +83,39 @@ export function ServiceSelection({
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center">
+      <section 
+        role="status" 
+        aria-live="polite" 
+        aria-label="Cargando servicios disponibles"
+        className="p-8 flex items-center justify-center"
+      >
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[#8b5cf6] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-[#94a3b8]">Loading services...</p>
+          <span className="sr-only">Cargando lista de servicios disponibles</span>
         </div>
-      </div>
+      </section>
     )
   }
 
   return (
-    <div className="p-6">
-      <h3 className="text-xl font-semibold text-foreground mb-6">Select a Service</h3>
+    <section 
+      role="region" 
+      aria-labelledby="service-selection-title"
+      className="p-6 max-w-[95vw] mx-auto"
+    >
+      <h3 
+        id="service-selection-title"
+        className="text-xl font-semibold text-foreground mb-6"
+      >
+        Select a Service
+      </h3>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div 
+        role="list"
+        aria-label="Lista de servicios disponibles"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+      >
         {services.map(service => {
           const isSelected = selectedServiceId === service.id
           const wasPreselected = isPreselected && isSelected
@@ -104,11 +123,23 @@ export function ServiceSelection({
           return (
             <Card
               key={service.id}
+              role="listitem"
               onClick={() => onSelectService(service)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onSelectService(service)
+                }
+              }}
+              tabIndex={0}
+              aria-label={`Servicio: ${service.name}, duración: ${service.duration} minutos${isSelected ? ', seleccionado' : ''}${wasPreselected ? ', preseleccionado' : ''}`}
+              aria-pressed={isSelected}
               className={cn(
                 'relative bg-card border-2 rounded-xl overflow-hidden',
                 'cursor-pointer transition-all duration-200',
                 'hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20',
+                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                'min-h-[44px] min-w-[44px]',
                 isSelected ? 'border-primary bg-primary/10' : 'border-border',
                 wasPreselected && 'ring-2 ring-green-500/50'
               )}
@@ -117,7 +148,7 @@ export function ServiceSelection({
               {wasPreselected && (
                 <div className="absolute top-2 left-2 z-10">
                   <Badge className="bg-green-500 text-white text-xs shadow-lg">
-                    <Check className="w-3 h-3 mr-1" />
+                    <Check className="w-3 h-3 mr-1" aria-hidden="true" />
                     Preseleccionado
                   </Badge>
                 </div>
@@ -127,7 +158,8 @@ export function ServiceSelection({
               <div className="aspect-square w-full relative">
                 <img
                   src={getServiceImage(service.name)}
-                  alt={service.name}
+                  alt={`Imagen del servicio ${service.name}`}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
 
@@ -139,6 +171,7 @@ export function ServiceSelection({
                       'flex items-center justify-center',
                       'animate-in zoom-in duration-200'
                     )}
+                    aria-hidden="true"
                   >
                     <Check className="w-5 h-5 text-primary-foreground" />
                   </div>
@@ -147,8 +180,12 @@ export function ServiceSelection({
 
               {/* Label debajo de la imagen */}
               <div className="p-3 text-center bg-muted/50">
-                <h3 className="text-base font-semibold text-foreground truncate">{service.name}</h3>
-                <p className="text-xs text-muted-foreground mt-1">{service.duration} min</p>
+                <h4 className="text-sm sm:text-base font-semibold text-foreground truncate">
+                  {service.name}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {service.duration} min
+                </p>
               </div>
             </Card>
           )
@@ -156,10 +193,17 @@ export function ServiceSelection({
       </div>
 
       {services.length === 0 && (
-        <div className="text-center py-12">
+        <section 
+          role="region" 
+          aria-labelledby="no-services-title"
+          className="text-center py-12"
+        >
+          <h4 id="no-services-title" className="sr-only">
+            No hay servicios disponibles
+          </h4>
           <p className="text-[#94a3b8]">No services available</p>
-        </div>
+        </section>
       )}
-    </div>
+    </section>
   )
 }

@@ -103,17 +103,19 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
   return (
     <div
       className={
-        user.activeRole === 'client' ? 'grid grid-cols-1 md:grid-cols-2 gap-8' : 'space-y-6'
+        user.activeRole === 'client' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 max-w-[95vw]' : 'space-y-6 max-w-[95vw]'
       }
+      role="main"
+      aria-label="Vista de citas"
     >
       {/* Columna principal: Citas programadas */}
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Citas programadas</h2>
+      <section aria-labelledby="appointments-title">
+        <h2 id="appointments-title" className="text-xl lg:text-2xl font-bold mb-2">Citas programadas</h2>
         {Object.keys(groupedAppointments).length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <Calendar size={64} className="mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No tienes reservas pendientes</h3>
+          <Card className="max-w-full">
+            <CardContent className="py-8 lg:py-16 text-center" role="status" aria-live="polite">
+              <Calendar size={48} className="mx-auto text-muted-foreground mb-4 lg:w-16 lg:h-16" aria-hidden="true" />
+              <h3 className="text-base lg:text-lg font-semibold mb-2">No tienes reservas pendientes</h3>
               {/* <Button onClick={() => setShowForm(true)} className="gap-2">
                 <Plus size={16} />
                 Crear Reserva
@@ -121,58 +123,70 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
             </CardContent>
           </Card>
         ) : (
-          Object.entries(groupedAppointments).map(([month, days]) => (
-            <div key={month} className="mb-8">
-              <h3 className="text-xl font-semibold mb-4">{month}</h3>
-              {Object.entries(days).map(([day, appointments]) => (
-                <div key={day} className="mb-6">
-                  <h4 className="text-lg font-semibold mb-2">{day}</h4>
-                  <div className="space-y-4">
-                    {appointments.map(appointment => (
-                      <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-lg">{appointment.title}</h3>
-                              <Badge className={getStatusColor(appointment.status)}>
-                                {getStatusLabel(appointment.status)}
-                              </Badge>
+          <div role="region" aria-label="Lista de citas agrupadas por fecha">
+            {Object.entries(groupedAppointments).map(([month, days]) => (
+              <section key={month} className="mb-6 lg:mb-8" aria-labelledby={`month-${month.replace(/\s+/g, '-')}`}>
+                <h3 id={`month-${month.replace(/\s+/g, '-')}`} className="text-lg lg:text-xl font-semibold mb-4">{month}</h3>
+                {Object.entries(days).map(([day, appointments]) => (
+                  <div key={day} className="mb-4 lg:mb-6" role="group" aria-labelledby={`day-${day.replace(/\s+/g, '-')}`}>
+                    <h4 id={`day-${day.replace(/\s+/g, '-')}`} className="text-base lg:text-lg font-semibold mb-2">{day}</h4>
+                    <div className="space-y-3 lg:space-y-4" role="list" aria-label={`Citas para ${day}`}>
+                      {appointments.map(appointment => (
+                        <Card 
+                          key={appointment.id} 
+                          className="hover:shadow-md transition-shadow max-w-full"
+                          role="listitem"
+                        >
+                          <CardContent className="p-4 lg:p-6">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <h5 className="font-semibold text-base lg:text-lg flex-1 min-w-0 truncate">{appointment.title}</h5>
+                                <Badge 
+                                  className={`${getStatusColor(appointment.status)} self-start sm:self-center flex-shrink-0`}
+                                  aria-label={`Estado: ${getStatusLabel(appointment.status)}`}
+                                >
+                                  {getStatusLabel(appointment.status)}
+                                </Badge>
+                              </div>
+                              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-muted-foreground text-sm">
+                                <span className="flex-shrink-0">
+                                  <span className="font-medium">Negocio:</span>{' '}
+                                  <span className="break-words">
+                                    {appointment.site_name || appointment.location || 'Sin nombre'}
+                                  </span>
+                                </span>
+                                <span className="flex-shrink-0">
+                                  <span className="font-medium">Hora:</span> {formatStartTime(appointment)} -{' '}
+                                  {formatEndTime(appointment)}
+                                </span>
+                                <span className="flex-shrink-0">
+                                  <span className="font-medium">Lugar:</span>{' '}
+                                  <span className="break-words">{appointment.location || 'Sin lugar'}</span>
+                                </span>
+                              </div>
+                              {appointment.description && (
+                                <p className="text-sm text-muted-foreground mb-2 break-words">
+                                  {appointment.description}
+                                </p>
+                              )}
                             </div>
-                            <div className="flex flex-wrap gap-4 text-muted-foreground text-sm">
-                              <span>
-                                <b>Negocio:</b>{' '}
-                                {appointment.site_name || appointment.location || 'Sin nombre'}
-                              </span>
-                              <span>
-                                <b>Hora:</b> {formatStartTime(appointment)} -{' '}
-                                {formatEndTime(appointment)}
-                              </span>
-                              <span>
-                                <b>Lugar:</b> {appointment.location || 'Sin lugar'}
-                              </span>
-                            </div>
-                            {appointment.description && (
-                              <p className="text-sm text-muted-foreground mb-2">
-                                {appointment.description}
-                              </p>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ))
+                ))}
+              </section>
+            ))}
+          </div>
         )}
-      </div>
+      </section>
 
       {/* Columna secundaria: Recomendados */}
       {user.activeRole === 'client' && (
-        <div>
+        <aside aria-label="Negocios recomendados" className="max-w-full">
           <RecommendedBusinesses />
-        </div>
+        </aside>
       )}
     </div>
   )

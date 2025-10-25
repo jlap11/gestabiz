@@ -341,7 +341,7 @@ export const SearchResults = React.memo(function SearchResults({
 
               return {
                 id: user.id,
-                name: user.full_name || 'Usuario sin nombre',
+                name: user.full_name || t('search.results.userNoName'),
                 type: 'users' as SearchType,
                 imageUrl: user.avatar_url,
                 rating: user.average_rating || undefined,
@@ -379,7 +379,7 @@ export const SearchResults = React.memo(function SearchResults({
     }
 
     fetchResults()
-  }, [searchTerm, searchType, userLocation])
+  }, [searchTerm, searchType, userLocation, calculateDistance, t])
 
   // Sort results
   const sortedResults = useMemo(() => {
@@ -477,9 +477,9 @@ export const SearchResults = React.memo(function SearchResults({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-label={t('search.resultsPage.searching')}>
         <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center py-12">
+          <CardContent className="flex flex-col items-center justify-center py-12" role="status" aria-live="polite">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" aria-hidden="true" />
             <p className="text-lg font-medium text-foreground">
               {t('search.resultsPage.searching')}
@@ -494,7 +494,7 @@ export const SearchResults = React.memo(function SearchResults({
   }
 
   return (
-    <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-label={t('search.resultsPage.title')}>
       <div className="min-h-screen py-4 sm:py-8 px-3 sm:px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header - Mobile Responsive */}
@@ -548,9 +548,10 @@ export const SearchResults = React.memo(function SearchResults({
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2 min-h-[44px] w-full sm:w-auto"
+              className="gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto"
               aria-label={t('search.filters.filters')}
               title={t('search.filters.filters')}
+              aria-pressed={showFilters}
             >
               <SlidersHorizontal className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline">{t('search.filters.filters')}</span>
@@ -574,10 +575,11 @@ export const SearchResults = React.memo(function SearchResults({
           {/* Results Grid - Mobile Responsive */}
           {sortedResults.length === 0 ? (
             <Card>
-              <CardContent className="py-12 sm:py-16 px-4 text-center">
+              <CardContent className="py-12 sm:py-16 px-4 text-center" role="status" aria-live="polite">
                 <div className="mb-3 sm:mb-4">
                   {React.createElement(getTypeIcon(searchType), {
                     className: 'h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground opacity-50',
+                    'aria-hidden': true,
                   })}
                 </div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
@@ -589,7 +591,7 @@ export const SearchResults = React.memo(function SearchResults({
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" role="list" aria-label={t('search.resultsPage.listLabel')}>
               {sortedResults.map(result => {
                 const TypeIcon = getTypeIcon(result.type)
                 return (
@@ -598,6 +600,13 @@ export const SearchResults = React.memo(function SearchResults({
                     className="hover:shadow-lg transition-all cursor-pointer group"
                     onClick={() => onResultClick(result)}
                     role="button"
+                    tabIndex={0}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onResultClick(result)
+                      }
+                    }}
                     aria-label={`${t('search.resultsPage.openResult')} ${result.name}`}
                     title={`${t('search.resultsPage.openResult')} ${result.name}`}
                   >
@@ -639,16 +648,16 @@ export const SearchResults = React.memo(function SearchResults({
                         {/* Business (for services/users) */}
                         {result.business && (
                           <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                            <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                            <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                             <span className="truncate">{result.business.name}</span>
                           </div>
                         )}
 
                         {/* Rating */}
                         {result.rating !== undefined && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" aria-label={t('search.resultsPage.ratingLabel')}>
                             <div className="flex items-center gap-1">
-                              <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                              <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" aria-hidden="true" />
                               <span className="font-semibold text-foreground text-sm sm:text-base">
                                 {result.rating.toFixed(1)}
                               </span>
@@ -670,15 +679,15 @@ export const SearchResults = React.memo(function SearchResults({
                         {/* Distance */}
                         {result.distance !== undefined && (
                           <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                            <span>{result.distance.toFixed(1)} km</span>
+                            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
+                            <span>{result.distance.toFixed(1)} {t('search.resultsPage.distanceUnit')}</span>
                           </div>
                         )}
 
                         {/* Location */}
                         {result.location?.city && (
                           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
-                            📍 {result.location.city}
+                            <span aria-hidden="true">📍</span> {result.location.city}
                           </div>
                         )}
 
@@ -691,7 +700,7 @@ export const SearchResults = React.memo(function SearchResults({
                                 minimumFractionDigits: 0,
                                 maximumFractionDigits: 0,
                               })}{' '}
-                              COP
+                              {t('search.resultsPage.currency')}
                             </span>
                           </div>
                         )}
@@ -699,7 +708,7 @@ export const SearchResults = React.memo(function SearchResults({
                         {/* Category */}
                         {result.category && (
                           <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-                            <Tag className="h-3 w-3 flex-shrink-0" />
+                            <Tag className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
                             <span className="truncate">{result.category}</span>
                           </div>
                         )}

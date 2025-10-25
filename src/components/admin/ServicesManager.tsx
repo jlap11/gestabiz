@@ -407,141 +407,192 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div className="flex items-center justify-center p-12" role="status" aria-label={t('common.loading')}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
+        <span className="sr-only">{t('common.loading')}</span>
       </div>
     )
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
-      {/* Header - Responsive */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+    <main 
+      role="main" 
+      aria-labelledby="services-manager-title"
+      className="p-3 sm:p-6 space-y-3 sm:space-y-4 max-w-[100vw] overflow-x-hidden"
+    >
+      <h1 id="services-manager-title" className="sr-only">{t('admin.services.title')}</h1>
+      
+      {/* Header - Enhanced Accessibility */}
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+          <h2 
+            id="services-header" 
+            className="text-xl sm:text-2xl font-bold text-foreground truncate"
+            aria-describedby="services-subtitle"
+          >
             {t('admin.services.title')}
           </h2>
-          <p className="text-muted-foreground text-xs sm:text-sm">{t('admin.services.subtitle')}</p>
+          <p id="services-subtitle" className="text-muted-foreground text-xs sm:text-sm">
+            {t('admin.services.subtitle')}
+          </p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
+          className="bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 w-full sm:w-auto min-h-[44px] min-w-[44px]"
+          aria-label={t('admin.actions.addService')}
+          title={t('admin.actions.addService')}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
           <span className="hidden sm:inline">{t('admin.actions.addService')}</span>
           <span className="sm:hidden">{t('admin.actions.newService')}</span>
         </Button>
-      </div>
+      </header>
 
-      {/* Services Grid - Responsive */}
+      {/* Services Grid - Enhanced Accessibility */}
       {services.length === 0 ? (
-        <Card className="bg-card border-border">
-          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
-            <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
-            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-              {t('admin.services.noServicesTitle')}
-            </h3>
-            <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
-              {t('admin.services.noServicesDesc')}
-            </p>
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t('admin.actions.createFirstService')}
-            </Button>
-          </CardContent>
-        </Card>
+        <section role="region" aria-labelledby="no-services-title">
+          <Card className="bg-card border-border">
+            <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+              <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" aria-hidden="true" />
+              <h3 id="no-services-title" className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+                {t('admin.services.noServicesTitle')}
+              </h3>
+              <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
+                {t('admin.services.noServicesDesc')}
+              </p>
+              <Button
+                onClick={() => handleOpenDialog()}
+                className="bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px] w-full sm:w-auto"
+                aria-label={t('admin.actions.createFirstService')}
+                title={t('admin.actions.createFirstService')}
+              >
+                <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+                {t('admin.actions.createFirstService')}
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {services.map(service => (
-            <Card
-              key={service.id}
-              className="bg-card border-border hover:border-border/80 transition-colors"
-            >
-              <CardHeader className="p-3 sm:p-6">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    {service.image_url && (
-                      <img
-                        src={service.image_url}
-                        alt={service.name}
-                        className="w-full h-28 sm:h-32 object-cover rounded-lg mb-2 sm:mb-3"
-                      />
-                    )}
-                    <CardTitle className="text-foreground text-base sm:text-lg truncate">
-                      {service.name}
-                    </CardTitle>
-                    {!service.is_active && (
-                      <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
-                        {t('common.states.inactive')}
-                      </Badge>
-                    )}
+        <section role="region" aria-labelledby="services-list-title">
+          <h3 id="services-list-title" className="sr-only">{t('admin.services.servicesList')}</h3>
+          <div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"
+            role="list"
+            aria-label={`${services.length} ${t('admin.services.servicesAvailable')}`}
+          >
+            {services.map(service => (
+              <Card
+                key={service.id}
+                role="listitem"
+                className="bg-card border-border hover:border-border/80 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                tabIndex={0}
+                aria-labelledby={`service-title-${service.id}`}
+                aria-describedby={`service-details-${service.id}`}
+              >
+                <CardHeader className="p-3 sm:p-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      {service.image_url && (
+                        <img
+                          src={service.image_url}
+                          alt={`${t('admin.services.imageFor')} ${service.name}`}
+                          className="w-full h-28 sm:h-32 object-cover rounded-lg mb-2 sm:mb-3"
+                          loading="lazy"
+                        />
+                      )}
+                      <CardTitle 
+                        id={`service-title-${service.id}`}
+                        className="text-foreground text-base sm:text-lg truncate"
+                      >
+                        {service.name}
+                      </CardTitle>
+                      {!service.is_active && (
+                        <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
+                          {t('common.states.inactive')}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDialog(service)}
+                        className="text-muted-foreground hover:text-foreground focus:ring-2 focus:ring-primary focus:ring-offset-2 min-w-[44px] min-h-[44px]"
+                        aria-label={`${t('admin.actions.edit')} ${service.name}`}
+                        title={`${t('admin.actions.edit')} ${service.name}`}
+                      >
+                        <Edit className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(service.id)}
+                        className="text-muted-foreground hover:text-red-400 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-w-[44px] min-h-[44px]"
+                        aria-label={`${t('admin.actions.delete')} ${service.name}`}
+                        title={`${t('admin.actions.delete')} ${service.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenDialog(service)}
-                      className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(service.id)}
-                      className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                </CardHeader>
+                <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
+                  <div id={`service-details-${service.id}`}>
+                    {service.description && (
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2">
+                        {service.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400 flex-shrink-0" aria-hidden="true" />
+                      <span 
+                        className="text-foreground font-semibold"
+                        aria-label={`${t('admin.services.price')}: ${service.price.toLocaleString('es-CO')} ${service.currency}`}
+                      >
+                        $ {service.price.toLocaleString('es-CO')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" aria-hidden="true" />
+                      <span 
+                        className="text-muted-foreground"
+                        aria-label={`${t('admin.services.duration')}: ${service.duration_minutes} ${t('common.time.minutes')}`}
+                      >
+                        {service.duration_minutes} {t('common.time.minutes')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
-                {service.description && (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                    {service.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400 flex-shrink-0" />
-                  <span className="text-foreground font-semibold">
-                    $ {service.price.toLocaleString('es-CO')}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" />
-                  <span className="text-muted-foreground">
-                    {service.duration_minutes} {t('common.time.minutes')}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* Create/Edit Dialog - Mobile Responsive */}
+      {/* Create/Edit Dialog - Enhanced Accessibility */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent 
+          className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6"
+          role="dialog"
+          aria-labelledby="dialog-title"
+          aria-describedby="dialog-description"
+        >
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle id="dialog-title">
               {editingService ? t('admin.actions.editService') : t('admin.actions.createService')}
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription id="dialog-description" className="text-muted-foreground">
               {editingService
                 ? t('admin.actions.updateServiceInfo')
                 : t('admin.actions.completeServiceInfo')}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="text-sm sm:text-base">
-                {t('admin.services.nameLabel')}
+              <Label htmlFor="name" className="text-sm sm:text-base font-medium">
+                {t('admin.services.nameLabel')} <span className="text-red-500" aria-label={t('common.required')}>*</span>
               </Label>
               <Input
                 id="name"
@@ -549,13 +600,16 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 onChange={e => handleChange('name', e.target.value)}
                 placeholder={t('admin.services.namePlaceholder')}
                 required
-                className="min-h-[44px]"
+                aria-required="true"
+                aria-describedby="name-error"
+                className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
               />
+              <div id="name-error" className="sr-only" aria-live="polite"></div>
             </div>
 
             {/* Description */}
             <div>
-              <Label htmlFor="description" className="text-sm sm:text-base">
+              <Label htmlFor="description" className="text-sm sm:text-base font-medium">
                 {t('admin.services.descriptionLabel')}
               </Label>
               <Textarea
@@ -564,32 +618,45 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                 onChange={e => handleChange('description', e.target.value)}
                 placeholder={t('admin.services.descriptionPlaceholder')}
                 rows={3}
-                className="min-h-[88px]"
+                className="min-h-[88px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-describedby="description-help"
               />
+              <p id="description-help" className="text-xs text-muted-foreground mt-1">
+                {t('admin.services.descriptionHelp')}
+              </p>
             </div>
 
             {/* Duration & Price - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="duration_minutes" className="text-sm sm:text-base">
-                  {t('admin.services.durationLabel')}
+                <Label htmlFor="duration_minutes" className="text-sm sm:text-base font-medium">
+                  {t('admin.services.durationLabel')} <span className="text-red-500" aria-label={t('common.required')}>*</span>
                 </Label>
                 <Input
                   id="duration_minutes"
                   type="number"
                   min="1"
+                  max="1440"
                   value={formData.duration_minutes}
                   onChange={e => handleChange('duration_minutes', parseInt(e.target.value) || 0)}
                   required
-                  className="min-h-[44px]"
+                  aria-required="true"
+                  aria-describedby="duration-help"
+                  className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
+                <p id="duration-help" className="text-xs text-muted-foreground mt-1">
+                  {t('admin.services.durationHelp')}
+                </p>
               </div>
               <div>
-                <Label htmlFor="price" className="text-sm sm:text-base">
-                  {t('admin.services.priceLabel')}
+                <Label htmlFor="price" className="text-sm sm:text-base font-medium">
+                  {t('admin.services.priceLabel')} <span className="text-red-500" aria-label={t('common.required')}>*</span>
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
+                  <span 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base"
+                    aria-hidden="true"
+                  >
                     $
                   </span>
                   <Input
@@ -599,19 +666,26 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                     onChange={e => handlePriceChange(e.target.value)}
                     onBlur={handlePriceBlur}
                     placeholder="0"
-                    className="pl-8 min-h-[44px]"
+                    className="pl-8 min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     required
+                    aria-required="true"
+                    aria-describedby="price-help price-display"
                   />
                 </div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                <div id="price-display" className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                   {formData.price > 0 && `$ ${formatPrice(formData.price)}`}
+                </div>
+                <p id="price-help" className="text-xs text-muted-foreground">
+                  {t('admin.services.priceHelp')}
                 </p>
               </div>
             </div>
 
-            {/* Image Upload (OPCIONAL) */}
-            <div>
-              <Label>{t('admin.services.imageLabel')}</Label>
+            {/* Image Upload */}
+            <fieldset>
+              <legend className="text-sm sm:text-base font-medium mb-2">
+                {t('admin.services.imageLabel')}
+              </legend>
               <p className="text-xs text-muted-foreground mb-2">{t('admin.services.imageDesc')}</p>
               {formData.image_url ? (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2">
@@ -626,9 +700,11 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                       handleChange('image_url', '')
                       setPendingImageFiles([])
                     }}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-white rounded-full p-1 min-w-[32px] min-h-[32px]"
+                    aria-label={t('admin.actions.removeImage')}
+                    title={t('admin.actions.removeImage')}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               ) : pendingImageFiles.length > 0 ? (
@@ -641,9 +717,11 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                   <button
                     type="button"
                     onClick={() => setPendingImageFiles([])}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-white rounded-full p-1 min-w-[32px] min-h-[32px]"
+                    aria-label={t('admin.actions.removeImage')}
+                    title={t('admin.actions.removeImage')}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               ) : editingService ? (
@@ -668,92 +746,116 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
                   folderPath="temp"
                 />
               )}
-            </div>
+            </fieldset>
 
             {/* Location Assignment */}
             {locations.length > 0 && (
-              <div>
-                <Label className="mb-2 block">{t('admin.services.availableAtLocations')}</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
+              <fieldset>
+                <legend className="text-sm sm:text-base font-medium mb-2">
+                  {t('admin.services.availableAtLocations')}
+                </legend>
+                <div 
+                  className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3"
+                  role="group"
+                  aria-labelledby="locations-legend"
+                >
                   {locations.map(location => (
                     <div key={location.id} className="flex items-center gap-2">
                       <Checkbox
                         id={`location-${location.id}`}
                         checked={selectedLocations.includes(location.id)}
                         onCheckedChange={() => handleToggleLocation(location.id)}
+                        className="focus:ring-2 focus:ring-primary focus:ring-offset-2"
                       />
                       <label
                         htmlFor={`location-${location.id}`}
-                        className="text-sm text-foreground cursor-pointer flex items-center gap-2"
+                        className="text-sm text-foreground cursor-pointer flex items-center gap-2 min-h-[44px] flex-1"
                       >
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        {location.name}
+                        <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                        <span>{location.name}</span>
                       </label>
                     </div>
                   ))}
                 </div>
                 {selectedLocations.length === 0 && (
-                  <p className="text-xs text-amber-400 mt-1">
+                  <p className="text-xs text-amber-400 mt-1" role="alert">
                     {t('admin.services.selectAtLeastOneLocation')}
                   </p>
                 )}
-              </div>
+              </fieldset>
             )}
 
             {/* Employee Assignment */}
             {employees.length > 0 && (
-              <div>
-                <Label className="mb-2 block">{t('admin.services.providedBy')}</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
+              <fieldset>
+                <legend className="text-sm sm:text-base font-medium mb-2">
+                  {t('admin.services.providedBy')}
+                </legend>
+                <div 
+                  className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3"
+                  role="group"
+                  aria-labelledby="employees-legend"
+                >
                   {employees.map(employee => (
                     <div key={employee.id} className="flex items-center gap-2">
                       <Checkbox
                         id={`employee-${employee.id}`}
                         checked={selectedEmployees.includes(employee.id)}
                         onCheckedChange={() => handleToggleEmployee(employee.id)}
+                        className="focus:ring-2 focus:ring-primary focus:ring-offset-2"
                       />
                       <label
                         htmlFor={`employee-${employee.id}`}
-                        className="text-sm text-foreground cursor-pointer flex items-center gap-2"
+                        className="text-sm text-foreground cursor-pointer flex items-center gap-2 min-h-[44px] flex-1"
                       >
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        {employee.profiles?.full_name ||
-                          employee.profiles?.email ||
-                          t('admin.services.noName')}
+                        <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                        <span>
+                          {employee.profiles?.full_name ||
+                            employee.profiles?.email ||
+                            t('admin.services.noName')}
+                        </span>
                       </label>
                     </div>
                   ))}
                 </div>
-              </div>
+              </fieldset>
             )}
 
             {/* Active Status */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-h-[44px]">
               <Checkbox
                 id="is_active"
                 checked={formData.is_active}
                 onCheckedChange={checked => handleChange('is_active', checked as boolean)}
+                className="focus:ring-2 focus:ring-primary focus:ring-offset-2"
               />
-              <Label htmlFor="is_active" className="cursor-pointer">
+              <Label 
+                htmlFor="is_active" 
+                className="cursor-pointer text-sm sm:text-base font-medium flex-1"
+              >
                 {t('admin.services.activeLabel')}
               </Label>
             </div>
 
-            {/* compute submit label to avoid nested ternary in JSX */}
-            {/**/}
-            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
               <Button
+                type="button"
                 variant="ghost"
                 onClick={handleCloseDialog}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto"
+                className="min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-label={t('common.actions.cancel')}
               >
                 {t('common.actions.cancel')}
               </Button>
               <Button
                 type="submit"
-                className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
+                className="bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px] w-full sm:w-auto"
                 disabled={isSaving}
+                aria-label={(() => {
+                  if (isSaving) return t('common.actions.saving')
+                  return editingService ? t('common.actions.update') : t('common.actions.create')
+                })()}
               >
                 {(() => {
                   if (isSaving) return t('common.actions.saving')
@@ -764,6 +866,6 @@ export function ServicesManager({ businessId }: Readonly<ServicesManagerProps>) 
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   )
 }

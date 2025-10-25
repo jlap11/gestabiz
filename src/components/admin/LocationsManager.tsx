@@ -284,25 +284,27 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div className="flex items-center justify-center p-12" role="status" aria-label="Cargando sedes">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <main className="p-3 sm:p-6 space-y-4 max-w-[100vw] overflow-x-hidden" role="main" aria-labelledby="locations-manager-title">
+      <h1 id="locations-manager-title" className="sr-only">Gestión de Sedes</h1>
+      
       {/* Header - Responsive */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">Sedes</h2>
-          <p className="text-muted-foreground text-xs sm:text-sm">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate" aria-describedby="locations-subtitle">Sedes</h2>
+          <p id="locations-subtitle" className="text-muted-foreground text-xs sm:text-sm">
             Gestiona las ubicaciones de tu negocio
           </p>
         </div>
         <Button
           onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
+          className="bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 w-full sm:w-auto min-h-[44px] min-w-[44px]"
           aria-label={t('admin.actions.addLocation')}
           title={t('admin.actions.addLocation')}
         >
@@ -310,158 +312,171 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
           <span className="hidden sm:inline">{t('admin.actions.addLocation')}</span>
           <span className="sm:hidden">{t('admin.actions.newLocation')}</span>
         </Button>
-      </div>
+      </header>
 
       {/* Locations Grid - Responsive */}
       {locations.length === 0 ? (
-        <Card className="bg-card border-border">
-          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
-            <MapPin className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" aria-hidden="true" />
-            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-              No hay sedes aún
-            </h3>
-            <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
-              Agrega tu primera sede para empezar a recibir citas
-            </p>
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primera Sede
-            </Button>
-          </CardContent>
-        </Card>
+        <section role="region" aria-labelledby="no-locations-title">
+          <Card className="bg-card border-border">
+            <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+              <MapPin className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" aria-hidden="true" />
+              <h3 id="no-locations-title" className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+                No hay sedes aún
+              </h3>
+              <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
+                Agrega tu primera sede para empezar a recibir citas
+              </p>
+              <Button
+                onClick={() => handleOpenDialog()}
+                className="bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px] w-full sm:w-auto"
+                aria-label="Crear primera sede"
+                title="Crear primera sede"
+              >
+                <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+                Crear Primera Sede
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {locations.map(location => (
-            <Card
-              key={location.id}
-              className="bg-card border-border hover:border-border/80 transition-colors"
-            >
-              <CardHeader className="p-3 sm:p-6">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <CardTitle className="text-foreground text-base sm:text-lg truncate">
-                        {location.name}
-                      </CardTitle>
-                      {location.is_primary && (
-                        <Badge variant="default" className="text-[10px] sm:text-xs">
-                          Principal
-                        </Badge>
-                      )}
-                      {preferredLocationId === location.id && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] sm:text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700"
+        <section role="region" aria-labelledby="locations-list-title">
+          <h2 id="locations-list-title" className="sr-only">Lista de Sedes</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4" role="list" aria-label="Sedes disponibles">
+            {locations.map(location => (
+              <Card
+                key={location.id}
+                className="bg-card border-border hover:border-border/80 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 transition-all p-3 sm:p-4"
+                role="listitem"
+                tabIndex={0}
+                aria-labelledby={`location-name-${location.id}`}
+                aria-describedby={`location-details-${location.id}`}
+              >
+                <CardHeader className="p-0 mb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CardTitle 
+                          id={`location-name-${location.id}`}
+                          className="text-foreground text-base sm:text-lg truncate"
                         >
-                          toast.info(t('common.messages.uploadingImages'))
+                          {location.name}
+                        </CardTitle>
+                        {location.is_primary && (
+                          <Badge variant="default" className="text-[10px] sm:text-xs" aria-label="Sede principal">
+                            Principal
+                          </Badge>
+                        )}
+                        {preferredLocationId === location.id && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] sm:text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700"
+                            aria-label="Sede preferida"
+                          >
+                            Preferida
+                          </Badge>
+                        )}
+                      </div>
+                      {!location.is_active && (
+                        <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs" aria-label="Sede inactiva">
+                          Inactiva
                         </Badge>
                       )}
                     </div>
-                    {!location.is_active && (
-                      <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
-                        Inactiva
-                      </Badge>
-                    )}
+                    <div className="flex gap-1 sm:gap-2 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDialog(location)}
+                        className="text-muted-foreground hover:text-foreground focus:ring-2 focus:ring-primary focus:ring-offset-2 min-w-[44px] min-h-[44px]"
+                        aria-label={`${t('admin.actions.editLocation')} ${location.name}`}
+                        title={`${t('admin.actions.editLocation')} ${location.name}`}
+                      >
+                        <Edit className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(location.id)}
+                        className="text-muted-foreground hover:text-red-400 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-w-[44px] min-h-[44px]"
+                        aria-label={`${t('admin.actions.deleteLocation')} ${location.name}`}
+                        title={`${t('admin.actions.deleteLocation')} ${location.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1 sm:gap-2 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenDialog(location)}
-                      className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
-                      aria-label={t('admin.actions.editLocation')}
-                      title={t('admin.actions.editLocation')}
-                    >
-                      <Edit className="h-4 w-4" aria-hidden="true" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(location.id)}
-                      className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
-                      aria-label={t('admin.actions.deleteLocation')}
-                      title={t('admin.actions.deleteLocation')}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
-                {location.address && (
-                  <div className="flex items-start gap-2 text-xs sm:text-sm">
-                    <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground line-clamp-2">
-                      {location.address}
-                      {location.city && `, ${location.city}`}
-                      {location.state && `, ${location.state}`}
-                    </span>
-                  </div>
-                )}
-                {location.phone && (
-                  <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground truncate">{location.phone}</span>
-                  </div>
-                )}
-                {location.email && (
-                  <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground truncate">{location.email}</span>
-                  </div>
-                )}
-                {location.business_hours && (
-                  <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <span className="font-medium">
-                      {editingLocation
-                        ? t('admin.actions.editLocation')
-                        : t('admin.actions.createLocation')}
-                    </span>
-                    <span className="text-muted-foreground">Horarios configurados</span>
-                    <span className="text-sm text-muted-foreground block mt-1">
-                      {editingLocation
-                        ? t('admin.locationManagement.editDescription')
-                        : t('admin.actions.completeLocationInfo')}
-                    </span>
-                  </div>
-                )}
-                {location.images && location.images.length > 0 && (
-                  <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground">
-                      {location.images.length} imagen(es)
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardHeader>
+                <CardContent className="space-y-2 sm:space-y-3 p-0" id={`location-details-${location.id}`}>
+                  {location.address && (
+                    <div className="flex items-start gap-2 text-xs sm:text-sm">
+                      <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 flex-shrink-0" aria-hidden="true" />
+                      <span className="text-muted-foreground line-clamp-2" aria-label={`Dirección: ${location.address}${location.city ? `, ${location.city}` : ''}${location.state ? `, ${location.state}` : ''}`}>
+                        {location.address}
+                        {location.city && `, ${location.city}`}
+                        {location.state && `, ${location.state}`}
+                      </span>
+                    </div>
+                  )}
+                  {location.phone && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                      <span className="text-muted-foreground truncate" aria-label={`Teléfono: ${location.phone}`}>{location.phone}</span>
+                    </div>
+                  )}
+                  {location.email && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                      <span className="text-muted-foreground truncate" aria-label={`Email: ${location.email}`}>{location.email}</span>
+                    </div>
+                  )}
+                  {location.business_hours && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <span className="font-medium" aria-label="Horarios configurados">
+                        Horarios configurados
+                      </span>
+                    </div>
+                  )}
+                  {location.images && location.images.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                      <span className="text-muted-foreground" aria-label={`${location.images.length} imágenes disponibles`}>
+                        {location.images.length} imagen(es)
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Create/Edit Dialog - Mobile Responsive */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="location-dialog-title" aria-describedby="location-dialog-description">
-      <DialogHeader>
-      <DialogTitle id="location-dialog-title">
-               {editingLocation
-                 ? t('admin.actions.editLocation')
-                 : t('admin.actions.createLocation')}
-             </DialogTitle>
-              <DialogDescription id="location-dialog-description" className="text-muted-foreground">
-               {editingLocation
-                 ? 'Actualiza la información de la sede'
-                 : t('admin.actions.completeLocationInfo')}
-             </DialogDescription>
-           </DialogHeader>
+        <DialogContent 
+          className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6" 
+          role="dialog" 
+          aria-modal="true" 
+          aria-labelledby="location-dialog-title" 
+          aria-describedby="location-dialog-description"
+        >
+          <DialogHeader>
+            <DialogTitle id="location-dialog-title" className="text-lg sm:text-xl">
+              {editingLocation
+                ? t('admin.actions.editLocation')
+                : t('admin.actions.createLocation')}
+            </DialogTitle>
+            <DialogDescription id="location-dialog-description" className="text-muted-foreground text-sm sm:text-base">
+              {editingLocation
+                ? 'Actualiza la información de la sede'
+                : t('admin.actions.completeLocationInfo')}
+            </DialogDescription>
+          </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Name */}
             <div>
-              <Label htmlFor="name" className="text-sm sm:text-base">
+              <Label htmlFor="name" className="text-sm sm:text-base font-medium" aria-label="Nombre de la sede (requerido)">
                 Nombre de la Sede *
               </Label>
               <Input
@@ -470,13 +485,16 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                 onChange={e => handleChange('name', e.target.value)}
                 placeholder="Ej: Sede Centro"
                 required
-                className="min-h-[44px]"
+                aria-required="true"
+                aria-describedby="name-help"
+                className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
               />
+              <span id="name-help" className="sr-only">Ingresa el nombre de la sede</span>
             </div>
 
             {/* Address */}
             <div>
-              <Label htmlFor="address" className="text-sm sm:text-base">
+              <Label htmlFor="address" className="text-sm sm:text-base font-medium">
                 Dirección
               </Label>
               <Input
@@ -484,14 +502,17 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                 value={formData.address}
                 onChange={e => handleChange('address', e.target.value)}
                 placeholder="Calle y número"
-                className="min-h-[44px]"
+                aria-describedby="address-help"
+                className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
               />
+              <span id="address-help" className="sr-only">Ingresa la dirección de la sede</span>
             </div>
 
             {/* City, State, Postal Code - Responsive Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <fieldset className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <legend className="sr-only">Información de ubicación</legend>
               <div>
-                <Label htmlFor="city" className="text-sm sm:text-base">
+                <Label htmlFor="city" className="text-sm sm:text-base font-medium">
                   Ciudad
                 </Label>
                 <Input
@@ -499,11 +520,13 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                   value={formData.city}
                   onChange={e => handleChange('city', e.target.value)}
                   placeholder="Ciudad"
-                  className="min-h-[44px]"
+                  aria-describedby="city-help"
+                  className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
+                <span id="city-help" className="sr-only">Ingresa la ciudad</span>
               </div>
               <div>
-                <Label htmlFor="state" className="text-sm sm:text-base">
+                <Label htmlFor="state" className="text-sm sm:text-base font-medium">
                   Estado/Provincia
                 </Label>
                 <Input
@@ -511,11 +534,13 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                   value={formData.state}
                   onChange={e => handleChange('state', e.target.value)}
                   placeholder="Estado"
-                  className="min-h-[44px]"
+                  aria-describedby="state-help"
+                  className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
+                <span id="state-help" className="sr-only">Ingresa el estado o provincia</span>
               </div>
               <div>
-                <Label htmlFor="postal_code" className="text-sm sm:text-base">
+                <Label htmlFor="postal_code" className="text-sm sm:text-base font-medium">
                   Código Postal
                 </Label>
                 <Input
@@ -523,14 +548,16 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                   value={formData.postal_code}
                   onChange={e => handleChange('postal_code', e.target.value)}
                   placeholder="00000"
-                  className="min-h-[44px]"
+                  aria-describedby="postal-help"
+                  className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
+                <span id="postal-help" className="sr-only">Ingresa el código postal</span>
               </div>
-            </div>
+            </fieldset>
 
             {/* Country */}
             <div>
-              <Label htmlFor="country" className="text-sm sm:text-base">
+              <Label htmlFor="country" className="text-sm sm:text-base font-medium">
                 País
               </Label>
               <Input
@@ -539,14 +566,17 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                 readOnly
                 placeholder="País"
                 autoComplete="country"
-                className="min-h-[44px]"
+                aria-describedby="country-help"
+                className="min-h-[44px] bg-muted"
               />
+              <span id="country-help" className="sr-only">País predeterminado: Colombia</span>
             </div>
 
             {/* Phone & Email - Responsive Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <legend className="sr-only">Información de contacto</legend>
               <div>
-                <Label htmlFor="phone" className="text-sm sm:text-base">
+                <Label htmlFor="phone" className="text-sm sm:text-base font-medium">
                   Teléfono
                 </Label>
                 <PhoneInput
@@ -559,27 +589,31 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                     handleChange('phone', `${prefix} ${number}`)
                   }}
                   placeholder="Número de teléfono"
-                  className="min-h-[44px]"
+                  aria-describedby="phone-help"
+                  className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
+                <span id="phone-help" className="sr-only">Ingresa el número de teléfono</span>
               </div>
               <div>
-                <Label htmlFor="email" className="text-sm sm:text-base">
+                <Label htmlFor="email" className="text-sm sm:text-base font-medium">
                   Email
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
-                  className="min-h-[44px]"
+                  className="min-h-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   onChange={e => handleChange('email', e.target.value)}
                   placeholder="sede@negocio.com"
+                  aria-describedby="email-help"
                 />
+                <span id="email-help" className="sr-only">Ingresa el email de contacto</span>
               </div>
-            </div>
+            </fieldset>
 
             {/* Description */}
             <div>
-              <Label htmlFor="description" className="text-sm sm:text-base">
+              <Label htmlFor="description" className="text-sm sm:text-base font-medium">
                 Descripción
               </Label>
               <Textarea
@@ -588,39 +622,44 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                 onChange={e => handleChange('description', e.target.value)}
                 placeholder="Información adicional sobre esta sede"
                 rows={3}
-                className="min-h-[88px]"
+                aria-describedby="description-help"
+                className="min-h-[88px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
               />
+              <span id="description-help" className="sr-only">Ingresa una descripción opcional de la sede</span>
             </div>
 
             {/* Business Hours */}
-            <div>
-              <Label className="text-sm sm:text-base">Horarios de Atención</Label>
+            <fieldset>
+              <legend className="text-sm sm:text-base font-medium mb-2">Horarios de Atención</legend>
               <BusinessHoursPicker
                 value={formData.business_hours}
                 onChange={hours => handleChange('business_hours', hours)}
               />
-            </div>
+            </fieldset>
 
             {/* Images */}
-            <div>
-              <Label className="text-sm sm:text-base">Imágenes de la Sede</Label>
+            <fieldset>
+              <legend className="text-sm sm:text-base font-medium mb-2">Imágenes de la Sede</legend>
               <div className="space-y-3 sm:space-y-4">
                 {/* Current Images */}
                 {formData.images && formData.images.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" role="group" aria-label="Imágenes actuales">
                     {formData.images.map((url, index) => (
                       <div key={index} className="relative group">
                         <img
                           src={url}
-                          alt={`Imagen ${index + 1}`}
+                          alt={`Imagen ${index + 1} de la sede`}
                           className="w-full h-24 object-cover rounded-lg"
+                          loading="lazy"
                         />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(url)}
-                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-primary-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-primary-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity min-w-[32px] min-h-[32px]"
+                          aria-label={`Eliminar imagen ${index + 1}`}
+                          title={`Eliminar imagen ${index + 1}`}
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-3 w-3" aria-hidden="true" />
                         </button>
                       </div>
                     ))}
@@ -654,21 +693,22 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                   />
                 )}
               </div>
-            </div>
+            </fieldset>
 
             {/* Active Status & Primary Location - Responsive */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <legend className="sr-only">Configuración de la sede</legend>
               <div className="flex items-center gap-3 p-3 sm:p-4 rounded-lg border border-border bg-card min-h-[68px]">
                 <Checkbox
                   id="is_active"
                   checked={formData.is_active}
                   onCheckedChange={checked => handleChange('is_active', checked === true)}
-                  className="min-w-[44px] min-h-[44px]"
+                  className="focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
                 <div className="flex flex-col">
                   <Label
                     htmlFor="is_active"
-                    className="cursor-pointer text-xs sm:text-sm font-medium text-foreground"
+                    className="cursor-pointer text-xs sm:text-sm font-medium text-foreground min-h-[44px] flex items-center"
                   >
                     Sede activa
                   </Label>
@@ -683,12 +723,12 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                   id="is_primary"
                   checked={formData.is_primary || false}
                   onCheckedChange={checked => handleChange('is_primary', checked === true)}
-                  className="min-w-[44px] min-h-[44px]"
+                  className="focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 />
                 <div className="flex flex-col">
                   <Label
                     htmlFor="is_primary"
-                    className="cursor-pointer text-xs sm:text-sm font-medium text-foreground"
+                    className="cursor-pointer text-xs sm:text-sm font-medium text-foreground min-h-[44px] flex items-center"
                   >
                     Sede principal
                   </Label>
@@ -697,22 +737,24 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                   </span>
                 </div>
               </div>
-            </div>
+            </fieldset>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-4">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={handleCloseDialog}
-                className="min-h-[44px] w-full sm:w-auto"
+                className="min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 disabled={isSaving}
+                aria-label="Cancelar creación/edición de sede"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
+                className="bg-primary hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[44px] min-w-[44px] w-full sm:w-auto"
                 disabled={isSaving}
+                aria-label={isSaving ? 'Guardando sede...' : editingLocation ? 'Actualizar sede' : 'Crear sede'}
               >
                 {isSaving ? 'Guardando...' : editingLocation ? 'Actualizar' : 'Crear'}
               </Button>
@@ -720,6 +762,6 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   )
 }

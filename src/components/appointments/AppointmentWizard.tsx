@@ -755,24 +755,30 @@ export function AppointmentWizard({
           'h-[95vh] sm:h-auto', // Full height mobile
           '[&>button]:hidden' // Ocultar el botón de cerrar por defecto del DialogContent
         )}
+        aria-labelledby="appointment-wizard-title"
+        role="dialog"
+        aria-modal="true"
       >
         {/* DialogTitle para accesibilidad (screen readers) */}
-        <DialogTitle className="sr-only">
+        <DialogTitle id="appointment-wizard-title" className="sr-only">
           {appointmentToEdit ? t('appointments.edit') : t('appointments.create')}
         </DialogTitle>
+        
         {/* Header - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
-          <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
+          <header className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
             <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
               <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
                 {appointmentToEdit ? t('appointments.edit') : t('appointments.create')}
               </h2>
               <button
                 onClick={handleClose}
-                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
                 disabled={isSubmitting}
+                aria-label="Cerrar asistente de citas"
+                title="Cerrar asistente de citas"
               >
-                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -783,11 +789,11 @@ export function AppointmentWizard({
               label={STEP_LABELS[currentStep as keyof typeof STEP_LABELS]}
               completedSteps={getCompletedSteps()}
             />
-          </div>
+          </header>
         )}
 
         {/* Content Area - Mobile Full Height */}
-        <div
+        <main
           className={cn(
             'overflow-y-auto',
             currentStep === getStepNumber('success')
@@ -795,72 +801,89 @@ export function AppointmentWizard({
               : 'max-h-[calc(95vh-200px)] sm:max-h-[calc(80vh-180px)]',
             'px-3 sm:px-0' // Padding horizontal mobile
           )}
+          role="main"
+          aria-labelledby="appointment-wizard-title"
         >
           {/* Paso 0: Selección de Negocio */}
           {!businessId && currentStep === getStepNumber('business') && (
-            <BusinessSelection
-              selectedBusinessId={wizardData.businessId}
-              preferredCityName={preferredCityName}
-              preferredRegionName={preferredRegionName}
-              onSelectBusiness={business => {
-                // Al seleccionar un negocio, limpiar campos dependientes.
-                // NO avanzamos automáticamente: el usuario debe presionar "Next Step".
-                updateWizardData({
-                  businessId: business.id,
-                  business,
-                  locationId: null,
-                  location: null,
-                  serviceId: null,
-                  service: null,
-                  employeeId: null,
-                  employee: null,
-                  employeeBusinessId: null,
-                  employeeBusiness: null,
-                  date: null,
-                  startTime: null,
-                  endTime: null,
-                  notes: '',
-                })
-                // Nota: No llamar a setCurrentStep aquí para evitar avance automático.
-              }}
-            />
+            <section role="region" aria-labelledby="business-selection-title">
+              <h3 id="business-selection-title" className="sr-only">Selección de negocio</h3>
+              <BusinessSelection
+                selectedBusinessId={wizardData.businessId}
+                preferredCityName={preferredCityName}
+                preferredRegionName={preferredRegionName}
+                onSelectBusiness={business => {
+                  // Al seleccionar un negocio, limpiar campos dependientes.
+                  // NO avanzamos automáticamente: el usuario debe presionar "Next Step".
+                  updateWizardData({
+                    businessId: business.id,
+                    business,
+                    locationId: null,
+                    location: null,
+                    serviceId: null,
+                    service: null,
+                    employeeId: null,
+                    employee: null,
+                    employeeBusinessId: null,
+                    employeeBusiness: null,
+                    date: null,
+                    startTime: null,
+                    endTime: null,
+                    notes: '',
+                  })
+                  // Nota: No llamar a setCurrentStep aquí para evitar avance automático.
+                }}
+              />
+            </section>
           )}
 
           {/* Paso 1: Selección de Sede */}
           {currentStep === getStepNumber('location') && (
-            <LocationSelection
-              businessId={wizardData.businessId || businessId || ''}
-              selectedLocationId={wizardData.locationId}
-              onSelectLocation={location => {
-                updateWizardData({
-                  locationId: location.id,
-                  location,
-                })
-              }}
-              preloadedLocations={dataCache.locations}
-              isPreselected={!!preselectedLocationId}
-            />
+            <section role="region" aria-labelledby="location-selection-title">
+              <h3 id="location-selection-title" className="sr-only">Selección de sede</h3>
+              <LocationSelection
+                businessId={wizardData.businessId || businessId || ''}
+                selectedLocationId={wizardData.locationId}
+                onSelectLocation={location => {
+                  updateWizardData({
+                    locationId: location.id,
+                    location,
+                  })
+                }}
+                preloadedLocations={dataCache.locations}
+                isPreselected={!!preselectedLocationId}
+              />
+            </section>
           )}
 
           {/* Paso 2: Selección de Servicio */}
           {currentStep === getStepNumber('service') && (
-            <ServiceSelection
-              businessId={wizardData.businessId || businessId || ''}
-              selectedServiceId={wizardData.serviceId}
-              onSelectService={service => {
-                updateWizardData({
-                  serviceId: service.id,
-                  service,
-                })
-              }}
-              preloadedServices={dataCache.services}
-              isPreselected={!!preselectedServiceId}
-            />
+            <section role="region" aria-labelledby="service-selection-title">
+              <h3 id="service-selection-title" className="sr-only">Selección de servicio</h3>
+              <ServiceSelection
+                businessId={wizardData.businessId || businessId || ''}
+                selectedServiceId={wizardData.serviceId}
+                onSelectService={service => {
+                  updateWizardData({
+                    serviceId: service.id,
+                    service,
+                  })
+                }}
+                preloadedServices={dataCache.services}
+                isPreselected={!!preselectedServiceId}
+              />
+            </section>
           )}
 
           {/* Paso 3: Selección de Profesional o Recurso */}
           {currentStep === getStepNumber('employee') && (
-            <>
+            <section role="region" aria-labelledby="employee-selection-title">
+              <h3 id="employee-selection-title" className="sr-only">
+                {wizardData.business?.resource_model && wizardData.business.resource_model !== 'professional' 
+                  ? 'Selección de recurso' 
+                  : 'Selección de profesional'
+                }
+              </h3>
               {/* Si el negocio usa modelo profesional o no tiene modelo definido → Mostrar EmployeeSelection */}
               {(!wizardData.business?.resource_model ||
                 wizardData.business.resource_model === 'professional') && (
@@ -897,83 +920,99 @@ export function AppointmentWizard({
                     }}
                   />
                 )}
-            </>
+            </section>
           )}
 
           {/* Paso 3.5: Selección de Negocio del Empleado (CONDICIONAL) */}
           {needsEmployeeBusinessSelection && currentStep === getStepNumber('employeeBusiness') && (
-            <EmployeeBusinessSelection
-              employeeId={wizardData.employeeId || ''}
-              employeeName={wizardData.employee?.full_name || 'Profesional'}
-              selectedBusinessId={wizardData.employeeBusinessId}
-              onSelectBusiness={business => {
-                updateWizardData({
-                  employeeBusinessId: business.id,
-                  employeeBusiness: business as Business,
-                })
-              }}
-            />
+            <section role="region" aria-labelledby="employee-business-selection-title">
+              <h3 id="employee-business-selection-title" className="sr-only">Selección de negocio del empleado</h3>
+              <EmployeeBusinessSelection
+                employeeId={wizardData.employeeId || ''}
+                employeeName={wizardData.employee?.full_name || 'Profesional'}
+                selectedBusinessId={wizardData.employeeBusinessId}
+                onSelectBusiness={business => {
+                  updateWizardData({
+                    employeeBusinessId: business.id,
+                    employeeBusiness: business as Business,
+                  })
+                }}
+              />
+            </section>
           )}
 
           {/* Paso 4: Selección de Fecha y Hora */}
           {currentStep === getStepNumber('dateTime') && (
-            <DateTimeSelection
-              service={wizardData.service}
-              selectedDate={wizardData.date}
-              selectedTime={wizardData.startTime}
-              employeeId={wizardData.employeeId}
-              resourceId={wizardData.resourceId}
-              locationId={wizardData.locationId}
-              businessId={wizardData.businessId}
-              appointmentToEdit={appointmentToEdit}
-              onSelectDate={date => {
-                updateWizardData({ date })
-              }}
-              onSelectTime={(startTime, endTime) => {
-                updateWizardData({ startTime, endTime })
-              }}
-            />
+            <section role="region" aria-labelledby="datetime-selection-title">
+              <h3 id="datetime-selection-title" className="sr-only">Selección de fecha y hora</h3>
+              <DateTimeSelection
+                service={wizardData.service}
+                selectedDate={wizardData.date}
+                selectedTime={wizardData.startTime}
+                employeeId={wizardData.employeeId}
+                resourceId={wizardData.resourceId}
+                locationId={wizardData.locationId}
+                businessId={wizardData.businessId}
+                appointmentToEdit={appointmentToEdit}
+                onSelectDate={date => {
+                  updateWizardData({ date })
+                }}
+                onSelectTime={(startTime, endTime) => {
+                  updateWizardData({ startTime, endTime })
+                }}
+              />
+            </section>
           )}
 
           {/* Paso 5: Confirmación */}
           {currentStep === getStepNumber('confirmation') && (
-            <ConfirmationStep
-              wizardData={wizardData}
-              onUpdateNotes={notes => updateWizardData({ notes })}
-              onSubmit={async () => {
-                const success = await createAppointment()
-                if (success) {
-                  handleNext()
-                }
-              }}
-            />
+            <section role="region" aria-labelledby="confirmation-title">
+              <h3 id="confirmation-title" className="sr-only">Confirmación de cita</h3>
+              <ConfirmationStep
+                wizardData={wizardData}
+                onUpdateNotes={notes => updateWizardData({ notes })}
+                onSubmit={async () => {
+                  const success = await createAppointment()
+                  if (success) {
+                    handleNext()
+                  }
+                }}
+              />
+            </section>
           )}
 
           {/* Paso 6: Éxito */}
           {currentStep === getStepNumber('success') && (
-            <SuccessStep appointmentData={wizardData} onClose={handleClose} />
+            <section role="region" aria-labelledby="success-title">
+              <h3 id="success-title" className="sr-only">Cita creada exitosamente</h3>
+              <SuccessStep appointmentData={wizardData} onClose={handleClose} />
+            </section>
           )}
-        </div>
+        </main>
 
         {/* Footer with navigation buttons - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
-          <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
+          <footer className="px-3 sm:px-6 py-3 sm:py-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={handleBack}
               disabled={currentStep === (businessId ? 1 : 0) || isSubmitting}
-              className="bg-transparent border-border text-foreground hover:bg-muted min-h-[44px] order-2 sm:order-1"
+              className="bg-transparent border-border text-foreground hover:bg-muted min-h-[44px] min-w-[44px] order-2 sm:order-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label="Volver al paso anterior"
+              title="Volver al paso anterior"
             >
-              ← Back
+              <span aria-hidden="true">←</span> <span className="ml-1">Back</span>
             </Button>
 
             {currentStep < getStepNumber('confirmation') ? (
               <Button
                 onClick={handleNext}
                 disabled={!canProceed() || isSubmitting}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] order-1 sm:order-2 focus:outline-none focus:ring-2 focus:ring-primary-foreground focus:ring-offset-2"
+                aria-label="Continuar al siguiente paso"
+                title="Continuar al siguiente paso"
               >
-                Next Step →
+                <span>Next Step</span> <span aria-hidden="true" className="ml-1">→</span>
               </Button>
             ) : (
               <Button
@@ -984,23 +1023,26 @@ export function AppointmentWizard({
                   }
                 }}
                 disabled={isSubmitting}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px] order-1 sm:order-2 focus:outline-none focus:ring-2 focus:ring-primary-foreground focus:ring-offset-2"
+                aria-label={isSubmitting ? "Guardando cita..." : "Confirmar y reservar cita"}
+                title={isSubmitting ? "Guardando cita..." : "Confirmar y reservar cita"}
               >
                 {isSubmitting ? (
                   <>
-                    <span className="animate-spin mr-2">⏳</span>{' '}
+                    <span className="animate-spin mr-2" aria-hidden="true">⏳</span>
                     <span className="hidden sm:inline">Guardando...</span>
                     <span className="sm:hidden">Guardar...</span>
                   </>
                 ) : (
                   <>
-                    <span className="hidden sm:inline">✓ Confirmar y Reservar</span>
-                    <span className="sm:hidden">✓ Confirmar</span>
+                    <span aria-hidden="true">✓</span>
+                    <span className="hidden sm:inline ml-1">Confirmar y Reservar</span>
+                    <span className="sm:hidden ml-1">Confirmar</span>
                   </>
                 )}
               </Button>
             )}
-          </div>
+          </footer>
         )}
       </DialogContent>
     </Dialog>

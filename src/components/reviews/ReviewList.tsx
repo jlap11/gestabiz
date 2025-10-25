@@ -77,7 +77,7 @@ export function ReviewList({
 
   const renderStars = (rating: number) => {
     return (
-      <div className="flex gap-0.5">
+      <div className="flex gap-0.5" aria-label={`Calificación ${rating} de 5`}>
         {[1, 2, 3, 4, 5].map(star => (
           <Star
             key={star}
@@ -85,6 +85,7 @@ export function ReviewList({
               'h-4 w-4',
               star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
             )}
+            aria-hidden="true"
           />
         ))}
       </div>
@@ -106,7 +107,7 @@ export function ReviewList({
           return (
             <div key={rating} className="flex items-center gap-3">
               <span className="text-sm w-12 flex items-center gap-1">
-                {rating} <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                {rating} <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />
               </span>
               <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
@@ -162,19 +163,20 @@ export function ReviewList({
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder={t('reviews.searchPlaceholder')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
+              aria-label={t('reviews.searchPlaceholder')}
             />
           </div>
 
           {/* Rating Filter */}
           <Select value={selectedRating} onValueChange={handleRatingFilter}>
-            <SelectTrigger className="w-full sm:w-48">
-              <Filter className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-full sm:w-48 min-h-[44px]" aria-label={t('reviews.filterByRating')}>
+              <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
               <SelectValue placeholder={t('reviews.filterByRating')} />
             </SelectTrigger>
             <SelectContent>
@@ -192,42 +194,46 @@ export function ReviewList({
       {/* Reviews List */}
       <div className="space-y-4">
         {loading && (
-          <Card className="p-8 text-center text-muted-foreground">{t('common.loading')}...</Card>
+          <Card className="p-8 text-center text-muted-foreground" role="status" aria-live="polite">{t('common.loading')}...</Card>
         )}
 
         {!loading && filteredReviews.length === 0 && (
-          <Card className="p-8 text-center text-muted-foreground">
+          <Card className="p-8 text-center text-muted-foreground" role="status" aria-live="polite">
             {searchTerm || selectedRating !== 'all'
               ? t('reviews.noResultsFound')
               : t('reviews.noReviews')}
           </Card>
         )}
 
-        {!loading &&
-          filteredReviews.map(review => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              canRespond={canRespond}
-              canModerate={canModerate}
-              onRespond={async (reviewId: string, response: string) => {
-                // Get current user ID from Supabase auth
-                const {
-                  data: { user },
-                } = await supabase.auth.getUser()
-                if (!user) throw new Error('Usuario no autenticado')
-                await respondToReview(reviewId, response, user.id)
-              }}
-              onToggleVisibility={toggleReviewVisibility}
-              onDelete={deleteReview}
-            />
-          ))}
+        {!loading && (
+          <div className="space-y-4" role="list">
+            {filteredReviews.map(review => (
+              <div key={review.id} role="listitem">
+                <ReviewCard
+                  review={review}
+                  canRespond={canRespond}
+                  canModerate={canModerate}
+                  onRespond={async (reviewId: string, response: string) => {
+                    // Get current user ID from Supabase auth
+                    const {
+                      data: { user },
+                    } = await supabase.auth.getUser()
+                    if (!user) throw new Error('Usuario no autenticado')
+                    await respondToReview(reviewId, response, user.id)
+                  }}
+                  onToggleVisibility={toggleReviewVisibility}
+                  onDelete={deleteReview}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Load More (if implementing pagination) */}
       {filteredReviews.length > 0 && filteredReviews.length < stats.total && (
         <div className="flex justify-center pt-4">
-          <Button variant="outline" disabled={loading}>
+          <Button variant="outline" disabled={loading} className="min-h-[44px] min-w-[44px]" aria-label={t('common.loadMore')}>
             {t('common.loadMore')}
           </Button>
         </div>
@@ -235,3 +241,4 @@ export function ReviewList({
     </div>
   )
 }
+

@@ -212,57 +212,105 @@ export function AppointmentForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="appointment-form-title"
+        aria-describedby="appointment-form-description"
+      >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle id="appointment-form-title">
             {appointment ? t('appointments.edit') : t('appointments.create')}
           </DialogTitle>
+          <div id="appointment-form-description" className="sr-only">
+            {appointment 
+              ? 'Formulario para editar una cita existente' 
+              : 'Formulario para crear una nueva cita'
+            }
+          </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form 
+          onSubmit={handleSubmit} 
+          className="space-y-4 sm:space-y-6"
+          role="form"
+          aria-label={appointment ? 'Editar cita' : 'Crear nueva cita'}
+        >
           {/* Personalización para cliente: solo campos esenciales */}
           {user.activeRole === 'client' ? (
-            <>
+            <section aria-labelledby="client-form-section" className="space-y-4 sm:space-y-6">
+              <h3 id="client-form-section" className="sr-only">Información de la cita</h3>
+              
               <div className="space-y-2">
-                <Label htmlFor="business">Negocio *</Label>
+                <Label htmlFor="business" className="text-sm font-medium">
+                  Negocio *
+                </Label>
                 <Select
                   value={formData.business_id}
                   onValueChange={v => handleInputChange('business_id', v)}
+                  required
+                  aria-label="Seleccionar negocio"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger 
+                    id="business"
+                    className="min-h-[44px]"
+                    aria-describedby="business-help"
+                  >
                     <SelectValue placeholder={t('common.placeholders.selectBusiness')} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent role="listbox">
                     {businesses.map(b => (
-                      <SelectItem key={b.id} value={b.id}>
+                      <SelectItem key={b.id} value={b.id} role="option">
                         {b.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <div id="business-help" className="sr-only">
+                  Selecciona el negocio donde deseas agendar tu cita
+                </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="service">{t('appointments.service')} *</Label>
+                <Label htmlFor="service" className="text-sm font-medium">
+                  {t('appointments.service')} *
+                </Label>
                 <Select
                   value={formData.service_id}
                   onValueChange={v => handleInputChange('service_id', v)}
+                  required
+                  aria-label="Seleccionar servicio"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger 
+                    id="service"
+                    className="min-h-[44px]"
+                    aria-describedby="service-help"
+                  >
                     <SelectValue placeholder={t('appointments.selectService')} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent role="listbox">
                     {services
                       .filter(s => !formData.business_id || s.business_id === formData.business_id)
                       .map(s => (
-                        <SelectItem key={s.id} value={s.id}>
+                        <SelectItem key={s.id} value={s.id} role="option">
                           <div className="flex justify-between items-center w-full">
                             <span>{s.name}</span>
-                            <span className="text-sm text-muted-foreground ml-2">{`${s.duration}min - $${s.price}`}</span>
+                            <span 
+                              className="text-sm text-muted-foreground ml-2"
+                              aria-label={`Duración ${s.duration} minutos, precio ${s.price} pesos`}
+                            >
+                              {`${s.duration}min - $${s.price}`}
+                            </span>
                           </div>
                         </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
+                <div id="service-help" className="sr-only">
+                  Selecciona el servicio que deseas reservar
+                </div>
               </div>
+
               <div className="space-y-2">
                 <CustomDateInput
                   id="date"
@@ -270,76 +318,129 @@ export function AppointmentForm({
                   value={formData.date}
                   onChange={value => handleInputChange('date', value)}
                   min={new Date().toISOString().split('T')[0]}
+                  className="min-h-[44px]"
+                  aria-describedby="date-help"
                 />
+                <div id="date-help" className="sr-only">
+                  Selecciona la fecha para tu cita. Debe ser una fecha futura
+                </div>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TimeInput
-                  id="startTime"
-                  label={`${t('appointments.startTime')} *`}
-                  value={formData.start_time}
-                  onChange={e => handleInputChange('start_time', e.target.value)}
-                  required
-                />
-                <TimeInput
-                  id="endTime"
-                  label={t('appointments.endTime')}
-                  value={formData.end_time}
-                  onChange={e => handleInputChange('end_time', e.target.value)}
-                  disabled
-                  className="opacity-60"
-                />
+                <div className="space-y-2">
+                  <TimeInput
+                    id="startTime"
+                    label={`${t('appointments.startTime')} *`}
+                    value={formData.start_time}
+                    onChange={e => handleInputChange('start_time', e.target.value)}
+                    required
+                    className="min-h-[44px]"
+                    aria-describedby="start-time-help"
+                  />
+                  <div id="start-time-help" className="sr-only">
+                    Hora de inicio de la cita
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <TimeInput
+                    id="endTime"
+                    label={t('appointments.endTime')}
+                    value={formData.end_time}
+                    onChange={e => handleInputChange('end_time', e.target.value)}
+                    disabled
+                    className="opacity-60 min-h-[44px]"
+                    aria-describedby="end-time-help"
+                  />
+                  <div id="end-time-help" className="sr-only">
+                    Hora de finalización calculada automáticamente según la duración del servicio
+                  </div>
+                </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="notes">{t('appointments.notes')}</Label>
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  {t('appointments.notes')}
+                </Label>
                 <Textarea
                   id="notes"
                   placeholder={t('appointments.notesPlaceholder')}
                   value={formData.notes}
                   onChange={e => handleInputChange('notes', e.target.value)}
                   rows={3}
+                  className="min-h-[88px] resize-none"
+                  aria-describedby="notes-help"
                 />
+                <div id="notes-help" className="sr-only">
+                  Información adicional o comentarios sobre la cita (opcional)
+                </div>
               </div>
-            </>
+            </section>
           ) : (
             // ...existing code for admin/employee...
-            <>
+            <section aria-labelledby="admin-form-section" className="space-y-4 sm:space-y-6">
+              <h3 id="admin-form-section" className="sr-only">Información administrativa de la cita</h3>
+              
               <div className="space-y-2">
-                <Label htmlFor="site_name">Nombre del sitio/negocio/local</Label>
+                <Label htmlFor="site_name" className="text-sm font-medium">
+                  Nombre del sitio/negocio/local
+                </Label>
                 <Input
                   id="site_name"
                   value={formData.site_name}
                   onChange={e => handleInputChange('site_name', e.target.value)}
                   placeholder="Ejemplo: Barbería Central, Café Luna..."
+                  className="min-h-[44px]"
+                  aria-describedby="site-name-help"
                 />
+                <div id="site-name-help" className="sr-only">
+                  Nombre descriptivo del lugar donde se realizará la cita
+                </div>
               </div>
               {/* ...resto de campos originales... */}
-            </>
+            </section>
           )}
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+          
+          <footer className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="min-h-[44px] min-w-[44px] order-2 sm:order-1"
+              aria-label="Cancelar y cerrar formulario"
+              title="Cancelar"
+            >
               {t('common.cancel')}
             </Button>
             {(() => {
               let submitLabel: string
+              let ariaLabel: string
               if (loading) {
                 submitLabel = t('common.saving')
+                ariaLabel = 'Guardando cita...'
               } else if (appointment) {
                 submitLabel = t('common.update')
+                ariaLabel = 'Actualizar cita'
               } else {
                 submitLabel = t('common.create')
+                ariaLabel = 'Crear nueva cita'
               }
               return (
-                <Button type="submit" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="min-h-[44px] min-w-[44px] order-1 sm:order-2"
+                  aria-label={ariaLabel}
+                  title={submitLabel}
+                >
                   {submitLabel}
                 </Button>
               )
             })()}
-          </div>
+          </footer>
         </form>
       </DialogContent>
     </Dialog>
   )
-}
 
 export interface LegacyAppointmentFormProps {
   user: User
@@ -441,40 +542,68 @@ export default function LegacyAppointmentForm({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <Label htmlFor="title">{t('appointments.title') || 'Title'}</Label>
-                <Input id="title" value={title} onChange={e => setTitle(e.target.value)} required />
+                <Label htmlFor="title" className="text-sm font-medium">
+                  {t('appointments.title') || 'Title'}
+                </Label>
+                <Input 
+                  id="title" 
+                  value={title} 
+                  onChange={e => setTitle(e.target.value)} 
+                  required 
+                  className="min-h-[44px]"
+                  aria-describedby="title-help"
+                />
+                <div id="title-help" className="sr-only">
+                  Título descriptivo para la cita
+                </div>
               </div>
 
               {user.activeRole !== 'client' && (
                 <div className="space-y-2">
-                  <Label htmlFor="client">{t('appointments.client') || 'Client'}</Label>
-                  <Select value={clientId} onValueChange={setClientId} required>
-                    <SelectTrigger>
+                  <Label htmlFor="client" className="text-sm font-medium">
+                    {t('appointments.client') || 'Client'}
+                  </Label>
+                  <Select 
+                    value={clientId} 
+                    onValueChange={setClientId} 
+                    required
+                    aria-label="Seleccionar cliente"
+                  >
+                    <SelectTrigger 
+                      id="client"
+                      className="min-h-[44px]"
+                      aria-describedby="client-help"
+                    >
                       <SelectValue
                         placeholder={t('appointments.selectClient') || 'Select client'}
                       />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent role="listbox">
                       {clients.length === 0 ? (
-                        <SelectItem value="no-clients" disabled>
+                        <SelectItem value="no-clients" disabled role="option">
                           {t('clients.none') || 'No clients available'}
                         </SelectItem>
                       ) : (
                         clients.map(client => (
-                          <SelectItem key={client.id} value={client.id}>
+                          <SelectItem key={client.id} value={client.id} role="option">
                             {client.name}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
+                  <div id="client-help" className="sr-only">
+                    Cliente para quien se agenda la cita
+                  </div>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="date">{t('appointments.date') || 'Date'}</Label>
+                <Label htmlFor="date" className="text-sm font-medium">
+                  {t('appointments.date') || 'Date'}
+                </Label>
                 <Input
                   id="date"
                   type="date"
@@ -482,76 +611,124 @@ export default function LegacyAppointmentForm({
                   onChange={e => setDate(e.target.value)}
                   min={today}
                   required
+                  className="min-h-[44px]"
+                  aria-describedby="legacy-date-help"
                 />
+                <div id="legacy-date-help" className="sr-only">
+                  Fecha de la cita. Debe ser una fecha futura
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">{t('appointments.startTime') || 'Start time'}</Label>
-                  <Select value={startTime} onValueChange={setStartTime} required>
-                    <SelectTrigger>
+                  <Label htmlFor="startTime" className="text-sm font-medium">
+                    {t('appointments.startTime') || 'Start time'}
+                  </Label>
+                  <Select 
+                    value={startTime} 
+                    onValueChange={setStartTime} 
+                    required
+                    aria-label="Seleccionar hora de inicio"
+                  >
+                    <SelectTrigger 
+                      id="startTime"
+                      className="min-h-[44px]"
+                      aria-describedby="start-time-legacy-help"
+                    >
                       <SelectValue placeholder="08:00" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-60">
+                    <SelectContent className="max-h-60" role="listbox">
                       {timeOptions.map(time => (
-                        <SelectItem key={`start-${time}`} value={time}>
+                        <SelectItem key={`start-${time}`} value={time} role="option">
                           {time}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <div id="start-time-legacy-help" className="sr-only">
+                    Hora de inicio de la cita
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endTime">{t('appointments.endTime') || 'End time'}</Label>
-                  <Select value={endTime} onValueChange={setEndTime} required>
-                    <SelectTrigger>
+                  <Label htmlFor="endTime" className="text-sm font-medium">
+                    {t('appointments.endTime') || 'End time'}
+                  </Label>
+                  <Select 
+                    value={endTime} 
+                    onValueChange={setEndTime} 
+                    required
+                    aria-label="Seleccionar hora de finalización"
+                  >
+                    <SelectTrigger 
+                      id="endTime"
+                      className="min-h-[44px]"
+                      aria-describedby="end-time-legacy-help"
+                    >
                       <SelectValue placeholder="09:00" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-60">
+                    <SelectContent className="max-h-60" role="listbox">
                       {timeOptions.map(time => (
-                        <SelectItem key={`end-${time}`} value={time}>
+                        <SelectItem key={`end-${time}`} value={time} role="option">
                           {time}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <div id="end-time-legacy-help" className="sr-only">
+                    Hora de finalización de la cita
+                  </div>
                 </div>
               </div>
 
               {appointment && (
                 <div className="space-y-2">
-                  <Label htmlFor="status">{t('appointments.status') || 'Status'}</Label>
-                  <Select value={status} onValueChange={v => setStatus(v as Appointment['status'])}>
-                    <SelectTrigger>
+                  <Label htmlFor="status" className="text-sm font-medium">
+                    {t('appointments.status') || 'Status'}
+                  </Label>
+                  <Select 
+                    value={status} 
+                    onValueChange={v => setStatus(v as Appointment['status'])}
+                    aria-label="Seleccionar estado de la cita"
+                  >
+                    <SelectTrigger 
+                      id="status"
+                      className="min-h-[44px]"
+                      aria-describedby="status-help"
+                    >
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="scheduled">
+                    <SelectContent role="listbox">
+                      <SelectItem value="scheduled" role="option">
                         {t('status.pending') || 'Scheduled'}
                       </SelectItem>
-                      <SelectItem value="confirmed">
+                      <SelectItem value="confirmed" role="option">
                         {t('status.confirmed') || 'Confirmed'}
                       </SelectItem>
-                      <SelectItem value="in_progress">
+                      <SelectItem value="in_progress" role="option">
                         {t('status.inProgress') || 'In progress'}
                       </SelectItem>
-                      <SelectItem value="completed">
+                      <SelectItem value="completed" role="option">
                         {t('status.completed') || 'Completed'}
                       </SelectItem>
-                      <SelectItem value="cancelled">
+                      <SelectItem value="cancelled" role="option">
                         {t('status.cancelled') || 'Cancelled'}
                       </SelectItem>
-                      <SelectItem value="no_show">{t('status.noShow') || 'No show'}</SelectItem>
-                      <SelectItem value="rescheduled">
+                      <SelectItem value="no_show" role="option">
+                        {t('status.noShow') || 'No show'}
+                      </SelectItem>
+                      <SelectItem value="rescheduled" role="option">
                         {t('status.rescheduled') || 'Rescheduled'}
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  <div id="status-help" className="sr-only">
+                    Estado actual de la cita
+                  </div>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="description">
+              <div className="space-y-2 lg:col-span-2">
+                <Label htmlFor="description" className="text-sm font-medium">
                   {t('appointments.description') || 'Description'}
                 </Label>
                 <Textarea
@@ -559,14 +736,31 @@ export default function LegacyAppointmentForm({
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   rows={3}
+                  className="min-h-[88px] resize-none"
+                  aria-describedby="description-help"
                 />
+                <div id="description-help" className="sr-only">
+                  Descripción adicional o notas sobre la cita (opcional)
+                </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={onCancel}>
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2 lg:col-span-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onCancel}
+                  className="min-h-[44px] min-w-[44px] order-2 sm:order-1"
+                  aria-label="Cancelar y cerrar formulario"
+                  title="Cancelar"
+                >
                   {t('common.cancel') || 'Cancel'}
                 </Button>
-                <Button type="submit">
+                <Button 
+                  type="submit"
+                  className="min-h-[44px] min-w-[44px] order-1 sm:order-2"
+                  aria-label={appointment ? 'Actualizar cita' : 'Crear nueva cita'}
+                  title={appointment ? t('common.update') || 'Update' : t('common.create') || 'Create'}
+                >
                   {appointment ? t('common.update') || 'Update' : t('common.create') || 'Create'}
                 </Button>
               </div>

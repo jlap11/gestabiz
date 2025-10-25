@@ -2,9 +2,12 @@
 
 Sistema integral de gestión de citas y negocios con roles dinámicos, sistema de pagos, notificaciones multicanal y búsqueda avanzada.
 
+**Disponible en**: 🌐 Web + 📱 Mobile (iOS/Android)
+
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/react-18.3.1-61dafb)
+![React Native](https://img.shields.io/badge/react--native-0.72.6-61dafb)
 ![Supabase](https://img.shields.io/badge/supabase-2.48.1-3ecf8e)
 ![TypeScript](https://img.shields.io/badge/typescript-5.7.2-3178c6)
 
@@ -159,6 +162,28 @@ npm run dev
 ```
 
 Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
+
+### 6. Ejecutar App Móvil (Opcional)
+
+La app móvil utiliza **arquitectura Hybrid WebView** (navegación nativa + contenido web reutilizado).
+
+```bash
+# Terminal 1: Web app (debe estar corriendo)
+npm run dev
+
+# Terminal 2: Mobile app
+npm run mobile
+# O directamente: cd mobile && npm start
+```
+
+Presiona:
+- `a` para Android emulator
+- `i` para iOS simulator  
+- Escanea QR con Expo Go app en dispositivo físico
+
+**Ventaja**: Un cambio en web se refleja automáticamente en móvil (100% paridad funcional).
+
+**Variables de entorno**: Se reutilizan automáticamente desde la configuración web (VITE_* → EXPO_PUBLIC_*)
 
 ---
 

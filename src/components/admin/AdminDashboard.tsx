@@ -133,27 +133,27 @@ export function AdminDashboard({
     {
       id: 'overview',
       label: t('adminDashboard.sidebar.overview'),
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      icon: <LayoutDashboard className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'appointments',
       label: t('adminDashboard.sidebar.appointments'),
-      icon: <Calendar className="h-5 w-5" />,
+      icon: <Calendar className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'absences',
       label: t('adminDashboard.sidebar.absences'),
-      icon: <CalendarOff className="h-5 w-5" />,
+      icon: <CalendarOff className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'locations',
       label: t('adminDashboard.sidebar.locations'),
-      icon: <MapPin className="h-5 w-5" />,
+      icon: <MapPin className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'services',
       label: t('adminDashboard.sidebar.services'),
-      icon: <Briefcase className="h-5 w-5" />,
+      icon: <Briefcase className="h-5 w-5" aria-hidden="true" />,
     },
     // Tab de recursos (solo para negocios con recursos físicos)
     ...(showResourcesTab
@@ -161,64 +161,144 @@ export function AdminDashboard({
           {
             id: 'resources',
             label: t('adminDashboard.sidebar.resources'),
-            icon: <Box className="h-5 w-5" />,
+            icon: <Box className="h-5 w-5" aria-hidden="true" />,
           },
         ]
       : []),
     {
       id: 'employees',
       label: t('adminDashboard.sidebar.employees'),
-      icon: <Users className="h-5 w-5" />,
+      icon: <Users className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'recruitment',
       label: t('adminDashboard.sidebar.recruitment'),
-      icon: <BriefcaseBusiness className="h-5 w-5" />,
+      icon: <BriefcaseBusiness className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'quick-sales',
       label: t('adminDashboard.sidebar.quickSales'),
-      icon: <ShoppingCart className="h-5 w-5" />,
+      icon: <ShoppingCart className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'accounting',
       label: t('adminDashboard.sidebar.accounting'),
-      icon: <Calculator className="h-5 w-5" />,
+      icon: <Calculator className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'reports',
       label: t('adminDashboard.sidebar.reports'),
-      icon: <FileText className="h-5 w-5" />,
+      icon: <FileText className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'billing',
       label: t('adminDashboard.sidebar.billing'),
-      icon: <CreditCard className="h-5 w-5" />,
+      icon: <CreditCard className="h-5 w-5" aria-hidden="true" />,
     },
     {
       id: 'permissions',
       label: t('adminDashboard.sidebar.permissions'),
-      icon: <Shield className="h-5 w-5" />,
+      icon: <Shield className="h-5 w-5" aria-hidden="true" />,
     },
   ]
 
   const renderContent = () => {
     switch (activePage) {
       case 'overview':
-        return <OverviewTab business={business} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="overview-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="overview-title" className="sr-only">
+              Resumen general del negocio
+            </h2>
+            <OverviewTab business={business} />
+          </section>
+        )
       case 'appointments':
-        return <AppointmentsCalendar />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="appointments-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="appointments-title" className="sr-only">
+              Gestión de citas
+            </h2>
+            <AppointmentsCalendar />
+          </section>
+        )
       case 'absences':
-        return <AbsencesTab businessId={business.id} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="absences-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="absences-title" className="sr-only">
+              Gestión de ausencias
+            </h2>
+            <AbsencesTab businessId={business.id} />
+          </section>
+        )
       case 'locations':
-        return <LocationsManager businessId={business.id} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="locations-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="locations-title" className="sr-only">
+              Gestión de sedes
+            </h2>
+            <LocationsManager businessId={business.id} />
+          </section>
+        )
       case 'services':
-        return <ServicesManager businessId={business.id} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="services-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="services-title" className="sr-only">
+              Gestión de servicios
+            </h2>
+            <ServicesManager businessId={business.id} />
+          </section>
+        )
       case 'resources':
-        return <ResourcesManager business={business} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="resources-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="resources-title" className="sr-only">
+              Gestión de recursos
+            </h2>
+            <ResourcesManager business={business} />
+          </section>
+        )
       case 'employees':
         return (
-          <>
+          <section 
+            role="region" 
+            aria-labelledby="employees-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="employees-title" className="sr-only">
+              Gestión de empleados
+            </h2>
             <EmployeeManagementHierarchy
               businessId={business.id}
               onEmployeeSelect={(employee: EmployeeHierarchy) => {
@@ -230,36 +310,112 @@ export function AdminDashboard({
               // Future: Modal de detalle del empleado
               <></>
             )}
-          </>
+          </section>
         )
       case 'recruitment':
         return (
-          <RecruitmentDashboard
-            businessId={business.id}
-            highlightedVacancyId={pageContext.vacancyId as string | undefined}
-            onChatStarted={setChatConversationId}
-          />
+          <section 
+            role="region" 
+            aria-labelledby="recruitment-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="recruitment-title" className="sr-only">
+              Gestión de reclutamiento
+            </h2>
+            <RecruitmentDashboard
+              businessId={business.id}
+              highlightedVacancyId={pageContext.vacancyId as string | undefined}
+              onChatStarted={setChatConversationId}
+            />
+          </section>
         )
       case 'quick-sales':
-        return <QuickSalesPage businessId={business.id} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="quick-sales-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="quick-sales-title" className="sr-only">
+              Ventas rápidas
+            </h2>
+            <QuickSalesPage businessId={business.id} />
+          </section>
+        )
       case 'accounting':
-        return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="accounting-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="accounting-title" className="sr-only">
+              Contabilidad
+            </h2>
+            <AccountingPage businessId={business.id} onUpdate={onUpdate} />
+          </section>
+        )
       case 'reports':
-        return <ReportsPage businessId={business.id} user={currentUser} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="reports-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="reports-title" className="sr-only">
+              Reportes financieros
+            </h2>
+            <ReportsPage businessId={business.id} user={currentUser} />
+          </section>
+        )
       case 'billing':
-        return <BillingDashboard businessId={business.id} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="billing-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="billing-title" className="sr-only">
+              Facturación
+            </h2>
+            <BillingDashboard businessId={business.id} />
+          </section>
+        )
       case 'permissions':
         return (
-          <PermissionsManager
-            businessId={business.id}
-            ownerId={business.owner_id}
-            currentUserId={currentUser.id}
-          />
+          <section 
+            role="region" 
+            aria-labelledby="permissions-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="permissions-title" className="sr-only">
+              Gestión de permisos
+            </h2>
+            <PermissionsManager
+              businessId={business.id}
+              ownerId={business.owner_id}
+              currentUserId={currentUser.id}
+            />
+          </section>
         )
       case 'settings':
       case 'profile':
         return (
-          <div className="p-6">
+          <section 
+            role="region" 
+            aria-labelledby="settings-title"
+            className="p-4 sm:p-6 focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="settings-title" className="sr-only">
+              Configuración del perfil
+            </h2>
             <CompleteUnifiedSettings
               user={currentUser}
               onUserUpdate={updatedUser => {
@@ -270,43 +426,71 @@ export function AdminDashboard({
               businessId={business.id}
               business={business}
             />
-          </div>
+          </section>
         )
       default:
-        return <OverviewTab business={business} />
+        return (
+          <section 
+            role="region" 
+            aria-labelledby="default-overview-title"
+            className="focus:outline-none"
+            tabIndex={-1}
+          >
+            <h2 id="default-overview-title" className="sr-only">
+              Resumen general del negocio
+            </h2>
+            <OverviewTab business={business} />
+          </section>
+        )
     }
   }
 
   return (
-    <UnifiedLayout
-      business={business}
-      businesses={businesses}
-      onSelectBusiness={onSelectBusiness}
-      onCreateNew={onCreateNew}
-      currentRole={currentRole}
-      availableRoles={availableRoles}
-      onRoleChange={onRoleChange}
-      onLogout={onLogout}
-      sidebarItems={sidebarItems}
-      activePage={activePage}
-      onPageChange={handlePageChange}
-      preferredLocationName={preferredLocationName}
-      onLocationSelect={setPreferredLocation}
-      availableLocations={locations.map(l => ({ id: l.id, name: l.name }))}
-      chatConversationId={chatConversationId}
-      onChatClose={() => setChatConversationId(null)}
-      user={
-        currentUser
-          ? {
-              id: currentUser.id,
-              name: currentUser.name,
-              email: currentUser.email,
-              avatar: currentUser.avatar_url,
-            }
-          : undefined
-      }
+    <main 
+      className="min-h-screen max-w-[100vw] overflow-x-hidden"
+      role="main"
+      aria-labelledby="admin-dashboard-title"
     >
-      <div className="p-6">{renderContent()}</div>
-    </UnifiedLayout>
+      <h1 id="admin-dashboard-title" className="sr-only">
+        Panel de administración - {business.name}
+      </h1>
+      
+      <UnifiedLayout
+        business={business}
+        businesses={businesses}
+        onSelectBusiness={onSelectBusiness}
+        onCreateNew={onCreateNew}
+        currentRole={currentRole}
+        availableRoles={availableRoles}
+        onRoleChange={onRoleChange}
+        onLogout={onLogout}
+        sidebarItems={sidebarItems}
+        activePage={activePage}
+        onPageChange={handlePageChange}
+        preferredLocationName={preferredLocationName}
+        onLocationSelect={setPreferredLocation}
+        availableLocations={locations.map(l => ({ id: l.id, name: l.name }))}
+        chatConversationId={chatConversationId}
+        onChatClose={() => setChatConversationId(null)}
+        user={
+          currentUser
+            ? {
+                id: currentUser.id,
+                name: currentUser.name,
+                email: currentUser.email,
+                avatar: currentUser.avatar_url,
+              }
+            : undefined
+        }
+      >
+        <div 
+          className="p-4 sm:p-6 max-w-full"
+          role="region"
+          aria-label="Contenido principal del panel de administración"
+        >
+          {renderContent()}
+        </div>
+      </UnifiedLayout>
+    </main>
   )
 }

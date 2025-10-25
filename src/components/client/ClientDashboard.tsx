@@ -319,7 +319,7 @@ export function ClientDashboard({
         const conversationId = await createOrGetConversation({
           other_user_id: professionalId,
           business_id: businessId,
-          initial_message: '¡Hola! Tengo algunas preguntas sobre mi cita.',
+            initial_message: t('clientDashboard.chatInitialMessage'),
         })
 
         console.log('[ClientDashboard] Conversation created/retrieved:', conversationId)
@@ -332,7 +332,7 @@ export function ClientDashboard({
           setChatConversationId(conversationId)
           console.log('[ClientDashboard] chatConversationId set to:', conversationId)
 
-          toast.success('Chat iniciado con el profesional')
+          toast.success(t('clientDashboard.chatStarted'))
         }
       } catch (error) {
         console.error('Error al iniciar chat:', error)
@@ -341,13 +341,13 @@ export function ClientDashboard({
         setIsStartingChat(false)
       }
     },
-    [user?.id, createOrGetConversation]
+    [user?.id, createOrGetConversation, t]
   )
 
   // Handle cancel appointment
   const handleCancelAppointment = useCallback(
     async (appointmentId: string) => {
-      if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+      if (!confirm(t('clientDashboard.confirmCancelPrompt'))) {
         return
       }
 
@@ -364,7 +364,7 @@ export function ClientDashboard({
 
         if (error) throw error
 
-        toast.success('Cita cancelada exitosamente')
+  toast.success(t('clientDashboard.cancelSuccess'))
         setSelectedAppointment(null)
 
         // Refresh appointments list
@@ -377,7 +377,7 @@ export function ClientDashboard({
         toast.error(t('clientDashboard.cancelError'))
       }
     },
-    [user?.id, appointments]
+    [user?.id, appointments, t]
   )
 
   // Handle reschedule appointment
@@ -540,17 +540,17 @@ export function ClientDashboard({
     {
       id: 'appointments',
       label: t('clientDashboard.sidebar.appointments'),
-      icon: <Calendar className="h-5 w-5" />,
+      icon: <Calendar className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />,
     },
     {
       id: 'favorites',
       label: t('clientDashboard.sidebar.favorites'),
-      icon: <Heart className="h-5 w-5" />,
+      icon: <Heart className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />,
     },
     {
       id: 'history',
       label: t('clientDashboard.sidebar.history'),
-      icon: <History className="h-5 w-5" />,
+      icon: <History className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />,
     },
   ]
 
@@ -568,9 +568,9 @@ export function ClientDashboard({
 
   // Get status label
   const getStatusLabel = (status: string): string => {
-    if (status === 'confirmed') return 'Confirmada'
-    if (status === 'scheduled') return 'Agendada'
-    return 'Pendiente'
+    if (status === 'confirmed') return t('clientDashboard.status.confirmed')
+    if (status === 'scheduled') return t('clientDashboard.status.scheduled')
+    return t('clientDashboard.status.pending')
   }
 
   // Handler para crear cita desde el calendario
@@ -594,54 +594,69 @@ export function ClientDashboard({
     switch (activePage) {
       case 'appointments':
         return (
-          <div className="p-6">
+          <main className="p-3 sm:p-6" role="main" aria-labelledby="appointments-page-title">
             {/* Header - Mantener en toda la parte superior */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <h2 className="text-2xl font-bold text-foreground">{t('clientDashboard.header.myAppointments')}</h2>
-              <div className="flex items-center gap-2">
+            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <h1 id="appointments-page-title" className="text-xl sm:text-2xl font-bold text-foreground">
+                {t('clientDashboard.header.myAppointments')}
+              </h1>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 {/* View Mode Toggle */}
-                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                <div 
+                  className="flex items-center gap-1 bg-muted rounded-lg p-1 flex-1 sm:flex-none"
+                  role="group"
+                  aria-label={t('clientDashboard.viewMode.toggle')}
+                >
                   <Button
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className={cn('h-8 min-h-[44px] min-w-[44px]', viewMode !== 'list' && 'hover:bg-primary hover:text-primary-foreground')}
+                    className={cn(
+                      'h-8 min-h-[44px] flex-1 sm:flex-none sm:min-w-[44px] text-xs sm:text-sm', 
+                      viewMode !== 'list' && 'hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground'
+                    )}
                     aria-label={t('clientDashboard.viewMode.list')}
                     title={t('clientDashboard.viewMode.list')}
                     aria-pressed={viewMode === 'list'}
                   >
-                    <List className="h-4 w-4 mr-2" aria-hidden="true" />
-                    {t('clientDashboard.viewMode.list')}
+                    <List className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                    <span className="hidden sm:inline">{t('clientDashboard.viewMode.list')}</span>
                   </Button>
                   <Button
                     variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('calendar')}
-                    className={cn('h-8 min-h-[44px] min-w-[44px]', viewMode !== 'calendar' && 'hover:bg-primary hover:text-primary-foreground')}
+                    className={cn(
+                      'h-8 min-h-[44px] flex-1 sm:flex-none sm:min-w-[44px] text-xs sm:text-sm', 
+                      viewMode !== 'calendar' && 'hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground'
+                    )}
                     aria-label={t('clientDashboard.viewMode.calendar')}
                     title={t('clientDashboard.viewMode.calendar')}
                     aria-pressed={viewMode === 'calendar'}
                   >
-                    <CalendarDays className="h-4 w-4 mr-2" aria-hidden="true" />
-                    {t('clientDashboard.viewMode.calendar')}
+                    <CalendarDays className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                    <span className="hidden sm:inline">{t('clientDashboard.viewMode.calendar')}</span>
                   </Button>
                 </div>
                 <Button
                   onClick={() => setShowAppointmentWizard(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px]"
+                  className="bg-primary hover:bg-primary/90 focus:bg-primary/90 text-primary-foreground min-h-[44px] flex-1 sm:flex-none sm:min-w-[44px] text-xs sm:text-sm"
                   aria-label={t('clientDashboard.newAppointment')}
                   title={t('clientDashboard.newAppointment')}
                 >
-                  <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
-                  {t('clientDashboard.newAppointment')}
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" aria-hidden="true" />
+                  <span className="hidden sm:inline">{t('clientDashboard.newAppointment')}</span>
                 </Button>
               </div>
-            </div>
+            </header>
 
             {/* Layout de 2 columnas: Citas (izquierda) + Sugerencias (derecha) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Columna izquierda: Citas (2/3 del ancho) */}
-              <div className="lg:col-span-2">
+              <section className="lg:col-span-2" aria-labelledby="appointments-content-title">
+                <h2 id="appointments-content-title" className="sr-only">
+                  {viewMode === 'calendar' ? 'Vista de calendario de citas' : 'Lista de citas'}
+                </h2>
                 {/* Calendar View */}
                 {viewMode === 'calendar' ? (
                   <ClientCalendarView
@@ -654,30 +669,50 @@ export function ClientDashboard({
                   <>
                     {upcomingAppointments.length === 0 ? (
                       <Card className="border-dashed">
-                        <CardContent className="pt-6 text-center">
+                        <CardContent className="pt-6 text-center" role="status" aria-live="polite">
                           <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
-                          <p className="text-muted-foreground">{t('clientDashboard.empty.noAppointments')}</p>
-                          <p className="text-sm text-muted-foreground mt-2">
+                          <p className="text-muted-foreground text-sm sm:text-base">{t('clientDashboard.empty.noAppointments')}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                             {t('clientDashboard.empty.hint')}
                           </p>
                         </CardContent>
                       </Card>
                     ) : (
-                      <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4" role="list" aria-label="Lista de citas próximas">
                         {upcomingAppointments.map(appointment => (
                           <Card
                             key={appointment.id}
-                            className="cursor-pointer hover:shadow-lg transition-shadow"
+                            className="cursor-pointer hover:shadow-lg focus-within:shadow-lg transition-shadow"
                             onClick={() => setSelectedAppointment(appointment)}
-                            role="button"
-                            aria-label={`Abrir cita ${appointment.service?.name || appointment.title || ''}`}
+                            role="listitem"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                setSelectedAppointment(appointment)
+                              }
+                            }}
+                            aria-label={t('clientDashboard.calendar.openAppointmentAt', {
+                              title: appointment.service?.name || appointment.title || '',
+                              time: new Date(appointment.start_time).toLocaleTimeString('es', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }),
+                            })}
+                            title={t('clientDashboard.calendar.openAppointmentAt', {
+                              title: appointment.service?.name || appointment.title || '',
+                              time: new Date(appointment.start_time).toLocaleTimeString('es', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }),
+                            })}
                           >
-                            <CardContent className="p-4">
-                              <div className="space-y-3">
+                            <CardContent className="p-3 sm:p-4">
+                              <div className="space-y-2 sm:space-y-3">
                                 {/* Top Row: Business/Sede + Status Badge */}
                                 <div className="flex items-start justify-between gap-2 pb-2 border-b border-border">
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-foreground">
+                                    <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
                                       {appointment.business?.name}
                                       {appointment.business?.name &&
                                         appointment.location?.name &&
@@ -691,60 +726,70 @@ export function ClientDashboard({
                                     variant={
                                       appointment.status === 'confirmed' ? 'default' : 'secondary'
                                     }
-                                    className="flex-shrink-0 whitespace-nowrap"
+                                    className="flex-shrink-0 whitespace-nowrap text-xs"
+                                    role="status"
+                                    aria-label={`Estado de la cita: ${getStatusLabel(appointment.status)}`}
                                   >
                                     {getStatusLabel(appointment.status)}
                                   </Badge>
                                 </div>
 
                                 {/* Service Name */}
-                                <h3 className="font-semibold text-foreground text-base line-clamp-2">
+                                <h3 className="font-semibold text-foreground text-sm sm:text-base line-clamp-2">
                                   {appointment.service?.name || appointment.title}
                                 </h3>
 
                                 {/* Professional Info: Avatar + Name */}
                                 {appointment.employee?.full_name && (
-                                  <div className="flex items-center gap-3 bg-card/50 p-2 rounded-lg border border-border/50">
+                                  <div className="flex items-center gap-2 sm:gap-3 bg-card/50 p-2 rounded-lg border border-border/50">
                                     {appointment.employee?.avatar_url ? (
                                       <img
                                         src={appointment.employee.avatar_url}
-                                        alt={appointment.employee.full_name}
-                                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                        alt={`Foto de ${appointment.employee.full_name}`}
+                                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
                                       />
                                     ) : (
-                                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                        <UserIcon className="h-4 w-4 text-primary" />
+                                      <div 
+                                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0"
+                                        aria-label={`Avatar de ${appointment.employee.full_name}`}
+                                      >
+                                        <UserIcon className="h-3 w-3 sm:h-4 sm:w-4 text-primary" aria-hidden="true" />
                                       </div>
                                     )}
                                     <div className="min-w-0 flex-1">
-                                      <p className="text-sm font-medium text-foreground line-clamp-1">
+                                      <p className="text-xs sm:text-sm font-medium text-foreground line-clamp-1">
                                         {appointment.employee.full_name}
                                       </p>
-                                      <p className="text-xs text-muted-foreground">Profesional</p>
+                                      <p className="text-xs text-muted-foreground">{t('clientDashboard.professionalRole')}</p>
                                     </div>
                                   </div>
                                 )}
 
                                 {/* Date and Time */}
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
-                                  <Clock className="h-4 w-4 flex-shrink-0" />
+                                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground pt-1">
+                                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                                   <span className="line-clamp-1">
-                                    {new Date(appointment.start_time).toLocaleDateString('es', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                    })}
-                                    {' • '}
-                                    {new Date(appointment.start_time).toLocaleTimeString('es', {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
+                                    <time dateTime={appointment.start_time}>
+                                      {new Date(appointment.start_time).toLocaleDateString('es', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                      })}
+                                      {' • '}
+                                      {new Date(appointment.start_time).toLocaleTimeString('es', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })}
+                                    </time>
                                   </span>
                                 </div>
 
                                 {/* Price */}
                                 {(appointment.service?.price || appointment.price) && (
                                   <div className="pt-2 border-t border-border">
-                                    <span className="text-lg font-bold text-primary">
+                                    <span 
+                                      className="text-sm sm:text-base lg:text-lg font-bold text-primary"
+                                      aria-label={`Precio: ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO')} ${t('clientDashboard.currency')}`}
+                                    >
                                       $
                                       {(
                                         appointment.service?.price ??
@@ -754,7 +799,7 @@ export function ClientDashboard({
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 0,
                                       })}{' '}
-                                      COP
+                                      {t('clientDashboard.currency')}
                                     </span>
                                   </div>
                                 )}
@@ -766,21 +811,20 @@ export function ClientDashboard({
                     )}
                   </>
                 )}
-              </div>
+              </section>
 
-              {/* Columna derecha: Sugerencias de negocios (1/3 del ancho) */}
-              <div className="lg:col-span-1">
+              {/* Columna derecha: Sugerencias (1/3 del ancho) */}
+              <aside className="lg:col-span-1" aria-labelledby="suggestions-title">
+                <h2 id="suggestions-title" className="sr-only">Sugerencias de negocios</h2>
                 <BusinessSuggestions
-                  userId={currentUser.id}
+                  userId={user?.id || ''}
                   preferredCityName={preferredCityName}
                   preferredRegionName={preferredRegionName}
-                  onBusinessSelect={businessId => {
-                    setSelectedBusinessId(businessId)
-                  }}
+                  onBusinessSelect={setSelectedBusinessId}
                 />
-              </div>
+              </aside>
             </div>
-          </div>
+          </main>
         )
       case 'profile':
       case 'settings':
@@ -796,7 +840,13 @@ export function ClientDashboard({
           </div>
         )
       case 'favorites':
-        return <FavoritesList />
+        return (
+          <div className="p-6">
+            {currentUser && (
+              <FavoritesList />
+            )}
+          </div>
+        )
       case 'history':
         return (
           <div className="p-6">
@@ -883,17 +933,18 @@ export function ClientDashboard({
       {/* Appointment Details Modal */}
       {selectedAppointment && (
         <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto" aria-label={t('clientDashboard.detailsTitle')}>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">Detalles de la Cita</DialogTitle>
+              <DialogTitle id="appointment-details-title" className="text-xl sm:text-2xl font-bold">{t('clientDashboard.detailsTitle')}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-6 pt-4">
               {/* Status Badge and Business Name */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <Badge
                   variant={selectedAppointment.status === 'confirmed' ? 'default' : 'secondary'}
-                  className="text-base px-4 py-1"
+                  className="text-sm sm:text-base px-4 py-1"
+                  aria-label={`${t('clientDashboard.status.label')}: ${getStatusLabel(selectedAppointment.status)}`}
                 >
                   {getStatusLabel(selectedAppointment.status)}
                 </Badge>
@@ -905,8 +956,8 @@ export function ClientDashboard({
               </div>
 
               {/* Service Name */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Servicio</h3>
+              <section role="region" aria-labelledby="service-info">
+                <h3 id="service-info" className="text-sm font-medium text-muted-foreground mb-1">{t('clientDashboard.serviceLabel')}</h3>
                 <p className="text-lg font-semibold text-foreground">
                   {selectedAppointment.service?.name || selectedAppointment.title}
                 </p>
@@ -915,56 +966,59 @@ export function ClientDashboard({
                     {selectedAppointment.service.description}
                   </p>
                 )}
-              </div>
+              </section>
 
               {/* Date and Time */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Fecha
-                  </h3>
-                  <p className="text-base text-foreground">
-                    {new Date(selectedAppointment.start_time).toLocaleDateString('es', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Hora
-                  </h3>
-                  <p className="text-base text-foreground">
-                    {new Date(selectedAppointment.start_time).toLocaleTimeString('es', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                    })}
-                    {' - '}
-                    {new Date(selectedAppointment.end_time).toLocaleTimeString('es', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                    })}
-                  </p>
-                  {selectedAppointment.service?.duration && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Duración: {selectedAppointment.service.duration} min
+              <section role="region" aria-labelledby="datetime-info">
+                <h3 id="datetime-info" className="sr-only">{t('clientDashboard.dateTimeInfo')}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" aria-hidden="true" />
+                      {t('clientDashboard.dateLabel')}
+                    </h4>
+                    <p className="text-sm sm:text-base text-foreground">
+                      {new Date(selectedAppointment.start_time).toLocaleDateString('es', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
                     </p>
-                  )}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                      <Clock className="h-4 w-4" aria-hidden="true" />
+                      {t('clientDashboard.timeLabel')}
+                    </h4>
+                    <p className="text-sm sm:text-base text-foreground">
+                      {new Date(selectedAppointment.start_time).toLocaleTimeString('es', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                      {' - '}
+                      {new Date(selectedAppointment.end_time).toLocaleTimeString('es', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </p>
+                    {selectedAppointment.service?.duration && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('clientDashboard.durationShort', { minutes: String(selectedAppointment.service.duration) })}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </section>
 
               {/* Professional/Employee */}
               {selectedAppointment.employee?.full_name && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <UserIcon className="h-4 w-4" />
-                    Profesional que te atenderá
+                <section role="region" aria-labelledby="professional-info">
+                  <h3 id="professional-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                    <UserIcon className="h-4 w-4" aria-hidden="true" />
+                    {t('clientDashboard.professionalTitle')}
                   </h3>
                   <div className="flex items-center gap-3 mt-2 p-3 bg-muted/30 rounded-lg">
                     {selectedAppointment.employee.avatar_url ? (
@@ -974,24 +1028,24 @@ export function ClientDashboard({
                         className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-primary" />
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center" aria-hidden="true">
+                        <UserIcon className="h-6 w-6 text-primary" aria-hidden="true" />
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-base font-semibold text-foreground mb-1">
+                      <p className="text-sm sm:text-base font-semibold text-foreground mb-1">
                         {selectedAppointment.employee.full_name}
                       </p>
                       <div className="space-y-0.5">
                         {selectedAppointment.employee.email && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
+                            <Mail className="h-3 w-3" aria-hidden="true" />
                             {selectedAppointment.employee.email}
                           </p>
                         )}
                         {selectedAppointment.employee.phone && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
+                            <Phone className="h-3 w-3" aria-hidden="true" />
                             {selectedAppointment.employee.phone}
                           </p>
                         )}
@@ -1003,18 +1057,18 @@ export function ClientDashboard({
                       )}
                     </div>
                   </div>
-                </div>
+                </section>
               )}
 
               {/* Location/Sede with full details */}
               {selectedAppointment.location && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+                <section role="region" aria-labelledby="location-info">
+                  <h3 id="location-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
                     {t('clientDashboard.locationAndAddress')}
                   </h3>
                   <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg">
-                    <p className="text-base font-semibold text-foreground">
+                    <p className="text-sm sm:text-base font-semibold text-foreground">
                       {selectedAppointment.location.name}
                     </p>
                     {selectedAppointment.location.address && (
@@ -1044,49 +1098,50 @@ export function ClientDashboard({
                           href={googleMapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
+                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                          aria-label={t('clientDashboard.viewInGoogleMapsAria')}
                         >
-                          <MapPin className="h-4 w-4" />
+                          <MapPin className="h-4 w-4" aria-hidden="true" />
                           {t('clientDashboard.viewInGoogleMaps')}
                         </a>
                       ) : null
                     })()}
                   </div>
-                </div>
+                </section>
               )}
 
               {/* Description */}
               {selectedAppointment.description && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                <section role="region" aria-labelledby="description-info">
+                  <h3 id="description-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                    <FileText className="h-4 w-4" aria-hidden="true" />
                     {t('clientDashboard.descriptionTitle')}
                   </h3>
-                  <p className="text-base text-foreground whitespace-pre-wrap">
+                  <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap">
                     {selectedAppointment.description}
                   </p>
-                </div>
+                </section>
               )}
 
               {/* Notes */}
               {selectedAppointment.notes && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                <section role="region" aria-labelledby="notes-info">
+                  <h3 id="notes-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+                    <FileText className="h-4 w-4" aria-hidden="true" />
                     {t('clientDashboard.notesTitle')}
                   </h3>
-                  <p className="text-base text-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">
+                  <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">
                     {selectedAppointment.notes}
                   </p>
-                </div>
+                </section>
               )}
 
               {/* Price/Value of Service */}
               {(selectedAppointment.service?.price || selectedAppointment.price) && (
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center justify-between">
+                <section role="region" aria-labelledby="price-info" className="pt-4 border-t border-border">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <div>
-                      <h3 className="text-lg font-medium text-muted-foreground">
+                      <h3 id="price-info" className="text-base sm:text-lg font-medium text-muted-foreground">
                         {t('clientDashboard.serviceValueTitle')}
                       </h3>
                       {selectedAppointment.service?.duration && (
@@ -1095,7 +1150,7 @@ export function ClientDashboard({
                         </p>
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       $
                       {(
                         selectedAppointment.service?.price ??
@@ -1105,14 +1160,14 @@ export function ClientDashboard({
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 0,
                       })}{' '}
-                      COP
+                      {t('clientDashboard.currency')}
                     </p>
                   </div>
-                </div>
+                </section>
               )}
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-4">
                 {/* Chat button - only show if there's a professional */}
                 {selectedAppointment.employee?.id && (
                   <Button
@@ -1124,7 +1179,7 @@ export function ClientDashboard({
                       )
                     }
                     disabled={isStartingChat}
-                    className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                    className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     aria-label={t('clientDashboard.chatWithProfessionalAria')}
                     title={t('clientDashboard.chatWithProfessional')}
                   >
@@ -1138,7 +1193,7 @@ export function ClientDashboard({
                   <Button
                     variant="outline"
                     onClick={() => handleRescheduleAppointment(selectedAppointment)}
-                    className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                    className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     aria-label={t('clientDashboard.rescheduleAria')}
                     title={t('clientDashboard.reschedule')}
                   >
@@ -1152,7 +1207,7 @@ export function ClientDashboard({
                   <Button
                     variant="destructive"
                     onClick={() => handleCancelAppointment(selectedAppointment.id)}
-                    className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                    className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     aria-label={t('clientDashboard.cancelAppointmentAria')}
                     title={t('clientDashboard.cancelAppointment')}
                   >
@@ -1164,7 +1219,7 @@ export function ClientDashboard({
                 <Button
                   variant="outline"
                   onClick={() => setSelectedAppointment(null)}
-                  className="ml-auto min-h-[44px] min-w-[44px]"
+                  className="ml-auto min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   aria-label={t('common.actions.close')}
                   title={t('common.actions.close')}
                 >

@@ -411,19 +411,19 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       completed: {
-        label: 'Asistida',
+        label: t('clientHistory.status.completed'),
         variant: 'default' as const,
         className: 'bg-green-500 hover:bg-green-600',
       },
-      cancelled: { label: 'Cancelada', variant: 'destructive' as const, className: '' },
+      cancelled: { label: t('clientHistory.status.cancelled'), variant: 'destructive' as const, className: '' },
       no_show: {
-        label: 'Perdida',
+        label: t('clientHistory.status.no_show'),
         variant: 'secondary' as const,
         className: 'bg-yellow-500 hover:bg-yellow-600',
       },
-      confirmed: { label: 'Confirmada', variant: 'default' as const, className: '' },
-      pending: { label: 'Pendiente', variant: 'secondary' as const, className: '' },
-      scheduled: { label: 'Agendada', variant: 'default' as const, className: '' },
+      confirmed: { label: t('clientHistory.status.confirmed'), variant: 'default' as const, className: '' },
+      pending: { label: t('clientHistory.status.pending'), variant: 'secondary' as const, className: '' },
+      scheduled: { label: t('clientHistory.status.scheduled'), variant: 'default' as const, className: '' },
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
@@ -489,7 +489,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+      <CardTitle className="text-sm font-medium text-muted-foreground">{t('clientHistory.stats.total')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{stats.total}</div>
@@ -498,7 +498,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Asistidas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('clientHistory.stats.attended')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.attended}</div>
@@ -507,7 +507,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Canceladas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('clientHistory.stats.cancelled')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
@@ -516,7 +516,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Perdidas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('clientHistory.stats.noShow')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{stats.noShow}</div>
@@ -526,7 +526,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Pagado
+              {t('clientHistory.stats.totalPaid')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -547,18 +547,20 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros
+              <Filter className="h-5 w-5" aria-hidden="true" />
+              {t('clientHistory.filters.title')}
             </CardTitle>
             {hasActiveFilters && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="hover:bg-destructive/10 hover:text-destructive"
+                className="hover:bg-destructive/10 hover:text-destructive min-h-[44px] min-w-[44px]"
+                aria-label={t('common.actions.reset')}
+                title={t('common.actions.reset')}
               >
-                <X className="h-4 w-4 mr-2" />
-                Limpiar filtros
+                <X className="h-4 w-4 mr-2" aria-hidden="true" />
+                {t('common.actions.reset')}
               </Button>
             )}
           </div>
@@ -566,12 +568,14 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
         <CardContent className="space-y-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Buscar por negocio, servicio, empleado o sede..."
+              placeholder={t('clientHistory.placeholders.search')}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
+              aria-label={t('clientHistory.placeholders.search')}
+              title={t('clientHistory.placeholders.search')}
             />
           </div>
 
@@ -581,7 +585,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
-                  {statusFilters.length === 0 ? 'Estado' : `${statusFilters.length} estado(s)`}
+                  {statusFilters.length === 0 ? t('clientHistory.filters.status') : `${statusFilters.length} ${t('clientHistory.filters.status')}`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -593,9 +597,9 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       checked={statusFilters.length === 0}
                       onCheckedChange={() => setStatusFilters([])}
                     />
-                    <label htmlFor="status-all" className="text-sm cursor-pointer">
-                      Todos los estados
-                    </label>
+                      <label htmlFor="status-all" className="text-sm cursor-pointer">
+                        {t('common.placeholders.allStatuses')}
+                      </label>
                   </div>
                   <div className="border-t pt-3 space-y-2">
                     {['attended', 'cancelled', 'no_show'].map(status => (
@@ -612,9 +616,9 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                           }}
                         />
                         <label htmlFor={`status-${status}`} className="text-sm cursor-pointer">
-                          {status === 'attended' && 'Asistidas'}
-                          {status === 'cancelled' && 'Canceladas'}
-                          {status === 'no_show' && 'Perdidas'}
+                          {status === 'attended' && t('clientHistory.status.completed')}
+                          {status === 'cancelled' && t('clientHistory.status.cancelled')}
+                          {status === 'no_show' && t('clientHistory.status.no_show')}
                         </label>
                       </div>
                     ))}
@@ -627,20 +631,22 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             <Popover open={businessPopoverOpen} onOpenChange={setBusinessPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
-                  {businessFilters.length === 0
-                    ? 'Negocio'
-                    : `${businessFilters.length} negocio(s)`}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+            {businessFilters.length === 0
+              ? t('clientHistory.filters.business')
+              : `${businessFilters.length} ${t('clientHistory.filters.business')}`}
+                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2">
                 <div className="p-2 pb-0">
                   <Input
-                    placeholder="Buscar negocio..."
+                    placeholder={t('clientHistory.placeholders.businessSearch')}
                     value={businessSearch}
                     onChange={e => setBusinessSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
+                    aria-label={t('clientHistory.placeholders.businessSearch')}
+                    title={t('clientHistory.placeholders.businessSearch')}
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
@@ -654,7 +660,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       }}
                     />
                     <label htmlFor="business-all" className="text-sm cursor-pointer">
-                      Todos los negocios
+                      {t('clientHistory.filters.allBusinesses')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -681,7 +687,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     ))}
                     {filteredBusinesses.length === 0 && businessSearch && (
                       <div className="p-2 text-center text-sm text-muted-foreground">
-                        No se encontraron negocios
+                        {t('clientHistory.messages.noBusinesses')}
                       </div>
                     )}
                   </div>
@@ -693,18 +699,20 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
             <Popover open={locationPopoverOpen} onOpenChange={setLocationPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
-                  {locationFilters.length === 0 ? 'Sede' : `${locationFilters.length} sede(s)`}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                  {locationFilters.length === 0 ? t('clientHistory.filters.location') : `${locationFilters.length} ${t('clientHistory.filters.location')}`}
+                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2">
                 <div className="p-2 pb-0">
                   <Input
-                    placeholder="Buscar sede..."
+                    placeholder={t('clientHistory.placeholders.locationSearch')}
                     value={locationSearch}
                     onChange={e => setLocationSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
+                    aria-label={t('clientHistory.placeholders.locationSearch')}
+                    title={t('clientHistory.placeholders.locationSearch')}
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
@@ -718,7 +726,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       }}
                     />
                     <label htmlFor="location-all" className="text-sm cursor-pointer">
-                      Todas las sedes
+                      {t('clientHistory.filters.allLocations')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -745,7 +753,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     ))}
                     {filteredLocations.length === 0 && locationSearch && (
                       <div className="p-2 text-center text-sm text-muted-foreground">
-                        No se encontraron sedes
+                        {t('clientHistory.messages.noLocations')}
                       </div>
                     )}
                   </div>
@@ -758,19 +766,21 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
                   {serviceFilters.length === 0
-                    ? 'Servicio'
-                    : `${serviceFilters.length} servicio(s)`}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                    ? t('clientHistory.filters.service')
+                    : `${serviceFilters.length} ${t('clientHistory.filters.service')}`}
+                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2">
                 <div className="p-2 pb-0">
                   <Input
-                    placeholder="Buscar servicio..."
+                    placeholder={t('clientHistory.placeholders.serviceSearch')}
                     value={serviceSearch}
                     onChange={e => setServiceSearch(e.target.value)}
                     className="mb-2"
                     autoFocus
+                    aria-label={t('clientHistory.placeholders.serviceSearch')}
+                    title={t('clientHistory.placeholders.serviceSearch')}
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
@@ -784,7 +794,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       }}
                     />
                     <label htmlFor="service-all" className="text-sm cursor-pointer">
-                      Todos los servicios
+                      {t('clientHistory.filters.allServices')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -811,7 +821,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     ))}
                     {filteredServices.length === 0 && serviceSearch && (
                       <div className="p-2 text-center text-sm text-muted-foreground">
-                        No se encontraron servicios
+                        {t('clientHistory.messages.noServices')}
                       </div>
                     )}
                   </div>
@@ -824,19 +834,21 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
                   {categoryFilters.length === 0
-                    ? 'Categoría'
-                    : `${categoryFilters.length} categoría(s)`}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                    ? t('clientHistory.filters.category')
+                    : `${categoryFilters.length} ${t('clientHistory.filters.category')}`}
+                  <ChevronDown className="h-4 w-4 opacity-50" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2">
                 <div className="p-2 pb-0">
                   <Input
-                    placeholder="Buscar categoría..."
+                    placeholder={t('clientHistory.placeholders.categorySearch')}
                     value={categorySearch}
                     onChange={e => setCategorySearch(e.target.value)}
                     className="mb-2"
                     autoFocus
+                    aria-label={t('clientHistory.placeholders.categorySearch')}
+                    title={t('clientHistory.placeholders.categorySearch')}
                   />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
@@ -850,7 +862,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       }}
                     />
                     <label htmlFor="category-all" className="text-sm cursor-pointer">
-                      Todas las categorías
+                      {t('clientHistory.filters.allCategories')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -877,7 +889,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     ))}
                     {filteredCategories.length === 0 && categorySearch && (
                       <div className="p-2 text-center text-sm text-muted-foreground">
-                        No se encontraron categorías
+                        {t('clientHistory.messages.noCategories')}
                       </div>
                     )}
                   </div>
@@ -890,20 +902,20 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
                   {employeeFilters.length === 0
-                    ? 'Profesional'
-                    : `${employeeFilters.length} profesional(es)`}
+                    ? t('clientHistory.filters.employee')
+                    : `${employeeFilters.length} ${t('clientHistory.filters.employee')}`}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2">
                 <div className="p-2 pb-0">
-                  <Input
-                    placeholder="Buscar profesional..."
-                    value={employeeSearch}
-                    onChange={e => setEmployeeSearch(e.target.value)}
-                    className="mb-2"
-                    autoFocus
-                  />
+                    <Input
+                      placeholder={t('clientHistory.placeholders.employeeSearch')}
+                      value={employeeSearch}
+                      onChange={e => setEmployeeSearch(e.target.value)}
+                      className="mb-2"
+                      autoFocus
+                    />
                 </div>
                 <div className="max-h-60 overflow-y-auto p-2">
                   <div className="flex items-center space-x-2 mb-3">
@@ -916,7 +928,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       }}
                     />
                     <label htmlFor="employee-all" className="text-sm cursor-pointer">
-                      Todos los profesionales
+                      {t('clientHistory.filters.allEmployees')}
                     </label>
                   </div>
                   <div className="border-t pt-2 space-y-2">
@@ -943,7 +955,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     ))}
                     {filteredEmployees.length === 0 && employeeSearch && (
                       <div className="p-2 text-center text-sm text-muted-foreground">
-                        No se encontraron profesionales
+                        {t('clientHistory.messages.noEmployees')}
                       </div>
                     )}
                   </div>
@@ -953,15 +965,15 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
             {/* Price Range */}
             <Select value={priceRangeFilter} onValueChange={setPriceRangeFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="min-h-[44px]" aria-label={t('common.placeholders.priceRange')} title={t('common.placeholders.priceRange')}>
                 <SelectValue placeholder={t('common.placeholders.priceRange')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los precios</SelectItem>
-                <SelectItem value="0-500">$0 - $500</SelectItem>
-                <SelectItem value="501-1000">$501 - $1,000</SelectItem>
-                <SelectItem value="1001-2000">$1,001 - $2,000</SelectItem>
-                <SelectItem value="2001+">$2,001+</SelectItem>
+                  <SelectItem value="all">{t('clientHistory.priceRanges.all')}</SelectItem>
+                  <SelectItem value="0-500">{t('clientHistory.priceRanges.0-500')}</SelectItem>
+                  <SelectItem value="501-1000">{t('clientHistory.priceRanges.501-1000')}</SelectItem>
+                  <SelectItem value="1001-2000">{t('clientHistory.priceRanges.1001-2000')}</SelectItem>
+                  <SelectItem value="2001+">{t('clientHistory.priceRanges.2001plus')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -970,7 +982,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
           Mostrando {paginatedAppointments.length} de {filteredAppointments.length} citas (
           {appointments.length} total)
         </p>
@@ -979,8 +991,8 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       {/* Appointments List */}
       {filteredAppointments.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
-            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <CardContent className="py-12 text-center" role="status" aria-live="polite">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
             <h3 className="text-lg font-semibold text-foreground mb-2">No se encontraron citas</h3>
             <p className="text-muted-foreground">
               {hasActiveFilters
@@ -991,9 +1003,9 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4" role="list" aria-label={t('clientHistory.appointmentsListLabel')}>
             {paginatedAppointments.map(appointment => (
-              <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+              <Card key={appointment.id} className="hover:shadow-md transition-shadow" role="listitem">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     {/* Left Section */}
@@ -1003,7 +1015,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                         {getStatusBadge(appointment.status)}
                         {appointment.business?.name && (
                           <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                            <Building2 className="h-4 w-4" />
+                            <Building2 className="h-4 w-4" aria-hidden="true" />
                             {appointment.business.name}
                           </div>
                         )}
@@ -1012,7 +1024,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {/* Service */}
                       {appointment.service?.name && (
                         <div className="flex items-center gap-2">
-                          <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                           <span className="font-semibold text-foreground text-lg">
                             {appointment.service.name}
                           </span>
@@ -1022,7 +1034,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {/* Date and Time */}
                       <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
+                          <Calendar className="h-4 w-4" aria-hidden="true" />
                           <span>
                             {format(new Date(appointment.start_time), "d 'de' MMMM, yyyy", {
                               locale: es,
@@ -1030,7 +1042,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-4 w-4" aria-hidden="true" />
                           <span>
                             {format(new Date(appointment.start_time), 'HH:mm', { locale: es })} -{' '}
                             {format(new Date(appointment.end_time), 'HH:mm', { locale: es })}
@@ -1041,7 +1053,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {/* Location */}
                       {appointment.location?.name && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <MapPin className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                           <span>{appointment.location.name}</span>
                         </div>
                       )}
@@ -1049,7 +1061,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                       {/* Employee */}
                       {appointment.employee?.full_name && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <User className="h-4 w-4 flex-shrink-0" />
+                          <User className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                           <span>{appointment.employee.full_name}</span>
                         </div>
                       )}
@@ -1059,7 +1071,7 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     {(appointment.service?.price || appointment.price) && (
                       <div className="flex flex-col items-end gap-2">
                         <div className="flex items-center gap-2 text-2xl font-bold text-foreground">
-                          <DollarSign className="h-6 w-6" />
+                          <DollarSign className="h-6 w-6" aria-hidden="true" />
                           {(appointment.service?.price || appointment.price || 0).toLocaleString(
                             'es-MX'
                           )}
@@ -1077,12 +1089,15 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg" role="navigation" aria-label="Paginación">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
+                className="min-h-[44px] min-w-[44px]"
+                aria-label="Anterior"
+                title="Anterior"
               >
                 Anterior
               </Button>
@@ -1094,6 +1109,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                     variant={currentPage === page ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
+                    className="min-h-[44px] min-w-[44px]"
+                    aria-label={`Ir a página ${page}`}
+                    title={`Ir a página ${page}`}
+                    aria-current={currentPage === page ? 'page' : undefined}
                   >
                     {page}
                   </Button>
@@ -1105,6 +1124,9 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
+                className="min-h-[44px] min-w-[44px]"
+                aria-label="Siguiente"
+                title="Siguiente"
               >
                 Siguiente
               </Button>
@@ -1119,3 +1141,4 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
     </div>
   )
 })
+

@@ -206,6 +206,14 @@ export function BusinessSuggestions({
         isFavorite && 'border-primary border-2'
       )}
       onClick={() => onBusinessSelect?.(business.id)}
+      role="button"
+      tabIndex={0}
+      aria-label={t('businessSuggestions.openBusiness', { name: business.name })}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          onBusinessSelect?.(business.id)
+        }
+      }}
     >
       <CardContent className="p-4">
         <div className="space-y-3">
@@ -219,7 +227,7 @@ export function BusinessSuggestions({
               />
             ) : (
               <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border-2 border-primary/30">
-                <Building2 className="h-6 w-6 text-primary" />
+                <Building2 className="h-6 w-6 text-primary" aria-hidden="true" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -230,7 +238,7 @@ export function BusinessSuggestions({
           {/* Rating */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
               <span className="text-sm font-semibold text-foreground">
                 {business.average_rating.toFixed(1)}
               </span>
@@ -240,31 +248,30 @@ export function BusinessSuggestions({
             )}
           </div>
 
-          {/* Ubicación */}
           {business.city && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <MapPin className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
               <span className="truncate">{business.city}</span>
             </div>
           )}
 
-          {/* Badge de favorito */}
           {isFavorite && (
             <Badge variant="default" className="w-full justify-center">
-              Tu favorito
+              {t('businessSuggestions.favoriteBadge')}
             </Badge>
           )}
 
-          {/* Botón de acción */}
           <Button
             variant={isFavorite ? 'default' : 'outline'}
-            className="w-full"
+            className="w-full min-h-[44px] min-w-[44px]"
             onClick={e => {
               e.stopPropagation()
               onBusinessSelect?.(business.id)
             }}
+            aria-label={isFavorite ? t('businessSuggestions.bookAgain') : t('businessSuggestions.bookNow')}
+            title={isFavorite ? t('businessSuggestions.bookAgain') : t('businessSuggestions.bookNow')}
           >
-            {isFavorite ? 'Reservar de nuevo' : 'Agendar cita'}
+            {isFavorite ? t('businessSuggestions.bookAgain') : t('businessSuggestions.bookNow')}
           </Button>
         </div>
       </CardContent>
@@ -274,16 +281,17 @@ export function BusinessSuggestions({
   if (loading) {
     return (
       <div className="space-y-4">
-        <Card>
+        <Card className="max-w-[95vw] max-h-[90vh] overflow-auto" role="dialog" aria-modal="true" aria-label="Cargando sugerencias de negocios">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+            <CardTitle className="text-lg flex items-center gap-2" id="loading-title">
+              <TrendingUp className="h-5 w-5" aria-hidden="true" />
               {t('businessSuggestions.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Cargando sugerencias de negocios">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" aria-hidden="true"></div>
+              <span className="sr-only">Cargando sugerencias de negocios...</span>
             </div>
           </CardContent>
         </Card>
@@ -297,41 +305,51 @@ export function BusinessSuggestions({
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="max-w-[95vw] max-h-[90vh] overflow-auto">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+          <CardTitle className="text-lg flex items-center gap-2" id="business-suggestions-title">
+            <TrendingUp className="h-5 w-5" aria-hidden="true" />
             {t('businessSuggestions.title')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Negocio favorito */}
+        <CardContent className="space-y-4" role="region" aria-labelledby="business-suggestions-title">
           {favoriteBusiness && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            <section className="space-y-2" aria-labelledby="favorite-section-title">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide" id="favorite-section-title">
                 {t('businessSuggestions.basedOnReviews')}
               </h3>
-              {renderBusinessCard(favoriteBusiness, true)}
-            </div>
+              <div role="list" aria-label="Negocio favorito">
+                <div role="listitem">
+                  {renderBusinessCard(favoriteBusiness, true)}
+                </div>
+              </div>
+            </section>
           )}
 
-          {/* Negocios en la ciudad */}
           {displayedBusinesses.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            <section className="space-y-2" aria-labelledby="suggestions-section-title">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide" id="suggestions-section-title">
                 {t('businessSuggestions.inCity')} {preferredCityName || preferredRegionName}
               </h3>
-              <div className="space-y-3">
-                {displayedBusinesses.map(business => renderBusinessCard(business, false))}
+              <div className="space-y-3" role="list" aria-label="Negocios sugeridos">
+                {displayedBusinesses.map(business => (
+                  <div key={business.id} role="listitem">
+                    {renderBusinessCard(business, false)}
+                  </div>
+                ))}
               </div>
-
-              {/* "Ver más..." button */}
               {hasMoreBusinesses && (
-                <Button variant="outline" className="w-full mt-4" onClick={handleLoadMore}>
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4 min-h-[44px] min-w-[44px]" 
+                  onClick={handleLoadMore} 
+                  aria-label="Ver más negocios" 
+                  title="Ver más negocios"
+                >
                   {t('businessSuggestions.viewMore')}
                 </Button>
               )}
-            </div>
+            </section>
           )}
         </CardContent>
       </Card>

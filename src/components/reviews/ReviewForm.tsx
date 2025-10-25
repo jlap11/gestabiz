@@ -53,9 +53,10 @@ export function ReviewForm({
 
   const renderStars = () => {
     return (
-      <div className="flex gap-2">
+      <div className="flex gap-2" role="radiogroup" aria-labelledby="rating-label">
         {[1, 2, 3, 4, 5].map(star => {
           const isActive = star <= (hoveredRating || rating)
+          const isChecked = rating === star
           return (
             <button
               key={star}
@@ -63,7 +64,17 @@ export function ReviewForm({
               onClick={() => setRating(star)}
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}
-              className="transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setRating(star)
+                }
+              }}
+              role="radio"
+              aria-checked={isChecked}
+              aria-label={`Calificar ${star} ${star === 1 ? 'estrella' : 'estrellas'}`}
+              tabIndex={rating === 0 ? (star === 1 ? 0 : -1) : isChecked ? 0 : -1}
+              className="transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <Star
                 className={cn(
@@ -72,6 +83,7 @@ export function ReviewForm({
                     ? 'fill-yellow-400 text-yellow-400'
                     : 'text-gray-300 hover:text-yellow-200'
                 )}
+                aria-hidden="true"
               />
             </button>
           )
@@ -92,21 +104,21 @@ export function ReviewForm({
   }
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <Card className="p-6 max-w-[95vw]">
+      <form onSubmit={handleSubmit} className="space-y-6" role="form" aria-labelledby="review-form-title">
         {/* Title */}
         <div>
-          <h3 className="text-lg font-semibold">{t('reviews.leaveReview')}</h3>
+          <h3 id="review-form-title" className="text-lg font-semibold">{t('reviews.leaveReview')}</h3>
           <p className="text-sm text-muted-foreground mt-1">{t('reviews.reviewDescription')}</p>
         </div>
 
         {/* Rating Stars */}
         <div className="space-y-2">
-          <Label>{t('reviews.rating')}</Label>
+          <Label id="rating-label">{t('reviews.rating')}</Label>
           <div className="flex items-center gap-4">
             {renderStars()}
             {(hoveredRating || rating) > 0 && (
-              <span className="text-sm font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-muted-foreground" role="status" aria-live="polite">
                 {getRatingLabel(hoveredRating || rating)}
               </span>
             )}
@@ -127,20 +139,36 @@ export function ReviewForm({
             rows={4}
             maxLength={1000}
             className="resize-none"
+            aria-describedby="comment-help comment-count"
+            aria-label={t('reviews.comment')}
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground" id="comment-help">
             <span>{t('reviews.shareExperience')}</span>
-            <span>{comment.length}/1000</span>
+            <span id="comment-count" aria-live="polite">{comment.length}/1000</span>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={rating === 0 || isSubmitting} className="flex-1">
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <Button
+            type="submit"
+            disabled={rating === 0 || isSubmitting}
+            className="flex-1 min-h-[44px] min-w-[44px] w-full sm:w-auto"
+            aria-label={isSubmitting ? t('common.submitting') : t('reviews.submitReview')}
+            title={isSubmitting ? t('common.submitting') : t('reviews.submitReview')}
+          >
             {isSubmitting ? t('common.submitting') : t('reviews.submitReview')}
           </Button>
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="min-h-[44px] min-w-[44px] w-full sm:w-auto"
+              aria-label={t('common.cancel')}
+              title={t('common.cancel')}
+            >
               {t('common.cancel')}
             </Button>
           )}

@@ -1180,14 +1180,24 @@ export const AppointmentsCalendar: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-    <div className="text-muted-foreground">{t('admin.appointmentCalendar.loadingCalendar')}</div>
+      <div 
+        className="flex items-center justify-center h-64"
+        role="status"
+        aria-label="Cargando calendario de citas"
+      >
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+        <div className="text-muted-foreground">{t('admin.appointmentCalendar.loadingCalendar')}</div>
+        <span className="sr-only">Cargando calendario de citas...</span>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <main 
+      className="space-y-6 max-w-[100vw] overflow-x-auto"
+      role="main"
+      aria-labelledby="appointments-calendar-title"
+    >
       {/* Console log for debugging - outside JSX (solo en dev) */}
       {DEBUG_MODE &&
         (() => {
@@ -1201,60 +1211,74 @@ export const AppointmentsCalendar: React.FC = () => {
         })()}
 
       {/* Header with date navigation */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h1 id="appointments-calendar-title" className="text-xl sm:text-2xl font-bold text-foreground">
           {t('admin.appointmentCalendar.title')}
-        </h2>
+        </h1>
 
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-            className="p-2 hover:bg-muted rounded-md min-h-[44px] min-w-[44px]"
-            aria-label={t('calendar.previous')}
-            title={t('calendar.previous')}
-          >
-            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-          </button>
+        <nav 
+          className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4"
+          aria-label="Navegación de fechas del calendario"
+        >
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+              className="p-2 hover:bg-muted rounded-md min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+              aria-label={t('calendar.previous')}
+              title={t('calendar.previous')}
+            >
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+            </button>
 
-          <div className="text-center">
-            <div className="text-lg font-semibold text-foreground">
-              {format(selectedDate, 'EEEE', { locale: es })}
+            <div className="text-center px-2">
+              <div className="text-sm sm:text-lg font-semibold text-foreground">
+                {format(selectedDate, 'EEEE', { locale: es })}
+              </div>
+              <div className="text-xs sm:text-sm text-muted-foreground">
+                {format(selectedDate, 'dd MMMM yyyy', { locale: es })}
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {format(selectedDate, 'dd MMMM yyyy', { locale: es })}
-            </div>
+
+            <button
+              onClick={() => setSelectedDate(addDays(selectedDate, 1))}
+              className="p-2 hover:bg-muted rounded-md min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+              aria-label={t('calendar.next')}
+              title={t('calendar.next')}
+            >
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
 
           <button
-            onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-            className="p-2 hover:bg-muted rounded-md min-h-[44px] min-w-[44px]"
-            aria-label={t('calendar.next')}
-            title={t('calendar.next')}
-          >
-            <ChevronRight className="h-5 w-5" aria-hidden="true" />
-          </button>
-
-          <button
             onClick={() => setSelectedDate(new Date())}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90"
+            className="px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors text-sm sm:text-base min-h-[44px]"
+            aria-label={t('calendar.today')}
+            title={t('calendar.today')}
           >
             {t('calendar.today')}
           </button>
-        </div>
-      </div>
+        </nav>
+      </header>
 
       {/* Filters Panel - Custom Dropdowns with Checkboxes */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+      <section 
+        className="bg-card border border-border rounded-lg overflow-hidden"
+        aria-labelledby="filters-section-title"
+      >
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full px-4 py-3 bg-muted/30 border-b border-border flex items-center justify-between hover:bg-muted/50 transition-colors"
+          className="w-full px-4 py-3 bg-muted/30 border-b border-border flex items-center justify-between hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset min-h-[44px]"
+          aria-expanded={showFilters}
+          aria-controls="filters-content"
+          aria-label="Mostrar u ocultar filtros del calendario"
         >
-          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+          <h3 id="filters-section-title" className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
             <svg
               className="w-4 h-4 text-primary"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -1274,7 +1298,9 @@ export const AppointmentsCalendar: React.FC = () => {
                 setFilterLocation([])
                 setFilterEmployee([])
               }}
-              className="px-3 py-1.5 text-xs bg-background hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors font-medium border border-border"
+              className="px-3 py-1.5 text-xs bg-background hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors font-medium border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[32px]"
+              aria-label={t('admin.appointmentCalendar.clearFilters')}
+              title={t('admin.appointmentCalendar.clearFilters')}
             >
               {t('admin.appointmentCalendar.clearFilters')}
             </button>
@@ -1286,21 +1312,29 @@ export const AppointmentsCalendar: React.FC = () => {
         </button>
 
         {showFilters && (
-          <div className="px-4 py-4 bg-background space-y-3">
-            <div className="flex flex-wrap gap-3">
+          <div 
+            id="filters-content"
+            className="px-4 py-4 bg-background space-y-3"
+            role="region"
+            aria-labelledby="filters-section-title"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Estado Dropdown */}
               <div className="relative">
-                <label className="block text-xs font-bold text-foreground uppercase tracking-wide mb-1">
+                <label 
+                  className="block text-xs font-bold text-foreground uppercase tracking-wide mb-1"
+                  id="status-filter-label"
+                >
                   {t('admin.appointmentCalendar.statusLabel')}
                 </label>
                 <button
                   ref={statusBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, status: !prev.status }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] min-h-[44px] flex items-center justify-between"
-                  aria-label={t('admin.appointmentCalendar.statusLabel')}
-                  title={t('admin.appointmentCalendar.statusLabel')}
-                  aria-haspopup="menu"
+                  className="w-full px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-h-[44px] flex items-center justify-between"
+                  aria-labelledby="status-filter-label"
+                  aria-haspopup="listbox"
                   aria-expanded={openDropdowns.status}
+                  aria-describedby="status-filter-description"
                 >
                   <span className="truncate">{t('admin.appointmentCalendar.selectedCount', { count: filterStatus.length })}</span>
                   <ChevronRight
@@ -1308,15 +1342,24 @@ export const AppointmentsCalendar: React.FC = () => {
                     aria-hidden="true"
                   />
                 </button>
+                <span id="status-filter-description" className="sr-only">
+                  Filtrar citas por estado. {filterStatus.length} estados seleccionados.
+                </span>
                 <DropdownPortal
                   anchorRef={statusBtnRef}
                   isOpen={openDropdowns.status}
                   onClose={() => setOpenDropdowns(prev => ({ ...prev, status: false }))}
                 >
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto" style={{ maxWidth: '95vw' }} role="menu" aria-label={t('admin.appointmentCalendar.statusLabel')}>
+                  <div 
+                    className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto" 
+                    style={{ maxWidth: '95vw' }} 
+                    role="listbox" 
+                    aria-labelledby="status-filter-label"
+                    aria-multiselectable="true"
+                  >
                     <div className="px-2 py-2 border-b border-border">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded min-h-[44px]"
+                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset transition-colors"
                         onClick={() =>
                           setFilterStatus(['pending', 'confirmed', 'cancelled', 'completed'])
                         }
@@ -1329,7 +1372,9 @@ export const AppointmentsCalendar: React.FC = () => {
                     {['pending', 'confirmed', 'cancelled', 'completed'].map(status => (
                       <label
                         key={status}
-                        className="flex items-center px-3 py-2 hover:bg-muted/50 cursor-pointer"
+                        className="flex items-center px-3 py-2 hover:bg-muted/50 cursor-pointer focus-within:bg-muted/50 transition-colors min-h-[44px]"
+                        role="option"
+                        aria-selected={filterStatus.includes(status)}
                       >
                         <input
                           type="checkbox"
@@ -1342,8 +1387,12 @@ export const AppointmentsCalendar: React.FC = () => {
                             }
                           }}
                           className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-slate-100 dark:bg-slate-800 checked:bg-primary checked:border-primary dark:checked:bg-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                          aria-describedby={`status-${status}-description`}
                         />
-                        <span className="ml-2 text-sm text-foreground">
+                        <span 
+                          className="ml-2 text-sm text-foreground"
+                          id={`status-${status}-description`}
+                        >
                           {status === 'pending' && t('admin.appointmentCalendar.statuses.pending')}
                           {status === 'confirmed' && t('admin.appointmentCalendar.statuses.confirmed')}
                           {status === 'cancelled' && t('admin.appointmentCalendar.statuses.cancelled')}
@@ -1552,12 +1601,19 @@ export const AppointmentsCalendar: React.FC = () => {
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+      <section 
+        className="bg-card border border-border rounded-lg overflow-hidden"
+        aria-labelledby="calendar-grid-title"
+      >
+        <h2 id="calendar-grid-title" className="sr-only">
+          Calendario de citas por empleado
+        </h2>
+        
         {/* Services Toggle Button */}
         <div className="bg-muted/30 border-b border-border px-4 py-2 flex items-center justify-end gap-2">
           <button
             onClick={() => setShowServices(!showServices)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors duration-200 font-medium min-h-[44px] min-w-[44px]"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors duration-200 font-medium min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             aria-pressed={showServices}
             aria-label={showServices ? t('admin.appointmentCalendar.hideServices') : t('admin.appointmentCalendar.showServices')}
             title={showServices ? t('admin.appointmentCalendar.hideServices') : t('admin.appointmentCalendar.showServices')}
@@ -1576,43 +1632,61 @@ export const AppointmentsCalendar: React.FC = () => {
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" role="region" aria-label="Calendario de citas desplazable">
           <div className="inline-block min-w-full">
             {/* Header with employee names */}
-            <div className="flex border-b-2 border-border bg-muted/50 sticky top-0 z-20">
-              <div className="w-20 flex-shrink-0 p-3 font-semibold text-sm text-muted-foreground border-r-2 border-border bg-background">
+            <div 
+              className="flex border-b-2 border-border bg-muted/50 sticky top-0 z-20"
+              role="row"
+              aria-label="Encabezado del calendario con empleados"
+            >
+              <div 
+                className="w-16 sm:w-20 flex-shrink-0 p-2 sm:p-3 font-semibold text-xs sm:text-sm text-muted-foreground border-r-2 border-border bg-background"
+                role="columnheader"
+                aria-label="Columna de horas"
+              >
                 {t('calendar.hour')}
               </div>
               {employees.map((employee, index) => (
                 <div
                   key={employee.id}
-                  className={`flex-1 min-w-[280px] p-3 border-r-2 border-border last:border-r-0 ${employeeColors[index % employeeColors.length]}`}
+                  className={`flex-1 min-w-[200px] sm:min-w-[280px] p-2 sm:p-3 border-r-2 border-border last:border-r-0 ${employeeColors[index % employeeColors.length]}`}
+                  role="columnheader"
+                  aria-label={`Columna de ${employee.profile_name || 'empleado sin nombre'}`}
                 >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       {employee.profile_avatar ? (
                         <img
                           src={employee.profile_avatar}
                           alt={employee.profile_name || t('admin.appointmentCalendar.noEmployeeName')}
-                          className="h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800 object-cover"
+                          className="h-6 w-6 sm:h-8 sm:w-8 rounded-full ring-2 ring-white dark:ring-gray-800 object-cover"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
-                          <User className="h-4 w-4 text-primary" />
+                        <div 
+                          className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-white dark:ring-gray-800"
+                          aria-label={`Avatar de ${employee.profile_name || 'empleado sin nombre'}`}
+                        >
+                          <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary" aria-hidden="true" />
                         </div>
                       )}
-                        <span className="font-semibold text-sm text-foreground">
+                      <span className="font-semibold text-xs sm:text-sm text-foreground truncate max-w-[120px] sm:max-w-none">
                         {employee.profile_name || t('admin.appointmentCalendar.noEmployeeName')}
                       </span>
                     </div>
 
                     {/* Services - only show if toggle is ON */}
                     {showServices && employee.services && employee.services.length > 0 && (
-                      <div className="flex flex-wrap gap-1 justify-center mt-1">
+                      <div 
+                        className="flex flex-wrap gap-1 justify-center mt-1"
+                        role="list"
+                        aria-label={`Servicios de ${employee.profile_name || 'empleado'}`}
+                      >
                         {employee.services.map((serviceName, idx) => (
                           <span
                             key={idx}
-                            className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20"
+                            className="text-xs px-1.5 sm:px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20"
+                            role="listitem"
                           >
                             {serviceName}
                           </span>
@@ -1625,7 +1699,12 @@ export const AppointmentsCalendar: React.FC = () => {
             </div>
 
             {/* Time slots */}
-            <div ref={timelineRef} className="relative max-h-[600px] overflow-y-auto">
+            <div 
+              ref={timelineRef} 
+              className="relative max-h-[600px] overflow-y-auto"
+              role="grid"
+              aria-label="Horarios de citas del calendario"
+            >
               {hours.map(hour => {
                 const isWorkHour = isBusinessHour(hour)
                 const workHourClass = isWorkHour ? '' : 'bg-muted/40'
@@ -1640,6 +1719,8 @@ export const AppointmentsCalendar: React.FC = () => {
                   <div
                     key={hour}
                     className={`flex border-b border-border min-h-[80px] ${workHourClass} hover:bg-muted/20 transition-colors relative`}
+                    role="row"
+                    aria-label={`Horario ${hour.toString().padStart(2, '0')}:00 ${isWorkHour ? '(horario laboral)' : '(fuera de horario laboral)'}`}
                   >
                     {/* Línea de hora actual - SOLO si es la hora correcta */}
                     {shouldShowLineInHour && currentTimePosition !== null && (
@@ -1648,12 +1729,17 @@ export const AppointmentsCalendar: React.FC = () => {
                         style={{
                           top: `${((currentTimePosition % (100 / 24)) / (100 / 24)) * 80}px`,
                         }}
+                        aria-label="Indicador de hora actual"
                       >
                         <div className="absolute -left-2 -top-2 w-4 h-4 bg-blue-500 rounded-full shadow-lg"></div>
                       </div>
                     )}
 
-                    <div className="w-20 flex-shrink-0 p-2 text-sm text-muted-foreground font-medium border-r-2 border-border bg-background">
+                    <div 
+                      className="w-16 sm:w-20 flex-shrink-0 p-1 sm:p-2 text-xs sm:text-sm text-muted-foreground font-medium border-r-2 border-border bg-background"
+                      role="rowheader"
+                      aria-label={`Hora ${hour.toString().padStart(2, '0')}:00`}
+                    >
                       {hour.toString().padStart(2, '0')}:00
                     </div>
                     {employees.map((employee, index) => {
@@ -1671,18 +1757,24 @@ export const AppointmentsCalendar: React.FC = () => {
                       return (
                         <div
                           key={employee.id}
-                          className={`flex-1 min-w-[280px] p-2 border-r-2 border-border last:border-r-0 transition-colors ${
+                          className={`flex-1 min-w-[200px] sm:min-w-[280px] p-1 sm:p-2 border-r-2 border-border last:border-r-0 transition-colors ${
                             isLunch
                               ? 'bg-gray-100 dark:bg-gray-900 opacity-60 cursor-not-allowed'
                               : `hover:bg-accent/50 ${employeeColors[index % employeeColors.length]}`
                           }`}
+                          role="gridcell"
+                          aria-label={`Citas de ${employee.profile_name || 'empleado'} a las ${hour.toString().padStart(2, '0')}:00`}
                         >
                           {isLunch ? (
-                            <div className="flex items-center justify-center h-full text-xs text-muted-foreground italic">
+                            <div 
+                              className="flex items-center justify-center h-full text-xs text-muted-foreground italic"
+                              role="status"
+                              aria-label="Horario de almuerzo"
+                            >
                               {t('employeePrefs.schedule.lunchBreak')}
                             </div>
                           ) : (
-                            <>
+                            <div className="space-y-1">
                               {slotAppointments.map(apt => {
                                 const appointmentClass = getAppointmentClass(apt.status)
 
@@ -1690,10 +1782,12 @@ export const AppointmentsCalendar: React.FC = () => {
                                   <button
                                     key={apt.id}
                                     onClick={() => setSelectedAppointment(apt)}
-                                    className={`w-full p-2 rounded-md text-left text-xs hover:opacity-80 transition-opacity shadow-sm ${appointmentClass}`}
+                                    className={`w-full p-1.5 sm:p-2 rounded-md text-left text-xs hover:opacity-80 transition-opacity shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ${appointmentClass}`}
+                                    aria-label={`Cita de ${apt.client_name} para ${apt.service_name} de ${formatTimeInColombia(apt.start_time)} a ${formatTimeInColombia(apt.end_time)}, estado: ${apt.status}`}
+                                    title={`${apt.client_name} - ${apt.service_name}`}
                                   >
                                     <div className="font-medium truncate">{apt.client_name}</div>
-                                    <div className="truncate">{apt.service_name}</div>
+                                    <div className="truncate text-xs opacity-90">{apt.service_name}</div>
                                     <div className="text-xs opacity-75">
                                       {formatTimeInColombia(apt.start_time)} -{' '}
                                       {formatTimeInColombia(apt.end_time)}
@@ -1701,7 +1795,7 @@ export const AppointmentsCalendar: React.FC = () => {
                                   </button>
                                 )
                               })}
-                            </>
+                            </div>
                           )}
                         </div>
                       )
@@ -1712,28 +1806,39 @@ export const AppointmentsCalendar: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Active and Overdue Appointments */}
       {(activeAppointments.length > 0 || overdueAppointments.length > 0) && (
-        <div className="grid md:grid-cols-2 gap-6">
+        <section 
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
+          aria-label="Citas activas y vencidas"
+        >
           {/* Active Appointments */}
           {activeAppointments.length > 0 && (
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-500" aria-hidden="true" />
+            <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+              <h3 
+                className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2"
+                id="active-appointments-title"
+              >
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" aria-hidden="true" />
                 {t('admin.appointmentCalendar.inProgressTitle', { count: activeAppointments.length })}
               </h3>
-              <div className="space-y-2">
+              <div 
+                className="space-y-2"
+                role="list"
+                aria-labelledby="active-appointments-title"
+              >
                 {activeAppointments.map(apt => (
                   <div
                     key={apt.id}
-                    className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md"
+                    className="p-2 sm:p-3 bg-blue-500/10 border border-blue-500/20 rounded-md"
+                    role="listitem"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-foreground">{apt.client_name}</div>
-                        <div className="text-sm text-muted-foreground">{apt.service_name}</div>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-foreground truncate">{apt.client_name}</div>
+                        <div className="text-sm text-muted-foreground truncate">{apt.service_name}</div>
                         <div className="text-xs text-muted-foreground">
                           {apt.employee_name} • {formatTimeInColombia(apt.start_time)} -{' '}
                           {formatTimeInColombia(apt.end_time)}
@@ -1741,7 +1846,8 @@ export const AppointmentsCalendar: React.FC = () => {
                       </div>
                       <button
                         onClick={() => setSelectedAppointment(apt)}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md"
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 text-white text-sm rounded-md transition-colors min-h-[32px] flex-shrink-0"
+                        aria-label={`Gestionar cita de ${apt.client_name}`}
                       >
                         {t('admin.appointmentCalendar.manage')}
                       </button>
@@ -1754,39 +1860,47 @@ export const AppointmentsCalendar: React.FC = () => {
 
           {/* Overdue Appointments */}
           {overdueAppointments.length > 0 && (
-            <div className="bg-card border border-border rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-orange-500" aria-hidden="true" />
+            <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+              <h3 
+                className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2"
+                id="overdue-appointments-title"
+              >
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" aria-hidden="true" />
                 {t('admin.appointmentCalendar.overdueTitle', { count: overdueAppointments.length })}
               </h3>
-              <div className="space-y-2">
+              <div 
+                className="space-y-2"
+                role="list"
+                aria-labelledby="overdue-appointments-title"
+              >
                 {overdueAppointments.map(apt => (
                   <div
                     key={apt.id}
-                    className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-md"
+                    className="p-2 sm:p-3 bg-orange-500/10 border border-orange-500/20 rounded-md"
+                    role="listitem"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-foreground">{apt.client_name}</div>
-                        <div className="text-sm text-muted-foreground">{apt.service_name}</div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-foreground truncate">{apt.client_name}</div>
+                        <div className="text-sm text-muted-foreground truncate">{apt.service_name}</div>
                         <div className="text-xs text-muted-foreground">
                           {apt.employee_name} • {formatTimeInColombia(apt.start_time)} -{' '}
                           {formatTimeInColombia(apt.end_time)}
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-shrink-0">
                         <button
                           onClick={() => handleCompleteAppointment(apt.id, 0)}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md min-h-[44px] min-w-[44px]"
-                          aria-label={t('admin.appointmentCalendar.completeButton')}
+                          className="px-2 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 text-white text-xs sm:text-sm rounded-md transition-colors min-h-[32px] sm:min-h-[36px]"
+                          aria-label={`${t('admin.appointmentCalendar.completeButton')} cita de ${apt.client_name}`}
                           title={t('admin.appointmentCalendar.completeButton')}
                         >
                           {t('admin.appointmentCalendar.completeButton')}
                         </button>
                         <button
                           onClick={() => handleNoShow(apt.id)}
-                          className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md min-h-[44px] min-w-[44px]"
-                          aria-label={t('admin.appointmentCalendar.noShowButton')}
+                          className="px-2 sm:px-3 py-1.5 bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 text-white text-xs sm:text-sm rounded-md transition-colors min-h-[32px] sm:min-h-[36px]"
+                          aria-label={`${t('admin.appointmentCalendar.noShowButton')} para cita de ${apt.client_name}`}
                           title={t('admin.appointmentCalendar.noShowButton')}
                         >
                           {t('admin.appointmentCalendar.noShowButton')}
@@ -1798,7 +1912,7 @@ export const AppointmentsCalendar: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* Appointment Modal */}
@@ -1811,6 +1925,6 @@ export const AppointmentsCalendar: React.FC = () => {
           onNoShow={handleNoShow}
         />
       )}
-    </div>
+    </main>
   )
 }
