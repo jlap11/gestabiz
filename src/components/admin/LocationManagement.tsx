@@ -311,7 +311,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
               </DialogHeader>
 
               <form onSubmit={handleLocationSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="col-span-2">
                     <Label htmlFor="location-name">{t('admin.locationManagement.nameLabel')}</Label>
                     <Input

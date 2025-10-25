@@ -147,9 +147,9 @@ function App() {
                 <AppStateProvider>
                   <AuthProvider>
                     <AppRoutes />
-                    <CookieConsent />
                   </AuthProvider>
                 </AppStateProvider>
+                <CookieConsent />
               </LanguageProvider>
             </ThemeProvider>
           </QueryClientProvider>

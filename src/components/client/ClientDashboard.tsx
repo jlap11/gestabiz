@@ -2,24 +2,16 @@ import React, { useCallback, useEffect, useState } from 'react'
 import {
   Calendar,
   CalendarDays,
-  Clock,
-  FileText,
   Heart,
   History,
   List,
-  Mail,
-  MapPin,
   MessageCircle,
-  Phone,
   Plus,
-  User as UserIcon,
   X,
 } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { ClientCalendarView } from '@/components/client/ClientCalendarView'
@@ -30,6 +22,16 @@ import ProfessionalProfile from '@/components/user/UserProfile'
 import { BusinessSuggestions } from '@/components/client/BusinessSuggestions'
 import FavoritesList from '@/components/client/FavoritesList'
 import { MandatoryReviewModal } from '@/components/jobs'
+import { AppointmentList } from '@/components/client/AppointmentList'
+import { AppointmentDetailsModal } from '@/components/client/AppointmentDetailsModal'
+import { AppointmentHeader } from '@/components/client/AppointmentHeader'
+import { EmptyAppointmentsState } from '@/components/client/EmptyAppointmentsState'
+
+// Custom hooks
+import { useClientAppointments } from './hooks/useClientAppointments'
+import { useClientNavigation } from './hooks/useClientNavigation'
+import { useClientModals } from './hooks/useClientModals'
+
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useChat } from '@/hooks/useChat'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -135,38 +137,43 @@ export function ClientDashboard({
   user,
   initialBookingContext,
 }: Readonly<ClientDashboardProps>) {
-  const [activePage, setActivePage] = useState('appointments')
-  const [showAppointmentWizard, setShowAppointmentWizard] = useState(false)
-  const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<
-    string | undefined
-  >(undefined)
-  const [appointmentToEdit, setAppointmentToEdit] = useState<AppointmentWithRelations | null>(null)
-  const [bookingPreselection, setBookingPreselection] = useState<
-    | {
-        serviceId?: string
-        locationId?: string
-        employeeId?: string
-      }
-    | undefined
-  >(undefined)
-  const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
-  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(
-    null
-  )
   const [currentUser, setCurrentUser] = useState(user)
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
-  const [preselectedDate, setPreselectedDate] = useState<Date | undefined>(undefined)
-  const [preselectedTime, setPreselectedTime] = useState<string | undefined>(undefined)
-  const [searchModalOpen, setSearchModalOpen] = useState(false)
-  const [searchParams, setSearchParams] = useState<{ term: string; type: SearchType } | null>(null)
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-
-  // Chat state
-  const [chatConversationId, setChatConversationId] = useState<string | null>(null)
-  const [isStartingChat, setIsStartingChat] = useState(false)
-
   const { t } = useLanguage()
+
+  // Custom hooks
+  const { appointments, upcomingAppointments, fetchClientAppointments } = useClientAppointments(currentUser?.id)
+  const { activePage, setActivePage, viewMode, setViewMode } = useClientNavigation()
+  const {
+    // Appointment Wizard
+    showAppointmentWizard,
+    setShowAppointmentWizard,
+    appointmentWizardBusinessId,
+    setAppointmentWizardBusinessId,
+    bookingPreselection,
+    setBookingPreselection,
+    preselectedDate,
+    preselectedTime,
+    appointmentToEdit,
+    setAppointmentToEdit,
+    handleCreateAppointmentFromCalendar,
+    handleCloseWizard,
+    // Search Modal
+    searchModalOpen,
+    setSearchModalOpen,
+    searchParams,
+    setSearchParams,
+    // Other modals
+    selectedAppointment,
+    setSelectedAppointment,
+    selectedBusinessId,
+    setSelectedBusinessId,
+    selectedUserId,
+    setSelectedUserId,
+    chatConversationId,
+    setChatConversationId,
+    isStartingChat,
+    setIsStartingChat,
+  } = useClientModals()
 
   // Chat hook
   const { createOrGetConversation } = useChat(user.id)
@@ -225,7 +232,7 @@ export function ClientDashboard({
       setShowAppointmentWizard(true)
       setActivePage('appointments')
     }
-  }, [initialBookingContext])
+  }, [initialBookingContext, setAppointmentWizardBusinessId, setBookingPreselection, setShowAppointmentWizard, setActivePage])
 
   // Leer conversation_id de la URL al cargar
   useEffect(() => {
@@ -252,13 +259,13 @@ export function ClientDashboard({
     }
     // eslint-disable-next-line no-console
     console.log('Selected quick search result:', result)
-  }, [])
+  }, [setSelectedBusinessId, setSelectedUserId])
 
   // Handle "View More" from search bar
   const handleSearchViewMore = useCallback((term: string, type: SearchType) => {
     setSearchParams({ term, type })
     setSearchModalOpen(true)
-  }, [])
+  }, [setSearchParams, setSearchModalOpen])
 
   // Handle result click from SearchResults modal
   const handleSearchResultItemClick = useCallback((result: SearchResultItem) => {
@@ -271,7 +278,7 @@ export function ClientDashboard({
     }
     // eslint-disable-next-line no-console
     console.log('Selected detailed search result:', result)
-  }, [])
+  }, [setSearchModalOpen, setSelectedBusinessId, setSelectedUserId])
 
   // Handle booking from business profile
   const handleBookAppointment = useCallback(
@@ -297,7 +304,7 @@ export function ClientDashboard({
         employeeId,
       })
     },
-    [selectedBusinessId]
+    [selectedBusinessId, setSelectedBusinessId, setSelectedUserId, setAppointmentWizardBusinessId, setShowAppointmentWizard]
   )
 
   // Handle chat with professional from appointment details
@@ -341,8 +348,23 @@ export function ClientDashboard({
         setIsStartingChat(false)
       }
     },
-    [user?.id, createOrGetConversation, t]
+    [user?.id, createOrGetConversation, t, setIsStartingChat, setSelectedAppointment, setChatConversationId]
   )
+
+    // Wrapper to start chat when invoked from history component (receives the appointment)
+    const handleStartChatFromHistory = useCallback(async (appointment: AppointmentWithRelations) => {
+      if (!appointment?.employee?.id) {
+        toast.error(t('clientDashboard.chatInitError'))
+        return
+      }
+      await handleStartChatWithProfessional(appointment.employee.id, appointment.business?.id)
+    }, [handleStartChatWithProfessional, t])
+
+    const handleLeaveReviewFromHistory = useCallback((appointment: AppointmentWithRelations) => {
+      // Minimal implementation: notify user and log. Full review flow handled elsewhere.
+      console.log('Leave review for appointment:', appointment)
+      toast.info(t('clientDashboard.reviewReminder', { count: '1' }))
+    }, [t])
 
   // Handle cancel appointment
   const handleCancelAppointment = useCallback(
@@ -377,7 +399,7 @@ export function ClientDashboard({
         toast.error(t('clientDashboard.cancelError'))
       }
     },
-    [user?.id, appointments, t]
+    [user?.id, appointments, t, setSelectedAppointment, setAppointments]
   )
 
   // Handle reschedule appointment
@@ -412,7 +434,7 @@ export function ClientDashboard({
     setShowAppointmentWizard(true)
 
     toast.info(t('clientDashboard.editAppointmentInfo'))
-  }, [t])
+  }, [t, setSelectedAppointment, setAppointmentToEdit, setAppointmentWizardBusinessId, setBookingPreselection, setPreselectedDate, setPreselectedTime, setShowAppointmentWizard])
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -439,102 +461,7 @@ export function ClientDashboard({
     setCurrentUser(user)
   }, [user])
 
-  // Fetch client appointments with related data (business, location, employee)
-  const fetchClientAppointments = React.useCallback(async () => {
-    if (!currentUser?.id) {
-      // eslint-disable-next-line no-console
-      console.log('⚠️ No currentUser.id, skipping fetch')
-      return
-    }
 
-    // eslint-disable-next-line no-console
-    console.log('🔍 Fetching appointments for client:', currentUser.id)
-
-    try {
-      // Query appointments con JOINs para traer toda la información necesaria
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(
-          `
-          id,
-          created_at,
-          updated_at,
-          business_id,
-          location_id,
-          service_id,
-          client_id,
-          employee_id,
-          start_time,
-          end_time,
-          status,
-          notes,
-          price,
-          currency,
-          businesses!inner (
-            id,
-            name,
-            description
-          ),
-          locations!appointments_location_id_fkey (
-            id,
-            name,
-            address,
-            city,
-            state,
-            postal_code,
-            country,
-            latitude,
-            longitude
-          ),
-          profiles!inner (
-            id,
-            full_name,
-            email,
-            phone,
-            avatar_url
-          ),
-          services!inner (
-            id,
-            name,
-            description,
-            duration,
-            price,
-            currency
-          )
-        `
-        )
-        .eq('client_id', currentUser.id)
-        .order('start_time', { ascending: true })
-
-      // eslint-disable-next-line no-console
-      console.log('📊 Query result:', { appointmentsCount: data?.length || 0, error })
-
-      if (error) throw error
-
-      // Mapear datos para compatibilidad (los JOINs retornan arrays, tomar el primero)
-      const mappedData = (data || []).map((apt: any) => ({
-        ...apt,
-        business: apt.businesses?.[0],
-        location: apt.locations?.[0],
-        employee: apt.profiles?.[0],
-        service: apt.services?.[0]
-          ? { ...apt.services[0], duration: apt.services[0].duration }
-          : undefined,
-      }))
-
-      // eslint-disable-next-line no-console
-      console.log('✅ Data enriquecida:', mappedData)
-      setAppointments(mappedData)
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('❌ Error final:', err)
-    }
-  }, [currentUser?.id])
-
-  // Fetch on mount and when user changes
-  React.useEffect(() => {
-    fetchClientAppointments()
-  }, [fetchClientAppointments])
 
   const sidebarItems = [
     {
@@ -554,101 +481,23 @@ export function ClientDashboard({
     },
   ]
 
-  // Filter upcoming appointments
-  const upcomingAppointments = React.useMemo(() => {
-    if (!appointments) return []
-    const now = new Date()
-    return appointments
-      .filter(apt => {
-        const aptDate = new Date(apt.start_time)
-        return aptDate >= now && ['pending', 'confirmed', 'scheduled'].includes(apt.status)
-      })
-      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-  }, [appointments])
 
-  // Get status label
-  const getStatusLabel = (status: string): string => {
-    if (status === 'confirmed') return t('clientDashboard.status.confirmed')
-    if (status === 'scheduled') return t('clientDashboard.status.scheduled')
-    return t('clientDashboard.status.pending')
-  }
 
-  // Handler para crear cita desde el calendario
-  const handleCreateAppointmentFromCalendar = (date: Date, time?: string) => {
-    setPreselectedDate(date)
-    setPreselectedTime(time)
-    setShowAppointmentWizard(true)
-  }
+  // NOTE: status labels are now resolved where needed; helper removed to avoid unused symbol
 
-  // Handler para cerrar el wizard y limpiar las preselecciones
-  const handleCloseWizard = () => {
-    setShowAppointmentWizard(false)
-    setPreselectedDate(undefined)
-    setPreselectedTime(undefined)
-    setAppointmentWizardBusinessId(undefined) // Limpiar businessId preseleccionado
-    setBookingPreselection(undefined) // Limpiar preselecciones de servicio/ubicación/empleado
-    setAppointmentToEdit(null) // Limpiar cita en edición
-  }
+  // NOTE: handlers `handleCreateAppointmentFromCalendar` and `handleCloseWizard` are
+  // provided by the `useClientModals` hook above and should NOT be redeclared here.
 
   const renderContent = () => {
     switch (activePage) {
       case 'appointments':
         return (
           <main className="p-3 sm:p-6" role="main" aria-labelledby="appointments-page-title">
-            {/* Header - Mantener en toda la parte superior */}
-            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <h1 id="appointments-page-title" className="text-xl sm:text-2xl font-bold text-foreground">
-                {t('clientDashboard.header.myAppointments')}
-              </h1>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                {/* View Mode Toggle */}
-                <div 
-                  className="flex items-center gap-1 bg-muted rounded-lg p-1 flex-1 sm:flex-none"
-                  role="group"
-                  aria-label={t('clientDashboard.viewMode.toggle')}
-                >
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      'h-8 min-h-[44px] flex-1 sm:flex-none sm:min-w-[44px] text-xs sm:text-sm', 
-                      viewMode !== 'list' && 'hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground'
-                    )}
-                    aria-label={t('clientDashboard.viewMode.list')}
-                    title={t('clientDashboard.viewMode.list')}
-                    aria-pressed={viewMode === 'list'}
-                  >
-                    <List className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('clientDashboard.viewMode.list')}</span>
-                  </Button>
-                  <Button
-                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('calendar')}
-                    className={cn(
-                      'h-8 min-h-[44px] flex-1 sm:flex-none sm:min-w-[44px] text-xs sm:text-sm', 
-                      viewMode !== 'calendar' && 'hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground'
-                    )}
-                    aria-label={t('clientDashboard.viewMode.calendar')}
-                    title={t('clientDashboard.viewMode.calendar')}
-                    aria-pressed={viewMode === 'calendar'}
-                  >
-                    <CalendarDays className="h-4 w-4 sm:mr-2" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('clientDashboard.viewMode.calendar')}</span>
-                  </Button>
-                </div>
-                <Button
-                  onClick={() => setShowAppointmentWizard(true)}
-                  className="bg-primary hover:bg-primary/90 focus:bg-primary/90 text-primary-foreground min-h-[44px] flex-1 sm:flex-none sm:min-w-[44px] text-xs sm:text-sm"
-                  aria-label={t('clientDashboard.newAppointment')}
-                  title={t('clientDashboard.newAppointment')}
-                >
-                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-2" aria-hidden="true" />
-                  <span className="hidden sm:inline">{t('clientDashboard.newAppointment')}</span>
-                </Button>
-              </div>
-            </header>
+            <AppointmentHeader
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              onNewAppointment={() => setShowAppointmentWizard(true)}
+            />
 
             {/* Layout de 2 columnas: Citas (izquierda) + Sugerencias (derecha) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -666,150 +515,16 @@ export function ClientDashboard({
                   />
                 ) : (
                   /* List View */
-                  <>
-                    {upcomingAppointments.length === 0 ? (
-                      <Card className="border-dashed">
-                        <CardContent className="pt-6 text-center" role="status" aria-live="polite">
-                          <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
-                          <p className="text-muted-foreground text-sm sm:text-base">{t('clientDashboard.empty.noAppointments')}</p>
-                          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                            {t('clientDashboard.empty.hint')}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-3 sm:gap-4" role="list" aria-label={t('clientDashboard.upcomingListLabel')}>
-                        {upcomingAppointments.map(appointment => (
-                          <Card
-                            key={appointment.id}
-                            className="cursor-pointer hover:shadow-lg focus-within:shadow-lg transition-shadow"
-                            onClick={() => setSelectedAppointment(appointment)}
-                            role="listitem"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault()
-                                setSelectedAppointment(appointment)
-                              }
-                            }}
-                            aria-label={t('clientDashboard.calendar.openAppointmentAt', {
-                              title: appointment.service?.name || appointment.title || '',
-                              time: new Date(appointment.start_time).toLocaleTimeString('es', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              }),
-                            })}
-                            title={t('clientDashboard.calendar.openAppointmentAt', {
-                              title: appointment.service?.name || appointment.title || '',
-                              time: new Date(appointment.start_time).toLocaleTimeString('es', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              }),
-                            })}
-                          >
-                            <CardContent className="p-3 sm:p-4">
-                              <div className="space-y-2 sm:space-y-3">
-                                {/* Top Row: Business/Sede + Status Badge */}
-                                <div className="flex items-start justify-between gap-2 pb-2 border-b border-border">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                                      {appointment.business?.name}
-                                      {appointment.business?.name &&
-                                        appointment.location?.name &&
-                                        ' • '}
-                                      <span className="font-normal text-muted-foreground">
-                                        {appointment.location?.name}
-                                      </span>
-                                    </p>
-                                  </div>
-                                  <Badge
-                                    variant={
-                                      appointment.status === 'confirmed' ? 'default' : 'secondary'
-                                    }
-                                    className="flex-shrink-0 whitespace-nowrap text-xs"
-                                    role="status"
-                                    aria-label={`Estado de la cita: ${getStatusLabel(appointment.status)}`}
-                                  >
-                                    {getStatusLabel(appointment.status)}
-                                  </Badge>
-                                </div>
-
-                                {/* Service Name */}
-                                <h3 className="font-semibold text-foreground text-sm sm:text-base line-clamp-2">
-                                  {appointment.service?.name || appointment.title}
-                                </h3>
-
-                                {/* Professional Info: Avatar + Name */}
-                                {appointment.employee?.full_name && (
-                                  <div className="flex items-center gap-2 sm:gap-3 bg-card/50 p-2 rounded-lg border border-border/50">
-                                    {appointment.employee?.avatar_url ? (
-                                      <img
-                                        src={appointment.employee.avatar_url}
-                                        alt={`Foto de ${appointment.employee.full_name}`}
-                                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
-                                      />
-                                    ) : (
-                                      <div 
-                                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0"
-                                        aria-label={`Avatar de ${appointment.employee.full_name}`}
-                                      >
-                                        <UserIcon className="h-3 w-3 sm:h-4 sm:w-4 text-primary" aria-hidden="true" />
-                                      </div>
-                                    )}
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-xs sm:text-sm font-medium text-foreground line-clamp-1">
-                                        {appointment.employee.full_name}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">{t('clientDashboard.professionalRole')}</p>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Date and Time */}
-                                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground pt-1">
-                                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
-                                  <span className="line-clamp-1">
-                                    <time dateTime={appointment.start_time}>
-                                      {new Date(appointment.start_time).toLocaleDateString('es', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                      })}
-                                      {' • '}
-                                      {new Date(appointment.start_time).toLocaleTimeString('es', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })}
-                                    </time>
-                                  </span>
-                                </div>
-
-                                {/* Price */}
-                                {(appointment.service?.price || appointment.price) && (
-                                  <div className="pt-2 border-t border-border">
-                                    <span 
-                                      className="text-sm sm:text-base lg:text-lg font-bold text-primary"
-                                      aria-label={`Precio: ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO')} ${t('clientDashboard.currency')}`}
-                                    >
-                                      $
-                                      {(
-                                        appointment.service?.price ??
-                                        appointment.price ??
-                                        0
-                                      ).toLocaleString('es-CO', {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 0,
-                                      })}{' '}
-                                      {t('clientDashboard.currency')}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  upcomingAppointments.length === 0 ? (
+                    <EmptyAppointmentsState
+                      onNewAppointment={() => setShowAppointmentWizard(true)}
+                    />
+                  ) : (
+                    <AppointmentList
+                      appointments={upcomingAppointments}
+                      onAppointmentClick={setSelectedAppointment}
+                    />
+                  )
                 )}
               </section>
 
@@ -829,7 +544,7 @@ export function ClientDashboard({
       case 'profile':
       case 'settings':
         return (
-          <div className="p-6">
+          <div className="p-3 sm:p-6">
             {currentUser && (
               <CompleteUnifiedSettings
                 user={currentUser}
@@ -841,23 +556,27 @@ export function ClientDashboard({
         )
       case 'favorites':
         return (
-          <div className="p-6">
-            {currentUser && (
-              <FavoritesList />
-            )}
+          <div className="p-3 sm:p-6">
+            {currentUser && <FavoritesList />}
           </div>
         )
       case 'history':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-6">{t('clientDashboard.history.title')}</h2>
-            {currentUser && <ClientHistory userId={currentUser.id} />}
+          <div className="p-3 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">{t('clientDashboard.history.title')}</h2>
+            {currentUser && (
+              <ClientHistory
+                userId={currentUser.id}
+                onStartChat={handleStartChatFromHistory}
+                onLeaveReview={handleLeaveReviewFromHistory}
+              />
+            )}
           </div>
         )
       default:
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground">{t('clientDashboard.header.myAppointments')}</h2>
+          <div className="p-3 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('clientDashboard.header.myAppointments')}</h2>
             <p className="text-muted-foreground">{t('clientDashboard.empty.upcomingPlaceholder')}</p>
           </div>
         )
@@ -872,8 +591,8 @@ export function ClientDashboard({
         onRoleChange={onRoleChange}
         onLogout={onLogout}
         sidebarItems={sidebarItems}
-        activePage={activePage}
-        onPageChange={setActivePage}
+    activePage={activePage}
+    onPageChange={handlePageChange}
         user={
           currentUser
             ? {
@@ -897,17 +616,17 @@ export function ClientDashboard({
         <AppointmentWizard
           open={showAppointmentWizard}
           onClose={handleCloseWizard}
-          businessId={appointmentWizardBusinessId} // Pasar businessId preseleccionado
+          businessId={appointmentWizardBusinessId}
           preselectedServiceId={bookingPreselection?.serviceId}
           preselectedLocationId={bookingPreselection?.locationId}
           preselectedEmployeeId={bookingPreselection?.employeeId}
           userId={currentUser.id}
           preselectedDate={preselectedDate}
           preselectedTime={preselectedTime}
-          appointmentToEdit={appointmentToEdit} // Pasar cita a editar
+          appointmentToEdit={appointmentToEdit}
           onSuccess={() => {
             handleCloseWizard()
-            fetchClientAppointments() // Recargar citas después de crear una nueva
+            fetchClientAppointments()
           }}
         />
       )}
@@ -931,305 +650,15 @@ export function ClientDashboard({
       )}
 
       {/* Appointment Details Modal */}
-      {selectedAppointment && (
-        <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
-          <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto" aria-label={t('clientDashboard.detailsTitle')}>
-            <DialogHeader>
-              <DialogTitle id="appointment-details-title" className="text-xl sm:text-2xl font-bold">{t('clientDashboard.detailsTitle')}</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-6 pt-4">
-              {/* Status Badge and Business Name */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <Badge
-                  variant={selectedAppointment.status === 'confirmed' ? 'default' : 'secondary'}
-                  className="text-sm sm:text-base px-4 py-1"
-                  aria-label={`${t('clientDashboard.status.label')}: ${getStatusLabel(selectedAppointment.status)}`}
-                >
-                  {getStatusLabel(selectedAppointment.status)}
-                </Badge>
-                {selectedAppointment.business?.name && (
-                  <span className="text-sm font-medium text-primary">
-                    {selectedAppointment.business.name}
-                  </span>
-                )}
-              </div>
-
-              {/* Service Name */}
-              <section role="region" aria-labelledby="service-info">
-                <h3 id="service-info" className="text-sm font-medium text-muted-foreground mb-1">{t('clientDashboard.serviceLabel')}</h3>
-                <p className="text-lg font-semibold text-foreground">
-                  {selectedAppointment.service?.name || selectedAppointment.title}
-                </p>
-                {selectedAppointment.service?.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedAppointment.service.description}
-                  </p>
-                )}
-              </section>
-
-              {/* Date and Time */}
-              <section role="region" aria-labelledby="datetime-info">
-                <h3 id="datetime-info" className="sr-only">{t('clientDashboard.dateTimeInfo')}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" aria-hidden="true" />
-                      {t('clientDashboard.dateLabel')}
-                    </h4>
-                    <p className="text-sm sm:text-base text-foreground">
-                      {new Date(selectedAppointment.start_time).toLocaleDateString('es', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                      <Clock className="h-4 w-4" aria-hidden="true" />
-                      {t('clientDashboard.timeLabel')}
-                    </h4>
-                    <p className="text-sm sm:text-base text-foreground">
-                      {new Date(selectedAppointment.start_time).toLocaleTimeString('es', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                      {' - '}
-                      {new Date(selectedAppointment.end_time).toLocaleTimeString('es', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                    </p>
-                    {selectedAppointment.service?.duration && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t('clientDashboard.durationShort', { minutes: String(selectedAppointment.service.duration) })}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              {/* Professional/Employee */}
-              {selectedAppointment.employee?.full_name && (
-                <section role="region" aria-labelledby="professional-info">
-                  <h3 id="professional-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <UserIcon className="h-4 w-4" aria-hidden="true" />
-                    {t('clientDashboard.professionalTitle')}
-                  </h3>
-                  <div className="flex items-center gap-3 mt-2 p-3 bg-muted/30 rounded-lg">
-                    {selectedAppointment.employee.avatar_url ? (
-                      <img
-                        src={selectedAppointment.employee.avatar_url}
-                        alt={selectedAppointment.employee.full_name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center" aria-hidden="true">
-                        <UserIcon className="h-6 w-6 text-primary" aria-hidden="true" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm sm:text-base font-semibold text-foreground mb-1">
-                        {selectedAppointment.employee.full_name}
-                      </p>
-                      <div className="space-y-0.5">
-                        {selectedAppointment.employee.email && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Mail className="h-3 w-3" aria-hidden="true" />
-                            {selectedAppointment.employee.email}
-                          </p>
-                        )}
-                        {selectedAppointment.employee.phone && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Phone className="h-3 w-3" aria-hidden="true" />
-                            {selectedAppointment.employee.phone}
-                          </p>
-                        )}
-                      </div>
-                      {!selectedAppointment.employee.avatar_url && (
-                        <p className="text-xs text-muted-foreground italic mt-1">
-                          {t('clientDashboard.noProfilePhoto')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {/* Location/Sede with full details */}
-              {selectedAppointment.location && (
-                <section role="region" aria-labelledby="location-info">
-                  <h3 id="location-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" aria-hidden="true" />
-                    {t('clientDashboard.locationAndAddress')}
-                  </h3>
-                  <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg">
-                    <p className="text-sm sm:text-base font-semibold text-foreground">
-                      {selectedAppointment.location.name}
-                    </p>
-                    {selectedAppointment.location.address && (
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {selectedAppointment.location.address}
-                        {selectedAppointment.location.city &&
-                          `, ${selectedAppointment.location.city}`}
-                        {selectedAppointment.location.state &&
-                          `, ${selectedAppointment.location.state}`}
-                        {selectedAppointment.location.postal_code &&
-                          ` ${selectedAppointment.location.postal_code}`}
-                        {selectedAppointment.location.country &&
-                          `, ${selectedAppointment.location.country}`}
-                      </p>
-                    )}
-                    {(() => {
-                      // Generate Google Maps URL: use saved URL or fallback to coordinates
-                      const googleMapsUrl =
-                        selectedAppointment.location.google_maps_url ||
-                        (selectedAppointment.location.latitude &&
-                        selectedAppointment.location.longitude
-                          ? `https://www.google.com/maps?q=${selectedAppointment.location.latitude},${selectedAppointment.location.longitude}`
-                          : null)
-
-                      return googleMapsUrl ? (
-                        <a
-                          href={googleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
-                          aria-label={t('clientDashboard.viewInGoogleMapsAria')}
-                        >
-                          <MapPin className="h-4 w-4" aria-hidden="true" />
-                          {t('clientDashboard.viewInGoogleMaps')}
-                        </a>
-                      ) : null
-                    })()}
-                  </div>
-                </section>
-              )}
-
-              {/* Description */}
-              {selectedAppointment.description && (
-                <section role="region" aria-labelledby="description-info">
-                  <h3 id="description-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <FileText className="h-4 w-4" aria-hidden="true" />
-                    {t('clientDashboard.descriptionTitle')}
-                  </h3>
-                  <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap">
-                    {selectedAppointment.description}
-                  </p>
-                </section>
-              )}
-
-              {/* Notes */}
-              {selectedAppointment.notes && (
-                <section role="region" aria-labelledby="notes-info">
-                  <h3 id="notes-info" className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <FileText className="h-4 w-4" aria-hidden="true" />
-                    {t('clientDashboard.notesTitle')}
-                  </h3>
-                  <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">
-                    {selectedAppointment.notes}
-                  </p>
-                </section>
-              )}
-
-              {/* Price/Value of Service */}
-              {(selectedAppointment.service?.price || selectedAppointment.price) && (
-                <section role="region" aria-labelledby="price-info" className="pt-4 border-t border-border">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <div>
-                      <h3 id="price-info" className="text-base sm:text-lg font-medium text-muted-foreground">
-                        {t('clientDashboard.serviceValueTitle')}
-                      </h3>
-                      {selectedAppointment.service?.duration && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('clientDashboard.estimatedDuration', { minutes: selectedAppointment.service.duration })}
-                        </p>
-                      )}
-                    </div>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">
-                      $
-                      {(
-                        selectedAppointment.service?.price ??
-                        selectedAppointment.price ??
-                        0
-                      ).toLocaleString('es-CO', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      })}{' '}
-                      {t('clientDashboard.currency')}
-                    </p>
-                  </div>
-                </section>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-4">
-                {/* Chat button - only show if there's a professional */}
-                {selectedAppointment.employee?.id && (
-                  <Button
-                    variant="default"
-                    onClick={() =>
-                      handleStartChatWithProfessional(
-                        selectedAppointment.employee!.id,
-                        selectedAppointment.business_id
-                      )
-                    }
-                    disabled={isStartingChat}
-                    className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label={t('clientDashboard.chatWithProfessionalAria')}
-                    title={t('clientDashboard.chatWithProfessional')}
-                  >
-                    <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                    {isStartingChat ? t('clientDashboard.chatStarting') : t('clientDashboard.chatWithProfessional')}
-                  </Button>
-                )}
-
-                {/* Reschedule button - only if not completed, cancelled or no_show */}
-                {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleRescheduleAppointment(selectedAppointment)}
-                    className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label={t('clientDashboard.rescheduleAria')}
-                    title={t('clientDashboard.reschedule')}
-                  >
-                    <Calendar className="h-4 w-4" aria-hidden="true" />
-                    {t('clientDashboard.reschedule')}
-                  </Button>
-                )}
-
-                {/* Cancel button - only if not completed, cancelled or no_show */}
-                {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleCancelAppointment(selectedAppointment.id)}
-                    className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                    aria-label={t('clientDashboard.cancelAppointmentAria')}
-                    title={t('clientDashboard.cancelAppointment')}
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                    {t('clientDashboard.cancelAppointment')}
-                  </Button>
-                )}
-
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedAppointment(null)}
-                  className="ml-auto min-h-[44px] min-w-[44px] w-full sm:w-auto focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  aria-label={t('common.actions.close')}
-                  title={t('common.actions.close')}
-                >
-                  {t('common.actions.close')}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <AppointmentDetailsModal
+        appointment={selectedAppointment}
+        isOpen={!!selectedAppointment}
+        onClose={() => setSelectedAppointment(null)}
+        onStartChat={handleStartChatWithProfessional}
+        onReschedule={handleRescheduleAppointment}
+        onCancel={handleCancelAppointment}
+        isStartingChat={isStartingChat}
+      />
 
       {/* Business Profile Modal */}
       {selectedBusinessId && (
@@ -1238,10 +667,9 @@ export function ClientDashboard({
           onClose={() => setSelectedBusinessId(null)}
           onBookAppointment={handleBookAppointment}
           onChatStarted={conversationId => {
-            // Cambiar a la página de chat y establecer la conversación activa
             setActivePage('chat')
             setChatConversationId(conversationId)
-            setSelectedBusinessId(null) // Cerrar el modal de perfil
+            setSelectedBusinessId(null)
           }}
           userLocation={
             geolocation.hasLocation
@@ -1259,9 +687,8 @@ export function ClientDashboard({
         <ProfessionalProfile
           userId={selectedUserId}
           onClose={() => setSelectedUserId(null)}
-          onBookAppointment={(serviceId, businessId) => {
+          onBookAppointment={(_serviceId, _businessId) => {
             setSelectedUserId(null)
-
             setShowAppointmentWizard(true)
           }}
           userLocation={

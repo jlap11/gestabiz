@@ -15,6 +15,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 import { QUERY_CONFIG } from '@/lib/queryConfig'
 
 export interface CompletedAppointment {
@@ -93,8 +94,10 @@ export function useCompletedAppointments(
         .order('start_time', { ascending: false })
 
       if (queryError) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching completed appointments:', queryError)
+        await logger.error('Error fetching completed appointments', queryError, {
+          component: 'useCompletedAppointments',
+          clientId
+        })
         throw queryError
       }
 

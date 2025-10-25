@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react'
 import { AlertCircle, Home, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { logger } from '@/lib/logger'
 
 interface Props {
   children: ReactNode
@@ -43,12 +44,13 @@ export class ErrorBoundary extends Component<Props, State> {
     const { componentName, onError } = this.props
 
     // Log estructurado para debugging
-    const prefix = componentName ? `[ErrorBoundary - ${componentName}]` : '[ErrorBoundary]'
-    // eslint-disable-next-line no-console
-    console.error(prefix, {
-      error,
-      errorInfo,
+    logger.error('Error boundary caught error', {
+      component: 'ErrorBoundary',
+      componentName: componentName || 'Unknown',
       errorId: this.state.errorId,
+      errorMessage: error.message,
+      errorStack: error.stack,
+      componentStack: errorInfo.componentStack,
       timestamp: new Date().toISOString(),
     })
 

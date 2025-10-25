@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { logger } from '@/lib/logger'
 
 export interface GeolocationState {
   latitude: number | null
@@ -49,8 +50,9 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       }))
       return result.state
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error checking geolocation permission:', error)
+      await logger.error('Error checking geolocation permission', error, {
+        component: 'useGeolocation'
+      })
       return null
     }
   }, [])

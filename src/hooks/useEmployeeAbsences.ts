@@ -1,10 +1,17 @@
-﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { format } from 'date-fns'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
-import QUERY_CONFIG from '@/lib/queryConfig'
+// React hooks
 import { useCallback } from 'react'
+
+// External libraries
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { format } from 'date-fns'
+import { toast } from 'sonner'
+
+// Internal utilities
+import QUERY_CONFIG from '@/lib/queryConfig'
+import { supabase } from '@/lib/supabase'
+
+// Contexts
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface AbsenceRequest {
   absenceType: 'vacation' | 'emergency' | 'sick_leave' | 'personal' | 'other'

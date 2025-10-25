@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Award, Briefcase, Building2, Calendar, Clock, MapPin, Star, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -100,12 +100,49 @@ export default function UserProfile({
     business_id: selectedBusinessId || undefined,
   })
 
-  const formatCurrency = (amount: number, currency: string = 'MXN') => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency,
-    }).format(amount)
-  }
+  // Memoize formatCurrency function
+  const formatCurrency = useMemo(() => {
+    return (amount: number, currency: string = 'MXN') => {
+      return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency,
+      }).format(amount)
+    }
+  }, [])
+
+  // Memoize grouped services by business
+  const servicesByBusiness = useMemo(() => {
+    if (!userData?.services) return {}
+    
+    return userData.services.reduce((acc, service) => {
+      const businessId = service.business_id
+      if (!acc[businessId]) {
+        acc[businessId] = {
+          business: service.business,
+          services: []
+        }
+      }
+      acc[businessId].services.push(service)
+      return acc
+    }, {} as Record<string, { business?: any; services: any[] }>)
+  }, [userData?.services])
+
+  // Memoize average rating calculation
+  const averageRating = useMemo(() => {
+    if (!userData?.reviews || userData.reviews.length === 0) return 0
+    return userData.reviews.reduce((acc, review) => acc + review.rating, 0) / userData.reviews.length
+  }, [userData?.reviews])
+
+  // Memoize stats data
+  const statsData = useMemo(() => {
+    return {
+      totalServices: userData?.services?.length || 0,
+      totalBusinesses: userData?.businesses?.length || 0,
+      averageRating,
+      totalReviews: userData?.reviewCount || 0,
+      totalAppointments: userData?.totalAppointments || 0
+    }
+  }, [userData?.services, userData?.businesses, averageRating, userData?.reviewCount, userData?.totalAppointments])
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -404,13 +441,13 @@ export default function UserProfile({
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold text-foreground text-sm sm:text-base">
-                    {userData.rating.toFixed(1)}
+                    {statsData.averageRating.toFixed(1)}
                   </span>
-                  <span className="text-muted-foreground text-xs sm:text-sm">({userData.reviewCount})</span>
+                  <span className="text-muted-foreground text-xs sm:text-sm">({statsData.totalReviews})</span>
                 </div>
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <Award className="h-3 w-3" />
-                  {userData.totalAppointments} {t('userProfile.header.completedAppointments')}
+                  {statsData.totalAppointments} {t('userProfile.header.completedAppointments')}
                 </Badge>
                 {isEmployeeOfAnyBusiness && (
                   <Badge variant="outline" className="flex items-center gap-1 text-xs">
@@ -587,21 +624,21 @@ export default function UserProfile({
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <Card className="p-4 text-center">
                     <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-primary" />
-                    <p className="text-xl sm:text-2xl font-bold">{userData.totalAppointments}</p>
+                    <p className="text-xl sm:text-2xl font-bold">{statsData.totalAppointments}</p>
                     <p className="text-xs text-muted-foreground">
                       {t('userProfile.experience.stats.completedAppointments')}
                     </p>
                   </Card>
                   <Card className="p-4 text-center">
                     <Star className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-yellow-400 fill-yellow-400" />
-                    <p className="text-xl sm:text-2xl font-bold">{userData.rating.toFixed(1)}</p>
+                    <p className="text-xl sm:text-2xl font-bold">{statsData.averageRating.toFixed(1)}</p>
                     <p className="text-xs text-muted-foreground">
                       {t('userProfile.experience.stats.rating')}
                     </p>
                   </Card>
                   <Card className="p-4 text-center sm:col-span-2 lg:col-span-1">
                     <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-primary" />
-                    <p className="text-xl sm:text-2xl font-bold">{userData.services.length}</p>
+                    <p className="text-xl sm:text-2xl font-bold">{statsData.totalServices}</p>
                     <p className="text-xs text-muted-foreground">
                       {t('userProfile.experience.stats.services')}
                     </p>

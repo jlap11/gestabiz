@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -40,8 +40,8 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
   const { t, language } = useLanguage()
   const locale = language === 'es' ? es : undefined
 
-  // Calculate analytics data
-  const analyticsData = useMemo(() => {
+  // Memoize date calculations
+  const dateCalculations = useMemo(() => {
     const now = new Date()
     const weekStart = startOfWeek(now, { weekStartsOn: 1 })
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 })
@@ -49,6 +49,22 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
     const dayLabelToDateString = new Map(
       weekDays.map(d => [format(d, 'EEE', { locale }), d.toDateString()])
     )
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+    return { now, weekStart, weekEnd, weekDays, dayLabelToDateString, nextWeek }
+  }, [locale])
+
+  // Memoize status configuration
+  const statusConfig = useMemo(() => ({
+    confirmed: { color: '#3b82f6', label: t('status.confirmed') },
+    completed: { color: '#10b981', label: t('status.completed') },
+    cancelled: { color: '#ef4444', label: t('status.cancelled') },
+    no_show: { color: '#6b7280', label: t('status.noShow') },
+  }), [t])
+
+  // Calculate analytics data
+  const analyticsData = useMemo(() => {
+    const { weekDays, dayLabelToDateString } = dateCalculations
 
     // Appointments by day of week
     const appointmentsByDay = weekDays.map(day => {
@@ -75,12 +91,13 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       no_show: appointments.filter(apt => apt.status === 'no_show').length,
     }
 
-    const statusData = [
-      { name: t('status.confirmed'), value: statusCounts.confirmed, color: '#3b82f6' },
-      { name: t('status.completed'), value: statusCounts.completed, color: '#10b981' },
-      { name: t('status.cancelled'), value: statusCounts.cancelled, color: '#ef4444' },
-      { name: t('status.noShow'), value: statusCounts.no_show, color: '#6b7280' },
-    ].filter(item => item.value > 0)
+    const statusData = Object.entries(statusCounts)
+      .filter(([, count]) => count > 0)
+      .map(([status, count]) => ({
+        name: statusConfig[status as keyof typeof statusConfig].label,
+        value: count,
+        color: statusConfig[status as keyof typeof statusConfig].color,
+      }))
 
     // Revenue by week
     const revenueData = appointmentsByDay.map(day => {
@@ -104,7 +121,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       revenueData,
       statusCounts,
     }
-  }, [appointments, t, locale])
+  }, [appointments, dateCalculations, locale, statusConfig])
 
   // Today's appointments
   const todayAppointments = useMemo(() => {
@@ -118,8 +135,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
 
   // Upcoming appointments (next 7 days)
   const upcomingAppointments = useMemo(() => {
-    const now = new Date()
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    const { now, nextWeek } = dateCalculations
 
     return appointments
       .filter(apt => {
@@ -127,9 +143,15 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
         return aptDate >= now && aptDate <= nextWeek && apt.status !== 'cancelled'
       })
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-  }, [appointments])
+  }, [appointments, dateCalculations])
 
-  const getStatusIcon = (status: string) => {
+  // Memoize completed today count
+  const completedTodayCount = useMemo(() => 
+    todayAppointments.filter(apt => apt.status === 'completed').length,
+    [todayAppointments]
+  )
+
+  const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'completed':
         return <CheckCircleIcon className="h-4 w-4 text-green-600" />
@@ -142,9 +164,9 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       default:
         return <Clock className="h-4 w-4 text-gray-600" />
     }
-  }
+  }, [])
 
-  const getStatusBadgeVariant = (
+  const getStatusBadgeVariant = useCallback((
     status: string
   ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
@@ -159,7 +181,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
       default:
         return 'outline'
     }
-  }
+  }, [])
 
   return (
     <div className="space-y-4 sm:space-y-6 p-2 sm:p-4">
@@ -175,7 +197,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
           <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
             <div className="text-xl sm:text-2xl font-bold">{todayAppointments.length}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {todayAppointments.filter(apt => apt.status === 'completed').length}{' '}
+              {completedTodayCount}{' '}
               {t('status.completed')}
             </p>
           </CardContent>

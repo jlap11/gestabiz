@@ -3,41 +3,26 @@
 // Sistema completo de nómina con prestaciones sociales colombianas
 // ============================================================================
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
-import {
-  Calculator,
-  DollarSign,
-  Download,
-  FileText,
-  Settings,
-  TrendingUp,
-  Users,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import supabase from '@/lib/supabase'
-import { formatCOP } from '@/lib/accounting/colombiaTaxes'
+import { FileText, Users } from 'lucide-react'
 import { exportPayrollToPDF, formatPayrollForExport } from '@/lib/accounting/exportPayroll'
+import { toast } from 'sonner'
+import {
+  usePayrollEmployees,
+  usePayrollConfig,
+  usePayrollPayments,
+  Employee,
+  PayrollPayment,
+} from './hooks'
+import {
+  PayrollStats,
+  EmployeeCard,
+  PaymentCard,
+  PayrollConfigDialog,
+  PaymentDialog,
+} from './components'
 
 interface Employee {
   id: string
@@ -123,14 +108,15 @@ const getPaymentStatusLabel = (status: 'pending' | 'paid' | 'cancelled'): string
 }
 
 export function PayrollManager({ businessId }: Readonly<PayrollManagerProps>) {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [payrollConfigs, setPayrollConfigs] = useState<Map<string, PayrollConfig>>(new Map())
-  const [payrollPayments, setPayrollPayments] = useState<PayrollPayment[]>([])
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false)
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('employees')
+
+  // Custom hooks
+  const { employees, loading: employeesLoading } = usePayrollEmployees(businessId)
+  const { payrollConfigs, saveConfig, loading: configLoading } = usePayrollConfig(businessId)
+  const { payrollPayments, createPayment, markAsPaid, loading: paymentsLoading } = usePayrollPayments(businessId)
 
   // Config form state
   const [configForm, setConfigForm] = useState<Partial<PayrollConfig>>({
@@ -155,355 +141,35 @@ export function PayrollManager({ businessId }: Readonly<PayrollManagerProps>) {
     status: 'pending',
   })
 
-  // Fetch employees
-  const fetchEmployees = async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('business_employees')
-        .select(
-          `
-          id,
-          employee_id,
-          salary_base,
-          salary_type,
-          hired_at,
-          is_active,
-          profiles!business_employees_employee_id_fkey (
-            id,
-            full_name,
-            email
-          )
-        `
-        )
-        .eq('business_id', businessId)
-        .eq('is_active', true)
+  const loading = employeesLoading || configLoading || paymentsLoading
 
-      if (error) throw error
-
-      const formattedEmployees = (data || []).map(emp => {
-        const profile = Array.isArray(emp.profiles) ? emp.profiles[0] : emp.profiles
-        return {
-          id: emp.id,
-          employee_id: emp.employee_id,
-          full_name: profile?.full_name || 'Sin nombre',
-          email: profile?.email || '',
-          salary_base: emp.salary_base || 0,
-          salary_type: emp.salary_type || 'monthly',
-          hired_at: emp.hired_at || '',
-          is_active: emp.is_active,
-        }
-      })
-
-      setEmployees(formattedEmployees)
-    } catch (error) {
-      toast.error(
-        `Error al cargar empleados: ${error instanceof Error ? error.message : 'Error desconocido'}`
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Fetch payroll configs
-  const fetchPayrollConfigs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('payroll_configuration')
-        .select('*')
-        .eq('business_id', businessId)
-
-      if (error) throw error
-
-      const configsMap = new Map<string, PayrollConfig>()
-      ;(data || []).forEach(config => {
-        configsMap.set(config.employee_id, config)
-      })
-      setPayrollConfigs(configsMap)
-    } catch (error) {
-      toast.error(
-        `Error al cargar configuraciones: ${error instanceof Error ? error.message : 'Error desconocido'}`
-      )
-    }
-  }
-
-  // Fetch payroll payments
-  const fetchPayrollPayments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('payroll_payments')
-        .select(
-          `
-          *,
-          profiles!payroll_payments_employee_id_fkey (
-            full_name
-          )
-        `
-        )
-        .eq('business_id', businessId)
-        .order('payment_period_end', { ascending: false })
-        .limit(50)
-
-      if (error) throw error
-
-      const formattedPayments = (data || []).map(payment => ({
-        ...payment,
-        employee_name: payment.profiles?.full_name || 'Sin nombre',
-      }))
-
-      setPayrollPayments(formattedPayments)
-    } catch (error) {
-      toast.error(
-        `Error al cargar pagos: ${error instanceof Error ? error.message : 'Error desconocido'}`
-      )
-    }
-  }
-
-  useEffect(() => {
-    void fetchEmployees()
-    void fetchPayrollConfigs()
-    void fetchPayrollPayments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [businessId])
-
-  // Calculate commissions from appointments
-  const calculateCommissions = async (
-    employeeId: string,
-    startDate: string,
-    endDate: string
-  ): Promise<number> => {
-    const config = payrollConfigs.get(employeeId)
-    if (!config || config.commission_rate === 0) return 0
-
-    try {
-      let totalCommissionable = 0
-
-      // Calculate from appointments if enabled
-      if (config.commission_base === 'appointments' || config.commission_base === 'both') {
-        const { data: appointments, error: apptError } = await supabase
-          .from('appointments')
-          .select('price')
-          .eq('business_id', businessId)
-          .eq('employee_id', employeeId)
-          .eq('status', 'completed')
-          .gte('start_time', startDate)
-          .lte('start_time', endDate)
-
-        if (apptError) throw apptError
-        totalCommissionable += (appointments || []).reduce((sum, apt) => sum + (apt.price || 0), 0)
-      }
-
-      // Calculate from transactions if enabled
-      if (config.commission_base === 'transactions' || config.commission_base === 'both') {
-        const { data: transactions, error: txError } = await supabase
-          .from('transactions')
-          .select('total_amount')
-          .eq('business_id', businessId)
-          .eq('type', 'income')
-          .gte('transaction_date', startDate)
-          .lte('transaction_date', endDate)
-
-        if (txError) throw txError
-        totalCommissionable += (transactions || []).reduce(
-          (sum, tx) => sum + (tx.total_amount || 0),
-          0
-        )
-      }
-
-      return totalCommissionable * (config.commission_rate / 100)
-    } catch {
-      return 0
-    }
-  }
-
-  // Calculate prestaciones sociales
-  const calculatePrestaciones = (salaryBase: number, config: PayrollConfig) => {
-    if (!config.calculate_prestaciones) {
-      return { cesantias: 0, prima: 0, vacaciones: 0, intereses_cesantias: 0 }
-    }
-
-    const cesantias = config.cesantias_enabled ? salaryBase * PRESTACIONES_RATES.CESANTIAS : 0
-    const prima = config.prima_enabled ? salaryBase * PRESTACIONES_RATES.PRIMA : 0
-    const vacaciones = config.vacaciones_enabled ? salaryBase * PRESTACIONES_RATES.VACACIONES : 0
-    const intereses_cesantias = config.intereses_cesantias_enabled
-      ? (cesantias * PRESTACIONES_RATES.INTERESES_CESANTIAS) / 12 // Mensual
-      : 0
-
-    return { cesantias, prima, vacaciones, intereses_cesantias }
-  }
-
-  // Calculate deductions
-  const calculateDeductions = (
-    salaryBase: number,
-    otherDeductions: Array<{ name: string; amount: number }> = []
-  ) => {
-    const health_deduction = salaryBase * DEDUCTIONS_RATES.HEALTH
-    const pension_deduction = salaryBase * DEDUCTIONS_RATES.PENSION
-    const other_deductions = otherDeductions.reduce((sum, d) => sum + d.amount, 0)
-
-    return { health_deduction, pension_deduction, other_deductions }
-  }
-
-  // Open config dialog
+  // Event handlers
   const handleOpenConfig = (employee: Employee) => {
     setSelectedEmployee(employee)
-    const existingConfig = payrollConfigs.get(employee.employee_id)
-
-    if (existingConfig) {
-      setConfigForm(existingConfig)
-    } else {
-      setConfigForm({
-        commission_rate: 0,
-        commission_base: 'appointments',
-        calculate_prestaciones: true,
-        cesantias_enabled: true,
-        prima_enabled: true,
-        vacaciones_enabled: true,
-        intereses_cesantias_enabled: true,
-        other_deductions: [],
-      })
-    }
     setIsConfigDialogOpen(true)
   }
 
-  // Save payroll configuration
-  const handleSaveConfig = async () => {
-    if (!selectedEmployee) return
-
-    const toastId = toast.loading('Guardando configuración...')
-    try {
-      const configData = {
-        business_id: businessId,
-        employee_id: selectedEmployee.employee_id,
-        ...configForm,
-      }
-
-      const { error } = await supabase
-        .from('payroll_configuration')
-        .upsert(configData, { onConflict: 'business_id,employee_id' })
-
-      if (error) throw error
-
-      toast.success('Configuración guardada exitosamente', { id: toastId })
-      setIsConfigDialogOpen(false)
-      fetchPayrollConfigs()
-    } catch (error) {
-      toast.error(
-        `Error al guardar configuración: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-        { id: toastId }
-      )
-    }
-  }
-
-  // Open payment dialog
-  const handleOpenPayment = async (employee: Employee) => {
+  const handleOpenPayment = (employee: Employee) => {
     setSelectedEmployee(employee)
-    const config = payrollConfigs.get(employee.employee_id) || {
-      commission_rate: 0,
-      commission_base: 'appointments' as const,
-      calculate_prestaciones: true,
-      cesantias_enabled: true,
-      prima_enabled: true,
-      vacaciones_enabled: true,
-      intereses_cesantias_enabled: true,
-      other_deductions: [],
-    }
-
-    // Calculate commissions
-    const startDate =
-      paymentForm.payment_period_start ||
-      new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
-    const endDate = paymentForm.payment_period_end || new Date().toISOString().split('T')[0]
-    const commissions = await calculateCommissions(employee.employee_id, startDate, endDate)
-
-    // Calculate prestaciones
-    const prestaciones = calculatePrestaciones(employee.salary_base, config as PayrollConfig)
-
-    // Calculate deductions
-    const deductions = calculateDeductions(employee.salary_base, config.other_deductions)
-
-    // Calculate totals
-    const total_earnings =
-      employee.salary_base +
-      commissions +
-      prestaciones.cesantias +
-      prestaciones.prima +
-      prestaciones.vacaciones +
-      prestaciones.intereses_cesantias +
-      (paymentForm.other_earnings || 0)
-
-    const total_deductions =
-      deductions.health_deduction + deductions.pension_deduction + deductions.other_deductions
-
-    const net_payment = total_earnings - total_deductions
-
-    setPaymentForm({
-      ...paymentForm,
-      salary_base: employee.salary_base,
-      commissions,
-      ...prestaciones,
-      other_earnings: 0,
-      ...deductions,
-      total_earnings,
-      total_deductions,
-      net_payment,
-    })
-
     setIsPaymentDialogOpen(true)
   }
 
-  // Create payroll payment
-  const handleCreatePayment = async () => {
+  const handleSaveConfig = async (config: any) => {
     if (!selectedEmployee) return
-
-    const toastId = toast.loading('Creando pago de nómina...')
-    try {
-      const paymentData: Partial<PayrollPayment> = {
-        business_id: businessId,
-        employee_id: selectedEmployee.employee_id,
-        ...paymentForm,
-      }
-
-      const { error } = await supabase.from('payroll_payments').insert(paymentData)
-
-      if (error) throw error
-
-      toast.success('Pago de nómina creado exitosamente', { id: toastId })
-      setIsPaymentDialogOpen(false)
-      fetchPayrollPayments()
-    } catch (error) {
-      toast.error(
-        `Error al crear pago: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-        { id: toastId }
-      )
-    }
+    await saveConfig(selectedEmployee.employee_id, config)
+    setIsConfigDialogOpen(false)
   }
 
-  // Mark payment as paid
+  const handleCreatePayment = async (paymentData: any) => {
+    if (!selectedEmployee) return
+    await createPayment(selectedEmployee.employee_id, paymentData)
+    setIsPaymentDialogOpen(false)
+  }
+
   const handleMarkAsPaid = async (paymentId: string) => {
-    const toastId = toast.loading('Actualizando pago...')
-    try {
-      const { error } = await supabase
-        .from('payroll_payments')
-        .update({
-          status: 'paid',
-          payment_date: new Date().toISOString().split('T')[0],
-        })
-        .eq('id', paymentId)
-
-      if (error) throw error
-
-      toast.success('Pago marcado como pagado', { id: toastId })
-      fetchPayrollPayments()
-    } catch (error) {
-      toast.error(
-        `Error al actualizar pago: ${error instanceof Error ? error.message : 'Error desconocido'}`,
-        { id: toastId }
-      )
-    }
+    await markAsPaid(paymentId)
   }
 
-  // Generate PDF receipt
   const handleGeneratePDF = async (payment: PayrollPayment) => {
     const toastId = toast.loading('Generando comprobante...')
     try {
@@ -518,67 +184,13 @@ export function PayrollManager({ businessId }: Readonly<PayrollManagerProps>) {
     }
   }
 
-  // Stats
-  const totalMonthlyPayroll = useMemo(() => {
-    const currentMonth = new Date().getMonth()
-    const currentYear = new Date().getFullYear()
-
-    return payrollPayments
-      .filter(p => {
-        const paymentDate = new Date(p.payment_period_end)
-        return (
-          paymentDate.getMonth() === currentMonth &&
-          paymentDate.getFullYear() === currentYear &&
-          p.status !== 'cancelled'
-        )
-      })
-      .reduce((sum, p) => sum + p.net_payment, 0)
-  }, [payrollPayments])
-
-  const pendingPayments = useMemo(() => {
-    return payrollPayments.filter(p => p.status === 'pending').length
-  }, [payrollPayments])
-
   return (
     <div className="space-y-6">
       {/* Header with Stats */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Empleados Activos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-foreground">{employees.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Nómina Mensual Actual
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-foreground">{formatCOP(totalMonthlyPayroll)}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Pagos Pendientes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-foreground">{pendingPayments}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <PayrollStats 
+        employees={employees}
+        payrollPayments={payrollPayments}
+      />
 
       {/* Main Content */}
       <Card>
@@ -614,45 +226,13 @@ export function PayrollManager({ businessId }: Readonly<PayrollManagerProps>) {
               )}
               {!loading && employees.length > 0 && (
                 <div className="space-y-2">
-                  {employees.map(employee => {
-                    const config = payrollConfigs.get(employee.employee_id)
-                    const hasConfig = !!config
-
-                    return (
-                      <Card key={employee.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-medium text-foreground">{employee.full_name}</h4>
-                              <p className="text-sm text-muted-foreground">{employee.email}</p>
-                              <div className="mt-2 flex gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Salario: </span>
-                                  <span className="font-medium">
-                                    {formatCOP(employee.salary_base)}
-                                  </span>
-                                </div>
-                                {hasConfig && config.commission_rate > 0 && (
-                                  <div>
-                                    <span className="text-muted-foreground">Comisión: </span>
-                                    <span className="font-medium">{config.commission_rate}%</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleOpenConfig(employee)}
-                              >
-                                <Settings className="h-4 w-4 mr-2" />
-                                Configurar
-                              </Button>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => void handleOpenPayment(employee)}
+                  {employees.map(employee => (
+                    <EmployeeCard
+                      key={employee.employee_id}
+                      employee={employee}
+                      config={payrollConfigs.get(employee.employee_id)}
+                      onConfigurePayroll={() => handleOpenConfig(employee)}
+                      onCalculatePayroll={() => handleOpenPayment(employee)}
                               >
                                 <Calculator className="h-4 w-4 mr-2" />
                                 Calcular Nómina

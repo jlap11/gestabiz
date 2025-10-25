@@ -165,7 +165,7 @@ export function EmployeeProfileModal({ employee, isOpen, onClose }: EmployeeProf
            )}
 
            {/* ESTADÍSTICAS */}
-           <div className="grid grid-cols-2 gap-4">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
              {/* Rating */}
              {employee.average_rating !== undefined && (
                <Card className="p-4">

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 import { toast } from 'sonner'
 
 export type StorageBucket = 'business-logos' | 'location-images' | 'service-images' | 'user-avatars'
@@ -235,7 +236,11 @@ export function useFileUpload(bucket: StorageBucket) {
 
         return data.map(file => `${folderPath}/${file.name}`)
       } catch (err) {
-        console.error('Error listing files:', err)
+        await logger.error('Error listing files', err, {
+          component: 'useFileUpload',
+          bucket,
+          folderPath
+        })
         return []
       }
     },

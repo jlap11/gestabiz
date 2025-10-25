@@ -1,14 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useLanguage } from '@/contexts/LanguageContext'
+// React
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+// External libraries
 import { FileIcon, Paperclip, Send, Smile, X } from 'lucide-react'
+
+// UI Components
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Textarea } from '@/components/ui/textarea'
+
+// Internal components
 import { FileUpload } from './FileUpload'
-import type { MessageWithSender } from '@/hooks/useMessages'
+
+// Contexts
+import { useLanguage } from '@/contexts/LanguageContext'
+
+// Types
 import type { ChatAttachment } from '@/hooks/useChat' // Temporal - future phase
-import { cn } from '@/lib/utils'
+import type { MessageWithSender } from '@/hooks/useMessages'
+
+// Utilities
 import { announce } from '@/lib/accessibility'
+import { cn } from '@/lib/utils'
 
 interface ChatInputProps {
   conversationId: string
@@ -69,7 +82,10 @@ export function ChatInput({
   }, [message])
 
   // Effective placeholder (use translated fallback when not provided)
-  const effectivePlaceholder = placeholder ?? t('chat.inputPlaceholder')
+  const effectivePlaceholder = useMemo(() => 
+    placeholder ?? t('chat.inputPlaceholder'), 
+    [placeholder, t]
+  )
 
   // Limpiar typing timeout al desmontar
   useEffect(() => {
@@ -84,7 +100,7 @@ export function ChatInput({
    * Manejar cambio en el textarea
    * Notifica typing indicator con debounce
    */
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value
     setMessage(newValue)
 
@@ -102,36 +118,36 @@ export function ChatInput({
         onTypingChange(false)
       }, 3000)
     }
-  }
+  }, [onTypingChange])
 
   /**
    * Manejar upload completo
    */
-  const handleUploadComplete = (uploaded: ChatAttachment[]) => {
+  const handleUploadComplete = useCallback((uploaded: ChatAttachment[]) => {
     setAttachments(prev => [...prev, ...uploaded])
     setIsUploadOpen(false)
-  }
+  }, [])
 
   /**
    * Remover attachment
    */
-  const handleRemoveAttachment = (index: number) => {
+  const handleRemoveAttachment = useCallback((index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index))
-  }
+  }, [])
 
   /**
    * Formatear tamaño de archivo
    */
-  const formatFileSize = (bytes: number): string => {
+  const formatFileSize = useCallback((bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  }
+  }, [])
 
   /**
    * Enviar mensaje
    */
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     const trimmedMessage = message.trim()
     if ((!trimmedMessage && attachments.length === 0) || isSending) return
 
@@ -145,7 +161,7 @@ export function ChatInput({
 
       // Enviar mensaje con attachments
       await onSendMessage(
-        trimmedMessage || '📎 Archivo adjunto',
+        trimmedMessage || t('chat.input.attachmentFallback'),
         replyToMessage?.id,
         attachments.length > 0 ? attachments : undefined
       )
@@ -169,7 +185,7 @@ export function ChatInput({
         textareaRef.current.focus()
       }
     }
-  }
+  }, [message, attachments, isSending, onTypingChange, onSendMessage, replyToMessage?.id, onCancelReply])
 
   /**
    * Manejar teclas de acceso
@@ -177,7 +193,7 @@ export function ChatInput({
    * Shift+Enter = nueva línea
    * Esc = cancelar reply
    */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter sin Shift: enviar
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -192,7 +208,20 @@ export function ChatInput({
       announce(t('chat.input.replyCancelled'), 'polite')
       textareaRef.current?.focus()
     }
-  }
+  }, [handleSend, replyToMessage, onCancelReply, t])
+
+  // Memoizar el estado de envío deshabilitado
+  const isSendDisabled = useMemo(() => 
+    (!message.trim() && attachments.length === 0) || disabled || isSending,
+    [message, attachments.length, disabled, isSending]
+  )
+
+  // Memoizar las clases del textarea
+  const textareaClasses = useMemo(() => cn(
+    'min-h-[48px] sm:min-h-[40px] max-h-[120px] sm:max-h-[160px] resize-none text-base sm:text-sm leading-relaxed sm:leading-tight overflow-y-auto',
+    'focus-visible:ring-1 touch-manipulation',
+    'px-3 py-3 sm:px-3 sm:py-2'
+  ), [])
 
   return (
     <div className="border-t bg-background pb-[env(safe-area-inset-bottom)] max-w-[100vw] overflow-hidden">

@@ -7,9 +7,11 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.11.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
+import { createLogger } from '../_shared/logger.ts'
 
-// Initialize Sentry
+// Initialize Sentry and Logger
 initSentry('stripe-webhook')
+const logger = createLogger('stripe-webhook')
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -31,7 +33,10 @@ serve(async req => {
     const body = await req.text()
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
 
-    console.log(`[Stripe Webhook] Received event: ${event.type}`)
+    logger.info(`Received event: ${event.type}`, { 
+      operation: 'webhook_received',
+      extra: { eventType: event.type, eventId: event.id }
+    })
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -100,9 +105,13 @@ serve(async req => {
         await handleSetupIntentSucceeded(supabase, event.data.object as Stripe.SetupIntent)
         break
 
-      default:
-        console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`)
-    }
+     default:
+        await logger.warn('Unhandled Stripe event type', {
+          operation: 'webhook_handler',
+          eventType: event.type,
+          eventId: event.id
+        })
+        break}
 
     return new Response(JSON.stringify({ received: true }), {
       headers: { 'Content-Type': 'application/json' },
@@ -129,7 +138,11 @@ serve(async req => {
 // ========== HANDLERS DE CUSTOMER ==========
 
 async function handleCustomerCreated(supabase: any, customer: Stripe.Customer) {
-  console.log(`[Customer] Created: ${customer.id}`)
+  await logger.info('Stripe customer created', {
+    operation: 'customer_created',
+    customerId: customer.id,
+    email: customer.email
+  })
 
   // Buscar business_id en metadata
   const businessId = customer.metadata?.business_id
@@ -150,12 +163,19 @@ async function handleCustomerCreated(supabase: any, customer: Stripe.Customer) {
 }
 
 async function handleCustomerUpdated(supabase: any, customer: Stripe.Customer) {
-  console.log(`[Customer] Updated: ${customer.id}`)
+  await logger.info('Stripe customer updated', {
+    operation: 'customer_updated',
+    customerId: customer.id,
+    email: customer.email
+  })
   // Sincronizar cambios de customer (email, nombre, etc.)
 }
 
 async function handleCustomerDeleted(supabase: any, customer: Stripe.Customer) {
-  console.log(`[Customer] Deleted: ${customer.id}`)
+  await logger.info('Stripe customer deleted', {
+    operation: 'customer_deleted',
+    customerId: customer.id
+  })
 
   // Marcar suscripción como cancelada
   const { error } = await supabase
@@ -178,7 +198,12 @@ async function handleSubscriptionCreatedOrUpdated(
   supabase: any,
   subscription: Stripe.Subscription
 ) {
-  console.log(`[Subscription] Created/Updated: ${subscription.id}`)
+  await logger.info('Stripe subscription created/updated', {
+    operation: 'subscription_created_updated',
+    subscriptionId: subscription.id,
+    customerId: subscription.customer,
+    status: subscription.status
+  })
 
   const businessId = subscription.metadata?.business_id
   if (!businessId) {
@@ -302,7 +327,12 @@ async function handleTrialWillEnd(supabase: any, subscription: Stripe.Subscripti
 // ========== HANDLERS DE PAYMENT INTENT ==========
 
 async function handlePaymentIntentSucceeded(supabase: any, paymentIntent: Stripe.PaymentIntent) {
-  console.log(`[PaymentIntent] Succeeded: ${paymentIntent.id}`)
+  await logger.info('Stripe payment intent succeeded', {
+    operation: 'payment_intent_succeeded',
+    paymentIntentId: paymentIntent.id,
+    amount: paymentIntent.amount,
+    currency: paymentIntent.currency
+  })
 
   const businessId = paymentIntent.metadata?.business_id
   if (!businessId) return

@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react'
+// React
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+
+// External libraries
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -9,8 +12,10 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+
+// UI components
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -18,11 +23,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
+// Contexts
 import { useLanguage } from '@/contexts/LanguageContext'
+
+// Hooks
 import { useTransactions } from '@/hooks/useTransactions'
+
+// Utilities
 import supabase from '@/lib/supabase'
-import type { TransactionFilters } from '@/types/types'
 import { cn } from '@/lib/utils'
+
+// Types
+import type { TransactionFilters } from '@/types/types'
 
 interface FinancialOverviewProps {
   businessId: string
@@ -51,15 +64,16 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
   })
   const [loadingStats, setLoadingStats] = useState(true)
 
-  const formatCurrency = (amount: number, currency = 'MXN') => {
+  // Memoize formatCurrency function
+  const formatCurrency = useCallback((amount: number, currency = 'MXN') => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
       style: 'currency',
       currency,
     }).format(amount)
-  }
+  }, [language])
 
-  // Calculate date range based on period
-  const getDateRange = () => {
+  // Memoize date range calculation
+  const getDateRange = useCallback(() => {
     const end = new Date()
     const start = new Date()
 
@@ -82,101 +96,114 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
       start: start.toISOString(),
       end: end.toISOString(),
     }
-  }
+  }, [period])
 
-  const [filters, setFilters] = useState<TransactionFilters>({
+  // Memoize filters
+  const filters = useMemo<TransactionFilters>(() => ({
     business_id: businessId,
     location_id: locationId,
     date_range: getDateRange(),
-  })
+  }), [businessId, locationId, getDateRange])
 
   const { summary, loading: loadingTransactions, refetch } = useTransactions(filters)
 
-  // Update filters when period changes
-  useEffect(() => {
-    const range = getDateRange()
-    setFilters(prev => ({
-      ...prev,
-      date_range: range,
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period])
+  // Memoize fetchAppointmentStats function
+  const fetchAppointmentStats = useCallback(async () => {
+    setLoadingStats(true)
+    try {
+      const range = getDateRange()
 
+      let query = supabase
+        .from('appointments')
+        .select('id, status, service:services(price)')
+        .eq('business_id', businessId)
+        .gte('start_time', range.start)
+        .lte('start_time', range.end)
+
+      if (locationId) {
+        query = query.eq('location_id', locationId)
+      }
+
+      const { data: appointments, error } = await query
+
+      if (error) throw error
+
+      const total = appointments?.length || 0
+      const completed = appointments?.filter(a => a.status === 'completed').length || 0
+
+      // Calculate revenue from completed appointments
+      const revenue =
+        appointments
+          ?.filter(a => a.status === 'completed')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .reduce((sum, a) => sum + ((a.service as any)?.price || 0), 0) || 0
+
+      const averageTicket = completed > 0 ? revenue / completed : 0
+
+      setAppointmentStats({
+        total_appointments: total,
+        completed_appointments: completed,
+        average_ticket: averageTicket,
+        revenue_from_appointments: revenue,
+      })
+    } catch {
+      // If fetch fails, reset to zero values
+      setAppointmentStats({
+        total_appointments: 0,
+        completed_appointments: 0,
+        average_ticket: 0,
+        revenue_from_appointments: 0,
+      })
+    } finally {
+      setLoadingStats(false)
+    }
+  }, [businessId, locationId, getDateRange])
+
+  // Update filters when period changes
   useEffect(() => {
     refetch()
   }, [filters, refetch])
 
   // Fetch appointment statistics
   useEffect(() => {
-    const fetchAppointmentStats = async () => {
-      setLoadingStats(true)
-      try {
-        const range = getDateRange()
-
-        let query = supabase
-          .from('appointments')
-          .select('id, status, service:services(price)')
-          .eq('business_id', businessId)
-          .gte('start_time', range.start)
-          .lte('start_time', range.end)
-
-        if (locationId) {
-          query = query.eq('location_id', locationId)
-        }
-
-        const { data: appointments, error } = await query
-
-        if (error) throw error
-
-        const total = appointments?.length || 0
-        const completed = appointments?.filter(a => a.status === 'completed').length || 0
-
-        // Calculate revenue from completed appointments
-        const revenue =
-          appointments
-            ?.filter(a => a.status === 'completed')
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .reduce((sum, a) => sum + ((a.service as any)?.price || 0), 0) || 0
-
-        const averageTicket = completed > 0 ? revenue / completed : 0
-
-        setAppointmentStats({
-          total_appointments: total,
-          completed_appointments: completed,
-          average_ticket: averageTicket,
-          revenue_from_appointments: revenue,
-        })
-      } catch {
-        // If fetch fails, reset to zero values
-        setAppointmentStats({
-          total_appointments: 0,
-          completed_appointments: 0,
-          average_ticket: 0,
-          revenue_from_appointments: 0,
-        })
-      } finally {
-        setLoadingStats(false)
-      }
-    }
-
     fetchAppointmentStats()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [businessId, locationId, period])
+  }, [fetchAppointmentStats])
 
-  const loading = loadingTransactions || loadingStats
+  // Memoize loading state
+  const loading = useMemo(() => loadingTransactions || loadingStats, [loadingTransactions, loadingStats])
 
-  // Calculate percentage changes (mock for now - would need historical data)
-  const getPercentageChange = (value: number) => {
+  // Memoize percentage change calculation
+  const getPercentageChange = useCallback((value: number) => {
     // This would compare with previous period in real implementation
     return Math.random() > 0.5 ? Math.floor(Math.random() * 30) : -Math.floor(Math.random() * 20)
-  }
+  }, [])
 
-  const profitMargin =
+  // Memoize profit margin calculation
+  const profitMargin = useMemo(() => 
     summary.total_income > 0
       ? ((summary.net_profit / summary.total_income) * 100).toFixed(1)
-      : '0.0'
+      : '0.0',
+    [summary.total_income, summary.net_profit]
+  )
 
-  const renderMetricCard = (
+  // Memoize completion rate calculation
+  const completionRate = useMemo(() => 
+    appointmentStats.total_appointments > 0
+      ? Math.round((appointmentStats.completed_appointments / appointmentStats.total_appointments) * 100)
+      : 0,
+    [appointmentStats.completed_appointments, appointmentStats.total_appointments]
+  )
+
+  // Memoize revenue per transaction calculation
+  const revenuePerTransaction = useMemo(() => 
+    summary.transaction_count > 0
+      ? summary.total_income / summary.transaction_count
+      : 0,
+    [summary.total_income, summary.transaction_count]
+  )
+
+  // Memoize renderMetricCard function
+  const renderMetricCard = useCallback((
     title: string,
     value: string | number,
     icon: React.ReactNode,
@@ -212,7 +239,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
         )}
       </div>
     </Card>
-  )
+  ), [loading])
 
   return (
     <div className="space-y-6">
@@ -237,7 +264,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
       </div>
 
       {/* Primary Metrics - Row 1 */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {renderMetricCard(
           t('financial.totalRevenue'),
           formatCurrency(summary.total_income),
@@ -258,11 +285,11 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
 
         {renderMetricCard(
           t('financial.netProfit'),
-          formatCurrency(summary.net_profit),
-          <TrendingUp className="h-6 w-6 text-primary" />,
-          getPercentageChange(summary.net_profit),
-          summary.net_profit >= 0 ? 'text-green-600' : 'text-red-600',
-          'bg-primary/10'
+          formatCurrency(summary.total_income - summary.total_expenses),
+          <TrendingUp className="h-6 w-6 text-green-600" />,
+          getPercentageChange(summary.total_income - summary.total_expenses),
+          'text-green-600',
+          'bg-green-100'
         )}
 
         {renderMetricCard(
@@ -276,7 +303,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
       </div>
 
       {/* Secondary Metrics - Row 2 */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {renderMetricCard(
           t('financial.totalAppointments'),
           appointmentStats.total_appointments.toString(),
@@ -329,7 +356,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Completion Rate */}
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">
@@ -340,16 +367,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold">
-                    {appointmentStats.total_appointments > 0
-                      ? Math.round(
-                          (appointmentStats.completed_appointments /
-                            appointmentStats.total_appointments) *
-                            100
-                        )
-                      : 0}
-                    %
-                  </span>
+                  <span className="text-2xl font-bold">{completionRate}%</span>
                   <span className="text-sm text-muted-foreground">
                     {appointmentStats.completed_appointments}/{appointmentStats.total_appointments}
                   </span>
@@ -357,15 +375,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500 rounded-full transition-all"
-                    style={{
-                      width: `${
-                        appointmentStats.total_appointments > 0
-                          ? (appointmentStats.completed_appointments /
-                              appointmentStats.total_appointments) *
-                            100
-                          : 0
-                      }%`,
-                    }}
+                    style={{ width: `${completionRate}%` }}
                   />
                 </div>
               </div>
@@ -381,11 +391,7 @@ export function FinancialOverview({ businessId, locationId }: Readonly<Financial
               <div className="h-6 bg-muted animate-pulse rounded" />
             ) : (
               <p className="text-2xl font-bold text-primary">
-                {formatCurrency(
-                  summary.transaction_count > 0
-                    ? summary.total_income / summary.transaction_count
-                    : 0
-                )}
+                {formatCurrency(revenuePerTransaction)}
               </p>
             )}
           </div>

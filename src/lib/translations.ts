@@ -56,8 +56,24 @@ export const translations = {
         export: 'Export',
         import: 'Import',
         print: 'Print',
+        scrollToTop: 'Scroll to top',
       },
-      
+      // Additional UI labels (added during client dashboard i18n sweep)
+      header: {
+        myAppointments: 'My Appointments',
+      },
+      viewMode: {
+        toggle: 'View mode',
+        list: 'List',
+        calendar: 'Calendar',
+      },
+      newAppointment: 'New appointment',
+      empty: {
+        noAppointments: 'You have no upcoming appointments',
+        hint: 'Book an appointment to see it here',
+        upcomingPlaceholder: 'No upcoming items',
+      },
+
       // States
       states: {
         loading: 'Loading...',
@@ -1261,6 +1277,14 @@ export const translations = {
         selectResult: 'Select {name}',
         independentProfessional: 'Independent professional',
         professionalServices: 'Service professional',
+        searching: 'Searching...',
+        searchBarLabel: 'Quick search',
+      },
+      typeLabelsPlural: {
+        service: 'Servicios',
+        business: 'Negocios',
+        category: 'Categorías',
+        user: 'Profesionales',
       },
       sorting: {
         relevance: 'Relevance',
@@ -1294,6 +1318,13 @@ export const translations = {
           category: 'Category',
           user: 'Professional',
         },
+        typeLabelsPlural: {
+          service: 'Services',
+          business: 'Businesses',
+          category: 'Categories',
+          user: 'Professionals',
+        },
+        listLabel: 'Search results list',
       },
     },
 
@@ -1478,6 +1509,8 @@ export const translations = {
       services: {
         previewAlt: 'Preview',
       },
+
+      
 
       clientManagement: {
         search_placeholder: 'Search clients by name, email or phone...',
@@ -2076,52 +2109,126 @@ export const translations = {
           daysSinceLastVisit: 'days since last visit',
         },
 
-        // Client Dashboard
-        clientDashboard: {
-          confirmError: 'Error confirming appointment',
-          confirmErrorWithMsg: 'Error confirming',
-          googleCalendarError: 'Error opening Google Calendar',
-          deleteError: 'Error deleting appointment',
-          errorDeleting: 'Error deleting: {{message}}',
-          chatInitError: 'Unable to start chat at this time',
-          chatError: 'Could not start chat. Please try again.',
-          cancelError: 'Could not cancel appointment. Please try again.',
-          // UI strings added during i18n retrofit
-          editAppointmentInfo: 'Edit your appointment details and confirm changes',
-          chatInitialMessage: 'Hi! I have a few questions about my appointment.',
-          chatStarted: 'Chat started with the professional',
-          confirmCancelPrompt: 'Are you sure you want to cancel this appointment?',
-          cancelSuccess: 'Appointment cancelled successfully',
-          detailsTitle: 'Appointment details',
-          serviceLabel: 'Service',
-          dateLabel: 'Date',
-          timeLabel: 'Time',
-          professionalTitle: 'Professional attending you',
-          professionalRole: 'Professional',
-          // Calendar specific
-          calendar: {
-            openAppointmentAt: 'Open appointment {{title}} at {{time}}',
-            addAppointment: 'Add appointment',
-            moreCount: '+{{count}} more',
-            controlsAria: 'Calendar navigation controls',
-            prevPeriod: 'Go to previous period',
-            nextPeriod: 'Go to next period',
-            today: 'Today',
-            day: 'Day',
-            week: 'Week',
-            month: 'Month',
-          },
-          accessible: {
-            calendarView: 'Calendar view of appointments',
-            listView: 'Appointments list view',
-          },
-          upcomingListLabel: 'Upcoming appointments list',
-          suggestions: {
-            title: 'Business suggestions',
-          },
-          currency: 'COP',
-        },
+  // Client Dashboard
+  clientDashboard: {
+    // Summary lists and primary actions
+    upcomingTitle: 'Upcoming Appointments',
+    viewAll: 'View All',
+    noUpcoming: 'No upcoming appointments',
+    bookFirstAppointment: 'Book your first appointment to get started',
+    bookAppointment: 'Book Appointment',
+    pastTitle: 'Past Appointments',
+    confirmButton: 'Confirm',
+    alreadyConfirmed: 'Already confirmed',
+    addToCalendar: 'Add to Google Calendar',
+    deleteAppointment: 'Delete appointment',
+    rebook: 'Rebook',
+    appointment: 'Appointment',
+    with: 'with',
+    confirmDelete: 'Are you sure you want to delete this appointment?',
+    deleteSuccess: 'Appointment deleted successfully',
+    deleteError: 'Error deleting appointment',
+    errorDeleting: 'Error deleting: {{message}}',
 
+    // Status labels
+    status: {
+      confirmed: 'Confirmed',
+      pending: 'Pending',
+      completed: 'Completed',
+      cancelled: 'Cancelled',
+      scheduled: 'Scheduled',
+      noShow: 'No Show',
+    },
+
+    table: {
+      service: 'Service',
+      dateTime: 'Date & Time',
+      provider: 'Provider',
+      location: 'Location',
+      actions: 'Actions',
+    },
+
+    durationShort: 'Duration: {{minutes}} min',
+    noProfilePhoto: 'No profile photo',
+    locationAndAddress: 'Location & Address',
+    viewInGoogleMaps: 'View on Google Maps',
+    descriptionTitle: 'Description',
+    notesTitle: 'Notes',
+    serviceValueTitle: 'Service Price',
+    estimatedDuration: 'Estimated duration: {{minutes}} minutes',
+    chatWithProfessional: 'Chat with the professional',
+    chatWithProfessionalAria: 'Chat with the professional',
+    chatStarting: 'Starting chat...',
+    reschedule: 'Reschedule',
+    rescheduleAria: 'Reschedule appointment',
+    cancelAppointment: 'Cancel appointment',
+    cancelAppointmentAria: 'Cancel appointment',
+    reviewReminder: 'We will remind you in 5 minutes. You have {{count}} pending review(s).',
+    thanksForReview: 'Thanks for your review!',
+
+    // Detailed / error / accessibility strings
+    confirmError: 'Error confirming appointment',
+    confirmErrorWithMsg: 'Error confirming',
+    googleCalendarError: 'Error opening Google Calendar',
+    deleteErrorDetail: 'Error deleting appointment',
+    chatInitError: 'Unable to start chat at this time',
+    chatError: 'Could not start chat. Please try again.',
+    cancelError: 'Could not cancel appointment. Please try again.',
+    editAppointmentInfo: 'Edit your appointment details and confirm changes',
+    chatInitialMessage: 'Hi! I have a few questions about my appointment.',
+    chatStarted: 'Chat started with the professional',
+    confirmCancelPrompt: 'Are you sure you want to cancel this appointment?',
+    cancelSuccess: 'Appointment cancelled successfully',
+    detailsTitle: 'Appointment details',
+    serviceLabel: 'Service',
+    dateLabel: 'Date',
+    timeLabel: 'Time',
+    professionalTitle: 'Professional attending you',
+    professionalRole: 'Professional',
+    photoOf: 'Photo of {{name}}',
+    avatarOf: 'Avatar of {{name}}',
+    accessible: {
+      calendarView: 'Calendar view of appointments',
+      listView: 'Appointments list view',
+    },
+    aria: {
+      appointmentState: 'Appointment status: {{state}}',
+    },
+    priceAria: 'Price: {{price}} {{currency}}',
+    upcomingListLabel: 'Upcoming appointments list',
+    suggestions: { title: 'Business suggestions' },
+    currency: 'COP',
+
+    // Calendar specific
+    calendar: {
+      mainTitle: 'Appointments calendar',
+      dayViewTitle: 'Day view: {date}',
+      appointmentSingular: 'appointment',
+      appointmentPlural: 'appointments',
+      addAppointment: 'Add appointment',
+      appointmentsForDay: 'Appointments for the day',
+      noAppointmentsForDay: 'No appointments scheduled for this day',
+      openAppointmentAt: 'Open appointment {{title}} at {{time}}',
+      with: 'With:',
+      moreCount: '+{{count}} more',
+      weekViewTitle: '{start} - {end} {monthYear}',
+      weekGrid: 'Week grid',
+      daySummary: '{date} — {count} appointments{todaySuffix}',
+      todayShort: 'Today',
+      prevPeriod: 'Go to previous period',
+      nextPeriod: 'Go to next period',
+      controlsAria: 'Calendar navigation controls',
+      viewSelector: 'View selector',
+      day: 'Day',
+      dayShort: 'D',
+      week: 'Week',
+      weekShort: 'W',
+      month: 'Month',
+      monthShort: 'M',
+      monthViewTitle: 'Month view: {monthYear}',
+      monthGrid: 'Month grid',
+    },
+  },
         // Appointment Form
         appointmentForm: {
           clientNameRequired: 'Client name is required',
@@ -2132,6 +2239,40 @@ export const translations = {
           updatedSuccess: 'Appointment updated successfully',
           createError: 'Error creating appointment',
           updateError: 'Error updating appointment',
+          // UI / accessibility
+          formDescription: {
+            edit: 'Form to edit an existing appointment',
+            create: 'Form to create a new appointment',
+          },
+          aria: {
+            editForm: 'Edit appointment form',
+            createForm: 'Create appointment form',
+            selectBusiness: 'Select business',
+            selectService: 'Select service',
+            saving: 'Saving appointment...',
+            update: 'Update appointment',
+            create: 'Create appointment',
+          },
+          help: {
+            selectBusiness: 'Select the business where you want to schedule the appointment',
+            selectService: 'Select the service you want to book',
+            selectDateFuture: 'Select the date for your appointment. It must be a future date',
+            startTime: 'Appointment start time',
+            endTime: 'Calculated end time based on service duration',
+            notes: 'Additional information or comments about the appointment (optional)',
+          },
+          businessLabel: 'Business',
+          adminInfo: 'Administrative information for the appointment',
+          placeholders: {
+            siteExample: 'E.g: Barbería Central, Café Luna...',
+          },
+          // Additional small labels used in the AppointmentForm component
+          clientDefault: 'Client',
+          clientSectionTitle: 'Appointment information',
+          serviceDurationPrice: 'Duration {{duration}} minutes, price {{price}} {{currency}}',
+          siteLabel: 'Site / business / location name',
+          siteNameHelp: 'Descriptive name of the place where the appointment will take place',
+          defaultTitle: 'Appointment',
         },
 
         // Unified Settings
@@ -2237,6 +2378,7 @@ export const translations = {
               sending: 'Sending message...',
               attachments: '{{count}} attachment(s) selected',
             },
+            attachmentFallback: 'Attachment',
             replyingTo: 'Replying to {{name}}',
             emptyMessage: '(no content)',
             cancelReplyAria: 'Cancel reply',
@@ -2817,63 +2959,9 @@ export const translations = {
           schedule: 'Schedule',
         },
       },
-
-      // Client Dashboard
-      clientDashboard: {
-        upcomingTitle: 'Upcoming Appointments',
-        viewAll: 'View All',
-        noUpcoming: 'No upcoming appointments',
-        bookFirstAppointment: 'Book your first appointment to get started',
-        bookAppointment: 'Book Appointment',
-        pastTitle: 'Past Appointments',
-        confirmButton: 'Confirm',
-        alreadyConfirmed: 'Already confirmed',
-        addToCalendar: 'Add to Google Calendar',
-        deleteAppointment: 'Delete appointment',
-        rebook: 'Rebook',
-        appointment: 'Appointment',
-        with: 'with',
-        confirmDelete: 'Are you sure you want to delete this appointment?',
-        deleteSuccess: 'Appointment deleted successfully',
-        deleteError: 'Error deleting appointment',
-        errorDeleting: 'Error deleting: {message}',
-        status: {
-          confirmed: 'Confirmed',
-          pending: 'Pending',
-          completed: 'Completed',
-          cancelled: 'Cancelled',
-          scheduled: 'Scheduled',
-          noShow: 'No Show',
-        },
-        table: {
-          service: 'Service',
-          dateTime: 'Date & Time',
-          provider: 'Provider',
-          location: 'Location',
-          actions: 'Actions',
-        },
-        durationShort: 'Duration: {{minutes}} min',
-        // UI labels and buttons
-        noProfilePhoto: 'No profile photo',
-        locationAndAddress: 'Location & Address',
-        viewInGoogleMaps: 'View on Google Maps',
-        descriptionTitle: 'Description',
-        notesTitle: 'Notes',
-        serviceValueTitle: 'Service Price',
-        estimatedDuration: 'Estimated duration: {{minutes}} minutes',
-        chatWithProfessional: 'Chat with the professional',
-        chatWithProfessionalAria: 'Chat with the professional',
-        chatStarting: 'Starting chat...',
-        reschedule: 'Reschedule',
-        rescheduleAria: 'Reschedule appointment',
-        cancelAppointment: 'Cancel appointment',
-        cancelAppointmentAria: 'Cancel appointment',
-        reviewReminder: 'We will remind you in 5 minutes. You have {{count}} pending review(s).',
-        thanksForReview: 'Thanks for your review!',
-      },
-
       // Favorites List
       favoritesList: {
+        logoAlt: '{name} logo',
         loading: 'Loading your favorite businesses...',
         errorTitle: 'Error loading favorites',
         emptyTitle: 'No favorites yet',
@@ -3075,10 +3163,12 @@ export const translations = {
             noShow: 'No-shows',
             totalPaid: 'Total Paid',
           },
+          currency: 'MXN',
           filters: {
             title: 'Filters',
             status: 'Status',
             business: 'Business',
+            allBusinesses: 'All businesses',
             location: 'Location',
             service: 'Service',
             category: 'Category',
@@ -3089,6 +3179,7 @@ export const translations = {
             businessSearch: 'Search business...',
             locationSearch: 'Search location...',
             serviceSearch: 'Search service...',
+            employeeSearch: 'Search professional...',
           },
           status: {
             completed: 'Attended',
@@ -3112,6 +3203,18 @@ export const translations = {
           },
           results: {
             showing: 'Showing {visible} of {total} appointments ({totalAll} total)',
+          },
+          appointment: {
+            ariaLabel: 'Appointment:',
+          },
+          messages: {
+            noBusinesses: 'No businesses found',
+            noLocations: 'No locations found',
+            noServices: 'No services found',
+            noCategories: 'No categories found',
+            noEmployees: 'No employees found',
+            noAppointments: 'No appointments found',
+            noAppointmentsDescription: 'You don\'t have any appointments yet. Try changing filters or booking a new appointment.',
           },
           appointmentsListLabel: 'Appointments list',
           pagination: {
@@ -3207,6 +3310,86 @@ export const translations = {
     },
   },
   es: {
+    // Client dashboard / calendar translations (ES)
+      clientDashboard_DEDUP_A: {
+      upcomingTitle: 'Próximas Citas',
+      viewAll: 'Ver Todas',
+      noUpcoming: 'No hay citas próximas',
+      bookFirstAppointment: 'Reserva tu primera cita para comenzar',
+      bookAppointment: 'Reservar Cita',
+      pastTitle: 'Citas Pasadas',
+      confirmButton: 'Confirmar',
+      alreadyConfirmed: 'Ya confirmado',
+      addToCalendar: 'Agregar a Google Calendar',
+      deleteAppointment: 'Eliminar cita',
+      rebook: 'Volver a reservar',
+      appointment: 'Cita',
+      with: 'con',
+      confirmDelete: '¿Estás seguro de que deseas eliminar esta cita?',
+      deleteSuccess: 'Cita eliminada exitosamente',
+      deleteError: 'Error al eliminar la cita',
+      errorDeleting: 'Error al eliminar: {message}',
+      status: {
+        confirmed: 'Confirmada',
+        pending: 'Pendiente',
+        completed: 'Completada',
+        cancelled: 'Cancelada',
+        scheduled: 'Agendada',
+        noShow: 'No Asistió',
+      },
+      table: {
+        service: 'Servicio',
+        dateTime: 'Fecha y Hora',
+        provider: 'Proveedor',
+        location: 'Ubicación',
+        actions: 'Acciones',
+      },
+      durationShort: 'Duración: {{minutes}} min',
+      noProfilePhoto: 'Sin foto de perfil',
+      locationAndAddress: 'Ubicación y Dirección',
+      viewInGoogleMaps: 'Ver en Google Maps',
+      descriptionTitle: 'Descripción',
+      notesTitle: 'Notas',
+      serviceValueTitle: 'Precio del Servicio',
+      estimatedDuration: 'Duración estimada: {{minutes}} minutos',
+      chatWithProfessional: 'Chatear con el profesional',
+      chatWithProfessionalAria: 'Chatear con el profesional',
+      chatStarting: 'Iniciando chat...',
+      reschedule: 'Reagendar',
+      rescheduleAria: 'Reagendar cita',
+      cancelAppointment: 'Cancelar cita',
+      cancelAppointmentAria: 'Cancelar cita',
+      reviewReminder: 'Te recordaremos en 5 minutos. Tienes {{count}} reseña(s) pendiente(s).',
+      thanksForReview: '¡Gracias por tu reseña!',
+      // Calendar
+      calendar: {
+        mainTitle: 'Calendario',
+        dayViewTitle: 'Vista día: {date}',
+        appointmentSingular: 'cita',
+        appointmentPlural: 'citas',
+        addAppointment: 'Agregar cita',
+        appointmentsForDay: 'Citas del día',
+        noAppointmentsForDay: 'No hay citas para este día',
+        openAppointmentAt: 'Abrir cita "{title}" a las {time}',
+        with: 'con',
+        weekViewTitle: '{start} - {end} {monthYear}',
+        weekGrid: 'Cuadrícula semanal',
+        daySummary: '{date} — {count} citas{todaySuffix}',
+        todayShort: 'Hoy',
+        prevPeriod: 'Anterior',
+        nextPeriod: 'Siguiente',
+        controlsAria: 'Controles del calendario',
+        viewSelector: 'Selector de vista',
+        day: 'Día',
+        dayShort: 'D',
+        week: 'Semana',
+        weekShort: 'W',
+        month: 'Mes',
+        monthShort: 'M',
+        monthViewTitle: 'Vista mes: {monthYear}',
+        monthGrid: 'Cuadrícula mensual',
+      },
+    },
     // Landing Page
     landing: {
       nav: {
@@ -4504,6 +4687,12 @@ export const translations = {
           category: 'Categoría',
           user: 'Profesional',
         },
+        typeLabelsPlural: {
+          service: 'Servicios',
+          business: 'Negocios',
+          category: 'Categorías',
+          user: 'Profesionales',
+        },
       },
     },
 
@@ -4967,19 +5156,7 @@ export const translations = {
         daysSinceLastVisit: 'días sin visitar',
       },
 
-      // Client Dashboard
-      clientDashboard: {
-        confirmError: 'Error al confirmar la cita',
-        confirmErrorWithMsg: 'Error al confirmar',
-        googleCalendarError: 'Error al abrir Google Calendar',
-        deleteError: 'Error al eliminar la cita',
-        errorDeleting: 'Error al eliminar: {{message}}',
-        chatInitError: 'No se puede iniciar el chat en este momento',
-        chatError: 'No se pudo iniciar el chat. Por favor, intenta de nuevo.',
-        cancelError: 'No se pudo cancelar la cita. Intenta de nuevo.',
-      },
-
-      // Appointment Form
+  // Appointment Form
       appointmentForm: {
         clientNameRequired: 'El nombre del cliente es requerido',
         dateRequired: 'La fecha es requerida',
@@ -4989,6 +5166,39 @@ export const translations = {
         updatedSuccess: 'Cita actualizada exitosamente',
         createError: 'Error al crear la cita',
         updateError: 'Error al actualizar la cita',
+        // UI / accessibility
+        formDescription: {
+          edit: 'Formulario para editar una cita existente',
+          create: 'Formulario para crear una nueva cita',
+        },
+        aria: {
+          editForm: 'Formulario para editar cita',
+          createForm: 'Formulario para crear cita',
+          selectBusiness: 'Seleccionar negocio',
+          selectService: 'Seleccionar servicio',
+          saving: 'Guardando cita...',
+          update: 'Actualizar cita',
+          create: 'Crear cita',
+        },
+        help: {
+          selectBusiness: 'Selecciona el negocio donde deseas agendar tu cita',
+          selectService: 'Selecciona el servicio que deseas reservar',
+          selectDateFuture: 'Selecciona la fecha para tu cita. Debe ser una fecha futura',
+          startTime: 'Hora de inicio de la cita',
+          endTime: 'Hora de finalización calculada automáticamente según la duración del servicio',
+          notes: 'Información adicional o comentarios sobre la cita (opcional)',
+        },
+        businessLabel: 'Negocio',
+        adminInfo: 'Información administrativa de la cita',
+        placeholders: {
+          siteExample: 'Ejemplo: Barbería Central, Café Luna...',
+        },
+        // Etiquetas adicionales usadas en AppointmentForm
+        clientDefault: 'Cliente',
+        clientSectionTitle: 'Información de la cita',
+        serviceDurationPrice: 'Duración {{duration}} minutos, precio {{price}} {{currency}}',
+        siteLabel: 'Nombre del sitio/negocio/local',
+        siteNameHelp: 'Nombre descriptivo del lugar donde se realizará la cita',
       },
 
       // Unified Settings
@@ -5172,6 +5382,7 @@ export const translations = {
             sending: 'Enviando mensaje...',
             attachments: '{{count}} archivo(s) adjunto(s)'
           },
+          attachmentFallback: 'Archivo adjunto',
           replyingTo: 'Respondiendo a {{name}}',
           emptyMessage: '(mensaje sin contenido)',
           cancelReplyAria: 'Cancelar respuesta',
@@ -5896,6 +6107,9 @@ export const translations = {
       rebook: 'Reagendar',
       appointment: 'Cita',
       with: 'con',
+      aria: {
+        appointmentState: 'Estado de la cita: {{state}}',
+      },
       confirmDelete: '¿Estás seguro de que deseas eliminar esta cita?',
       deleteSuccess: 'Cita eliminada exitosamente',
       deleteError: 'Error al eliminar la cita',
@@ -5915,6 +6129,23 @@ export const translations = {
         location: 'Ubicación',
         actions: 'Acciones',
       },
+      // Etiquetas adicionales usadas en ClientDashboard
+      header: {
+        myAppointments: 'Mis citas',
+      },
+      viewMode: {
+        toggle: 'Modo de vista',
+        list: 'Lista',
+        calendar: 'Calendario',
+      },
+      newAppointment: 'Nueva cita',
+      empty: {
+        noAppointments: 'No tienes citas próximas',
+        hint: 'Agenda una cita para verla aquí',
+        upcomingPlaceholder: 'No hay elementos próximos',
+      },
+      priceAria: 'Precio: {{price}} {{currency}}',
+      defaultTitle: 'Cita',
       // Etiquetas y botones de UI
       noProfilePhoto: 'Sin foto de perfil',
       locationAndAddress: 'Sede y Ubicación',
@@ -5930,6 +6161,16 @@ export const translations = {
         openAppointmentAt: 'Abrir cita {{title}} a las {{time}}',
         addAppointment: 'Agregar cita',
         moreCount: '+{{count}} más',
+        // Pequeñas etiquetas y strings del calendario
+        mainTitle: 'Calendario de citas',
+        appointmentSingular: 'cita',
+        appointmentPlural: 'citas',
+        noAppointmentsForDay: 'No hay citas programadas para este día',
+        with: 'Con:',
+        todayShort: 'Hoy',
+        dayShort: 'Día',
+        weekShort: 'Sem',
+        monthShort: 'Mes',
         controlsAria: 'Controles de navegación del calendario',
         prevPeriod: 'Ir al período anterior',
         nextPeriod: 'Ir al período siguiente',
@@ -5938,6 +6179,9 @@ export const translations = {
         week: 'Semana',
         month: 'Mes',
       },
+      // Accesibilidad / textos de avatar
+      photoOf: 'Foto de {{name}}',
+      avatarOf: 'Avatar de {{name}}',
       accessible: {
         calendarView: 'Vista de calendario de citas',
         listView: 'Vista de lista de citas',
@@ -5971,6 +6215,7 @@ export const translations = {
 
     // Favorites List
     favoritesList: {
+      logoAlt: 'Logo de {name}',
       loading: 'Cargando tus negocios favoritos...',
       errorTitle: 'Error al cargar favoritos',
       emptyTitle: 'No tienes favoritos aún',
@@ -6173,10 +6418,12 @@ export const translations = {
         noShow: 'Perdidas',
         totalPaid: 'Total Pagado',
       },
+      currency: 'MXN',
       filters: {
         title: 'Filtros',
         status: 'Estado',
         business: 'Negocio',
+        allBusinesses: 'Todos los negocios',
         location: 'Sede',
         service: 'Servicio',
         category: 'Categoría',
@@ -6187,6 +6434,7 @@ export const translations = {
         businessSearch: 'Buscar negocio...',
         locationSearch: 'Buscar sede...',
         serviceSearch: 'Buscar servicio...',
+        employeeSearch: 'Buscar profesional...',
       },
       status: {
         completed: 'Asistida',
@@ -6210,6 +6458,18 @@ export const translations = {
       },
       results: {
         showing: 'Mostrando {visible} de {total} citas ({totalAll} total)',
+      },
+      appointment: {
+        ariaLabel: 'Cita:',
+      },
+      messages: {
+        noBusinesses: 'No se encontraron negocios',
+        noLocations: 'No se encontraron sedes',
+        noServices: 'No se encontraron servicios',
+        noCategories: 'No se encontraron categorías',
+        noEmployees: 'No se encontraron empleados',
+        noAppointments: 'No se encontraron citas',
+        noAppointmentsDescription: 'Aún no tienes citas. Intenta cambiar los filtros o agenda una nueva cita.',
       },
       appointmentsListLabel: 'Lista de citas',
       pagination: {

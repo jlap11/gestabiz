@@ -1,43 +1,24 @@
 import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
 import { User } from '@/types'
-import { useKV } from '@/lib/useKV'
-import { useTheme } from '@/contexts'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { toast } from 'sonner'
 import UserProfile from './UserProfile'
 import { NotificationSettings } from './NotificationSettings'
+import { ThemeSelector } from './ThemeSelector'
+import { LanguageSelector } from './LanguageSelector'
+import { AdminSettings } from './AdminSettings'
+import { ClientSettings } from './ClientSettings'
+import { UnifiedSettingsProps } from '@/types/settings'
 import {
   Bell,
   Briefcase,
   Globe,
-  Monitor,
-  Moon,
   Palette,
   ShoppingCart,
-  Sun,
   UserCircle,
   User as UserIcon,
 } from '@phosphor-icons/react'
-
-interface UnifiedSettingsProps {
-  user: User
-  onUserUpdate: (user: User) => void
-  currentRole: 'admin' | 'employee' | 'client'
-  businessId?: string // Para configuraciones específicas del negocio (admin/employee)
-}
 
 export default function UnifiedSettings({
   user,
@@ -45,52 +26,7 @@ export default function UnifiedSettings({
   currentRole,
   businessId,
 }: UnifiedSettingsProps) {
-  const { t, language, setLanguage } = useLanguage()
-  const { theme, setTheme } = useTheme()
-  const [, setUsers] = useKV<User[]>('users', [])
-
-  // Helper para obtener info del tema actual
-  const getThemeInfo = () => {
-    if (theme === 'light')
-      return {
-        label: t('settings.themeSection.themes.light.label'),
-        classes: 'bg-yellow-100 text-yellow-600',
-        icon: Sun,
-      }
-    if (theme === 'dark')
-      return {
-        label: t('settings.themeSection.themes.dark.label'),
-        classes: 'bg-blue-100 text-blue-600',
-        icon: Moon,
-      }
-    return {
-      label: t('settings.themeSection.themes.system.label'),
-      classes: 'bg-primary/10 text-primary',
-      icon: Monitor,
-    }
-  }
-
-  const themeInfo = getThemeInfo()
-  const ThemeIcon = themeInfo.icon
-
-  const handleLanguageChange = async (newLanguage: 'es' | 'en') => {
-    try {
-      const updatedUser = {
-        ...user,
-        language: newLanguage,
-        updated_at: new Date().toISOString(),
-      }
-
-      await setUsers(prev => prev.map(u => (u.id === user.id ? updatedUser : u)))
-
-      setLanguage(newLanguage)
-      onUserUpdate(updatedUser)
-      toast.success(t('settings.preferences_saved'))
-    } catch (error) {
-      toast.error(t('common.messages.updateError'))
-      throw error
-    }
-  }
+  const { t } = useLanguage()
 
   // Tabs dinámicas según rol
   const tabs = [
@@ -149,118 +85,12 @@ export default function UnifiedSettings({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                {t('settings.themeSection.title')}
+                {t('settings.general')}
               </CardTitle>
-              <CardDescription>{t('settings.themeSection.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Theme Selection */}
-              <div className="space-y-3">
-                <Label className="text-base font-medium flex items-center gap-2">
-                  <Sun className="h-4 w-4" />
-                  {t('settings.themeSection.themeLabel')}
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  {t('settings.themeSection.themeDescription')}
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {[
-                    {
-                      value: 'light',
-                      label: t('settings.themeSection.themes.light.label'),
-                      icon: <Sun className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.light.description'),
-                    },
-                    {
-                      value: 'dark',
-                      label: t('settings.themeSection.themes.dark.label'),
-                      icon: <Moon className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.dark.description'),
-                    },
-                    {
-                      value: 'system',
-                      label: t('settings.themeSection.themes.system.label'),
-                      icon: <Monitor className="h-5 w-5" />,
-                      description: t('settings.themeSection.themes.system.description'),
-                    },
-                  ].map(themeOption => (
-                    <button
-                      key={themeOption.value}
-                      onClick={() => setTheme(themeOption.value as 'light' | 'dark' | 'system')}
-                      className={`
-                        flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all
-                        ${
-                          theme === themeOption.value
-                            ? 'border-primary bg-primary/5 shadow-sm'
-                            : 'border-border hover:border-primary/50 hover:bg-muted/30'
-                        }
-                      `}
-                    >
-                      <div
-                        className={`
-                        p-3 rounded-full
-                        ${theme === themeOption.value ? 'bg-primary text-primary-foreground' : 'bg-muted'}
-                      `}
-                      >
-                        {themeOption.icon}
-                      </div>
-                      <div className="text-center">
-                        <p className="font-semibold text-sm">{themeOption.label}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {themeOption.description}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg mt-3">
-                  <div className={`p-2 rounded-full ${themeInfo.classes}`}>
-                    <ThemeIcon className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      {t('settings.themeSection.currentTheme', { theme: themeInfo.label })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {theme === 'system'
-                        ? t('settings.themeSection.systemThemeNote')
-                        : t('settings.themeSection.changeAnytime')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Language Selection */}
-              <div className="space-y-3">
-                <Label className="text-base font-medium flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  {t('settings.language')}
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  {t('settings.languageSection.description')}
-                </p>
-                <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-full md:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="es">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">🇪🇸</span>
-                        <span>{t('settings.spanish')}</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="en">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">🇺🇸</span>
-                        <span>{t('settings.english')}</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <ThemeSelector />
+              <LanguageSelector user={user} onUserUpdate={onUserUpdate} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -278,108 +108,7 @@ export default function UnifiedSettings({
         {/* CONFIGURACIONES ESPECÍFICAS DEL ROL ADMIN */}
         {currentRole === 'admin' && (
           <TabsContent value="admin" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />
-                  Configuraciones del Negocio
-                </CardTitle>
-                <CardDescription>Administra las configuraciones de tu negocio</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Permitir reservas online</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Los clientes pueden agendar citas directamente desde la plataforma
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Confirmación automática</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Las citas se confirman automáticamente sin necesidad de aprobación manual
-                      </p>
-                    </div>
-                    <Switch />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Recordatorios automáticos</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Envía recordatorios automáticos a los clientes antes de sus citas
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Mostrar precios públicamente</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Los precios de los servicios son visibles para todos
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <Label className="text-base font-medium">
-                    Horario de atención predeterminado
-                  </Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm text-muted-foreground">Apertura</Label>
-                      <Select defaultValue="09:00">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 24 }, (_, i) => {
-                            const hour = i.toString().padStart(2, '0')
-                            return (
-                              <SelectItem key={i} value={`${hour}:00`}>
-                                {hour}:00
-                              </SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm text-muted-foreground">Cierre</Label>
-                      <Select defaultValue="18:00">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 24 }, (_, i) => {
-                            const hour = i.toString().padStart(2, '0')
-                            return (
-                              <SelectItem key={i} value={`${hour}:00`}>
-                                {hour}:00
-                              </SelectItem>
-                            )
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <Button className="w-full">Guardar Configuraciones</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminSettings businessId={businessId} />
           </TabsContent>
         )}
 
@@ -490,100 +219,7 @@ export default function UnifiedSettings({
         {/* CONFIGURACIONES ESPECÍFICAS DEL ROL CLIENT */}
         {currentRole === 'client' && (
           <TabsContent value="client" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
-                  Preferencias de Cliente
-                </CardTitle>
-                <CardDescription>
-                  Configura tus preferencias de reserva y comunicación
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Recordatorios de citas</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Recibe recordatorios automáticos antes de tus citas
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Confirmación por email</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Recibe confirmación por correo al agendar una cita
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Notificaciones de promociones</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Recibe ofertas especiales de los negocios que sigues
-                      </p>
-                    </div>
-                    <Switch />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label className="text-base font-medium">Guardar métodos de pago</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Almacena tarjetas para reservas más rápidas
-                      </p>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <Label className="text-base font-medium">Tiempo de anticipación preferido</Label>
-                  <p className="text-sm text-muted-foreground">
-                    ¿Con cuánta anticipación quieres recibir recordatorios?
-                  </p>
-                  <Select defaultValue="24">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 hora antes</SelectItem>
-                      <SelectItem value="2">2 horas antes</SelectItem>
-                      <SelectItem value="4">4 horas antes</SelectItem>
-                      <SelectItem value="24">1 día antes</SelectItem>
-                      <SelectItem value="48">2 días antes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <Label className="text-base font-medium">Historial de servicios</Label>
-                  <div className="p-4 bg-muted/30 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Has completado <strong className="text-foreground">0 servicios</strong> hasta
-                      ahora
-                    </p>
-                    <Button variant="outline" className="mt-3 w-full">
-                      Ver Historial Completo
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <Button className="w-full">Guardar Preferencias</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientSettings />
           </TabsContent>
         )}
       </Tabs>

@@ -13,6 +13,7 @@
 import { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 interface TransferImpact {
   appointmentsToKeep: number
@@ -64,7 +65,11 @@ export function useLocationTransfer(): UseLocationTransferReturn {
         })
 
         if (error) {
-          console.error('Error al obtener impacto de traslado:', error)
+          await logger.error('Error al obtener impacto de traslado', error, {
+            component: 'useLocationTransfer',
+            businessEmployeeId,
+            effectiveDate: effectiveDate.toISOString()
+          })
           return null
         }
 
@@ -74,7 +79,11 @@ export function useLocationTransfer(): UseLocationTransferReturn {
           effectiveDate: data.effective_date,
         }
       } catch (error) {
-        console.error('Error en getTransferImpact:', error)
+        await logger.error('Error en getTransferImpact', error, {
+          component: 'useLocationTransfer',
+          businessEmployeeId,
+          effectiveDate: effectiveDate.toISOString()
+        })
         return null
       } finally {
         setIsLoading(false)
@@ -145,7 +154,13 @@ export function useLocationTransfer(): UseLocationTransferReturn {
           .eq('id', employeeData.id)
 
         if (updateError) {
-          console.error('Error al programar traslado:', updateError)
+          await logger.error('Error al programar traslado', updateError, {
+            component: 'useLocationTransfer',
+            businessId,
+            employeeId,
+            toLocationId,
+            effectiveDate: effectiveDate.toISOString()
+          })
           toast.error('Error al programar el traslado')
           return { success: false }
         }
@@ -162,7 +177,12 @@ export function useLocationTransfer(): UseLocationTransferReturn {
           }
         )
 
-        console.log('🔄 Resultado cancelación de citas:', functionData)
+        await logger.debug('Resultado cancelación de citas', {
+          component: 'useLocationTransfer',
+          businessEmployeeId: employeeData.id,
+          effectiveDate: effectiveDate.toISOString(),
+          result: functionData
+        })
 
         toast.success(
           `Traslado programado exitosamente. ${impact.appointmentsToCancel} citas canceladas.`
@@ -170,7 +190,13 @@ export function useLocationTransfer(): UseLocationTransferReturn {
 
         return { success: true, impact }
       } catch (error) {
-        console.error('Error en scheduleTransfer:', error)
+        await logger.error('Error en scheduleTransfer', error, {
+          component: 'useLocationTransfer',
+          businessId,
+          employeeId,
+          toLocationId,
+          effectiveDate: effectiveDate.toISOString()
+        })
         toast.error('Error al programar el traslado')
         return { success: false }
       } finally {
@@ -222,7 +248,11 @@ export function useLocationTransfer(): UseLocationTransferReturn {
           .eq('id', employeeData.id)
 
         if (updateError) {
-          console.error('Error al cancelar traslado:', updateError)
+          await logger.error('Error al cancelar traslado', updateError, {
+            component: 'useLocationTransfer',
+            businessId,
+            employeeId
+          })
           toast.error('Error al cancelar el traslado')
           return false
         }
@@ -230,7 +260,11 @@ export function useLocationTransfer(): UseLocationTransferReturn {
         toast.success('Traslado cancelado exitosamente')
         return true
       } catch (error) {
-        console.error('Error en cancelTransfer:', error)
+        await logger.error('Error en cancelTransfer', error, {
+          component: 'useLocationTransfer',
+          businessId,
+          employeeId
+        })
         toast.error('Error al cancelar el traslado')
         return false
       } finally {
@@ -256,7 +290,11 @@ export function useLocationTransfer(): UseLocationTransferReturn {
           .single()
 
         if (error || !data) {
-          console.error('Error al obtener estado de traslado:', error)
+          await logger.error('Error al obtener estado de traslado', error, {
+            component: 'useLocationTransfer',
+            businessId,
+            employeeId
+          })
           return null
         }
 
@@ -269,7 +307,11 @@ export function useLocationTransfer(): UseLocationTransferReturn {
           scheduledAt: data.transfer_scheduled_at,
         }
       } catch (error) {
-        console.error('Error en getTransferStatus:', error)
+        await logger.error('Error en getTransferStatus', error, {
+          component: 'useLocationTransfer',
+          businessId,
+          employeeId
+        })
         return null
       }
     },

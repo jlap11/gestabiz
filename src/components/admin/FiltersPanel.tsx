@@ -6,21 +6,18 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Search, X } from 'lucide-react'
-import { useLanguage } from '@/contexts/LanguageContext'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
 import { supabase } from '@/lib/supabase'
 import type { HierarchyFilters } from '@/types'
+import { SearchFilter } from './filters/SearchFilter'
+import { LocationFilter } from './filters/LocationFilter'
+import { HierarchyLevelFilter } from './filters/HierarchyLevelFilter'
+import { EmployeeTypeFilter } from './filters/EmployeeTypeFilter'
+import { DepartmentFilter } from './filters/DepartmentFilter'
+import { OccupancyRangeFilter } from './filters/OccupancyRangeFilter'
+import { RatingRangeFilter } from './filters/RatingRangeFilter'
+import { ActiveFiltersIndicator } from './filters/ActiveFiltersIndicator'
 
 // =====================================================
 // TIPOS
@@ -48,7 +45,6 @@ export function FiltersPanel({
   onFiltersChange,
   onClear,
 }: Readonly<FiltersPanelProps>) {
-  const { t } = useLanguage()
   // Estados locales para rangos
   const [occupancyRange, setOccupancyRange] = useState<RangeFilter>({ min: 0, max: 100 })
   const [ratingRange, setRatingRange] = useState<RangeFilter>({ min: 0, max: 5 })
@@ -136,189 +132,52 @@ export function FiltersPanel({
         )}
       </div>
 
-      {/* BÚSQUEDA */}
-      <div className="space-y-2">
-        <Label htmlFor="search">{t('common.actions.search')}</Label>
-        <div className="relative" role="search" aria-label={t('common.actions.search')}>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          <Input
-            id="search"
-            placeholder="Nombre, email o cargo..."
-            value={filters.searchQuery || ''}
-            onChange={e => handleSearchChange(e.target.value)}
-            className="pl-9"
-            role="searchbox"
-            aria-label={t('common.actions.search')}
-          />
-          {filters.searchQuery && (
-            <button
-              onClick={() => handleSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px]"
-              aria-label="Quitar búsqueda"
-              title="Quitar búsqueda"
-            >
-              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" aria-hidden="true" />
-            </button>
-          )}
-        </div>
-      </div>
+      {/* FILTROS */}
+      <SearchFilter
+        value={filters.searchQuery}
+        onChange={handleSearchChange}
+      />
 
-      {/* FILTRO POR SEDE */}
-      <div className="space-y-2">
-        <Label htmlFor="location">Sede</Label>
-        <Select value={filters.location_id || 'all'} onValueChange={handleLocationChange}>
-          <SelectTrigger id="location" aria-label="Seleccionar sede" className="min-h-[44px] min-w-[44px]">
-            <SelectValue placeholder="Todas las sedes" />
-          </SelectTrigger>
-          <SelectContent className="max-w-[95vw]">
-            <SelectItem value="all">Todas las sedes</SelectItem>
-            {locations.map(location => (
-              <SelectItem key={location.id} value={location.id}>
-                {location.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <LocationFilter
+        value={filters.location_id}
+        locations={locations}
+        onChange={handleLocationChange}
+      />
 
-      {/* NIVEL JERÁRQUICO */}
-      <div className="space-y-2">
-        <Label htmlFor="level">Nivel Jerárquico</Label>
-        <Select
-          value={filters.hierarchyLevel !== undefined ? String(filters.hierarchyLevel) : 'all'}
-          onValueChange={handleLevelChange}
-        >
-          <SelectTrigger id="level" aria-label="Seleccionar nivel jerárquico" className="min-h-[44px] min-w-[44px]">
-            <SelectValue placeholder="Todos los niveles" />
-          </SelectTrigger>
-          <SelectContent className="max-w-[95vw]">
-            <SelectItem value="all">Todos los niveles</SelectItem>
-            <SelectItem value="0">Nivel 0 - Owner</SelectItem>
-            <SelectItem value="1">Nivel 1 - Admin</SelectItem>
-            <SelectItem value="2">Nivel 2 - Manager</SelectItem>
-            <SelectItem value="3">Nivel 3 - Team Lead</SelectItem>
-            <SelectItem value="4">Nivel 4 - Staff</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <HierarchyLevelFilter
+        value={filters.hierarchyLevel}
+        onChange={handleLevelChange}
+      />
 
-      {/* TIPO DE EMPLEADO */}
-      <div className="space-y-2">
-        <Label htmlFor="employee-type">Tipo de Empleado</Label>
-        <Select value={filters.employeeType || 'all'} onValueChange={handleEmployeeTypeChange}>
-          <SelectTrigger id="employee-type" aria-label="Seleccionar tipo de empleado" className="min-h-[44px] min-w-[44px]">
-            <SelectValue placeholder="Todos los tipos" />
-          </SelectTrigger>
-          <SelectContent className="max-w-[95vw]">
-            <SelectItem value="all">Todos los tipos</SelectItem>
-            <SelectItem value="service_provider">Proveedor de Servicio</SelectItem>
-            <SelectItem value="support_staff">Personal de Apoyo</SelectItem>
-            <SelectItem value="location_manager">Gerente de Sede</SelectItem>
-            <SelectItem value="team_lead">Líder de Equipo</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <EmployeeTypeFilter
+        value={filters.employeeType}
+        onChange={handleEmployeeTypeChange}
+      />
 
-      {/* DEPARTAMENTO */}
-      <div className="space-y-2">
-        <Label htmlFor="department">Departamento</Label>
-        <Select value={filters.departmentId || 'all'} onValueChange={handleDepartmentChange}>
-          <SelectTrigger id="department" aria-label="Seleccionar departamento" className="min-h-[44px] min-w-[44px]">
-            <SelectValue placeholder="Todos los departamentos" />
-          </SelectTrigger>
-          <SelectContent className="max-w-[95vw]">
-            <SelectItem value="all">Todos los departamentos</SelectItem>
-            <SelectItem value="sales">Ventas</SelectItem>
-            <SelectItem value="operations">Operaciones</SelectItem>
-            <SelectItem value="customer-service">Atención al Cliente</SelectItem>
-            <SelectItem value="technical">Técnico</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <DepartmentFilter
+        value={filters.departmentId}
+        onChange={handleDepartmentChange}
+      />
 
-      {/* RANGO DE OCUPACIÓN */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>Ocupación</Label>
-          <span className="text-sm text-muted-foreground">
-            {occupancyRange.min}% - {occupancyRange.max}%
-          </span>
-        </div>
-        <Slider
-          min={0}
-          max={100}
-          step={5}
-          value={[occupancyRange.min, occupancyRange.max]}
-          onValueChange={([min, max]) => setOccupancyRange({ min, max })}
-          className="w-full"
-          aria-label="Rango de ocupación"
-        />
-      </div>
+      <OccupancyRangeFilter
+        value={occupancyRange}
+        onChange={setOccupancyRange}
+      />
 
-      {/* RANGO DE RATING */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>Rating</Label>
-          <span className="text-sm text-muted-foreground">
-            {ratingRange.min.toFixed(1)} - {ratingRange.max.toFixed(1)} ⭐
-          </span>
-        </div>
-        <Slider
-          min={0}
-          max={5}
-          step={0.5}
-          value={[ratingRange.min, ratingRange.max]}
-          onValueChange={([min, max]) => setRatingRange({ min, max })}
-          className="w-full"
-          aria-label="Rango de rating"
-        />
-      </div>
+      <RatingRangeFilter
+        value={ratingRange}
+        onChange={setRatingRange}
+      />
 
       {/* INDICADOR DE FILTROS ACTIVOS */}
-      {hasActiveFilters && (
-        <div className="pt-4 border-t">
-          <div className="flex flex-wrap gap-2">
-            {filters.searchQuery && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
-                <span className="font-medium">Búsqueda:</span>
-                <span>{filters.searchQuery}</span>
-                <button onClick={() => handleSearchChange('')} aria-label="Quitar filtro de búsqueda" title="Quitar filtro de búsqueda">
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              </div>
-            )}
-            {filters.hierarchyLevel !== undefined && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
-                <span className="font-medium">Nivel:</span>
-                <span>{filters.hierarchyLevel}</span>
-                <button onClick={() => handleLevelChange('all')} aria-label="Quitar filtro de nivel" title="Quitar filtro de nivel">
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              </div>
-            )}
-            {filters.employeeType && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
-                <span className="font-medium">Tipo:</span>
-                <span>{filters.employeeType}</span>
-                <button onClick={() => handleEmployeeTypeChange('all')} aria-label="Quitar filtro de tipo" title="Quitar filtro de tipo">
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              </div>
-            )}
-            {filters.location_id && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
-                <span className="font-medium">Sede:</span>
-                <span>
-                  {locations.find(l => l.id === filters.location_id)?.name || filters.location_id}
-                </span>
-                <button onClick={() => handleLocationChange('all')} aria-label="Quitar filtro de sede" title="Quitar filtro de sede">
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ActiveFiltersIndicator
+        filters={filters}
+        locations={locations}
+        onRemoveSearch={() => handleSearchChange('')}
+        onRemoveLevel={() => handleLevelChange('all')}
+        onRemoveEmployeeType={() => handleEmployeeTypeChange('all')}
+        onRemoveLocation={() => handleLocationChange('all')}
+      />
     </div>
   )
 }

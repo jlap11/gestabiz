@@ -3,8 +3,21 @@
 // Genera reportes contables y financieros con exportación
 // ============================================================================
 
+// React hooks
 import { useCallback, useState } from 'react'
+
+// External libraries
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import * as XLSX from 'xlsx'
+
+// Internal utilities
+import { logger } from '@/lib/logger'
 import supabase from '@/lib/supabase'
+
+// Types
 import {
   ExportOptions,
   PayrollReport,
@@ -12,13 +25,9 @@ import {
   ReportFilters,
 } from '@/types/accounting.types'
 import { Transaction, TransactionCategory } from '@/types/types'
-import { format } from 'date-fns'
-import { logger } from '@/lib/logger'
-import { es } from 'date-fns/locale'
+
+// Hooks
 import { getCategoryColor } from './useChartData'
-import * as XLSX from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 
 // Extend jsPDF type for autoTable
 interface JPdfWithAutoTable extends jsPDF {

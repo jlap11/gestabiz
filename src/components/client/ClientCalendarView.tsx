@@ -158,7 +158,7 @@ export function ClientCalendarView({
               {d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
             </h5>
             <p className="text-sm text-muted-foreground">
-              {appts.length} {appts.length === 1 ? 'cita' : 'citas'}
+              {appts.length} {appts.length === 1 ? t('clientDashboard.calendar.appointmentSingular') : t('clientDashboard.calendar.appointmentPlural')}
             </p>
           </div>
           {onCreateAppointment && (
@@ -179,7 +179,7 @@ export function ClientCalendarView({
         <div role="list" aria-label={t('clientDashboard.calendar.appointmentsForDay')} className="space-y-2">
           {appts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm sm:text-base">No hay citas programadas para este día</p>
+              <p className="text-sm sm:text-base">{t('clientDashboard.calendar.noAppointmentsForDay')}</p>
             </div>
           ) : (
             appts.map(a => (
@@ -217,7 +217,7 @@ export function ClientCalendarView({
                       </div>
                       {a.employee?.full_name && (
                         <div className="text-xs text-muted-foreground mt-1">
-                          Con: {a.employee.full_name}
+                          {t('clientDashboard.calendar.with')} {a.employee.full_name}
                         </div>
                       )}
                     </div>
@@ -326,7 +326,7 @@ export function ClientCalendarView({
                     ))}
                     {dayAppts.length > 4 && (
                       <div className="text-xs text-muted-foreground text-center py-1">
-                        +{dayAppts.length - 4} más
+                        +{dayAppts.length - 4} {t('common.misc.more')}
                       </div>
                     )}
                   </div>
@@ -342,7 +342,7 @@ export function ClientCalendarView({
                         aria-label={t('clientDashboard.calendar.addAppointment')}
                       >
                         <Plus className="h-3 w-3 mr-1" aria-hidden="true" />
-                        <span className="hidden sm:inline">Agregar</span>
+                        <span className="hidden sm:inline">{t('clientDashboard.calendar.addAppointment')}</span>
                         <span className="sm:hidden">+</span>
                       </Button>
                     </div>
@@ -451,7 +451,7 @@ export function ClientCalendarView({
                     ))}
                     {appts.length > 2 && (
                       <div className="text-xs text-muted-foreground text-center">
-                        +{appts.length - 2}
+                        +{appts.length - 2} {t('common.misc.more')}
                       </div>
                     )}
                   </div>
@@ -478,7 +478,7 @@ export function ClientCalendarView({
       className="space-y-3 sm:space-y-4 max-w-full mx-auto px-2 sm:px-4"
     >
       <h2 id="calendar-main-title" className="sr-only">
-        Calendario de citas
+        {t('clientDashboard.calendar.mainTitle')}
       </h2>
       
       {/* Enhanced mobile-first header with better touch targets */}
@@ -510,7 +510,7 @@ export function ClientCalendarView({
               title={t('clientDashboard.calendar.today')}
             >
               <span className="hidden xs:inline">{t('clientDashboard.calendar.today')}</span>
-              <span className="xs:hidden">Hoy</span>
+              <span className="xs:hidden">{t('clientDashboard.calendar.todayShort')}</span>
             </Button>
             
             <Button
@@ -571,7 +571,7 @@ export function ClientCalendarView({
             title={t('clientDashboard.calendar.day')}
           >
             <span className="hidden sm:inline">{t('clientDashboard.calendar.day')}</span>
-            <span className="sm:hidden">Día</span>
+            <span className="sm:hidden">{t('clientDashboard.calendar.dayShort')}</span>
           </Button>
           <Button
             variant={view === 'week' ? 'default' : 'ghost'}
@@ -588,7 +588,7 @@ export function ClientCalendarView({
             title={t('clientDashboard.calendar.week')}
           >
             <span className="hidden sm:inline">{t('clientDashboard.calendar.week')}</span>
-            <span className="sm:hidden">Sem</span>
+            <span className="sm:hidden">{t('clientDashboard.calendar.weekShort')}</span>
           </Button>
           <Button
             variant={view === 'month' ? 'default' : 'ghost'}
@@ -605,7 +605,7 @@ export function ClientCalendarView({
             title={t('clientDashboard.calendar.month')}
           >
             <span className="hidden sm:inline">{t('clientDashboard.calendar.month')}</span>
-            <span className="sm:hidden">Mes</span>
+            <span className="sm:hidden">{t('clientDashboard.calendar.monthShort')}</span>
           </Button>
         </div>
       </div>

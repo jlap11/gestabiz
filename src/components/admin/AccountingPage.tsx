@@ -6,7 +6,7 @@
 import React, { Suspense, lazy, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Calculator, FileText, Settings } from 'lucide-react'
+import { Calculator, FileText, Settings, Receipt } from 'lucide-react'
 import { SuspenseFallback } from '@/components/ui/loading-spinner'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -22,6 +22,12 @@ const TaxConfiguration = lazy(() =>
 const EnhancedTransactionForm = lazy(() =>
   import('@/components/transactions/EnhancedTransactionForm').then(module => ({
     default: module.EnhancedTransactionForm,
+  }))
+)
+
+const ExpenseManager = lazy(() =>
+  import('@/components/dashboard/financial/ExpenseManager').then(module => ({
+    default: module.ExpenseManager,
   }))
 )
 
@@ -79,7 +85,7 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
           className="w-full"
         >
           <TabsList 
-            className="grid w-full grid-cols-2 h-auto"
+            className="grid w-full grid-cols-3 h-auto"
             role="tablist"
             aria-label="Secciones de contabilidad"
           >
@@ -104,6 +110,17 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
             >
               <FileText className="h-4 w-4" aria-hidden="true" />
               <span className="truncate">{t('accounting.tabs.transactions')}</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="expenses" 
+              className="flex items-center gap-2 min-h-[44px] px-3 py-2 text-sm sm:text-base focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="tab"
+              aria-selected={activeTab === 'expenses'}
+              aria-controls="expenses-panel"
+              id="expenses-tab"
+            >
+              <Receipt className="h-4 w-4" aria-hidden="true" />
+              <span className="truncate">Gastos</span>
             </TabsTrigger>
           </TabsList>
 
@@ -188,6 +205,20 @@ export function AccountingPage({ businessId, onUpdate }: Readonly<AccountingPage
                 </Suspense>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab: Gastos Recurrentes */}
+          <TabsContent 
+            value="expenses" 
+            className="space-y-4 mt-4 sm:mt-6"
+            role="tabpanel"
+            aria-labelledby="expenses-tab"
+            id="expenses-panel"
+            tabIndex={0}
+          >
+            <Suspense fallback={<SuspenseFallback text="Gestión de Gastos" />}>
+              <ExpenseManager businessId={businessId} />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </section>

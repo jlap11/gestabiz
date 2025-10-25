@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Filter, List, Network, Users } from 'lucide-react'
+import { Filter } from 'lucide-react'
 import { useBusinessHierarchy } from '@/hooks/useBusinessHierarchy'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -16,6 +16,8 @@ import { FiltersPanel } from './FiltersPanel'
 import { EmployeeListView } from './EmployeeListView'
 import { HierarchyMapView } from './HierarchyMapView'
 import { EmployeeProfileModal } from './EmployeeProfileModal'
+import { EmployeeHeader } from './EmployeeHeader'
+import { EmployeeStatsCards } from './EmployeeStatsCards'
 import type { EmployeeHierarchy } from '@/types'
 
 // =====================================================
@@ -64,29 +66,6 @@ export function EmployeeManagementHierarchy({
   }, [preferredLocationId, filters.location_id, updateFilters])
 
   // =====================================================
-  // ESTADÍSTICAS HEADER
-  // =====================================================
-
-  const stats = {
-    total: employees.length,
-    byLevel: {
-      0: employees.filter(e => e.hierarchy_level === 0).length, // Owner
-      1: employees.filter(e => e.hierarchy_level === 1).length, // Admin
-      2: employees.filter(e => e.hierarchy_level === 2).length, // Manager
-      3: employees.filter(e => e.hierarchy_level === 3).length, // Lead
-      4: employees.filter(e => e.hierarchy_level === 4).length, // Staff
-    },
-    avgOccupancy:
-      employees.length > 0
-        ? employees.reduce((acc, e) => acc + (e.occupancy_rate || 0), 0) / employees.length
-        : 0,
-    avgRating:
-      employees.length > 0
-        ? employees.reduce((acc, e) => acc + (e.average_rating || 0), 0) / employees.length
-        : 0,
-  }
-
-  // =====================================================
   // HANDLERS
   // =====================================================
 
@@ -94,6 +73,10 @@ export function EmployeeManagementHierarchy({
     setSelectedEmployee(employee)
     setIsProfileModalOpen(true)
     onEmployeeSelect?.(employee)
+  }
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode)
   }
 
   const toggleFilters = () => {
@@ -150,140 +133,14 @@ export function EmployeeManagementHierarchy({
         {t('employees.management.title')}
       </h1>
 
-      {/* HEADER CON ESTADÍSTICAS */}
-      <header className="flex flex-col gap-3 sm:gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight" id="page-title">
-              {t('employees.management.title')}
-            </h2>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base" aria-describedby="page-title">
-              {t('employees.management.subtitle')}
-            </p>
-          </div>
+      {/* HEADER */}
+      <EmployeeHeader 
+        viewMode={viewMode} 
+        onViewModeChange={handleViewModeChange} 
+      />
 
-          {/* VIEW MODE TOGGLE */}
-          <div 
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2" 
-            role="toolbar" 
-            aria-label={t('employees.management.viewModeToolbar')}
-          >
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="gap-2 min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              aria-label={t('employees.management.listView')}
-              title={t('employees.management.listView')}
-              aria-pressed={viewMode === 'list'}
-            >
-              <List className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden sm:inline">{t('employees.management.listView')}</span>
-              <span className="sm:hidden">Lista</span>
-            </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('map')}
-              className="gap-2 min-h-[44px] min-w-[44px] focus:ring-2 focus:ring-primary focus:ring-offset-2"
-              aria-label={t('employees.management.mapView')}
-              title={t('employees.management.mapView')}
-              aria-pressed={viewMode === 'map'}
-            >
-              <Network className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden sm:inline">{t('employees.management.mapView')}</span>
-              <span className="sm:hidden">Mapa</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* STATS CARDS - Responsive Grid */}
-        <section 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" 
-          role="region" 
-          aria-labelledby="stats-section-title"
-        >
-          <h3 id="stats-section-title" className="sr-only">
-            Estadísticas de empleados
-          </h3>
-
-          <Card className="p-3 sm:p-4 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-                  {t('employees.management.totalEmployees')}
-                </p>
-                <p className="text-xl sm:text-2xl font-bold mt-1" aria-label={`${stats.total} empleados en total`}>
-                  {stats.total}
-                </p>
-              </div>
-              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary opacity-20" aria-hidden="true" />
-            </div>
-          </Card>
-
-          <Card className="p-3 sm:p-4 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-2 font-medium">
-                {t('employees.management.byLevel')}
-              </p>
-              <div className="grid grid-cols-5 gap-0.5 sm:gap-1 text-xs" role="group" aria-label="Empleados por nivel jerárquico">
-                <div className="text-center">
-                  <div className="font-bold text-base sm:text-lg" aria-label={`${stats.byLevel[0]} propietarios`}>
-                    {stats.byLevel[0]}
-                  </div>
-                  <div className="text-muted-foreground text-[10px] sm:text-xs">Own</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-base sm:text-lg" aria-label={`${stats.byLevel[1]} administradores`}>
-                    {stats.byLevel[1]}
-                  </div>
-                  <div className="text-muted-foreground text-[10px] sm:text-xs">Adm</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-base sm:text-lg" aria-label={`${stats.byLevel[2]} gerentes`}>
-                    {stats.byLevel[2]}
-                  </div>
-                  <div className="text-muted-foreground text-[10px] sm:text-xs">Mgr</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-base sm:text-lg" aria-label={`${stats.byLevel[3]} líderes`}>
-                    {stats.byLevel[3]}
-                  </div>
-                  <div className="text-muted-foreground text-[10px] sm:text-xs">Lead</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-base sm:text-lg" aria-label={`${stats.byLevel[4]} personal`}>
-                    {stats.byLevel[4]}
-                  </div>
-                  <div className="text-muted-foreground text-[10px] sm:text-xs">Staff</div>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-3 sm:p-4 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-                {t('employees.management.avgOccupancy')}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold mt-1" aria-label={`${stats.avgOccupancy.toFixed(1)} por ciento de ocupación promedio`}>
-                {stats.avgOccupancy.toFixed(1)}%
-              </p>
-            </div>
-          </Card>
-
-          <Card className="p-3 sm:p-4 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-                {t('employees.management.avgRating')}
-              </p>
-              <p className="text-xl sm:text-2xl font-bold mt-1" aria-label={`${stats.avgRating.toFixed(1)} estrellas de calificación promedio`}>
-                {stats.avgRating.toFixed(1)} ⭐
-              </p>
-            </div>
-          </Card>
-        </section>
-      </header>
+      {/* STATS CARDS */}
+      <EmployeeStatsCards employees={employees} />
 
       {/* FILTERS BAR */}
       <section 

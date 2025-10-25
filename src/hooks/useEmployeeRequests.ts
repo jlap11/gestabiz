@@ -201,7 +201,6 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         await fetchRequests()
         return true
       } catch (err) {
-        console.error('Error creating employee request:', err) // eslint-disable-line no-console
         logger.error('Failed to create employee request', err as Error, {
           component: 'useEmployeeRequests',
           operation: 'createRequest',
@@ -242,7 +241,6 @@ export function useEmployeeRequests(options: UseEmployeeRequestsOptions = {}) {
         await fetchRequests()
         return true
       } catch (err) {
-        console.error('Error approving request:', err) // eslint-disable-line no-console
         logger.error('Failed to approve employee request', err as Error, {
           component: 'useEmployeeRequests',
           operation: 'approveRequest',
