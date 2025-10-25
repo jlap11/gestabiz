@@ -237,3 +237,4 @@ https://gestabiz.com/app/appointments
 
 **Conclusión**: Arquitectura Hybrid WebView fue la decisión correcta ✅
 
+

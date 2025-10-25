@@ -260,3 +260,4 @@ npm audit
 - Verificar que todas las variables de entorno estén en EAS Secrets
 - Incrementar versionCode/buildNumber en cada build
 
+

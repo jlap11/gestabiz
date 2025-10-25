@@ -159,3 +159,4 @@ export async function setBadgeCount(count: number): Promise<void> {
   await Notifications.setBadgeCountAsync(count)
 }
 
+

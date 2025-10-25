@@ -72,3 +72,4 @@ export default {
   EFFECTIVE_WEB_URL,
 }
 
+

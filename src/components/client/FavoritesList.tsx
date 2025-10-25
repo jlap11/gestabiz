@@ -99,10 +99,10 @@ export default function FavoritesList() {
         <div className="space-y-3">
           {/* Logo y nombre */}
           <div className="flex items-start gap-3">
-            {business.logo_url ? (
+              {business.logo_url ? (
               <img
                 src={business.logo_url}
-                alt={`${business.name} logo`}
+                alt={t('favoritesList.logoAlt', { name: business.name })}
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border-2 border-primary/50 flex-shrink-0"
               />
             ) : (

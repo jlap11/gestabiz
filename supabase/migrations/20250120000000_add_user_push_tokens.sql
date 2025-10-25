@@ -65,3 +65,4 @@ COMMENT ON COLUMN public.user_push_tokens.token IS 'Token de Expo Push Notificat
 COMMENT ON COLUMN public.user_push_tokens.platform IS 'Plataforma del dispositivo: ios, android, web';
 COMMENT ON COLUMN public.user_push_tokens.device_name IS 'Nombre del dispositivo para identificación';
 
+

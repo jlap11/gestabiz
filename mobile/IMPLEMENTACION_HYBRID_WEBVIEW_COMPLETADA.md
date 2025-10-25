@@ -613,3 +613,4 @@ const validations = [
 
 **Próximo paso**: Testing en dispositivos reales (iOS + Android)
 
+

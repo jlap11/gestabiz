@@ -280,3 +280,4 @@ npm run test:e2e:android
 4. ⏳ Beta testing con usuarios reales
 5. ⏳ Release a TestFlight/Play Store Beta
 
+

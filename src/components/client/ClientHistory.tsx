@@ -27,6 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -191,8 +192,10 @@ export const ClientHistory = React.memo(function ClientHistory({ userId }: Clien
       if (error) throw error
       setAppointments(data || [])
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching appointments:', error)
+      await logger.error('Error fetching appointments', error, { 
+        component: 'ClientHistory',
+        userId 
+      })
     } finally {
       setLoading(false)
     }
