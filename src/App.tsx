@@ -84,13 +84,19 @@ function AuthenticatedApp() {
 }
 
 function AppRoutes() {
+  const navigate = useNavigate()
+
+  const handleNavigateToAuth = () => {
+    navigate('/login')
+  }
+
   return (
     <Routes>
       <Route
         path="/"
         element={
           <Suspense fallback={<AppLoader />}>
-            <LandingPage />
+            <LandingPage onNavigateToAuth={handleNavigateToAuth} />
           </Suspense>
         }
       />

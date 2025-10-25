@@ -120,7 +120,7 @@ function DropdownPortal({
     <div
       ref={portalRef}
       className="dropdown-portal"
-      style={{ position: 'absolute', top, left, minWidth: estimatedWidth, zIndex: 9999 }}
+      style={{ position: 'absolute', top, left, minWidth: estimatedWidth, maxWidth: '95vw', zIndex: 9999 }}
     >
       {children}
     </div>
@@ -320,7 +320,9 @@ const AppointmentModal = React.memo<AppointmentModalProps>(
               <button
                 onClick={handleComplete}
                 disabled={isProcessing}
-                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px]"
+                aria-label={t('admin.appointmentCalendar.markCompleted')}
+                title={t('admin.appointmentCalendar.markCompleted')}
               >
                 <Check className="h-4 w-4 inline mr-2" />
                 {t('admin.appointmentCalendar.markCompleted')}
@@ -328,7 +330,9 @@ const AppointmentModal = React.memo<AppointmentModalProps>(
               <button
                 onClick={handleNoShow}
                 disabled={isProcessing}
-                className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] min-w-[44px]"
+                aria-label={t('admin.appointmentCalendar.markNoShow')}
+                title={t('admin.appointmentCalendar.markNoShow')}
               >
                 <AlertCircle className="h-4 w-4 inline mr-2" />
                 {t('admin.appointmentCalendar.markNoShow')}
@@ -1205,9 +1209,11 @@ export const AppointmentsCalendar: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-            className="p-2 hover:bg-muted rounded-md"
+            className="p-2 hover:bg-muted rounded-md min-h-[44px] min-w-[44px]"
+            aria-label={t('calendar.previous')}
+            title={t('calendar.previous')}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
           </button>
 
           <div className="text-center">
@@ -1221,9 +1227,11 @@ export const AppointmentsCalendar: React.FC = () => {
 
           <button
             onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-            className="p-2 hover:bg-muted rounded-md"
+            className="p-2 hover:bg-muted rounded-md min-h-[44px] min-w-[44px]"
+            aria-label={t('calendar.next')}
+            title={t('calendar.next')}
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-5 w-5" aria-hidden="true" />
           </button>
 
           <button
@@ -1272,6 +1280,7 @@ export const AppointmentsCalendar: React.FC = () => {
             </button>
             <ChevronRight
               className={`h-5 w-5 text-muted-foreground transition-transform ${showFilters ? 'rotate-90' : ''}`}
+              aria-hidden="true"
             />
           </div>
         </button>
@@ -1287,11 +1296,16 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={statusBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, status: !prev.status }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] min-h-[44px] flex items-center justify-between"
+                  aria-label={t('admin.appointmentCalendar.statusLabel')}
+                  title={t('admin.appointmentCalendar.statusLabel')}
+                  aria-haspopup="menu"
+                  aria-expanded={openDropdowns.status}
                 >
                   <span className="truncate">{t('admin.appointmentCalendar.selectedCount', { count: filterStatus.length })}</span>
                   <ChevronRight
                     className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.status ? 'rotate-90' : ''}`}
+                    aria-hidden="true"
                   />
                 </button>
                 <DropdownPortal
@@ -1299,13 +1313,15 @@ export const AppointmentsCalendar: React.FC = () => {
                   isOpen={openDropdowns.status}
                   onClose={() => setOpenDropdowns(prev => ({ ...prev, status: false }))}
                 >
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto" style={{ maxWidth: '95vw' }} role="menu" aria-label={t('admin.appointmentCalendar.statusLabel')}>
                     <div className="px-2 py-2 border-b border-border">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
+                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded min-h-[44px]"
                         onClick={() =>
                           setFilterStatus(['pending', 'confirmed', 'cancelled', 'completed'])
                         }
+                        aria-label={t('admin.appointmentCalendar.selectAll')}
+                        title={t('admin.appointmentCalendar.selectAll')}
                       >
                         {t('admin.appointmentCalendar.selectAll')}
                       </button>
@@ -1347,11 +1363,16 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={locationBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, location: !prev.location }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] min-h-[44px] flex items-center justify-between"
+                  aria-label={t('admin.appointmentCalendar.locationLabel')}
+                  title={t('admin.appointmentCalendar.locationLabel')}
+                  aria-haspopup="menu"
+                  aria-expanded={openDropdowns.location}
                 >
                   <span className="truncate">{t('admin.appointmentCalendar.selectedCount', { count: filterLocation.length })}</span>
                   <ChevronRight
                     className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.location ? 'rotate-90' : ''}`}
+                    aria-hidden="true"
                   />
                 </button>
                 <DropdownPortal
@@ -1359,11 +1380,13 @@ export const AppointmentsCalendar: React.FC = () => {
                   isOpen={openDropdowns.location}
                   onClose={() => setOpenDropdowns(prev => ({ ...prev, location: false }))}
                 >
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto" style={{ maxWidth: '95vw' }} role="menu" aria-label={t('admin.appointmentCalendar.locationLabel')}>
                     <div className="px-2 py-2 border-b border-border">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
+                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded min-h-[44px]"
                         onClick={() => setFilterLocation(locations.map(l => l.id))}
+                        aria-label={t('admin.appointmentCalendar.selectAll')}
+                        title={t('admin.appointmentCalendar.selectAll')}
                       >
                         {t('admin.appointmentCalendar.selectAll')}
                       </button>
@@ -1408,11 +1431,16 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={serviceBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, service: !prev.service }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] min-h-[44px] flex items-center justify-between"
+                  aria-label={t('admin.appointmentCalendar.serviceLabel')}
+                  title={t('admin.appointmentCalendar.serviceLabel')}
+                  aria-haspopup="menu"
+                  aria-expanded={openDropdowns.service}
                 >
                   <span className="truncate">{t('admin.appointmentCalendar.selectedCount', { count: filterService.length })}</span>
                   <ChevronRight
                     className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.service ? 'rotate-90' : ''}`}
+                    aria-hidden="true"
                   />
                 </button>
                 <DropdownPortal
@@ -1420,11 +1448,13 @@ export const AppointmentsCalendar: React.FC = () => {
                   isOpen={openDropdowns.service}
                   onClose={() => setOpenDropdowns(prev => ({ ...prev, service: false }))}
                 >
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto" style={{ maxWidth: '95vw' }} role="menu" aria-label={t('admin.appointmentCalendar.serviceLabel')}>
                     <div className="px-2 py-2 border-b border-border">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
+                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded min-h-[44px]"
                         onClick={() => setFilterService(services.map(s => s.name))}
+                        aria-label={t('admin.appointmentCalendar.selectAll')}
+                        title={t('admin.appointmentCalendar.selectAll')}
                       >
                         {t('admin.appointmentCalendar.selectAll')}
                       </button>
@@ -1463,11 +1493,16 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={employeeBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, employee: !prev.employee }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] min-h-[44px] flex items-center justify-between"
+                  aria-label={t('admin.appointmentCalendar.employeeLabel')}
+                  title={t('admin.appointmentCalendar.employeeLabel')}
+                  aria-haspopup="menu"
+                  aria-expanded={openDropdowns.employee}
                 >
                   <span className="truncate">{t('admin.appointmentCalendar.selectedCount', { count: filterEmployee.length })}</span>
                   <ChevronRight
                     className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.employee ? 'rotate-90' : ''}`}
+                    aria-hidden="true"
                   />
                 </button>
                 <DropdownPortal
@@ -1475,11 +1510,13 @@ export const AppointmentsCalendar: React.FC = () => {
                   isOpen={openDropdowns.employee}
                   onClose={() => setOpenDropdowns(prev => ({ ...prev, employee: false }))}
                 >
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto" style={{ maxWidth: '95vw' }} role="menu" aria-label={t('admin.appointmentCalendar.employeeLabel')}>
                     <div className="px-2 py-2 border-b border-border">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
+                        className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded min-h-[44px]"
                         onClick={() => setFilterEmployee(employees.map(e => e.user_id))}
+                        aria-label={t('admin.appointmentCalendar.selectAll')}
+                        title={t('admin.appointmentCalendar.selectAll')}
                       >
                         {t('admin.appointmentCalendar.selectAll')}
                       </button>
@@ -1520,16 +1557,19 @@ export const AppointmentsCalendar: React.FC = () => {
         <div className="bg-muted/30 border-b border-border px-4 py-2 flex items-center justify-end gap-2">
           <button
             onClick={() => setShowServices(!showServices)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors duration-200 font-medium"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors duration-200 font-medium min-h-[44px] min-w-[44px]"
+            aria-pressed={showServices}
+            aria-label={showServices ? t('admin.appointmentCalendar.hideServices') : t('admin.appointmentCalendar.showServices')}
+            title={showServices ? t('admin.appointmentCalendar.hideServices') : t('admin.appointmentCalendar.showServices')}
           >
             {showServices ? (
               <>
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
                 {t('admin.appointmentCalendar.hideServices')}
               </>
             ) : (
               <>
-                <Eye className="h-4 w-4" />
+                <Eye className="h-4 w-4" aria-hidden="true" />
                 {t('admin.appointmentCalendar.showServices')}
               </>
             )}
@@ -1681,7 +1721,7 @@ export const AppointmentsCalendar: React.FC = () => {
           {activeAppointments.length > 0 && (
             <div className="bg-card border border-border rounded-lg p-4">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-500" />
+                <Clock className="h-5 w-5 text-blue-500" aria-hidden="true" />
                 {t('admin.appointmentCalendar.inProgressTitle', { count: activeAppointments.length })}
               </h3>
               <div className="space-y-2">
@@ -1716,7 +1756,7 @@ export const AppointmentsCalendar: React.FC = () => {
           {overdueAppointments.length > 0 && (
             <div className="bg-card border border-border rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-orange-500" />
+                <AlertCircle className="h-5 w-5 text-orange-500" aria-hidden="true" />
                 {t('admin.appointmentCalendar.overdueTitle', { count: overdueAppointments.length })}
               </h3>
               <div className="space-y-2">
@@ -1737,13 +1777,17 @@ export const AppointmentsCalendar: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleCompleteAppointment(apt.id, 0)}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md"
+                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md min-h-[44px] min-w-[44px]"
+                          aria-label={t('admin.appointmentCalendar.completeButton')}
+                          title={t('admin.appointmentCalendar.completeButton')}
                         >
                           {t('admin.appointmentCalendar.completeButton')}
                         </button>
                         <button
                           onClick={() => handleNoShow(apt.id)}
-                          className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md"
+                          className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md min-h-[44px] min-w-[44px]"
+                          aria-label={t('admin.appointmentCalendar.noShowButton')}
+                          title={t('admin.appointmentCalendar.noShowButton')}
                         >
                           {t('admin.appointmentCalendar.noShowButton')}
                         </button>

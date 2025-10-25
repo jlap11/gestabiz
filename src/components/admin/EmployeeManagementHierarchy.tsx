@@ -151,27 +151,34 @@ export function EmployeeManagementHierarchy({
           </div>
 
           {/* VIEW MODE TOGGLE */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="gap-2 min-h-[44px]"
-            >
-              <List className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('employees.management.listView')}</span>
-              <span className="sm:hidden">Lista</span>
-            </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('map')}
-              className="gap-2 min-h-[44px]"
-            >
-              <Network className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('employees.management.mapView')}</span>
-              <span className="sm:hidden">Mapa</span>
-            </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2" role="toolbar" aria-label={t('employees.management.viewModeToolbar')}>
+          
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+              className="gap-2 min-h-[44px] min-w-[44px]"
+              aria-label={t('employees.management.listView')}
+              title={t('employees.management.listView')}
+              aria-pressed={viewMode === 'list'}
+          >
+              <List className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t('employees.management.listView')}</span>
+            <span className="sm:hidden">Lista</span>
+          </Button>
+          <Button
+            variant={viewMode === 'map' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('map')}
+              className="gap-2 min-h-[44px] min-w-[44px]"
+              aria-label={t('employees.management.mapView')}
+              title={t('employees.management.mapView')}
+              aria-pressed={viewMode === 'map'}
+          >
+              <Network className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{t('employees.management.mapView')}</span>
+            <span className="sm:hidden">Mapa</span>
+          </Button>
           </div>
         </div>
 
@@ -246,9 +253,12 @@ export function EmployeeManagementHierarchy({
             variant={showFilters ? 'default' : 'outline'}
             size="sm"
             onClick={toggleFilters}
-            className="gap-2"
+            className="gap-2 min-h-[44px] min-w-[44px]"
+            aria-label={t('employees.management.filters')}
+            title={t('employees.management.filters')}
+            aria-expanded={showFilters}
           >
-            <Filter className="h-4 w-4" />
+            <Filter className="h-4 w-4" aria-hidden="true" />
             {t('employees.management.filters')}
             {(filters.searchQuery ||
               filters.hierarchyLevel !== undefined ||
@@ -271,15 +281,15 @@ export function EmployeeManagementHierarchy({
             filters.hierarchyLevel !== undefined ||
             filters.employeeType ||
             filters.departmentId) && (
-            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-              {t('employees.management.clearFilters')}
-            </Button>
-          )}
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="min-h-[44px] min-w-[44px]" aria-label={t('employees.management.clearFilters')} title={t('employees.management.clearFilters')}>
+               {t('employees.management.clearFilters')}
+             </Button>
+           )}
         </div>
 
-        <div className="text-sm text-muted-foreground">
-          {employees.length} {t('employees.management.employeesShown')}
-        </div>
+        <div className="text-sm text-muted-foreground" aria-live="polite">
+           {employees.length} {t('employees.management.employeesShown')}
+         </div>
       </div>
 
       {/* FILTERS PANEL (Collapsible) */}
@@ -325,3 +335,4 @@ export function EmployeeManagementHierarchy({
 }
 
 export default EmployeeManagementHierarchy
+

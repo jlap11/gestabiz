@@ -246,7 +246,7 @@ export function SimpleChatLayout({
                     className="flex-1 px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[44px]"
                     autoComplete="off"
                   />
-                  <Button type="submit" className="px-6 min-h-[44px] h-11">
+                  <Button type="submit" className="px-6 min-h-[44px] h-11" aria-label={t('chat.send')} title={t('chat.send')}>
                     {t('chat.send')}
                   </Button>
                 </form>
@@ -276,6 +276,7 @@ function ChatHeader({
   onTogglePin,
   onToggleMute,
 }: ChatHeaderProps) {
+  const { t } = useLanguage()
   const otherUserId = activeConversation.other_user?.id
   const activeBusiness = useEmployeeActiveBusiness(otherUserId)
 
@@ -295,13 +296,13 @@ function ChatHeader({
   return (
     <div className="border-b border-border bg-card p-3 sm:p-4 pt-[env(safe-area-inset-top)] flex items-center gap-3 justify-between">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBackToList} className="shrink-0 h-11 w-11 sm:h-9 sm:w-9" aria-label="Volver">
-          <ArrowLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" onClick={onBackToList} className="shrink-0 h-11 w-11 sm:h-9 sm:w-9" aria-label={t('chat.backToList')}>
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage
             src={activeConversation.other_user?.avatar_url || undefined}
-            alt={activeConversation.other_user?.full_name || 'Usuario'}
+            alt={activeConversation.other_user?.full_name || t('chat.userAlt')}
           />
           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
             {getInitials(activeConversation.other_user?.full_name)}
@@ -309,7 +310,7 @@ function ChatHeader({
         </Avatar>
         <div className="min-w-0">
           <div className="font-semibold truncate">
-            {activeConversation.other_user?.full_name || activeConversation.title || 'Chat'}
+            {activeConversation.other_user?.full_name || activeConversation.title || t('chat.fallback')}
           </div>
           {activeBusiness.status === 'active' && activeBusiness.business_name ? (
             <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
@@ -318,21 +319,21 @@ function ChatHeader({
             </div>
           ) : activeBusiness.status === 'off-schedule' && activeBusiness.business_name ? (
             <div className="text-sm text-orange-600 dark:text-orange-400 truncate flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> Fuera de horario laboral
+              <Clock className="w-3.5 h-3.5" /> {t('chat.outOfHoursText')}
             </div>
           ) : activeBusiness.status === 'no-schedule' && activeBusiness.business_name ? (
             <div className="text-sm text-muted-foreground truncate flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> {activeBusiness.business_name} (sin horario)
+              <Clock className="w-3.5 h-3.5" /> {activeBusiness.business_name} {t('chat.noScheduleSuffix')}
             </div>
           ) : null}
         </div>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" className="h-10 sm:h-8" onClick={() => onTogglePin(!isPinned)}>
-          {isPinned ? 'Desfijar' : 'Fijar'}
+          {isPinned ? t('chat.unpin') : t('chat.pin')}
         </Button>
         <Button variant="ghost" size="sm" className="h-10 sm:h-8" onClick={() => onToggleMute(!isMuted)}>
-          {isMuted ? 'Quitar silencio' : 'Silenciar'}
+          {isMuted ? t('chat.unmute') : t('chat.mute')}
         </Button>
       </div>
     </div>

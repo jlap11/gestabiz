@@ -142,16 +142,14 @@ export function ChatWindow({
     }
   }
 
-  // Estado vacío
+  // Empty state
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center bg-muted/20">
         <div className="text-center">
           <div className="text-6xl mb-4">💬</div>
-          <h3 className="text-lg font-semibold mb-2">Selecciona una conversación</h3>
-          <p className="text-muted-foreground">
-            Elige una conversación de la lista para empezar a chatear
-          </p>
+          <h3 className="text-lg font-semibold mb-2">{t('chat.selectConversation.title')}</h3>
+          <p className="text-muted-foreground">{t('chat.selectConversation.subtitle')}</p>
         </div>
       </div>
     )
@@ -210,7 +208,7 @@ export function ChatWindow({
             variant="ghost"
             size="icon"
             disabled
-            title="Llamada (próximamente)"
+            title={t('chat.callComingSoon')}
             className="hidden sm:flex h-9 w-9"
           >
             <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -219,7 +217,7 @@ export function ChatWindow({
             variant="ghost"
             size="icon"
             disabled
-            title="Videollamada (próximamente)"
+            title={t('chat.videoComingSoon')}
             className="hidden sm:flex h-9 w-9"
           >
             <Video className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -236,8 +234,8 @@ export function ChatWindow({
                 setSearchQuery('')
               }
             }}
-            title="Buscar en conversación"
-            aria-label={isSearchOpen ? 'Cerrar búsqueda' : 'Buscar en mensajes'}
+            title={isSearchOpen ? t('chat.search.close') : t('chat.search.open')}
+            aria-label={isSearchOpen ? t('chat.search.close') : t('chat.search.open')}
             aria-expanded={isSearchOpen}
           >
             <SearchIcon className="h-5 w-5" aria-hidden="true" />
@@ -282,7 +280,7 @@ export function ChatWindow({
       {isSearchOpen && (
         <div className="border-b bg-muted/30 px-3 py-2 sm:px-4">
           <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
             <input
               type="text"
               placeholder="Buscar mensajes..."
@@ -297,7 +295,7 @@ export function ChatWindow({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-8 sm:w-8"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-9 sm:w-9"
                 onClick={() => setSearchQuery('')}
                 aria-label="Limpiar búsqueda"
               >
@@ -410,4 +408,5 @@ function getInputPlaceholder(
   }
   return 'Escribe un mensaje...'
 }
+
 

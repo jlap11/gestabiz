@@ -172,46 +172,43 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative flex-1" role="search" aria-label={t('admin.clientManagement.search_placeholder')}>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t('admin.clientManagement.search_placeholder')}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="pl-10"
+            role="searchbox"
+            aria-label={t('admin.clientManagement.search_placeholder')}
+            title={t('admin.clientManagement.search_placeholder')}
           />
         </div>
         <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px] min-h-[44px]" aria-label={t('admin.clientManagement.filter_by_status')} title={t('admin.clientManagement.filter_by_status')}>
             <SelectValue placeholder={t('admin.clientManagement.filter_by_status')} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-w-[95vw]">
             <SelectItem value="all">{t('admin.clientManagement.all_statuses')}</SelectItem>
-            <SelectItem value="active">
-              {t('admin.clientManagement.status.active_plural')}
-            </SelectItem>
-            <SelectItem value="inactive">
-              {t('admin.clientManagement.status.inactive_plural')}
-            </SelectItem>
-            <SelectItem value="blocked">
-              {t('admin.clientManagement.status.blocked_plural')}
-            </SelectItem>
+            <SelectItem value="active">{t('admin.clientManagement.status.active_plural')}</SelectItem>
+            <SelectItem value="inactive">{t('admin.clientManagement.status.inactive_plural')}</SelectItem>
+            <SelectItem value="blocked">{t('admin.clientManagement.status.blocked_plural')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">
+          <TabsTrigger value="all" className="min-h-[44px] min-w-[44px]" aria-label={t('admin.clientManagement.tabs.all')} title={t('admin.clientManagement.tabs.all')}>
             {t('admin.clientManagement.tabs.all')} ({filteredClients.length})
           </TabsTrigger>
-          <TabsTrigger value="recurring">
+          <TabsTrigger value="recurring" className="min-h-[44px] min-w-[44px]" aria-label={t('admin.clientManagement.tabs.recurring')} title={t('admin.clientManagement.tabs.recurring')}>
             {t('admin.clientManagement.tabs.recurring')} ({stats.recurring})
           </TabsTrigger>
-          <TabsTrigger value="at_risk">
+          <TabsTrigger value="at_risk" className="min-h-[44px] min-w-[44px]" aria-label={t('admin.clientManagement.tabs.at_risk')} title={t('admin.clientManagement.tabs.at_risk')}>
             {t('admin.clientManagement.tabs.at_risk')} ({stats.atRisk})
           </TabsTrigger>
-          <TabsTrigger value="lost">
+          <TabsTrigger value="lost" className="min-h-[44px] min-w-[44px]" aria-label={t('admin.clientManagement.tabs.lost')} title={t('admin.clientManagement.tabs.lost')}>
             {t('admin.clientManagement.tabs.lost')} ({stats.lost})
           </TabsTrigger>
         </TabsList>
@@ -219,7 +216,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
           {filteredClients.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" aria-hidden="true" />
                 <h3 className="text-lg font-medium mb-2">
                   {t('admin.clientManagement.empty.title')}
                 </h3>
@@ -260,19 +257,19 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
                       <div className="space-y-2">
                         {client.email && (
                           <div className="flex items-center gap-2 text-sm">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <Mail className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                             <span>{client.email}</span>
                           </div>
                         )}
                         {client.phone && (
                           <div className="flex items-center gap-2 text-sm">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <Phone className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                             <span>{client.phone}</span>
                           </div>
                         )}
                         {client.whatsapp && (
                           <div className="flex items-center gap-2 text-sm">
-                            <MessageSquare className="h-4 w-4 text-green-500" />
+                            <MessageSquare className="h-4 w-4 text-green-500" aria-hidden="true" />
                             <span>{client.whatsapp}</span>
                           </div>
                         )}
@@ -297,7 +294,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
                       </div>
                       <div className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-4 w-4" aria-hidden="true" />
                           <span>
                             {t('admin.clientManagement.last_appointment_prefix')}:{' '}
                             {client.last_appointment
@@ -310,8 +307,8 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
                         </div>
                       </div>
                       <div className="flex gap-2 pt-3 border-t">
-                        <Button size="sm" className="flex-1">
-                          <Calendar className="h-4 w-4 mr-1" />
+                        <Button size="sm" className="flex-1 min-h-[44px] min-w-[44px]" aria-label={`${t('admin.clientManagement.actions.schedule')} ${client.name}`} title={`${t('admin.clientManagement.actions.schedule')} ${client.name}`}>
+                          <Calendar className="h-4 w-4 mr-1" aria-hidden="true" />
                           {t('admin.clientManagement.actions.schedule')}
                         </Button>
                         {analytics.days_since_last_appointment > 30 && client.whatsapp && (
@@ -319,9 +316,11 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
                             size="sm"
                             variant="outline"
                             onClick={() => handleSendFollowUp(client)}
-                            className="flex-1"
+                            className="flex-1 min-h-[44px] min-w-[44px]"
+                            aria-label={`${t('admin.clientManagement.actions.contact')} ${client.name}`}
+                            title={`${t('admin.clientManagement.actions.contact')} ${client.name}`}
                           >
-                            <MessageSquare className="h-4 w-4 mr-1" />
+                            <MessageSquare className="h-4 w-4 mr-1" aria-hidden="true" />
                             {t('admin.clientManagement.actions.contact')}
                           </Button>
                         )}
@@ -330,7 +329,7 @@ export default function ClientManagement(props: Readonly<ClientManagementProps>)
                         <div
                           className={`text-xs p-2 rounded-md ${analytics.days_since_last_appointment > 120 ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}
                         >
-                          <AlertCircle className="h-3 w-3 inline mr-1" />
+                          <AlertCircle className="h-3 w-3 inline mr-1" aria-hidden="true" />
                           {analytics.days_since_last_appointment > 120
                             ? t('admin.clientManagement.risk.lost', {
                                 days: String(analytics.days_since_last_appointment),

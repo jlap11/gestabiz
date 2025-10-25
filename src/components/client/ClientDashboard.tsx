@@ -32,6 +32,7 @@ import FavoritesList from '@/components/client/FavoritesList'
 import { MandatoryReviewModal } from '@/components/jobs'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useChat } from '@/hooks/useChat'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { usePreferredCity } from '@/hooks/usePreferredCity'
@@ -164,6 +165,8 @@ export function ClientDashboard({
   // Chat state
   const [chatConversationId, setChatConversationId] = useState<string | null>(null)
   const [isStartingChat, setIsStartingChat] = useState(false)
+
+  const { t } = useLanguage()
 
   // Chat hook
   const { createOrGetConversation } = useChat(user.id)
@@ -408,8 +411,8 @@ export function ClientDashboard({
     }
     setShowAppointmentWizard(true)
 
-    toast.info('Modifica los datos de tu cita y confirma los cambios')
-  }, [])
+    toast.info(t('clientDashboard.editAppointmentInfo'))
+  }, [t])
 
   // Listen for avatar updates and refresh user
   useEffect(() => {
@@ -536,17 +539,17 @@ export function ClientDashboard({
   const sidebarItems = [
     {
       id: 'appointments',
-      label: 'Mis Citas',
+      label: t('clientDashboard.sidebar.appointments'),
       icon: <Calendar className="h-5 w-5" />,
     },
     {
       id: 'favorites',
-      label: 'Favoritos',
+      label: t('clientDashboard.sidebar.favorites'),
       icon: <Heart className="h-5 w-5" />,
     },
     {
       id: 'history',
-      label: 'Historial',
+      label: t('clientDashboard.sidebar.history'),
       icon: <History className="h-5 w-5" />,
     },
   ]
@@ -594,7 +597,7 @@ export function ClientDashboard({
           <div className="p-6">
             {/* Header - Mantener en toda la parte superior */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
+              <h2 className="text-2xl font-bold text-foreground">{t('clientDashboard.header.myAppointments')}</h2>
               <div className="flex items-center gap-2">
                 {/* View Mode Toggle */}
                 <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
@@ -602,33 +605,35 @@ export function ClientDashboard({
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
-                    className={cn(
-                      'h-8',
-                      viewMode !== 'list' && 'hover:bg-primary hover:text-primary-foreground'
-                    )}
+                    className={cn('h-8 min-h-[44px] min-w-[44px]', viewMode !== 'list' && 'hover:bg-primary hover:text-primary-foreground')}
+                    aria-label={t('clientDashboard.viewMode.list')}
+                    title={t('clientDashboard.viewMode.list')}
+                    aria-pressed={viewMode === 'list'}
                   >
-                    <List className="h-4 w-4 mr-2" />
-                    Lista
+                    <List className="h-4 w-4 mr-2" aria-hidden="true" />
+                    {t('clientDashboard.viewMode.list')}
                   </Button>
                   <Button
                     variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('calendar')}
-                    className={cn(
-                      'h-8',
-                      viewMode !== 'calendar' && 'hover:bg-primary hover:text-primary-foreground'
-                    )}
+                    className={cn('h-8 min-h-[44px] min-w-[44px]', viewMode !== 'calendar' && 'hover:bg-primary hover:text-primary-foreground')}
+                    aria-label={t('clientDashboard.viewMode.calendar')}
+                    title={t('clientDashboard.viewMode.calendar')}
+                    aria-pressed={viewMode === 'calendar'}
                   >
-                    <CalendarDays className="h-4 w-4 mr-2" />
-                    Calendario
+                    <CalendarDays className="h-4 w-4 mr-2" aria-hidden="true" />
+                    {t('clientDashboard.viewMode.calendar')}
                   </Button>
                 </div>
                 <Button
                   onClick={() => setShowAppointmentWizard(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] min-w-[44px]"
+                  aria-label={t('clientDashboard.newAppointment')}
+                  title={t('clientDashboard.newAppointment')}
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Nueva Cita
+                  <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
+                  {t('clientDashboard.newAppointment')}
                 </Button>
               </div>
             </div>
@@ -650,10 +655,10 @@ export function ClientDashboard({
                     {upcomingAppointments.length === 0 ? (
                       <Card className="border-dashed">
                         <CardContent className="pt-6 text-center">
-                          <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                          <p className="text-muted-foreground">No tienes citas programadas</p>
+                          <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
+                          <p className="text-muted-foreground">{t('clientDashboard.empty.noAppointments')}</p>
                           <p className="text-sm text-muted-foreground mt-2">
-                            Usa el botón "Nueva Cita" para agendar tu primera cita
+                            {t('clientDashboard.empty.hint')}
                           </p>
                         </CardContent>
                       </Card>
@@ -664,6 +669,8 @@ export function ClientDashboard({
                             key={appointment.id}
                             className="cursor-pointer hover:shadow-lg transition-shadow"
                             onClick={() => setSelectedAppointment(appointment)}
+                            role="button"
+                            aria-label={`Abrir cita ${appointment.service?.name || appointment.title || ''}`}
                           >
                             <CardContent className="p-4">
                               <div className="space-y-3">
@@ -793,15 +800,15 @@ export function ClientDashboard({
       case 'history':
         return (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Historial de Citas</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{t('clientDashboard.history.title')}</h2>
             {currentUser && <ClientHistory userId={currentUser.id} />}
           </div>
         )
       default:
         return (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
-            <p className="text-muted-foreground">Tus próximas citas aparecerán aquí</p>
+            <h2 className="text-2xl font-bold text-foreground">{t('clientDashboard.header.myAppointments')}</h2>
+            <p className="text-muted-foreground">{t('clientDashboard.empty.upcomingPlaceholder')}</p>
           </div>
         )
     }
@@ -991,7 +998,7 @@ export function ClientDashboard({
                       </div>
                       {!selectedAppointment.employee.avatar_url && (
                         <p className="text-xs text-muted-foreground italic mt-1">
-                          Sin foto de perfil
+                          {t('clientDashboard.noProfilePhoto')}
                         </p>
                       )}
                     </div>
@@ -1004,7 +1011,7 @@ export function ClientDashboard({
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    Sede y Ubicación
+                    {t('clientDashboard.locationAndAddress')}
                   </h3>
                   <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg">
                     <p className="text-base font-semibold text-foreground">
@@ -1040,7 +1047,7 @@ export function ClientDashboard({
                           className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
                         >
                           <MapPin className="h-4 w-4" />
-                          Ver en Google Maps
+                          {t('clientDashboard.viewInGoogleMaps')}
                         </a>
                       ) : null
                     })()}
@@ -1053,7 +1060,7 @@ export function ClientDashboard({
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Descripción
+                    {t('clientDashboard.descriptionTitle')}
                   </h3>
                   <p className="text-base text-foreground whitespace-pre-wrap">
                     {selectedAppointment.description}
@@ -1066,7 +1073,7 @@ export function ClientDashboard({
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Notas
+                    {t('clientDashboard.notesTitle')}
                   </h3>
                   <p className="text-base text-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">
                     {selectedAppointment.notes}
@@ -1080,11 +1087,11 @@ export function ClientDashboard({
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-medium text-muted-foreground">
-                        Valor del Servicio
+                        {t('clientDashboard.serviceValueTitle')}
                       </h3>
                       {selectedAppointment.service?.duration && (
                         <p className="text-xs text-muted-foreground">
-                          Duración estimada: {selectedAppointment.service.duration} minutos
+                          {t('clientDashboard.estimatedDuration', { minutes: selectedAppointment.service.duration })}
                         </p>
                       )}
                     </div>
@@ -1117,10 +1124,12 @@ export function ClientDashboard({
                       )
                     }
                     disabled={isStartingChat}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                    aria-label={t('clientDashboard.chatWithProfessionalAria')}
+                    title={t('clientDashboard.chatWithProfessional')}
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    {isStartingChat ? 'Iniciando chat...' : 'Chatear con el profesional'}
+                    <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                    {isStartingChat ? t('clientDashboard.chatStarting') : t('clientDashboard.chatWithProfessional')}
                   </Button>
                 )}
 
@@ -1129,10 +1138,12 @@ export function ClientDashboard({
                   <Button
                     variant="outline"
                     onClick={() => handleRescheduleAppointment(selectedAppointment)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                    aria-label={t('clientDashboard.rescheduleAria')}
+                    title={t('clientDashboard.reschedule')}
                   >
-                    <Calendar className="h-4 w-4" />
-                    Reprogramar
+                    <Calendar className="h-4 w-4" aria-hidden="true" />
+                    {t('clientDashboard.reschedule')}
                   </Button>
                 )}
 
@@ -1141,19 +1152,23 @@ export function ClientDashboard({
                   <Button
                     variant="destructive"
                     onClick={() => handleCancelAppointment(selectedAppointment.id)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                    aria-label={t('clientDashboard.cancelAppointmentAria')}
+                    title={t('clientDashboard.cancelAppointment')}
                   >
-                    <X className="h-4 w-4" />
-                    Cancelar Cita
+                    <X className="h-4 w-4" aria-hidden="true" />
+                    {t('clientDashboard.cancelAppointment')}
                   </Button>
                 )}
 
                 <Button
                   variant="outline"
                   onClick={() => setSelectedAppointment(null)}
-                  className="ml-auto"
+                  className="ml-auto min-h-[44px] min-w-[44px]"
+                  aria-label={t('common.actions.close')}
+                  title={t('common.actions.close')}
                 >
-                  Cerrar
+                  {t('common.actions.close')}
                 </Button>
               </div>
             </div>
@@ -1210,14 +1225,12 @@ export function ClientDashboard({
         isOpen={shouldShowReviewModal}
         onClose={() => {
           remindLater()
-          toast.info(
-            `Te recordaremos en 5 minutos. Tienes ${pendingReviewsCount} reseña${pendingReviewsCount > 1 ? 's' : ''} pendiente${pendingReviewsCount > 1 ? 's' : ''}.`
-          )
+          toast.info(t('clientDashboard.reviewReminder', { count: String(pendingReviewsCount) }))
         }}
         onReviewSubmitted={() => {
           checkPendingReviews()
           fetchClientAppointments()
-          toast.success('¡Gracias por tu reseña!')
+          toast.success(t('clientDashboard.thanksForReview'))
         }}
         userId={user.id}
       />

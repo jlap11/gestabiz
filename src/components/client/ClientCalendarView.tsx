@@ -141,7 +141,14 @@ export function ClientCalendarView({
     return (
       <div className="space-y-2">
         {appts.map(a => (
-          <Card key={a.id} className="p-2" onClick={() => onAppointmentClick?.(a)}>
+          <Card
+            key={a.id}
+            className="p-2 cursor-pointer"
+            onClick={() => onAppointmentClick?.(a)}
+            role="button"
+            aria-label={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
+            title={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
+          >
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
@@ -157,8 +164,13 @@ export function ClientCalendarView({
         ))}
         {onCreateAppointment && (
           <div className="pt-2">
-            <Button onClick={() => onCreateAppointment(d)}>
-              <Plus className="h-4 w-4 mr-2" /> Agregar cita
+            <Button
+              onClick={() => onCreateAppointment(d)}
+              className="min-h-[44px] min-w-[44px]"
+              aria-label="Agregar cita"
+              title="Agregar cita"
+            >
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> Agregar cita
             </Button>
           </div>
         )}
@@ -189,6 +201,9 @@ export function ClientCalendarView({
                     key={a.id}
                     className="text-xs truncate cursor-pointer"
                     onClick={() => onAppointmentClick?.(a)}
+                    role="button"
+                    aria-label={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
+                    title={`Abrir cita ${a.service?.name || a.title} a las ${formatTimeInTZ(a.start_time)}`}
                   >
                     {a.service?.name || a.title} • {formatTimeInTZ(a.start_time)}
                   </div>
@@ -264,20 +279,24 @@ export function ClientCalendarView({
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="navigation" aria-label="Controles de navegación del calendario">
           <Button
             variant="outline"
             size="sm"
             onClick={navigatePrevious}
-            className="hover:bg-primary hover:text-primary-foreground hover:border-primary"
+            className="hover:bg-primary hover:text-primary-foreground hover:border-primary min-h-[44px] min-w-[44px]"
+            aria-label="Ir al período anterior"
+            title="Ir al período anterior"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={goToToday}
-            className="hover:bg-primary hover:text-primary-foreground hover:border-primary"
+            className="hover:bg-primary hover:text-primary-foreground hover:border-primary min-h-[44px] min-w-[44px]"
+            aria-label="Ir a hoy"
+            title="Ir a hoy"
           >
             Hoy
           </Button>
@@ -285,9 +304,11 @@ export function ClientCalendarView({
             variant="outline"
             size="sm"
             onClick={navigateNext}
-            className="hover:bg-primary hover:text-primary-foreground hover:border-primary"
+            className="hover:bg-primary hover:text-primary-foreground hover:border-primary min-h-[44px] min-w-[44px]"
+            aria-label="Ir al período siguiente"
+            title="Ir al período siguiente"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
           <h3 className="text-lg font-semibold text-foreground ml-2">{getHeaderTitle()}</h3>
         </div>
@@ -298,9 +319,11 @@ export function ClientCalendarView({
             size="sm"
             onClick={() => setView('day')}
             className={cn(
-              view !== 'day' &&
-                'hover:bg-primary hover:text-primary-foreground hover:border-primary'
+              view !== 'day' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary',
+              'min-h-[44px] min-w-[44px]'
             )}
+            aria-label="Ver día"
+            title="Ver día"
           >
             Día
           </Button>
@@ -309,9 +332,11 @@ export function ClientCalendarView({
             size="sm"
             onClick={() => setView('week')}
             className={cn(
-              view !== 'week' &&
-                'hover:bg-primary hover:text-primary-foreground hover:border-primary'
+              view !== 'week' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary',
+              'min-h-[44px] min-w-[44px]'
             )}
+            aria-label="Ver semana"
+            title="Ver semana"
           >
             Semana
           </Button>
@@ -320,9 +345,11 @@ export function ClientCalendarView({
             size="sm"
             onClick={() => setView('month')}
             className={cn(
-              view !== 'month' &&
-                'hover:bg-primary hover:text-primary-foreground hover:border-primary'
+              view !== 'month' && 'hover:bg-primary hover:text-primary-foreground hover:border-primary',
+              'min-h-[44px] min-w-[44px]'
             )}
+            aria-label="Ver mes"
+            title="Ver mes"
           >
             Mes
           </Button>
@@ -337,3 +364,4 @@ export function ClientCalendarView({
     </div>
   )
 }
+

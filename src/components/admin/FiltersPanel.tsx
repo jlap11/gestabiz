@@ -122,8 +122,15 @@ export function FiltersPanel({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Filtros</h3>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClearAll} className="h-8 gap-1">
-            <X className="h-3 w-3" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearAll}
+            className="h-8 gap-1 min-h-[44px] min-w-[44px]"
+            aria-label="Limpiar todos los filtros"
+            title="Limpiar todos los filtros"
+          >
+            <X className="h-3 w-3" aria-hidden="true" />
             Limpiar todo
           </Button>
         )}
@@ -132,21 +139,25 @@ export function FiltersPanel({
       {/* BÚSQUEDA */}
       <div className="space-y-2">
         <Label htmlFor="search">{t('common.actions.search')}</Label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative" role="search" aria-label={t('common.actions.search)}>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             id="search"
             placeholder="Nombre, email o cargo..."
             value={filters.searchQuery || ''}
             onChange={e => handleSearchChange(e.target.value)}
             className="pl-9"
+            role="searchbox"
+            aria-label={t('common.actions.search')}
           />
           {filters.searchQuery && (
             <button
               onClick={() => handleSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px]"
+              aria-label="Quitar búsqueda"
+              title="Quitar búsqueda"
             >
-              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -156,10 +167,10 @@ export function FiltersPanel({
       <div className="space-y-2">
         <Label htmlFor="location">Sede</Label>
         <Select value={filters.location_id || 'all'} onValueChange={handleLocationChange}>
-          <SelectTrigger id="location">
+          <SelectTrigger id="location" aria-label="Seleccionar sede" className="min-h-[44px] min-w-[44px]">
             <SelectValue placeholder="Todas las sedes" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-w-[95vw]">
             <SelectItem value="all">Todas las sedes</SelectItem>
             {locations.map(location => (
               <SelectItem key={location.id} value={location.id}>
@@ -177,10 +188,10 @@ export function FiltersPanel({
           value={filters.hierarchyLevel !== undefined ? String(filters.hierarchyLevel) : 'all'}
           onValueChange={handleLevelChange}
         >
-          <SelectTrigger id="level">
+          <SelectTrigger id="level" aria-label="Seleccionar nivel jerárquico" className="min-h-[44px] min-w-[44px]">
             <SelectValue placeholder="Todos los niveles" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-w-[95vw]">
             <SelectItem value="all">Todos los niveles</SelectItem>
             <SelectItem value="0">Nivel 0 - Owner</SelectItem>
             <SelectItem value="1">Nivel 1 - Admin</SelectItem>
@@ -195,10 +206,10 @@ export function FiltersPanel({
       <div className="space-y-2">
         <Label htmlFor="employee-type">Tipo de Empleado</Label>
         <Select value={filters.employeeType || 'all'} onValueChange={handleEmployeeTypeChange}>
-          <SelectTrigger id="employee-type">
+          <SelectTrigger id="employee-type" aria-label="Seleccionar tipo de empleado" className="min-h-[44px] min-w-[44px]">
             <SelectValue placeholder="Todos los tipos" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-w-[95vw]">
             <SelectItem value="all">Todos los tipos</SelectItem>
             <SelectItem value="service_provider">Proveedor de Servicio</SelectItem>
             <SelectItem value="support_staff">Personal de Apoyo</SelectItem>
@@ -212,10 +223,10 @@ export function FiltersPanel({
       <div className="space-y-2">
         <Label htmlFor="department">Departamento</Label>
         <Select value={filters.departmentId || 'all'} onValueChange={handleDepartmentChange}>
-          <SelectTrigger id="department">
+          <SelectTrigger id="department" aria-label="Seleccionar departamento" className="min-h-[44px] min-w-[44px]">
             <SelectValue placeholder="Todos los departamentos" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-w-[95vw]">
             <SelectItem value="all">Todos los departamentos</SelectItem>
             <SelectItem value="sales">Ventas</SelectItem>
             <SelectItem value="operations">Operaciones</SelectItem>
@@ -240,6 +251,7 @@ export function FiltersPanel({
           value={[occupancyRange.min, occupancyRange.max]}
           onValueChange={([min, max]) => setOccupancyRange({ min, max })}
           className="w-full"
+          aria-label="Rango de ocupación"
         />
       </div>
 
@@ -258,6 +270,7 @@ export function FiltersPanel({
           value={[ratingRange.min, ratingRange.max]}
           onValueChange={([min, max]) => setRatingRange({ min, max })}
           className="w-full"
+          aria-label="Rango de rating"
         />
       </div>
 
@@ -269,8 +282,8 @@ export function FiltersPanel({
               <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
                 <span className="font-medium">Búsqueda:</span>
                 <span>{filters.searchQuery}</span>
-                <button onClick={() => handleSearchChange('')}>
-                  <X className="h-3 w-3" />
+                <button onClick={() => handleSearchChange('')} aria-label="Quitar filtro de búsqueda" title="Quitar filtro de búsqueda">
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -278,8 +291,8 @@ export function FiltersPanel({
               <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
                 <span className="font-medium">Nivel:</span>
                 <span>{filters.hierarchyLevel}</span>
-                <button onClick={() => handleLevelChange('all')}>
-                  <X className="h-3 w-3" />
+                <button onClick={() => handleLevelChange('all')} aria-label="Quitar filtro de nivel" title="Quitar filtro de nivel">
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -287,8 +300,8 @@ export function FiltersPanel({
               <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-xs">
                 <span className="font-medium">Tipo:</span>
                 <span>{filters.employeeType}</span>
-                <button onClick={() => handleEmployeeTypeChange('all')}>
-                  <X className="h-3 w-3" />
+                <button onClick={() => handleEmployeeTypeChange('all')} aria-label="Quitar filtro de tipo" title="Quitar filtro de tipo">
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -298,8 +311,8 @@ export function FiltersPanel({
                 <span>
                   {locations.find(l => l.id === filters.location_id)?.name || filters.location_id}
                 </span>
-                <button onClick={() => handleLocationChange('all')}>
-                  <X className="h-3 w-3" />
+                <button onClick={() => handleLocationChange('all')} aria-label="Quitar filtro de sede" title="Quitar filtro de sede">
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -311,3 +324,4 @@ export function FiltersPanel({
 }
 
 export default FiltersPanel
+

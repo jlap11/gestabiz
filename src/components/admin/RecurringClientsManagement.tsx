@@ -143,12 +143,17 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
           </p>
         </div>
 
-        <Input
-          placeholder={t('action.search') + ' clientes...'}
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="sm:w-80"
-        />
+        <div role="search" className="w-full sm:w-auto">
+          <Input
+            placeholder={t('action.search') + ' clientes...'}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="sm:w-80 w-full min-h-[44px]"
+            aria-label={t('action.search') + ' clientes'}
+            title={t('action.search') + ' clientes'}
+            role="searchbox"
+          />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -160,7 +165,7 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
                 <p className="text-sm text-muted-foreground">Total Recurrentes</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <Users className="h-8 w-8 text-primary" />
+              <Users className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
           </CardContent>
         </Card>
@@ -172,7 +177,7 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
                 <p className="text-sm text-muted-foreground">{t('recurring.active')}</p>
                 <p className="text-2xl font-bold text-green-600">{stats.active}</p>
               </div>
-              <TrendUp className="h-8 w-8 text-green-600" />
+              <TrendUp className="h-8 w-8 text-green-600" aria-hidden="true" />
             </div>
           </CardContent>
         </Card>
@@ -184,7 +189,7 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
                 <p className="text-sm text-muted-foreground">En Riesgo</p>
                 <p className="text-2xl font-bold text-yellow-600">{stats.atRisk}</p>
               </div>
-              <CalendarX className="h-8 w-8 text-yellow-600" />
+              <CalendarX className="h-8 w-8 text-yellow-600" aria-hidden="true" />
             </div>
           </CardContent>
         </Card>
@@ -196,7 +201,7 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
                 <p className="text-sm text-muted-foreground">{t('recurring.inactive')}</p>
                 <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
               </div>
-              <TrendDown className="h-8 w-8 text-red-600" />
+              <TrendDown className="h-8 w-8 text-red-600" aria-hidden="true" />
             </div>
           </CardContent>
         </Card>
@@ -204,17 +209,17 @@ export default function RecurringClientsManagement({ user }: RecurringClientsMan
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="active" className="flex items-center gap-2">
-            <TrendUp size={16} />
+        <TabsList aria-label={t('recurring.filter_tabs')}>
+          <TabsTrigger value="active" className="flex items-center gap-2 min-h-[44px]" aria-label={t('recurring.active')} title={t('recurring.active')}>
+            <TrendUp size={16} aria-hidden="true" />
             {t('recurring.active')} ({stats.active})
           </TabsTrigger>
-          <TabsTrigger value="at_risk" className="flex items-center gap-2">
-            <CalendarX size={16} />
+          <TabsTrigger value="at_risk" className="flex items-center gap-2 min-h-[44px]" aria-label={t('recurring.at_risk') || 'En Riesgo'} title={t('recurring.at_risk') || 'En Riesgo'}>
+            <CalendarX size={16} aria-hidden="true" />
             En Riesgo ({stats.atRisk})
           </TabsTrigger>
-          <TabsTrigger value="inactive" className="flex items-center gap-2">
-            <TrendDown size={16} />
+          <TabsTrigger value="inactive" className="flex items-center gap-2 min-h-[44px]" aria-label={t('recurring.inactive')} title={t('recurring.inactive')}>
+            <TrendDown size={16} aria-hidden="true" />
             {t('recurring.inactive')} ({stats.inactive})
           </TabsTrigger>
         </TabsList>
@@ -421,9 +426,12 @@ function ClientCard({
                 size="sm"
                 onClick={() => onSendWhatsApp(client, 'follow_up')}
                 disabled={sendingMessage === client.id}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 min-h-[44px] min-w-[44px]"
+                aria-label={(sendingMessage === client.id ? t('loading.saving') : t('recurring.send_whatsapp')) + ' ' + client.name}
+                title={(sendingMessage === client.id ? t('loading.saving') : t('recurring.send_whatsapp')) + ' ' + client.name}
+                aria-busy={sendingMessage === client.id}
               >
-                <WhatsappLogo size={16} className="text-green-600" />
+                <WhatsappLogo size={16} className="text-green-600" aria-hidden="true" />
                 {sendingMessage === client.id ? t('loading.saving') : t('recurring.send_whatsapp')}
               </Button>
             )}

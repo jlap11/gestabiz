@@ -4,6 +4,7 @@ import { ChatWindow } from './ChatWindow'
 import { ChatErrorBoundary } from './ChatErrorBoundary'
 import { useChat } from '@/hooks/useChat'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { AlertCircle } from 'lucide-react'
 import { logger } from '@/lib/logger'
 
@@ -38,6 +39,8 @@ export function ChatLayout({
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     initialConversationId
   )
+
+  const { t } = useLanguage()
 
   // Hook de chat unificado
   const {
@@ -216,7 +219,7 @@ export function ChatLayout({
         {error && (
           <Alert variant="destructive" className="rounded-none border-x-0 border-t-0">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
+              <AlertDescription className="flex items-center justify-between">
               <span>{error}</span>
               <button
                 onClick={() => {
@@ -224,7 +227,7 @@ export function ChatLayout({
                 }}
                 className="text-sm underline hover:no-underline"
               >
-                Cerrar
+                {t('common.actions.close')}
               </button>
             </AlertDescription>
           </Alert>

@@ -236,19 +236,20 @@ export default function ClientsView({ user }: ClientsViewProps) {
           <h2 className="text-2xl font-bold">Clients</h2>
           <p className="text-muted-foreground">Manage your client contact information</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus size={16} className="mr-2" />
+        <Button onClick={() => setShowForm(true)} className="min-h-[44px] min-w-[44px]" aria-label="Add client" title="Add client">
+          <Plus size={16} className="mr-2" aria-hidden="true" />
           Add Client
         </Button>
       </div>
 
       {/* Search */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4" role="search">
         <div className="flex-1 max-w-md">
           <Input
             placeholder="Search clients..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
+            aria-label="Search clients"
           />
         </div>
       </div>
@@ -257,7 +258,7 @@ export default function ClientsView({ user }: ClientsViewProps) {
       {filteredClients.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
-            <User size={64} className="mx-auto text-muted-foreground mb-4" />
+            <User size={64} className="mx-auto text-muted-foreground mb-4" aria-hidden="true" />
             <h3 className="text-lg font-semibold mb-2">
               {clients.length === 0 ? 'No clients yet' : 'No clients found'}
             </h3>
@@ -267,8 +268,8 @@ export default function ClientsView({ user }: ClientsViewProps) {
                 : 'Try adjusting your search terms.'}
             </p>
             {clients.length === 0 && (
-              <Button onClick={() => setShowForm(true)}>
-                <Plus size={16} className="mr-2" />
+              <Button onClick={() => setShowForm(true)} className="min-h-[44px]" aria-label="Add your first client" title="Add your first client">
+                <Plus size={16} className="mr-2" aria-hidden="true" />
                 Add Your First Client
               </Button>
             )}
@@ -300,19 +301,19 @@ export default function ClientsView({ user }: ClientsViewProps) {
                         <div className="space-y-1">
                           {client.email && (
                             <div className="flex items-center text-sm text-muted-foreground">
-                              <Mail size={14} className="mr-2" />
+                              <Mail size={14} className="mr-2" aria-hidden="true" />
                               {client.email}
                             </div>
                           )}
                           {client.phone && (
                             <div className="flex items-center text-sm text-muted-foreground">
-                              <Phone size={14} className="mr-2" />
+                              <Phone size={14} className="mr-2" aria-hidden="true" />
                               {client.phone}
                             </div>
                           )}
                           {client.company && (
                             <div className="flex items-center text-sm text-muted-foreground">
-                              <Building size={14} className="mr-2" />
+                              <Building size={14} className="mr-2" aria-hidden="true" />
                               {client.company}
                             </div>
                           )}
@@ -326,16 +327,18 @@ export default function ClientsView({ user }: ClientsViewProps) {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(client)}>
-                        <PencilSimple size={16} />
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(client)} className="min-h-[44px] min-w-[44px]" aria-label={`Edit ${client.name}`} title={`Edit ${client.name}`}>
+                        <PencilSimple size={16} aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(client.id)}
-                        className="text-destructive hover:text-destructive"
+                        className="text-destructive hover:text-destructive min-h-[44px] min-w-[44px]"
+                        aria-label={`Delete ${client.name}`}
+                        title={`Delete ${client.name}`}
                       >
-                        <Trash size={16} />
+                        <Trash size={16} aria-hidden="true" />
                       </Button>
                     </div>
                   </div>

@@ -401,17 +401,21 @@ export default function BusinessProfile({
           )}
 
           {/* Botones en header - Touch Optimized */}
-          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2 flex-wrap">
             {/* Botón favorito */}
             {user && (
               <button
                 onClick={handleToggleFavorite}
                 className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label={isFavorite(businessId) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                title={isFavorite(businessId) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                aria-pressed={isFavorite(businessId)}
               >
                 <Heart
                   className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
                     isFavorite(businessId) ? 'fill-primary text-primary' : 'text-foreground'
                   }`}
+                  aria-hidden="true"
                 />
               </button>
             )}
@@ -420,8 +424,10 @@ export default function BusinessProfile({
             <button
               onClick={onClose}
               className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Cerrar perfil"
+              title="Cerrar"
             >
-              <X className="h-4 w-4 sm:h-5 sm:w-5" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -449,7 +455,7 @@ export default function BusinessProfile({
                     </Badge>
                   )}
                   <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" aria-hidden="true" />
                     <span className="font-medium">{business.rating.toFixed(1)}</span>
                     <span className="text-white/70">({business.reviewCount})</span>
                   </div>
@@ -466,19 +472,19 @@ export default function BusinessProfile({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
               {business.phone && (
                 <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                   <span className="truncate">{business.phone}</span>
                 </div>
               )}
               {business.email && (
                 <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                   <span className="truncate">{business.email}</span>
                 </div>
               )}
               {business.website && (
                 <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                   <a
                     href={business.website}
                     target="_blank"
@@ -528,7 +534,7 @@ export default function BusinessProfile({
                   No hay servicios disponibles
                 </p>
               ) : (
-                <div className="grid gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {business.services.map(service => (
                     <Card key={service.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between gap-2 sm:gap-4">
@@ -543,7 +549,7 @@ export default function BusinessProfile({
                           )}
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
+                              <Clock className="h-4 w-4" aria-hidden="true" />
                               <span>{formatDuration(service.duration)}</span>
                             </div>
                             {service.employee && (
@@ -568,8 +574,8 @@ export default function BusinessProfile({
                           <p className="text-2xl font-bold text-primary mb-2">
                             {formatCurrency(service.price, 'MXN')}
                           </p>
-                          <Button onClick={() => onBookAppointment?.(service.id)} size="sm">
-                            <Calendar className="h-4 w-4 mr-2" />
+                          <Button onClick={() => onBookAppointment?.(service.id)} size="sm" className="min-h-[44px] min-w-[44px]" aria-label="Agendar servicio" title="Agendar servicio">
+                            <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
                             Agendar
                           </Button>
                         </div>
@@ -630,8 +636,11 @@ export default function BusinessProfile({
                           <Button
                             onClick={() => onBookAppointment?.(undefined, location.id)}
                             size="sm"
+                            className="min-h-[44px] min-w-[44px]"
+                            aria-label="Agendar en esta ubicación"
+                            title="Agendar en esta ubicación"
                           >
-                            <Calendar className="h-4 w-4 mr-2" />
+                            <Calendar className="h-4 w-4 mr-2" aria-hidden="true" />
                             Agendar aquí
                           </Button>
                         </div>
@@ -644,7 +653,7 @@ export default function BusinessProfile({
                               className="text-sm text-primary hover:underline flex items-center gap-1"
                             >
                               Ver en Google Maps
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-4 w-4" aria-hidden="true" />
                             </a>
                           </div>
                         )}
@@ -732,8 +741,8 @@ export default function BusinessProfile({
 
         {/* Footer sticky con botones principales */}
         <div className="border-t border-border p-4 bg-background space-y-3">
-          <Button onClick={() => onBookAppointment?.()} className="w-full" size="lg">
-            <Calendar className="h-5 w-5 mr-2" />
+          <Button onClick={() => onBookAppointment?.()} className="w-full min-h-[44px]" size="lg" aria-label="Agendar cita" title="Agendar cita">
+            <Calendar className="h-5 w-5 mr-2" aria-hidden="true" />
             Agendar Cita
           </Button>
 
@@ -743,11 +752,13 @@ export default function BusinessProfile({
             </p>
             <Button
               onClick={() => setShowChatModal(true)}
-              className="w-full"
+              className="w-full min-h-[44px]"
               size="lg"
               variant="outline"
+              aria-label="Iniciar chat"
+              title="Iniciar chat"
             >
-              <MessageCircle className="h-5 w-5 mr-2" />
+              <MessageCircle className="h-5 w-5 mr-2" aria-hidden="true" />
               Iniciar Chat
             </Button>
           </div>

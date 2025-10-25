@@ -303,8 +303,10 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
         <Button
           onClick={() => handleOpenDialog()}
           className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
+          aria-label={t('admin.actions.addLocation')}
+          title={t('admin.actions.addLocation')}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
           <span className="hidden sm:inline">{t('admin.actions.addLocation')}</span>
           <span className="sm:hidden">{t('admin.actions.newLocation')}</span>
         </Button>
@@ -314,7 +316,7 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
       {locations.length === 0 ? (
         <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
-            <MapPin className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
+            <MapPin className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" aria-hidden="true" />
             <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
               No hay sedes aún
             </h3>
@@ -370,16 +372,20 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
                       size="sm"
                       onClick={() => handleOpenDialog(location)}
                       className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
+                      aria-label={t('admin.actions.editLocation')}
+                      title={t('admin.actions.editLocation')}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-4 w-4" aria-hidden="true" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(location.id)}
                       className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
+                      aria-label={t('admin.actions.deleteLocation')}
+                      title={t('admin.actions.deleteLocation')}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -438,19 +444,19 @@ export function LocationsManager({ businessId }: Readonly<LocationsManagerProps>
 
       {/* Create/Edit Dialog - Mobile Responsive */}
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader>
-            <DialogTitle>
-              {editingLocation
-                ? t('admin.actions.editLocation')
-                : t('admin.actions.createLocation')}
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {editingLocation
-                ? 'Actualiza la información de la sede'
-                : t('admin.actions.completeLocationInfo')}
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent className="bg-card border-border text-foreground max-w-[95vw] sm:max-w-3xl lg:max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="location-dialog-title" aria-describedby="location-dialog-description">
+      <DialogHeader>
+      <DialogTitle id="location-dialog-title">
+               {editingLocation
+                 ? t('admin.actions.editLocation')
+                 : t('admin.actions.createLocation')}
+             </DialogTitle>
+              <DialogDescription id="location-dialog-description" className="text-muted-foreground">
+               {editingLocation
+                 ? 'Actualiza la información de la sede'
+                 : t('admin.actions.completeLocationInfo')}
+             </DialogDescription>
+           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Name */}

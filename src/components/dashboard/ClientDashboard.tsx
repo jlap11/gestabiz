@@ -233,7 +233,7 @@ export default function ClientDashboard({
               {t('clientDashboard.upcomingTitle')}
             </h2>
             {upcomingAppointments.length > 0 && (
-              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 min-w-[44px] min-h-[44px]" aria-label={t('clientDashboard.viewAll')} title={t('clientDashboard.viewAll')}>
                 {t('clientDashboard.viewAll')}
               </Button>
             )}
@@ -242,7 +242,7 @@ export default function ClientDashboard({
           {upcomingAppointments.length === 0 ? (
             <Card className="border-dashed border-2 border-border bg-transparent">
               <CardContent className="py-16 text-center">
-                <CalendarX className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <CalendarX className="h-16 w-16 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
                 <h3 className="text-lg font-semibold mb-2 text-foreground">
                   {t('clientDashboard.noUpcoming')}
                 </h3>
@@ -250,10 +250,10 @@ export default function ClientDashboard({
                   {t('clientDashboard.bookFirstAppointment')}
                 </p>
                 <Button
-                  onClick={() => setShowAppointmentForm(true)}
-                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => setShowAppointmentForm(true)} aria-label={t('clientDashboard.bookAppointment')} title={t('clientDashboard.bookAppointment')}
+                  className="bg-primary hover:bg-primary/90 min-w-[44px] min-h-[44px]"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
                   {t('clientDashboard.bookAppointment')}
                 </Button>
               </CardContent>
@@ -283,16 +283,16 @@ export default function ClientDashboard({
                     {/* Date, Time, Location */}
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center gap-2 text-foreground/90 text-sm">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-4 w-4" aria-hidden="true" />
                         <span>{formatDate(appointment.start_time)}</span>
                       </div>
                       <div className="flex items-center gap-2 text-foreground/90 text-sm">
-                        <Clock className="h-4 w-4" />
+                        <Clock className="h-4 w-4" aria-hidden="true" />
                         <span>{formatTime(appointment.start_time)}</span>
                       </div>
                       {appointment.location && (
                         <div className="flex items-center gap-2 text-foreground/90 text-sm">
-                          <MapPin className="h-4 w-4" />
+                          <MapPin className="h-4 w-4" aria-hidden="true" />
                           <span>{appointment.location}</span>
                         </div>
                       )}
@@ -303,7 +303,7 @@ export default function ClientDashboard({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:text-green-500 hover:bg-muted"
+                        className="text-muted-foreground hover:text-green-500 hover:bg-muted min-w-[44px] min-h-[44px]"
                         onClick={() => handleConfirmAppointment(appointment.id)}
                         disabled={
                           confirmingId === appointment.id || appointment.status === 'confirmed'
@@ -313,34 +313,41 @@ export default function ClientDashboard({
                             ? t('clientDashboard.alreadyConfirmed')
                             : t('clientDashboard.confirmButton')
                         }
+                        aria-label={
+                          appointment.status === 'confirmed'
+                            ? t('clientDashboard.alreadyConfirmed')
+                            : t('clientDashboard.confirmButton')
+                        }
                       >
                         {confirmingId === appointment.id ? (
-                          <span className="animate-spin">⏳</span>
+                          <span className="animate-spin" aria-hidden="true">⏳</span>
                         ) : (
-                          <CalendarCheck className="h-5 w-5" />
+                          <CalendarCheck className="h-5 w-5" aria-hidden="true" />
                         )}
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:text-blue-500 hover:bg-muted"
+                        className="text-muted-foreground hover:text-blue-500 hover:bg-muted min-w-[44px] min-h-[44px]"
                         onClick={() => handleAddToGoogleCalendar(appointment)}
                         title={t('clientDashboard.addToCalendar')}
+                        aria-label={t('clientDashboard.addToCalendar')}
                       >
-                        <CalendarPlus className="h-5 w-5" />
+                        <CalendarPlus className="h-5 w-5" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:text-red-500 hover:bg-muted"
+                        className="text-muted-foreground hover:text-red-500 hover:bg-muted min-w-[44px] min-h-[44px]"
                         onClick={() => handleDeleteAppointment(appointment.id)}
                         disabled={deletingId === appointment.id}
                         title={t('clientDashboard.deleteAppointment')}
+                        aria-label={t('clientDashboard.deleteAppointment')}
                       >
                         {deletingId === appointment.id ? (
-                          <span className="animate-spin">⏳</span>
+                          <span className="animate-spin text-sm" aria-hidden="true">⏳</span>
                         ) : (
-                          <Trash2 className="h-5 w-5" />
+                          <Trash2 className="h-5 w-5" aria-hidden="true" />
                         )}
                       </Button>
                     </div>
@@ -418,13 +425,14 @@ export default function ClientDashboard({
                                 size="sm"
                                 onClick={() => handleDeleteAppointment(appointment.id)}
                                 disabled={deletingId === appointment.id}
-                                className="text-muted-foreground hover:text-red-500 p-1 h-auto"
+                                className="text-muted-foreground hover:text-red-500 p-1 h-auto min-w-[44px] min-h-[44px]"
                                 title={t('clientDashboard.deleteAppointment')}
+                                aria-label={t('clientDashboard.deleteAppointment')}
                               >
                                 {deletingId === appointment.id ? (
-                                  <span className="animate-spin text-sm">⏳</span>
+                                  <span className="animate-spin text-sm" aria-hidden="true">⏳</span>
                                 ) : (
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                                 )}
                               </Button>
                             </div>
@@ -447,9 +455,9 @@ export default function ClientDashboard({
 
                         {/* Date & Time */}
                         <div className="flex items-center gap-2 text-sm text-foreground/80">
-                          <Calendar className="h-4 w-4" />
+                          <Calendar className="h-4 w-4" aria-hidden="true" />
                           <span>{formatDate(appointment.start_time)}</span>
-                          <Clock className="h-4 w-4 ml-2" />
+                          <Clock className="h-4 w-4 ml-2" aria-hidden="true" />
                           <span>{formatTime(appointment.start_time)}</span>
                         </div>
 
@@ -463,7 +471,7 @@ export default function ClientDashboard({
 
                         {/* Location */}
                         <div className="flex items-center gap-2 text-sm text-foreground/70">
-                          <MapPin className="h-4 w-4" />
+                          <MapPin className="h-4 w-4" aria-hidden="true" />
                           <span>{appointment.location || t('clientDashboard.table.location')}</span>
                         </div>
 
@@ -473,6 +481,8 @@ export default function ClientDashboard({
                             variant="outline"
                             size="sm"
                             className="flex-1 min-h-[44px] text-[#8B5CF6] hover:text-[#a78bfa] border-[#8B5CF6]"
+                            aria-label={t('clientDashboard.rebook')}
+                            title={t('clientDashboard.rebook')}
                           >
                             {t('clientDashboard.rebook')}
                           </Button>

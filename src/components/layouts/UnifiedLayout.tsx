@@ -226,12 +226,13 @@ export function UnifiedLayout({
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Toggle menu"
+                aria-label={sidebarOpen ? t('layout.close_menu') : t('layout.open_menu')}
+                title={sidebarOpen ? t('layout.close_menu') : t('layout.open_menu')}
               >
                 {sidebarOpen ? (
-                  <X className="h-6 w-6 text-foreground" />
+                  <X className="h-6 w-6 text-foreground" aria-hidden="true" />
                 ) : (
-                  <Menu className="h-6 w-6 text-foreground" />
+                  <Menu className="h-6 w-6 text-foreground" aria-hidden="true" />
                 )}
               </button>
 
@@ -239,7 +240,10 @@ export function UnifiedLayout({
               {business ? (
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="inline-flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 overflow-hidden">
+                    <DropdownMenuTrigger className="inline-flex items-center gap-2 sm:gap-3 hover:bg-muted/50 rounded-lg p-1.5 sm:p-2 transition-colors group focus:outline-none min-w-0 overflow-hidden min-h-[44px]"
+                      aria-label="Menú de negocio"
+                      title="Menú de negocio"
+                    >
                       {business.logo_url ? (
                         <img
                           src={business.logo_url}
@@ -248,7 +252,7 @@ export function UnifiedLayout({
                         />
                       ) : (
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/20 flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
-                          <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" aria-hidden="true" />
                         </div>
                       )}
 
@@ -263,11 +267,11 @@ export function UnifiedLayout({
                             {business.category.name}
                           </Badge>
                         )}
-                        <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
+                        <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" aria-hidden="true" />
                       </div>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="start" className="w-64 bg-card border-border">
+                    <DropdownMenuContent align="start" className="max-w-[95vw] sm:w-64 bg-card border-border">
                       <div className="px-3 py-2 border-b border-border">
                         <p className="text-xs font-semibold text-muted-foreground uppercase">
                           Mis Negocios
@@ -330,16 +334,18 @@ export function UnifiedLayout({
                           e.stopPropagation()
                           setLocationMenuOpen(!locationMenuOpen)
                         }}
-                        className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 px-2 py-1 hover:bg-muted rounded-md whitespace-nowrap"
+                        className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 px-2 py-1 hover:bg-muted rounded-md whitespace-nowrap min-h-[44px]"
+                        aria-label="Seleccionar sede"
+                        title="Seleccionar sede"
                       >
                         <span>📍</span>
                         <span className="truncate">
                           {preferredLocationName || 'Seleccionar sede'}
                         </span>
-                        <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                        <ChevronDown className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
                       </button>
                       {locationMenuOpen && (
-                        <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[180px]">
+                        <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[180px] max-w-[95vw]">
                           <button
                             onClick={e => {
                               e.preventDefault()
@@ -347,7 +353,7 @@ export function UnifiedLayout({
                               onLocationSelect?.(null)
                               setLocationMenuOpen(false)
                             }}
-                            className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors first:rounded-t-md"
+                            className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors first:rounded-t-md min-h-[44px]"
                           >
                             Todas las sedes
                           </button>
@@ -361,7 +367,7 @@ export function UnifiedLayout({
                                 setLocationMenuOpen(false)
                               }}
                               className={cn(
-                                'w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors',
+                                'w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted/50 transition-colors min-h-[44px]',
                                 preferredLocationName === location.name &&
                                   'bg-primary/20 text-foreground font-semibold'
                               )}
@@ -432,13 +438,17 @@ export function UnifiedLayout({
               {/* Role Selector - Responsive */}
               {uniqueRoles.length > 0 && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="group flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg hover:bg-muted transition-colors focus:outline-none min-h-[44px]">
-                    <UserIcon className="h-4 w-4 sm:hidden text-foreground" />
+                  <DropdownMenuTrigger
+                    className="group flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg hover:bg-muted transition-colors focus:outline-none min-h-[44px]"
+                    aria-label="Cambiar rol"
+                    title="Cambiar rol"
+                  >
+                    <UserIcon className="h-4 w-4 sm:hidden text-foreground" aria-hidden="true" />
                     <span className="text-xs sm:text-sm font-medium text-foreground hidden sm:inline whitespace-nowrap">
                       {roleLabels[currentRole]}
                     </span>
                     {uniqueRoles.length > 1 && (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true" />
                     )}
                   </DropdownMenuTrigger>
                   {uniqueRoles.length > 1 && (
@@ -463,7 +473,11 @@ export function UnifiedLayout({
               {/* User Menu - Touch optimized */}
               {user && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  <DropdownMenuTrigger
+                    className="focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    aria-label="Abrir menú de usuario"
+                    title="Abrir menú de usuario"
+                  >
                     {user.avatar ? (
                       <img
                         key={user.avatar}
@@ -480,26 +494,25 @@ export function UnifiedLayout({
                     )}
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="max-w-[95vw] sm:w-56 bg-card border-border">
-+                    <div className="px-3 py-2 border-b border-border">
-+                      <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-+                    </div>
-+                    <DropdownMenuItem
-+                      onClick={() => onPageChange('profile')}
-+                      className="cursor-pointer"
-+                    >
-+                      <UserIcon className="h-4 w-4 mr-2" />
-+                      Mi Perfil
-+                    </DropdownMenuItem>
-+                    <DropdownMenuItem
-+                      onClick={() => onPageChange('settings')}
-+                      className="cursor-pointer"
-+                    >
-+                      <Settings className="h-4 w-4 mr-2" />
-+                      Configuración
-+                    </DropdownMenuItem>
--                  </DropdownMenuContent>
-+                  </DropdownMenuContent>
+                    <div className="px-3 py-2 border-b border-border">
+                      <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                    <DropdownMenuItem
+                      onClick={() => onPageChange('profile')}
+                      className="cursor-pointer"
+                    >
+                      <UserIcon className="h-4 w-4 mr-2" />
+                      Mi Perfil
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onPageChange('settings')}
+                      className="cursor-pointer"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configuración
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
                 </DropdownMenu>
               )}
             </div>

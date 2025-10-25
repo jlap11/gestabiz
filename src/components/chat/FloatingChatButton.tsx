@@ -82,7 +82,9 @@ export function FloatingChatButton({
             'group'
           )}
           aria-label={
-            unreadCount > 0 ? `Abrir chat (${unreadCount} mensajes nuevos)` : 'Abrir chat'
+            unreadCount > 0
+              ? t('chat.openWithCount', { count: String(unreadCount) })
+              : t('chat.open')
           }
         >
           <MessageSquare className="h-6 w-6 group-hover:scale-110 transition-transform" />
@@ -108,12 +110,12 @@ export function FloatingChatButton({
             className="absolute inset-0 bg-black/20 backdrop-blur-sm"
             onClick={handleClose}
             onKeyDown={e => e.key === 'Escape' && handleClose()}
-            aria-label="Cerrar chat"
+            aria-label={t('common.actions.close')}
           />
 
           {/* Ventana de Chat */}
           <div
-            role="dialog" aria-modal="true" aria-label="Chat"
+            role="dialog" aria-modal="true" aria-label={t('chat.dialogLabel')}
             className={cn(
               'relative',
               'w-full h-full',
@@ -128,14 +130,14 @@ export function FloatingChatButton({
             <div className="bg-primary text-primary-foreground p-3 sm:p-4 pt-[env(safe-area-inset-top)] flex items-center justify-between border-b">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
-                <h3 className="font-semibold">Chat</h3>
+                <h3 className="font-semibold">{t('chat.headerTitle')}</h3>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
                 className="h-11 w-11 sm:h-9 sm:w-9 p-0 text-primary-foreground hover:bg-primary-foreground/20"
-                aria-label="Cerrar chat"
+                aria-label={t('common.actions.close')}
               >
                 <X className="h-5 w-5" />
               </Button>

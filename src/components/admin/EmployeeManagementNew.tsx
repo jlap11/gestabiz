@@ -258,9 +258,11 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                         <Button
                           size="sm"
                           onClick={() => handleApproveEmployee(request)}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-green-600 hover:bg-green-700 min-h-[44px] min-w-[44px]"
+                          aria-label={`${t('employee.approve')} ${request.user_name}`}
+                          title={`${t('employee.approve')} ${request.user_name}`}
                         >
-                          <Check className="w-4 h-4 mr-2" />
+                          <Check className="w-4 h-4 mr-2" aria-hidden="true" />
                           {t('employee.approve')}
                         </Button>
                         <Button
@@ -270,9 +272,13 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                             setSelectedRequest(request)
                             setShowRejectionDialog(true)
                           }}
-                          className="border-red-200 text-red-600 hover:bg-red-50"
+                          className="border-red-200 text-red-600 hover:bg-red-50 min-h-[44px] min-w-[44px]"
+                          aria-label={`${t('employee.reject')} ${request.user_name}`}
+                          title={`${t('employee.reject')} ${request.user_name}`}
+                          aria-haspopup="dialog"
+                          aria-controls="rejection-dialog"
                         >
-                          <X className="w-4 h-4 mr-2" />
+                          <X className="w-4 h-4 mr-2" aria-hidden="true" />
                           {t('employee.reject')}
                         </Button>
                       </div>
@@ -292,11 +298,15 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                   <CardTitle>{t('employee.currentEmployees')}</CardTitle>
                   <CardDescription>{t('employee.currentEmployeesDescription')}</CardDescription>
                 </div>
-                <div className="w-64">
+                <div className="w-64" role="search" aria-label={t('action.search')}>
                   <Input
                     placeholder={t('action.search')}
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
+                    role="searchbox"
+                    aria-label={t('action.search')}
+                    title={t('action.search')}
+                    className="min-h-[44px]"
                   />
                 </div>
               </div>
@@ -359,8 +369,11 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                               size="sm"
                               variant="outline"
                               onClick={() => handleRemoveEmployee(employee.id)}
+                              className="min-h-[44px] min-w-[44px]"
+                              aria-label={`${t('employee.remove')} ${employee.name}`}
+                              title={`${t('employee.remove')} ${employee.name}`}
                             >
-                              <Trash className="w-4 h-4" />
+                              <Trash className="w-4 h-4" aria-hidden="true" />
                             </Button>
                           </div>
                         </TableCell>
@@ -376,10 +389,10 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
 
       {/* Rejection Dialog */}
       <Dialog open={showRejectionDialog} onOpenChange={setShowRejectionDialog}>
-        <DialogContent>
+        <DialogContent role="dialog" aria-modal="true" aria-labelledby="rejection-dialog-title" aria-describedby="rejection-dialog-description">
           <DialogHeader>
-            <DialogTitle>{t('employee.rejectRequest')}</DialogTitle>
-            <DialogDescription>{t('employee.rejectDescription')}</DialogDescription>
+            <DialogTitle id="rejection-dialog-title">{t('employee.rejectRequest')}</DialogTitle>
+            <DialogDescription id="rejection-dialog-description">{t('employee.rejectDescription')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -400,7 +413,9 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                   setRejectionReason('')
                   setSelectedRequest(null)
                 }}
-                className="flex-1"
+                className="flex-1 min-h-[44px] min-w-[44px]"
+                aria-label={t('action.cancel')}
+                title={t('action.cancel')}
               >
                 {t('action.cancel')}
               </Button>
@@ -408,7 +423,9 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                 onClick={() =>
                   selectedRequest && handleRejectEmployee(selectedRequest, rejectionReason)
                 }
-                className="flex-1 bg-red-600 hover:bg-red-700"
+                className="flex-1 bg-red-600 hover:bg-red-700 min-h-[44px] min-w-[44px]"
+                aria-label={t('employee.reject')}
+                title={t('employee.reject')}
               >
                 {t('employee.reject')}
               </Button>

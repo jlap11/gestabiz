@@ -226,8 +226,116 @@ export function useAuthSimple() {
     await supabase.auth.signOut()
   }
 
+  const signIn = async (data: { email: string; password: string }) => {
+    debugLog('🔐 Signing in with email/password...')
+    try {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
+
+      if (error) {
+        debugLog('❌ Sign in error:', error.message)
+        return { success: false, error: error.message, user: null }
+      }
+
+      if (authData.user) {
+        // Fetch profile to check if account is active
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single()
+
+        const user = buildUserFromSession(authData.user, profile)
+        debugLog('✅ Sign in successful')
+        return { success: true, user, error: null }
+      }
+
+      return { success: false, error: 'No user returned', user: null }
+    } catch (error) {
+      debugLog('💥 Sign in exception:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        user: null,
+      }
+    }
+  }
+
+  const signUp = async (data: { email: string; password: string; full_name?: string }) => {
+    debugLog('📝 Signing up new user...')
+    try {
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.full_name || data.email.split('@')[0],
+          },
+        },
+      })
+
+      if (error) {
+        debugLog('❌ Sign up error:', error.message)
+        return { success: false, error: error.message, needsEmailConfirmation: false }
+      }
+
+      // Check if email confirmation is required
+      const needsEmailConfirmation = authData.user && !authData.session
+
+      if (needsEmailConfirmation) {
+        debugLog('📧 Email confirmation required')
+        return { success: true, needsEmailConfirmation: true, error: null }
+      }
+
+      debugLog('✅ Sign up successful')
+      return { success: true, needsEmailConfirmation: false, error: null }
+    } catch (error) {
+      debugLog('💥 Sign up exception:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        needsEmailConfirmation: false,
+      }
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    debugLog('🔐 Signing in with Google...')
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${globalThis.location.origin}/app`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+
+      if (error) {
+        debugLog('❌ Google sign in error:', error.message)
+        return { success: false, error: error.message }
+      }
+
+      debugLog('✅ Google OAuth initiated')
+      return { success: true, error: null }
+    } catch (error) {
+      debugLog('💥 Google sign in exception:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }
+    }
+  }
+
   return {
     ...state,
     signOut,
+    signIn,
+    signUp,
+    signInWithGoogle,
   }
 }

@@ -1,0 +1,290 @@
+# Guía de Agents para Gestabiz
+
+> **Sistema integral de gestión de citas y negocios** - FASE BETA COMPLETADA  
+> **Stack**: React 18 + TypeScript 5.7 + Vite 6 + Supabase + Tailwind 4  
+> **Última actualización**: Enero 2025  
+> **Estado del Proyecto**: ✅ Funcionalidad completa | 🐛 Solo bugs y optimizaciones
+
+---
+
+## 📖 RESUMEN EJECUTIVO
+
+**Gestabiz** es una plataforma omnicanal (web/móvil/extensión) para gestión de citas y negocios con:
+
+- **13 sistemas principales**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, Preferencias de Mensajes para Empleados, Sistema de Ausencias y Vacaciones, Registración Automática de Owners, Tabla de Festivos Públicos, **Sistema de Modelo de Negocio Flexible** ⭐ NUEVO (Backend completo)
+- **40+ tablas en Supabase**: PostgreSQL 15+ con RLS, extensiones (pg_trgm, postgis), Edge Functions (Deno)
+- **30+ Edge Functions desplegadas**: Notificaciones multicanal, pagos (Stripe/PayU/MercadoPago), chat, reviews
+- **Arquitectura multi-rol**: Admin/Employee/Client calculados dinámicamente (NO guardados en BD)
+- **58 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, useBusinessEmployeesForChat, **useBusinessResources**, **useAssigneeAvailability** ⭐ NUEVOS
+- **Base de código**: ~151k líneas TypeScript, 1,060 archivos .ts/.tsx
+
+### Principios de Desarrollo
+
+1. **No generar .md sin solicitud explícita** - Mantener repo limpio
+2. **No usar emojis en UI** - Solo iconos profesionales (Phosphor/Lucide)
+3. **Cliente Supabase singleton** - Un solo export en `src/lib/supabase.ts`
+4. **Roles dinámicos** - Calculados en tiempo real, no persistidos
+5. **TypeScript strict** - Cero `any`, tipado completo
+
+---
+
+## 🏗️ ARQUITECTURA Y PATRONES
+
+### Arquitectura de Autenticación ⭐ CRÍTICO
+
+**Sistema centralizado con Context API para evitar múltiples instancias**
+
+- **AuthContext**: `src/contexts/AuthContext.tsx` - Context que llama `useAuthSimple()` UNA sola vez
+- **AuthProvider**: Wrapper que provee estado de auth a toda la app
+- **useAuth()**: Hook consumidor para acceder al contexto
+- **PATRÓN DE USO**:
+  ```tsx
+  // ❌ NUNCA: const { user } = useAuthSimple()
+  // ✅ SIEMPRE: const { user } = useAuth()
+  ```
+- **Arquitectura**:
+  - `App.tsx`: Envuelve `<AppRoutes />` con `<AuthProvider>`
+  - `MainApp.tsx`: Usa `useAuth()` (NO `useAuthSimple()`)
+  - Componentes: Usan `useAuth()` para acceder al estado
+- **Cálculo de roles dinámico**:
+  - `useAuth.ts` NO usa tabla `user_roles` (no existe en DB)
+  - Consulta `businesses.owner_id` → rol ADMIN
+  - Consulta `business_employees.employee_id` → rol EMPLOYEE
+  - Default → rol CLIENT
+- **⚠️ IMPORTANTE**: Si ves "Multiple GoTrueClient instances detected", algo está llamando `useAuthSimple()` directamente o creando clientes Supabase adicionales. SIEMPRE usar el cliente singleton de `src/lib/supabase.ts`
+
+### Sistema de Roles Dinámicos ⭐ CRÍTICO
+
+**Los roles NO se guardan en la base de datos - se calculan dinámicamente**
+
+- **ADMIN**: Usuario es `owner_id` de un negocio en `businesses`
+- **EMPLOYEE**: Siempre disponible (todos pueden solicitar unirse a un negocio)
+  - Si existe en `business_employees`: acceso completo
+  - Si no existe: verá onboarding para unirse
+- **CLIENT**: Siempre disponible (todos pueden reservar citas)
+- **Acceso universal**: TODOS los usuarios tienen acceso a los 3 roles
+- **Multi-negocio**: Un usuario puede ser admin de negocio A, employee de negocio B, y client en cualquier negocio
+- **Hook**: `useUserRoles` calcula roles disponibles dinámicamente
+- **Persistencia**: Solo el rol activo se guarda en localStorage
+- **Ver**: `DYNAMIC_ROLES_SYSTEM.md`
+
+### Cliente Supabase Singleton ⭐ CRÍTICO
+
+**UN SOLO cliente para toda la aplicación**
+
+- **Ubicación**: `src/lib/supabase.ts` (export único)
+- **NUNCA**: Crear nuevos clientes con `createClient()` en otros archivos
+- **Payment Gateways**: Reciben el cliente como parámetro en constructor
+- **Demo Mode**: Cliente simulado si `VITE_DEMO_MODE=true` o URL contiene `demo.supabase.co`
+- **Validación**: Detecta variables vacías o placeholders automáticamente
+- **Logging**: Configuración visible en console (solo dev)
+
+---
+
+## 🔧 CONVENCIONES Y PATRONES
+
+### Organización de Archivos
+
+- **Alias de paths**: `@` apunta a `src/` (útil en imports: `@/lib/...`, `@/types/...`)
+- **Tipos**: `src/types/types.ts` (fuente de verdad para roles, permisos, entidades)
+- **Componentes**: Organizados por dominio (`admin/`, `employee/`, `client/`, `billing/`, `jobs/`, etc.)
+- **Hooks**: `src/hooks/` - Hooks personalizados reutilizables
+- **Contexts**: `src/contexts/` - Estado global (Auth, Language, AppState, Notification, Theme)
+- **Lib**: `src/lib/` - Utilidades, servicios, helpers
+
+### Prácticas de Código
+
+- **TypeScript strict**: Todos los archivos tipados, sin `any` (usar `unknown`)
+- **Hooks de datos**:
+  - `useSupabaseData(...)` centraliza lecturas y aplica filtros por rol
+  - `useSupabase.ts` ofrece hooks de auth, appointments, settings
+- **Estado y feedback**:
+  - `useAppState()` para controles de carga/errores
+  - `useAsyncOperation()` para envolver operaciones async con toasts
+- **Permisos**: `src/lib/permissions.ts` expone `ROLE_PERMISSIONS`, `hasPermission`, etc.
+- **i18n**: `LanguageProvider` expone `t(key, params)` y utilidades de formato
+
+### Estilos y UI
+
+- **Tailwind 4**: Variables CSS semánticas (bg-background, text-foreground, border-border)
+- **NO hardcodear colores**: Usar variables de tema, no valores hex directos
+- **Radix UI**: Componentes accesibles en `src/components/ui/`
+- **Iconos**: Phosphor Icons (NO emojis en UI)
+- **Responsive**: Mobile-first con breakpoints (sm/md/lg/xl)
+- **Tema claro/oscuro**: ThemeProvider con persistencia en localStorage
+
+### Performance
+
+- **React Query**: Caché de datos con TTL de 5 minutos
+- **Lazy loading**: Componentes pesados cargados dinámicamente
+- **Memoization**: `React.useCallback`, `React.useMemo` en componentes complejos
+- **Debounce**: 300ms en búsquedas y inputs frecuentes
+- **Vistas materializadas**: Pre-cálculo de estadísticas en Supabase
+
+---
+
+## 🗄️ BASE DE DATOS SUPABASE
+
+### Infraestructura
+
+- **SOLO en la nube** (no hay instancia local)
+- **PostgreSQL 15+** con extensiones:
+  - `uuid-ossp`: Generación de UUIDs
+  - `pg_trgm`: Búsqueda fuzzy (trigram)
+  - `postgis`: Geolocalización
+- **Row Level Security (RLS)**: Todas las tablas tienen políticas de seguridad
+- **Edge Functions**: Deno runtime para lógica serverless
+- **Realtime**: Suscripciones en tiempo real a cambios de datos
+- **Storage**: Buckets para avatares, CVs, archivos de chat, bug reports
+
+### Tablas Principales (40+)
+
+**Core del Negocio**:
+
+- `businesses`: Datos del negocio (owner_id, categorías, ratings cache)
+- `locations`: Sedes físicas (opens_at, closes_at, coordenadas)
+- `services`: Servicios ofrecidos (precio, duración, categoría)
+- `business_employees`: Empleados vinculados (lunch_break, salarios, horarios)
+- `location_services`: Servicios disponibles por sede
+- `employee_services`: Servicios que ofrece cada empleado
+
+**Citas y Clientes**:
+
+- `appointments`: Citas agendadas (start_time, end_time, status, is_location_exception)
+- `profiles`: Perfiles de usuario (name, email, phone, avatar_url, is_active)
+- `reviews`: Calificaciones de clientes (rating 1-5, comment, response, review_type)
+
+### IMPORTANTE - Campos Clave
+
+- **business_employees** usa `employee_id` NO `user_id`: Siempre usar `employee_id = auth.uid()` en queries
+- **appointments** tiene `is_location_exception` para empleados trabajando fuera de su sede
+- **reviews** tiene `review_type` ('business' | 'employee') para diferenciar tipos
+- **transactions** tiene campos fiscales: `subtotal`, `tax_type`, `tax_rate`, `tax_amount`, `fiscal_period`
+- **job_vacancies** tiene `commission_based` (BOOLEAN) para salarios por comisión
+
+---
+
+## 🚀 GUÍAS DE DESARROLLO
+
+### Comandos Principales (PowerShell)
+
+**Desarrollo Web**:
+
+```powershell
+npm run dev              # Iniciar servidor Vite (http://localhost:5173)
+npm run build            # Build de producción
+npm run preview          # Preview del build
+npm run lint             # ESLint
+npm run type-check       # TypeScript compiler check
+npm run generate-sitemap # Generar sitemap.xml
+```
+
+**Supabase** (siempre usar `npx supabase`):
+
+```powershell
+npx supabase start                           # Iniciar Supabase local (NO DISPONIBLE)
+npx supabase db push                         # Aplicar migraciones en remoto
+npx supabase functions deploy <function-name> # Desplegar Edge Function
+npx supabase gen types typescript --project-id <id> > src/types/supabase.ts  # Generar tipos
+```
+
+### Flujo de Desarrollo Típico
+
+1. **Crear nueva feature**:
+   - Crear componente en `src/components/<rol>/`
+   - Crear hook si necesita lógica reutilizable en `src/hooks/`
+   - Agregar tipos en `src/types/types.ts`
+   - Agregar traducciones en `src/lib/translations.ts`
+
+2. **Trabajar con datos de Supabase**:
+   - Usar `useSupabaseData` para queries con filtros por rol
+   - Para operaciones complejas, usar MCP o crear RPC function
+   - Siempre aplicar RLS policies en migraciones
+
+3. **Desplegar cambios en Supabase**:
+   - Crear migración: `npx supabase migration new <nombre>`
+   - Probar localmente (NO disponible, usar directamente remoto)
+   - Aplicar en producción: `npx supabase db push`
+   - Actualizar tipos: `npx supabase gen types typescript...`
+
+### Debugging Common Issues
+
+**Error: "Multiple GoTrueClient instances detected"**
+
+- ✅ Solución: Verificar que NO se esté importando `createClient` en múltiples archivos
+- ✅ SIEMPRE usar el cliente de `src/lib/supabase.ts`
+- ✅ Payment gateways deben recibir cliente como parámetro
+
+**Error: "Failed to fetch" en Supabase queries**
+
+- ✅ Verificar variables de entorno: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- ✅ Verificar que usuario tenga permisos (RLS policies)
+- ✅ Ver políticas en Supabase Dashboard → Authentication → Policies
+
+**Roles no se calculan correctamente**
+
+- ✅ Verificar que se use `employee_id` (NO `user_id`) en `business_employees`
+- ✅ Revisar `useAuth.ts` líneas 150-250 (cálculo de roles)
+- ✅ Roles NO están en BD, se calculan dinámicamente
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+### Para Agentes de IA
+
+- **NO crear archivos .md** a menos que se solicite explícitamente
+- **NO usar emojis en código UI** - Solo iconos de Phosphor/Lucide
+- **SIEMPRE** consultar este archivo antes de hacer cambios importantes
+- **SIEMPRE** actualizar este archivo si se hacen cambios estructurales
+- **Fase BETA completada**: No agregar nuevos flujos funcionales, solo bugs y optimizaciones
+
+### Reglas de Negocio Críticas
+
+1. Un empleado puede trabajar en múltiples negocios simultáneamente
+2. Los roles se calculan dinámicamente (NO se guardan en BD)
+3. TODOS los usuarios tienen acceso a los 3 roles (Admin/Employee/Client)
+4. Las citas tienen validación de overlap, horarios de sede y almuerzo
+5. Las reviews son anónimas y requieren cita completada
+6. Las notificaciones tienen fallback automático entre canales
+7. El sistema contable calcula IVA/ICA/Retención automáticamente
+8. Los pagos soportan 3 gateways (Stripe/PayU/MercadoPago)
+
+### Prioridades de Mantenimiento
+
+1. **Crítico**: Bugs que afectan creación/edición de citas
+2. **Alto**: Problemas de autenticación o permisos
+3. **Medio**: Optimizaciones de performance
+4. **Bajo**: Mejoras cosméticas de UI
+
+---
+
+## Prácticas específicas al añadir/editar código
+
+- **Operaciones con Supabase**:
+  - Usar el **servidor MCP disponible** para consultas SQL directas, migraciones, y operaciones de base de datos complejas cuando sea más eficiente que el cliente JavaScript.
+  - Para código de aplicación: sigue el patrón de `useSupabaseData.fetch*` construyendo la query base (`supabase.from('table')...`), filtra por rol/negocio, ordena, y mapea a los tipos de `src/types`.
+- Realtime: para colecciones por usuario, suscribe con filtro `filter: user_id=eq.${userId}` y maneja `INSERT/UPDATE/DELETE` actualizando el estado local.
+- UI/estado: para operaciones que muestran feedback, envuelve con `useAsyncOperation().executeAsync(() => ..., 'clave-loading', { successMessage })` en vez de gestionar loading/toasts manualmente.
+- Permisos: valida acciones con `userHasPermission(role, permissions, 'write_appointments')` antes de mutaciones.
+- **Limpieza de archivos**: Al crear scripts temporales para Supabase (testing, debug, migraciones), eliminarlos una vez completada la tarea.
+
+## Gotchas conocidas
+
+- **CRÍTICO - Sincronización business_roles ↔ business_employees** (20 Oct 2025):
+  - **Problema**: La RPC `get_business_hierarchy` busca en `business_roles`, pero empleados se registran en `business_employees`
+  - **Síntoma**: Empleados no aparecen en gestión de empleados aunque estén en la BD
+  - **Solución**: Trigger automático `sync_business_roles_from_business_employees()` mantiene ambas tablas sincronizadas (migración `20251020180000_*`)
+  - **Garantía**: Cualquier INSERT/UPDATE en `business_employees` automáticamente sincroniza `business_roles`
+- `useSupabase.ts` importa `authService/appointmentService/...` desde `@/lib/supabase`, pero la implementación de referencia de estos servicios está en `src/mobile/src/lib/supabase.ts`. Si trabajas en web, duplica o mueve esos servicios a `src/lib/` para mantener consistencia y evitar errores de import.
+- Zonas horarias: el código usa valores como `America/Mexico_City` y `America/New_York` en distintas utilidades; al persistir o mostrar fechas, pasa explícitamente la TZ correcta.
+- No expongas claves de servicio (service_role) en cliente; usa Edge Functions para operaciones privilegiadas.
+- **MCP vs Cliente JS**: Prefiere MCP para operaciones complejas, migraciones y consultas directas. Usa cliente JS para operaciones de UI en tiempo real.
+
+---
+
+_Última actualización: Enero 2025_  
+_Mantenido por: TI-Turing Team_
+
+_Para ver la documentación completa, consulta `AGENTS.md` o `.github/copilot-instructions.md`_
+

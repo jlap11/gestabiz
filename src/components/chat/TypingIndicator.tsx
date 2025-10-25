@@ -20,19 +20,19 @@ export function TypingIndicator({ typingUsers }: Readonly<TypingIndicatorProps>)
 
   // Obtener nombres de usuarios
   const names = typingUsers
-    .map(u => u.user?.full_name || u.user?.email?.split('@')[0] || 'Usuario')
+    .map(u => u.user?.full_name || u.user?.email?.split('@')[0] || t('chat.userAlt'))
     .filter(Boolean)
 
   // Formatear texto según cantidad
   let text = ''
   if (names.length === 1) {
-    text = `${names[0]} está escribiendo`
+    text = t('chat.typing.single', { name: names[0] })
   } else if (names.length === 2) {
-    text = `${names[0]} y ${names[1]} están escribiendo`
+    text = t('chat.typing.two', { a: names[0], b: names[1] })
   } else if (names.length === 3) {
-    text = `${names[0]}, ${names[1]} y ${names[2]} están escribiendo`
+    text = t('chat.typing.three', { a: names[0], b: names[1], c: names[2] })
   } else {
-    text = `${names[0]}, ${names[1]} y ${names.length - 2} más están escribiendo`
+    text = t('chat.typing.many', { a: names[0], b: names[1], n: String(names.length - 2) })
   }
 
   return (
@@ -87,4 +87,4 @@ function TypingAnimation() {
   animation-delay: 300ms;
 }
 */
-
+

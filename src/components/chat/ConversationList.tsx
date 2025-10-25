@@ -119,7 +119,7 @@ export function ConversationList({
       <button
         onClick={onClick}
         className={cn(
-          'w-full p-3 sm:p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors text-left min-h-[64px]',
+          'w-full p-3 sm:p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors text-left min-h-[56px] sm:min-h-[64px]',
           isActive && 'bg-muted'
         )}
       >
@@ -195,7 +195,7 @@ export function ConversationList({
               size="icon"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-9 sm:w-9"
               onClick={() => setSearchQuery('')}
-              aria-label={t('chat.clear')}
+              aria-label={t('common.actions.clear')}
             >
               <X className="h-5 w-5" />
             </Button>

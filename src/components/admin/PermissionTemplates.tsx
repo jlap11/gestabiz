@@ -130,7 +130,7 @@ function TemplateCard({
           ))}
           {permissionsArray.length > 5 && (
             <p className="text-xs text-muted-foreground pl-5">
-              +{permissionsArray.length - 5} permisos más...
+              {permissionsArray.length - 5} permisos más...
             </p>
           )}
         </div>

@@ -16,13 +16,13 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
+        <Button variant="outline" size="icon" className="relative min-h-[44px] min-w-[44px]">
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">{t('themeToggle.label')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-card border-border">
+      <DropdownMenuContent align="end" className="max-w-[95vw] sm:w-48 bg-card border-border">
         <DropdownMenuItem
           onClick={() => setTheme('light')}
           className={`cursor-pointer ${theme === 'light' ? 'bg-accent' : ''}`}
@@ -48,3 +48,4 @@ export function ThemeToggle() {
     </DropdownMenu>
   )
 }
+

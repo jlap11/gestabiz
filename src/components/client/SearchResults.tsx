@@ -480,7 +480,7 @@ export const SearchResults = React.memo(function SearchResults({
       <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" aria-hidden="true" />
             <p className="text-lg font-medium text-foreground">
               {t('search.resultsPage.searching')}
             </p>
@@ -522,19 +522,21 @@ export const SearchResults = React.memo(function SearchResults({
               size="icon"
               onClick={onClose}
               className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 min-w-[44px] min-h-[44px]"
+              aria-label={t('common.actions.close')}
+              title={t('common.actions.close')}
             >
-              <X className="h-5 w-5 sm:h-6 sm:w-6" />
+              <X className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
             </Button>
           </div>
 
           {/* Toolbar - Mobile Optimized */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
             <Select value={sortBy} onValueChange={v => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-full sm:w-[280px] min-h-[44px]">
-                <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
+              <SelectTrigger className="w-full sm:w-[280px] min-h-[44px]" aria-label={t('common.placeholders.sortBy')} title={t('common.placeholders.sortBy')}>
+                <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" aria-hidden="true" />
                 <SelectValue placeholder={t('common.placeholders.sortBy')} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-w-[95vw]">
                 {sortOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -547,8 +549,10 @@ export const SearchResults = React.memo(function SearchResults({
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
               className="gap-2 min-h-[44px] w-full sm:w-auto"
+              aria-label={t('search.filters.filters')}
+              title={t('search.filters.filters')}
             >
-              <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
+              <SlidersHorizontal className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline">{t('search.filters.filters')}</span>
               <span className="sm:hidden">{t('search.filters.filter')}</span>
               {showFilters && (
@@ -560,7 +564,7 @@ export const SearchResults = React.memo(function SearchResults({
 
             {!userLocation && (
               <div className="flex-1 text-xs sm:text-sm text-muted-foreground flex items-center gap-2 p-2 sm:p-0">
-                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" aria-hidden="true" />
                 <span className="hidden sm:inline">{t('search.filters.enableLocation')}</span>
                 <span className="sm:hidden">{t('search.filters.enableLocationShort')}</span>
               </div>
@@ -593,6 +597,9 @@ export const SearchResults = React.memo(function SearchResults({
                     key={result.id}
                     className="hover:shadow-lg transition-all cursor-pointer group"
                     onClick={() => onResultClick(result)}
+                    role="button"
+                    aria-label={`${t('search.resultsPage.openResult')} ${result.name}`}
+                    title={`${t('search.resultsPage.openResult')} ${result.name}`}
                   >
                     <CardContent className="p-3 sm:p-5">
                       {/* Image or Icon - Mobile Optimized */}
@@ -606,7 +613,7 @@ export const SearchResults = React.memo(function SearchResults({
                         </div>
                       ) : (
                         <div className="w-full h-32 sm:h-40 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-3 sm:mb-4">
-                          <TypeIcon className="h-12 w-12 sm:h-16 sm:w-16 text-primary/40" />
+                          <TypeIcon className="h-12 w-12 sm:h-16 sm:w-16 text-primary/40" aria-hidden="true" />
                         </div>
                       )}
 

@@ -224,3 +224,70 @@ export function HierarchyMapView({ employees, onEmployeeSelect }: Readonly<Hiera
 }
 
 export default HierarchyMapView
+
+        <div className="flex items-center gap-2" role="toolbar" aria-label={t('employees.management.mapControls')}>
+           <Button
+             onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+             variant="outline"
+             className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
+             aria-label={t('employees.management.zoomOut')}
+             title={t('employees.management.zoomOut')}
+           >
+             <span aria-hidden="true">-</span>
+           </Button>
+           <Button
+             onClick={() => setZoom(1)}
+             variant="outline"
+             className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
+             aria-label={t('employees.management.resetZoom')}
+             title={t('employees.management.resetZoom')}
+           >
+             <span aria-hidden="true">1x</span>
+           </Button>
+           <Button
+             onClick={() => setZoom(z => Math.min(2, z + 0.1))}
+             variant="outline"
+             className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
+             aria-label={t('employees.management.zoomIn')}
+             title={t('employees.management.zoomIn')}
+           >
+             <span aria-hidden="true">+</span>
+           </Button>
+         </div>
+      <div
+        className="relative border rounded-lg overflow-hidden"
+        style={{ height: `${containerHeight}px` }}
+        role="region"
+        aria-label={t('employees.management.orgChartRegion')}
+      >
+         {/* Simulated org chart with zoom */}
+         <div
+           className="p-6"
+           style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+         >
+           {/* ... org chart nodes ... */}
+         </div>
+       </div>
+       {hasChildren && node.isExpanded && (
+         <div className="flex items-start gap-8">
+           {node.children.map(child => (
+             <div
+               key={
+                 getEmployeeId(child.employee) ?? child.employee.email ?? child.employee.full_name
+               }
+               className="relative"
+             >
+               {/* CONECTOR HORIZONTAL (para múltiples hijos) */}
+               {node.children.length > 1 && (
+                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-8 bg-border" />
+               )}
+               {renderNode(child, depth + 1)}
+             </div>
+           ))}
+         </div>
+       )}
+     </div>
+   )
+}
+
+export default HierarchyMapView
