@@ -14,6 +14,8 @@ interface Business {
   address: string | null;
   city: string | null;
   phone: string | null;
+  // added for category-based filtering
+  category_id?: string | null;
 }
 
 interface BusinessSelectionProps {
@@ -32,6 +34,12 @@ export function BusinessSelection({
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  // track active search type coming from SearchBar
+  const [searchType, setSearchType] = useState<'services' | 'businesses' | 'categories' | 'users'>('businesses');
+  // ids matched by backend queries for services/categories/users
+  const [matchedBusinessIds, setMatchedBusinessIds] = useState<string[]>([]);
+  // labels to show on cards according to filter
+  const [matchLabels, setMatchLabels] = useState<Record<string, string>>({});
   const hookCityData = usePreferredCity();
   
   // Usar props si vienen del parent (AppointmentWizard), si no usar hook
@@ -48,20 +56,28 @@ export function BusinessSelection({
         return str.normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').toLowerCase();
       };
       
+      // Helper para mapear nombres conocidos (Bogotá D.C. -> Bogotá/Cundinamarca)
+      const isBogotaCity = preferredCityName && normalize(preferredCityName).includes('bogota');
+      const isBogotaRegion = preferredRegion && normalize(preferredRegion).includes('bogota');
+      
       // Filtrar por ciudad preferida si está disponible
       if (preferredCityName) {
-        const normalizedCity = normalize(preferredCityName);
-        // Caso especial para Bogotá
-        if (normalizedCity.includes('bogota')) {
+        if (isBogotaCity) {
+          // Coincidencias flexibles para Bogotá
           query = query.ilike('city', '%Bogot%');
         } else {
           query = query.ilike('city', `%${preferredCityName}%`);
         }
       }
       
-      // Si hay región, filtrar también por ella
+      // Si hay región y no se especificó ciudad, filtrar por región
       if (preferredRegion && !preferredCityName) {
-        query = query.ilike('state', `%${preferredRegion}%`);
+        if (isBogotaRegion) {
+          // Bogotá D.C. mapea al departamento Cundinamarca y ciudad Bogotá
+          query = query.ilike('state', '%Cundinamarca%').ilike('city', '%Bogot%');
+        } else {
+          query = query.ilike('state', `%${preferredRegion}%`);
+        }
       }
 
       const { data: locations, error: locError } = await query;
@@ -81,12 +97,13 @@ export function BusinessSelection({
         return;
       }
 
-      // Obtener detalles de los negocios
+      // Obtener detalles de los negocios (incluye category_id)
       const { data: businessesData, error: bizError } = await supabase
         .from('businesses')
-        .select('id, name, description, logo_url, address, city, phone')
+        .select('id, name, description, logo_url, address, city, phone, category_id')
         .in('id', uniqueBusinessIds)
         .eq('is_active', true)
+        .eq('is_public', true)
         .order('name');
 
       if (bizError) throw bizError;
@@ -127,6 +144,100 @@ export function BusinessSelection({
     return 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=400&fit=crop';
   };
 
+  // Apply filter with backend queries for services/categories/users
+  const applyFilter = useCallback(async (term: string, type: 'services' | 'businesses' | 'categories' | 'users') => {
+    const loadedIds = businesses.map(b => b.id);
+    const labels: Record<string, string> = {};
+
+    // helper to capitalize term for label
+    const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+    if (!term || term.trim().length < 2) {
+      setMatchedBusinessIds([]);
+      setMatchLabels({});
+      return;
+    }
+
+    switch (type) {
+      case 'businesses': {
+        // Pure name-based filtering; labels not used
+        setMatchedBusinessIds([]);
+        setMatchLabels({});
+        break;
+      }
+      case 'services': {
+        try {
+          const { data } = await supabase
+            .from('services')
+            .select('id, name, business_id')
+            .ilike('name', `%${term}%`)
+            .eq('is_active', true)
+            .in('business_id', loadedIds);
+
+          const ids = Array.from(new Set((data || []).map((s: any) => s.business_id).filter(Boolean)));
+          ids.forEach((bid: string) => { labels[bid] = `Servicios: ${cap(term)}...`; });
+          setMatchedBusinessIds(ids);
+          setMatchLabels(labels);
+        } catch {
+          setMatchedBusinessIds([]);
+          setMatchLabels({});
+        }
+        break;
+      }
+      case 'categories': {
+        try {
+          const { data } = await supabase
+            .from('business_categories')
+            .select('id, name')
+            .ilike('name', `%${term}%`)
+            .eq('is_active', true);
+
+          const matchedCatIds = new Set((data || []).map((c: any) => c.id));
+          const ids = businesses.filter(b => b.category_id && matchedCatIds.has(b.category_id)).map(b => b.id);
+          ids.forEach((bid: string) => { labels[bid] = `Categorías: ${cap(term)}...`; });
+          setMatchedBusinessIds(ids);
+          setMatchLabels(labels);
+        } catch {
+          setMatchedBusinessIds([]);
+          setMatchLabels({});
+        }
+        break;
+      }
+      case 'users': {
+        try {
+          const { data } = await supabase
+            .from('business_employees')
+            .select(`
+              business_id,
+              profiles:profiles!business_employees_user_id_fkey ( id, full_name )
+            `)
+            .eq('status', 'approved')
+            .in('business_id', loadedIds)
+            .ilike('profiles.full_name', `%${term}%`);
+
+          const byBusiness: Record<string, any[]> = {};
+          (data || []).forEach((row: any) => {
+            if (!row.business_id) return;
+            if (!byBusiness[row.business_id]) byBusiness[row.business_id] = [];
+            byBusiness[row.business_id].push(row.profiles);
+          });
+
+          const ids = Object.keys(byBusiness);
+          ids.forEach((bid: string) => {
+            const first = byBusiness[bid]?.[0]?.full_name || cap(term);
+            labels[bid] = `Profesional: ${first}...`;
+          });
+          setMatchedBusinessIds(ids);
+          setMatchLabels(labels);
+        } catch {
+          setMatchedBusinessIds([]);
+          setMatchLabels({});
+        }
+        break;
+      }
+    }
+  }, [businesses]);
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -150,13 +261,21 @@ export function BusinessSelection({
     );
   }
 
-  // Filtrar negocios según el término de búsqueda
-  const filteredBusinesses = businesses.filter((business) =>
-    business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.address?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtrar negocios según el término de búsqueda y tipo
+  const filteredBusinesses = (() => {
+    if (!searchTerm || searchTerm.trim().length < 2) return businesses;
+
+    const termLower = searchTerm.toLowerCase();
+    if (searchType === 'businesses') {
+      return businesses.filter((business) =>
+        (business.name.toLowerCase().includes(termLower))
+      );
+    }
+
+    // For services, categories and users we rely on matchedBusinessIds from backend
+    const idSet = new Set(matchedBusinessIds);
+    return businesses.filter((b) => idSet.has(b.id));
+  })();
 
   return (
     <div className="p-6 space-y-6">
@@ -188,8 +307,9 @@ export function BusinessSelection({
                     try {
                       const { data } = await supabase
                         .from('businesses')
-                        .select('id, name, description, logo_url, address, city, phone')
+                        .select('id, name, description, logo_url, address, city, phone, category_id')
                         .eq('id', result.id)
+                        .eq('is_public', true)
                         .single();
                       if (data) {
                         onSelectBusiness(data as Business);
@@ -199,11 +319,18 @@ export function BusinessSelection({
                     }
                   })();
                 }
+              } else {
+                // For other types, set the type and apply filter directly with the selected item name
+                setSearchType(result.type);
+                setSearchTerm(result.name);
+                applyFilter(result.name, result.type);
               }
             }}
-            onViewMore={(term: string, _type: unknown) => {
-              // When user requests view more, populate the local searchTerm
+            onViewMore={(term: string, type: any) => {
+              // When user requests view more, populate the local searchTerm and type
               setSearchTerm(term);
+              setSearchType(type as any);
+              applyFilter(term, type as any);
             }}
           />
         </div>
@@ -255,6 +382,15 @@ export function BusinessSelection({
                 <h3 className="text-base font-semibold text-foreground mb-1">
                   {business.name}
                 </h3>
+
+                {/* Filter match label for services/categories/users */}
+                {searchType !== 'businesses' && matchLabels[business.id] && (
+                  <div className="mb-2">
+                    <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
+                      {matchLabels[business.id]}
+                    </span>
+                  </div>
+                )}
                 
                 {business.description && (
                   <p className="text-xs text-muted-foreground mb-2 line-clamp-2">

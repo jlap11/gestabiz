@@ -54,12 +54,18 @@ CREATE POLICY ins_profiles ON public.profiles
 -- BUSINESSES
 -- ============================================================================
 DROP POLICY IF EXISTS sel_businesses ON public.businesses;
+DROP POLICY IF EXISTS sel_businesses_public ON public.businesses;
 DROP POLICY IF EXISTS ins_businesses ON public.businesses;
 DROP POLICY IF EXISTS upd_businesses ON public.businesses;
 DROP POLICY IF EXISTS del_businesses ON public.businesses;
 CREATE POLICY sel_businesses ON public.businesses
   FOR SELECT USING (
     is_business_owner(id) OR is_business_member(id)
+  );
+-- Allow public read of active, public businesses for client browsing
+CREATE POLICY sel_businesses_public ON public.businesses
+  FOR SELECT USING (
+    is_active = TRUE AND is_public = TRUE
   );
 CREATE POLICY ins_businesses ON public.businesses
   FOR INSERT WITH CHECK (owner_id = auth.uid());
@@ -72,10 +78,18 @@ CREATE POLICY del_businesses ON public.businesses
 -- LOCATIONS
 -- ============================================================================
 DROP POLICY IF EXISTS sel_locations ON public.locations;
+DROP POLICY IF EXISTS sel_locations_public ON public.locations;
 DROP POLICY IF EXISTS all_locations_owner ON public.locations;
 CREATE POLICY sel_locations ON public.locations
   FOR SELECT USING (
     is_business_owner(locations.business_id) OR is_business_member(locations.business_id)
+  );
+-- Allow public read of active locations of public businesses
+CREATE POLICY sel_locations_public ON public.locations
+  FOR SELECT USING (
+    is_active = TRUE AND locations.business_id IN (
+      SELECT id FROM public.businesses WHERE is_public = TRUE AND is_active = TRUE
+    )
   );
 CREATE POLICY all_locations_owner ON public.locations
   FOR ALL USING (is_business_owner(locations.business_id));

@@ -13,14 +13,36 @@ interface StoredRoleContext {
 }
 
 export function useUserRoles(user: User | null) {
+  // Clave de almacenamiento por usuario para evitar fugas de contexto entre cuentas
+  const storageKey = user?.id ? `${ACTIVE_ROLE_KEY}:${user.id}` : ACTIVE_ROLE_KEY
+
+  // Persist active role context in localStorage (por usuario)
+  const [storedContext, setStoredContext] = useKV<StoredRoleContext | null>(storageKey, null)
   const [roles, setRoles] = useState<UserRoleAssignment[]>([])
-  const [activeRole, setActiveRole] = useState<UserRole>('client')
-  const [activeBusiness, setActiveBusiness] = useState<{ id: string; name: string } | undefined>()
+
+  // Inicializar desde storedContext para evitar "parpadeo" hacia Cliente tras login
+  const [activeRole, setActiveRole] = useState<UserRole>(() => storedContext?.role ?? 'client')
+  const [activeBusiness, setActiveBusiness] = useState<{ id: string; name: string } | undefined>(() => {
+    return storedContext?.businessId && storedContext?.businessName
+      ? { id: storedContext.businessId, name: storedContext.businessName }
+      : undefined
+  })
   const [isLoading, setIsLoading] = useState(false)
 
-  // Persist active role context in localStorage
-  const [storedContext, setStoredContext] = useKV<StoredRoleContext | null>(ACTIVE_ROLE_KEY, null)
-  
+  // Migrar una vez desde la clave global si existe y aún no hay valor por usuario
+  useEffect(() => {
+    if (!user?.id || typeof window === 'undefined') return
+    const oldKey = ACTIVE_ROLE_KEY
+    const newKey = `${ACTIVE_ROLE_KEY}:${user.id}`
+    try {
+      const oldVal = window.localStorage.getItem(oldKey)
+      const newVal = window.localStorage.getItem(newKey)
+      if (oldVal && !newVal) {
+        window.localStorage.setItem(newKey, oldVal)
+      }
+    } catch {}
+  }, [user?.id])
+
   // Use ref to avoid infinite loop in fetchUserRoles dependencies
   const storedContextRef = useRef(storedContext)
   const setStoredContextRef = useRef(setStoredContext)
@@ -30,6 +52,21 @@ export function useUserRoles(user: User | null) {
     storedContextRef.current = storedContext
     setStoredContextRef.current = setStoredContext
   }, [storedContext, setStoredContext])
+
+  // Sincronizar estado cuando cambie storedContext (por ejemplo, al cambiar de usuario)
+  useEffect(() => {
+    if (storedContext) {
+      setActiveRole(storedContext.role)
+      if (storedContext.businessId && storedContext.businessName) {
+        setActiveBusiness({ id: storedContext.businessId, name: storedContext.businessName })
+      } else {
+        setActiveBusiness(undefined)
+      }
+    } else {
+      setActiveRole('client')
+      setActiveBusiness(undefined)
+    }
+  }, [storedContext])
 
   // Flag to prevent multiple fetches
   const hasFetchedRef = useRef(false)
@@ -50,14 +87,13 @@ export function useUserRoles(user: User | null) {
         .from('businesses')
         .select('id, name')
         .eq('owner_id', user.id)
-
-      if (businessError && businessError.code !== 'PGRST116') {
+        
+      if (businessError) {
         throw businessError
       }
 
-      // Add admin roles for owned businesses
       if (ownedBusinesses && ownedBusinesses.length > 0) {
-        ownedBusinesses.forEach(business => {
+        ownedBusinesses.forEach((business) => {
           roleAssignments.push({
             id: `${user.id}-admin-${business.id}`,
             user_id: user.id,
@@ -68,33 +104,26 @@ export function useUserRoles(user: User | null) {
             created_at: user.created_at,
           })
         })
-      } else {
-        // Always add admin role even without businesses (will show onboarding)
-        roleAssignments.push({
-          id: `${user.id}-admin`,
-          user_id: user.id,
-          role: 'admin',
-          business_id: null,
-          is_active: true,
-          created_at: user.created_at,
-        })
       }
 
-      // 2. Get businesses where user is employee
-      const { data: employeeBusinesses, error: empError } = await supabase
+      // 2. Get businesses where user is employee (approved)
+      const { data: employeeRelations, error: employeeError } = await supabase
         .from('business_employees')
-        .select('business_id, businesses(id, name)')
+        .select('business_id, status, businesses:business_id(id, name)')
         .eq('employee_id', user.id)
-
-      if (empError && empError.code !== 'PGRST116') {
-        throw empError
+        .eq('status', 'approved')
+      
+      if (employeeError) {
+        throw employeeError
       }
 
-      // Add employee roles
-      if (employeeBusinesses && employeeBusinesses.length > 0) {
-        employeeBusinesses.forEach(emp => {
-          const business = Array.isArray(emp.businesses) ? emp.businesses[0] : emp.businesses
-          if (business) {
+      if (employeeRelations && employeeRelations.length > 0) {
+        employeeRelations.forEach((rel) => {
+          const bizData = rel.businesses
+          const biz = Array.isArray(bizData) ? bizData[0] : bizData
+          const business = biz || { id: rel.business_id, name: undefined }
+
+          if (business?.id) {
             roleAssignments.push({
               id: `${user.id}-employee-${business.id}`,
               user_id: user.id,
@@ -109,8 +138,6 @@ export function useUserRoles(user: User | null) {
       }
 
       // 3. Always add employee role (everyone can be an employee)
-      // Note: Even if user has no business_employees relationship, they can switch to employee role
-      // and will see the employee onboarding to join a business
       const hasEmployeeRole = roleAssignments.some(r => r.role === 'employee')
       if (!hasEmployeeRole) {
         roleAssignments.push({
@@ -139,7 +166,6 @@ export function useUserRoles(user: User | null) {
       const currentStoredContext = storedContextRef.current
       
       if (currentStoredContext) {
-        // Always restore the last used role from localStorage
         setActiveRole(currentStoredContext.role)
         if (currentStoredContext.businessId && currentStoredContext.businessName) {
           setActiveBusiness({
@@ -221,6 +247,9 @@ export function useUserRoles(user: User | null) {
               businessId: businessId,
               businessName: roleAssignment.business_name,
             })
+          } else {
+            // Store without business name if not available
+            setStoredContextRef.current({ role: newRole, businessId })
           }
         } else {
           // No business context (will trigger onboarding if needed)
@@ -235,9 +264,6 @@ export function useUserRoles(user: User | null) {
         
         toast.success(`Cambiado a rol ${roleLabel}`)
 
-        // No reload needed - state update will trigger re-render
-        // The component will automatically show the new role's view
-        
         return true
       } catch (error) {
         // eslint-disable-next-line no-console

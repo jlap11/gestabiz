@@ -141,10 +141,10 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
           og_image_url,
           is_public,
           category_id,
-          categories!businesses_category_id_fkey (
+          business_categories!businesses_category_id_fkey (
             id,
             name,
-            icon
+            icon_name
           )
         `)
         .eq(slug ? 'slug' : 'id', slug || businessId)
@@ -160,7 +160,7 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
         .from('business_subcategories')
         .select(`
           subcategory_id,
-          subcategories (
+          business_categories (
             id,
             name
           )
@@ -169,7 +169,7 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
 
       // 3. Fetch locations
       const { data: locationsData } = await supabase
-        .from('business_locations')
+        .from('locations')
         .select('*')
         .eq('business_id', businessData.id)
         .eq('is_active', true)
@@ -297,7 +297,7 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
       });
 
       // 11. Build final business object
-      const category = Array.isArray(businessData.categories) ? businessData.categories[0] : businessData.categories;
+      const category = Array.isArray(businessData.business_categories) ? businessData.business_categories[0] : businessData.business_categories;
       
       const finalBusiness: BusinessData = {
         id: businessData.id,
@@ -313,10 +313,10 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
         reviewCount: statsData?.review_count || 0,
         category: category ? {
           name: category.name,
-          icon: category.icon
+          icon: category.icon_name
         } : undefined,
         subcategories: subcategoriesData?.map((sc: any) => {
-          const subcat = Array.isArray(sc.subcategories) ? sc.subcategories[0] : sc.subcategories;
+          const subcat = Array.isArray(sc.business_categories) ? sc.business_categories[0] : sc.business_categories;
           return {
             name: subcat?.name || ''
           };
@@ -339,7 +339,7 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
     } finally {
       setIsLoading(false);
     }
-  }, [businessId, slug, userLocation, calculateDistance]);
+  }, [businessId, slug, calculateDistance, userLocation?.latitude, userLocation?.longitude]);
 
   useEffect(() => {
     fetchBusinessData();

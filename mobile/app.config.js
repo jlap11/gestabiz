@@ -1,70 +1,101 @@
-{
-  "expo": {
-    "name": "Gestabiz",
-    "slug": "Gestabiz",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#3B82F6"
+export default {
+  expo: {
+    name: "Gestabiz",
+    slug: "gestabiz-mobile",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "automatic",
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "contain",
+      backgroundColor: "#F8FAFC"
     },
-    "assetBundlePatterns": [
+    assetBundlePatterns: [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.Gestabiz.app",
-      "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to take photos for appointments.",
-        "NSMicrophoneUsageDescription": "This app uses the microphone for voice notes."
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.gestabiz.mobile",
+      buildNumber: "1.0.0",
+      config: {
+        usesNonExemptEncryption: false
+      },
+      infoPlist: {
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true,
+          NSAllowsLocalNetworking: true
+        }
       }
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#F8FAFC"
       },
-      "package": "com.Gestabiz.app",
-      "permissions": [
+      package: "com.gestabiz.mobile",
+      versionCode: 1,
+      permissions: [
+        "INTERNET",
         "CAMERA",
-        "RECORD_AUDIO",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "NOTIFICATIONS",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
       ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+    web: {
+      favicon: "./assets/favicon.png",
+      bundler: "metro"
     },
-    "plugins": [
+    plugins: [
       "expo-router",
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#3B82F6",
-          "sounds": [
-            "./assets/sounds/notification.wav"
+          icon: "./assets/notification-icon.png",
+          color: "#3B82F6",
+          sounds: [
+            "./assets/notification.wav"
           ]
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          calendarPermission: "La aplicación necesita acceder a tu calendario para sincronizar citas."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          cameraPermission: "La aplicación necesita acceder a tu cámara para escanear códigos QR."
         }
       ]
     ],
-    "experiments": {
-      "typedRoutes": true
+    extra: {
+      // URLs de la web app
+      webAppUrl: process.env.EXPO_PUBLIC_WEB_APP_URL || process.env.VITE_APP_URL || "https://gestabiz.com",
+      webAppUrlDev: "http://localhost:5173",
+      
+      // Supabase (sincronizado con variables de web)
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
+      
+      eas: {
+        projectId: "your-project-id-here"
+      }
     },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "your-project-id-here"
-      },
-      "supabaseUrl": process.env.EXPO_PUBLIC_SUPABASE_URL,
-      "supabaseAnonKey": process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+    scheme: "gestabiz",
+    runtimeVersion: {
+      policy: "sdkVersion"
     },
-    "owner": "your-expo-username"
+    updates: {
+      fallbackToCacheTimeout: 0,
+      url: "https://u.expo.dev/your-project-id-here"
+    }
   }
 }

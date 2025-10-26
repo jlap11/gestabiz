@@ -81,7 +81,6 @@ function AuthenticatedApp() {
   return (
     <NotificationProvider userId={user.id}>
       <MainApp onLogout={handleLogout} />
-      <Toaster richColors closeButton />
     </NotificationProvider>
   )
 }
@@ -134,6 +133,8 @@ function App() {
                   <AuthProvider>
                     <AppRoutes />
                     <CookieConsent />
+                    {/* Toaster global para todas las rutas, incluidas públicas */}
+                    <Toaster richColors closeButton />
                   </AuthProvider>
                 </AppStateProvider>
               </LanguageProvider>

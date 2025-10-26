@@ -11,24 +11,50 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
-export default function PublicBusinessProfile() {
-  const { slug } = useParams<{ slug: string }>();
+interface PublicBusinessProfileProps {
+  readonly slug?: string;
+  readonly embedded?: boolean;
+}
+
+export default function PublicBusinessProfile({ slug: slugProp, embedded = false }: Readonly<PublicBusinessProfileProps>) {
+  const routeParams = useParams<{ slug: string }>();
+  const slug = slugProp ?? routeParams.slug;
   const navigate = useNavigate();
   const { user } = useAuth();
   const analytics = useAnalytics();
   
   // Geolocation for distance calculation
   const geoState = useGeolocation({ requestOnMount: true });
+
+  // Memoize user location to avoid re-renders triggering refetch
+  const userLocation = useMemo(() => (
+    geoState.latitude && geoState.longitude
+      ? { latitude: geoState.latitude, longitude: geoState.longitude }
+      : undefined
+  ), [geoState.latitude, geoState.longitude]);
   
   // Fetch business data by slug
   const { business, isLoading, error } = useBusinessProfileData({
     slug,
-    userLocation: geoState.latitude && geoState.longitude ? {
-      latitude: geoState.latitude,
-      longitude: geoState.longitude
-    } : undefined
+    userLocation
+  });
+
+  // Build SEO meta tags early to keep hook order stable
+  const pageTitle = business?.meta_title || `${business?.name ?? 'Perfil del Negocio'} - AppointSync Pro`;
+  const pageDescription = business?.meta_description || business?.description || (business ? `Reserva citas en ${business.name}` : 'Explora y reserva servicios.');
+  const ogImage = business?.og_image_url || business?.banner_url || business?.logo_url;
+  const canonicalUrl = `${globalThis.location.origin}/negocio/${business?.slug ?? slug}`;
+
+  usePageMeta({
+    title: pageTitle,
+    description: pageDescription,
+    keywords: business?.meta_keywords?.join(', '),
+    ogImage: ogImage || undefined,
+    ogTitle: pageTitle,
+    ogDescription: pageDescription,
+    canonical: canonicalUrl,
   });
 
   // Track profile view when business data loads
@@ -38,10 +64,46 @@ export default function PublicBusinessProfile() {
         businessId: business.id,
         businessName: business.name,
         slug: business.slug,
-        category: business.category as string | undefined,
+        category: business.category?.name,
       });
     }
   }, [business, analytics]);
+
+  // Handle JSON-LD structured data (always call the hook, guard inside)
+  useEffect(() => {
+    if (!business) return;
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": business.name,
+      "description": business.description,
+      "image": ogImage,
+      "url": canonicalUrl,
+      "telephone": business.phone,
+      "email": business.email,
+      "address": business.locations[0] ? {
+        "@type": "PostalAddress",
+        "streetAddress": business.locations[0].address,
+        "addressLocality": business.locations[0].city,
+        "addressRegion": business.locations[0].state,
+        "postalCode": business.locations[0].postal_code,
+        "addressCountry": business.locations[0].country
+      } : undefined,
+      "aggregateRating": business.reviewCount > 0 ? {
+        "@type": "AggregateRating",
+        "ratingValue": business.rating.toFixed(1),
+        "reviewCount": business.reviewCount
+      } : undefined
+    });
+    document.head.appendChild(script);
+    
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [business, ogImage, canonicalUrl]);
 
   // Handle booking action
   const handleBookAppointment = (serviceId?: string, locationId?: string, employeeId?: string) => {
@@ -98,72 +160,75 @@ export default function PublicBusinessProfile() {
   }
 
   // Build SEO meta tags
-  const pageTitle = business.meta_title || `${business.name} - AppointSync Pro`;
-  const pageDescription = business.meta_description || business.description || `Reserva citas en ${business.name}`;
-  const ogImage = business.og_image_url || business.banner_url || business.logo_url;
-  const canonicalUrl = `${globalThis.location.origin}/negocio/${business.slug}`;
+  // const pageTitle = business.meta_title || `${business.name} - AppointSync Pro`;
+  // const pageDescription = business.meta_description || business.description || `Reserva citas en ${business.name}`;
+  // const ogImage = business.og_image_url || business.banner_url || business.logo_url;
+  // const canonicalUrl = `${globalThis.location.origin}/negocio/${business.slug}`;
 
-  // Use the custom meta tag hook
-  usePageMeta({
-    title: pageTitle,
-    description: pageDescription,
-    keywords: business.meta_keywords?.join(', '),
-    ogImage: ogImage || undefined,
-    ogTitle: pageTitle,
-    ogDescription: pageDescription,
-    canonical: canonicalUrl,
-  });
+  // // Use the custom meta tag hook
+  // usePageMeta({
+  //   title: pageTitle,
+  //   description: pageDescription,
+  //   keywords: business.meta_keywords?.join(', '),
+  //   ogImage: ogImage || undefined,
+  //   ogTitle: pageTitle,
+  //   ogDescription: pageDescription,
+  //   canonical: canonicalUrl,
+  // });
+  // Meta tags managed earlier to keep hook calls stable
 
   // Handle JSON-LD structured data
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": business.name,
-      "description": business.description,
-      "image": ogImage,
-      "url": canonicalUrl,
-      "telephone": business.phone,
-      "email": business.email,
-      "address": business.locations[0] ? {
-        "@type": "PostalAddress",
-        "streetAddress": business.locations[0].address,
-        "addressLocality": business.locations[0].city,
-        "addressRegion": business.locations[0].state,
-        "postalCode": business.locations[0].postal_code,
-        "addressCountry": business.locations[0].country
-      } : undefined,
-      "aggregateRating": business.reviewCount > 0 ? {
-        "@type": "AggregateRating",
-        "ratingValue": business.rating.toFixed(1),
-        "reviewCount": business.reviewCount
-      } : undefined
-    });
-    document.head.appendChild(script);
-    
-    return () => {
-      if (script.parentNode) script.parentNode.removeChild(script);
-    };
-  }, [business, ogImage, canonicalUrl]);
+  // useEffect(() => {
+  //   const script = document.createElement('script');
+  //   script.type = 'application/ld+json';
+  //   script.textContent = JSON.stringify({
+  //     "@context": "https://schema.org",
+  //     "@type": "LocalBusiness",
+  //     "name": business.name,
+  //     "description": business.description,
+  //     "image": ogImage,
+  //     "url": canonicalUrl,
+  //     "telephone": business.phone,
+  //     "email": business.email,
+  //     "address": business.locations[0] ? {
+  //       "@type": "PostalAddress",
+  //       "streetAddress": business.locations[0].address,
+  //       "addressLocality": business.locations[0].city,
+  //       "addressRegion": business.locations[0].state,
+  //       "postalCode": business.locations[0].postal_code,
+  //       "addressCountry": business.locations[0].country
+  //     } : undefined,
+  //     "aggregateRating": business.reviewCount > 0 ? {
+  //       "@type": "AggregateRating",
+  //       "ratingValue": business.rating.toFixed(1),
+  //       "reviewCount": business.reviewCount
+  //     } : undefined
+  //   });
+  //   document.head.appendChild(script);
+  //   
+  //   return () => {
+  //     if (script.parentNode) script.parentNode.removeChild(script);
+  //   };
+  // }, [business, ogImage, canonicalUrl]);
 
   return (
     <>
       <div className="min-h-screen bg-background">
         {/* Header con navegación */}
-        <header className="sticky top-0 z-10 bg-card border-b border-border">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver
-            </Button>
-            <Button onClick={() => handleBookAppointment()} size="lg">
-              <Calendar className="w-4 h-4 mr-2" />
-              Reservar Ahora
-            </Button>
-          </div>
-        </header>
+        {!embedded && (
+          <header className="sticky top-0 z-10 bg-card border-b border-border">
+            <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')}> 
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver
+              </Button>
+              <Button onClick={() => handleBookAppointment()} size="lg">
+                <Calendar className="w-4 h-4 mr-2" />
+                Reservar Ahora
+              </Button>
+            </div>
+          </header>
+        )}
 
         {/* Banner */}
         {business.banner_url && (
@@ -479,14 +544,7 @@ export default function PublicBusinessProfile() {
         {/* Footer CTA */}
         <div className="sticky bottom-0 border-t border-border bg-card/95 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => handleBookAppointment()}
-            >
-              <Calendar className="w-5 h-5 mr-2" />
-              Reservar cita ahora
-            </Button>
+            
           </div>
         </div>
       </div>

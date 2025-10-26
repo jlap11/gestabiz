@@ -40,7 +40,8 @@ import {
   CurrencyDollar as DollarSign,
   Calendar,
   Warning as AlertCircle,
-  Buildings as Building2
+  Buildings as Building2,
+  ImageSquare as ImageIcon
 } from '@phosphor-icons/react'
 import { useEmployeeProfile, type Certification } from '@/hooks/useEmployeeProfile'
 import { supabase } from '@/lib/supabase'
@@ -48,6 +49,7 @@ import type { Business } from '@/types/types'
 import { PhoneInput } from '@/components/ui/PhoneInput'
 import { BusinessNotificationSettings } from '../admin/settings/BusinessNotificationSettings'
 import { NotificationTracking } from '../admin/settings/NotificationTracking'
+import { BusinessBranding } from '../admin/settings/BusinessBranding'
 
 interface CompleteUnifiedSettingsProps {
   user: User
@@ -327,7 +329,7 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
   })
   const [phonePrefix, setPhonePrefix] = useState('+57')
   const [isSaving, setIsSaving] = useState(false)
-  const [activeSubTab, setActiveSubTab] = useState<'info' | 'notifications' | 'tracking'>('info')
+  const [activeSubTab, setActiveSubTab] = useState<'info' | 'branding' | 'notifications' | 'tracking'>('info')
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -388,6 +390,14 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
         >
           <Bell className="h-4 w-4" />
           {t('settings.businessInfo.tabs.notifications')}
+        </Button>
+        <Button
+          variant={activeSubTab === 'branding' ? 'default' : 'outline'}
+          onClick={() => setActiveSubTab('branding')}
+          className="flex items-center gap-2"
+        >
+          <ImageIcon className="h-4 w-4" />
+          Logo y Banner
         </Button>
         <Button
           variant={activeSubTab === 'tracking' ? 'default' : 'outline'}
@@ -617,6 +627,10 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
             </Button>
           </div>
         </form>
+      )}
+
+      {activeSubTab === 'branding' && (
+        <BusinessBranding businessId={business.id} />
       )}
 
       {activeSubTab === 'notifications' && (

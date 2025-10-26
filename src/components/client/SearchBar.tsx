@@ -119,6 +119,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             `)
             .ilike('name', `%${term}%`)
             .eq('is_active', true)
+            .eq('is_public', true)
             .limit(5)
 
           if (error) throw error

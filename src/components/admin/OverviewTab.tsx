@@ -16,6 +16,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Business } from '@/types/types'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { Link } from 'react-router-dom'
+import PublicBusinessProfile from '@/pages/PublicBusinessProfile'
 
 interface OverviewTabProps {
   business: Business
@@ -37,6 +40,7 @@ interface Stats {
 export function OverviewTab({ business }: OverviewTabProps) {
   const [stats, setStats] = useState<Stats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showPublicProfile, setShowPublicProfile] = useState(false)
 
   const fetchStats = React.useCallback(async () => {
     setIsLoading(true)
@@ -74,39 +78,34 @@ export function OverviewTab({ business }: OverviewTabProps) {
         .from('locations')
         .select('id')
         .eq('business_id', business.id)
-        .eq('is_active', true)
 
       if (locError) throw locError
 
       // Get services
-      const { data: services, error: servError } = await supabase
+      const { data: services, error: svcError } = await supabase
         .from('services')
-        .select('id, price')
-        .eq('business_id', business.id)
-        .eq('is_active', true)
-
-      if (servError) throw servError
-
-      // Get employees
-      const { data: employees, error: empError } = await supabase
-        .from('business_employees')
         .select('id')
         .eq('business_id', business.id)
 
+      if (svcError) throw svcError
+
+      // Get employees
+      const { data: employees, error: empError } = await supabase
+        .from('business_roles')
+        .select('user_id')
+        .eq('business_id', business.id)
+        .eq('role', 'employee')
+        .eq('is_active', true)
+
       if (empError) throw empError
 
-      // Calculate revenue (only completed appointments)
-      const completedThisMonth = appointments?.filter(
-        (a) => a.status === 'completed' && a.start_time >= monthStart
-      ) || []
+      // Calculate stats
+      const monthlyRevenue = appointments?.filter(
+        (a) => new Date(a.start_time).getMonth() === new Date().getMonth() && a.status === 'completed'
+      ).reduce((sum, a) => sum + (a.price || 0), 0) || 0
 
-      const monthlyRevenue = completedThisMonth.reduce((sum, appt) => {
-        // Assuming appointment has a service with price
-        return sum + (appt.total_price || 0)
-      }, 0)
-
-      const averageAppointmentValue = completedAppointments > 0
-        ? monthlyRevenue / completedAppointments
+      const averageAppointmentValue = totalAppointments > 0
+        ? (appointments?.reduce((sum, a) => sum + (a.price || 0), 0) || 0) / totalAppointments
         : 0
 
       setStats({
@@ -121,9 +120,8 @@ export function OverviewTab({ business }: OverviewTabProps) {
         monthlyRevenue,
         averageAppointmentValue,
       })
-    } catch {
-      // Error silenciado - mostrar UI de error en su lugar
-      setStats(null)
+    } catch (err) {
+      console.error('Error fetching stats:', err)
     } finally {
       setIsLoading(false)
     }
@@ -133,126 +131,153 @@ export function OverviewTab({ business }: OverviewTabProps) {
     fetchStats()
   }, [fetchStats])
 
-  if (isLoading) {
+  if (isLoading || !stats) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-6">
-        {[...Array(8)].map((_, i) => (
-          <Card key={i} className="bg-card border-border">
-            <CardHeader>
-              <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground">Resumen</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-24" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
-
-  if (!stats) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-muted-foreground">No se pudieron cargar las estadísticas</p>
-      </div>
-    )
-  }
-
-  const statCards = [
-    {
-      title: 'Total Citas',
-      value: stats.totalAppointments,
-      icon: Calendar,
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-500/10',
-    },
-    {
-      title: 'Citas Hoy',
-      value: stats.todayAppointments,
-      icon: Clock,
-      color: 'text-violet-400',
-      bgColor: 'bg-violet-500/10',
-    },
-    {
-      title: 'Próximas Citas',
-      value: stats.upcomingAppointments,
-      icon: TrendingUp,
-      color: 'text-green-400',
-      bgColor: 'bg-green-500/10',
-    },
-    {
-      title: 'Completadas',
-      value: stats.completedAppointments,
-      icon: CheckCircle,
-      color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/10',
-    },
-    {
-      title: 'Canceladas',
-      value: stats.cancelledAppointments,
-      icon: XCircle,
-      color: 'text-red-400',
-      bgColor: 'bg-red-500/10',
-    },
-    {
-      title: 'Sedes',
-      value: stats.totalLocations,
-      icon: MapPin,
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-500/10',
-    },
-    {
-      title: 'Servicios',
-      value: stats.totalServices,
-      icon: Briefcase,
-      color: 'text-pink-400',
-      bgColor: 'bg-pink-500/10',
-    },
-    {
-      title: 'Empleados',
-      value: stats.totalEmployees,
-      icon: Users,
-      color: 'text-cyan-400',
-      bgColor: 'bg-cyan-500/10',
-    },
-  ]
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-      {/* Main Stats Grid - Responsive */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {statCards.map((stat) => (
-          <Card key={stat.title} className="bg-card border-border hover:border-primary/20 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 sm:p-4">
-              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <div className={`${stat.bgColor} p-1.5 sm:p-2 rounded-lg`}>
-                <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0">
-              <div className="text-xl sm:text-2xl font-bold text-foreground">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Revenue Cards - Responsive */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+    <div className="space-y-6">
+      {/* Stats Grid */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
         <Card className="bg-card border-border">
-          <CardHeader className="p-3 sm:p-4">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
-              <span>Ingresos del Mes</span>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-blue-400" />
+              Citas Hoy
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 sm:p-4 pt-0">
-            <div className="text-2xl sm:text-3xl font-bold text-foreground">
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.todayAppointments}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Citas programadas para hoy
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4 text-teal-400" />
+              Próximas Citas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.upcomingAppointments}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Citas futuras programadas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-400" />
+              Citas Completadas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.completedAppointments}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Citas marcadas como completadas
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detailed Stats Grid */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-4">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <XCircle className="h-4 w-4 text-red-400" />
+              Citas Canceladas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.cancelledAppointments}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Total de citas canceladas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Users className="h-4 w-4 text-indigo-400" />
+              Empleados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.totalEmployees}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Miembros del equipo activos
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-pink-400" />
+              Sedes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.totalLocations}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Ubicaciones del negocio
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-emerald-400" />
+              Servicios
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">{stats.totalServices}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Servicios ofertados activos
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue and Avg Value */}
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-orange-400" />
+              Ingresos del Mes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">
               ${stats.monthlyRevenue.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-              Basado en citas completadas este mes
+            <p className="text-xs text-muted-foreground mt-1">
+              Total de ingresos por citas completadas este mes
             </p>
           </CardContent>
         </Card>
@@ -316,6 +341,20 @@ export function OverviewTab({ business }: OverviewTabProps) {
           <CardTitle className="text-foreground">Información del Negocio</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPublicProfile((prev) => !prev)}
+            >
+              {showPublicProfile ? 'Ocultar perfil' : 'Ver perfil del negocio'}
+            </Button>
+          </div>
+          {showPublicProfile && (
+            <div className="mt-4">
+              <PublicBusinessProfile slug={business.slug} embedded />
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Nombre</p>

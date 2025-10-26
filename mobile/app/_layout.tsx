@@ -1,14 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import { View, StyleSheet } from 'react-native'
-import { Stack } from 'expo-router'
+import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { PaperProvider, MD3LightTheme, MD3DarkTheme } from 'react-native-paper'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { AuthProvider } from '../lib/auth'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import * as Linking from 'expo-linking'
+import { AuthProvider, useAuth } from '../lib/auth'
 import { NotificationProvider } from '../lib/notifications'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../../src/lib/supabase'
 import LoadingScreen from '../components/LoadingScreen'
+
+// QueryClient con misma configuración que web
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutos
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
 
 const lightTheme = {
   ...MD3LightTheme,
@@ -46,6 +59,45 @@ const darkTheme = {
   },
 }
 
+// Layout interno que usa el contexto de auth
+function RootLayoutNav() {
+  const { user, loading } = useAuth()
+  const segments = useSegments()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (loading) return
+
+    const inAuthGroup = segments[0] === '(auth)'
+
+    if (!user && !inAuthGroup) {
+      // Usuario no autenticado → redirigir a login
+      router.replace('/(auth)/login')
+    } else if (user && inAuthGroup) {
+      // Usuario autenticado en pantalla de auth → redirigir a tabs
+      router.replace('/(tabs)/client')
+    }
+  }, [user, segments, loading])
+
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: lightTheme.colors.background,
+        },
+      }}
+    >
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  )
+}
+
 export default function RootLayout() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -55,8 +107,10 @@ export default function RootLayout() {
     const initializeApp = async () => {
       try {
         // Check if user is already logged in
-        const { data: { session } } = await supabase.auth.getSession()
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
         // Set up auth state listener
         supabase.auth.onAuthStateChange((event, session) => {
           console.log('Auth state changed:', event, session?.user?.email)
@@ -81,50 +135,16 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <PaperProvider theme={theme}>
-          <AuthProvider>
-            <NotificationProvider>
-              <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-              <Stack
-                screenOptions={{
-                  headerStyle: {
-                    backgroundColor: theme.colors.surface,
-                  },
-                  headerTintColor: theme.colors.onSurface,
-                  headerTitleStyle: {
-                    fontWeight: '600',
-                  },
-                  contentStyle: {
-                    backgroundColor: theme.colors.background,
-                  },
-                }}
-              >
-                <Stack.Screen 
-                  name="(auth)" 
-                  options={{ headerShown: false }} 
-                />
-                <Stack.Screen 
-                  name="(tabs)" 
-                  options={{ headerShown: false }} 
-                />
-                <Stack.Screen 
-                  name="appointment/[id]" 
-                  options={{ 
-                    title: 'Detalles de Cita',
-                    presentation: 'modal' 
-                  }} 
-                />
-                <Stack.Screen 
-                  name="client/[id]" 
-                  options={{ 
-                    title: 'Detalles del Cliente',
-                    presentation: 'modal' 
-                  }} 
-                />
-              </Stack>
-            </NotificationProvider>
-          </AuthProvider>
-        </PaperProvider>
+        <QueryClientProvider client={queryClient}>
+          <PaperProvider theme={theme}>
+            <AuthProvider>
+              <NotificationProvider>
+                <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+                <RootLayoutNav />
+              </NotificationProvider>
+            </AuthProvider>
+          </PaperProvider>
+        </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )
