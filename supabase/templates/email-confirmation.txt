@@ -1,0 +1,30 @@
+Bienvenido a Gestabiz!
+======================
+
+Hola {{ .Email }},
+
+Gracias por unirte a Gestabiz, la plataforma que revoluciona la gestión de citas y reservas.
+
+Para completar tu registro, confirma tu dirección de correo electrónico haciendo clic en el siguiente enlace:
+
+{{ .ConfirmationURL }}
+
+Este enlace expirará en 24 horas por seguridad.
+
+Una vez confirmado, podrás:
+- Agendar y gestionar citas fácilmente
+- Crear y administrar tu negocio
+- Invitar a tu equipo de trabajo
+- Acceder a reportes y estadísticas
+- Recibir notificaciones en tiempo real
+
+Si no creaste una cuenta en Gestabiz, ignora este email.
+
+--
+© 2025 Gestabiz
+Gestiona tus citas de forma inteligente
+
+Sitio Web: https://Gestabiz.com
+Soporte: https://Gestabiz.com/support
+Privacidad: https://Gestabiz.com/privacy
+Términos: https://Gestabiz.com/terms

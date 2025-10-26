@@ -1,0 +1,17 @@
+{
+  "name": "Gestabiz-extension",
+  "version": "1.0.0",
+  "description": "Quick access to your Gestabiz appointments from any webpage",
+  "scripts": {
+    "build": "npm run clean && npm run copy-files && npm run create-zip",
+    "clean": "rm -rf dist",
+    "copy-files": "mkdir -p dist && cp -r *.html *.js *.css *.json icons dist/",
+    "create-zip": "cd dist && zip -r ../Gestabiz-extension.zip .",
+    "dev": "npm run copy-files && cd dist && python3 -m http.server 8080",
+    "validate": "node scripts/validate-manifest.js"
+  },
+  "devDependencies": {
+    "archiver": "^5.3.1"
+  },
+  "private": true
+}

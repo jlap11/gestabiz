@@ -1,0 +1,69 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*-dist
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.env
+**/agent-eval-report*
+packages
+pids
+.file-manifest
+.devcontainer/
+
+# Credentials (NEVER commit)
+.credentials/
+**/*.credentials.*
+**/CREDENTIALS.*
+
+# CSV exports and temporary files
+*.csv
+*.tmp
+*.bak
+*.swp
+*~
+
+# Supabase temp
+supabase/.temp/
+supabase/.branches/
+
+# Test and debug files
+**/test-*.tsx
+**/debug-*.tsx
+**/*-test.tsx
+**/*-debug.tsx
+**/*-simple.tsx
+
+# Vercel
+.vercel
+.vercel/
+*.vercel
+
+# Environment variables (NUNCA commitear!)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+

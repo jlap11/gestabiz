@@ -1,0 +1,43 @@
+# Dependency lockfile
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+.vercel/
+.output/
+.next/
+
+# Environment variables (never commit these!)
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Local development
+.vite/
+.cache/
+
+# Testing
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

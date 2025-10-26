@@ -1,0 +1,53 @@
+# Supabase Configuration
+# Copy this to supabase/config.toml
+
+[project]
+ref = "dkancockzvcqorqbwtyh"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+external_url = "http://localhost:3000"
+email_confirm_url = "http://localhost:3000/auth/confirm"
+email_change_url = "http://localhost:3000/auth/change-email"
+password_reset_url = "http://localhost:3000/auth/reset-password"
+
+[auth.providers.email]
+enabled = true
+
+[auth.providers.google]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.providers.apple]
+enabled = false
+client_id = ""
+secret = ""
+
+[db]
+port = 54322
+
+[storage]
+enabled = true
+port = 54323
+file_size_limit = "50MiB"
+
+[edge_functions]
+enabled = true
+port = 54325
+
+[realtime]
+enabled = true
+port = 54326
+
+[studio]
+enabled = true
+port = 54323

@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "Gestabiz",
+    "slug": "Gestabiz-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.Gestabiz.mobile",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "This app needs access to calendar to sync appointments.",
+        "NSRemindersUsageDescription": "This app needs access to reminders to create appointment reminders."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.Gestabiz.mobile",
+      "permissions": [
+        "CALENDAR",
+        "WRITE_CALENDAR",
+        "READ_CALENDAR",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-notifications",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "The app needs to access your calendar to sync appointments."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    "scheme": "Gestabiz"
+  }
+}

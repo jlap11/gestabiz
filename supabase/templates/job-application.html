@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Aplicación Recibida - Gestabiz</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 30px 20px;
+    }
+    .alert-box {
+      background-color: #f0f9ff;
+      border-left: 4px solid #3b82f6;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    .alert-box p {
+      margin: 0;
+      color: #1e40af;
+      font-size: 16px;
+    }
+    .info-section {
+      margin-bottom: 25px;
+    }
+    .info-section h2 {
+      color: #1f2937;
+      font-size: 18px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 5px;
+    }
+    .info-row {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #6b7280;
+      width: 150px;
+    }
+    .info-value {
+      color: #1f2937;
+      flex: 1;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-pending {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .match-score {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .match-score-value {
+      font-size: 36px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .match-score-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .cta-button {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 30px auto;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    }
+    .cta-button:hover {
+      box-shadow: 0 6px 8px rgba(102, 126, 234, 0.4);
+    }
+    .footer {
+      background-color: #f9fafb;
+      padding: 20px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+    }
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+    @media only screen and (max-width: 600px) {
+      .content {
+        padding: 20px 15px;
+      }
+      .info-row {
+        flex-direction: column;
+      }
+      .info-label {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>📋 Nueva Aplicación Recibida</h1>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Alert Box -->
+      <div class="alert-box">
+        <p>
+          <strong>{{applicant_name}}</strong> ha aplicado a tu vacante 
+          <strong>"{{vacancy_title}}"</strong>
+        </p>
+      </div>
+
+      <!-- Match Score (if available) -->
+      {{#if match_score}}
+      <div class="match-score">
+        <p class="match-score-value">{{match_score}}%</p>
+        <p class="match-score-label">Puntuación de Compatibilidad</p>
+      </div>
+      {{/if}}
+
+      <!-- Applicant Information -->
+      <div class="info-section">
+        <h2>👤 Información del Aplicante</h2>
+        <div class="info-row">
+          <span class="info-label">Nombre:</span>
+          <span class="info-value">{{applicant_name}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{applicant_email}}</span>
+        </div>
+        {{#if applicant_phone}}
+        <div class="info-row">
+          <span class="info-label">Teléfono:</span>
+          <span class="info-value">{{applicant_phone}}</span>
+        </div>
+        {{/if}}
+        <div class="info-row">
+          <span class="info-label">Experiencia:</span>
+          <span class="info-value">{{years_of_experience}} años</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Estado:</span>
+          <span class="info-value">
+            <span class="badge badge-pending">{{status}}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Vacancy Information -->
+      <div class="info-section">
+        <h2>💼 Detalles de la Vacante</h2>
+        <div class="info-row">
+          <span class="info-label">Posición:</span>
+          <span class="info-value">{{vacancy_title}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Tipo:</span>
+          <span class="info-value">{{position_type}}</span>
+        </div>
+        {{#if salary_range}}
+        <div class="info-row">
+          <span class="info-label">Salario:</span>
+          <span class="info-value">{{salary_range}}</span>
+        </div>
+        {{/if}}
+        <div class="info-row">
+          <span class="info-label">Fecha de aplicación:</span>
+          <span class="info-value">{{application_date}}</span>
+        </div>
+      </div>
+
+      <!-- Cover Letter (if provided) -->
+      {{#if cover_letter}}
+      <div class="info-section">
+        <h2>✉️ Carta de Presentación</h2>
+        <p style="color: #4b5563; line-height: 1.6;">
+          {{cover_letter}}
+        </p>
+      </div>
+      {{/if}}
+
+      <!-- CTA Button -->
+      <a href="{{dashboard_url}}" class="cta-button">
+        Ver Aplicación Completa
+      </a>
+
+      <!-- Tips Section -->
+      <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <p style="margin: 0 0 10px 0; color: #1f2937; font-weight: 600;">💡 Próximos pasos:</p>
+        <ul style="margin: 0; padding-left: 20px; color: #6b7280;">
+          <li>Revisa el perfil completo del aplicante</li>
+          <li>Verifica su experiencia y certificaciones</li>
+          <li>Programa una entrevista si es un buen candidato</li>
+          <li>Responde dentro de 48 horas para mantener engagement</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        Este correo fue enviado por <strong>Gestabiz</strong><br>
+        Sistema de Gestión de Citas y Reclutamiento
+      </p>
+      <p style="margin-top: 10px;">
+        <a href="{{settings_url}}">Configurar Notificaciones</a> | 
+        <a href="{{support_url}}">Soporte</a>
+      </p>
+      <p style="margin-top: 15px; font-size: 11px; color: #9ca3af;">
+        © 2025 Gestabiz. Todos los derechos reservados.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
