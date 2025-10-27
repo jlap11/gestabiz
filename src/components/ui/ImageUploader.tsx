@@ -72,31 +72,36 @@ export function ImageUploader({
 
       // DELAYED UPLOAD MODE: Just create preview and call callback
       if (delayedUpload) {
-        const file = fileArray[0] // Only handle single file in delayed mode
-        
-        // Validate file size
-        if (file.size > maxSizeMB * 1024 * 1024) {
-          onUploadError?.(`El archivo es muy grande. Máximo ${maxSizeMB}MB`)
-          return
+        const filesToProcess = fileArray.slice(0, remainingSlots)
+        if (fileArray.length > remainingSlots) {
+          onUploadError?.(`Solo puedes subir ${remainingSlots} imagen(es) más`)
         }
 
-        // Create preview with FileReader
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const preview: ImagePreview = {
-            id: `preview-${Date.now()}`,
-            file,
-            url: e.target?.result as string,
-            isExisting: false,
-            isUploading: false,
-            progress: 100,
+        for (const file of filesToProcess) {
+          // Validate file size
+          if (file.size > maxSizeMB * 1024 * 1024) {
+            onUploadError?.(`El archivo es muy grande. Máximo ${maxSizeMB}MB`)
+            continue
           }
-          setPreviews([preview]) // Replace existing preview (single file mode)
-        }
-        reader.readAsDataURL(file)
 
-        // Call callback with File object
-        onFileSelected?.(file)
+          // Create preview with FileReader
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            const preview: ImagePreview = {
+              id: `preview-${Date.now()}-${Math.random()}`,
+              file,
+              url: e.target?.result as string,
+              isExisting: false,
+              isUploading: false,
+              progress: 100,
+            }
+            setPreviews((prev) => [...prev, preview])
+          }
+          reader.readAsDataURL(file)
+
+          // Call callback with File object
+          onFileSelected?.(file)
+        }
         return
       }
 

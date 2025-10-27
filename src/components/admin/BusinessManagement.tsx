@@ -18,6 +18,7 @@ import {
   Gear as Settings,
   Star
 } from '@phosphor-icons/react'
+import { LocationAddress } from '@/components/ui/LocationAddress'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 interface BusinessManagementProps {
@@ -463,7 +464,7 @@ export default function BusinessManagement({ user }: Readonly<BusinessManagement
                             <div>
                               <div className="font-medium">{location.name}</div>
                               <div className="text-sm text-muted-foreground">
-                                {location.city}, {location.state}
+                                <LocationAddress cityId={location.city} stateId={location.state} showFullAddress={false} />
                               </div>
                             </div>
                           </div>

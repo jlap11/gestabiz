@@ -162,11 +162,11 @@ export function AdminDashboard({
       label: t('adminDashboard.sidebar.quickSales'),
       icon: <ShoppingCart className="h-5 w-5" />
     },
-    {
-      id: 'accounting',
-      label: t('adminDashboard.sidebar.accounting'),
-      icon: <Calculator className="h-5 w-5" />
-    },
+    // {
+    //   id: 'accounting',
+    //   label: t('adminDashboard.sidebar.accounting'),
+    //   icon: <Calculator className="h-5 w-5" />
+    // },
     {
       id: 'reports',
       label: t('adminDashboard.sidebar.reports'),
@@ -224,8 +224,8 @@ export function AdminDashboard({
         )
       case 'quick-sales':
         return <QuickSalesPage businessId={business.id} />
-      case 'accounting':
-        return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
+      // case 'accounting':
+      //   return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
       case 'reports':
         return <ReportsPage businessId={business.id} user={currentUser} />
       case 'billing':

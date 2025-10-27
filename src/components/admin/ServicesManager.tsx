@@ -27,7 +27,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ImageUploader } from '@/components/ui/ImageUploader'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface Service {
   id: string
@@ -55,6 +57,7 @@ interface Employee {
   profiles?: {
     full_name?: string
     email?: string
+    avatar_url?: string
   }
 }
 
@@ -86,6 +89,10 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [priceDisplay, setPriceDisplay] = useState('')
   const [pendingImageFiles, setPendingImageFiles] = useState<File[]>([])
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [profileService, setProfileService] = useState<Service | null>(null)
+  const [profileEmployees, setProfileEmployees] = useState<string[]>([])
+  const [profileLocations, setProfileLocations] = useState<string[]>([])
 
   // Formatear precio con separadores de miles
   const formatPrice = (value: number): string => {
@@ -128,7 +135,8 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           employee_id,
           profiles:employee_id (
             full_name,
-            email
+            email,
+            avatar_url
           )
         `)
         .eq('business_id', businessId)
@@ -271,6 +279,43 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
 
       if (editingService) {
         // Update existing service
+        // Subida diferida: si hay archivo pendiente, subir primero y calcular nueva URL
+        let nextImageUrl: string | null | undefined = formData.image_url || null
+        if (pendingImageFiles.length > 0) {
+          const file = pendingImageFiles[0]
+
+          // Eliminar imagen anterior si existía y era de Supabase
+          const prevUrl = formData.image_url || editingService.image_url
+          if (prevUrl && prevUrl.includes('supabase')) {
+            const cleanPrev = prevUrl.split('?')[0]
+            const oldName = cleanPrev.split('/').pop()
+            if (oldName) {
+              const oldPath = `${editingService.id}/${oldName}`
+              await supabase.storage
+                .from('service-images')
+                .remove([oldPath])
+                .catch(() => {})
+            }
+          }
+
+          // Subir nueva imagen al bucket con prefijo del servicio
+          const fileExt = file.name.split('.').pop()
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+          const filePath = `${editingService.id}/${fileName}`
+
+          const { error: uploadError } = await supabase.storage
+            .from('service-images')
+            .upload(filePath, file)
+
+          if (uploadError) throw uploadError
+
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('service-images').getPublicUrl(filePath)
+
+          nextImageUrl = publicUrl
+        }
+
         const serviceData = {
           name: formData.name.trim(),
           description: formData.description?.trim() || null,
@@ -278,7 +323,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           price: formData.price,
           currency: formData.currency || 'COP',
           category: formData.category || null,
-          image_url: formData.image_url || null,
+          image_url: nextImageUrl || null,
           is_active: formData.is_active,
           updated_at: new Date().toISOString(),
         }
@@ -290,6 +335,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
 
         if (error) throw error
         serviceId = editingService.id
+        setPendingImageFiles([])
         toast.success('Servicio actualizado exitosamente')
       } else {
         // Create new service (no incluir updated_at en INSERT)
@@ -325,16 +371,16 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           for (const file of pendingImageFiles) {
             const fileExt = file.name.split('.').pop()
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-            const filePath = `services/${serviceId}/${fileName}`
+            const filePath = `${serviceId}/${fileName}`
 
             const { error: uploadError } = await supabase.storage
               .from('service-images')
               .upload(filePath, file)
 
             if (!uploadError) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('service-images')
-                .getPublicUrl(filePath)
+              const {
+                data: { publicUrl },
+              } = supabase.storage.from('service-images').getPublicUrl(filePath)
               uploadedUrls.push(publicUrl)
             }
           }
@@ -364,10 +410,19 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
       // Update employee assignments
       await supabase.from('employee_services').delete().eq('service_id', serviceId)
       if (selectedEmployees.length > 0) {
-        const employeeAssignments = selectedEmployees.map((empId) => ({
-          employee_id: empId,
-          service_id: serviceId,
-        }))
+        // Crear asignaciones por cada sede seleccionada
+        const employeeAssignments = (selectedLocations.length > 0
+          ? selectedLocations
+          : [null]
+        ).flatMap((locId) =>
+          selectedEmployees.map((empId) => ({
+            employee_id: empId,
+            service_id: serviceId,
+            business_id: businessId,
+            ...(locId ? { location_id: locId } : {}),
+            is_active: true,
+          }))
+        )
         await supabase.from('employee_services').insert(employeeAssignments)
       }
 
@@ -387,8 +442,19 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
     }
   }
 
-  const handleImageUploaded = (urls: string[]) => {
+  const handleImageUploaded = async (urls: string[]) => {
     if (urls.length > 0) {
+      if (editingService) {
+        const prevUrl = formData.image_url || editingService.image_url
+        if (prevUrl && prevUrl.includes("supabase")) {
+          const cleanPrev = prevUrl.split("?")[0]
+          const oldName = cleanPrev.split("/").pop()
+          if (oldName) {
+            const oldPath = `${editingService.id}/${oldName}`
+            await supabase.storage.from("service-images").remove([oldPath]).catch(() => {})
+          }
+        }
+      }
       setFormData((prev) => ({ ...prev, image_url: urls[0] }))
     }
   }
@@ -423,6 +489,53 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
       </div>
     )
+  }
+
+  const openProfile = async (service: Service) => {
+    setProfileService(service)
+    try {
+      const { data: locAssign } = await supabase
+        .from('location_services')
+        .select('location_id')
+        .eq('service_id', service.id)
+      const { data: empAssign } = await supabase
+        .from('employee_services')
+        .select('employee_id')
+        .eq('service_id', service.id)
+      setProfileLocations((locAssign || []).map((a: any) => a.location_id))
+      setProfileEmployees((empAssign || []).map((a: any) => a.employee_id))
+
+      // Console log para verificar vinculación real en DB
+      if ((empAssign || []).length > 0) {
+        const employeeIds = (empAssign || []).map((a: any) => a.employee_id)
+        const { data: memberships, error: membershipsError } = await supabase
+          .from('business_employees')
+          .select('employee_id, business_id, location_id, status, is_active')
+          .eq('business_id', service.business_id)
+          .in('employee_id', employeeIds)
+        // eslint-disable-next-line no-console
+        console.log('[Perfil Sede] Verificación vinculación en DB', {
+          serviceId: service.id,
+          businessId: service.business_id,
+          locationsAsignadasAlServicio: (locAssign || []).map((a: any) => a.location_id),
+          empleadosAsignadosAlServicio: employeeIds,
+          membershipsError,
+          memberships
+        })
+      }
+    } catch {
+      toast.error('Error al cargar asignaciones')
+      setProfileLocations([])
+      setProfileEmployees([])
+    }
+    setIsProfileOpen(true)
+  }
+
+  const closeProfile = () => {
+    setIsProfileOpen(false)
+    setProfileService(null)
+    setProfileLocations([])
+    setProfileEmployees([])
   }
 
   return (
@@ -464,57 +577,68 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {services.map((service) => (
-            <Card key={service.id} className="bg-card border-border hover:border-border/80 transition-colors">
-              <CardHeader className="p-3 sm:p-6">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    {service.image_url && (
-                      <img
-                        src={service.image_url}
-                        alt={service.name}
-                        className="w-full h-28 sm:h-32 object-cover rounded-lg mb-2 sm:mb-3"
-                      />
-                    )}
-                    <CardTitle className="text-foreground text-base sm:text-lg truncate">{service.name}</CardTitle>
+            <Card
+              key={service.id}
+              className="group relative overflow-hidden border-border hover:border-border/80 transition-colors cursor-pointer"
+              onClick={() => openProfile(service)}
+            >
+              <div
+                className="relative h-40 sm:h-48 w-full"
+                style={{
+                  backgroundImage: service.image_url ? `url(${service.image_url})` : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                {!service.image_url && <div className="absolute inset-0 bg-muted" />}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+
+                <div className="absolute top-2 right-2 z-20 flex gap-1 sm:gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-white/80 hover:bg-white text-gray-800 hover:text-gray-900 rounded-full shadow"
+                    onClick={(e) => { e.stopPropagation(); handleOpenDialog(service) }}
+                    title="Editar"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-white/80 hover:bg-white text-red-600 hover:text-red-700 rounded-full shadow"
+                    onClick={(e) => { e.stopPropagation(); handleDelete(service.id) }}
+                    title="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <h3 className="text-white font-semibold text-base sm:text-lg truncate">{service.name}</h3>
+                      {service.description && (
+                        <p className="text-white/80 text-xs sm:text-sm line-clamp-2">{service.description}</p>
+                      )}
+                    </div>
                     {!service.is_active && (
-                      <Badge variant="secondary" className="mt-2 text-[10px] sm:text-xs">
-                        Inactivo
-                      </Badge>
+                      <Badge variant="secondary" className="bg-white/90 text-gray-800 text-[10px] sm:text-xs">Inactivo</Badge>
                     )}
                   </div>
-                  <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenDialog(service)}
-                      className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(service.id)}
-                      className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                </div>
+              </div>
+
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-foreground">
+                    <DollarSign className="h-4 w-4 text-green-400" />
+                    <span className="font-semibold">$ {service.price.toLocaleString('es-CO')}</span>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
-                {service.description && (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{service.description}</p>
-                )}
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400 flex-shrink-0" />
-                  <span className="text-foreground font-semibold">
-                    $ {service.price.toLocaleString('es-CO')}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400 flex-shrink-0" />
-                  <span className="text-muted-foreground">{service.duration_minutes} minutos</span>
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4 text-blue-400" />
+                    <span>{service.duration_minutes} minutos</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -644,9 +768,10 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                   bucket="service-images"
                   maxFiles={1}
                   maxSizeMB={5}
-                  onUploadComplete={handleImageUploaded}
+                  delayedUpload={true}
+                  onFileSelected={(file) => setPendingImageFiles([file])}
                   onUploadError={(error) => toast.error(error)}
-                  folderPath={`services/${editingService.id}`}
+                  folderPath={`${editingService.id}`}
                 />
               ) : (
                 <ImageUploader
@@ -654,7 +779,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                   maxFiles={1}
                   maxSizeMB={5}
                   delayedUpload={true}
-                  onFileSelected={(files) => setPendingImageFiles(Array.isArray(files) ? files : [files])}
+                  onFileSelected={(file) => setPendingImageFiles([file])}
                   onUploadError={(error) => toast.error(error)}
                   folderPath="temp"
                 />
@@ -691,28 +816,34 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               </div>
             )}
 
-            {/* Employee Assignment */}
+            {/* Employee Assignment - Read Only */}
             {employees.length > 0 && (
               <div>
                 <Label className="mb-2 block">Prestado por:</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3">
-                  {employees.map((employee) => (
-                    <div key={employee.id} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`employee-${employee.id}`}
-                        checked={selectedEmployees.includes(employee.id)}
-                        onCheckedChange={() => handleToggleEmployee(employee.id)}
-                      />
-                      <label
-                        htmlFor={`employee-${employee.id}`}
-                        className="text-sm text-foreground cursor-pointer flex items-center gap-2"
-                      >
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        {employee.profiles?.full_name || employee.profiles?.email || 'Sin nombre'}
-                      </label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-border rounded-lg p-3 bg-muted/30">
+                  {employees.filter(employee => selectedEmployees.includes(employee.employee_id)).length > 0 ? (
+                    employees
+                      .filter(employee => selectedEmployees.includes(employee.employee_id))
+                      .map((employee) => (
+                        <div key={employee.id} className="flex items-center gap-2 text-sm text-foreground">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={employee.profiles?.avatar_url || undefined} alt={employee.profiles?.full_name || 'Usuario'} />
+                            <AvatarFallback className="text-xs">
+                              {(employee.profiles?.full_name || employee.profiles?.email || 'U').charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          {employee.profiles?.full_name || employee.profiles?.email || 'Sin nombre'}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground italic">
+                      No hay empleados asignados a este servicio
                     </div>
-                  ))}
+                  )}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Los empleados se gestionan desde la sección de empleados
+                </p>
               </div>
             )}
 
@@ -747,6 +878,117 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Perfil de Servicio */}
+      <Dialog open={isProfileOpen} onOpenChange={(open) => open ? setIsProfileOpen(true) : closeProfile()}>
+        <DialogContent hideClose className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Perfil de {profileService?.name || 'Servicio'}</DialogTitle>
+          </DialogHeader>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 bg-white/90 hover:bg-white text-gray-800 hover:text-gray-900 rounded-full shadow-md"
+            onClick={() => closeProfile()}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          <div className="relative h-56 sm:h-72 flex-shrink-0">
+            {profileService?.image_url ? (
+              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${profileService.image_url})` }} />
+            ) : (
+              <div className="absolute inset-0 bg-muted" />
+            )}
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
+            <div className="relative z-10 p-4 sm:p-6 flex items-end h-full">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold text-white">{profileService?.name}</h3>
+                <div className="mt-2 flex items-center gap-3 text-white/90 text-xs sm:text-sm">
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-4 w-4" />
+                    <span>$ {profileService ? profileService.price.toLocaleString('es-CO') : ''}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>{profileService?.duration_minutes} minutos</span>
+                  </div>
+                  {profileService?.category && (
+                    <Badge variant="default" className="bg-white/80 text-gray-800">{profileService.category}</Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList>
+                <TabsTrigger value="overview">Detalle</TabsTrigger>
+                <TabsTrigger value="employees">Empleados ({profileEmployees.length})</TabsTrigger>
+                <TabsTrigger value="locations">Sedes ({profileLocations.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="mt-4">
+                {profileService?.description ? (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{profileService.description}</p>
+                ) : (
+                  <Card><CardContent className="p-6 text-muted-foreground text-center">Sin descripción</CardContent></Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="employees" className="mt-4">
+                {(() => {
+                  const assigned = employees.filter((e) => profileEmployees.includes(e.employee_id))
+                  return assigned.length === 0 ? (
+                    <Card><CardContent className="p-6 text-muted-foreground text-center">No hay empleados asignados</CardContent></Card>
+                  ) : (
+                    <div className="space-y-2">
+                      {assigned.map((e) => (
+                        <Card key={e.id}><CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={e.profiles?.avatar_url || undefined} alt={e.profiles?.full_name || 'Usuario'} />
+                              <AvatarFallback className="text-xs">
+                                {(e.profiles?.full_name || e.profiles?.email || 'U').charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="text-sm">
+                              <div className="font-medium">{e.profiles?.full_name || e.profiles?.email || 'Sin nombre'}</div>
+                            </div>
+                          </div>
+                        </CardContent></Card>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </TabsContent>
+
+              <TabsContent value="locations" className="mt-4">
+                {(() => {
+                  const assigned = locations.filter((l) => profileLocations.includes(l.id))
+                  return assigned.length === 0 ? (
+                    <Card><CardContent className="p-6 text-muted-foreground text-center">No hay sedes asignadas</CardContent></Card>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {assigned.map((l) => (
+                        <Card key={l.id}><CardContent className="p-4">
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{l.name}</span>
+                          </div>
+                        </CardContent></Card>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </TabsContent>
+            </Tabs>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

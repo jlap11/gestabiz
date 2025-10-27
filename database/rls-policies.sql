@@ -37,6 +37,55 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   );
 $$;
 
+CREATE OR REPLACE FUNCTION public.is_business_admin(bid uuid)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT 
+    EXISTS (
+      SELECT 1 FROM public.businesses b 
+      WHERE b.id = bid AND b.owner_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.business_employees be
+      WHERE be.business_id = bid 
+        AND be.employee_id = auth.uid() 
+        AND be.status = 'approved' 
+        AND be.role = 'manager'
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_location_owner_for_storage(p_location_id UUID)
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.locations l
+    JOIN public.businesses b ON b.id = l.business_id
+    WHERE l.id = p_location_id
+      AND b.owner_id = auth.uid()
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.can_manage_location_media(p_location_id UUID)
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.locations l
+    WHERE l.id = p_location_id
+      AND (
+        public.is_business_owner(l.business_id)
+        OR public.is_business_member(l.business_id)
+      )
+  );
+$$;
+
 -- ============================================================================
 -- PROFILES
 -- ============================================================================
@@ -147,6 +196,10 @@ CREATE POLICY sel_services ON public.services
   );
 CREATE POLICY all_services_owner ON public.services
   FOR ALL USING (is_business_owner(services.business_id));
+DROP POLICY IF EXISTS all_services_admin ON public.services;
+CREATE POLICY all_services_admin ON public.services
+  FOR ALL USING (public.is_business_admin(services.business_id))
+  WITH CHECK (public.is_business_admin(services.business_id));
 
 -- ============================================================================
 -- APPOINTMENTS
@@ -177,3 +230,141 @@ CREATE POLICY upd_notifications_self ON public.notifications
   FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY ins_notifications_system ON public.notifications
   FOR INSERT WITH CHECK (TRUE);
+
+-- ============================================================================
+-- LOCATION_MEDIA
+-- ============================================================================
+ALTER TABLE public.location_media ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view location media" ON public.location_media;
+DROP POLICY IF EXISTS "Location owners can insert media" ON public.location_media;
+DROP POLICY IF EXISTS "Location owners can update their media" ON public.location_media;
+DROP POLICY IF EXISTS "Location owners can delete their media" ON public.location_media;
+DROP POLICY IF EXISTS "Members can insert location media" ON public.location_media;
+DROP POLICY IF EXISTS "Members can update their location media" ON public.location_media;
+DROP POLICY IF EXISTS "Members can delete their location media" ON public.location_media;
+CREATE POLICY "Users can view location media" ON public.location_media
+    FOR SELECT USING (true);
+CREATE POLICY "Members can insert location media" ON public.location_media
+    FOR INSERT WITH CHECK (
+        public.can_manage_location_media(location_id)
+    );
+CREATE POLICY "Members can update their location media" ON public.location_media
+    FOR UPDATE USING (
+        public.can_manage_location_media(location_id)
+    )
+    WITH CHECK (
+        public.can_manage_location_media(location_id)
+    );
+CREATE POLICY "Members can delete their location media" ON public.location_media
+    FOR DELETE USING (
+        public.can_manage_location_media(location_id)
+    );
+
+CREATE OR REPLACE FUNCTION public.can_manage_service_media(p_service_id UUID)
+RETURNS BOOLEAN
+LANGUAGE SQL STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.services s
+    WHERE s.id = p_service_id
+      AND public.is_business_admin(s.business_id)
+  );
+$$;
+
+-- STORAGE: service-images
+DROP POLICY IF EXISTS "Public read access for service images" ON storage.objects;
+DROP POLICY IF EXISTS "Business admins can upload service images" ON storage.objects;
+DROP POLICY IF EXISTS "Business admins can update service images" ON storage.objects;
+DROP POLICY IF EXISTS "Business admins can delete service images" ON storage.objects;
+
+CREATE POLICY "Public read access for service images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'service-images');
+
+CREATE POLICY "Business admins can upload service images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'service-images'
+  AND public.can_manage_service_media(((storage.foldername(storage.objects.name))[1])::uuid)
+);
+
+CREATE POLICY "Business admins can update service images"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'service-images'
+  AND public.can_manage_service_media(((storage.foldername(storage.objects.name))[1])::uuid)
+);
+
+CREATE POLICY "Business admins can delete service images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'service-images'
+  AND public.can_manage_service_media(((storage.foldername(storage.objects.name))[1])::uuid)
+);
+
+-- ============================================================================
+-- EMPLOYEE_SERVICES
+-- ============================================================================
+ALTER TABLE public.employee_services ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS sel_employee_services ON public.employee_services;
+DROP POLICY IF EXISTS ins_employee_services_admin ON public.employee_services;
+DROP POLICY IF EXISTS upd_employee_services_admin ON public.employee_services;
+DROP POLICY IF EXISTS del_employee_services_admin ON public.employee_services;
+
+CREATE POLICY sel_employee_services ON public.employee_services
+  FOR SELECT USING (
+    public.is_business_admin(employee_services.business_id)
+    OR auth.uid() = employee_services.employee_id
+  );
+
+CREATE POLICY ins_employee_services_admin ON public.employee_services
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_business_admin(employee_services.business_id));
+
+CREATE POLICY upd_employee_services_admin ON public.employee_services
+  FOR UPDATE
+  TO authenticated
+  USING (public.is_business_admin(employee_services.business_id))
+  WITH CHECK (public.is_business_admin(employee_services.business_id));
+
+CREATE POLICY del_employee_services_admin ON public.employee_services
+  FOR DELETE
+  TO authenticated
+  USING (public.is_business_admin(employee_services.business_id));
+
+-- Permitir que empleados aprobados gestionen sus propias asignaciones
+DROP POLICY IF EXISTS ins_employee_services_self ON public.employee_services;
+DROP POLICY IF EXISTS upd_employee_services_self ON public.employee_services;
+DROP POLICY IF EXISTS del_employee_services_self ON public.employee_services;
+
+CREATE POLICY ins_employee_services_self ON public.employee_services
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    auth.uid() = employee_services.employee_id
+    AND public.is_business_member(employee_services.business_id)
+  );
+
+CREATE POLICY upd_employee_services_self ON public.employee_services
+  FOR UPDATE
+  TO authenticated
+  USING (
+    auth.uid() = employee_services.employee_id
+    AND public.is_business_member(employee_services.business_id)
+  )
+  WITH CHECK (
+    auth.uid() = employee_services.employee_id
+    AND public.is_business_member(employee_services.business_id)
+  );
+
+CREATE POLICY del_employee_services_self ON public.employee_services
+  FOR DELETE
+  TO authenticated
+  USING (
+    auth.uid() = employee_services.employee_id
+    AND public.is_business_member(employee_services.business_id)
+  );

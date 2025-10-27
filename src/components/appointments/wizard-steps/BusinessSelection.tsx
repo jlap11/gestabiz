@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Check, Building2 } from 'lucide-react';
-import { SearchBar } from '@/components/client/SearchBar';
+import { SimpleSearchBar, type SearchType } from '@/components/ui/SimpleSearchBar';
 import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
@@ -32,14 +32,10 @@ export function BusinessSelection({
   onSelectBusiness,
 }: BusinessSelectionProps) {
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  // track active search type coming from SearchBar
-  const [searchType, setSearchType] = useState<'services' | 'businesses' | 'categories' | 'users'>('businesses');
-  // ids matched by backend queries for services/categories/users
-  const [matchedBusinessIds, setMatchedBusinessIds] = useState<string[]>([]);
-  // labels to show on cards according to filter
-  const [matchLabels, setMatchLabels] = useState<Record<string, string>>({});
+  const [searchType, setSearchType] = useState<SearchType>('businesses');
   const hookCityData = usePreferredCity();
   
   // Usar props si vienen del parent (AppointmentWizard), si no usar hook
@@ -107,9 +103,12 @@ export function BusinessSelection({
         .order('name');
 
       if (bizError) throw bizError;
-      setBusinesses((businessesData as Business[]) || []);
+      const businessList = (businessesData as Business[]) || [];
+      setBusinesses(businessList);
+      setFilteredBusinesses(businessList);
     } catch {
       setBusinesses([]);
+      setFilteredBusinesses([]);
     } finally {
       setLoading(false);
     }
@@ -118,6 +117,13 @@ export function BusinessSelection({
   useEffect(() => {
     loadBusinesses();
   }, [loadBusinesses]);
+
+  // Reset search when businesses change
+  useEffect(() => {
+    setSearchTerm('');
+    setSearchType('businesses');
+    setFilteredBusinesses(businesses);
+  }, [businesses]);
 
   // Imagen placeholder para negocios
   const getBusinessImage = (business: Business): string => {
@@ -144,43 +150,53 @@ export function BusinessSelection({
     return 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=400&fit=crop';
   };
 
-  // Apply filter with backend queries for services/categories/users
-  const applyFilter = useCallback(async (term: string, type: 'services' | 'businesses' | 'categories' | 'users') => {
-    const loadedIds = businesses.map(b => b.id);
-    const labels: Record<string, string> = {};
-
-    // helper to capitalize term for label
-    const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  // Handle search and filter businesses in real-time
+  const handleSearch = useCallback(async (term: string, type: SearchType) => {
+    setSearchTerm(term);
+    setSearchType(type);
 
     if (!term || term.trim().length < 2) {
-      setMatchedBusinessIds([]);
-      setMatchLabels({});
+      setFilteredBusinesses(businesses);
       return;
     }
 
+    const termLower = term.toLowerCase();
+
     switch (type) {
       case 'businesses': {
-        // Pure name-based filtering; labels not used
-        setMatchedBusinessIds([]);
-        setMatchLabels({});
+        try {
+          const { data, error } = await supabase
+            .from('businesses')
+            .select('id, name, description, logo_url, address, city, phone, category_id')
+            .eq('is_active', true)
+            .eq('is_public', true)
+            .ilike('name', `%${term}%`)
+            .limit(20);
+
+          if (error) {
+            setFilteredBusinesses([]);
+          } else {
+            setFilteredBusinesses((data || []) as Business[]);
+          }
+        } catch {
+          setFilteredBusinesses([]);
+        }
         break;
       }
       case 'services': {
         try {
           const { data } = await supabase
             .from('services')
-            .select('id, name, business_id')
+            .select('business_id')
             .ilike('name', `%${term}%`)
             .eq('is_active', true)
-            .in('business_id', loadedIds);
+            .in('business_id', businesses.map(b => b.id));
 
-          const ids = Array.from(new Set((data || []).map((s: any) => s.business_id).filter(Boolean)));
-          ids.forEach((bid: string) => { labels[bid] = `Servicios: ${cap(term)}...`; });
-          setMatchedBusinessIds(ids);
-          setMatchLabels(labels);
+          const matchedBusinessIds = new Set((data || []).map((s: any) => s.business_id));
+          const filtered = businesses.filter(b => matchedBusinessIds.has(b.id));
+          setFilteredBusinesses(filtered);
         } catch {
-          setMatchedBusinessIds([]);
-          setMatchLabels({});
+          setFilteredBusinesses([]);
         }
         break;
       }
@@ -188,18 +204,15 @@ export function BusinessSelection({
         try {
           const { data } = await supabase
             .from('business_categories')
-            .select('id, name')
+            .select('id')
             .ilike('name', `%${term}%`)
             .eq('is_active', true);
 
           const matchedCatIds = new Set((data || []).map((c: any) => c.id));
-          const ids = businesses.filter(b => b.category_id && matchedCatIds.has(b.category_id)).map(b => b.id);
-          ids.forEach((bid: string) => { labels[bid] = `Categorías: ${cap(term)}...`; });
-          setMatchedBusinessIds(ids);
-          setMatchLabels(labels);
+          const filtered = businesses.filter(b => b.category_id && matchedCatIds.has(b.category_id));
+          setFilteredBusinesses(filtered);
         } catch {
-          setMatchedBusinessIds([]);
-          setMatchLabels({});
+          setFilteredBusinesses([]);
         }
         break;
       }
@@ -209,29 +222,21 @@ export function BusinessSelection({
             .from('business_employees')
             .select(`
               business_id,
-              profiles:profiles!business_employees_user_id_fkey ( id, full_name )
+              profiles!business_employees_user_id_fkey (
+                full_name
+              )
             `)
-            .eq('status', 'approved')
-            .in('business_id', loadedIds)
-            .ilike('profiles.full_name', `%${term}%`);
+            .eq('status', 'approved');
 
-          const byBusiness: Record<string, any[]> = {};
-          (data || []).forEach((row: any) => {
-            if (!row.business_id) return;
-            if (!byBusiness[row.business_id]) byBusiness[row.business_id] = [];
-            byBusiness[row.business_id].push(row.profiles);
-          });
-
-          const ids = Object.keys(byBusiness);
-          ids.forEach((bid: string) => {
-            const first = byBusiness[bid]?.[0]?.full_name || cap(term);
-            labels[bid] = `Profesional: ${first}...`;
-          });
-          setMatchedBusinessIds(ids);
-          setMatchLabels(labels);
+          const matchedBusinessIds = new Set(
+            (data || [])
+              .filter((e: any) => (e.profiles?.full_name || '').toLowerCase().includes(termLower))
+              .map((e: any) => e.business_id)
+          );
+          const filtered = businesses.filter(b => matchedBusinessIds.has(b.id));
+          setFilteredBusinesses(filtered);
         } catch {
-          setMatchedBusinessIds([]);
-          setMatchLabels({});
+          setFilteredBusinesses([]);
         }
         break;
       }
@@ -261,22 +266,6 @@ export function BusinessSelection({
     );
   }
 
-  // Filtrar negocios según el término de búsqueda y tipo
-  const filteredBusinesses = (() => {
-    if (!searchTerm || searchTerm.trim().length < 2) return businesses;
-
-    const termLower = searchTerm.toLowerCase();
-    if (searchType === 'businesses') {
-      return businesses.filter((business) =>
-        (business.name.toLowerCase().includes(termLower))
-      );
-    }
-
-    // For services, categories and users we rely on matchedBusinessIds from backend
-    const idSet = new Set(matchedBusinessIds);
-    return businesses.filter((b) => idSet.has(b.id));
-  })();
-
   return (
     <div className="p-6 space-y-6">
       {/* Título */}
@@ -290,49 +279,11 @@ export function BusinessSelection({
 
         {/* SearchBar shared component (same dropdown/options as header) - full-bleed */}
         <div className="-mx-3 sm:mx-0 w-full">
-            <SearchBar
-              className="w-full"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onResultSelect={(result: any) => {
-              // Only handle business selections here
-              if (result.type === 'businesses') {
-                // result.id is business id
-                // find business in currently loaded businesses or fetch if missing
-                const found = businesses.find(b => b.id === result.id);
-                if (found) {
-                  onSelectBusiness(found);
-                } else {
-                  // Fetch business details and then select
-                  (async () => {
-                    try {
-                      const { data } = await supabase
-                        .from('businesses')
-                        .select('id, name, description, logo_url, address, city, phone, category_id')
-                        .eq('id', result.id)
-                        .eq('is_public', true)
-                        .single();
-                      if (data) {
-                        onSelectBusiness(data as Business);
-                      }
-                    } catch {
-                      // ignore
-                    }
-                  })();
-                }
-              } else {
-                // For other types, set the type and apply filter directly with the selected item name
-                setSearchType(result.type);
-                setSearchTerm(result.name);
-                applyFilter(result.name, result.type);
-              }
-            }}
-            onViewMore={(term: string, type: any) => {
-              // When user requests view more, populate the local searchTerm and type
-              setSearchTerm(term);
-              setSearchType(type as any);
-              applyFilter(term, type as any);
-            }}
-          />
+            <SimpleSearchBar
+              searchTerm={searchTerm}
+              searchType={searchType}
+              onSearch={handleSearch}
+            />
         </div>
       </div>
 
@@ -382,15 +333,6 @@ export function BusinessSelection({
                 <h3 className="text-base font-semibold text-foreground mb-1">
                   {business.name}
                 </h3>
-
-                {/* Filter match label for services/categories/users */}
-                {searchType !== 'businesses' && matchLabels[business.id] && (
-                  <div className="mb-2">
-                    <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
-                      {matchLabels[business.id]}
-                    </span>
-                  </div>
-                )}
                 
                 {business.description && (
                   <p className="text-xs text-muted-foreground mb-2 line-clamp-2">

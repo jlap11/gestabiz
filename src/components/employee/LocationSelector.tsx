@@ -107,6 +107,37 @@ export function LocationSelector({
     }
   }, [businessId, employeeId]);
 
+  const handleInitialLocationAssignment = async (locationId: string) => {
+    try {
+      setLoading(true);
+      
+      // Actualizar la tabla business_employees con la nueva location_id
+      const { error } = await supabase
+        .from('business_employees')
+        .update({ location_id: locationId })
+        .eq('employee_id', employeeId)
+        .eq('business_id', businessId);
+
+      if (error) throw error;
+
+      toast.success('Sede de trabajo asignada correctamente');
+      
+      // Refrescar datos
+      await fetchLocations();
+      await fetchTransferStatus();
+      
+      // Notificar al componente padre
+      if (onLocationChanged) {
+        onLocationChanged();
+      }
+    } catch (error) {
+      console.error('Error al asignar sede:', error);
+      toast.error('Error al asignar la sede de trabajo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchLocations();
     fetchTransferStatus();
@@ -275,20 +306,26 @@ export function LocationSelector({
                 </div>
               )}
 
-              {/* Botón Seleccionar - Abre modal de traslado */}
+              {/* Botón Seleccionar - Asignación inicial o traslado */}
               {!location.is_assigned && (
                 <div className="pt-3 border-t">
                   <Button
                     onClick={() => {
-                      setTransferTargetLocationId(location.id);
-                      setTransferTargetLocationName(location.name);
-                      setTransferModalOpen(true);
+                      if (!currentLocationId) {
+                        // Asignación inicial - asignar directamente
+                        handleInitialLocationAssignment(location.id);
+                      } else {
+                        // Traslado - abrir modal
+                        setTransferTargetLocationId(location.id);
+                        setTransferTargetLocationName(location.name);
+                        setTransferModalOpen(true);
+                      }
                     }}
                     className="w-full"
                     variant="outline"
                   >
                     <ArrowRightLeft className="h-4 w-4 mr-2" />
-                    Seleccionar Sede de Trabajo
+                    {!currentLocationId ? 'Seleccionar Sede de Trabajo' : 'Cambiar a esta Sede'}
                   </Button>
                 </div>
               )}
@@ -321,8 +358,8 @@ export function LocationSelector({
         ))}
       </div>
 
-      {/* Modal de Traslado */}
-      {currentLocationId && (
+      {/* Modal de Traslado - Solo para cambios entre sedes */}
+      {currentLocationId && transferModalOpen && (
         <LocationTransferModal
           open={transferModalOpen}
           onOpenChange={setTransferModalOpen}

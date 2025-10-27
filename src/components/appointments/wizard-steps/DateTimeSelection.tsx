@@ -216,24 +216,25 @@ export function DateTimeSelection({
     // Validar disponibilidad por traslado
     const transferValidation = await validateAvailability(employeeId, businessId, selectedDate, locationId);
 
+    // Consultar una sola vez si el empleado está ausente en la fecha
+    const checkDate = format(selectedDate, 'yyyy-MM-dd');
+    const { data: absenceData } = await supabase
+      .from('employee_absences')
+      .select('id, absence_type')
+      .eq('employee_id', employeeId)
+      .eq('business_id', businessId)
+      .eq('status', 'approved')
+      .lte('start_date', checkDate)
+      .gte('end_date', checkDate)
+      .maybeSingle();
+
     for (let hour = openHour; hour <= closeHour; hour++) {
       const time12h = formatHourTo12h(hour);
 
       let isAvailable = true;
       let unavailableReason = '';
 
-      // Regla 1: Validar ausencias aprobadas
-      const checkDate = format(selectedDate, 'yyyy-MM-dd');
-      const { data: absenceData } = await supabase
-        .from('employee_absences')
-        .select('id, absence_type')
-        .eq('employee_id', employeeId)
-        .eq('business_id', businessId)
-        .eq('status', 'approved')
-        .lte('start_date', checkDate)
-        .gte('end_date', checkDate)
-        .single();
-
+      // Regla 1: Validar ausencias aprobadas (resultado reusado)
       if (absenceData) {
         isAvailable = false;
         const typeLabels: Record<string, string> = {

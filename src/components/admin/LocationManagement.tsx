@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LocationAddress } from '@/components/ui/LocationAddress'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
@@ -620,7 +621,7 @@ export default function LocationManagement(props: Readonly<LocationManagementPro
                     {location.name}
                   </CardTitle>
                   <CardDescription>
-                    {location.address}, {location.city}
+                    <LocationAddress address={location.address || ''} cityId={location.city} stateId={location.state} postalCode={location.postal_code || ''} />
                   </CardDescription>
                 </div>
                 <div className="flex gap-1">

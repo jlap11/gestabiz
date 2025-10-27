@@ -96,11 +96,13 @@ export function CitySelect({
                 {searchTerm ? 'No se encontraron ciudades' : 'No hay ciudades disponibles'}
               </div>
             ) : (
-              filteredCities.map(city => (
-                <SelectItem key={city.id} value={city.id}>
-                  {city.name}
-                </SelectItem>
-              ))
+              <>
+                {filteredCities.map(city => (
+                  <SelectItem key={city.id} value={city.id}>
+                    {city.name}
+                  </SelectItem>
+                ))}
+              </>
             )}
           </div>
         </SelectContent>

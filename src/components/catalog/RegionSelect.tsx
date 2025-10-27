@@ -69,11 +69,13 @@ export function RegionSelect({
               No hay regiones disponibles
             </div>
           ) : (
-            regions.map(region => (
-              <SelectItem key={region.id} value={region.id}>
-                {region.name}
-              </SelectItem>
-            ))
+            <>
+              {regions.map(region => (
+                <SelectItem key={region.id} value={region.id}>
+                  {region.name}
+                </SelectItem>
+              ))}
+            </>
           )}
         </SelectContent>
       </Select>

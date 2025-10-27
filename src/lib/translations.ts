@@ -2736,7 +2736,7 @@ export const translations = {
       loginWithGoogle: 'Continuar con Google',
       loginWithApple: 'Continuar con Apple',
       alreadyHaveAccount: '¿Ya tienes una cuenta?',
-      dontHaveAccount: '¿No tienes una cuenta?',
+      dontHaveAccount: '¿No tienes una cuenta? ',
       signInHere: 'Inicia sesión aquí',
       signUpHere: 'Regístrate aquí',
       enterEmail: 'Ingresa tu correo electrónico',

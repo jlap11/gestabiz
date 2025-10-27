@@ -419,3 +419,43 @@ export async function getColombiaId(): Promise<string | null> {
     return null;
   }
 }
+
+// =====================================================
+// HELPER: Obtener nombre de región por ID
+// =====================================================
+
+export async function getRegionName(regionId: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('regions')
+      .select('name')
+      .eq('id', regionId)
+      .single();
+
+    if (error) throw error;
+    return data?.name || null;
+  } catch (err) {
+    console.error('Error getting region name:', err);
+    return null;
+  }
+}
+
+// =====================================================
+// HELPER: Obtener nombre de ciudad por ID
+// =====================================================
+
+export async function getCityName(cityId: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('name')
+      .eq('id', cityId)
+      .single();
+
+    if (error) throw error;
+    return data?.name || null;
+  } catch (err) {
+    console.error('Error getting city name:', err);
+    return null;
+  }
+}

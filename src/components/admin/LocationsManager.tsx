@@ -9,7 +9,11 @@ import {
   Mail,
   Clock,
   Image as ImageIcon,
+  Video as VideoIcon,
+  Star,
+  Play,
   X,
+  Save,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,9 +32,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { BusinessHoursPicker, type BusinessHours } from '@/components/ui/BusinessHoursPicker'
-import { ImageUploader } from '@/components/ui/ImageUploader'
 import { toast } from 'sonner'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
+import { MediaUploader } from '@/components/ui/MediaUploader'
+import { LocationProfileModal } from '@/components/admin/LocationProfileModal'
+import { BannerCropper } from '@/components/settings/BannerCropper'
+import { RegionSelect, CitySelect } from '@/components/catalog'
+import { LocationAddress } from '@/components/ui/LocationAddress'
 
 interface Location {
   id: string
@@ -61,7 +69,7 @@ const initialFormData: Omit<Location, 'id' | 'created_at' | 'updated_at' | 'busi
   address: '',
   city: '',
   state: '',
-  country: 'México',
+  country: 'Colombia',
   postal_code: '',
   phone: '',
   email: '',
@@ -79,8 +87,62 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
   const [editingLocation, setEditingLocation] = useState<Location | null>(null)
   const [formData, setFormData] = useState(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
-  const [pendingImageFiles, setPendingImageFiles] = useState<File[]>([])
   const { preferredLocationId } = usePreferredLocation(businessId)
+  const [locationBanners, setLocationBanners] = useState<Record<string, string>>({})
+  const [locationPrimaryVideos, setLocationPrimaryVideos] = useState<Record<string, string>>({})
+  const [profileLocation, setProfileLocation] = useState<Location | null>(null)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  
+  // Estados para banner cropper
+  const [isBannerCropperOpen, setIsBannerCropperOpen] = useState(false)
+  const [bannerImageToEdit, setBannerImageToEdit] = useState<string | null>(null)
+  const [selectedRegionId, setSelectedRegionId] = useState<string>('')
+  
+  // Estado para manejar la subida de multimedia
+  const [uploadMediaFn, setUploadMediaFn] = useState<(() => Promise<void>) | null>(null)
+  
+  // Estado para multimedia existente
+  const [existingMedia, setExistingMedia] = useState<Array<{
+    id: string
+    location_id: string
+    type: 'image' | 'video'
+    url: string
+    description: string | null
+    is_banner: boolean
+    is_primary: boolean
+    created_at: string
+  }>>([])
+  const [isLoadingMedia, setIsLoadingMedia] = useState(false)
+  
+  // Estado para manejar descripciones temporales
+  const [tempDescriptions, setTempDescriptions] = useState<Record<string, string>>({})
+  const [savingDescriptions, setSavingDescriptions] = useState<Record<string, boolean>>({})
+  
+  // Función estable para manejar la configuración de uploadMediaFn
+  const handleUploadTrigger = React.useCallback((uploadFn: () => Promise<void>) => {
+    setUploadMediaFn(() => uploadFn)
+  }, [])
+
+  // Función para cargar multimedia existente
+  const loadExistingMedia = React.useCallback(async (locationId: string) => {
+    setIsLoadingMedia(true)
+    try {
+      const { data, error } = await supabase
+        .from('location_media')
+        .select('*')
+        .eq('location_id', locationId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setExistingMedia(data || [])
+    } catch (err) {
+      console.error('Error loading existing media:', err)
+      toast.error('Error al cargar multimedia existente')
+      setExistingMedia([])
+    } finally {
+      setIsLoadingMedia(false)
+    }
+  }, [])
 
   const fetchLocations = React.useCallback(async () => {
     setIsLoading(true)
@@ -99,20 +161,74 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
       setIsLoading(false)
     }
   }, [businessId])
+  
+  // Nueva función reutilizable para refrescar banners y videos principales
+  const refreshMediaFlags = async () => {
+    const ids = locations.map((l) => l.id)
+    if (ids.length === 0) {
+      setLocationBanners({})
+      setLocationPrimaryVideos({})
+      return
+    }
+    const { data, error } = await supabase
+      .from('location_media')
+      .select('location_id, type, url, is_banner, is_primary, description, created_at')
+      .in('location_id', ids)
+      .order('created_at', { ascending: false })
+    if (error) {
+      // ignore
+      return
+    }
+    const banners: Record<string, string> = {}
+    const primVideos: Record<string, string> = {}
+    const rows = Array.isArray(data) ? data : []
 
+    // Agrupar posibles banners por sede y elegir ignorando "Banner de prueba"
+    const bannerByLocation = new Map<string, any[]>()
+    rows.forEach((m) => {
+      const cleanUrl = (m.url || '').trim().replace(/^[`'\"]+|[`'\"]+$/g, '')
+      if (m.is_primary && m.type === 'video' && !primVideos[m.location_id]) {
+        primVideos[m.location_id] = cleanUrl
+      }
+      if (m.is_banner && m.type === 'image') {
+        const arr = bannerByLocation.get(m.location_id) || []
+        arr.push({ ...m, url: cleanUrl })
+        bannerByLocation.set(m.location_id, arr)
+      }
+    })
+
+    bannerByLocation.forEach((arr, locId) => {
+      const chosen = arr.find((x) => (x.description || '').trim() !== 'Banner de prueba') || arr[0]
+      if (chosen) banners[locId] = chosen.url
+    })
+
+    setLocationBanners(banners)
+    setLocationPrimaryVideos(primVideos)
+  }
+  
   useEffect(() => {
     fetchLocations()
   }, [fetchLocations])
 
+  // Actualiza banners y videos al cambiar las sedes
+  useEffect(() => {
+    refreshMediaFlags()
+  }, [locations])
+  
+  const handleOpenProfile = (location: Location) => {
+    setProfileLocation(location)
+    setIsProfileOpen(true)
+  }
   const handleOpenDialog = (location?: Location) => {
     if (location) {
       setEditingLocation(location)
+      setSelectedRegionId(location.state || '')
       setFormData({
         name: location.name,
         address: location.address || '',
         city: location.city || '',
         state: location.state || '',
-        country: location.country || 'México',
+        country: location.country || 'Colombia',
         postal_code: location.postal_code || '',
         phone: location.phone || '',
         email: location.email || '',
@@ -120,23 +236,93 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         business_hours: location.business_hours || undefined,
         images: location.images || [],
         is_active: location.is_active,
+        is_primary: location.is_primary || false,
       })
+      // Cargar multimedia existente
+      loadExistingMedia(location.id)
     } else {
       setEditingLocation(null)
+      setSelectedRegionId('')
       setFormData(initialFormData)
+      setExistingMedia([])
     }
+    // Limpiar descripciones temporales
+    setTempDescriptions({})
+    setSavingDescriptions({})
     setIsDialogOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-    setEditingLocation(null)
-    setFormData(initialFormData)
-    setPendingImageFiles([]) // Clear pending image files
+  const handleCloseDialog = (open?: boolean) => {
+    if (open === false || open === undefined) {
+      setIsDialogOpen(false)
+      setEditingLocation(null)
+      setSelectedRegionId('')
+      setFormData(initialFormData)
+      // Limpiar descripciones temporales
+      setTempDescriptions({})
+      setSavingDescriptions({})
+    }
   }
 
   const handleChange = (field: keyof typeof formData, value: string | boolean | BusinessHours | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+
+  const handleBannerEdit = (imageUrl: string) => {
+    setBannerImageToEdit(imageUrl)
+    setIsBannerCropperOpen(true)
+  }
+
+  const handleBannerSave = async (croppedImageBlob: Blob) => {
+    if (!editingLocation) return
+
+    try {
+      // Subir la imagen recortada
+      const fileName = `banner-${editingLocation.id}-${Date.now()}.jpg`
+      const { data, error } = await supabase.storage
+        .from('location-images')
+        .upload(`banners/${fileName}`, croppedImageBlob, {
+          contentType: 'image/jpeg',
+          upsert: true
+        })
+
+      if (error) throw error
+
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('location-images')
+        .getPublicUrl(`banners/${fileName}`)
+
+      // Actualizar el banner en la base de datos (usar columnas correctas)
+      // Primero, desmarcar banners anteriores
+      await supabase
+        .from('location_media')
+        .update({ is_banner: false })
+        .eq('location_id', editingLocation.id)
+        .eq('type', 'image')
+        .eq('is_banner', true)
+
+      // Insertar nuevo banner
+      await supabase
+        .from('location_media')
+        .insert({
+          location_id: editingLocation.id,
+          type: 'image',
+          url: publicUrl,
+          is_banner: true
+        })
+
+      toast.success('Banner actualizado exitosamente')
+      setIsBannerCropperOpen(false)
+      setBannerImageToEdit(null)
+      
+      // Recargar las ubicaciones para mostrar el nuevo banner
+      fetchLocations()
+    } catch (error) {
+      console.error('Error al guardar banner:', error)
+      toast.error('Error al guardar el banner')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,6 +373,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
 
         if (error) throw error
         locationId = editingLocation.id
+
         toast.success('Sede actualizada exitosamente')
       } else {
         // Create new location and get its ID
@@ -201,53 +388,21 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         
         locationId = newLocation.id
         
-        // Upload pending images if any
-        if (pendingImageFiles.length > 0) {
-          toast.info('Subiendo imágenes...')
-          const uploadedUrls: string[] = []
-          
-          for (const file of pendingImageFiles) {
-            try {
-              const fileName = `${Date.now()}-${file.name}`
-              const filePath = `locations/${locationId}/${fileName}`
-              
-              const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('location-images')
-                .upload(filePath, file, {
-                  cacheControl: '3600',
-                  upsert: false,
-                })
-
-              if (uploadError) {
-                console.error('Error uploading image:', uploadError)
-                continue
-              }
-
-              const { data: urlData } = supabase.storage
-                .from('location-images')
-                .getPublicUrl(uploadData.path)
-
-              uploadedUrls.push(urlData.publicUrl)
-            } catch (err) {
-              console.error('Error processing image:', err)
-            }
-          }
-
-          // Update location with uploaded image URLs
-          if (uploadedUrls.length > 0) {
-            await supabase
-              .from('locations')
-              .update({ images: uploadedUrls })
-              .eq('id', locationId)
-          }
-        }
-        
         toast.success('Sede creada exitosamente')
+      }
+
+      // Subir multimedia si hay archivos pendientes y es una edición
+      if (editingLocation && uploadMediaFn) {
+        try {
+          await uploadMediaFn()
+        } catch (mediaError) {
+          console.error('Error uploading media:', mediaError)
+          toast.error('Sede guardada, pero hubo un error al subir la multimedia')
+        }
       }
 
       await fetchLocations()
       handleCloseDialog()
-      setPendingImageFiles([]) // Clear pending files
     } catch (err) {
       console.error('Error saving location:', err)
       toast.error(editingLocation ? 'Error al actualizar la sede' : 'Error al crear la sede')
@@ -289,6 +444,171 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
     }))
   }
 
+  // Funciones para manejar multimedia existente
+  const handleDeleteExistingMedia = async (mediaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('location_media')
+        .delete()
+        .eq('id', mediaId)
+
+      if (error) throw error
+
+      setExistingMedia(prev => prev.filter(media => media.id !== mediaId))
+      toast.success('Multimedia eliminada exitosamente')
+      
+      // Recargar ubicaciones para actualizar las tarjetas
+      await fetchLocations()
+    } catch (err) {
+      console.error('Error deleting media:', err)
+      toast.error('Error al eliminar multimedia')
+    }
+  }
+
+  const handleUpdateMediaDescription = async (mediaId: string, description: string) => {
+    try {
+      const { error } = await supabase
+        .from('location_media')
+        .update({ description: description.trim() || null })
+        .eq('id', mediaId)
+
+      if (error) throw error
+
+      setExistingMedia(prev => prev.map(media => 
+        media.id === mediaId ? { ...media, description: description.trim() || null } : media
+      ))
+      toast.success('Descripción actualizada')
+    } catch (err) {
+      console.error('Error updating media description:', err)
+      toast.error('Error al actualizar descripción')
+    }
+  }
+
+  const handleToggleBanner = async (mediaId: string, currentIsBanner: boolean) => {
+    if (!editingLocation) return
+
+    try {
+      if (!currentIsBanner) {
+        // Desmarcar otros banners primero
+        await supabase
+          .from('location_media')
+          .update({ is_banner: false })
+          .eq('location_id', editingLocation.id)
+          .eq('type', 'image')
+      }
+
+      // Marcar/desmarcar este como banner
+      const { error } = await supabase
+        .from('location_media')
+        .update({ is_banner: !currentIsBanner })
+        .eq('id', mediaId)
+
+      if (error) throw error
+
+      setExistingMedia(prev => prev.map(media => ({
+        ...media,
+        is_banner: media.id === mediaId ? !currentIsBanner : (media.type === 'image' ? false : media.is_banner)
+      })))
+      
+      toast.success(currentIsBanner ? 'Banner desmarcado' : 'Banner marcado')
+      
+      // Refrescar banderas para que las tarjetas se actualicen
+      await refreshMediaFlags()
+    } catch (err) {
+      console.error('Error toggling banner:', err)
+      toast.error('Error al cambiar banner')
+    }
+  }
+
+  const handleTogglePrimaryVideo = async (mediaId: string, currentIsPrimary: boolean) => {
+    if (!editingLocation) return
+
+    try {
+      if (!currentIsPrimary) {
+        // Desmarcar otros videos primarios primero
+        await supabase
+          .from('location_media')
+          .update({ is_primary: false })
+          .eq('location_id', editingLocation.id)
+          .eq('type', 'video')
+      }
+
+      // Marcar/desmarcar este como video principal
+      const { error } = await supabase
+        .from('location_media')
+        .update({ is_primary: !currentIsPrimary })
+        .eq('id', mediaId)
+
+      if (error) throw error
+
+      setExistingMedia(prev => prev.map(media => ({
+        ...media,
+        is_primary: media.id === mediaId ? !currentIsPrimary : (media.type === 'video' ? false : media.is_primary)
+      })))
+      
+      toast.success(currentIsPrimary ? 'Video principal desmarcado' : 'Video principal marcado')
+      
+      // Recargar ubicaciones para actualizar las tarjetas
+      await fetchLocations()
+    } catch (err) {
+      console.error('Error toggling primary video:', err)
+      toast.error('Error al cambiar video principal')
+    }
+  }
+
+  // Funciones para manejar descripciones temporales
+  const handleTempDescriptionChange = (mediaId: string, value: string) => {
+    setTempDescriptions(prev => ({
+      ...prev,
+      [mediaId]: value
+    }))
+  }
+
+  const handleSaveDescription = async (mediaId: string) => {
+    const description = tempDescriptions[mediaId]
+    if (description === undefined) return
+
+    setSavingDescriptions(prev => ({ ...prev, [mediaId]: true }))
+    
+    try {
+      const { error } = await supabase
+        .from('location_media')
+        .update({ description: description.trim() || null })
+        .eq('id', mediaId)
+
+      if (error) throw error
+
+      setExistingMedia(prev => prev.map(media => 
+        media.id === mediaId ? { ...media, description: description.trim() || null } : media
+      ))
+      
+      // Limpiar descripción temporal
+      setTempDescriptions(prev => {
+        const newTemp = { ...prev }
+        delete newTemp[mediaId]
+        return newTemp
+      })
+      
+      toast.success('Descripción guardada')
+    } catch (err) {
+      console.error('Error saving description:', err)
+      toast.error('Error al guardar descripción')
+    } finally {
+      setSavingDescriptions(prev => ({ ...prev, [mediaId]: false }))
+    }
+  }
+
+  const getDisplayDescription = (media: any) => {
+    return tempDescriptions[media.id] !== undefined 
+      ? tempDescriptions[media.id] 
+      : media.description || ''
+  }
+
+  const hasUnsavedChanges = (media: any) => {
+    return tempDescriptions[media.id] !== undefined && 
+           tempDescriptions[media.id] !== (media.description || '')
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -305,14 +625,16 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
           <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">Sedes</h2>
           <p className="text-muted-foreground text-xs sm:text-sm">Gestiona las ubicaciones de tu negocio</p>
         </div>
-        <Button
-          onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Agregar Sede</span>
-          <span className="sm:hidden">Nueva Sede</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => handleOpenDialog()}
+            className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Agregar Sede</span>
+            <span className="sm:hidden">Nueva Sede</span>
+          </Button>
+        </div>
       </div>
 
       {/* Locations Grid - Responsive */}
@@ -336,12 +658,37 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {locations.map((location) => (
-            <Card key={location.id} className="bg-card border-border hover:border-border/80 transition-colors">
-              <CardHeader className="p-3 sm:p-6">
+            <Card
+              key={location.id}
+              className="relative overflow-hidden cursor-pointer group"
+              onClick={() => handleOpenProfile(location)}
+            >
+              {/* Banner superior (50% de la tarjeta) */}
+              {locationBanners[location.id] && (
+                <img
+                  src={locationBanners[location.id]}
+                  alt=""
+                  className="absolute left-0 top-0 w-full object-cover"
+                  style={{ height: '50%' }}
+                  aria-hidden="true"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement
+                    img.style.display = 'none'
+                  }}
+                />
+              )}
+              {/* Degradado para legibilidad (en la mitad superior) */}
+              {locationBanners[location.id] && (
+                <div
+                  className="absolute left-0 top-0 w-full bg-gradient-to-t from-black/40 via-black/30 to-transparent"
+                  style={{ height: '50%' }}
+                />
+              )}
+              <CardHeader className="p-3 sm:p-6 relative z-10">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <CardTitle className="text-foreground text-base sm:text-lg truncate">{location.name}</CardTitle>
+                      <CardTitle className={`text-base sm:text-lg truncate font-semibold ${locationBanners[location.id] ? 'text-white drop-shadow-lg' : 'text-foreground'}`}>{location.name}</CardTitle>
                       {location.is_primary && (
                         <Badge variant="default" className="text-[10px] sm:text-xs">
                           Principal
@@ -363,43 +710,45 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleOpenDialog(location)}
-                      className="text-muted-foreground hover:text-foreground min-w-[44px] min-h-[44px]"
+                      onClick={(e) => { e.stopPropagation(); handleOpenDialog(location) }}
+                      className={`min-w-[44px] min-h-[44px] ${locationBanners[location.id] ? 'text-white/80 hover:text-white bg-black/20 hover:bg-black/30' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(location.id)}
-                      className="text-muted-foreground hover:text-red-400 min-w-[44px] min-h-[44px]"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(location.id) }}
+                      className={`min-w-[44px] min-h-[44px] ${locationBanners[location.id] ? 'text-white/80 hover:text-red-300 bg-black/20 hover:bg-red-500/30' : 'text-muted-foreground hover:text-red-400'}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6">
+              <CardContent className="space-y-2 sm:space-y-3 p-3 sm:p-6 relative z-10">
                 {location.address && (
                   <div className="flex items-start gap-2 text-xs sm:text-sm">
-                    <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground line-clamp-2">
-                      {location.address}
-                      {location.city && `, ${location.city}`}
-                      {location.state && `, ${location.state}`}
-                    </span>
+                    <MapPin className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mt-0.5 flex-shrink-0 ${locationBanners[location.id] ? 'text-white/70' : 'text-muted-foreground'}`} />
+                    <LocationAddress
+                      address={location.address}
+                      cityId={location.city}
+                      stateId={location.state}
+                      postalCode={location.postal_code}
+                      className={`line-clamp-2 ${locationBanners[location.id] ? 'text-white/80' : 'text-muted-foreground'}`}
+                    />
                   </div>
                 )}
                 {location.phone && (
                   <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground truncate">{location.phone}</span>
+                    <Phone className={`h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 ${locationBanners[location.id] ? 'text-white/70' : 'text-muted-foreground'}`} />
+                    <span className={`truncate ${locationBanners[location.id] ? 'text-white/80' : 'text-muted-foreground'}`}>{location.phone}</span>
                   </div>
                 )}
                 {location.email && (
                   <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-muted-foreground truncate">{location.email}</span>
+                    <Mail className={`h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 ${locationBanners[location.id] ? 'text-white/70' : 'text-muted-foreground'}`} />
+                    <span className={`truncate ${locationBanners[location.id] ? 'text-white/80' : 'text-muted-foreground'}`}>{location.email}</span>
                   </div>
                 )}
                 {location.business_hours && (
@@ -418,6 +767,17 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Perfil de Sede */}
+      {profileLocation && (
+        <LocationProfileModal
+          open={isProfileOpen}
+          onOpenChange={setIsProfileOpen}
+          location={profileLocation}
+          bannerUrl={locationBanners[profileLocation.id]}
+          primaryVideoUrl={locationPrimaryVideos[profileLocation.id]}
+        />
       )}
 
       {/* Create/Edit Dialog - Mobile Responsive */}
@@ -460,25 +820,37 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               />
             </div>
 
-            {/* City, State, Postal Code - Responsive Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* Country, Region, City, Postal Code - Responsive Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="city" className="text-sm sm:text-base">Ciudad</Label>
+                <Label htmlFor="country" className="text-sm sm:text-base">País</Label>
                 <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  placeholder="Ciudad"
+                  id="country"
+                  value="Colombia"
+                  disabled
+                  className="min-h-[44px] bg-muted"
+                />
+              </div>
+              <div>
+                <Label className="text-sm sm:text-base">Departamento</Label>
+                <RegionSelect
+                  countryId="01b4e9d1-a84e-41c9-8768-253209225a21"
+                  value={selectedRegionId}
+                  onChange={(value) => {
+                    setSelectedRegionId(value)
+                    handleChange('state', value)
+                  }}
+                  placeholder="Seleccione departamento"
                   className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="state" className="text-sm sm:text-base">Estado/Provincia</Label>
-                <Input
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) => handleChange('state', e.target.value)}
-                  placeholder="Estado"
+                <Label className="text-sm sm:text-base">Ciudad</Label>
+                <CitySelect
+                  regionId={selectedRegionId}
+                  value={formData.city}
+                  onChange={(value) => handleChange('city', value)}
+                  placeholder="Seleccione ciudad"
                   className="min-h-[44px]"
                 />
               </div>
@@ -492,19 +864,6 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                   className="min-h-[44px]"
                 />
               </div>
-            </div>
-
-            {/* Country */}
-            <div>
-              <Label htmlFor="country" className="text-sm sm:text-base">País</Label>
-              <Input
-                id="country"
-                value="Colombia"
-                readOnly
-                placeholder="País"
-                autoComplete="country"
-                className="min-h-[44px]"
-              />
             </div>
 
             {/* Phone & Email - Responsive Grid */}
@@ -559,57 +918,166 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               />
             </div>
 
-            {/* Images */}
+            {/* Multimedia */}
             <div>
-              <Label className="text-sm sm:text-base">Imágenes de la Sede</Label>
+              <Label className="text-sm sm:text-base">Multimedia de la Sede</Label>
               <div className="space-y-3 sm:space-y-4">
-                {/* Current Images */}
-                {formData.images && formData.images.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {formData.images.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Imagen ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(url)}
-                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-primary-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                {/* Galería de multimedia existente */}
+                {editingLocation && (
+                  <div className="space-y-4">
+                    {isLoadingMedia ? (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-muted-foreground">Cargando multimedia...</p>
                       </div>
-                    ))}
+                    ) : existingMedia.length > 0 ? (
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-medium">Multimedia actual</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {existingMedia.map((media) => (
+                            <div key={media.id} className="relative group border rounded-lg overflow-hidden">
+                              {media.type === 'image' ? (
+                                <img
+                                  src={media.url}
+                                  alt={media.description || 'Imagen'}
+                                  className="w-full h-32 object-cover"
+                                />
+                              ) : (
+                                <div className="relative w-full h-32 bg-gray-100 flex items-center justify-center">
+                                  <video
+                                    src={media.url}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                    <Play className="h-8 w-8 text-white" />
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Badges */}
+                              <div className="absolute top-2 left-2 flex flex-col gap-1">
+                                {media.is_banner && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    <Star className="h-3 w-3 mr-1" />
+                                    Banner
+                                  </Badge>
+                                )}
+                                {media.is_primary && media.type === 'video' && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    <Play className="h-3 w-3 mr-1" />
+                                    Principal
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* Overlay con controles */}
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+                                <div className="flex justify-end gap-1">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteExistingMedia(media.id)}
+                                    className="h-7 w-7 p-0"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  {/* Descripción editable */}
+                                  <div className="flex gap-1">
+                                    <Input
+                                      placeholder="Descripción..."
+                                      value={getDisplayDescription(media)}
+                                      onChange={(e) => handleTempDescriptionChange(media.id, e.target.value)}
+                                      className="text-xs h-7 bg-background/90 border-border flex-1"
+                                    />
+                                    {hasUnsavedChanges(media) && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="default"
+                                        onClick={() => handleSaveDescription(media.id)}
+                                        disabled={savingDescriptions[media.id]}
+                                        className="h-7 w-7 p-0"
+                                      >
+                                        {savingDescriptions[media.id] ? (
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                        ) : (
+                                          <Save className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Botones de acción */}
+                                  <div className="flex gap-1">
+                                    {media.type === 'image' && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={media.is_banner ? "default" : "secondary"}
+                                        onClick={() => handleToggleBanner(media.id, media.is_banner)}
+                                        className="h-7 px-2 text-xs flex-1"
+                                      >
+                                        <Star className="h-3 w-3 mr-1" />
+                                        {media.is_banner ? 'Quitar Banner' : 'Marcar Banner'}
+                                      </Button>
+                                    )}
+                                    {media.type === 'video' && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={media.is_primary ? "default" : "secondary"}
+                                        onClick={() => handleTogglePrimaryVideo(media.id, media.is_primary)}
+                                        className="h-7 px-2 text-xs flex-1"
+                                      >
+                                        <Play className="h-3 w-3 mr-1" />
+                                        {media.is_primary ? 'Quitar Principal' : 'Marcar Principal'}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 border-2 border-dashed border-gray-200 rounded-lg">
+                        <p className="text-sm text-muted-foreground">No hay multimedia subida aún</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Upload New Images */}
+                {/* Upload multimedia unificado (images + videos) */}
                 {editingLocation ? (
-                  // Editing: Upload immediately (location exists)
-                  <ImageUploader
-                    bucket="location-images"
-                    maxFiles={5}
-                    maxSizeMB={5}
-                    existingImages={formData.images || []}
-                    onUploadComplete={handleImagesUploaded}
-                    onUploadError={(error) => toast.error(error)}
-                    folderPath={`locations/${editingLocation.id}`}
-                  />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Subir nueva multimedia</h4>
+                    <MediaUploader
+                      locationId={editingLocation.id}
+                      onUploadComplete={() => {
+                        // Recargar ubicaciones y multimedia después de subir
+                        fetchLocations()
+                        loadExistingMedia(editingLocation.id)
+                      }}
+                      onUploadError={(error) => toast.error(error)}
+                      onBannerCropRequest={(imageUrl) => {
+                        // Activar recorte automático cuando se marca como banner
+                        setBannerImageToEdit(imageUrl)
+                        setIsBannerCropperOpen(true)
+                      }}
+                      onUploadTrigger={handleUploadTrigger}
+                    />
+                  </div>
                 ) : (
-                  // Creating: Delayed upload (location doesn't exist yet)
-                  <ImageUploader
-                    bucket="location-images"
-                    maxFiles={5}
-                    maxSizeMB={5}
-                    delayedUpload={true}
-                    onFileSelected={(file) => {
-                      setPendingImageFiles((prev) => [...prev, file])
-                    }}
-                    onUploadError={(error) => toast.error(error)}
-                    folderPath="temp" // Not used in delayed mode
-                  />
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Podrás subir multimedia después de crear la sede
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -672,6 +1140,16 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Banner Cropper */}
+      {bannerImageToEdit && (
+        <BannerCropper
+          open={isBannerCropperOpen}
+          onOpenChange={setIsBannerCropperOpen}
+          imageUrl={bannerImageToEdit}
+          onSave={handleBannerSave}
+        />
+      )}
     </div>
   )
 }

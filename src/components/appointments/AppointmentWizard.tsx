@@ -71,15 +71,15 @@ interface WizardData {
   notes: string;
 }
 
-const STEP_LABELS = {
-  0: 'Business Selection',
-  1: 'Location Selection',
-  2: 'Service Selection',
-  3: 'Employee Selection',
-  4: 'Employee Business',
-  5: 'Date & Time',
-  6: 'Confirmation',
-  7: 'Complete'
+const STEP_LABELS_MAP: Record<string, string> = {
+  business: 'Business Selection',
+  location: 'Location Selection',
+  service: 'Service Selection',
+  employee: 'Employee Selection',
+  employeeBusiness: 'Employee Business',
+  dateTime: 'Date & Time',
+  confirmation: 'Confirmation',
+  success: 'Complete',
 };
 
 export function AppointmentWizard({ 
@@ -119,8 +119,11 @@ export function AppointmentWizard({
     return 1;
   };
 
-  const [currentStep, setCurrentStep] = useState(getInitialStep());
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // currentStep initialization handled by dynamic step order above
+  // isSubmitting initialization handled below with dynamic step order
+  /* wizardData initial state moved to dynamic block using getStepOrder; see new initialization below */
+
+  // Initialize wizard state before computing dynamic step order
   const [wizardData, setWizardData] = useState<WizardData>({
     businessId: businessId || null,
     business: null,
@@ -132,15 +135,54 @@ export function AppointmentWizard({
     employee: null,
     employeeBusinessId: null,
     employeeBusiness: null,
-    resourceId: null, // ⭐ NUEVO: Para recursos físicos
+    resourceId: null,
     date: preselectedDate || null,
     startTime: preselectedTime || null,
     endTime: null,
     notes: '',
   });
 
-  // Hook para obtener los negocios del empleado seleccionado
+  // Hook needed for optional Employee Business step
   const { businesses: employeeBusinesses, isEmployeeOfAnyBusiness } = useEmployeeBusinesses(wizardData.employeeId, true);
+
+  // Determine if flow was initiated from employee profile and needs employee business selection
+  const initiatedFromEmployeeProfile = Boolean(preselectedEmployeeId);
+  const needsEmployeeBusinessSelection = !!initiatedFromEmployeeProfile && !!wizardData.employeeId && employeeBusinesses.length > 1;
+
+  // Orden dinámico de pasos
+  const getStepOrder = (): string[] => {
+    const base = businessId 
+      ? ['location','service','employee','dateTime','confirmation','success'] 
+      : ['business','location','service','employee','dateTime','confirmation','success'];
+    if (needsEmployeeBusinessSelection) {
+      const idx = base.indexOf('employee');
+      return [...base.slice(0, idx + 1), 'employeeBusiness', ...base.slice(idx + 1)];
+    }
+    return base;
+  };
+
+  // Total de pasos
+  const getTotalSteps = () => getStepOrder().length;
+
+  // Mapeo lógico → índice dinámico
+  const getStepNumber = (logicalStep: string): number => {
+    const order = getStepOrder();
+    return order.indexOf(logicalStep);
+  };
+
+  // Paso inicial lógico y numérico
+  const getInitialStepLogical = () => {
+    if (!businessId) return 'business';
+    if (preselectedEmployeeId && preselectedServiceId) return 'dateTime';
+    if (preselectedEmployeeId && !preselectedServiceId) return 'service';
+    if (preselectedServiceId && !preselectedEmployeeId) return 'employee';
+    if (preselectedLocationId) return 'service';
+    return 'location';
+  };
+
+  const [currentStep, setCurrentStep] = useState(() => getStepNumber(getInitialStepLogical()));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // wizardData is initialized above before dynamic step order
 
   // Hook para obtener la ciudad preferida del usuario
   const { preferredCityName, preferredRegionName } = usePreferredCity();
@@ -156,215 +198,16 @@ export function AppointmentWizard({
   React.useEffect(() => {
     if (open && !hasTrackedStart && (businessId || wizardData.businessId)) {
       analytics.trackBookingStarted({
-        businessId: businessId || wizardData.businessId || '',
+        businessId: wizardData.businessId || businessId || '',
         businessName: wizardData.business?.name,
-        serviceId: preselectedServiceId,
-        serviceName: wizardData.service?.name,
-        employeeId: preselectedEmployeeId,
-        employeeName: wizardData.employee?.full_name || undefined,
-        locationId: preselectedLocationId,
-        currency: 'COP',
       });
       setHasTrackedStart(true);
     }
+  }, [open, hasTrackedStart, analytics, businessId, wizardData.businessId, wizardData.business?.name]);
 
-    // Reset flag cuando se cierra
-    if (!open && hasTrackedStart) {
-      setHasTrackedStart(false);
-    }
-  }, [open, businessId, wizardData.businessId, hasTrackedStart, analytics, preselectedServiceId, preselectedLocationId, preselectedEmployeeId, wizardData.business?.name, wizardData.service?.name, wizardData.employee?.full_name]);
+  /* replaced: getTotalSteps now derives from getStepOrder().length (dynamic) */
 
-  // Efecto para cargar datos completos de items preseleccionados
-  React.useEffect(() => {
-    if (!open) return; // Solo cargar cuando el wizard esté abierto
-
-    const loadPreselectedData = async () => {
-      try {
-        const updates: Partial<WizardData> = {};
-
-        // Cargar negocio si está preseleccionado pero no tenemos los datos completos
-        if (businessId && !wizardData.business) {
-          const { data: businessData } = await supabase
-            .from('businesses')
-            .select('id, name, description')
-            .eq('id', businessId)
-            .single();
-          
-          if (businessData) {
-            updates.business = businessData as Business;
-            // También actualizar wizardData.businessId si aún no está
-            if (!wizardData.businessId) {
-              updates.businessId = businessId;
-            }
-          }
-        }
-
-        // Cargar ubicación si está preseleccionada
-        if (preselectedLocationId && !wizardData.location) {
-          const { data: locationData } = await supabase
-            .from('locations')
-            .select('*')
-            .eq('id', preselectedLocationId)
-            .single();
-          
-          if (locationData) {
-            updates.location = locationData as Location;
-            if (!wizardData.locationId) {
-              updates.locationId = preselectedLocationId;
-            }
-          }
-        }
-
-        // Cargar empleado si está preseleccionado
-        if (preselectedEmployeeId && !wizardData.employee) {
-          const { data: employeeData } = await supabase
-            .from('profiles')
-            .select('id, email, full_name, role, avatar_url')
-            .eq('id', preselectedEmployeeId)
-            .single();
-          
-          if (employeeData) {
-            updates.employee = employeeData as Employee;
-            if (!wizardData.employeeId) {
-              updates.employeeId = preselectedEmployeeId;
-            }
-
-            // Si hay empleado pero NO hay negocio o ubicación, cargar su negocio y ubicación
-            if (!businessId && !wizardData.businessId) {
-              // Consultar el primer negocio vinculado al empleado
-              const { data: employeeBusinessData } = await supabase
-                .from('business_employees')
-                .select('business_id, location_id')
-                .eq('employee_id', preselectedEmployeeId)
-                .eq('is_active', true)
-                .limit(1)
-                .single();
-              
-              if (employeeBusinessData) {
-                // Cargar negocio
-                const { data: bizData } = await supabase
-                  .from('businesses')
-                  .select('id, name, description')
-                  .eq('id', employeeBusinessData.business_id)
-                  .single();
-                
-                if (bizData) {
-                  updates.businessId = bizData.id;
-                  updates.business = bizData as Business;
-                }
-
-                // Cargar ubicación si está disponible
-                if (employeeBusinessData.location_id && !preselectedLocationId) {
-                  const { data: locData } = await supabase
-                    .from('locations')
-                    .select('*')
-                    .eq('id', employeeBusinessData.location_id)
-                    .single();
-                  
-                  if (locData) {
-                    updates.locationId = locData.id;
-                    updates.location = locData as Location;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        // Cargar servicio si está preseleccionado
-        if (preselectedServiceId && !wizardData.service) {
-          const { data: serviceData } = await supabase
-            .from('services')
-            .select('*')
-            .eq('id', preselectedServiceId)
-            .single();
-          
-          if (serviceData) {
-            updates.service = serviceData as Service;
-            if (!wizardData.serviceId) {
-              updates.serviceId = preselectedServiceId;
-            }
-          }
-        }
-
-        // Aplicar todas las actualizaciones de una vez
-        if (Object.keys(updates).length > 0) {
-          updateWizardData(updates);
-        }
-      } catch {
-        // Silent fail - el usuario puede seleccionar manualmente si falla la precarga
-      }
-    };
-
-    loadPreselectedData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, businessId, preselectedLocationId, preselectedServiceId, preselectedEmployeeId]);
-
-  // Validar compatibilidad empleado-servicio
-  React.useEffect(() => {
-    if (!open || !preselectedEmployeeId || !preselectedServiceId) return;
-
-    const validateEmployeeService = async () => {
-      try {
-        // Verificar que el empleado ofrezca este servicio
-        const { data: compatibility } = await supabase
-          .from('employee_services')
-          .select('id')
-          .eq('employee_id', preselectedEmployeeId)
-          .eq('service_id', preselectedServiceId)
-          .eq('is_active', true)
-          .single();
-
-        if (!compatibility) {
-          // El empleado no ofrece este servicio - limpiar preselección
-          toast.error(t('appointments.wizard_errors.professionalNotOffersService'));
-          updateWizardData({
-            employeeId: null,
-            employee: null,
-          });
-        }
-      } catch {
-        // Si hay error, limpiar preselección por seguridad
-        toast.error(t('appointments.wizard_errors.cannotVerifyCompatibility'));
-        updateWizardData({
-          employeeId: null,
-          employee: null,
-        });
-      }
-    };
-
-    validateEmployeeService();
-  }, [open, preselectedEmployeeId, preselectedServiceId]);
-
-  // Determinar si necesitamos mostrar el paso de selección de negocio del empleado
-  const needsEmployeeBusinessSelection = wizardData.employeeId && employeeBusinesses.length > 1;
-
-  // Calcular el número total de pasos dinámicamente
-  const getTotalSteps = () => {
-    // Con businessId: 7 pasos (sin paso 0 de negocio)
-    // Sin businessId: 8 pasos (con paso 0 de negocio)
-    let total = businessId ? 7 : 8;
-    if (needsEmployeeBusinessSelection) total += 1; // Paso adicional si el empleado tiene múltiples negocios
-    return total;
-  };
-
-  // Mapeo simplificado de pasos lógicos a números
-  // Todos los pasos se numeran igual independientemente de preselecciones:
-  // business=0, location=1, service=2, employee=3, employeeBusiness=4, dateTime=5, confirmation=6, success=7
-  // Si businessId está preseleccionado, simplemente NO se mostrará el paso 0
-  const getStepNumber = (logicalStep: string): number => {
-    const stepMap: Record<string, number> = {
-      'business': 0,
-      'location': 1,
-      'service': 2,
-      'employee': 3,
-      'employeeBusiness': 4,
-      'dateTime': 5,
-      'confirmation': 6,
-      'success': 7,
-    };
-    return stepMap[logicalStep] ?? currentStep;
-  };
+  /* replaced: getStepNumber now uses getStepOrder() to compute index dynamically */
 
   // Calcular los pasos completados dinámicamente
   const getCompletedSteps = (): number[] => {
@@ -451,7 +294,7 @@ export function AppointmentWizard({
         toast.error(t('appointments.wizard_errors.professionalNotAvailable'));
         return;
       }
-      // Ir al paso de selección de negocio del empleado
+      // Ir al paso de selección de negocio del empleado (solo si el flujo inició desde perfil del profesional)
       setCurrentStep(getStepNumber('employeeBusiness'));
       return;
     }
@@ -464,6 +307,20 @@ export function AppointmentWizard({
       });
       setCurrentStep(getStepNumber('dateTime'));
       return;
+    }
+
+    // Si NO iniciamos desde el perfil del profesional y hay negocio seleccionado en contexto,
+    // auto-asignar ese negocio al empleado y saltar el paso 4
+    if (currentStep === getStepNumber('employee') && !initiatedFromEmployeeProfile) {
+      const contextBusinessId = wizardData.businessId || businessId || null;
+      if (contextBusinessId) {
+        updateWizardData({
+          employeeBusinessId: contextBusinessId,
+          employeeBusiness: wizardData.business || null,
+        });
+        setCurrentStep(getStepNumber('dateTime'));
+        return;
+      }
     }
 
     // Si el empleado no tiene negocios, no permitir continuar
@@ -504,7 +361,7 @@ export function AppointmentWizard({
         });
       }
 
-      setCurrentStep(getInitialStep()); // Usar función para calcular paso inicial
+      setCurrentStep(getStepNumber(getInitialStepLogical()));
       setWizardData({
         businessId: businessId || null,
         business: null,
@@ -759,7 +616,7 @@ export function AppointmentWizard({
             <ProgressBar 
               currentStep={currentStep} 
               totalSteps={getTotalSteps()}
-              label={STEP_LABELS[currentStep as keyof typeof STEP_LABELS]}
+              label={STEP_LABELS_MAP[getStepOrder()[currentStep] as keyof typeof STEP_LABELS_MAP]}
               completedSteps={getCompletedSteps()}
             />
           </div>
@@ -851,6 +708,15 @@ export function AppointmentWizard({
                       employee,
                       resourceId: null // Limpiar recurso si se selecciona empleado
                     });
+
+                    // Si el flujo NO viene desde el perfil del profesional, auto-asignar el negocio de contexto
+                    const contextBusinessId = (!initiatedFromEmployeeProfile) ? (wizardData.businessId || businessId || null) : null;
+                    if (contextBusinessId) {
+                      updateWizardData({
+                        employeeBusinessId: contextBusinessId,
+                        employeeBusiness: wizardData.business || null,
+                      });
+                    }
                   }}
                   isPreselected={!!preselectedEmployeeId}
                 />

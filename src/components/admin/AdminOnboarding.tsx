@@ -438,11 +438,11 @@ export function AdminOnboarding({
       label: 'Reclutamiento',
       icon: <BriefcaseBusiness className="h-5 w-5" />
     },
-    {
-      id: 'accounting',
-      label: 'Contabilidad',
-      icon: <Calculator className="h-5 w-5" />
-    },
+    // {
+    //   id: 'accounting',
+    //   label: 'Contabilidad',
+    //   icon: <Calculator className="h-5 w-5" />
+    // },
     {
       id: 'reports',
       label: 'Reportes',

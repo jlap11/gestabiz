@@ -19,6 +19,7 @@ interface SearchResult {
   subtitle?: string
   category?: string
   location?: string
+  logo_url?: string
 }
 
 interface SearchBarProps {
@@ -108,6 +109,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
               id,
               name,
               description,
+              logo_url,
               category:business_categories!businesses_category_id_fkey (
                 name
               ),
@@ -129,7 +131,8 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
             name: business.name,
             type: 'businesses' as SearchType,
             subtitle: business.category?.name || t('search.results.noCategory'),
-            location: business.locations?.[0]?.city || t('search.results.locationNotSpecified')
+            location: business.locations?.[0]?.city || t('search.results.locationNotSpecified'),
+            logo_url: business.logo_url
           }))
           break
         }
@@ -315,8 +318,29 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                     onClick={() => handleResultClick(result)}
                     className="w-full flex items-start gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0 group min-h-[68px]"
                   >
-                    <div className="flex-shrink-0 mt-0.5 p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background transition-colors">
-                      <ResultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <div className="flex-shrink-0 mt-0.5">
+                      {result.type === 'businesses' && result.logo_url ? (
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-muted group-hover:bg-background transition-colors">
+                          <img
+                            src={result.logo_url}
+                            alt={result.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to icon if image fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const iconContainer = target.parentElement;
+                              if (iconContainer) {
+                                iconContainer.innerHTML = `<div class="w-full h-full flex items-center justify-center p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background transition-colors"><svg class="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg></div>`;
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-muted group-hover:bg-background transition-colors">
+                          <ResultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-foreground truncate text-sm sm:text-base group-hover:text-primary transition-colors">
