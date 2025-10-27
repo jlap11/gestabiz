@@ -40,7 +40,7 @@ export function RevenueChart({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
       style: 'currency',
-      currency: 'MXN',
+      currency: 'COP',
       notation: 'compact',
       maximumFractionDigits: 1,
     }).format(amount);

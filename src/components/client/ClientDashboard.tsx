@@ -67,13 +67,11 @@ interface AppointmentWithRelations {
   business_id: string
   location_id?: string
   service_id?: string
-  user_id: string
   client_id: string
-  title: string
-  description?: string
+  employee_id?: string
   start_time: string
   end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
   notes?: string
   price?: number
   currency?: string
@@ -108,6 +106,7 @@ interface AppointmentWithRelations {
     duration?: number
     price?: number
     currency?: string
+    image_url?: string
   }
 }
 
@@ -143,6 +142,10 @@ export function ClientDashboard({
     employeeId?: string
   } | undefined>(undefined)
   const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
+  const [serviceImages, setServiceImages] = useState<Record<string, string>>({})
+  const [locationBanners, setLocationBanners] = useState<Record<string, string>>({})
+  // Eliminamos rotación de fondos; solo usamos imagen real del servicio
+  const [showServiceImage, setShowServiceImage] = useState(true)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [currentUser, setCurrentUser] = useState(user)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
@@ -411,6 +414,14 @@ export function ClientDashboard({
     console.log('👤 ClientDashboard: user prop changed', { userId: user?.id, userName: user?.name })
     setCurrentUser(user)
   }, [user])
+
+  // Alternar imagen de fondo (servicio <-> sede) cada 15s con transición suave
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowServiceImage((prev) => !prev)
+    }, 15000)
+    return () => clearInterval(interval)
+  }, [])
   
   // Fetch client appointments with related data (business, location, employee)
   const fetchClientAppointments = React.useCallback(async () => {
@@ -442,7 +453,7 @@ export function ClientDashboard({
           notes,
           price,
           currency,
-          businesses!inner (
+          businesses!appointments_business_id_fkey (
             id,
             name,
             description
@@ -458,20 +469,21 @@ export function ClientDashboard({
             latitude,
             longitude
           ),
-          profiles!inner (
+          profiles!appointments_employee_id_fkey (
             id,
             full_name,
             email,
             phone,
             avatar_url
           ),
-          services!inner (
+          services!appointments_service_id_fkey (
             id,
             name,
             description,
-            duration,
+            duration_minutes,
             price,
-            currency
+            currency,
+            image_url
           )
         `)
         .eq('client_id', currentUser.id)
@@ -482,17 +494,40 @@ export function ClientDashboard({
       
       if (error) throw error
       
-      // Mapear datos para compatibilidad (los JOINs retornan arrays, tomar el primero)
-      const mappedData = (data || []).map((apt: any) => ({
-        ...apt,
-        business: apt.businesses?.[0],
-        location: apt.locations?.[0],
-        employee: apt.profiles?.[0],
-        service: apt.services?.[0] ? { ...apt.services[0], duration: apt.services[0].duration } : undefined
-      }));
+      // eslint-disable-next-line no-console
+      console.log('🔍 Raw appointments data:', data)
+      
+      // Mapear datos para compatibilidad (los JOINs pueden venir como objeto o array)
+      const mappedData = (data || []).map((apt: any) => {
+        const business = Array.isArray(apt.businesses) ? apt.businesses[0] : apt.businesses
+        const location = Array.isArray(apt.locations) ? apt.locations[0] : apt.locations
+        const employee = Array.isArray(apt.profiles) ? apt.profiles[0] : apt.profiles
+        const svcRaw = Array.isArray(apt.services) ? apt.services[0] : apt.services
+        const service = svcRaw ? { ...svcRaw, duration: svcRaw.duration_minutes } : undefined
+
+        const mapped = {
+          ...apt,
+          business,
+          location,
+          employee,
+          service,
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('🔍 Mapped appointment:', {
+          id: mapped.id,
+          service: mapped.service,
+          business: mapped.business,
+          location: mapped.location,
+          employee: mapped.employee,
+          price: mapped.price || mapped.service?.price,
+        })
+
+        return mapped
+      })
       
       // eslint-disable-next-line no-console
-      console.log('✅ Data enriquecida:', mappedData)
+      console.log('✅ Final mapped data:', mappedData)
       setAppointments(mappedData)
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -504,6 +539,114 @@ export function ClientDashboard({
   React.useEffect(() => {
     fetchClientAppointments()
   }, [fetchClientAppointments])
+
+  // Sin rotación de fondo: solo imagen real de servicio
+
+  // Al cargar citas, traer imágenes de servicios y banners de sedes
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        // Pequeña utilidad para evitar caché del navegador/CDN cuando la URL no cambia
+        const cacheBust = (url: string) => {
+          try {
+            const u = new URL(url)
+            // usamos segundos para que sea estable durante una sesión corta
+            u.searchParams.set('v', String(Math.floor(Date.now() / 1000)))
+            return u.toString()
+          } catch {
+            return `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`
+          }
+        }
+
+        const uniqueServiceIds = Array.from(new Set((appointments || []).map(a => a.service?.id).filter(Boolean))) as string[]
+        const uniqueLocationIds = Array.from(new Set((appointments || []).map(a => a.location?.id).filter(Boolean))) as string[]
+
+        if (uniqueServiceIds.length > 0) {
+          const map: Record<string, string> = {}
+
+          // 1) Preferir la URL oficial guardada en servicios (image_url)
+          for (const apt of appointments || []) {
+            const sid = apt.service?.id
+            const surl = apt.service?.image_url?.trim().replace(/^[`'\"]+|[`'\"]+$/g, '')
+            if (sid && surl && !map[sid]) {
+              map[sid] = cacheBust(surl)
+            }
+          }
+          // 2) Sin fallback a Storage: evitamos imágenes genéricas/desactualizadas
+
+          // eslint-disable-next-line no-console
+          console.log('🖼️ serviceImages map:', map)
+          setServiceImages(map)
+        } else {
+          setServiceImages({})
+        }
+
+        if (uniqueLocationIds.length > 0) {
+          const banners: Record<string, string> = {}
+          try {
+            const { data: locMedia, error: locErr } = await supabase
+              .from('location_media')
+              .select('location_id, type, url, is_banner, created_at')
+              .in('location_id', uniqueLocationIds)
+              .order('created_at', { ascending: false })
+
+            if (!locErr && Array.isArray(locMedia)) {
+              const byLoc = new Map<string, any[]>()
+              locMedia.forEach((m: any) => {
+                const cleanUrl = (m.url || '').trim().replace(/^[`'\"]+|[`'\"]+$/g, '')
+                if (m.is_banner && m.type === 'image') {
+                  const arr = byLoc.get(m.location_id) || []
+                  arr.push({ ...m, url: cleanUrl })
+                  byLoc.set(m.location_id, arr)
+                }
+              })
+              byLoc.forEach((arr, locId) => {
+                const chosen = arr[0]
+                if (chosen) banners[locId] = cacheBust(chosen.url)
+              })
+            }
+          } catch {
+            // Ignorar errores de RLS en tabla location_media
+          }
+
+          // Fallback: si no hay banner en tabla o RLS lo bloquea, intentar recuperar última imagen de Storage
+          const missingLocIds = uniqueLocationIds.filter((id) => !banners[id])
+          for (const locId of missingLocIds) {
+            try {
+              const { data: files, error: listErr } = await supabase.storage
+                .from('location-images')
+                .list(locId)
+              if (!listErr && Array.isArray(files) && files.length > 0) {
+                // Elegir por timestamp en el nombre (subida usa timestamp.ext)
+                const pick = files.reduce((best: any | null, f: any) => {
+                  const nBest = best ? parseInt(String(best.name).split('.')[0], 10) : -1
+                  const nCur = parseInt(String(f.name).split('.')[0], 10)
+                  if (!isNaN(nCur) && nCur > nBest) return f
+                  return best || f
+                }, null)
+                const chosenName = (pick?.name) || files[files.length - 1].name
+                const { data: pub } = supabase.storage
+                  .from('location-images')
+                  .getPublicUrl(`${locId}/${chosenName}`)
+                if (pub?.publicUrl) banners[locId] = cacheBust(pub.publicUrl)
+              }
+            } catch {
+              // Si Storage list falla, seguimos sin banner
+            }
+          }
+
+          // eslint-disable-next-line no-console
+          console.log('🏙️ locationBanners map (with storage fallback):', banners)
+          setLocationBanners(banners)
+        } else {
+          setLocationBanners({})
+        }
+      } catch {
+        // Silencio: si hay RLS que bloquea, simplemente no habrá fondos
+      }
+    }
+    loadImages()
+  }, [appointments])
 
   const sidebarItems = [
     {
@@ -527,19 +670,36 @@ export function ClientDashboard({
   const upcomingAppointments = React.useMemo(() => {
     if (!appointments) return []
     const now = new Date()
-    return appointments
+    const filtered = appointments
       .filter(apt => {
         const aptDate = new Date(apt.start_time)
         return aptDate >= now && ['pending', 'confirmed', 'scheduled'].includes(apt.status)
       })
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-  }, [appointments])
+    
+    // Debug: Log appointments data
+    console.log('🔍 Debug - All appointments:', appointments)
+    console.log('🔍 Debug - Filtered upcoming appointments:', filtered)
+    console.log('🔍 Debug - Service images:', serviceImages)
+    console.log('🔍 Debug - Location banners:', locationBanners)
+    
+    return filtered
+  }, [appointments, serviceImages, locationBanners])
 
   // Get status label
   const getStatusLabel = (status: string): string => {
     if (status === 'confirmed') return 'Confirmada'
     if (status === 'scheduled') return 'Agendada'
     return 'Pendiente'
+  }
+
+  // Formato de hora 12h con AM/PM
+  const formatTime12h = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    } catch {
+      return ''
+    }
   }
 
   // Handler para crear cita desde el calendario
@@ -630,27 +790,55 @@ export function ClientDashboard({
                         </CardContent>
                       </Card>
                     ) : (
-                      <div className="grid grid-cols-1 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {upcomingAppointments.map((appointment) => (
-                          <Card 
-                            key={appointment.id} 
-                            className="cursor-pointer hover:shadow-lg transition-shadow"
+                          <Card
+                            key={appointment.id}
+                            className="relative overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
                             onClick={() => setSelectedAppointment(appointment)}
                           >
-                            <CardContent className="p-4">
+                            {/* Fondo: alterna entre imagen del servicio y banner de la sede */}
+                            {(() => {
+                              const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
+                              const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
+                              const showSvc = showServiceImage || !locImg
+                              const showLoc = !showServiceImage || !svcImg
+                              return (
+                                <>
+                                  {svcImg && (
+                                    <div
+                                      aria-hidden
+                                      className={
+                                        `absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${showSvc ? 'opacity-100' : 'opacity-0'}`
+                                      }
+                                      style={{ backgroundImage: `url(${svcImg})` }}
+                                    />
+                                  )}
+                                  {locImg && (
+                                    <div
+                                      aria-hidden
+                                      className={
+                                        `absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${showLoc ? 'opacity-100' : 'opacity-0'}`
+                                      }
+                                      style={{ backgroundImage: `url(${locImg})` }}
+                                    />
+                                  )}
+                                  {(svcImg || locImg) && (
+                                    <div
+                                      className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"
+                                      aria-hidden
+                                    />
+                                  )}
+                                </>
+                              )
+                            })()}
+
+                            <CardContent className="relative z-10 p-4">
                               <div className="space-y-3">
-                                {/* Top Row: Business/Sede + Status Badge */}
-                                <div className="flex items-start justify-between gap-2 pb-2 border-b border-border">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-foreground">
-                                      {appointment.business?.name}
-                                      {appointment.business?.name && appointment.location?.name && ' • '}
-                                      <span className="font-normal text-muted-foreground">
-                                        {appointment.location?.name}
-                                      </span>
-                                    </p>
-                                  </div>
-                                  <Badge 
+                                {/* Fila superior: solo badge de estado */}
+                                <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/60">
+                                  <div />
+                                  <Badge
                                     variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
                                     className="flex-shrink-0 whitespace-nowrap"
                                   >
@@ -658,58 +846,94 @@ export function ClientDashboard({
                                   </Badge>
                                 </div>
 
-                                {/* Service Name */}
-                                <h3 className="font-semibold text-foreground text-base line-clamp-2">
-                                  {appointment.service?.name || appointment.title}
-                                </h3>
+                                {/* Títulos: Servicio (principal), Negocio (secundario), Sede (terciario) */}
+                                {(() => {
+                                  const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
+                                  const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
+                                  const hasBg = !!(svcImg || locImg)
+                                  return (
+                                    <div className="space-y-1">
+                                      <h3 className={`font-semibold text-lg line-clamp-2 ${hasBg ? 'text-white' : 'text-foreground'}`}>
+                                        {appointment.service?.name || 'Cita'}
+                                      </h3>
+                                      {appointment.business?.name && (
+                                        <p className={`text-sm font-medium ${hasBg ? 'text-white/90' : 'text-muted-foreground'}`}>{appointment.business.name}</p>
+                                      )}
+                                      {appointment.location?.name && (
+                                        <p className={`text-xs ${hasBg ? 'text-white/80' : 'text-muted-foreground'}`}>{appointment.location.name}</p>
+                                      )}
+                                    </div>
+                                  )
+                                })()}
 
-                                {/* Professional Info: Avatar + Name */}
+                                {/* Profesional: avatar + nombre */}
                                 {appointment.employee?.full_name && (
-                                  <div className="flex items-center gap-3 bg-card/50 p-2 rounded-lg border border-border/50">
-                                    {appointment.employee?.avatar_url ? (
-                                      <img 
-                                        src={appointment.employee.avatar_url} 
-                                        alt={appointment.employee.full_name}
-                                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                                      />
-                                    ) : (
+                                  (() => {
+                                    const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
+                                    const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
+                                    const hasBg = !!(svcImg || locImg)
+                                    return (
+                                      <div className={`flex items-center gap-3 p-2 rounded-lg border ${hasBg ? 'bg-black/30 backdrop-blur-sm border-white/10' : 'bg-card/50 border-border/50'}`}>
+                                      {appointment.employee?.avatar_url ? (
+                                        <img
+                                          src={appointment.employee.avatar_url}
+                                          alt={appointment.employee.full_name}
+                                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                        />
+                                      ) : (
                                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                                         <UserIcon className="h-4 w-4 text-primary" />
                                       </div>
-                                    )}
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-sm font-medium text-foreground line-clamp-1">
-                                        {appointment.employee.full_name}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">Profesional</p>
+                                      )}
+                                        <div className="min-w-0 flex-1">
+                                          <p className={`text-sm font-medium line-clamp-1 ${hasBg ? 'text-white' : 'text-foreground'}`}>
+                                            {appointment.employee.full_name}
+                                          </p>
+                                          <p className={`text-xs ${hasBg ? 'text-white/80' : 'text-muted-foreground'}`}>Profesional</p>
+                                        </div>
+                                      </div>
+                                    )
+                                  })()
+                                )}
+
+                                {/* Fecha y Hora (12h) */}
+                                {(() => {
+                                  const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
+                                  const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
+                                  const hasBg = !!(svcImg || locImg)
+                                  return (
+                                    <div className={`flex items-center gap-2 text-sm pt-1 ${hasBg ? 'text-white/90' : 'text-foreground/90'}`}>
+                                      <Clock className="h-4 w-4 flex-shrink-0" />
+                                      <span className="line-clamp-1">
+                                        {new Date(appointment.start_time).toLocaleDateString('es', { day: 'numeric', month: 'short' })}
+                                        {' • '}
+                                        {formatTime12h(appointment.start_time)}
+                                      </span>
                                     </div>
-                                  </div>
-                                )}
+                                  )
+                                })()}
 
-                                {/* Date and Time */}
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
-                                  <Clock className="h-4 w-4 flex-shrink-0" />
-                                  <span className="line-clamp-1">
-                                    {new Date(appointment.start_time).toLocaleDateString('es', {
-                                      day: 'numeric',
-                                      month: 'short'
-                                    })}
-                                    {' • '}
-                                    {new Date(appointment.start_time).toLocaleTimeString('es', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </span>
-                                </div>
-
-                                {/* Price */}
-                                {(appointment.service?.price || appointment.price) && (
-                                  <div className="pt-2 border-t border-border">
-                                    <span className="text-lg font-bold text-primary">
-                                      ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
-                                    </span>
-                                  </div>
-                                )}
+                                {/* Dirección y precio */}
+                                {(() => {
+                                  const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
+                                  const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
+                                  const hasBg = !!(svcImg || locImg)
+                                  return (
+                                    <div className="flex items-center justify-between gap-3 pt-1">
+                                      <div className={`flex items-center gap-2 text-sm min-w-0 ${hasBg ? 'text-white/90' : 'text-muted-foreground'}`}>
+                                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                                        <span className="truncate">
+                                          {appointment.location?.address || appointment.location?.name || '—'}
+                                        </span>
+                                      </div>
+                                      {(appointment.service?.price || appointment.price) && (
+                                        <span className={`text-base font-bold ${hasBg ? 'text-white' : 'text-primary'}`}>
+                                          ${(appointment.service?.price ?? appointment.price ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP
+                                        </span>
+                                      )}
+                                    </div>
+                                  )
+                                })()}
                               </div>
                             </CardContent>
                           </Card>
@@ -852,7 +1076,7 @@ export function ClientDashboard({
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">Servicio</h3>
                 <p className="text-lg font-semibold text-foreground">
-                  {selectedAppointment.service?.name || selectedAppointment.title}
+                  {selectedAppointment.service?.name || 'Cita'}
                 </p>
                 {selectedAppointment.service?.description && (
                   <p className="text-sm text-muted-foreground mt-1">

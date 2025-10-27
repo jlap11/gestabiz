@@ -39,7 +39,7 @@ export const servicesService = {
       description: payload.description ?? null,
       duration_minutes: payload.duration,
       price: payload.price,
-      currency: payload.currency ?? 'MXN',
+      currency: payload.currency ?? 'COP',
       category: payload.category ?? null,
       is_active: payload.is_active,
     }
@@ -55,7 +55,7 @@ export const servicesService = {
     if (updates.description !== undefined) dbUpdates.description = updates.description ?? null
     if (updates.duration !== undefined) dbUpdates.duration_minutes = updates.duration
     if (updates.price !== undefined) dbUpdates.price = updates.price
-    if (updates.currency !== undefined) dbUpdates.currency = updates.currency ?? 'MXN'
+    if (updates.currency !== undefined) dbUpdates.currency = updates.currency ?? 'COP'
     if (updates.category !== undefined) dbUpdates.category = updates.category ?? null
     if (updates.is_active !== undefined) dbUpdates.is_active = updates.is_active
     const { data, error } = await supabase.from('services').update(dbUpdates).eq('id', id).select().single()

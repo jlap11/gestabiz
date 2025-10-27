@@ -10,6 +10,7 @@ import {
   MapPin,
   Users,
   X,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,10 +27,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { sendAppointmentCancellationNotification } from '@/lib/mailService'
 
 interface Service {
   id: string
@@ -41,6 +44,7 @@ interface Service {
   currency: string
   category?: string
   image_url?: string
+  commission_percentage?: number | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -73,6 +77,7 @@ const initialFormData: Omit<Service, 'id' | 'created_at' | 'updated_at' | 'busin
   currency: 'COP',
   category: undefined,
   image_url: undefined,
+  commission_percentage: null,
   is_active: true,
 }
 
@@ -93,6 +98,18 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
   const [profileService, setProfileService] = useState<Service | null>(null)
   const [profileEmployees, setProfileEmployees] = useState<string[]>([])
   const [profileLocations, setProfileLocations] = useState<string[]>([])
+  const [showInactive, setShowInactive] = useState(false)
+
+  // Evitar caché del navegador/CDN cuando la URL no cambia
+  const cacheBust = (url: string) => {
+    try {
+      const u = new URL(url)
+      u.searchParams.set('v', String(Math.floor(Date.now() / 1000)))
+      return u.toString()
+    } catch {
+      return `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`
+    }
+  }
 
   // Formatear precio con separadores de miles
   const formatPrice = (value: number): string => {
@@ -196,6 +213,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
         currency: service.currency || 'COP',
         category: service.category,
         image_url: service.image_url,
+        commission_percentage: service.commission_percentage ?? null,
         is_active: service.is_active,
       })
       setPriceDisplay(formatPrice(service.price))
@@ -284,20 +302,6 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
         if (pendingImageFiles.length > 0) {
           const file = pendingImageFiles[0]
 
-          // Eliminar imagen anterior si existía y era de Supabase
-          const prevUrl = formData.image_url || editingService.image_url
-          if (prevUrl && prevUrl.includes('supabase')) {
-            const cleanPrev = prevUrl.split('?')[0]
-            const oldName = cleanPrev.split('/').pop()
-            if (oldName) {
-              const oldPath = `${editingService.id}/${oldName}`
-              await supabase.storage
-                .from('service-images')
-                .remove([oldPath])
-                .catch(() => {})
-            }
-          }
-
           // Subir nueva imagen al bucket con prefijo del servicio
           const fileExt = file.name.split('.').pop()
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
@@ -314,6 +318,20 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           } = supabase.storage.from('service-images').getPublicUrl(filePath)
 
           nextImageUrl = publicUrl
+
+          // Tras subir con éxito, eliminar imagen anterior si era de Supabase
+          const prevUrl = editingService.image_url
+          if (prevUrl && prevUrl.includes('supabase')) {
+            const cleanPrev = prevUrl.split('?')[0]
+            const oldName = cleanPrev.split('/').pop()
+            if (oldName) {
+              const oldPath = `${editingService.id}/${oldName}`
+              await supabase.storage
+                .from('service-images')
+                .remove([oldPath])
+                .catch(() => {})
+            }
+          }
         }
 
         const serviceData = {
@@ -324,6 +342,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           currency: formData.currency || 'COP',
           category: formData.category || null,
           image_url: nextImageUrl || null,
+          commission_percentage: typeof formData.commission_percentage === 'number' ? formData.commission_percentage : null,
           is_active: formData.is_active,
           updated_at: new Date().toISOString(),
         }
@@ -347,6 +366,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           price: formData.price,
           currency: formData.currency || 'COP',
           category: formData.category || null,
+           commission_percentage: typeof formData.commission_percentage === 'number' ? formData.commission_percentage : null,
           is_active: formData.is_active,
         }
 
@@ -411,6 +431,10 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
       await supabase.from('employee_services').delete().eq('service_id', serviceId)
       if (selectedEmployees.length > 0) {
         // Crear asignaciones por cada sede seleccionada
+        const defaultCommission =
+          typeof formData.commission_percentage === 'number'
+            ? formData.commission_percentage
+            : null
         const employeeAssignments = (selectedLocations.length > 0
           ? selectedLocations
           : [null]
@@ -420,6 +444,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
             service_id: serviceId,
             business_id: businessId,
             ...(locId ? { location_id: locId } : {}),
+            ...(defaultCommission !== null ? { commission_percentage: defaultCommission } : {}),
             is_active: true,
           }))
         )
@@ -432,11 +457,18 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
       // eslint-disable-next-line no-console
       console.error('Error en handleSubmit:', error)
       const errorMessage = error?.message || 'Error desconocido'
-      toast.error(
-        editingService 
-          ? `Error al actualizar el servicio: ${errorMessage}` 
-          : `Error al crear el servicio: ${errorMessage}`
-      )
+      const statusCode = (error as any)?.statusCode || (error as any)?.status || undefined
+      const msg = String(errorMessage).toLowerCase()
+      const is403 = statusCode === '403' || statusCode === 403 || msg.includes('row-level security') || msg.includes('unauthorized') || msg.includes('permission')
+      if (is403) {
+        toast.error('Sin permisos para subir imágenes de servicio. Debes ser owner/manager o miembro aprobado del negocio.')
+      } else {
+        toast.error(
+          editingService 
+            ? `Error al actualizar el servicio: ${errorMessage}` 
+            : `Error al crear el servicio: ${errorMessage}`
+        )
+      }
     } finally {
       setIsSaving(false)
     }
@@ -460,26 +492,117 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
   }
 
   const handleDelete = async (serviceId: string) => {
-    if (!confirm('¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.')) {
-      return
-    }
-
     try {
-      // Delete assignments first
+      // 1) Obtener datos del servicio para el contenido del correo
+      const { data: serviceData } = await supabase
+        .from('services')
+        .select('id, name, business_id')
+        .eq('id', serviceId)
+        .single()
+
+      // 2) Buscar citas pendientes/activas vinculadas al servicio y calcular conteo
+  const activeStatuses = ['pending', 'confirmed']
+      const { data: apptsToCancel, error: fetchApptsError } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          start_time,
+          business_id,
+          client_id,
+          profiles:client_id ( full_name, email )
+        `)
+        .eq('service_id', serviceId)
+        .in('status', activeStatuses)
+
+      if (fetchApptsError) throw fetchApptsError
+
+      const cancelCount = (apptsToCancel ?? []).length
+      const confirmed = confirm(
+        cancelCount > 0
+          ? `¿Estás seguro de eliminar este servicio? Se cancelarán ${cancelCount} cita(s) y se notificará a los clientes.`
+          : '¿Estás seguro de eliminar este servicio?'
+      )
+      if (!confirmed) return
+
+      // 3) Cancelar en bloque las citas afectadas
+      if (cancelCount > 0) {
+        const { error: cancelError } = await supabase
+          .from('appointments')
+          .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: 'Servicio eliminado' })
+          .eq('service_id', serviceId)
+          .in('status', activeStatuses)
+
+        if (cancelError) throw cancelError
+      }
+
+      // 4) Notificar a clientes: forzar in-app + email (MVP mail service)
+      for (const appt of (apptsToCancel ?? [])) {
+        const startDate = new Date(appt.start_time)
+        const dateStr = startDate.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+        const timeStr = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+
+        await sendAppointmentCancellationNotification({
+          appointmentId: appt.id,
+          businessId: appt.business_id,
+          recipientUserId: appt.client_id,
+          recipientEmail: appt?.profiles?.email,
+          recipientName: appt?.profiles?.full_name || 'Cliente',
+          date: dateStr,
+          time: timeStr,
+          service: serviceData?.name || 'Servicio',
+        })
+      }
+
+      // 5) Eliminar asignaciones de sedes y empleados
       await supabase.from('location_services').delete().eq('service_id', serviceId)
       await supabase.from('employee_services').delete().eq('service_id', serviceId)
 
-      // Delete service
+      // 6) Desactivar el servicio (soft-delete) para evitar cascada de borrado de citas
+      const { error: deactivateError } = await supabase
+        .from('services')
+        .update({ is_active: false })
+        .eq('id', serviceId)
+
+      if (deactivateError) throw deactivateError
+
+      toast.success(
+        cancelCount > 0
+          ? `Servicio eliminado: se cancelaron ${cancelCount} cita(s) y clientes notificados`
+          : 'Servicio eliminado'
+      )
+      await fetchData()
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error al eliminar servicio y cancelar citas:', error)
+      toast.error('Error al eliminar el servicio y cancelar citas')
+    }
+  }
+
+  const handleReactivate = async (serviceId: string) => {
+    try {
       const { error } = await supabase
         .from('services')
-        .delete()
+        .update({ is_active: true, updated_at: new Date().toISOString() })
         .eq('id', serviceId)
 
       if (error) throw error
-      toast.success('Servicio eliminado exitosamente')
+
+      toast.success('Servicio reactivado')
+      // Refrescar listado y abrir automáticamente el editor para reasignar sedes
       await fetchData()
-    } catch {
-      toast.error('Error al eliminar el servicio')
+      const { data: svc } = await supabase
+        .from('services')
+        .select('*')
+        .eq('id', serviceId)
+        .single()
+      if (svc) {
+        await handleOpenDialog(svc as Service)
+        toast.message('Selecciona las sedes para este servicio')
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error al reactivar servicio:', err)
+      toast.error('Error al reactivar el servicio')
     }
   }
 
@@ -538,6 +661,8 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
     setProfileEmployees([])
   }
 
+  const filteredServices = showInactive ? services : services.filter((s) => s.is_active)
+
   return (
     <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
       {/* Header - Responsive */}
@@ -546,18 +671,25 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
           <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate">Servicios</h2>
           <p className="text-muted-foreground text-xs sm:text-sm">Gestiona los servicios que ofreces</p>
         </div>
-        <Button
-          onClick={() => handleOpenDialog()}
-          className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Agregar Servicio</span>
-          <span className="sm:hidden">Nuevo Servicio</span>
-        </Button>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background">
+            <Label htmlFor="show-inactive" className="text-xs sm:text-sm">Mostrar inactivos</Label>
+            <Switch id="show-inactive" checked={showInactive} onCheckedChange={setShowInactive} />
+          </div>
+          <Button
+            onClick={() => handleOpenDialog()}
+            className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Agregar Servicio</span>
+            <span className="sm:hidden">Nuevo Servicio</span>
+          </Button>
+        </div>
       </div>
 
       {/* Services Grid - Responsive */}
-      {services.length === 0 ? (
+      {filteredServices.length === 0 ? (
+        services.length === 0 ? (
         <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
             <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
@@ -574,9 +706,20 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
             </Button>
           </CardContent>
         </Card>
+        ) : (
+          <Card className="bg-card border-border">
+            <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+              <Briefcase className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">No hay servicios para mostrar</h3>
+              <p className="text-muted-foreground text-center text-sm sm:text-base">
+                No hay servicios activos con el filtro actual. Activa "Mostrar inactivos" para verlos.
+              </p>
+            </CardContent>
+          </Card>
+        )
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {services.map((service) => (
+          {filteredServices.map((service) => (
             <Card
               key={service.id}
               className="group relative overflow-hidden border-border hover:border-border/80 transition-colors cursor-pointer"
@@ -585,7 +728,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               <div
                 className="relative h-40 sm:h-48 w-full"
                 style={{
-                  backgroundImage: service.image_url ? `url(${service.image_url})` : undefined,
+                  backgroundImage: service.image_url ? `url(${cacheBust(service.image_url)})` : undefined,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
@@ -603,6 +746,17 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
+                  {!service.is_active && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="bg-white/80 hover:bg-white text-green-600 hover:text-green-700 rounded-full shadow"
+                      onClick={(e) => { e.stopPropagation(); handleReactivate(service.id) }}
+                      title="Reactivar"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -687,7 +841,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               />
             </div>
 
-            {/* Duration & Price - Responsive Grid */}
+            {/* Duration, Price & Commission - Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label htmlFor="duration_minutes" className="text-sm sm:text-base">Duración (minutos) *</Label>
@@ -722,6 +876,26 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                   {formData.price > 0 && `$ ${formatPrice(formData.price)}`}
                 </p>
               </div>
+              <div>
+                <Label htmlFor="commission_percentage" className="text-sm sm:text-base">Comisión (%)</Label>
+                <Input
+                  id="commission_percentage"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={typeof formData.commission_percentage === 'number' ? formData.commission_percentage : ''}
+                  onChange={(e) => {
+                    const v = e.target.value === '' ? null : Math.max(0, Math.min(100, parseFloat(e.target.value)))
+                    handleChange('commission_percentage', (v ?? null) as any)
+                  }}
+                  placeholder="Opcional"
+                  className="min-h-[44px]"
+                />
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                  {typeof formData.commission_percentage === 'number' ? `${formData.commission_percentage}%` : 'Sin comisión por defecto'}
+                </p>
+              </div>
             </div>
 
             {/* Image Upload (OPCIONAL) */}
@@ -730,7 +904,22 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
               <p className="text-xs text-muted-foreground mb-2">
                 Puedes subir una imagen para mostrar resultados o ejemplos del servicio
               </p>
-              {formData.image_url ? (
+              {pendingImageFiles.length > 0 ? (
+                <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2 bg-muted">
+                  <img
+                    src={URL.createObjectURL(pendingImageFiles[0])}
+                    alt="Vista previa"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPendingImageFiles([])}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : formData.image_url ? (
                 <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2">
                   <img
                     src={formData.image_url}
@@ -748,28 +937,18 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-              ) : pendingImageFiles.length > 0 ? (
-                <div className="relative w-full h-48 rounded-lg overflow-hidden mb-2 bg-muted">
-                  <img
-                    src={URL.createObjectURL(pendingImageFiles[0])}
-                    alt="Vista previa"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setPendingImageFiles([])}
-                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
               ) : editingService ? (
                 <ImageUploader
                   bucket="service-images"
                   maxFiles={1}
                   maxSizeMB={5}
+                  /* Para edición de servicios, subir al guardar */
                   delayedUpload={true}
-                  onFileSelected={(file) => setPendingImageFiles([file])}
+                  onFileSelected={(file) => {
+                    setPendingImageFiles([file])
+                    // Limpiamos la URL actual para mostrar previsualización local
+                    handleChange('image_url', '')
+                  }}
                   onUploadError={(error) => toast.error(error)}
                   folderPath={`${editingService.id}`}
                 />
@@ -899,7 +1078,7 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
 
           <div className="relative h-56 sm:h-72 flex-shrink-0">
             {profileService?.image_url ? (
-              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${profileService.image_url})` }} />
+              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${cacheBust(profileService.image_url)})` }} />
             ) : (
               <div className="absolute inset-0 bg-muted" />
             )}
@@ -972,7 +1151,24 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                 {(() => {
                   const assigned = locations.filter((l) => profileLocations.includes(l.id))
                   return assigned.length === 0 ? (
-                    <Card><CardContent className="p-6 text-muted-foreground text-center">No hay sedes asignadas</CardContent></Card>
+                    <Card>
+                      <CardContent className="p-6 text-muted-foreground text-center space-y-3">
+                        <div>No hay sedes asignadas</div>
+                        {profileService && (
+                          <Button
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90"
+                            onClick={() => {
+                              closeProfile()
+                              handleOpenDialog(profileService)
+                              toast.message('Asigna una o más sedes antes de publicar')
+                            }}
+                          >
+                            Asignar sedes
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {assigned.map((l) => (

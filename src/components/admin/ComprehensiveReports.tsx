@@ -22,6 +22,7 @@ import { format, subWeeks, subMonths, subYears, parseISO } from 'date-fns'
 import { toast } from 'sonner'
 import { es as esLocale, enUS } from 'date-fns/locale'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useCustomAlert } from '@/hooks/useCustomAlert'
 import { formatCurrency } from '@/lib/i18n'
 
 interface ComprehensiveReportsProps {
@@ -59,6 +60,7 @@ interface EmployeePerformance {
 export default function ComprehensiveReports(props: Readonly<ComprehensiveReportsProps>) {
   const { user } = props
   const { t, language } = useLanguage()
+  const { warning } = useCustomAlert()
   const dfLocale = language === 'es' ? esLocale : enUS
   const [appointments] = useKV<Appointment[]>(`appointments-${user.business_id}`, [])
   const [clients] = useKV<Client[]>(`clients-${user.business_id}`, [])
@@ -293,7 +295,9 @@ export default function ComprehensiveReports(props: Readonly<ComprehensiveReport
 
   const sendWhatsAppMessage = async (client: RecurringClient) => {
     if (!client.whatsapp) {
-      alert(t('admin.comprehensiveReports.whatsapp.missing'))
+      warning(t('admin.comprehensiveReports.whatsapp.missing'), {
+        title: 'WhatsApp no disponible'
+      })
       return
     }
 

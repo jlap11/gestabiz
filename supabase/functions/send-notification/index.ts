@@ -13,6 +13,7 @@ const corsHeaders = {
 
 interface NotificationRequest {
   type: 'appointment_reminder' | 'appointment_confirmation' | 'appointment_cancellation' | 
+        'appointment_location_update' |
         'appointment_new_client' | 'appointment_new_employee' | 'appointment_new_business' |
         'email_verification' | 'phone_verification_sms' | 'phone_verification_whatsapp' |
         'employee_request_new' | 'employee_request_accepted' | 'employee_request_rejected' |
@@ -265,6 +266,10 @@ async function prepareNotificationContent(request: NotificationRequest) {
     appointment_cancellation: {
       subject: '❌ Cita Cancelada',
       message: `Hola {{name}},\n\nTu cita del {{date}} a las {{time}} ha sido cancelada.\n\nSi deseas reprogramar, contáctanos.`
+    },
+    appointment_location_update: {
+      subject: '📍 Cambio de ubicación de tu cita',
+      message: `Hola {{name}},\n\nLa sede de tu cita ha cambiado.\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Nueva dirección: {{new_address}}\n\nSi necesitas ajustar tu cita, contáctanos.`
     },
     appointment_new_employee: {
       subject: '📅 Nueva Cita Asignada',

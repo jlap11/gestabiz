@@ -34,7 +34,7 @@ export const profilesService = {
         daily_digest: false, weekly_report: false
       },
       permissions: [],
-      timezone: 'America/Mexico_City'
+      timezone: 'America/Bogota'
     }
   }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { sendAppointmentCancellationNotification } from '@/lib/mailService'
 import {
   MapPin,
   Plus,
@@ -365,7 +366,16 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
       let locationId: string | undefined
 
       if (editingLocation) {
-        // Update existing location
+        // Detectar cambio de dirección (reubicación)
+        const addressChanged = (
+          (editingLocation.address || '') !== (locationData.address || '') ||
+          (editingLocation.city || '') !== (locationData.city || '') ||
+          (editingLocation.state || '') !== (locationData.state || '') ||
+          (editingLocation.country || '') !== (locationData.country || '') ||
+          (editingLocation.postal_code || '') !== (locationData.postal_code || '')
+        )
+
+        // Actualizar sede
         const { error } = await supabase
           .from('locations')
           .update(locationData)
@@ -375,6 +385,62 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
         locationId = editingLocation.id
 
         toast.success('Sede actualizada exitosamente')
+
+        // Si cambió la dirección, notificar a clientes con citas pendientes en esta sede
+        if (addressChanged && locationId) {
+          try {
+            const activeStatuses = ['pending', 'confirmed']
+            const { data: apptsToNotify, error: apptErr } = await supabase
+              .from('appointments')
+              .select(`
+                id,
+                start_time,
+                business_id,
+                client_id,
+                profiles:client_id ( full_name, email )
+              `)
+              .eq('location_id', locationId)
+              .in('status', activeStatuses)
+
+            if (apptErr) throw apptErr
+
+            let notifiedCount = 0
+            for (const appt of (apptsToNotify ?? [])) {
+              const recipientEmail = appt?.profiles?.email
+              const recipientName = appt?.profiles?.full_name || 'Cliente'
+              if (!recipientEmail) continue
+
+              const startDate = new Date(appt.start_time)
+              const dateStr = startDate.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+              const timeStr = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+
+              await supabase.functions.invoke('send-notification', {
+                body: {
+                  type: 'appointment_location_update',
+                  recipient_user_id: appt.client_id,
+                  recipient_email: recipientEmail,
+                  recipient_name: recipientName,
+                  business_id: appt.business_id,
+                  appointment_id: appt.id,
+                  data: {
+                    name: recipientName,
+                    date: dateStr,
+                    time: timeStr,
+                    new_address: `${locationData.address || ''}, ${locationData.city || ''}`.trim(),
+                  }
+                }
+              })
+              notifiedCount += 1
+            }
+
+            if (notifiedCount > 0) {
+              toast.info(`Dirección actualizada: se notificó por email a ${notifiedCount} cliente(s) con citas pendientes`)
+            }
+          } catch (notifyErr) {
+            console.error('Error al notificar reubicación:', notifyErr)
+            toast.error('La sede fue actualizada, pero hubo un error enviando notificaciones de reubicación')
+          }
+        }
       } else {
         // Create new location and get its ID
         const { data: newLocation, error } = await supabase
@@ -412,20 +478,75 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
   }
 
   const handleDelete = async (locationId: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta sede? Esta acción no se puede deshacer.')) {
-      return
-    }
-
     try {
+      // Buscar citas activas en esta sede para informar cuántas se cancelarán
+      const activeStatuses = ['pending', 'confirmed']
+      const { data: apptsToCancel, error: fetchApptsError } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          start_time,
+          business_id,
+          client_id,
+          profiles:client_id ( full_name, email ),
+          service:service_id ( name )
+        `)
+        .eq('location_id', locationId)
+        .in('status', activeStatuses)
+
+      if (fetchApptsError) throw fetchApptsError
+      const cancelCount = (apptsToCancel ?? []).length
+
+      const confirmed = confirm(
+        cancelCount > 0
+          ? `¿Estás seguro de eliminar esta sede? Se cancelarán ${cancelCount} cita(s) y se notificará a los clientes. Si es una reubicación, considera editar la dirección y actualizar las imágenes en lugar de eliminar.`
+          : '¿Estás seguro de eliminar esta sede? Si es una reubicación, considera editar la dirección y actualizar las imágenes en lugar de eliminar.'
+      )
+      if (!confirmed) return
+
+      // Cancelar citas afectadas antes de eliminar la sede
+      if (cancelCount > 0) {
+        const { error: cancelError } = await supabase
+          .from('appointments')
+          .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: 'Sede eliminada' })
+          .eq('location_id', locationId)
+          .in('status', activeStatuses)
+        if (cancelError) throw cancelError
+
+        // Notificar al cliente: forzar in-app + email usando servicio centralizado
+        for (const appt of (apptsToCancel ?? [])) {
+          const startDate = new Date(appt.start_time)
+          const dateStr = startDate.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+          const timeStr = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+
+          await sendAppointmentCancellationNotification({
+            appointmentId: appt.id,
+            businessId: appt.business_id,
+            recipientUserId: appt.client_id,
+            recipientEmail: appt?.profiles?.email,
+            recipientName: appt?.profiles?.full_name || 'Cliente',
+            date: dateStr,
+            time: timeStr,
+            service: appt?.service?.name || 'Servicio',
+          })
+        }
+      }
+
+      // Eliminar la sede
       const { error } = await supabase
         .from('locations')
         .delete()
         .eq('id', locationId)
-
       if (error) throw error
-      toast.success('Sede eliminada exitosamente')
+
+      toast.success(
+        cancelCount > 0
+          ? `Sede eliminada: se cancelaron ${cancelCount} cita(s) y clientes notificados`
+          : 'Sede eliminada exitosamente'
+      )
       await fetchLocations()
-    } catch {
+    } catch (err) {
+      console.error('Error al eliminar la sede:', err)
       toast.error('Error al eliminar la sede')
     }
   }

@@ -338,7 +338,7 @@ export function LocationProfileModal({ open, onOpenChange, location, bannerUrl, 
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
                               <span>
-                                ${locationService.service?.price || 0} {locationService.service?.currency || 'MXN'}
+                                ${locationService.service?.price || 0} {locationService.service?.currency || 'COP'}
                               </span>
                             </div>
                           </div>
@@ -385,4 +385,4 @@ export function LocationProfileModal({ open, onOpenChange, location, bannerUrl, 
     </Dialog>
   )
 }
-
+

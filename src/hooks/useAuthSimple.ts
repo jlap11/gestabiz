@@ -45,7 +45,7 @@ const buildUserFromSession = (sessionUser: SupabaseUser, profile?: ProfileRow | 
     name: baseName,
     username,
     avatar_url: sessionUser.user_metadata?.avatar_url || profile?.avatar_url || undefined,
-    timezone: profile?.timezone || 'America/Mexico_City',
+    timezone: profile?.timezone || 'America/Bogota',
     roles: [{
       id: profile ? `simple-role-${profile.id}` : 'simple-role-default',
       user_id: sessionUser.id,

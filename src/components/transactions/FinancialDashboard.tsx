@@ -139,7 +139,7 @@ export function FinancialDashboard({
               <div className="h-8 bg-muted animate-pulse rounded" />
             ) : (
               <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(summary.total_income, 'MXN')}
+                {formatCurrency(summary.total_income, 'COP')}
               </p>
             )}
           </div>
@@ -161,7 +161,7 @@ export function FinancialDashboard({
               <div className="h-8 bg-muted animate-pulse rounded" />
             ) : (
               <p className="text-2xl font-bold text-red-600">
-                {formatCurrency(summary.total_expenses, 'MXN')}
+                {formatCurrency(summary.total_expenses, 'COP')}
               </p>
             )}
           </div>
@@ -187,7 +187,7 @@ export function FinancialDashboard({
                   summary.net_profit >= 0 ? 'text-green-600' : 'text-red-600'
                 )}
               >
-                {formatCurrency(summary.net_profit, 'MXN')}
+                {formatCurrency(summary.net_profit, 'COP')}
               </p>
             )}
           </div>

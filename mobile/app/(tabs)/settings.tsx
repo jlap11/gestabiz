@@ -1,9 +1,10 @@
 import React from 'react'
-import { View, StyleSheet, Alert } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { List, Divider } from 'react-native-paper'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../../lib/auth'
 import WebViewDashboard from '../../components/WebViewDashboard'
+import { mobileConfirm } from '../../lib/alert'
 
 /**
  * Settings Screen - Hybrid approach
@@ -29,21 +30,10 @@ export default function SettingsScreen() {
   const [showLogoutButton, setShowLogoutButton] = React.useState(true)
 
   const handleSignOut = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro que deseas cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar Sesión',
-          style: 'destructive',
-          onPress: async () => {
-            await signOut()
-            router.replace('/(auth)/login')
-          },
-        },
-      ]
-    )
+    mobileConfirm('¿Estás seguro que deseas cerrar sesión?', async () => {
+      await signOut()
+      router.replace('/(auth)/login')
+    }, { title: 'Cerrar Sesión', confirmText: 'Cerrar Sesión' })
   }
 
   return (

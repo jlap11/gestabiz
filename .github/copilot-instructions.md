@@ -870,7 +870,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 - Sincronizar con Google Calendar:
   - Usa `googleCalendarService.syncAppointments(appointments, settings)` tras autenticar y seleccionar `calendarId`.
 - Internacionalización en componentes:
-  - `const { t } = useLanguage(); t('dashboard.title')` y formatos `formatCurrency(amount, 'MXN', 'es')`.
+  - `const { t } = useLanguage(); t('dashboard.title')` y formatos `formatCurrency(amount, 'COP', 'es')`.
 
 ## Gotchas conocidas
 - **CRÍTICO - Sincronización business_roles ↔ business_employees** (20 Oct 2025):
@@ -880,7 +880,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - **Garantía**: Cualquier INSERT/UPDATE en `business_employees` automáticamente sincroniza `business_roles`
   - **Ver**: `docs/FIX_INCONSISTENCIA_BUSINESS_ROLES_2025-10-20.md`
 - `useSupabase.ts` importa `authService/appointmentService/...` desde `@/lib/supabase`, pero la implementación de referencia de estos servicios está en `src/mobile/src/lib/supabase.ts`. Si trabajas en web, duplica o mueve esos servicios a `src/lib/` para mantener consistencia y evitar errores de import.
-- Zonas horarias: el código usa valores como `America/Mexico_City` y `America/New_York` en distintas utilidades; al persistir o mostrar fechas, pasa explícitamente la TZ correcta.
+- Zonas horarias: el código usa valores como `America/Bogota` y `America/New_York` en distintas utilidades; al persistir o mostrar fechas, pasa explícitamente la TZ correcta.
 - No expongas claves de servicio (service_role) en cliente; usa Edge Functions para operaciones privilegiadas.
 - **MCP vs Cliente JS**: Prefiere MCP para operaciones complejas, migraciones y consultas directas. Usa cliente JS para operaciones de UI en tiempo real.
 

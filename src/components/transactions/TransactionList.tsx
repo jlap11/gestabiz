@@ -135,7 +135,7 @@ export function TransactionList({
             <TrendingUp className="h-5 w-5 text-green-600" />
           </div>
           <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(summary.total_income, 'MXN')}
+            {formatCurrency(summary.total_income, 'COP')}
           </div>
         </Card>
 
@@ -148,7 +148,7 @@ export function TransactionList({
             <TrendingDown className="h-5 w-5 text-red-600" />
           </div>
           <div className="text-2xl font-bold text-red-600">
-            {formatCurrency(summary.total_expenses, 'MXN')}
+            {formatCurrency(summary.total_expenses, 'COP')}
           </div>
         </Card>
 
@@ -166,7 +166,7 @@ export function TransactionList({
               summary.net_profit >= 0 ? 'text-green-600' : 'text-red-600'
             )}
           >
-            {formatCurrency(summary.net_profit, 'MXN')}
+            {formatCurrency(summary.net_profit, 'COP')}
           </div>
         </Card>
       </div>

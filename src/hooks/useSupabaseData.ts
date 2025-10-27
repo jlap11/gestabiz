@@ -97,7 +97,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
           location: locationName || '',
           notes: apt.notes || apt.description || '',
           price: apt.price,
-          currency: apt.currency || 'MXN',
+          currency: apt.currency || 'COP',
           reminder_sent: apt.reminder_sent ?? false,
           created_at: apt.created_at || apt.start_time!,
           updated_at: apt.updated_at || apt.start_time!,
@@ -245,7 +245,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
         location: appointment.location,
         notes: appointment.notes || '',
         price: appointment.price,
-        currency: appointment.currency || 'MXN',
+        currency: appointment.currency || 'COP',
         reminder_sent: false,
         created_by: user.id
       })

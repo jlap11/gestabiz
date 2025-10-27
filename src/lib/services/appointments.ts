@@ -3,6 +3,19 @@ import type { Appointment } from '@/types'
 import { normalizeAppointment, toDbAppointmentStatus } from '@/lib/normalizers'
 import type { Insert, Row, Update } from '@/lib/supabaseTyped'
 
+// Función para enviar email de confirmación
+async function sendAppointmentConfirmationEmail(appointmentId: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('send-appointment-confirmation', {
+    body: { appointmentId }
+  })
+  
+  if (error) {
+    throw new Error(`Failed to send confirmation email: ${error.message}`)
+  }
+  
+  return data
+}
+
 export interface AppointmentQuery {
   businessId?: string
   employeeId?: string
@@ -163,7 +176,20 @@ export const appointmentsService = {
 
     const { data, error } = await supabase.from('appointments').insert(insertRow).select().single()
     if (error) throw error
-    return normalizeAppointment(data as Row<'appointments'>)
+    
+    const appointment = normalizeAppointment(data as Row<'appointments'>)
+    
+    // Enviar email de confirmación automáticamente si la cita requiere confirmación
+    if (appointment.status === 'pending' || appointment.status === 'pending_confirmation') {
+      try {
+        await sendAppointmentConfirmationEmail(appointment.id)
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError)
+        // No fallar la creación de la cita si el email falla
+      }
+    }
+    
+    return appointment
   },
 
   async update(id: string, updates: Partial<Appointment>, options?: OverlapOptions): Promise<Appointment> {

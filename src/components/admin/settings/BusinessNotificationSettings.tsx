@@ -52,7 +52,7 @@ const NOTIFICATION_TYPE_CONFIGS = [
 
 const TIMEZONES = [
   { value: 'America/Bogota', label: 'Bogotá (GMT-5)' },
-  { value: 'America/Mexico_City', label: 'Ciudad de México (GMT-6)' },
+  { value: 'America/Bogota', label: 'Ciudad de México (GMT-6)' },
   { value: 'America/New_York', label: 'Nueva York (GMT-5/4)' },
   { value: 'America/Los_Angeles', label: 'Los Ángeles (GMT-8/7)' },
   { value: 'Europe/Madrid', label: 'Madrid (GMT+1/2)' },

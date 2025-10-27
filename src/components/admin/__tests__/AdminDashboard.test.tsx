@@ -91,7 +91,7 @@ function createMockBusiness(overrides?: Partial<Business>): Business {
     state: 'Test State',
     postal_code: '12345',
     country: 'Test Country',
-    timezone: 'America/Mexico_City',
+    timezone: 'America/Bogota',
     business_hours: {
       monday: { open: '09:00', close: '18:00', closed: false },
       tuesday: { open: '09:00', close: '18:00', closed: false },
@@ -108,7 +108,7 @@ function createMockBusiness(overrides?: Partial<Business>): Business {
       auto_confirm: false,
       require_deposit: false,
       deposit_percentage: 0,
-      currency: 'MXN'
+      currency: 'COP'
     },
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

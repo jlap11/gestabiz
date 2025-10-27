@@ -413,7 +413,7 @@ export function CreateVacancy({ businessId, vacancyId, onClose, onSuccess }: Rea
                     <SelectItem value="COP">COP (Peso Colombiano)</SelectItem>
                     <SelectItem value="USD">USD (Dólar)</SelectItem>
                     <SelectItem value="EUR">EUR (Euro)</SelectItem>
-                    <SelectItem value="MXN">MXN (Peso Mexicano)</SelectItem>
+                    <SelectItem value="COP">COP (Peso Mexicano)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

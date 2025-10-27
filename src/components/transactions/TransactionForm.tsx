@@ -83,7 +83,7 @@ export function TransactionForm({
     type: defaultType,
     category: defaultType === 'income' ? 'appointment_payment' : 'salary',
     amount: 0,
-    currency: 'MXN',
+    currency: 'COP',
     description: '',
     transaction_date: new Date().toISOString().split('T')[0],
     payment_method: 'cash',
@@ -108,7 +108,7 @@ export function TransactionForm({
         type: defaultType,
         category: defaultType === 'income' ? 'appointment_payment' : 'salary',
         amount: 0,
-        currency: 'MXN',
+        currency: 'COP',
         description: '',
         transaction_date: new Date().toISOString().split('T')[0],
         payment_method: 'cash',
@@ -238,7 +238,7 @@ export function TransactionForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MXN">MXN</SelectItem>
+                  <SelectItem value="COP">COP</SelectItem>
                   <SelectItem value="USD">USD</SelectItem>
                   <SelectItem value="EUR">EUR</SelectItem>
                 </SelectContent>

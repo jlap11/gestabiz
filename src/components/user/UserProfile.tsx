@@ -98,7 +98,7 @@ export default function UserProfile({
     business_id: selectedBusinessId || undefined
   });
 
-  const formatCurrency = (amount: number, currency: string = 'MXN') => {
+  const formatCurrency = (amount: number, currency: string = 'COP') => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency,
@@ -455,7 +455,7 @@ export default function UserProfile({
                         </div>
                         <div className="text-right">
                           <p className="text-2xl font-bold text-primary mb-2">
-                            {formatCurrency(service.price, 'MXN')}
+                            {formatCurrency(service.price, 'COP')}
                           </p>
                           <Button
                             onClick={() => onBookAppointment?.(service.id, service.business_id)}

@@ -10,13 +10,11 @@ interface AppointmentWithRelations {
   business_id: string
   location_id?: string
   service_id?: string
-  user_id: string
   client_id: string
-  title: string
-  description?: string
+  employee_id?: string
   start_time: string
   end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
   notes?: string
   price?: number
   currency?: string
@@ -187,7 +185,7 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground truncate hover:text-foreground">
-              {appointment.service?.name || appointment.title}
+              {appointment.service?.name || 'Cita'}
             </p>
             {appointment.business?.name && (
               <p className="text-xs text-muted-foreground truncate hover:text-muted-foreground">

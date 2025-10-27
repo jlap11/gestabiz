@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Calendar, Share2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 interface WizardData {
   service: { name: string } | null;
@@ -18,6 +19,7 @@ interface SuccessStepProps {
 
 export function SuccessStep({ appointmentData, onClose }: SuccessStepProps) {
   const [status, setStatus] = useState<'loading' | 'success'>('loading');
+  const { info, warning } = useCustomAlert();
 
   useEffect(() => {
     // Simular proceso de guardado
@@ -32,7 +34,9 @@ export function SuccessStep({ appointmentData, onClose }: SuccessStepProps) {
 
   const handleAddToCalendar = () => {
     // Implementar integración con Google Calendar
-    alert('Add to Google Calendar feature coming soon!');
+    info('Add to Google Calendar feature coming soon!', {
+      title: 'Funcionalidad en desarrollo'
+    });
   };
 
   const handleShare = () => {
@@ -45,7 +49,9 @@ export function SuccessStep({ appointmentData, onClose }: SuccessStepProps) {
         // Silently fail if user cancels share
       });
     } else {
-      alert('Share feature not supported on this browser');
+      warning('Share feature not supported on this browser', {
+        title: 'Funcionalidad no soportada'
+      });
     }
   };
 

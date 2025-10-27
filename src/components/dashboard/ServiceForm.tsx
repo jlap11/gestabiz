@@ -37,7 +37,7 @@ export function ServiceForm({
     description: '',
     duration: 60,
     price: 0,
-    currency: 'MXN',
+    currency: 'COP',
     category: ''
   })
   const [loading, setLoading] = useState(false)
@@ -50,7 +50,7 @@ export function ServiceForm({
         description: service.description || '',
         duration: service.duration,
         price: service.price,
-        currency: service.currency || 'MXN',
+        currency: service.currency || 'COP',
         category: service.category || ''
       })
     } else {
@@ -59,7 +59,7 @@ export function ServiceForm({
         description: '',
         duration: 60,
         price: 0,
-        currency: 'MXN',
+        currency: 'COP',
         category: ''
       })
     }
@@ -241,7 +241,7 @@ export function ServiceForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MXN">MXN - Peso Mexicano</SelectItem>
+                    <SelectItem value="COP">COP - Peso Mexicano</SelectItem>
                     <SelectItem value="USD">USD - Dólar Americano</SelectItem>
                     <SelectItem value="EUR">EUR - Euro</SelectItem>
                   </SelectContent>
@@ -370,18 +370,91 @@ export function ServicesManagement({ user, businessId }: Readonly<ServicesManage
   }
 
   const handleDeleteService = async (serviceId: string) => {
-    if (!confirm(t('services.deleteConfirm'))) return
-
     try {
-      const { error } = await supabase
+      // 1) Obtener servicio
+      const { data: serviceData } = await supabase
+        .from('services')
+        .select('id, name, business_id')
+        .eq('id', serviceId)
+        .single()
+
+      // 2) Buscar citas pendientes/activas del servicio y calcular conteo
+      const activeStatuses = ['pending', 'confirmed']
+      const { data: apptsToCancel, error: fetchApptsError } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          start_time,
+          business_id,
+          client_id,
+          profiles:client_id ( full_name, email )
+        `)
+        .eq('service_id', serviceId)
+        .in('status', activeStatuses)
+
+      if (fetchApptsError) throw fetchApptsError
+      const cancelCount = (apptsToCancel ?? []).length
+
+      const confirmed = confirm(
+        cancelCount > 0
+          ? `¿Estás seguro de eliminar este servicio? Se cancelarán ${cancelCount} cita(s) y se notificará a los clientes.`
+          : t('services.deleteConfirm')
+      )
+      if (!confirmed) return
+
+      // 3) Cancelar citas en bloque
+      if (cancelCount > 0) {
+        const { error: cancelError } = await supabase
+          .from('appointments')
+          .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: 'Servicio eliminado' })
+          .eq('service_id', serviceId)
+          .in('status', activeStatuses)
+
+        if (cancelError) throw cancelError
+      }
+
+      // 4) Notificar por correo a clientes afectados (si tienen email)
+      for (const appt of (apptsToCancel ?? [])) {
+        const recipientEmail = appt?.profiles?.email
+        const recipientName = appt?.profiles?.full_name || 'Cliente'
+        if (!recipientEmail) continue
+
+        const startDate = new Date(appt.start_time)
+        const dateStr = startDate.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+        const timeStr = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'appointment_cancellation',
+            recipient_user_id: appt.client_id,
+            recipient_email: recipientEmail,
+            recipient_name: recipientName,
+            business_id: appt.business_id,
+            appointment_id: appt.id,
+            data: {
+              name: recipientName,
+              date: dateStr,
+              time: timeStr,
+              service: serviceData?.name || 'Servicio'
+            }
+          }
+        })
+      }
+
+      // 5) Desactivar el servicio (soft-delete)
+      const { error: deactivateError } = await supabase
         .from('services')
         .update({ is_active: false })
         .eq('id', serviceId)
 
-      if (error) throw error
+      if (deactivateError) throw deactivateError
 
       setServices(prev => prev.filter(s => s.id !== serviceId))
-      toast.success(t('services.deleted'))
+      toast.success(
+        cancelCount > 0
+          ? 'Servicio eliminado: se cancelaron ' + cancelCount + ' cita(s) y clientes notificados'
+          : t('services.deleted')
+      )
     } catch (error) {
       toast.error(t('services.deleteError'))
       throw error

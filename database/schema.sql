@@ -99,7 +99,8 @@ CREATE TABLE public.services (
     description TEXT,
     duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-    currency TEXT DEFAULT 'MXN' NOT NULL,
+    commission_percentage DECIMAL(5, 2) CHECK (commission_percentage >= 0 AND commission_percentage <= 100),
+    currency TEXT DEFAULT 'COP' NOT NULL,
     category TEXT,
     is_active BOOLEAN DEFAULT TRUE NOT NULL
 );
@@ -123,7 +124,7 @@ CREATE TABLE public.appointments (
     notes TEXT,
     client_notes TEXT,
     price DECIMAL(10, 2),
-    currency TEXT DEFAULT 'MXN',
+    currency TEXT DEFAULT 'COP',
     payment_status payment_status DEFAULT 'pending',
     reminder_sent BOOLEAN DEFAULT FALSE NOT NULL,
     cancelled_at TIMESTAMPTZ,
@@ -432,7 +433,7 @@ SELECT
     'Av. Reforma 123',
     'Ciudad de México',
     'México',
-    '{"appointment_buffer": 15, "advance_booking_days": 30, "cancellation_policy": 24, "auto_confirm": false, "require_deposit": false, "deposit_percentage": 0, "currency": "MXN"}'::jsonb
+    '{"appointment_buffer": 15, "advance_booking_days": 30, "cancellation_policy": 24, "auto_confirm": false, "require_deposit": false, "deposit_percentage": 0, "currency": "COP"}'::jsonb
 WHERE EXISTS (SELECT 1 FROM public.profiles WHERE role = 'admin');
 
 -- Insert demo services

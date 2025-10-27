@@ -45,7 +45,7 @@ const normalizeUserSettings = (row: AnyRecord | null | undefined): UserSettings 
     user_id: asString(row?.user_id, ''),
     theme,
     language: isValidLanguage(lang) ? lang : 'es',
-    timezone: asString(row?.timezone, 'America/Mexico_City'),
+    timezone: asString(row?.timezone, 'America/Bogota'),
     default_appointment_duration: asNumber(row?.default_appointment_duration, 60),
     business_hours: {
       start: asString(business_hours?.start, '09:00'),
@@ -87,7 +87,7 @@ const buildDomainUser = (
   const avatar_url = (profileRow?.avatar_url as string) || (metadata?.avatar_url as string) || (metadata?.picture as string) || undefined
   const langCandidate = asString(settings?.language ?? metadata?.locale, '')
   const language = isValidLanguage(langCandidate) ? langCandidate : 'es'
-  const timezone = settings?.timezone ?? (metadata?.timezone as string) ?? 'America/Mexico_City'
+  const timezone = settings?.timezone ?? (metadata?.timezone as string) ?? 'America/Bogota'
   const notification_preferences: User['notification_preferences'] = settings
     ? {
         email: Boolean(settings.email_notifications.appointment_reminders || settings.email_notifications.appointment_confirmations),

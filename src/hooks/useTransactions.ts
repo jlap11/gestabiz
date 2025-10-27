@@ -110,7 +110,7 @@ export function useTransactions(filters?: TransactionFilters) {
           type,
           category,
           amount,
-          currency: 'MXN',
+          currency: 'COP',
           description,
           location_id: options?.location_id,
           appointment_id: options?.appointment_id,

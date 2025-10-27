@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     type transaction_type NOT NULL,
     category transaction_category NOT NULL,
     amount DECIMAL(12, 2) NOT NULL CHECK (amount >= 0),
-    currency TEXT DEFAULT 'MXN' NOT NULL,
+    currency TEXT DEFAULT 'COP' NOT NULL,
     description TEXT,
     appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL,
     employee_id UUID REFERENCES profiles(id) ON DELETE SET NULL,

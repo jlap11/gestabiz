@@ -148,11 +148,11 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
           location_id,
           created_at,
           updated_at,
-          businesses!inner (
+          businesses (
             id,
             name
           ),
-          services!inner (
+          services (
             id,
             name,
             price
@@ -977,7 +977,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
                         {(appointment.service?.price || appointment.price || 0).toLocaleString('es-MX')}
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {appointment.service?.currency || appointment.currency || 'MXN'}
+                        {appointment.service?.currency || appointment.currency || 'COP'}
                       </span>
                     </div>
                   )}

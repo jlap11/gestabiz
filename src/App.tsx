@@ -16,6 +16,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { initializeGA4 } from '@/lib/ga4'
 import { hasAnalyticsConsent } from '@/hooks/useAnalytics'
 import { CookieConsent } from '@/components/CookieConsent'
+import { AlertProvider } from '@/components/ui/custom-alert'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -33,6 +34,8 @@ const LandingPage = lazy(() => import('@/components/landing/LandingPage').then(m
 const AuthScreen = lazy(() => import('@/components/auth/AuthScreen'))
 const MainApp = lazy(() => import('@/components/MainApp'))
 const PublicBusinessProfile = lazy(() => import('@/pages/PublicBusinessProfile'))
+const AppointmentConfirmation = lazy(() => import('@/pages/AppointmentConfirmation'))
+const AppointmentCancellation = lazy(() => import('@/pages/AppointmentCancellation'))
 
 // Loading component
 function AppLoader() {
@@ -98,6 +101,10 @@ function AppRoutes() {
       {/* Perfil público de negocio - accesible sin autenticación */}
       <Route path="/negocio/:slug" element={<PublicBusinessProfile />} />
       
+      {/* Rutas públicas para confirmación de citas */}
+      <Route path="/confirmar-cita/:token" element={<AppointmentConfirmation />} />
+      <Route path="/cancelar-cita/:token" element={<AppointmentCancellation />} />
+      
       {/* Rutas protegidas - requieren autenticación */}
       <Route
         path="/app/*"
@@ -131,10 +138,12 @@ function App() {
               <LanguageProvider>
                 <AppStateProvider>
                   <AuthProvider>
-                    <AppRoutes />
-                    <CookieConsent />
-                    {/* Toaster global para todas las rutas, incluidas públicas */}
-                    <Toaster richColors closeButton />
+                    <AlertProvider>
+                      <AppRoutes />
+                      <CookieConsent />
+                      {/* Toaster global para todas las rutas, incluidas públicas */}
+                      <Toaster richColors closeButton />
+                    </AlertProvider>
                   </AuthProvider>
                 </AppStateProvider>
               </LanguageProvider>

@@ -69,7 +69,7 @@ export function useAuth() {
             weekly_report: false
           },
           permissions: [],
-          timezone: 'America/Mexico_City'
+          timezone: 'America/Bogota'
         }
       }
 
@@ -177,7 +177,7 @@ export function useAuth() {
             weekly_report: false
           },
           permissions: [],
-          timezone: 'America/Mexico_City'
+          timezone: 'America/Bogota'
         }
       }
 
@@ -247,7 +247,7 @@ export function useAuth() {
           weekly_report: false
         },
         permissions: [],
-        timezone: 'America/Mexico_City'
+        timezone: 'America/Bogota'
       }
   } catch {
       // Error converting user - return null

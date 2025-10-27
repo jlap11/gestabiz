@@ -52,57 +52,57 @@ BEGIN
         CASE business_record.name
             WHEN 'Spa Relax María' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Masaje Relajante', 'Masaje completo de relajación muscular', 60, 800.00, 'MXN', 'Masajes', true),
-                (business_record.id, 'Facial Hidratante', 'Tratamiento facial con hidratación profunda', 45, 650.00, 'MXN', 'Faciales', true),
-                (business_record.id, 'Manicure Completo', 'Cuidado completo de uñas de manos', 30, 350.00, 'MXN', 'Uñas', true);
+                (business_record.id, 'Masaje Relajante', 'Masaje completo de relajación muscular', 60, 800.00, 'COP', 'Masajes', true),
+                (business_record.id, 'Facial Hidratante', 'Tratamiento facial con hidratación profunda', 45, 650.00, 'COP', 'Faciales', true),
+                (business_record.id, 'Manicure Completo', 'Cuidado completo de uñas de manos', 30, 350.00, 'COP', 'Uñas', true);
 
             WHEN 'Barbería Clásica Carlos' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Corte Tradicional', 'Corte de cabello clásico para caballero', 30, 180.00, 'MXN', 'Cortes', true),
-                (business_record.id, 'Afeitado Navaja', 'Afeitado tradicional con navaja', 20, 150.00, 'MXN', 'Afeitado', true),
-                (business_record.id, 'Corte + Barba', 'Paquete corte y arreglo de barba', 45, 280.00, 'MXN', 'Paquetes', true);
+                (business_record.id, 'Corte Tradicional', 'Corte de cabello clásico para caballero', 30, 180.00, 'COP', 'Cortes', true),
+                (business_record.id, 'Afeitado Navaja', 'Afeitado tradicional con navaja', 20, 150.00, 'COP', 'Afeitado', true),
+                (business_record.id, 'Corte + Barba', 'Paquete corte y arreglo de barba', 45, 280.00, 'COP', 'Paquetes', true);
 
             WHEN 'Consultorio Médico Ana' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Consulta General', 'Consulta médica general', 30, 500.00, 'MXN', 'Consultas', true),
-                (business_record.id, 'Chequeo Preventivo', 'Examen médico preventivo completo', 60, 800.00, 'MXN', 'Prevención', true);
+                (business_record.id, 'Consulta General', 'Consulta médica general', 30, 500.00, 'COP', 'Consultas', true),
+                (business_record.id, 'Chequeo Preventivo', 'Examen médico preventivo completo', 60, 800.00, 'COP', 'Prevención', true);
 
             WHEN 'Clínica Dental Luis' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Limpieza Dental', 'Profilaxis y limpieza dental', 45, 600.00, 'MXN', 'Limpieza', true),
-                (business_record.id, 'Consulta Odontológica', 'Revisión dental general', 30, 400.00, 'MXN', 'Consultas', true),
-                (business_record.id, 'Blanqueamiento', 'Blanqueamiento dental profesional', 90, 2500.00, 'MXN', 'Estética', true);
+                (business_record.id, 'Limpieza Dental', 'Profilaxis y limpieza dental', 45, 600.00, 'COP', 'Limpieza', true),
+                (business_record.id, 'Consulta Odontológica', 'Revisión dental general', 30, 400.00, 'COP', 'Consultas', true),
+                (business_record.id, 'Blanqueamiento', 'Blanqueamiento dental profesional', 90, 2500.00, 'COP', 'Estética', true);
 
             WHEN 'Estética Sofía Beauty' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Facial Anti-edad', 'Tratamiento facial antienvejecimiento', 60, 900.00, 'MXN', 'Faciales', true),
-                (business_record.id, 'Depilación Láser', 'Sesión de depilación láser', 30, 750.00, 'MXN', 'Depilación', true);
+                (business_record.id, 'Facial Anti-edad', 'Tratamiento facial antienvejecimiento', 60, 900.00, 'COP', 'Faciales', true),
+                (business_record.id, 'Depilación Láser', 'Sesión de depilación láser', 30, 750.00, 'COP', 'Depilación', true);
 
             WHEN 'Veterinaria Diego' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Consulta Veterinaria', 'Consulta médica veterinaria', 30, 350.00, 'MXN', 'Consultas', true),
-                (business_record.id, 'Vacunación', 'Aplicación de vacunas', 15, 200.00, 'MXN', 'Prevención', true),
-                (business_record.id, 'Baño y Corte', 'Baño completo y corte de pelo', 45, 300.00, 'MXN', 'Estética', true);
+                (business_record.id, 'Consulta Veterinaria', 'Consulta médica veterinaria', 30, 350.00, 'COP', 'Consultas', true),
+                (business_record.id, 'Vacunación', 'Aplicación de vacunas', 15, 200.00, 'COP', 'Prevención', true),
+                (business_record.id, 'Baño y Corte', 'Baño completo y corte de pelo', 45, 300.00, 'COP', 'Estética', true);
 
             WHEN 'Gimnasio Valeria Fit' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Entrenamiento Personal', 'Sesión de entrenamiento personalizado', 60, 450.00, 'MXN', 'Entrenamiento', true),
-                (business_record.id, 'Clase Grupal Yoga', 'Clase de yoga en grupo', 45, 200.00, 'MXN', 'Clases', true);
+                (business_record.id, 'Entrenamiento Personal', 'Sesión de entrenamiento personalizado', 60, 450.00, 'COP', 'Entrenamiento', true),
+                (business_record.id, 'Clase Grupal Yoga', 'Clase de yoga en grupo', 45, 200.00, 'COP', 'Clases', true);
 
             WHEN 'Taller Mecánico Ricardo' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Cambio de Aceite', 'Cambio de aceite y filtros', 30, 350.00, 'MXN', 'Mantenimiento', true),
-                (business_record.id, 'Revisión General', 'Diagnóstico completo del vehículo', 60, 500.00, 'MXN', 'Diagnóstico', true);
+                (business_record.id, 'Cambio de Aceite', 'Cambio de aceite y filtros', 30, 350.00, 'COP', 'Mantenimiento', true),
+                (business_record.id, 'Revisión General', 'Diagnóstico completo del vehículo', 60, 500.00, 'COP', 'Diagnóstico', true);
 
             WHEN 'Salón Camila Style' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Corte y Peinado', 'Corte y peinado profesional', 45, 400.00, 'MXN', 'Cortes', true),
-                (business_record.id, 'Tinte Completo', 'Coloración completa del cabello', 120, 800.00, 'MXN', 'Coloración', true);
+                (business_record.id, 'Corte y Peinado', 'Corte y peinado profesional', 45, 400.00, 'COP', 'Cortes', true),
+                (business_record.id, 'Tinte Completo', 'Coloración completa del cabello', 120, 800.00, 'COP', 'Coloración', true);
 
             WHEN 'Estudio Fotográfico Fernando' THEN
                 INSERT INTO public.services (business_id, name, description, duration_minutes, price, currency, category, is_active) VALUES 
-                (business_record.id, 'Sesión de Retratos', 'Sesión fotográfica de retratos', 60, 1200.00, 'MXN', 'Fotografía', true),
-                (business_record.id, 'Sesión Familiar', 'Sesión fotográfica familiar', 90, 1800.00, 'MXN', 'Fotografía', true);
+                (business_record.id, 'Sesión de Retratos', 'Sesión fotográfica de retratos', 60, 1200.00, 'COP', 'Fotografía', true),
+                (business_record.id, 'Sesión Familiar', 'Sesión fotográfica familiar', 90, 1800.00, 'COP', 'Fotografía', true);
 
             ELSE
                 NULL; -- No hacer nada para otros nombres

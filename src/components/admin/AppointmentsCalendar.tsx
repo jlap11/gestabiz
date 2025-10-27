@@ -180,6 +180,8 @@ interface AppointmentModalProps {
   onComplete: (appointmentId: string, tip: number) => void;
   onCancel: (appointmentId: string) => void;
   onNoShow: (appointmentId: string) => void;
+  onConfirm: (appointmentId: string) => void;
+  onResendConfirmation: (appointmentId: string) => void;
 }
 
 const AppointmentModal = React.memo<AppointmentModalProps>(({ 
@@ -187,7 +189,9 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
   onClose, 
   onComplete, 
   onCancel,
-  onNoShow 
+  onNoShow,
+  onConfirm,
+  onResendConfirmation
 }) => {
   const [tip, setTip] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -224,8 +228,28 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
     }
   };
 
+  const handleConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      await onConfirm(appointment.id);
+      onClose();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    setIsProcessing(true);
+    try {
+      await onResendConfirmation(appointment.id);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const isCompleted = appointment.status === 'completed';
   const isCancelled = appointment.status === 'cancelled';
+  const isPendingConfirmation = appointment.status === 'pending_confirmation';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -316,34 +340,66 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
               </p>
             </div>
           )}
+
+          {isPendingConfirmation && (
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-md">
+              <p className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Pendiente de confirmación
+              </p>
+            </div>
+          )}
         </div>
 
         {!isCompleted && !isCancelled && (
-          <div className="p-4 border-t border-border flex gap-3">
-            <button
-              onClick={handleComplete}
-              disabled={isProcessing}
-              className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Check className="h-4 w-4 inline mr-2" />
-              Marcar Completada
-            </button>
-            <button
-              onClick={handleNoShow}
-              disabled={isProcessing}
-              className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <AlertCircle className="h-4 w-4 inline mr-2" />
-              Sin Asistencia
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={isProcessing}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <X className="h-4 w-4 inline mr-2" />
-              Cancelar
-            </button>
+          <div className="p-4 border-t border-border space-y-3">
+            {isPendingConfirmation && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleConfirm}
+                  disabled={isProcessing}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Check className="h-4 w-4 inline mr-2" />
+                  Confirmar Cita
+                </button>
+                <button
+                  onClick={handleResendConfirmation}
+                  disabled={isProcessing}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Clock className="h-4 w-4 inline mr-2" />
+                  Reenviar Email
+                </button>
+              </div>
+            )}
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleComplete}
+                disabled={isProcessing}
+                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Check className="h-4 w-4 inline mr-2" />
+                Marcar Completada
+              </button>
+              <button
+                onClick={handleNoShow}
+                disabled={isProcessing}
+                className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <AlertCircle className="h-4 w-4 inline mr-2" />
+                Sin Asistencia
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={isProcessing}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <X className="h-4 w-4 inline mr-2" />
+                Cancelar
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -371,7 +427,7 @@ export const AppointmentsCalendar: React.FC = () => {
   const [showFilters, setShowFilters] = useState(true);
 
   // Filter states - now as arrays for multi-select
-  const [filterStatus, setFilterStatus] = useState<string[]>(['confirmed']);
+  const [filterStatus, setFilterStatus] = useState<string[]>(['confirmed', 'pending_confirmation']);
   const [filterLocation, setFilterLocation] = useState<string[]>([]);
   const [filterService, setFilterService] = useState<string[]>([]);
   const [filterEmployee, setFilterEmployee] = useState<string[]>([]);
@@ -826,6 +882,43 @@ export const AppointmentsCalendar: React.FC = () => {
     }
   };
 
+  const handleConfirmAppointment = async (appointmentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ 
+          status: 'confirmed',
+          confirmed_at: new Date().toISOString()
+        })
+        .eq('id', appointmentId);
+
+      if (error) throw error;
+
+      toast.success('Cita confirmada manualmente');
+      
+      // Refresh appointments
+      if (currentBusinessId) {
+        await fetchAppointments(currentBusinessId, selectedDate);
+      }
+    } catch {
+      toast.error('Error al confirmar la cita');
+    }
+  };
+
+  const handleResendConfirmation = async (appointmentId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-appointment-confirmation', {
+        body: { appointmentId }
+      });
+
+      if (error) throw error;
+
+      toast.success('Email de confirmación reenviado');
+    } catch {
+      toast.error('Error al reenviar email de confirmación');
+    }
+  };
+
   // Generate hours array (0-23)
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
@@ -1117,6 +1210,9 @@ export const AppointmentsCalendar: React.FC = () => {
     if (status === 'pending') {
       return 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-700 dark:text-yellow-300';
     }
+    if (status === 'pending_confirmation') {
+      return 'bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300';
+    }
     if (status === 'confirmed') {
       return 'bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300';
     }
@@ -1232,12 +1328,12 @@ export const AppointmentsCalendar: React.FC = () => {
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
-                        onClick={() => setFilterStatus(['pending', 'confirmed', 'cancelled', 'completed'])}
+                        onClick={() => setFilterStatus(['pending', 'pending_confirmation', 'confirmed', 'cancelled', 'completed'])}
                       >
                         Seleccionar Todos
                       </button>
                     </div>
-                    {['pending', 'confirmed', 'cancelled', 'completed'].map(status => (
+                    {['pending', 'pending_confirmation', 'confirmed', 'cancelled', 'completed'].map(status => (
                       <label key={status} className="flex items-center px-3 py-2 hover:bg-muted/50 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1253,6 +1349,7 @@ export const AppointmentsCalendar: React.FC = () => {
                         />
                         <span className="ml-2 text-sm text-foreground">
                           {status === 'pending' && 'Pendiente'}
+                          {status === 'pending_confirmation' && 'Pendiente de Confirmación'}
                           {status === 'confirmed' && 'Confirmada'}
                           {status === 'cancelled' && 'Cancelada'}
                           {status === 'completed' && 'Completada'}
@@ -1641,6 +1738,8 @@ export const AppointmentsCalendar: React.FC = () => {
           onComplete={handleCompleteAppointment}
           onCancel={handleCancelAppointment}
           onNoShow={handleNoShow}
+          onConfirm={handleConfirmAppointment}
+          onResendConfirmation={handleResendConfirmation}
         />
       )}
     </div>

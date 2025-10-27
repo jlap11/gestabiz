@@ -9,11 +9,12 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  Alert,
 } from 'react-native'
 import { supabase } from '../lib/supabase'
+import { useMobileAlert } from '../../../../components/mobile/useMobileAlert'
 
 export default function DashboardScreen({ navigation }) {
+  const { error } = useMobileAlert()
   const [appointments, setAppointments] = useState([])
   const [stats, setStats] = useState({
     total: 0,
@@ -66,7 +67,7 @@ export default function DashboardScreen({ navigation }) {
 
     } catch (error) {
       console.error('Error loading dashboard data:', error)
-      Alert.alert('Error', 'Failed to load dashboard data')
+      error('Failed to load dashboard data', { title: 'Error' })
     }
   }
 

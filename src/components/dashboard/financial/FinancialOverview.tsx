@@ -54,7 +54,7 @@ export function FinancialOverview({
   });
   const [loadingStats, setLoadingStats] = useState(true);
 
-  const formatCurrency = (amount: number, currency = 'MXN') => {
+  const formatCurrency = (amount: number, currency = 'COP') => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
       style: 'currency',
       currency,

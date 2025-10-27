@@ -54,7 +54,53 @@ export function LocationSelection({
           return;
         }
 
-        setLocations(data || []);
+        const activeLocations = (data || []) as Location[];
+        if (activeLocations.length === 0) {
+          setLocations([]);
+          return;
+        }
+
+        // Filtrar sedes que no tengan servicios prestados por al menos un profesional activo
+        const locationIds = activeLocations.map(l => l.id);
+
+        const [employeesRes, empServicesRes] = await Promise.all([
+          supabase
+            .from('business_employees')
+            .select('employee_id')
+            .eq('business_id', businessId)
+            .eq('status', 'approved')
+            .eq('is_active', true),
+          supabase
+            .from('employee_services')
+            .select('service_id, location_id, employee_id, is_active')
+            .eq('business_id', businessId)
+            .in('location_id', locationIds)
+            .eq('is_active', true),
+        ]);
+
+        const activeEmployeeIds = new Set((employeesRes.data || []).map((e: any) => e.employee_id as string));
+        const empServices = (empServicesRes.data || []) as { service_id: string; location_id: string | null; employee_id: string; is_active: boolean }[];
+
+        const serviceIds = Array.from(new Set(empServices.map(es => es.service_id)));
+        const { data: servicesData } = serviceIds.length > 0
+          ? await supabase
+              .from('services')
+              .select('id')
+              .in('id', serviceIds)
+              .eq('is_active', true)
+          : { data: [] } as any;
+        const activeServiceIds = new Set((servicesData || []).map((s: any) => s.id as string));
+
+        const allowedLocationIds = new Set<string>();
+        for (const es of empServices) {
+          if (!es.location_id) continue; // Debe estar ligada a sede
+          if (activeEmployeeIds.has(es.employee_id) && activeServiceIds.has(es.service_id)) {
+            allowedLocationIds.add(es.location_id);
+          }
+        }
+
+        const filtered = activeLocations.filter(loc => allowedLocationIds.has(loc.id));
+        setLocations(filtered);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error inesperado';
         toast.error(`Error: ${message}`);

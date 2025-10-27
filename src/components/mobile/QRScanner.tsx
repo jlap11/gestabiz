@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native'
 import { Camera, CameraType } from 'expo-camera'
 import { BarCodeScanner } from 'expo-barcode-scanner'
 import type { BarCodeScanningResult } from 'expo-camera'
 import { X, Zap } from 'lucide-react-native'
+import { useMobileAlert } from '@/components/mobile/useMobileAlert'
 
 interface QRScannerProps {
   onScan: (data: BusinessInvitationQRData) => void
@@ -23,6 +24,7 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [scanned, setScanned] = useState(false)
   const [flashEnabled, setFlashEnabled] = useState(false)
+  const { info, error, warning, confirm } = useMobileAlert()
 
   useEffect(() => {
     if (isOpen) {
@@ -36,15 +38,14 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
       setHasPermission(status === 'granted')
       
       if (status !== 'granted') {
-        Alert.alert(
-          'Permiso de Cámara',
+        warning(
           'Necesitamos acceso a tu cámara para escanear códigos QR. Por favor habilita el permiso en la configuración de tu dispositivo.',
-          [{ text: 'OK' }]
+          { title: 'Permiso de Cámara' }
         )
       }
     } catch (error) {
       console.error('Error requesting camera permission:', error)
-      Alert.alert('Error', 'No se pudo solicitar permiso de cámara')
+      error('No se pudo solicitar permiso de cámara', { title: 'Error' })
     }
   }
 
@@ -65,40 +66,21 @@ export function QRScanner({ onScan, onCancel, isOpen }: QRScannerProps) {
         qrData.invitation_code
       ) {
         // Valid invitation QR
-        Alert.alert(
-          'Código Escaneado',
+        confirm(
           `¿Deseas unirte a "${qrData.business_name}"?`,
-          [
-            {
-              text: 'Cancelar',
-              style: 'cancel',
-              onPress: () => {
-                setScanned(false)
-              },
-            },
-            {
-              text: 'Confirmar',
-              onPress: () => {
-                onScan(qrData)
-              },
-            },
-          ]
+          () => onScan(qrData),
+          {
+            title: 'Código Escaneado',
+            onCancel: () => setScanned(false),
+          }
         )
       } else {
         throw new Error('Formato de QR inválido')
       }
     } catch (error) {
-      Alert.alert(
-        'Error',
+      error(
         'El código QR escaneado no es válido para Gestabiz. Por favor escanea un código de invitación válido.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setScanned(false)
-            },
-          },
-        ]
+        { title: 'Error', onConfirm: () => setScanned(false) }
       )
     }
   }

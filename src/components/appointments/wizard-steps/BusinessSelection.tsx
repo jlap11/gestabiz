@@ -42,10 +42,90 @@ export function BusinessSelection({
   const preferredCityName = propCityName ?? hookCityData.preferredCityName;
   const preferredRegion = propRegionName ?? hookCityData.preferredRegionName;
 
+  // Helper: obtiene negocios por IDs, activos y públicos
+  const fetchBusinessesByIds = useCallback(async (ids: string[]): Promise<Business[]> => {
+    if (!ids || ids.length === 0) return [];
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('id, name, description, logo_url, address, city, phone, category_id')
+      .in('id', ids)
+      .eq('is_active', true)
+      .eq('is_public', true);
+    if (error) return [];
+    return (data as Business[]) || [];
+  }, []);
+
+  // Helper: aplica la regla de disponibilidad (servicio+empleado+ubicación activos)
+  const applyAvailabilityFilter = useCallback(async (candidateBusinesses: Business[]): Promise<Business[]> => {
+    const businessIds = candidateBusinesses.map(b => b.id);
+    if (businessIds.length === 0) return [];
+
+    const [servicesRes, locationsRes, employeesRes, empServicesRes] = await Promise.all([
+      supabase
+        .from('services')
+        .select('id, business_id')
+        .in('business_id', businessIds)
+        .eq('is_active', true),
+      supabase
+        .from('locations')
+        .select('id, business_id')
+        .in('business_id', businessIds)
+        .eq('is_active', true),
+      supabase
+        .from('business_employees')
+        .select('business_id, employee_id')
+        .in('business_id', businessIds)
+        .eq('status', 'approved')
+        .eq('is_active', true),
+      supabase
+        .from('employee_services')
+        .select('business_id, service_id, location_id, employee_id, is_active')
+        .in('business_id', businessIds)
+        .eq('is_active', true),
+    ]);
+
+    const activeServices = (servicesRes.data || []) as { id: string; business_id: string }[];
+    const activeLocations = (locationsRes.data || []) as { id: string; business_id: string }[];
+    const activeEmployees = (employeesRes.data || []) as { business_id: string; employee_id: string }[];
+    const activeEmpServices = (empServicesRes.data || []) as { business_id: string; service_id: string; location_id: string | null; employee_id: string; is_active: boolean }[];
+
+    const svcByBiz = new Map<string, Set<string>>();
+    for (const s of activeServices) {
+      if (!svcByBiz.has(s.business_id)) svcByBiz.set(s.business_id, new Set());
+      svcByBiz.get(s.business_id)!.add(s.id);
+    }
+
+    const locByBiz = new Map<string, Set<string>>();
+    for (const l of activeLocations) {
+      if (!locByBiz.has(l.business_id)) locByBiz.set(l.business_id, new Set());
+      locByBiz.get(l.business_id)!.add(l.id);
+    }
+
+    const empByBiz = new Map<string, Set<string>>();
+    for (const e of activeEmployees) {
+      if (!empByBiz.has(e.business_id)) empByBiz.set(e.business_id, new Set());
+      empByBiz.get(e.business_id)!.add(e.employee_id);
+    }
+
+    const allowedBusinessIds = new Set<string>();
+    for (const es of activeEmpServices) {
+      if (!es.location_id) continue;
+      const svc = svcByBiz.get(es.business_id);
+      const loc = locByBiz.get(es.business_id);
+      const emp = empByBiz.get(es.business_id);
+      if (!svc || !loc || !emp) continue;
+      if (svc.has(es.service_id) && loc.has(es.location_id) && emp.has(es.employee_id)) {
+        allowedBusinessIds.add(es.business_id);
+      }
+    }
+
+    return candidateBusinesses.filter(b => allowedBusinessIds.has(b.id));
+  }, []);
+
   const loadBusinesses = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase.from('locations').select('city, state, business_id');
+      let query = supabase.from('locations').select('city, state, business_id').eq('is_active', true);
       
       // Función para normalizar texto (remover acentos y convertir a minúsculas)
       const normalize = (str: string) => {
@@ -104,8 +184,81 @@ export function BusinessSelection({
 
       if (bizError) throw bizError;
       const businessList = (businessesData as Business[]) || [];
-      setBusinesses(businessList);
-      setFilteredBusinesses(businessList);
+
+      // Regla de negocio solicitada:
+      // Mostrar solo negocios que tengan al menos un servicio activo
+      // que sea prestado por al menos un profesional activo en alguna de sus sedes activas.
+      if (businessList.length > 0) {
+        const businessIds = businessList.map(b => b.id);
+
+        // Consultas paralelas
+        const [servicesRes, locationsRes, employeesRes, empServicesRes] = await Promise.all([
+          supabase
+            .from('services')
+            .select('id, business_id')
+            .in('business_id', businessIds)
+            .eq('is_active', true),
+          supabase
+            .from('locations')
+            .select('id, business_id')
+            .in('business_id', businessIds)
+            .eq('is_active', true),
+          supabase
+            .from('business_employees')
+            .select('business_id, employee_id')
+            .in('business_id', businessIds)
+            .eq('status', 'approved')
+            .eq('is_active', true),
+          supabase
+            .from('employee_services')
+            .select('business_id, service_id, location_id, employee_id, is_active')
+            .in('business_id', businessIds)
+            .eq('is_active', true),
+        ]);
+
+        const activeServices = (servicesRes.data || []) as { id: string; business_id: string }[];
+        const activeLocations = (locationsRes.data || []) as { id: string; business_id: string }[];
+        const activeEmployees = (employeesRes.data || []) as { business_id: string; employee_id: string }[];
+        const activeEmpServices = (empServicesRes.data || []) as { business_id: string; service_id: string; location_id: string | null; employee_id: string; is_active: boolean }[];
+
+        // Indexar por negocio
+        const svcByBiz = new Map<string, Set<string>>();
+        for (const s of activeServices) {
+          if (!svcByBiz.has(s.business_id)) svcByBiz.set(s.business_id, new Set());
+          svcByBiz.get(s.business_id)!.add(s.id);
+        }
+
+        const locByBiz = new Map<string, Set<string>>();
+        for (const l of activeLocations) {
+          if (!locByBiz.has(l.business_id)) locByBiz.set(l.business_id, new Set());
+          locByBiz.get(l.business_id)!.add(l.id);
+        }
+
+        const empByBiz = new Map<string, Set<string>>();
+        for (const e of activeEmployees) {
+          if (!empByBiz.has(e.business_id)) empByBiz.set(e.business_id, new Set());
+          empByBiz.get(e.business_id)!.add(e.employee_id);
+        }
+
+        const allowedBusinessIds = new Set<string>();
+        for (const es of activeEmpServices) {
+          if (!es.location_id) continue; // Debe estar asociado a una sede
+          const svc = svcByBiz.get(es.business_id);
+          const loc = locByBiz.get(es.business_id);
+          const emp = empByBiz.get(es.business_id);
+          if (!svc || !loc || !emp) continue;
+          if (svc.has(es.service_id) && loc.has(es.location_id) && emp.has(es.employee_id)) {
+            allowedBusinessIds.add(es.business_id);
+          }
+        }
+
+        const filteredByAvailability = businessList.filter(b => allowedBusinessIds.has(b.id));
+        setBusinesses(filteredByAvailability);
+        setFilteredBusinesses(filteredByAvailability);
+      } else {
+        setBusinesses([]);
+        setFilteredBusinesses([]);
+      }
     } catch {
       setBusinesses([]);
       setFilteredBusinesses([]);
@@ -162,86 +315,85 @@ export function BusinessSelection({
 
     const termLower = term.toLowerCase();
 
-    switch (type) {
-      case 'businesses': {
-        try {
+    try {
+      switch (type) {
+        case 'businesses': {
+          // Buscar en backend por nombre y luego aplicar disponibilidad
           const { data, error } = await supabase
             .from('businesses')
             .select('id, name, description, logo_url, address, city, phone, category_id')
+            .ilike('name', `%${term}%`)
             .eq('is_active', true)
             .eq('is_public', true)
-            .ilike('name', `%${term}%`)
-            .limit(20);
+            .order('name');
 
-          if (error) {
-            setFilteredBusinesses([]);
-          } else {
-            setFilteredBusinesses((data || []) as Business[]);
-          }
-        } catch {
-          setFilteredBusinesses([]);
+          if (error) throw error;
+          const candidates = ((data || []) as Business[]);
+          const available = await applyAvailabilityFilter(candidates);
+          setFilteredBusinesses(available);
+          break;
         }
-        break;
-      }
-      case 'services': {
-        try {
-          const { data } = await supabase
+        case 'services': {
+          const { data, error } = await supabase
             .from('services')
             .select('business_id')
             .ilike('name', `%${term}%`)
-            .eq('is_active', true)
-            .in('business_id', businesses.map(b => b.id));
-
-          const matchedBusinessIds = new Set((data || []).map((s: any) => s.business_id));
-          const filtered = businesses.filter(b => matchedBusinessIds.has(b.id));
-          setFilteredBusinesses(filtered);
-        } catch {
-          setFilteredBusinesses([]);
+            .eq('is_active', true);
+          if (error) throw error;
+          const ids = Array.from(new Set((data || []).map((s: any) => s.business_id)));
+          const candidates = await fetchBusinessesByIds(ids);
+          const available = await applyAvailabilityFilter(candidates);
+          setFilteredBusinesses(available);
+          break;
         }
-        break;
-      }
-      case 'categories': {
-        try {
-          const { data } = await supabase
+        case 'categories': {
+          const { data: cats, error: catErr } = await supabase
             .from('business_categories')
             .select('id')
             .ilike('name', `%${term}%`)
             .eq('is_active', true);
-
-          const matchedCatIds = new Set((data || []).map((c: any) => c.id));
-          const filtered = businesses.filter(b => b.category_id && matchedCatIds.has(b.category_id));
-          setFilteredBusinesses(filtered);
-        } catch {
-          setFilteredBusinesses([]);
+          if (catErr) throw catErr;
+          const catIds = (cats || []).map((c: any) => c.id);
+          if (catIds.length === 0) { setFilteredBusinesses([]); break; }
+          const { data: biz, error: bizErr } = await supabase
+            .from('businesses')
+            .select('id, name, description, logo_url, address, city, phone, category_id')
+            .in('category_id', catIds)
+            .eq('is_active', true)
+            .eq('is_public', true);
+          if (bizErr) throw bizErr;
+          const candidates = ((biz || []) as Business[]);
+          const available = await applyAvailabilityFilter(candidates);
+          setFilteredBusinesses(available);
+          break;
         }
-        break;
-      }
-      case 'users': {
-        try {
-          const { data } = await supabase
+        case 'users': {
+          // Buscar perfiles por nombre y luego mapear a negocios vía business_employees
+          const { data: profiles, error: profErr } = await supabase
+            .from('profiles')
+            .select('id')
+            .ilike('full_name', `%${term}%`);
+          if (profErr) throw profErr;
+          const employeeIds = (profiles || []).map((p: any) => p.id);
+          if (employeeIds.length === 0) { setFilteredBusinesses([]); break; }
+          const { data: emp, error: empErr } = await supabase
             .from('business_employees')
-            .select(`
-              business_id,
-              profiles!business_employees_user_id_fkey (
-                full_name
-              )
-            `)
-            .eq('status', 'approved');
-
-          const matchedBusinessIds = new Set(
-            (data || [])
-              .filter((e: any) => (e.profiles?.full_name || '').toLowerCase().includes(termLower))
-              .map((e: any) => e.business_id)
-          );
-          const filtered = businesses.filter(b => matchedBusinessIds.has(b.id));
-          setFilteredBusinesses(filtered);
-        } catch {
-          setFilteredBusinesses([]);
+            .select('business_id')
+            .in('employee_id', employeeIds)
+            .eq('status', 'approved')
+            .eq('is_active', true);
+          if (empErr) throw empErr;
+          const ids = Array.from(new Set((emp || []).map((e: any) => e.business_id)));
+          const candidates = await fetchBusinessesByIds(ids);
+          const available = await applyAvailabilityFilter(candidates);
+          setFilteredBusinesses(available);
+          break;
         }
-        break;
       }
+    } catch {
+      setFilteredBusinesses([]);
     }
-  }, [businesses]);
+  }, [businesses, applyAvailabilityFilter, fetchBusinessesByIds]);
 
   if (loading) {
     return (
@@ -267,7 +419,7 @@ export function BusinessSelection({
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Título */}
       <div>
         <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -289,7 +441,7 @@ export function BusinessSelection({
 
       {/* Resultados */}
       {filteredBusinesses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {filteredBusinesses.map((business) => {
           const isSelected = selectedBusinessId === business.id;
 
@@ -298,39 +450,39 @@ export function BusinessSelection({
               key={business.id}
               onClick={() => onSelectBusiness(business)}
               className={cn(
-                "relative bg-card border-2 rounded-xl overflow-hidden",
+                "relative bg-card border rounded-lg overflow-hidden",
                 "cursor-pointer transition-all duration-200",
-                "hover:border-primary hover:scale-105 hover:shadow-lg hover:shadow-primary/20",
+                "hover:border-primary hover:scale-[1.02] hover:shadow-md hover:shadow-primary/15",
                 isSelected
                   ? "border-primary bg-primary/10"
                   : "border-border"
               )}
             >
               {/* Imagen del negocio */}
-              <div className="aspect-video w-full relative">
+              <div className="relative w-full aspect-square">
                 <img
                   src={getBusinessImage(business)}
                   alt={business.name}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
 
                 {/* Checkmark cuando está seleccionado */}
                 {isSelected && (
                   <div
                     className={cn(
-                      "absolute top-3 right-3 w-8 h-8 bg-primary rounded-full",
+                      "absolute top-2 right-2 w-7 h-7 bg-primary rounded-full",
                       "flex items-center justify-center",
                       "animate-in zoom-in duration-200"
                     )}
                   >
-                    <Check className="w-5 h-5 text-primary-foreground" />
+                    <Check className="w-4 h-4 text-primary-foreground" />
                   </div>
                 )}
               </div>
 
               {/* Información del negocio */}
-              <div className="p-4 bg-muted/50">
-                <h3 className="text-base font-semibold text-foreground mb-1">
+              <div className="p-3 bg-muted/50">
+                <h3 className="text-sm font-semibold text-foreground mb-1">
                   {business.name}
                 </h3>
                 

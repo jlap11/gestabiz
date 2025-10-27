@@ -60,6 +60,18 @@ export function useEmployeeServices(filters?: EmployeeServiceFilters) {
     commissionPercentage?: number
   ) => {
     try {
+      let finalCommission = commissionPercentage;
+      // Si no se proporciona comisión, usar la del servicio (si existe)
+      if (finalCommission === undefined || finalCommission === null || Number.isNaN(finalCommission)) {
+        const { data: svc, error: svcErr } = await supabase
+          .from('services')
+          .select('commission_percentage')
+          .eq('id', serviceId)
+          .single();
+        if (!svcErr && svc) {
+          finalCommission = (svc as any).commission_percentage ?? undefined;
+        }
+      }
       const { data, error: insertError } = await supabase
         .from('employee_services')
         .insert({
@@ -68,7 +80,7 @@ export function useEmployeeServices(filters?: EmployeeServiceFilters) {
           business_id: businessId,
           location_id: locationId,
           expertise_level: expertiseLevel,
-          commission_percentage: commissionPercentage,
+          commission_percentage: finalCommission,
           is_active: true,
         })
         .select()

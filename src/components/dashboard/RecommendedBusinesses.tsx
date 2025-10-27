@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/hooks/useAuth'
+import { useCustomAlert } from '@/hooks/useCustomAlert'
 import type { Business, Service } from '@/types'
 
 interface BusinessWithServices {
@@ -35,6 +36,7 @@ function CategoryEmoji({ category }: Readonly<{ category: string }>) {
 export default function RecommendedBusinesses() {
   const { t } = useLanguage()
   const { user } = useAuth()
+  const { info } = useCustomAlert()
   const [businesses, setBusinesses] = useState<BusinessWithServices[]>([])
   const [showAll, setShowAll] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -240,7 +242,9 @@ export default function RecommendedBusinesses() {
               <button 
                 onClick={() => {
                   // Funcionalidad de navegación se implementará cuando se agregue el router
-                  window.alert(`Próximamente podrás reservar en ${b.name}`)
+                  info(`Próximamente podrás reservar en ${b.name}`, {
+                    title: 'Funcionalidad en desarrollo'
+                  })
                 }}
                 className="w-full px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
               >

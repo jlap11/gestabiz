@@ -39,7 +39,7 @@ export function TopPerformers({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-MX' : 'en-US', {
       style: 'currency',
-      currency: 'MXN',
+      currency: 'COP',
       maximumFractionDigits: 0,
     }).format(amount);
   };
