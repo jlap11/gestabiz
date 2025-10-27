@@ -18,7 +18,12 @@ Write-Host ""
 
 # Configurar Brevo API Key
 Write-Host "📧 Configurando Brevo API Key..." -ForegroundColor Yellow
-$brevoApiKey = "xkeysib-YOUR_API_KEY_HERE"
+Write-Host "Por favor, ingresa tu Brevo API Key:" -ForegroundColor White
+$brevoApiKey = Read-Host
+if ([string]::IsNullOrWhiteSpace($brevoApiKey)) {
+    Write-Host "❌ Error: API Key no puede estar vacío" -ForegroundColor Red
+    exit 1
+}
 npx supabase secrets set BREVO_API_KEY=$brevoApiKey
 
 if ($LASTEXITCODE -eq 0) {
@@ -35,7 +40,15 @@ Write-Host "📧 Configurando credenciales SMTP..." -ForegroundColor Yellow
 npx supabase secrets set BREVO_SMTP_HOST=smtp-relay.brevo.com
 npx supabase secrets set BREVO_SMTP_PORT=587
 npx supabase secrets set BREVO_SMTP_USER=no-reply@gestabiz.com
-npx supabase secrets set BREVO_SMTP_PASSWORD=xsmtpsib-YOUR_SMTP_PASSWORD_HERE
+
+Write-Host "Por favor, ingresa tu contraseña SMTP de Brevo:" -ForegroundColor White
+$smtpPassword = Read-Host -AsSecureString
+$smtpPasswordPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($smtpPassword))
+if ([string]::IsNullOrWhiteSpace($smtpPasswordPlain)) {
+    Write-Host "❌ Error: Contraseña SMTP no puede estar vacía" -ForegroundColor Red
+    exit 1
+}
+npx supabase secrets set BREVO_SMTP_PASSWORD=$smtpPasswordPlain
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Credenciales SMTP configuradas" -ForegroundColor Green

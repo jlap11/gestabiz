@@ -271,6 +271,10 @@ async function prepareNotificationContent(request: NotificationRequest) {
       subject: '📍 Cambio de ubicación de tu cita',
       message: `Hola {{name}},\n\nLa sede de tu cita ha cambiado.\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Nueva dirección: {{new_address}}\n\nSi necesitas ajustar tu cita, contáctanos.`
     },
+    appointment_new_client: {
+      subject: '✅ Cita Agendada Exitosamente',
+      message: `Hola {{client_name}},\n\n¡Tu cita ha sido agendada exitosamente!\n\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📍 Lugar: {{location}}\n📝 Servicio: {{service}}\n👨‍💼 Profesional: {{employee_name}}\n\n¡Te esperamos!`
+    },
     appointment_new_employee: {
       subject: '📅 Nueva Cita Asignada',
       message: `Hola {{employee_name}},\n\nSe te ha asignado una nueva cita:\n\n👤 Cliente: {{client_name}}\n📅 Fecha: {{date}}\n🕐 Hora: {{time}}\n📝 Servicio: {{service}}`
