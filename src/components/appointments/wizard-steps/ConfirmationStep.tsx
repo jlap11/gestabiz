@@ -71,6 +71,15 @@ export function ConfirmationStep({
             value={service?.name || 'Not selected'}
           />
 
+          {/* Duration */}
+          {service?.duration && (
+            <InfoRow
+              icon={<Clock className="h-5 w-5" />}
+              label="Duration"
+              value={`${service.duration} minutes`}
+            />
+          )}
+
           <Separator className="bg-white/10" />
 
           {/* Date */}

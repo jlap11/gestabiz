@@ -255,24 +255,10 @@ export function EmployeeSelection({
                 {employee.full_name || 'Profesional'}
               </h4>
 
-              {/* Role Badge */}
-              <div className={cn(
-                "mt-2 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1",
-                selectedEmployeeId === employee.id
-                  ? "bg-primary/30 text-primary"
-                  : "bg-muted text-muted-foreground"
-              )}>
-                <Briefcase className="h-3 w-3" />
-                <span className="capitalize">{employee.role === 'admin' ? 'Administrador' : 'Empleado'}</span>
-              </div>
+
             </div>
 
-            {/* Email */}
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground truncate">
-                {employee.email}
-              </p>
-            </div>
+            {/* Email ocultado según requerimiento */}
 
             {/* Rating (placeholder - puede agregarse después) */}
             <div className="flex justify-center items-center gap-1 mt-3 text-yellow-500">

@@ -37,10 +37,17 @@ export function BusinessSelection({
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState<SearchType>('businesses');
   const hookCityData = usePreferredCity();
+  const [cityNameMap, setCityNameMap] = useState<Record<string, string>>({});
+  
+  // Helper para detectar UUID (IDs de ciudad/región)
+  const isUUID = (value: string | null): boolean => {
+    if (!value) return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  };
   
   // Usar props si vienen del parent (AppointmentWizard), si no usar hook
   const preferredCityName = propCityName ?? hookCityData.preferredCityName;
-  const preferredRegion = propRegionName ?? hookCityData.preferredRegionName;
+  const preferredRegionName = propRegionName ?? hookCityData.preferredRegionName;
 
   // Helper: obtiene negocios por IDs, activos y públicos
   const fetchBusinessesByIds = useCallback(async (ids: string[]): Promise<Business[]> => {
@@ -134,7 +141,7 @@ export function BusinessSelection({
       
       // Helper para mapear nombres conocidos (Bogotá D.C. -> Bogotá/Cundinamarca)
       const isBogotaCity = preferredCityName && normalize(preferredCityName).includes('bogota');
-      const isBogotaRegion = preferredRegion && normalize(preferredRegion).includes('bogota');
+      const isBogotaRegion = preferredRegionName && normalize(preferredRegionName).includes('bogota');
       
       // Filtrar por ciudad preferida si está disponible
       if (preferredCityName) {
@@ -147,12 +154,12 @@ export function BusinessSelection({
       }
       
       // Si hay región y no se especificó ciudad, filtrar por región
-      if (preferredRegion && !preferredCityName) {
+      if (preferredRegionName && !preferredCityName) {
         if (isBogotaRegion) {
           // Bogotá D.C. mapea al departamento Cundinamarca y ciudad Bogotá
           query = query.ilike('state', '%Cundinamarca%').ilike('city', '%Bogot%');
         } else {
-          query = query.ilike('state', `%${preferredRegion}%`);
+          query = query.ilike('state', `%${preferredRegionName}%`);
         }
       }
 
@@ -265,7 +272,7 @@ export function BusinessSelection({
     } finally {
       setLoading(false);
     }
-  }, [preferredCityName, preferredRegion]);
+  }, [preferredCityName, preferredRegionName]);
 
   useEffect(() => {
     loadBusinesses();
@@ -277,6 +284,38 @@ export function BusinessSelection({
     setSearchType('businesses');
     setFilteredBusinesses(businesses);
   }, [businesses]);
+
+  // Pre-cargar nombres de ciudades para IDs presentes en resultados
+  useEffect(() => {
+    const cityIds = Array.from(
+      new Set(
+        filteredBusinesses
+          .map((b) => b.city)
+          .filter((c): c is string => !!c && isUUID(c))
+      )
+    );
+
+    const fetchCityNames = async () => {
+      if (cityIds.length === 0) return;
+      try {
+        const { data, error } = await supabase
+          .from('cities')
+          .select('id, name')
+          .in('id', cityIds);
+        if (error) return;
+        const map: Record<string, string> = { ...cityNameMap };
+        for (const row of (data || [])) {
+          map[row.id] = row.name;
+        }
+        setCityNameMap(map);
+      } catch {
+        // Silent fail - no bloquear UI por nombres
+      }
+    };
+
+    fetchCityNames();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredBusinesses]);
 
   // Imagen placeholder para negocios
   const getBusinessImage = (business: Business): string => {
@@ -428,6 +467,11 @@ export function BusinessSelection({
         <p className="text-muted-foreground mb-4">
           Choose the business where you want to book your appointment
         </p>
+        {(preferredCityName || preferredRegionName) && (
+          <p className="text-xs text-muted-foreground mb-3">
+            Preferred location: {preferredCityName || preferredRegionName}
+          </p>
+        )}
 
         {/* SearchBar shared component (same dropdown/options as header) - full-bleed */}
         <div className="-mx-3 sm:mx-0 w-full">
@@ -495,7 +539,12 @@ export function BusinessSelection({
                 <div className="space-y-1">
                   {business.address && (
                     <p className="text-xs text-[#64748b] flex items-center gap-1">
-                      📍 {business.city ? `${business.city}, ` : ''}{business.address}
+                      {(() => {
+                        const cityDisplay = business.city
+                          ? (cityNameMap[business.city] || business.city)
+                          : '';
+                        return `📍 ${cityDisplay ? `${cityDisplay}, ` : ''}${business.address}`;
+                      })()}
                     </p>
                   )}
                   {business.phone && (

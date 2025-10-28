@@ -128,7 +128,7 @@ export function ServiceSelection({
               {/* Imagen fotográfica real del servicio */}
               <div className="aspect-square w-full relative">
                 <img
-                  src={getServiceImage(service.name)}
+                  src={service.image_url || getServiceImage(service.name)}
                   alt={service.name}
                   className="w-full h-full object-cover"
                 />

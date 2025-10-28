@@ -368,6 +368,36 @@ export const useAppointments = (userId?: string) => {
             }
           })
         }
+
+        // Notificación al ADMINISTRADOR/NEGOCIO
+        // Obtener el administrador del negocio
+        const { data: businessOwner } = await supabase
+          .from('business_users')
+          .select('user_id')
+          .eq('business_id', appointmentData.business_id)
+          .eq('role', 'admin')
+          .single()
+
+        if (businessOwner && businessOwner.user_id !== userId) {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              type: 'appointment_new_business',
+              recipient_user_id: businessOwner.user_id,
+              business_id: appointmentData.business_id,
+              appointment_id: newAppointment.id,
+              priority: 1,
+              action_url: `/appointments/${newAppointment.id}`,
+              force_channels: ['in_app', 'email'],
+              data: {
+                client_id: appointmentData.client_id,
+                employee_id: targetEmployeeId,
+                appointment_date: appointmentData.start_time,
+                service_id: appointmentData.service_id,
+                location_id: appointmentData.location_id
+              }
+            }
+          })
+        }
         
         // Notificaciones enviadas exitosamente
       } catch {
