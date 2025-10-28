@@ -549,12 +549,13 @@ export const AppointmentsCalendar: React.FC = () => {
           notes,
           employee_id,
           location_id,
+          client_id,
           services!inner (
             id,
             name,
             price
           ),
-          profiles!inner (
+          client:profiles!appointments_client_id_fkey (
             id,
             full_name,
             avatar_url
@@ -603,8 +604,8 @@ export const AppointmentsCalendar: React.FC = () => {
         start_time: apt.start_time as string,
         end_time: apt.end_time as string,
         status: apt.status as string,
-        service_name: (apt.service as Record<string, unknown>)?.name as string || 'Servicio sin nombre',
-        service_price: (apt.service as Record<string, unknown>)?.price as number || 0,
+        service_name: (apt.services as Record<string, unknown>)?.name as string || 'Servicio sin nombre',
+        service_price: (apt.services as Record<string, unknown>)?.price as number || 0,
         client_name: (apt.client as Record<string, unknown>)?.full_name as string || 'Cliente sin nombre',
         employee_id: (apt.employee_id as string) || '',
         employee_name: employeeNames[(apt.employee_id as string)] || 'Sin asignar',
@@ -1318,13 +1319,13 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={statusBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, status: !prev.status }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
                 >
                   <span className="truncate">{filterStatus.length} seleccionados</span>
                   <ChevronRight className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.status ? 'rotate-90' : ''}`} />
                 </button>
                 <DropdownPortal anchorRef={statusBtnRef} isOpen={openDropdowns.status} onClose={() => setOpenDropdowns(prev => ({ ...prev, status: false }))}>
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
@@ -1345,7 +1346,7 @@ export const AppointmentsCalendar: React.FC = () => {
                               setFilterStatus(filterStatus.filter(s => s !== status));
                             }
                           }}
-                          className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-slate-100 dark:bg-slate-800 checked:bg-primary checked:border-primary dark:checked:bg-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                          className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-background checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
                         />
                         <span className="ml-2 text-sm text-foreground">
                           {status === 'pending' && 'Pendiente'}
@@ -1366,13 +1367,13 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={locationBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, location: !prev.location }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
                 >
                   <span className="truncate">{filterLocation.length} seleccionadas</span>
                   <ChevronRight className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.location ? 'rotate-90' : ''}`} />
                 </button>
                 <DropdownPortal anchorRef={locationBtnRef} isOpen={openDropdowns.location} onClose={() => setOpenDropdowns(prev => ({ ...prev, location: false }))}>
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
@@ -1396,7 +1397,7 @@ export const AppointmentsCalendar: React.FC = () => {
                                 setFilterLocation(filterLocation.filter(l => l !== location.id));
                               }
                             }}
-                            className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-slate-100 dark:bg-slate-800 checked:bg-primary checked:border-primary dark:checked:bg-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                            className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-background checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
                           />
                           <span className="ml-2 text-sm text-foreground truncate">{location.name}</span>
                         </label>
@@ -1412,13 +1413,13 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={serviceBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, service: !prev.service }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
                 >
                   <span className="truncate">{filterService.length} seleccionados</span>
                   <ChevronRight className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.service ? 'rotate-90' : ''}`} />
                 </button>
                 <DropdownPortal anchorRef={serviceBtnRef} isOpen={openDropdowns.service} onClose={() => setOpenDropdowns(prev => ({ ...prev, service: false }))}>
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
@@ -1439,7 +1440,7 @@ export const AppointmentsCalendar: React.FC = () => {
                               setFilterService(filterService.filter(s => s !== service.name));
                             }
                           }}
-                          className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-slate-100 dark:bg-slate-800 checked:bg-primary checked:border-primary dark:checked:bg-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                          className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-background checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
                         />
                         <span className="ml-2 text-sm text-foreground truncate">{service.name}</span>
                       </label>
@@ -1454,13 +1455,13 @@ export const AppointmentsCalendar: React.FC = () => {
                 <button
                   ref={employeeBtnRef}
                   onClick={() => setOpenDropdowns(prev => ({ ...prev, employee: !prev.employee }))}
-                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background dark:bg-slate-900 text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
+                  className="px-3 py-2 pr-8 text-sm border border-border rounded-md bg-background text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all min-w-[160px] flex items-center justify-between"
                 >
                   <span className="truncate">{filterEmployee.length} seleccionados</span>
                   <ChevronRight className={`h-4 w-4 text-muted-foreground ml-2 transition-transform ${openDropdowns.employee ? 'rotate-90' : ''}`} />
                 </button>
                 <DropdownPortal anchorRef={employeeBtnRef} isOpen={openDropdowns.employee} onClose={() => setOpenDropdowns(prev => ({ ...prev, employee: false }))}>
-                  <div className="bg-background dark:bg-slate-900 border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                  <div className="bg-background border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
@@ -1481,7 +1482,7 @@ export const AppointmentsCalendar: React.FC = () => {
                               setFilterEmployee(filterEmployee.filter(e => e !== employee.user_id));
                             }
                           }}
-                          className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-slate-100 dark:bg-slate-800 checked:bg-primary checked:border-primary dark:checked:bg-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+                          className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-background checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
                         />
                         <span className="ml-2 text-sm text-foreground truncate">{employee.profile_name}</span>
                       </label>

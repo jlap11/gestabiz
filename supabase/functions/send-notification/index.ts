@@ -1,14 +1,48 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
+// Sentry deshabilitado temporalmente para evitar fallos en carga del worker
 import { sendBrevoEmail, createBasicEmailTemplate } from '../_shared/brevo.ts'
 
-// Initialize Sentry
-initSentry('send-notification')
+// Initialize Sentry (temporarily disabled)
+// initSentry('send-notification')
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// Dominios permitidos para CORS (producción); localhost es dinámico
+const allowedOrigins = [
+  'https://gestabiz.com',
+  'https://www.gestabiz.com'
+]
+
+function isLocalOrigin(origin: string) {
+  try {
+    const u = new URL(origin)
+    return (
+      u.hostname === 'localhost' ||
+      u.hostname === '127.0.0.1'
+    )
+  } catch {
+    return false
+  }
+}
+
+function getCorsHeaders(origin: string | null, accessControlRequestHeaders?: string | null) {
+  let allowedOrigin = allowedOrigins[0]
+  if (origin) {
+    if (isLocalOrigin(origin)) {
+      // Permitir cualquier puerto en localhost/127.0.0.1 (Vite/Next/etc.)
+      allowedOrigin = origin
+    } else if (allowedOrigins.includes(origin)) {
+      allowedOrigin = origin
+    }
+  }
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': accessControlRequestHeaders || 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  }
 }
 
 interface NotificationRequest {
@@ -40,27 +74,97 @@ interface NotificationRequest {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get('origin')
+  const acrh = req.headers.get('Access-Control-Request-Headers')
+  const corsHeaders = getCorsHeaders(origin, acrh)
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    console.log('🚀 [SEND-NOTIFICATION] Función iniciada')
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const request: NotificationRequest = await req.json()
     
+    console.log('📨 [SEND-NOTIFICATION] Solicitud recibida:', {
+      type: request.type,
+      recipient_user_id: request.recipient_user_id,
+      recipient_email: request.recipient_email,
+      business_id: request.business_id,
+      appointment_id: request.appointment_id,
+      force_channels: request.force_channels,
+      skip_preferences: request.skip_preferences,
+      priority: request.priority,
+      action_url: request.action_url,
+      data: request.data
+    })
+    
     // Determinar canales a usar
+    console.log('🔍 [SEND-NOTIFICATION] Determinando canales...')
     const channels = await determineChannels(supabase, request)
+    console.log('📡 [SEND-NOTIFICATION] Canales determinados:', channels)
     
     // Preparar contenido de la notificación
+    console.log('📝 [SEND-NOTIFICATION] Preparando contenido...')
     const content = await prepareNotificationContent(request)
+    console.log('📄 [SEND-NOTIFICATION] Contenido preparado:', {
+      subject: content.subject,
+      message: content.message,
+      html: content.html ? 'HTML presente' : 'Sin HTML'
+    })
     
+    // Enriquecer destinatario: si falta email pero tenemos user_id, resolver desde profiles
+    if (!request.recipient_email && request.recipient_user_id) {
+      console.log('🧩 [SEND-NOTIFICATION] Resolviendo email desde profiles para user_id:', request.recipient_user_id)
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', request.recipient_user_id)
+        .single()
+      if (profile?.email) {
+        request.recipient_email = profile.email
+        if (!request.recipient_name && profile.full_name) {
+          request.recipient_name = profile.full_name
+        }
+        console.log('✅ [SEND-NOTIFICATION] Email resuelto:', request.recipient_email)
+      } else {
+        console.warn('⚠️ [SEND-NOTIFICATION] No se pudo resolver email para user_id:', {
+          recipient_user_id: request.recipient_user_id,
+          profileErr
+        })
+      }
+    }
+    
+    // Construir diagnósticos ligeros (sin exponer secretos)
+    const diagnostics = {
+      env: {
+        hasBrevoApiKey: Boolean(Deno.env.get('BREVO_API_KEY')),
+        fromEmail: Deno.env.get('FROM_EMAIL') || Deno.env.get('BREVO_SMTP_USER') || 'noreply@gestabiz.app'
+      },
+      recipient: {
+        email: request.recipient_email || null,
+        name: request.recipient_name || null
+      },
+      cors: {
+        origin,
+        allowedOrigin: corsHeaders['Access-Control-Allow-Origin'],
+        requestedHeaders: acrh || null
+      },
+      channels_selected: channels
+    }
+    console.log('🧪 [SEND-NOTIFICATION] Diagnósticos:', diagnostics)
+
     // Enviar por cada canal
+    console.log('📤 [SEND-NOTIFICATION] Iniciando envío por canales...')
     const results = []
     
     for (const channel of channels) {
+      console.log(`🔄 [SEND-NOTIFICATION] Procesando canal: ${channel}`)
       try {
         let sent = false
         let externalId = null
@@ -68,7 +172,9 @@ serve(async (req) => {
 
         switch (channel) {
           case 'email': {
+            console.log('📧 [EMAIL] Enviando email...')
             const emailResult = await sendEmail(request, content)
+            console.log('📧 [EMAIL] Resultado:', emailResult)
             sent = emailResult.success
             externalId = ('messageId' in emailResult) ? emailResult.messageId : null
             errorMsg = emailResult.error || null
@@ -76,7 +182,9 @@ serve(async (req) => {
           }
             
           case 'sms': {
+            console.log('📱 [SMS] Enviando SMS...')
             const smsResult = await sendSMS(request, content)
+            console.log('📱 [SMS] Resultado:', smsResult)
             sent = smsResult.success
             externalId = smsResult.id
             errorMsg = smsResult.error
@@ -84,7 +192,9 @@ serve(async (req) => {
           }
             
           case 'whatsapp': {
+            console.log('💬 [WHATSAPP] Enviando WhatsApp...')
             const waResult = await sendWhatsApp(request, content)
+            console.log('💬 [WHATSAPP] Resultado:', waResult)
             sent = waResult.success
             externalId = waResult.id
             errorMsg = waResult.error
@@ -92,7 +202,9 @@ serve(async (req) => {
           }
             
           case 'in_app': {
+            console.log('🔔 [IN-APP] Enviando notificación in-app...')
             const inAppResult = await sendInAppNotification(supabase, request, content)
+            console.log('🔔 [IN-APP] Resultado:', inAppResult)
             sent = inAppResult.success
             externalId = inAppResult.id
             errorMsg = inAppResult.error
@@ -100,8 +212,11 @@ serve(async (req) => {
           }
         }
 
+        console.log(`📊 [${channel.toUpperCase()}] Estado final:`, { sent, externalId, errorMsg })
+
         // Registrar en notification_log
-        await supabase.from('notification_log').insert({
+        console.log('💾 [SEND-NOTIFICATION] Registrando en notification_log...')
+        const logData = {
           business_id: request.business_id,
           appointment_id: request.appointment_id,
           user_id: request.recipient_user_id,
@@ -116,7 +231,11 @@ serve(async (req) => {
           external_id: externalId,
           error_message: errorMsg,
           metadata: request.data
-        })
+        }
+        console.log('💾 [SEND-NOTIFICATION] Datos del log:', logData)
+        
+        const logResult = await supabase.from('notification_log').insert(logData)
+        console.log('💾 [SEND-NOTIFICATION] Resultado del log:', logResult)
 
         results.push({
           channel,
@@ -127,10 +246,11 @@ serve(async (req) => {
 
         // Si se envió exitosamente y no requiere fallback, salir
         if (sent && !request.force_channels) {
+          console.log(`✅ [SEND-NOTIFICATION] Envío exitoso por ${channel}, terminando proceso`)
           break
         }
       } catch (error) {
-        console.error(`Error sending via ${channel}:`, error)
+        console.error(`❌ [SEND-NOTIFICATION] Error enviando por ${channel}:`, error)
         results.push({
           channel,
           sent: false,
@@ -145,7 +265,8 @@ serve(async (req) => {
         type: request.type,
         channels_attempted: results.length,
         channels_succeeded: results.filter(r => r.sent).length,
-        results
+        results,
+        diagnostics
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -156,17 +277,36 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in send-notification:', error)
     
-    // Capture error to Sentry
-    captureEdgeFunctionError(error as Error, {
-      functionName: 'send-notification',
-      operation: 'main',
-      extra: { requestBody: await req.clone().text() }
-    })
-    
-    await flushSentry()
+    // Sentry disabled: log request body for diagnostics only
+    try {
+      console.error('[send-notification] Request body snapshot:', await req.clone().text())
+    } catch {}
+
+    // Diagnósticos mínimos también en error
+    const errorDiagnostics: any = {
+      env: {
+        hasBrevoApiKey: Boolean(Deno.env.get('BREVO_API_KEY')),
+        fromEmail: Deno.env.get('FROM_EMAIL') || Deno.env.get('BREVO_SMTP_USER') || 'noreply@gestabiz.app'
+      },
+      cors: {
+        origin,
+        allowedOrigin: corsHeaders['Access-Control-Allow-Origin'],
+        requestedHeaders: acrh || null
+      },
+      recipient: null
+    }
+
+    try {
+      const bodyText = await req.clone().text()
+      const parsed = JSON.parse(bodyText || '{}')
+      errorDiagnostics.recipient = {
+        email: parsed?.recipient_email || null,
+        name: parsed?.recipient_name || null
+      }
+    } catch {}
     
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: (error as Error).message, diagnostics: errorDiagnostics }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
@@ -382,22 +522,39 @@ function getRecipientContact(request: NotificationRequest, channel: string): str
 }
 
 async function sendEmail(request: NotificationRequest, content: any) {
+  console.log('📧 [SEND-EMAIL] Iniciando función sendEmail')
+  console.log('📧 [SEND-EMAIL] Request:', {
+    type: request.type,
+    recipient_email: request.recipient_email,
+    recipient_name: request.recipient_name
+  })
+  console.log('📧 [SEND-EMAIL] Content:', {
+    subject: content.subject,
+    message: content.message?.substring(0, 100) + '...'
+  })
+
   if (!request.recipient_email) {
+    console.error('❌ [SEND-EMAIL] Email del destinatario faltante')
     return { success: false, error: 'Recipient email missing' }
   }
 
   try {
     let htmlBody = ''
     
+    console.log('🎨 [SEND-EMAIL] Preparando template HTML...')
+    
     // Usar template HTML personalizado para job_application_new
     if (request.type === 'job_application_new' || request.type === 'job_application_accepted' || request.type === 'job_application_interview') {
+      console.log('🎨 [SEND-EMAIL] Usando template personalizado para:', request.type)
       // Intentar cargar template HTML personalizado
       const templateName = request.type === 'job_application_new' ? 'job-application' : request.type
       const customTemplate = await loadHTMLTemplate(templateName, request.data)
       
       if (customTemplate) {
+        console.log('✅ [SEND-EMAIL] Template personalizado cargado')
         htmlBody = renderHTMLTemplate(customTemplate, request.data)
       } else {
+        console.log('⚠️ [SEND-EMAIL] Template personalizado no encontrado, usando básico')
         // Fallback al template básico desde brevo.ts
         htmlBody = createBasicEmailTemplate(
           content.subject,
@@ -405,6 +562,7 @@ async function sendEmail(request: NotificationRequest, content: any) {
         )
       }
     } else {
+      console.log('🎨 [SEND-EMAIL] Usando template básico para:', request.type)
       // Template básico para otros tipos
       htmlBody = createBasicEmailTemplate(
         content.subject,
@@ -412,18 +570,40 @@ async function sendEmail(request: NotificationRequest, content: any) {
       )
     }
     
+    console.log('📄 [SEND-EMAIL] HTML Body preparado, longitud:', htmlBody.length)
+    
     // Enviar email usando Brevo
-    const result = await sendBrevoEmail({
+    console.log('🚀 [SEND-EMAIL] Enviando email con Brevo...')
+    const emailParams = {
       to: request.recipient_email,
       subject: content.subject,
       htmlBody: htmlBody,
       textBody: content.message,
-      fromEmail: 'no-reply@gestabiz.com',
+      fromEmail: Deno.env.get('FROM_EMAIL') || Deno.env.get('BREVO_SMTP_USER') || 'noreply@gestabiz.app',
       fromName: 'Gestabiz'
+    }
+    console.log('📨 [SEND-EMAIL] Parámetros de Brevo:', {
+      to: emailParams.to,
+      subject: emailParams.subject,
+      fromEmail: emailParams.fromEmail,
+      fromName: emailParams.fromName,
+      htmlBodyLength: emailParams.htmlBody.length,
+      textBodyLength: emailParams.textBody.length
     })
+    
+    const result = await sendBrevoEmail(emailParams)
+    
+    console.log('📧 [SEND-EMAIL] Resultado de Brevo:', result)
+    
+    if (result.success) {
+      console.log('✅ [SEND-EMAIL] Email enviado exitosamente')
+    } else {
+      console.error('❌ [SEND-EMAIL] Error enviando email:', result.error)
+    }
     
     return result
   } catch (error) {
+    console.error('❌ [SEND-EMAIL] Excepción en sendEmail:', error)
     return { success: false, error: error.message }
   }
 }

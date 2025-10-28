@@ -14,7 +14,7 @@ interface AppointmentWithRelations {
   employee_id?: string
   start_time: string
   end_time: string
-  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'pending' | 'pending_confirmation' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
   notes?: string
   price?: number
   currency?: string
@@ -153,13 +153,27 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
 
   // Get status badge variant
   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
-    if (status === 'confirmed') return 'default'
-    if (status === 'cancelled') return 'destructive'
-    return 'secondary'
+    switch (status) {
+      case 'confirmed':
+        return 'default' // Verde
+      case 'pending_confirmation':
+        return 'outline' // Amarillo/naranja
+      case 'completed':
+        return 'secondary' // Gris
+      case 'cancelled':
+      case 'no_show':
+        return 'destructive' // Rojo
+      case 'in_progress':
+        return 'default' // Verde
+      default:
+        return 'secondary' // Gris por defecto
+    }
   }
 
   const getStatusLabel = (status: string): string => {
     const labels: Record<string, string> = {
+      pending: 'Pendiente',
+      pending_confirmation: 'Por Confirmar',
       scheduled: 'Agendada',
       confirmed: 'Confirmada',
       in_progress: 'En Proceso',

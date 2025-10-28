@@ -317,92 +317,166 @@ export const useAppointments = (userId?: string) => {
     
     setLoading(true)
     try {
-      const insert = { ...appointmentData, employee_id: userId }
+      // Validación: debe existir empleado (employee_id/user_id) o recurso
+      const hasEmployee = Boolean((appointmentData as any).employee_id || (appointmentData as any).user_id)
+      const hasResource = Boolean((appointmentData as any).resource_id)
+      if (!hasEmployee && !hasResource) {
+        const msg = 'Debe seleccionar un empleado o un recurso para la cita.'
+        toast.error(msg)
+        throw new Error(msg)
+      }
+
+      // No sobreescribir employee_id: respetar selección del wizard (o resource_id)
+      const insert = { ...appointmentData }
       const { data, error } = await supabase
         .from('appointments')
         .insert(insert)
         .select()
         .single()
-      if (error) throw new Error(error.message)
+      if (error) {
+        // Log detallado para diagnosticar 400 Bad Request
+        console.error('❌ [APPOINTMENTS INSERT] Error:', {
+          message: error.message,
+          details: (error as any).details,
+          hint: (error as any).hint,
+          code: (error as any).code,
+          payload: insert
+        })
+        throw new Error(error.message)
+      }
       
       const newAppointment = data as Appointment
       setAppointments(prev => [...prev, newAppointment])
       
+      console.log('🔔 [NOTIFICATIONS] Iniciando envío de notificaciones para cita:', newAppointment.id)
+      console.log('📋 [NOTIFICATIONS] Datos de la cita:', {
+        appointmentId: newAppointment.id,
+        clientId: appointmentData.client_id,
+        businessId: appointmentData.business_id,
+        employeeId: (insert as any).employee_id ?? (insert as any).user_id,
+        startTime: appointmentData.start_time,
+        serviceId: appointmentData.service_id,
+        locationId: appointmentData.location_id,
+        createdBy: userId
+      })
+      
       // ✅ Enviar notificaciones in-app (no bloqueantes)
       try {
         // Notificación al CLIENTE
-        await supabase.functions.invoke('send-notification', {
-          body: {
-            type: 'appointment_new_client',
-            recipient_user_id: appointmentData.client_id,
+        console.log('📧 [CLIENT NOTIFICATION] Enviando notificación al cliente:', appointmentData.client_id)
+        const clientNotificationPayload = {
+          type: 'appointment_new_client',
+          recipient_user_id: appointmentData.client_id,
+          business_id: appointmentData.business_id,
+          appointment_id: newAppointment.id,
+          priority: 1, // Alta prioridad
+          action_url: `/appointments/${newAppointment.id}`,
+          force_channels: ['in_app', 'email'], // In-app + Email
+          data: {
+            appointment_date: appointmentData.start_time,
+            service_id: appointmentData.service_id,
+            location_id: appointmentData.location_id
+          }
+        }
+        console.log('📧 [CLIENT NOTIFICATION] Payload:', clientNotificationPayload)
+        
+        const clientResult = await supabase.functions.invoke('send-notification', {
+          body: clientNotificationPayload
+        })
+        
+        console.log('📧 [CLIENT NOTIFICATION] Resultado:', clientResult)
+        if (clientResult.error) {
+          console.error('❌ [CLIENT NOTIFICATION] Error:', clientResult.error)
+        } else {
+          console.log('✅ [CLIENT NOTIFICATION] Enviada exitosamente')
+        }
+        
+        // Notificación al EMPLEADO (si es diferente del creador)
+        const targetEmployeeId = (insert as any).employee_id ?? (insert as any).user_id
+        if (targetEmployeeId && targetEmployeeId !== userId) {
+          console.log('👨‍💼 [EMPLOYEE NOTIFICATION] Enviando notificación al empleado:', targetEmployeeId)
+          const employeeNotificationPayload = {
+            type: 'appointment_new_employee',
+            recipient_user_id: targetEmployeeId,
             business_id: appointmentData.business_id,
             appointment_id: newAppointment.id,
-            priority: 1, // Alta prioridad
+            priority: 1,
             action_url: `/appointments/${newAppointment.id}`,
-            force_channels: ['in_app', 'email'], // In-app + Email
+            force_channels: ['in_app', 'email'],
             data: {
+              client_id: appointmentData.client_id,
+              appointment_date: appointmentData.start_time,
+              service_id: appointmentData.service_id
+            }
+          }
+          console.log('👨‍💼 [EMPLOYEE NOTIFICATION] Payload:', employeeNotificationPayload)
+          
+          const employeeResult = await supabase.functions.invoke('send-notification', {
+            body: employeeNotificationPayload
+          })
+          
+          console.log('👨‍💼 [EMPLOYEE NOTIFICATION] Resultado:', employeeResult)
+          if (employeeResult.error) {
+            console.error('❌ [EMPLOYEE NOTIFICATION] Error:', employeeResult.error)
+          } else {
+            console.log('✅ [EMPLOYEE NOTIFICATION] Enviada exitosamente')
+          }
+        } else {
+          console.log('⏭️ [EMPLOYEE NOTIFICATION] Omitida - empleado es el mismo que el creador o no hay empleado asignado')
+        }
+
+        // Notificación al ADMINISTRADOR/NEGOCIO
+        console.log('🏢 [BUSINESS NOTIFICATION] Buscando administrador del negocio:', appointmentData.business_id)
+        
+        // Obtener el administrador del negocio (propietario)
+        const { data: businessOwner, error: businessOwnerError } = await supabase
+          .from('businesses')
+          .select('owner_id')
+          .eq('id', appointmentData.business_id)
+          .single()
+
+        console.log('🏢 [BUSINESS NOTIFICATION] Resultado búsqueda admin:', { businessOwner, businessOwnerError })
+
+        if (businessOwnerError) {
+          console.error('❌ [BUSINESS NOTIFICATION] Error buscando admin:', businessOwnerError)
+        } else if (businessOwner && businessOwner.owner_id !== userId) {
+          console.log('🏢 [BUSINESS NOTIFICATION] Enviando notificación al admin:', businessOwner.owner_id)
+          const businessNotificationPayload = {
+            type: 'appointment_new_business',
+            recipient_user_id: businessOwner.owner_id,
+            business_id: appointmentData.business_id,
+            appointment_id: newAppointment.id,
+            priority: 1,
+            action_url: `/appointments/${newAppointment.id}`,
+            force_channels: ['in_app', 'email'],
+            data: {
+              client_id: appointmentData.client_id,
+              employee_id: targetEmployeeId,
               appointment_date: appointmentData.start_time,
               service_id: appointmentData.service_id,
               location_id: appointmentData.location_id
             }
           }
-        })
-        
-        // Notificación al EMPLEADO (si es diferente del creador)
-        const targetEmployeeId = insert.employee_id
-        if (targetEmployeeId && targetEmployeeId !== userId) {
-          await supabase.functions.invoke('send-notification', {
-            body: {
-              type: 'appointment_new_employee',
-              recipient_user_id: targetEmployeeId,
-              business_id: appointmentData.business_id,
-              appointment_id: newAppointment.id,
-              priority: 1,
-              action_url: `/appointments/${newAppointment.id}`,
-              force_channels: ['in_app', 'email'],
-              data: {
-                client_id: appointmentData.client_id,
-                appointment_date: appointmentData.start_time,
-                service_id: appointmentData.service_id
-              }
-            }
+          console.log('🏢 [BUSINESS NOTIFICATION] Payload:', businessNotificationPayload)
+          
+          const businessResult = await supabase.functions.invoke('send-notification', {
+            body: businessNotificationPayload
           })
-        }
-
-        // Notificación al ADMINISTRADOR/NEGOCIO
-        // Obtener el administrador del negocio
-        const { data: businessOwner } = await supabase
-          .from('business_users')
-          .select('user_id')
-          .eq('business_id', appointmentData.business_id)
-          .eq('role', 'admin')
-          .single()
-
-        if (businessOwner && businessOwner.user_id !== userId) {
-          await supabase.functions.invoke('send-notification', {
-            body: {
-              type: 'appointment_new_business',
-              recipient_user_id: businessOwner.user_id,
-              business_id: appointmentData.business_id,
-              appointment_id: newAppointment.id,
-              priority: 1,
-              action_url: `/appointments/${newAppointment.id}`,
-              force_channels: ['in_app', 'email'],
-              data: {
-                client_id: appointmentData.client_id,
-                employee_id: targetEmployeeId,
-                appointment_date: appointmentData.start_time,
-                service_id: appointmentData.service_id,
-                location_id: appointmentData.location_id
-              }
-            }
-          })
+          
+          console.log('🏢 [BUSINESS NOTIFICATION] Resultado:', businessResult)
+          if (businessResult.error) {
+            console.error('❌ [BUSINESS NOTIFICATION] Error:', businessResult.error)
+          } else {
+            console.log('✅ [BUSINESS NOTIFICATION] Enviada exitosamente')
+          }
+        } else {
+          console.log('⏭️ [BUSINESS NOTIFICATION] Omitida - admin es el mismo que el creador o no se encontró admin')
         }
         
-        // Notificaciones enviadas exitosamente
-      } catch {
+        console.log('✅ [NOTIFICATIONS] Proceso de notificaciones completado')
+      } catch (notificationError) {
+        console.error('❌ [NOTIFICATIONS] Error general enviando notificaciones:', notificationError)
         // No fallar la creación de cita si fallan las notificaciones
-        // Error enviando notificaciones in-app
       }
       
       toast.success('Appointment created successfully!')

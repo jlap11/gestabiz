@@ -23,6 +23,7 @@ import { useWizardDataCache } from '@/hooks/useWizardDataCache';
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
+import { useAppointments } from '@/hooks/useSupabase';
 
 interface AppointmentWizardProps {
   open: boolean;
@@ -194,6 +195,9 @@ export function AppointmentWizard({
   const analytics = useAnalytics();
   const [hasTrackedStart, setHasTrackedStart] = React.useState(false);
 
+  // Hook para crear citas con notificaciones automáticas
+  const { createAppointment: createAppointmentWithNotifications } = useAppointments(userId);
+
   // Track booking started (solo una vez cuando se abre el wizard)
   React.useEffect(() => {
     if (open && !hasTrackedStart && (businessId || wizardData.businessId)) {
@@ -209,49 +213,161 @@ export function AppointmentWizard({
 
   /* replaced: getStepNumber now uses getStepOrder() to compute index dynamically */
 
+  // ⭐ NUEVA FUNCIÓN: Determinar qué pasos se pueden omitir automáticamente
+  const getSkippableSteps = (): string[] => {
+    const skippable: string[] = [];
+    
+    // ⭐ VALIDACIÓN: Verificar que el cache esté cargado
+    if (!dataCache.locations || !dataCache.services || !dataCache.employees || !dataCache.serviceEmployees) {
+      return skippable; // Retornar array vacío si el cache no está listo
+    }
+    
+    // Si solo hay una ubicación, se puede omitir el paso de ubicación
+    if (dataCache.locations.length === 1) {
+      skippable.push('location');
+      
+      // Si también solo hay un servicio en esa ubicación, se puede omitir
+      const servicesForLocation = dataCache.services.filter(service => 
+        service.location_id === dataCache.locations[0].id
+      );
+      if (servicesForLocation.length === 1) {
+        skippable.push('service');
+        
+        // Si también solo hay un empleado para ese servicio, se puede omitir
+        const employeesForService = dataCache.employees.filter(employee =>
+          dataCache.serviceEmployees.some(se => 
+            se.service_id === servicesForLocation[0].id && se.employee_id === employee.id
+          )
+        );
+        if (employeesForService.length === 1) {
+          skippable.push('employee');
+        }
+      }
+    } else if (wizardData.locationId) {
+      // Si ya hay ubicación seleccionada, verificar servicios
+      const servicesForLocation = dataCache.services.filter(service => 
+        service.location_id === wizardData.locationId
+      );
+      if (servicesForLocation.length === 1) {
+        skippable.push('service');
+        
+        // Si también solo hay un empleado para ese servicio, se puede omitir
+        const employeesForService = dataCache.employees.filter(employee =>
+          dataCache.serviceEmployees.some(se => 
+            se.service_id === servicesForLocation[0].id && se.employee_id === employee.id
+          )
+        );
+        if (employeesForService.length === 1) {
+          skippable.push('employee');
+        }
+      } else if (wizardData.serviceId) {
+        // Si ya hay servicio seleccionado, verificar empleados
+        const employeesForService = dataCache.employees.filter(employee =>
+          dataCache.serviceEmployees.some(se => 
+            se.service_id === wizardData.serviceId && se.employee_id === employee.id
+          )
+        );
+        if (employeesForService.length === 1) {
+          skippable.push('employee');
+        }
+      }
+    }
+    
+    return skippable;
+  };
+
+  // ⭐ NUEVA FUNCIÓN: Pasos a mostrar en la barra (agrupa y oculta extras)
+  // Regla de visualización:
+  // - Oculta siempre 'success' (pantalla final no cuenta en progreso)
+  // - Oculta 'employeeBusiness' (solo información contextual)
+  // - Agrupa 'employee' dentro de 'dateTime' para el conteo visual
+  const getDisplaySteps = (): string[] => {
+    const order = getStepOrder();
+    const filtered = order.filter(step => step !== 'success' && step !== 'employeeBusiness');
+
+    // Si existe el paso de empleado, lo consideramos parte del DateTime en la visualización
+    const hasEmployee = filtered.includes('employee');
+    if (hasEmployee) {
+      return filtered.filter(step => step !== 'employee');
+    }
+    return filtered;
+  };
+
+  // ⭐ NUEVA FUNCIÓN: Calcular pasos efectivos (excluyendo los omitidos)
+  const getEffectiveSteps = (): string[] => {
+    const allSteps = getDisplaySteps();
+    const skippable = getSkippableSteps();
+    return allSteps.filter(step => !skippable.includes(step));
+  };
+
+  // ⭐ NUEVA FUNCIÓN: Calcular total de pasos efectivos
+  const getEffectiveTotalSteps = (): number => {
+    return getEffectiveSteps().length;
+  };
+
+  // ⭐ NUEVA FUNCIÓN: Calcular paso actual efectivo
+  const getEffectiveCurrentStep = (): number => {
+    const effectiveSteps = getEffectiveSteps();
+    let currentStepName = getStepOrder()[currentStep];
+    // Mapear pasos internos a su representación visual
+    if (currentStepName === 'employee' || currentStepName === 'employeeBusiness') {
+      currentStepName = 'dateTime';
+    }
+    return effectiveSteps.indexOf(currentStepName);
+  };
+
   // Calcular los pasos completados dinámicamente
   const getCompletedSteps = (): number[] => {
     const completed: number[] = [];
+    const effectiveSteps = getEffectiveSteps();
 
     // Paso 0: Business (completado si businessId está presente)
-    if (wizardData.businessId) {
-      completed.push(getStepNumber('business'));
+    if (wizardData.businessId && effectiveSteps.includes('business')) {
+      completed.push(effectiveSteps.indexOf('business'));
     }
 
-    // Paso 1: Location (completado si locationId está presente)
-    if (wizardData.locationId) {
-      completed.push(getStepNumber('location'));
+    // Paso 1: Location (completado si locationId está presente o se omite)
+    if (wizardData.locationId && effectiveSteps.includes('location')) {
+      completed.push(effectiveSteps.indexOf('location'));
     }
 
-    // Paso 2: Service (completado si serviceId está presente)
-    if (wizardData.serviceId) {
-      completed.push(getStepNumber('service'));
+    // Paso 2: Service (completado si serviceId está presente o se omite)
+    if (wizardData.serviceId && effectiveSteps.includes('service')) {
+      completed.push(effectiveSteps.indexOf('service'));
     }
 
-    // Paso 3: Employee (completado si employeeId está presente)
-    if (wizardData.employeeId) {
-      completed.push(getStepNumber('employee'));
-    }
+    // Paso 3: Employee (completado si employeeId está presente o se omite)
+    // 'employee' se agrupa en 'dateTime' para visualización; no agregar explícito
+    // No hacemos push aquí para evitar doble conteo
 
     // Paso 4: Employee Business (completado si aplica y está seleccionado)
-    if (needsEmployeeBusinessSelection && wizardData.employeeBusinessId) {
-      completed.push(getStepNumber('employeeBusiness'));
-    }
+    // 'employeeBusiness' no cuenta en la visualización
+    // No se considera en el progreso visual
 
     // Paso 5: DateTime (completado si date y startTime están presentes)
-    if (wizardData.date && wizardData.startTime) {
-      completed.push(getStepNumber('dateTime'));
+    if (wizardData.date && wizardData.startTime && effectiveSteps.includes('dateTime')) {
+      completed.push(effectiveSteps.indexOf('dateTime'));
     }
 
     // Paso 6: Confirmation (completado si hemos avanzado más allá)
-    if (currentStep > getStepNumber('confirmation')) {
-      completed.push(getStepNumber('confirmation'));
+    const effectiveCurrentStepIndex = getEffectiveCurrentStep();
+    const confirmationIndex = effectiveSteps.indexOf('confirmation');
+    if (effectiveCurrentStepIndex > confirmationIndex && confirmationIndex !== -1) {
+      completed.push(confirmationIndex);
     }
 
-    return completed;
+    // Convertir a 1-based para ProgressBar
+    return completed.map(i => i + 1);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // ⭐ VALIDACIÓN: Verificar que el cache esté cargado antes de aplicar optimizaciones
+    if (!dataCache.locations || !dataCache.services || !dataCache.employees || !dataCache.serviceEmployees) {
+      // Si el cache no está listo, proceder con navegación normal
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+
     // Validación para el paso de Fecha y Hora (paso 4)
     if (currentStep === getStepNumber('dateTime')) {
       // eslint-disable-next-line no-console
@@ -286,6 +402,141 @@ export function AppointmentWizard({
       locationId: wizardData.locationId || undefined,
       currency: 'COP',
     });
+
+    // ⭐ OPTIMIZACIÓN: Auto-seleccionar ubicación si solo hay una disponible
+    if (currentStep === getStepNumber('location') && dataCache.locations.length === 1) {
+      const singleLocation = dataCache.locations[0];
+      updateWizardData({
+        locationId: singleLocation.id,
+        location: singleLocation,
+      });
+      
+      // Verificar si también podemos auto-seleccionar el servicio
+      const servicesForLocation = dataCache.services.filter(service => 
+        service.location_id === singleLocation.id
+      );
+      
+      if (servicesForLocation.length === 1) {
+        const singleService = servicesForLocation[0];
+        updateWizardData({
+          serviceId: singleService.id,
+          service: singleService,
+        });
+        
+        // Verificar si también podemos auto-seleccionar el empleado
+        const employeesForService = dataCache.employees.filter(employee =>
+          dataCache.serviceEmployees.some(se => 
+            se.service_id === singleService.id && se.employee_id === employee.id
+          )
+        );
+        
+        if (employeesForService.length === 1) {
+          const singleEmployee = employeesForService[0];
+          updateWizardData({
+            employeeId: singleEmployee.id,
+            employee: singleEmployee,
+          });
+          
+          // Auto-asignar negocio del empleado si corresponde
+          const contextBusinessId = wizardData.businessId || businessId || null;
+          if (contextBusinessId && !initiatedFromEmployeeProfile) {
+            updateWizardData({
+              employeeBusinessId: contextBusinessId,
+              employeeBusiness: wizardData.business || null,
+            });
+          }
+          
+          // Saltar directamente a fecha/hora
+          setCurrentStep(getStepNumber('dateTime'));
+          return;
+        } else {
+          // Saltar a selección de empleado
+          setCurrentStep(getStepNumber('employee'));
+          return;
+        }
+      } else {
+        // Saltar a selección de servicio
+        setCurrentStep(getStepNumber('service'));
+        return;
+      }
+    }
+
+    // ⭐ OPTIMIZACIÓN: Auto-seleccionar servicio si solo hay uno disponible en la ubicación
+    if (currentStep === getStepNumber('service') && wizardData.locationId) {
+      const servicesForLocation = dataCache.services.filter(service => 
+        service.location_id === wizardData.locationId
+      );
+      
+      if (servicesForLocation.length === 1) {
+        const singleService = servicesForLocation[0];
+        updateWizardData({
+          serviceId: singleService.id,
+          service: singleService,
+        });
+        
+        // Verificar si también podemos auto-seleccionar el empleado
+        const employeesForService = dataCache.employees.filter(employee =>
+          dataCache.serviceEmployees.some(se => 
+            se.service_id === singleService.id && se.employee_id === employee.id
+          )
+        );
+        
+        if (employeesForService.length === 1) {
+          const singleEmployee = employeesForService[0];
+          updateWizardData({
+            employeeId: singleEmployee.id,
+            employee: singleEmployee,
+          });
+          
+          // Auto-asignar negocio del empleado si corresponde
+          const contextBusinessId = wizardData.businessId || businessId || null;
+          if (contextBusinessId && !initiatedFromEmployeeProfile) {
+            updateWizardData({
+              employeeBusinessId: contextBusinessId,
+              employeeBusiness: wizardData.business || null,
+            });
+          }
+          
+          // Saltar directamente a fecha/hora
+          setCurrentStep(getStepNumber('dateTime'));
+          return;
+        } else {
+          // Saltar a selección de empleado
+          setCurrentStep(getStepNumber('employee'));
+          return;
+        }
+      }
+    }
+
+    // ⭐ OPTIMIZACIÓN: Auto-seleccionar empleado si solo hay uno disponible para el servicio
+    if (currentStep === getStepNumber('employee') && wizardData.serviceId) {
+      const employeesForService = dataCache.employees.filter(employee =>
+        dataCache.serviceEmployees.some(se => 
+          se.service_id === wizardData.serviceId && se.employee_id === employee.id
+        )
+      );
+      
+      if (employeesForService.length === 1) {
+        const singleEmployee = employeesForService[0];
+        updateWizardData({
+          employeeId: singleEmployee.id,
+          employee: singleEmployee,
+        });
+        
+        // Auto-asignar negocio del empleado si corresponde
+        const contextBusinessId = wizardData.businessId || businessId || null;
+        if (contextBusinessId && !initiatedFromEmployeeProfile) {
+          updateWizardData({
+            employeeBusinessId: contextBusinessId,
+            employeeBusiness: wizardData.business || null,
+          });
+        }
+        
+        // Saltar directamente a fecha/hora
+        setCurrentStep(getStepNumber('dateTime'));
+        return;
+      }
+    }
 
     // Si estamos en el paso de Employee y tiene múltiples negocios, validar primero
     if (currentStep === getStepNumber('employee') && needsEmployeeBusinessSelection) {
@@ -387,7 +638,7 @@ export function AppointmentWizard({
     setWizardData(prev => ({ ...prev, ...data }));
   };
 
-  // Función para crear la cita en Supabase
+  // Función para crear la cita usando el hook useSupabase
   const createAppointment = async () => {
     if (!wizardData.businessId || !wizardData.serviceId || !wizardData.date || !wizardData.startTime) {
       toast.error(t('appointments.wizard_errors.missingRequiredData'));
@@ -471,12 +722,12 @@ export function AppointmentWizard({
         end_time: endDateTime.toISOString(),
         status: 'pending' as const,
         notes: wizardData.notes || null,
-        updated_at: new Date().toISOString(),
       };
 
       // Determinar si es UPDATE (editando cita existente) o INSERT (nueva cita)
       if (appointmentToEdit) {
-        // MODO EDICIÓN: Actualizar cita existente
+        // MODO EDICIÓN: Actualizar cita existente usando Supabase directo
+        // (el hook useSupabase.createAppointment solo maneja creación)
         const { error } = await supabase
           .from('appointments')
           .update(appointmentData)
@@ -491,22 +742,9 @@ export function AppointmentWizard({
 
         toast.success(t('appointments.wizard_success.modified'));
       } else {
-        // MODO CREACIÓN: Insertar nueva cita
-        const appointmentDataWithCreatedAt = {
-          ...appointmentData,
-          created_at: new Date().toISOString(),
-        };
-
-        const { error } = await supabase
-          .from('appointments')
-          .insert(appointmentDataWithCreatedAt)
-          .select()
-          .single();
-
-        if (error) {
-          toast.error(`${t('appointments.wizard_errors.errorCreating')}: ${error.message}`);
-          return false;
-        }
+        // MODO CREACIÓN: Usar el hook useSupabase.createAppointment que incluye notificaciones
+        console.log('🚀 [WIZARD] Usando useSupabase.createAppointment con notificaciones automáticas');
+        await createAppointmentWithNotifications(appointmentData);
 
         // Track booking completed (conversión exitosa) - Solo para nuevas citas
         analytics.trackBookingCompleted({
@@ -614,9 +852,9 @@ export function AppointmentWizard({
 
             {/* Progress Bar */}
             <ProgressBar 
-              currentStep={currentStep} 
-              totalSteps={getTotalSteps()}
-              label={STEP_LABELS_MAP[getStepOrder()[currentStep] as keyof typeof STEP_LABELS_MAP]}
+              currentStep={getEffectiveCurrentStep() + 1}
+              totalSteps={getEffectiveTotalSteps()}
+              label={STEP_LABELS_MAP[getEffectiveSteps()[getEffectiveCurrentStep()] as keyof typeof STEP_LABELS_MAP]}
               completedSteps={getCompletedSteps()}
             />
           </div>

@@ -71,7 +71,7 @@ interface AppointmentWithRelations {
   employee_id?: string
   start_time: string
   end_time: string
-  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'pending' | 'pending_confirmation' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
   notes?: string
   price?: number
   currency?: string
@@ -688,9 +688,37 @@ export function ClientDashboard({
 
   // Get status label
   const getStatusLabel = (status: string): string => {
-    if (status === 'confirmed') return 'Confirmada'
-    if (status === 'scheduled') return 'Agendada'
-    return 'Pendiente'
+    const labels: Record<string, string> = {
+      pending: 'Pendiente',
+      pending_confirmation: 'Por Confirmar',
+      scheduled: 'Agendada',
+      confirmed: 'Confirmada',
+      in_progress: 'En Proceso',
+      completed: 'Completada',
+      cancelled: 'Cancelada',
+      no_show: 'No Asistió',
+      rescheduled: 'Reagendada'
+    }
+    return labels[status] || status
+  }
+
+  // Get status badge variant
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case 'confirmed':
+        return 'default' // Verde
+      case 'pending_confirmation':
+        return 'outline' // Amarillo/naranja
+      case 'completed':
+        return 'secondary' // Gris
+      case 'cancelled':
+      case 'no_show':
+        return 'destructive' // Rojo
+      case 'in_progress':
+        return 'default' // Verde
+      default:
+        return 'secondary' // Gris por defecto
+    }
   }
 
   // Formato de hora 12h con AM/PM
@@ -839,7 +867,7 @@ export function ClientDashboard({
                                 <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/60">
                                   <div />
                                   <Badge
-                                    variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
+                                    variant={getStatusVariant(appointment.status)}
                                     className="flex-shrink-0 whitespace-nowrap"
                                   >
                                     {getStatusLabel(appointment.status)}
@@ -1060,7 +1088,7 @@ export function ClientDashboard({
               {/* Status Badge and Business Name */}
               <div className="flex items-center justify-between">
                 <Badge 
-                  variant={selectedAppointment.status === 'confirmed' ? 'default' : 'secondary'}
+                  variant={getStatusVariant(selectedAppointment.status)}
                   className="text-base px-4 py-1"
                 >
                   {getStatusLabel(selectedAppointment.status)}

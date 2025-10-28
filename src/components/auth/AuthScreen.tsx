@@ -48,12 +48,12 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
   // Show toast if user was redirected from booking attempt
   useEffect(() => {
-    if (redirectUrl) {
+    if (redirectUrl && (serviceId || locationId || employeeId)) {
       toast.info(t('auth.continueBooking'), {
         duration: 5000
       })
     }
-  }, [redirectUrl, t])
+  }, [redirectUrl, serviceId, locationId, employeeId, t])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
