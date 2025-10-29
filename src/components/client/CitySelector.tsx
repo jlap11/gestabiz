@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ChevronDown } from 'lucide-react';
 import { useRegions, useCities } from '@/hooks/useCatalogs';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { BOGOTA_REGION_ID, BOGOTA_CITY_ID, BOGOTA_CITY_NAME } from '@/constants';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
@@ -25,7 +26,7 @@ interface CitySelectorProps {
 }
 
 const COLOMBIA_ID = '01b4e9d1-a84e-41c9-8768-253209225a21';
-const BOGOTA_REGION_ID = '7f9b5c84-93ab-44e7-b07d-4f6e7d4c6e4b';
+// BOGOTA_REGION_ID provided by '@/constants'
 
 export function CitySelector({
   preferredRegionId,
@@ -90,7 +91,12 @@ export function CitySelector({
 
   const handleRegionSelect = (region: Region) => {
     setSelectedRegion(region.id);
-    onCitySelect(region.id, region.name, null, null);
+    // Opción 2: si la región es Bogotá D.C., seleccionar Bogotá en segundo plano
+    if (region.id === BOGOTA_REGION_ID) {
+      onCitySelect(region.id, region.name, BOGOTA_CITY_ID, BOGOTA_CITY_NAME);
+    } else {
+      onCitySelect(region.id, region.name, null, null);
+    }
     setRegionMenuOpen(false);
     setCityMenuOpen(false);
   };
@@ -219,3 +225,4 @@ export function CitySelector({
     </div>
   );
 }
+// Moved Bogotá constants to '@/constants' to avoid redeclarations

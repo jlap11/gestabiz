@@ -193,7 +193,9 @@ export function ClientDashboard({
 
   // Hook para preferencias de ciudad (para sugerencias)
   const {
+    preferredCityId,
     preferredCityName,
+    preferredRegionId,
     preferredRegionName
   } = usePreferredCity()
 
@@ -987,7 +989,9 @@ export function ClientDashboard({
               <div className="lg:col-span-1">
                 <BusinessSuggestions
                   userId={currentUser.id}
+                  preferredCityId={preferredCityId}
                   preferredCityName={preferredCityName}
+                  preferredRegionId={preferredRegionId}
                   preferredRegionName={preferredRegionName}
                   onBusinessSelect={(businessId) => {
                     setSelectedBusinessId(businessId)

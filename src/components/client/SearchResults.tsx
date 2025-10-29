@@ -25,6 +25,8 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { usePreferredCity } from '@/hooks/usePreferredCity'
+import { useAuth } from '@/hooks/useAuth'
 import type { SearchType } from './SearchBar'
 
 interface SearchResultsProps {
@@ -75,6 +77,8 @@ export function SearchResults({
   const [loading, setLoading] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('balanced')
   const [showFilters, setShowFilters] = useState(false)
+  const { preferredRegionId, preferredRegionName, preferredCityId, preferredCityName } = usePreferredCity()
+  const { user } = useAuth()
   
   const sortOptions = [
     { value: 'relevance' as SortOption, label: t('search.sorting.relevance') },
@@ -184,17 +188,28 @@ export function SearchResults({
           }
 
           case 'businesses': {
-            // Usar función RPC optimizada
-            const { data: businessesData, error } = await supabase.rpc('search_businesses', {
-              search_query: searchTerm,
-              limit_count: 50,
-              offset_count: 0
+            // Unificar con Edge Function de modal: aplica mismas reglas y filtros
+            const { data: edgeData, error } = await supabase.functions.invoke('search_businesses', {
+              body: {
+                type: 'businesses',
+                term: searchTerm,
+                preferredRegionId: preferredRegionId || null,
+                preferredRegionName: preferredRegionName || null,
+                preferredCityId: preferredCityId || null,
+                preferredCityName: preferredCityName || null,
+                clientId: user?.id ?? null,
+                page: 1,
+                pageSize: 50,
+                excludeBusinessIds: [],
+              },
             })
 
             if (error) throw error
 
+            const businessesData = ((edgeData as any)?.businesses || []) as any[]
+
             // Fetch locations for distance calculation
-            const businessIds = businessesData?.map((b: any) => b.id) || []
+            const businessIds = businessesData.map((b: any) => b.id)
             const { data: locationsData } = await supabase
               .from('locations')
               .select('business_id, address, city, latitude, longitude')
@@ -202,14 +217,12 @@ export function SearchResults({
               .eq('is_active', true)
 
             const locationsByBusiness = (locationsData || []).reduce((acc: any, loc: any) => {
-              if (!acc[loc.business_id]) {
-                acc[loc.business_id] = loc
-              }
+              if (!acc[loc.business_id]) acc[loc.business_id] = loc
               return acc
             }, {})
 
             // Fetch category names
-            const categoryIds = businessesData?.map((b: any) => b.category_id).filter(Boolean) || []
+            const categoryIds = businessesData.map((b: any) => b.category_id).filter(Boolean)
             const { data: categoriesData } = await supabase
               .from('business_categories')
               .select('id, name')
@@ -220,7 +233,7 @@ export function SearchResults({
               return acc
             }, {})
 
-            data = (businessesData || []).map((business: any) => {
+            data = businessesData.map((business: any) => {
               const location = locationsByBusiness[business.id]
               const distance = userLocation && location?.latitude && location?.longitude
                 ? calculateDistance(
@@ -247,7 +260,7 @@ export function SearchResults({
                   latitude: location.latitude,
                   longitude: location.longitude
                 } : undefined,
-                createdAt: business.created_at
+                createdAt: business.created_at,
               }
             })
             break

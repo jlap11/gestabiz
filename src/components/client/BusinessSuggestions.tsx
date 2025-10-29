@@ -19,7 +19,9 @@ interface SimpleBusiness {
 
 interface BusinessSuggestionsProps {
   userId: string;
+  preferredCityId?: string | null;
   preferredCityName: string | null;
+  preferredRegionId?: string | null;
   preferredRegionName: string | null;
   onBusinessSelect?: (businessId: string) => void;
 }
@@ -28,7 +30,9 @@ const ITEMS_PER_PAGE = 10;
 
 export function BusinessSuggestions({
   userId,
+  preferredCityId,
   preferredCityName,
+  preferredRegionId,
   preferredRegionName,
   onBusinessSelect
 }: Readonly<BusinessSuggestionsProps>) {
@@ -87,44 +91,66 @@ export function BusinessSuggestions({
   };
 
   const loadSuggestedBusinesses = async (
+    cityId: string | null,
     cityName: string | null,
+    regionId: string | null,
     regionName: string | null,
     excludeId: string | null
   ) => {
-    if (!cityName && !regionName) return [];
+    if (!cityId && !cityName && !regionId && !regionName) return [];
 
     const query = supabase
       .from('locations')
-      .select('city, state, business_id');
+      .select('city, state, business_id')
+      .eq('is_active', true);
 
-    let filtered = query;
-    
-    // Normalize city/region name by removing accents and special chars
-    const normalize = (str: string) => {
-      return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[,.]/g, '')
-        .trim()
-        .toLowerCase();
-    };
-    
-    // Handle special cases and normalize search
-    if (!cityName && regionName) {
-      // If only region is provided (e.g., "BOGOTÃ, D.C." or "Bogotá D.C.")
-      const normalizedRegion = normalize(regionName);
-      if (normalizedRegion.includes('bogota')) {
-        filtered = filtered.ilike('city', '%Bogot%'); // Search by city instead
-      } else {
-        filtered = filtered.ilike('state', `%${regionName.split(',')[0].trim()}%`);
+    let filtered = query as any;
+
+    // Cuando hay IDs, combinar igualdad por ID con coincidencia por nombre para compatibilidad
+    if (cityId || regionId) {
+      const clauses: string[] = [];
+      if (cityId) {
+        clauses.push(`city.eq.${cityId}`);
+        if (cityName) {
+          clauses.push(`city.ilike.%${cityName}%`);
+        }
       }
-    } else if (cityName) {
-      // If city is provided, search by normalized city name
-      const normalizedCity = normalize(cityName);
-      if (normalizedCity.includes('bogota')) {
-        filtered = filtered.ilike('city', '%Bogot%');
-      } else {
-        filtered = filtered.ilike('city', `%${cityName}%`);
+      if (regionId) {
+        clauses.push(`state.eq.${regionId}`);
+        if (regionName) {
+          clauses.push(`state.ilike.%${regionName}%`);
+          // Considerar coincidencia en city para regiones tipo Bogotá
+          const norm = (regionName || '').toLowerCase();
+          if (norm.includes('bogota')) {
+            clauses.push('city.ilike.%Bogotá%');
+          }
+        }
+      }
+      filtered = (filtered as any).or(clauses.join(','));
+    } else {
+      // Fallback: Normalizar y filtrar solo por nombre cuando no hay IDs
+      const normalize = (str: string) => {
+        return str
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[,.]/g, '')
+          .trim()
+          .toLowerCase();
+      };
+      if (!cityName && regionName) {
+        const normalizedRegion = normalize(regionName);
+        if (normalizedRegion.includes('bogota')) {
+          filtered = filtered.ilike('city', '%Bogot%');
+        } else {
+          filtered = filtered.ilike('state', `%${regionName.split(',')[0].trim()}%`);
+        }
+      } else if (cityName) {
+        const normalizedCity = normalize(cityName);
+        if (normalizedCity.includes('bogota')) {
+          filtered = filtered.ilike('city', '%Bogot%');
+        } else {
+          filtered = filtered.ilike('city', `%${cityName}%`);
+        }
       }
     }
 
@@ -170,7 +196,9 @@ export function BusinessSuggestions({
         setFavoriteBusiness(favorite);
 
         const suggested = await loadSuggestedBusinesses(
+          preferredCityId ?? null,
           preferredCityName,
+          preferredRegionId ?? null,
           preferredRegionName,
           favorite?.id || null
         );
@@ -188,7 +216,7 @@ export function BusinessSuggestions({
     };
 
     loadData();
-  }, [userId, preferredCityName, preferredRegionName]);
+  }, [userId, preferredCityId, preferredCityName, preferredRegionId, preferredRegionName]);
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;

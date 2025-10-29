@@ -36,17 +36,38 @@ export function useWizardDataCache(businessId: string | null) {
       setCache(prev => ({ ...prev, loading: true, error: null }));
 
       try {
-        // Ejecutar consultas en paralelo para máxima velocidad
+        // Intentar RPC combinada
+        const { data, error } = await supabase.rpc('get_wizard_business_data', {
+          p_business_id: businessId,
+        });
+
+        if (!error && data) {
+          const payload = data as any;
+          const rawLocations = (payload.locations as unknown[] | null) || [];
+          const rawServices = (payload.services as unknown[] | null) || [];
+
+          const normalizedServices: Service[] = rawServices.map((s: any) => ({
+            ...s,
+            duration: s?.duration ?? s?.duration_minutes ?? 0,
+          }));
+
+          setCache({
+            locations: rawLocations as Location[],
+            services: normalizedServices,
+            loading: false,
+            error: null,
+          });
+          return;
+        }
+
+        // Fallback: realizar dos consultas si la RPC no existe o falla
         const [locationsResult, servicesResult] = await Promise.all([
-          // Cargar sedes
           supabase
             .from('locations')
             .select('*')
             .eq('business_id', businessId)
             .eq('is_active', true)
             .order('name'),
-
-          // Cargar servicios
           supabase
             .from('services')
             .select('*')
@@ -55,11 +76,9 @@ export function useWizardDataCache(businessId: string | null) {
             .order('name'),
         ]);
 
-        // Verificar errores
         if (locationsResult.error) throw new Error(`Locations: ${locationsResult.error.message}`);
         if (servicesResult.error) throw new Error(`Services: ${servicesResult.error.message}`);
 
-        // Normalizar duración del servicio para soportar `duration` y `duration_minutes`
         const rawServices = (servicesResult.data as unknown[] | null) || [];
         const normalizedServices: Service[] = rawServices.map((s: any) => ({
           ...s,

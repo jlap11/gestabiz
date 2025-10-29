@@ -169,3 +169,8 @@ export const COUNTRY_PHONE_EXAMPLES: Record<string, string> = {
   '+593': '099 123 4567',     // EC (mobile)
   '+502': '5123 4567'         // GT
 }
+
+// Bogotá Constants (single source of truth)
+export const BOGOTA_REGION_ID = 'fc6cc79b-dfd1-42c9-b35d-3d0df51c1c83'
+export const BOGOTA_CITY_ID = 'c5861b80-bd05-48a9-9e24-d8c93e0d1d6b'
+export const BOGOTA_CITY_NAME = 'Bogotá'

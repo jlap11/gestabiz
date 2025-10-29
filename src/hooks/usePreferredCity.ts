@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 
 const STORAGE_KEY_PREFIX = 'preferred-city';
-const DEFAULT_REGION_ID = '7f9b5c84-93ab-44e7-b07d-4f6e7d4c6e4b'; // Bogotá D.C.
-const DEFAULT_CITY_ID = null; // Bogotá D.C. no necesita ciudad
+const BOGOTA_REGION_ID = 'fc6cc79b-dfd1-42c9-b35d-3d0df51c1c83';
+const BOGOTA_CITY_ID = 'c5861b80-bd05-48a9-9e24-d8c93e0d1d6b';
+const BOGOTA_CITY_NAME = 'Bogotá';
+const DEFAULT_REGION_ID = BOGOTA_REGION_ID; // Bogotá D.C.
+const DEFAULT_CITY_ID = null; // Opción 1: región sin ciudad explícita
 
 interface PreferredCityData {
   regionId: string;
@@ -29,7 +32,7 @@ export function usePreferredCity() {
           setPreferredCityId(data.cityId);
           setPreferredCityName(data.cityName);
         } else {
-          // Set default to Bogotá D.C.
+        // Set default to Bogotá D.C. (sin ciudad explícita)
           setPreferredRegionId(DEFAULT_REGION_ID);
           setPreferredRegionName('Bogotá D.C.');
           setPreferredCityId(DEFAULT_CITY_ID);
@@ -70,6 +73,11 @@ export function usePreferredCity() {
 
   const setPreferredCity = (regionId: string, regionName: string, cityId: string | null, cityName: string | null) => {
     try {
+      // Opción 2: si región es Bogotá D.C. y no hay ciudad, seleccionar Bogotá en segundo plano
+      if (regionId === BOGOTA_REGION_ID && !cityId) {
+        cityId = BOGOTA_CITY_ID;
+        cityName = BOGOTA_CITY_NAME;
+      }
       const data: PreferredCityData = {
         regionId,
         regionName,

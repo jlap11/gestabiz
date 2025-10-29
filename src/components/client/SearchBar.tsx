@@ -9,6 +9,7 @@ import {
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useKV } from '@/lib/useKV'
 
 export type SearchType = 'services' | 'businesses' | 'categories' | 'users'
 
@@ -44,6 +45,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   const [showResults, setShowResults] = useState(false)
   const debounceTimerRef = useRef<NodeJS.Timeout>()
   const searchBarRef = useRef<HTMLDivElement>(null)
+  const [, setLastSearch] = useKV<{ term: string; type: SearchType }>('last-search', { term: '', type: 'businesses' })
 
   const Icon = searchTypeIconConfig[searchType]
   const typeLabel = t(`search.types.${searchType}`)
@@ -233,6 +235,8 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   }
 
   const handleViewMore = () => {
+    // Persist last search for modal preloading
+    void setLastSearch({ term: searchTerm, type: searchType })
     onViewMore(searchTerm, searchType)
     setShowResults(false)
     setSearchTerm('')
@@ -247,6 +251,8 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   const handleSearchTypeChange = (type: SearchType) => {
     setSearchType(type)
     if (searchTerm.length >= 2) {
+      // Persist when changing type with an active term
+      void setLastSearch({ term: searchTerm, type })
       performSearch(searchTerm, type)
     }
   }

@@ -31,7 +31,17 @@ export function useEmployeeBusinesses(
       if (!employeeId) return [];
 
       try {
-        // 1. Obtener negocios donde el usuario es empleado
+        // Intentar RPC combinada para reducir a una llamada
+        const { data, error: rpcError } = await supabase.rpc('get_user_businesses', {
+          p_user_id: employeeId,
+          p_include_owner: includeIndependent,
+        });
+
+        if (!rpcError && data) {
+          return (data as Business[]) || [];
+        }
+
+        // Fallback: dos consultas separadas
         const { data: employeeBusinesses, error: employeeError } = await supabase
           .from('business_employees')
           .select(`
@@ -57,7 +67,6 @@ export function useEmployeeBusinesses(
 
         let allBusinesses = [...businessesAsEmployee];
 
-        // 2. Si includeIndependent, obtener negocios donde el usuario es owner
         if (includeIndependent) {
           const { data: ownedBusinesses, error: ownerError } = await supabase
             .from('businesses')
