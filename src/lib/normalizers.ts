@@ -128,6 +128,7 @@ export function normalizeAppointment(row: Row<'appointments'>): Appointment {
     location_id: row.location_id ?? undefined,
     service_id: row.service_id,
     user_id: row.employee_id ?? '',
+    employee_id: row.employee_id ?? undefined,
     client_id: row.client_id,
     // Campos no presentes en la tabla: defaults seguros
     title: '',

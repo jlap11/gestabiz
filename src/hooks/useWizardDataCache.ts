@@ -59,9 +59,16 @@ export function useWizardDataCache(businessId: string | null) {
         if (locationsResult.error) throw new Error(`Locations: ${locationsResult.error.message}`);
         if (servicesResult.error) throw new Error(`Services: ${servicesResult.error.message}`);
 
+        // Normalizar duración del servicio para soportar `duration` y `duration_minutes`
+        const rawServices = (servicesResult.data as unknown[] | null) || [];
+        const normalizedServices: Service[] = rawServices.map((s: any) => ({
+          ...s,
+          duration: s?.duration ?? s?.duration_minutes ?? 0,
+        }));
+
         setCache({
           locations: (locationsResult.data as Location[]) || [],
-          services: (servicesResult.data as Service[]) || [],
+          services: normalizedServices,
           loading: false,
           error: null,
         });

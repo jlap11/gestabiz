@@ -52,8 +52,8 @@ export function initSentry(
     
     // Integrations específicas para Deno
     integrations: [
-      new Sentry.Integrations.HttpContext(),
-      new Sentry.Integrations.LinkedErrors(),
+      // HttpContext no está disponible en Deno, usar solo las integraciones por defecto
+      // new Sentry.Integrations.LinkedErrors(), // También puede causar problemas en Deno
     ],
     
     // Filtros

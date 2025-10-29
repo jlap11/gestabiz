@@ -72,11 +72,14 @@ export function ConfirmationStep({
           />
 
           {/* Duration */}
-          {service?.duration && (
+          {(() => {
+            const d = service?.duration ?? (service as any)?.duration_minutes;
+            return typeof d === 'number' && d > 0;
+          })() && (
             <InfoRow
               icon={<Clock className="h-5 w-5" />}
               label="Duration"
-              value={`${service.duration} minutes`}
+              value={`${service?.duration ?? (service as any)?.duration_minutes} minutes`}
             />
           )}
 

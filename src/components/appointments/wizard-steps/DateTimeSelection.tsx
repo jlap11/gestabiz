@@ -117,12 +117,15 @@ export function DateTimeSelection({
   const [disabledReasons, setDisabledReasons] = useState<Record<string, string>>({});
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
   const { validateAvailability } = useEmployeeTransferAvailability();
+  // Conjunto de días laborables del empleado (0=Dom, 6=Sáb). Fallback: Lunes-Viernes
+  const [employeeWorkingDays, setEmployeeWorkingDays] = useState<Set<number> | null>(null);
 
-  // Cargar horarios, citas existentes y validar disponibilidad
+  // Cargar horarios y disponibilidad base (sin requerir fecha).
+  // Las citas del día se cargan solo cuando hay selectedDate.
   useEffect(() => {
     const loadScheduleData = async () => {
       // Validar que haya employeeId O resourceId (al menos uno)
-      if ((!employeeId && !resourceId) || !locationId || !businessId || !selectedDate) return;
+      if ((!employeeId && !resourceId) || !locationId || !businessId) return;
 
       setIsLoadingSchedule(true);
 
@@ -146,19 +149,42 @@ export function DateTimeSelection({
             .single();
 
           setEmployeeSchedule(employeeData);
+
+          // 2.1. Intentar cargar días laborables semanales desde work_schedules
+          try {
+            const { data: wsData, error: wsError } = await supabase
+              .from('work_schedules')
+              .select('day_of_week, is_working')
+              .eq('employee_id', employeeId);
+
+            if (!wsError && wsData && wsData.length > 0) {
+              const days = new Set<number>();
+              wsData.forEach((row: { day_of_week: number; is_working: boolean }) => {
+                if (row.is_working) days.add(row.day_of_week);
+              });
+              setEmployeeWorkingDays(days);
+            } else {
+              // Fallback: Lunes(1) a Viernes(5) activos; fines de semana deshabilitados
+              setEmployeeWorkingDays(new Set([1, 2, 3, 4, 5]));
+            }
+          } catch {
+            // Si la tabla no existe o falla, usar fallback L-V
+            setEmployeeWorkingDays(new Set([1, 2, 3, 4, 5]));
+          }
         } else {
           // Si es recurso, no tiene lunch break
           setEmployeeSchedule(null);
+          setEmployeeWorkingDays(null);
         }
 
-        // 3. Obtener citas existentes
-        const dayStart = new Date(selectedDate);
-        dayStart.setHours(0, 0, 0, 0);
+        // 3. Obtener citas existentes (solo si hay fecha seleccionada)
+        if (selectedDate && employeeId) {
+          const dayStart = new Date(selectedDate);
+          dayStart.setHours(0, 0, 0, 0);
 
-        const dayEnd = new Date(selectedDate);
-        dayEnd.setHours(23, 59, 59, 999);
+          const dayEnd = new Date(selectedDate);
+          dayEnd.setHours(23, 59, 59, 999);
 
-        if (employeeId) {
           // Buscar citas del empleado
           const { data: employeeRecord } = await supabase
             .from('business_employees')
@@ -183,7 +209,7 @@ export function DateTimeSelection({
 
             setExistingAppointments(filteredAppointments);
           }
-        } else if (resourceId) {
+        } else if (selectedDate && resourceId) {
           // Buscar reservas del recurso físico
           const { data: appointments } = await supabase
             .from('appointments')
@@ -228,6 +254,13 @@ export function DateTimeSelection({
 
     // Validar disponibilidad por traslado
     const transferValidation = await validateAvailability(employeeId, businessId, selectedDate, locationId);
+
+    // Regla: si el día no es laborable para el empleado, no hay slots
+    const dayOfWeek = selectedDate.getDay(); // 0=Dom, 6=Sáb
+    if (employeeWorkingDays && !employeeWorkingDays.has(dayOfWeek)) {
+      setTimeSlots([]);
+      return;
+    }
 
     // Consultar una sola vez si el empleado está ausente en la fecha
     const checkDate = format(selectedDate, 'yyyy-MM-dd');
@@ -409,6 +442,15 @@ export function DateTimeSelection({
           continue;
         }
 
+        // Regla: Día no laborable (semana del empleado)
+        const dow = dayCursor.getDay();
+        if (employeeWorkingDays && !employeeWorkingDays.has(dow)) {
+          disabledSet.add(dateStr);
+          disabledTitle[dateStr] = 'Día no laborable del empleado';
+          dayCursor.setDate(dayCursor.getDate() + 1);
+          continue;
+        }
+
         // Ausencia
         if (absenceDays.has(dateStr)) {
           disabledSet.add(dateStr);
@@ -498,7 +540,13 @@ export function DateTimeSelection({
         <div className="mb-6 p-3 bg-card rounded-lg border border-border">
           <p className="text-sm text-muted-foreground">Selected service:</p>
           <p className="text-foreground font-semibold">
-            {service.name} <span className="text-muted-foreground font-normal">({service.duration} min)</span>
+            {service.name}{' '}
+            {(() => {
+              const d = service?.duration ?? (service as any)?.duration_minutes;
+              return typeof d === 'number' && d > 0 ? (
+                <span className="text-muted-foreground font-normal">({d} min)</span>
+              ) : null;
+            })()}
           </p>
         </div>
       )}
@@ -521,7 +569,8 @@ export function DateTimeSelection({
               const key = format(date, 'yyyy-MM-dd');
               const t = new Date();
               const tm = new Date(t.getFullYear(), t.getMonth(), t.getDate());
-              return date < tm || disabledDates.has(key);
+              const nonWorking = employeeWorkingDays ? !employeeWorkingDays.has(date.getDay()) : false;
+              return date < tm || nonWorking || disabledDates.has(key);
             }}
             title={(date) => {
               const key = format(date, 'yyyy-MM-dd');

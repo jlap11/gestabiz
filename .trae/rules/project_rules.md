@@ -27,8 +27,8 @@ Esta guía establece reglas y convenciones para entender, mantener y evolucionar
 
 - Crear migración: `npx supabase migration new <nombre>`.
 - Aplicar migraciones: `npx supabase db push` (o `db reset` para limpiar y reaplicar).
-- Iniciar entorno local: `npx supabase start` (requiere Docker).
 - Lint DB: `npx supabase db lint`.
+- No hay supabase local, solo el de la nube.
 
 ## Cambios de Base de Datos (Workflow)
 

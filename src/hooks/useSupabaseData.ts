@@ -85,6 +85,7 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
           location_id: apt.location_id,
           service_id: apt.service_id,
           user_id: apt.user_id || apt.employee_id || '',
+          employee_id: apt.employee_id || apt.user_id,
           client_id: apt.client_id!,
           title: apt.title || `${apt.service?.name || 'Cita'} - ${apt.client?.full_name || 'Cliente'}`,
           description: apt.description || apt.notes || '',
@@ -233,7 +234,10 @@ export function useSupabaseData({ user, autoFetch = true }: UseSupabaseDataOptio
         location_id: appointment.location_id,
         service_id: appointment.service_id!,
         client_id: appointment.client_id!,
-        user_id: appointment.user_id!, // employee assigned
+        // Enviar correctamente el empleado asignado
+        employee_id:
+          appointment.employee_id ??
+          (appointment.user_id && appointment.user_id !== appointment.client_id ? appointment.user_id : undefined),
         title: appointment.title || 'Cita',
         description: appointment.description || '',
         client_name: appointment.client_name || '',

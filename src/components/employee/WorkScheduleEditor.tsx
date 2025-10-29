@@ -58,6 +58,27 @@ const DAYS_ES = {
   sunday: 'sunday',
 }
 
+// Mapas de días para conversión entre índice (0=Domingo) y claves del WeekSchedule
+const DAY_TO_INDEX: Record<keyof WeekSchedule, number> = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+}
+
+const INDEX_TO_DAY: Record<number, keyof WeekSchedule> = {
+  0: 'sunday',
+  1: 'monday',
+  2: 'tuesday',
+  3: 'wednesday',
+  4: 'thursday',
+  5: 'friday',
+  6: 'saturday',
+}
+
 const DEFAULT_SCHEDULE: DaySchedule = {
   is_active: true,
   start_time: '09:00',
@@ -109,6 +130,41 @@ export function WorkScheduleEditor({
             lunch_break_start: data.lunch_break_start || '12:00',
             lunch_break_end: data.lunch_break_end || '13:00',
           })
+        }
+
+        // Intentar cargar el horario semanal desde work_schedules
+        try {
+          const { data: wsData, error: wsError } = await supabase
+            .from('work_schedules')
+            .select('day_of_week, start_time, end_time, is_working')
+            .eq('employee_id', employeeId)
+
+          if (!wsError && wsData && wsData.length > 0) {
+            const next: WeekSchedule = {
+              monday: { ...DEFAULT_SCHEDULE },
+              tuesday: { ...DEFAULT_SCHEDULE },
+              wednesday: { ...DEFAULT_SCHEDULE },
+              thursday: { ...DEFAULT_SCHEDULE },
+              friday: { ...DEFAULT_SCHEDULE },
+              saturday: { is_active: false, start_time: '09:00', end_time: '14:00' },
+              sunday: { is_active: false, start_time: '09:00', end_time: '14:00' },
+            }
+
+            for (const row of wsData as Array<{ day_of_week: number; start_time: string | null; end_time: string | null; is_working: boolean | null }>) {
+              const key = INDEX_TO_DAY[row.day_of_week]
+              if (key) {
+                next[key] = {
+                  is_active: Boolean(row.is_working),
+                  start_time: row.start_time ?? next[key].start_time,
+                  end_time: row.end_time ?? next[key].end_time,
+                }
+              }
+            }
+
+            setSchedule(next)
+          }
+        } catch {
+          // Silenciar errores de lectura de work_schedules; mantener valores por defecto
         }
       } catch {
         // Handle error silently for now
@@ -191,8 +247,22 @@ export function WorkScheduleEditor({
     try {
       setSaving(true)
 
-      // Solo guardamos las configuraciones de almuerzo
-      // El horario semanal (work_schedule) se mantiene en estado local
+      // 1) Persistir horario semanal en work_schedules
+      const rows = (Object.keys(schedule) as (keyof WeekSchedule)[]).map((day) => ({
+        employee_id: employeeId,
+        day_of_week: DAY_TO_INDEX[day],
+        start_time: schedule[day].start_time,
+        end_time: schedule[day].end_time,
+        is_working: schedule[day].is_active,
+      }))
+
+      const { error: wsError } = await supabase
+        .from('work_schedules')
+        .upsert(rows, { onConflict: 'employee_id,day_of_week' })
+
+      if (wsError) throw wsError
+
+      // 2) Guardar las configuraciones de almuerzo
       const { error } = await supabase
         .from('business_employees')
         .update({

@@ -2,9 +2,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // Sentry deshabilitado temporalmente para evitar fallos en carga del worker
 import { sendBrevoEmail, createBasicEmailTemplate } from '../_shared/brevo.ts'
+import { initSentry, captureEdgeFunctionError, captureEdgeFunctionMessage, flushSentry } from '../_shared/sentry.ts'
 
-// Initialize Sentry (temporarily disabled)
-// initSentry('send-notification')
+// Initialize Sentry (se activa solo si existe SENTRY_DSN)
+initSentry('send-notification')
 
 // Dominios permitidos para CORS (producción); localhost es dinámico
 const allowedOrigins = [
@@ -74,6 +75,7 @@ interface NotificationRequest {
 }
 
 serve(async (req) => {
+  const requestId = crypto.randomUUID()
   const origin = req.headers.get('origin')
   const acrh = req.headers.get('Access-Control-Request-Headers')
   const corsHeaders = getCorsHeaders(origin, acrh)
@@ -84,6 +86,7 @@ serve(async (req) => {
 
   try {
     console.log('🚀 [SEND-NOTIFICATION] Función iniciada')
+    captureEdgeFunctionMessage('send-notification:start', 'info', { request_id: requestId })
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -103,15 +106,24 @@ serve(async (req) => {
       action_url: request.action_url,
       data: request.data
     })
+    captureEdgeFunctionMessage('send-notification:request', 'info', {
+      request_id: requestId,
+      type: request.type,
+      has_recipient_email: Boolean(request.recipient_email),
+      has_recipient_user_id: Boolean(request.recipient_user_id),
+      business_id: request.business_id || 'none',
+      appointment_id: request.appointment_id || 'none'
+    })
     
     // Determinar canales a usar
     console.log('🔍 [SEND-NOTIFICATION] Determinando canales...')
     const channels = await determineChannels(supabase, request)
     console.log('📡 [SEND-NOTIFICATION] Canales determinados:', channels)
+    captureEdgeFunctionMessage('send-notification:channels', 'info', { request_id: requestId, channels: channels.join(',') })
     
     // Preparar contenido de la notificación
     console.log('📝 [SEND-NOTIFICATION] Preparando contenido...')
-    const content = await prepareNotificationContent(request)
+    const content = await prepareNotificationContent(request, supabase)
     console.log('📄 [SEND-NOTIFICATION] Contenido preparado:', {
       subject: content.subject,
       message: content.message,
@@ -158,6 +170,7 @@ serve(async (req) => {
       channels_selected: channels
     }
     console.log('🧪 [SEND-NOTIFICATION] Diagnósticos:', diagnostics)
+    captureEdgeFunctionMessage('send-notification:diagnostics', 'info', { request_id: requestId, hasBrevoApiKey: String(diagnostics.env.hasBrevoApiKey), fromEmail: diagnostics.env.fromEmail })
 
     // Enviar por cada canal
     console.log('📤 [SEND-NOTIFICATION] Iniciando envío por canales...')
@@ -259,15 +272,19 @@ serve(async (req) => {
       }
     }
 
+    const responseBody = {
+      success: results.some(r => r.sent),
+      type: request.type,
+      channels_attempted: results.length,
+      channels_succeeded: results.filter(r => r.sent).length,
+      results,
+      diagnostics,
+      trace_id: requestId
+    }
+    captureEdgeFunctionMessage('send-notification:response', responseBody.success ? 'info' : 'warning', { request_id: requestId, channels_succeeded: responseBody.channels_succeeded })
+    await flushSentry()
     return new Response(
-      JSON.stringify({
-        success: results.some(r => r.sent),
-        type: request.type,
-        channels_attempted: results.length,
-        channels_succeeded: results.filter(r => r.sent).length,
-        results,
-        diagnostics
-      }),
+      JSON.stringify(responseBody),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
@@ -276,6 +293,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in send-notification:', error)
+    captureEdgeFunctionError(error as Error, {
+      functionName: 'send-notification',
+      requestId,
+      operation: 'serve'
+    })
     
     // Sentry disabled: log request body for diagnostics only
     try {
@@ -305,8 +327,10 @@ serve(async (req) => {
       }
     } catch {}
     
+    const errorBody = { error: (error as Error).message, diagnostics: errorDiagnostics, trace_id: requestId }
+    await flushSentry()
     return new Response(
-      JSON.stringify({ error: (error as Error).message, diagnostics: errorDiagnostics }),
+      JSON.stringify(errorBody),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
@@ -393,7 +417,7 @@ async function determineChannels(
   return ['email']
 }
 
-async function prepareNotificationContent(request: NotificationRequest) {
+async function prepareNotificationContent(request: NotificationRequest, supabase?: any) {
   const templates = {
     appointment_confirmation: {
       subject: '✅ Cita Confirmada',
@@ -466,14 +490,274 @@ async function prepareNotificationContent(request: NotificationRequest) {
     message: JSON.stringify(request.data)
   }
 
-  // Reemplazar variables
+  // Intentar enriquecer variables desde appointment_details si hay appointment_id
+  let appointment: any | null = null
+  console.log('🔍 [DEBUG] Iniciando enriquecimiento de datos...')
+  console.log('🔍 [DEBUG] appointment_id:', request.appointment_id)
+  console.log('🔍 [DEBUG] request.data:', JSON.stringify(request.data, null, 2))
+  
+  try {
+    if (request.appointment_id) {
+      console.log('🔍 [DEBUG] Consultando appointment_details para ID:', request.appointment_id)
+      
+      // Crear cliente admin para consultar la vista
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      
+      const { data: appt, error: apptError } = await supabaseAdmin
+        .from('appointment_details')
+        .select('id, client_name, employee_name, service_name, location_name, start_time')
+        .eq('id', request.appointment_id)
+        .single()
+        
+      if (apptError) {
+        console.error('❌ [DEBUG] Error consultando appointment_details:', apptError)
+      } else if (appt) {
+        console.log('✅ [DEBUG] appointment_details encontrado:', JSON.stringify(appt, null, 2))
+        appointment = appt
+      } else {
+        console.log('⚠️ [DEBUG] No se encontró appointment_details para ID:', request.appointment_id)
+      }
+    } else {
+      console.log('⚠️ [DEBUG] No appointment_id proporcionado, saltando consulta appointment_details')
+    }
+  } catch (e) {
+    console.warn('❌ [DEBUG] No se pudo cargar appointment_details:', e)
+  }
+
+  // Fallbacks inteligentes: si la vista no devolvió datos, resolver por IDs recibidos en request.data
+  console.log('🔍 [DEBUG] Iniciando fallbacks por IDs...')
+  try {
+    const d = request.data || {}
+    console.log('🔍 [DEBUG] Data disponible para fallbacks:', JSON.stringify(d, null, 2))
+
+    // Crear cliente admin para los fallbacks
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Cliente
+    if ((!appointment?.client_name || appointment?.client_name === '') && typeof d.client_id === 'string') {
+      console.log('🔍 [DEBUG] Buscando client_name para ID:', d.client_id)
+      const { data: clientRow, error: clientError } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name')
+        .eq('id', d.client_id)
+        .single()
+      console.log('🔍 [DEBUG] Resultado consulta cliente:', clientRow, 'Error:', clientError)
+      if (clientRow?.full_name) {
+        appointment = { ...(appointment || {}), client_name: clientRow.full_name }
+        console.log('✅ [DEBUG] client_name enriquecido:', clientRow.full_name)
+      }
+    }
+
+      // Empleado
+      if ((!appointment?.employee_name || appointment?.employee_name === '') && typeof d.employee_id === 'string') {
+        console.log('🔍 [DEBUG] Buscando employee_name para ID:', d.employee_id)
+        const { data: empRow, error: empError } = await supabaseAdmin
+          .from('profiles')
+          .select('full_name')
+          .eq('id', d.employee_id)
+          .single()
+        console.log('🔍 [DEBUG] Resultado consulta empleado:', empRow, 'Error:', empError)
+        if (empRow?.full_name) {
+          appointment = { ...(appointment || {}), employee_name: empRow.full_name }
+          console.log('✅ [DEBUG] employee_name enriquecido:', empRow.full_name)
+        }
+      }
+
+      // Servicio
+      if ((!appointment?.service_name || appointment?.service_name === '') && typeof d.service_id === 'string') {
+        console.log('🔍 [DEBUG] Buscando service_name para ID:', d.service_id)
+        const { data: svcRow, error: svcError } = await supabaseAdmin
+          .from('services')
+          .select('name')
+          .eq('id', d.service_id)
+          .single()
+        console.log('🔍 [DEBUG] Resultado consulta servicio:', svcRow, 'Error:', svcError)
+        if (svcRow?.name) {
+          appointment = { ...(appointment || {}), service_name: svcRow.name }
+          console.log('✅ [DEBUG] service_name enriquecido:', svcRow.name)
+        }
+      }
+
+      // Sede / ubicación: siempre intentar enriquecer dirección y ciudad si tenemos location_id
+      if (typeof d.location_id === 'string') {
+        console.log('🔍 [DEBUG] Buscando datos de ubicación para ID:', d.location_id)
+        const { data: locRow, error: locError } = await supabaseAdmin
+          .from('locations')
+          .select('name, address, city')
+          .eq('id', d.location_id)
+          .single()
+        console.log('🔍 [DEBUG] Resultado consulta ubicación:', locRow, 'Error:', locError)
+        if (locRow?.name && (!appointment?.location_name || appointment?.location_name === '')) {
+          appointment = { ...(appointment || {}), location_name: locRow.name }
+          console.log('✅ [DEBUG] location_name enriquecido:', locRow.name)
+        }
+        if (locRow?.address) {
+          appointment = { ...(appointment || {}), location_address: locRow.address }
+          console.log('✅ [DEBUG] location_address enriquecido:', locRow.address)
+        }
+        if (locRow?.city) {
+          appointment = { ...(appointment || {}), location_city: locRow.city }
+          console.log('✅ [DEBUG] location_city enriquecido:', locRow.city)
+        }
+      }
+
+      // Fecha/hora desde appointment_date en payload
+      if ((!appointment?.start_time || appointment?.start_time === '') && typeof d.appointment_date === 'string') {
+        // Guardamos ISO para usar formato más abajo
+        appointment = { ...(appointment || {}), start_time: d.appointment_date }
+      }
+  } catch (e) {
+    console.warn('[prepareNotificationContent] Fallbacks por IDs fallaron:', e)
+  }
+
+  // Formateadores de fecha/hora en español
+  const formatDate = (iso?: string) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    return d.toLocaleDateString('es-ES', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    })
+  }
+  const formatTime = (iso?: string) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // Normalizar variables con alias y fallbacks
+  console.log('🔍 [DEBUG] Datos disponibles para normalización:')
+  console.log('🔍 [DEBUG] - request.data:', JSON.stringify(request.data, null, 2))
+  console.log('🔍 [DEBUG] - appointment:', JSON.stringify(appointment, null, 2))
+  
+  const data = request.data || {}
+  const vars: Record<string, string> = {}
+
+  // Nombre genérico del destinatario
+  vars['name'] = String(
+    data.name ?? request.recipient_name ?? ''
+  )
+
+  // Cliente
+  vars['client_name'] = String(
+    data.client_name ?? appointment?.client_name ?? request.recipient_name ?? ''
+  )
+
+  // Empleado/profesional
+  vars['employee_name'] = String(
+    data.employee_name ?? appointment?.employee_name ?? ''
+  )
+
+  // Servicio
+  vars['service'] = String(
+    data.service ?? data.service_name ?? appointment?.service_name ?? ''
+  )
+
+  // Ubicación
+  vars['location'] = String(
+    data.location ?? data.location_name ?? appointment?.location_name ?? ''
+  )
+  // Dirección de la sede (si está disponible)
+  if (typeof data.new_address === 'string' && data.new_address) {
+    vars['new_address'] = data.new_address
+  }
+  vars['address'] = String(
+    (typeof data.address === 'string' ? data.address : '') ||
+    (typeof data.location_address === 'string' ? data.location_address : '') ||
+    (typeof (appointment && appointment.location_address) === 'string' ? appointment.location_address : '') ||
+    ''
+  )
+  // Ciudad de la sede (si está disponible)
+  vars['city'] = String(
+    (typeof data.city === 'string' ? data.city : '') ||
+    (typeof (appointment && (appointment as any).location_city) === 'string' ? (appointment as any).location_city : '') ||
+    ''
+  )
+  
+  console.log('🔍 [DEBUG] Variables normalizadas iniciales:', JSON.stringify(vars, null, 2))
+
+  // Fecha y hora
+  const startIso = appointment?.start_time as string | undefined
+  // Si tenemos ISO, formateamos siempre a humano; si solo viene en data, intentamos formatear
+  const isoFromData = typeof data.appointment_date === 'string' ? data.appointment_date : undefined
+  const isoCandidate = startIso || isoFromData
+  vars['date'] = (data.date && String(data.date)) || (isoCandidate ? formatDate(isoCandidate) : '')
+  vars['time'] = (data.time && String(data.time)) || (isoCandidate ? formatTime(isoCandidate) : '')
+
+  // Otros campos comunes (por si las plantillas los usan)
+  if (typeof data.business_name === 'string') vars['business_name'] = data.business_name
+  if (typeof data.new_address === 'string') vars['new_address'] = data.new_address
+  if (typeof data.user_name === 'string') vars['user_name'] = data.user_name
+
+  console.log('🔍 [DEBUG] Variables finales antes del reemplazo:', JSON.stringify(vars, null, 2))
+  console.log('🔍 [DEBUG] Subject template:', template.subject)
+  console.log('🔍 [DEBUG] Message template:', template.message)
+  
+  // Reemplazar variables en subject y message
   let subject = template.subject
   let message = template.message
 
-  for (const [key, value] of Object.entries(request.data || {})) {
+  // Primero con datos originales
+  for (const [key, value] of Object.entries(data)) {
+    const placeholder = `{{${key}}}`
+    subject = subject.replace(new RegExp(placeholder, 'g'), String(value ?? ''))
+    message = message.replace(new RegExp(placeholder, 'g'), String(value ?? ''))
+  }
+
+  // Luego asegurar los alias/fallbacks
+  for (const [key, value] of Object.entries(vars)) {
     const placeholder = `{{${key}}}`
     subject = subject.replace(new RegExp(placeholder, 'g'), value)
     message = message.replace(new RegExp(placeholder, 'g'), value)
+  }
+  
+  console.log('🔍 [DEBUG] Subject procesado:', subject)
+  console.log('🔍 [DEBUG] Message procesado:', message)
+
+  // Añadir dirección de la sede al correo del cliente si existe
+  try {
+    if (request.type === 'appointment_new_client') {
+      const address = (vars['address'] || '').trim()
+      const city = (vars['city'] || '').trim()
+      if (address) {
+        const locationText = `📍 Lugar: ${vars['location'] || ''}`
+        const addressText = `📍 Dirección: ${address}${city ? `, ${city}` : ''}`
+        if (message.includes(locationText) && !message.includes(addressText)) {
+          message = message.replace(locationText, `${locationText}\n${addressText}`)
+        } else if (!message.includes(addressText)) {
+          message = `${message}\n${addressText}`
+        }
+      }
+    }
+  } catch (_) {
+    // No bloquear envío por errores menores de formato
+  }
+
+  // Saneado final: si aún faltan campos críticos para ciertos tipos, añadimos avisos
+  const criticalByType: Record<string, string[]> = {
+    appointment_new_employee: ['client_name', 'date', 'time', 'service'],
+    appointment_new_client: ['date', 'time', 'location', 'service'],
+    appointment_confirmation: ['date', 'time', 'location', 'service'],
+    appointment_reminder: ['date', 'time'],
+  }
+  const crit = criticalByType[request.type] || []
+  const missing = crit.filter(k => (vars[k] || '').trim() === '')
+  if (missing.length > 0) {
+    console.warn('[prepareNotificationContent] Campos faltantes en plantilla:', { type: request.type, missing })
+    // Ajustar a un mensaje genérico para evitar enviar email “vacío”
+    const genericMap: Record<string, string> = {
+      appointment_new_employee: 'Se te ha asignado una nueva cita. Revisa la app para ver detalles completos.',
+      appointment_new_client: 'Tu cita fue registrada correctamente. Revisa la app para ver detalles completos.',
+      appointment_confirmation: 'Tu cita ha sido confirmada. Revisa la app para ver detalles completos.',
+      appointment_reminder: 'Tienes una cita próxima. Revisa la app para ver detalles completos.',
+    }
+    const generic = genericMap[request.type] || 'Tienes una notificación. Revisa la app para más detalles.'
+    message = generic
   }
 
   return { subject, message }
@@ -571,6 +855,15 @@ async function sendEmail(request: NotificationRequest, content: any) {
     }
     
     console.log('📄 [SEND-EMAIL] HTML Body preparado, longitud:', htmlBody.length)
+
+    // Validación extra: si el mensaje quedó demasiado genérico o vacío, evitar enviar basura
+    const isEmptyContent = !content.message || content.message.trim().length < 10
+    if (isEmptyContent) {
+      console.warn('⚠️ [SEND-EMAIL] Contenido insuficiente. Se ajustará a mensaje seguro.')
+      content.subject = content.subject || 'Notificación'
+      content.message = 'Tienes una nueva notificación en Gestabiz. Abre la app para ver los detalles.'
+      htmlBody = createBasicEmailTemplate(content.subject, content.message)
+    }
     
     // Enviar email usando Brevo
     console.log('🚀 [SEND-EMAIL] Enviando email con Brevo...')

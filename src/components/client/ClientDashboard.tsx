@@ -469,7 +469,14 @@ export function ClientDashboard({
             latitude,
             longitude
           ),
-          profiles!appointments_employee_id_fkey (
+          employee:profiles!appointments_employee_id_fkey (
+            id,
+            full_name,
+            email,
+            phone,
+            avatar_url
+          ),
+          client:profiles!appointments_client_id_fkey (
             id,
             full_name,
             email,
@@ -501,7 +508,9 @@ export function ClientDashboard({
       const mappedData = (data || []).map((apt: any) => {
         const business = Array.isArray(apt.businesses) ? apt.businesses[0] : apt.businesses
         const location = Array.isArray(apt.locations) ? apt.locations[0] : apt.locations
-        const employee = Array.isArray(apt.profiles) ? apt.profiles[0] : apt.profiles
+        // Usar alias explícito para evitar confusión entre múltiples relaciones a profiles
+        const employeeRel = Array.isArray(apt.employee) ? apt.employee[0] : apt.employee
+        const clientRel = Array.isArray(apt.client) ? apt.client[0] : apt.client
         const svcRaw = Array.isArray(apt.services) ? apt.services[0] : apt.services
         const service = svcRaw ? { ...svcRaw, duration: svcRaw.duration_minutes } : undefined
 
@@ -509,7 +518,9 @@ export function ClientDashboard({
           ...apt,
           business,
           location,
-          employee,
+          employee: employeeRel,
+          // Incluimos client (aunque no se muestra) por si se requiere en otros componentes
+          client: clientRel,
           service,
         }
 

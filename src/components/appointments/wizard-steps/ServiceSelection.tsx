@@ -42,7 +42,12 @@ export function ServiceSelection({
         .eq('is_active', true);
 
       if (error) throw error;
-      setServices((data as Service[]) || []);
+      // Normalizar duración para soportar esquemas con `duration_minutes`
+      const normalized = ((data as unknown[] | null) || []).map((s: any) => ({
+        ...s,
+        duration: s?.duration ?? s?.duration_minutes ?? 0,
+      })) as Service[];
+      setServices(normalized);
     } catch {
       setServices([]);
     } finally {

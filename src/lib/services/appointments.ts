@@ -80,7 +80,12 @@ export const appointmentsService = {
     if (updates.location_id !== undefined) db.location_id = updates.location_id ?? null
     if (updates.service_id !== undefined) db.service_id = updates.service_id
     if (updates.client_id !== undefined) db.client_id = updates.client_id
-    if (updates.user_id !== undefined) db.employee_id = updates.user_id
+    // Preferir employee_id; mantener compatibilidad con user_id solo si representa al empleado
+    if (updates.employee_id !== undefined) {
+      db.employee_id = updates.employee_id
+    } else if (updates.user_id !== undefined) {
+      db.employee_id = updates.user_id
+    }
     if (updates.start_time !== undefined) db.start_time = updates.start_time
     if (updates.end_time !== undefined) db.end_time = updates.end_time
     if (updates.status !== undefined) db.status = toDbAppointmentStatus(updates.status)
@@ -94,12 +99,12 @@ export const appointmentsService = {
 
   async _checkOverlapIfNeeded(id: string, current: Appointment, updates: Partial<Appointment>, options?: OverlapOptions) {
     const needsCheck = Boolean(
-      updates.start_time || updates.end_time || updates.user_id || updates.location_id
+      updates.start_time || updates.end_time || updates.employee_id || updates.location_id
     )
     if (!needsCheck) return
     const nextStart = updates.start_time ?? current.start_time
     const nextEnd = updates.end_time ?? current.end_time
-    const nextEmployeeId = updates.user_id ?? current.user_id
+    const nextEmployeeId = updates.employee_id ?? current.employee_id ?? current.user_id
     const nextLocationId = updates.location_id ?? current.location_id
     const overlap = await hasOverlap({
       employeeId: nextEmployeeId,
@@ -144,11 +149,11 @@ export const appointmentsService = {
   return normalizeAppointment(data as Row<'appointments'>)
   },
 
-  async create(payload: Omit<Appointment, 'id' | 'created_at' | 'updated_at'>, options?: OverlapOptions): Promise<Appointment> {
+  async create(payload: Omit<Appointment, 'id' | 'created_at' | 'updated_at' | 'user_id'>, options?: OverlapOptions): Promise<Appointment> {
     // Validación de solapamientos (overbooking) solo si hay empleado asignado
-    if (payload.user_id) {
+    if (payload.employee_id) {
       const overlap = await hasOverlap({
-        employeeId: payload.user_id,
+        employeeId: payload.employee_id,
         start_time: payload.start_time,
         end_time: payload.end_time,
         location_id: payload.location_id,
@@ -163,7 +168,7 @@ export const appointmentsService = {
       location_id: payload.location_id ?? null,
       service_id: payload.service_id!,
       client_id: payload.client_id,
-      employee_id: payload.user_id ?? null,
+      employee_id: payload.employee_id ?? null,
       start_time: payload.start_time,
       end_time: payload.end_time,
       status: toDbAppointmentStatus(payload.status),

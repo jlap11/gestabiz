@@ -440,34 +440,41 @@ export const useAppointments = (userId?: string) => {
         if (businessOwnerError) {
           console.error('❌ [BUSINESS NOTIFICATION] Error buscando admin:', businessOwnerError)
         } else if (businessOwner && businessOwner.owner_id !== userId) {
-          console.log('🏢 [BUSINESS NOTIFICATION] Enviando notificación al admin:', businessOwner.owner_id)
-          const businessNotificationPayload = {
-            type: 'appointment_new_business',
-            recipient_user_id: businessOwner.owner_id,
-            business_id: appointmentData.business_id,
-            appointment_id: newAppointment.id,
-            priority: 1,
-            action_url: `/appointments/${newAppointment.id}`,
-            force_channels: ['in_app', 'email'],
-            data: {
-              client_id: appointmentData.client_id,
-              employee_id: targetEmployeeId,
-              appointment_date: appointmentData.start_time,
-              service_id: appointmentData.service_id,
-              location_id: appointmentData.location_id
-            }
-          }
-          console.log('🏢 [BUSINESS NOTIFICATION] Payload:', businessNotificationPayload)
+          // Verificar si el dueño del negocio es el mismo empleado para evitar notificaciones duplicadas
+          const isOwnerSameAsEmployee = targetEmployeeId && businessOwner.owner_id === targetEmployeeId
           
-          const businessResult = await supabase.functions.invoke('send-notification', {
-            body: businessNotificationPayload
-          })
-          
-          console.log('🏢 [BUSINESS NOTIFICATION] Resultado:', businessResult)
-          if (businessResult.error) {
-            console.error('❌ [BUSINESS NOTIFICATION] Error:', businessResult.error)
+          if (isOwnerSameAsEmployee) {
+            console.log('⏭️ [BUSINESS NOTIFICATION] Omitida - el dueño del negocio es el mismo empleado que ya recibió notificación')
           } else {
-            console.log('✅ [BUSINESS NOTIFICATION] Enviada exitosamente')
+            console.log('🏢 [BUSINESS NOTIFICATION] Enviando notificación al admin:', businessOwner.owner_id)
+            const businessNotificationPayload = {
+              type: 'appointment_new_business',
+              recipient_user_id: businessOwner.owner_id,
+              business_id: appointmentData.business_id,
+              appointment_id: newAppointment.id,
+              priority: 1,
+              action_url: `/appointments/${newAppointment.id}`,
+              force_channels: ['in_app', 'email'],
+              data: {
+                client_id: appointmentData.client_id,
+                employee_id: targetEmployeeId,
+                appointment_date: appointmentData.start_time,
+                service_id: appointmentData.service_id,
+                location_id: appointmentData.location_id
+              }
+            }
+            console.log('🏢 [BUSINESS NOTIFICATION] Payload:', businessNotificationPayload)
+            
+            const businessResult = await supabase.functions.invoke('send-notification', {
+              body: businessNotificationPayload
+            })
+            
+            console.log('🏢 [BUSINESS NOTIFICATION] Resultado:', businessResult)
+            if (businessResult.error) {
+              console.error('❌ [BUSINESS NOTIFICATION] Error:', businessResult.error)
+            } else {
+              console.log('✅ [BUSINESS NOTIFICATION] Enviada exitosamente')
+            }
           }
         } else {
           console.log('⏭️ [BUSINESS NOTIFICATION] Omitida - admin es el mismo que el creador o no se encontró admin')
@@ -479,7 +486,8 @@ export const useAppointments = (userId?: string) => {
         // No fallar la creación de cita si fallan las notificaciones
       }
       
-      toast.success('Appointment created successfully!')
+      // Evitar duplicar notificaciones: el flujo de UI (p.ej., AppointmentWizard)
+      // muestra su propio toast de éxito. No emitir otro aquí.
       return newAppointment
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create appointment'
