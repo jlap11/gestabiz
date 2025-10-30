@@ -3,6 +3,7 @@ import { User, Appointment, UserSettings, DashboardStats, UpcomingAppointment, i
 import supabase from '@/lib/supabase'
 import { toast } from 'sonner'
 import { getRolePermissions } from '@/lib/permissions'
+import { withCache } from '@/lib/cache'
 
 // Internal helpers
 type AnyRecord = Record<string, unknown>
@@ -280,7 +281,7 @@ export const useAuth = () => {
 }
 
 // Appointments hook
-export const useAppointments = (userId?: string) => {
+export const useAppointments = (userId?: string, options: { autoFetch?: boolean } = { autoFetch: true }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const appointmentsRef = useRef<Appointment[]>([])
   const [loading, setLoading] = useState(false)
@@ -717,9 +718,10 @@ export const useAppointments = (userId?: string) => {
     }
   }, [userId])
 
-  // Set up real-time subscription
+  // Set up real-time subscription and optional initial fetch
   useEffect(() => {
     if (!userId) return
+    if (!options.autoFetch) return
 
     fetchAppointments()
 
@@ -772,7 +774,7 @@ export const useAppointments = (userId?: string) => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId, fetchAppointments])
+  }, [userId, fetchAppointments, options.autoFetch])
 
   return {
     appointments,
@@ -923,21 +925,24 @@ export const useBrowserExtensionData = () => {
     setLoading(true)
     try {
       const now = new Date().toISOString()
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('id,title,start_time,client_name,location')
-        .gt('start_time', now)
-        .order('start_time', { ascending: true })
-        .limit(limit)
-      if (error) throw new Error(error.message)
-      const mapped = (data || []).map(row => ({
-        id: row.id,
-        title: row.title,
-        start_time: row.start_time,
-        client_name: row.client_name,
-        location: row.location,
-        time_until: ''
-      })) as UpcomingAppointment[]
+      const cacheKey = `upcomingAppointments|limit=${limit}`
+      const mapped = await withCache<UpcomingAppointment[]>(cacheKey, async () => {
+        const { data, error } = await supabase
+          .from('appointments')
+          .select('id,title,start_time,client_name,location')
+          .gt('start_time', now)
+          .order('start_time', { ascending: true })
+          .limit(limit)
+        if (error) throw new Error(error.message)
+        return ((data || []).map(row => ({
+          id: row.id,
+          title: row.title,
+          start_time: row.start_time,
+          client_name: row.client_name,
+          location: row.location,
+          time_until: ''
+        })) as UpcomingAppointment[])
+      }, 5 * 60 * 1000)
       setUpcomingAppointments(mapped)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch upcoming appointments'

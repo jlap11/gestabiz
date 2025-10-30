@@ -2,13 +2,15 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Check, Building2 } from 'lucide-react';
 import { SimpleSearchBar, type SearchType } from '@/components/ui/SimpleSearchBar';
 import { cn } from '@/lib/utils';
+import { withCache } from '@/lib/cache';
 import supabase from '@/lib/supabase';
 import { usePreferredCity } from '@/hooks/usePreferredCity';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { BOGOTA_REGION_ID, BOGOTA_CITY_ID, BOGOTA_CITY_NAME } from '@/constants';
 import { useKV } from '@/lib/useKV';
 
@@ -29,6 +31,8 @@ interface BusinessSelectionProps {
   readonly preferredCityName?: string | null;
   readonly preferredRegionName?: string | null;
   readonly onSelectBusiness: (business: Business) => void;
+  // Nuevo: controlar si se debe cargar automáticamente al montar
+  readonly autoLoad?: boolean;
 }
 
 export function BusinessSelection({
@@ -36,26 +40,36 @@ export function BusinessSelection({
   preferredCityName: propCityName,
   preferredRegionName: propRegionName,
   onSelectBusiness,
+  autoLoad = true,
 }: BusinessSelectionProps) {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
-  const [loading, setLoading] = useState(true);
+  // No mostrar loading hasta que el usuario interactúe
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchType, setSearchType] = useState<SearchType>('businesses');
+  const [searchType, setSearchType] = useState<SearchType>('all');
   const hookCityData = usePreferredCity();
   const [cityNameMap, setCityNameMap] = useState<Record<string, string>>({});
   const [locationsCountMap, setLocationsCountMap] = useState<Record<string, number>>({});
   const [cityBusinessIds, setCityBusinessIds] = useState<string[]>([]);
   const [cityLocationIds, setCityLocationIds] = useState<string[]>([]);
+  const [matchSourcesByBusinessId, setMatchSourcesByBusinessId] = useState<Record<string, string[]>>({});
   const [displayedBusinesses, setDisplayedBusinesses] = useState<Business[]>([]);
   const [remainingBusinessIds, setRemainingBusinessIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalResults, setTotalResults] = useState<number>(0);
   const { user } = useAuth();
-  const PAGE_SIZE = 24;
+  const PAGE_SIZE = 12;
   const hasLoadedRef = useRef(false);
   // Cargar última búsqueda guardada (si existe)
   const [lastSearch] = useKV<{ term: string; type: SearchType } | null>('last-search', null);
+  
+  // Filtros y orden por calificación (solo primeros 12)
+  const [minRating, setMinRating] = useState<number | ''>('');
+  const [minReviewCount, setMinReviewCount] = useState<number | ''>('');
+  const [orderBestRated, setOrderBestRated] = useState<boolean>(false);
+  const [ratingStatsByBusinessId, setRatingStatsByBusinessId] = useState<Record<string, { average_rating: number; review_count: number }>>({});
+  const [filtersApplied, setFiltersApplied] = useState<boolean>(false);
   
   // Helper para detectar UUID (IDs de ciudad/región)
   const isUUID = (value: string | null): boolean => {
@@ -156,20 +170,26 @@ export function BusinessSelection({
       const effectiveRegionName = propRegionName ?? hookRegionName ?? null;
       const effectiveCityName = propCityName ?? hookCityName ?? null;
 
-      const { data, error } = await supabase.functions.invoke('search_businesses', {
-        body: {
-          type: 'initial',
-          term: '',
-          preferredRegionId: effectiveRegionId,
-          preferredRegionName: effectiveRegionName,
-          preferredCityId: effectiveCityId,
-          preferredCityName: effectiveCityName,
-          clientId: user?.id ?? null,
-          page: 1,
-          pageSize: PAGE_SIZE,
-          excludeBusinessIds: [],
-        },
-      });
+      const cacheKey = `search_businesses|type=all|term=|regionId=${effectiveRegionId}|regionName=${effectiveRegionName}|cityId=${effectiveCityId}|cityName=${effectiveCityName}|client=${user?.id ?? ''}|page=1|size=${PAGE_SIZE}|minRating=${typeof minRating==='number'?minRating:''}|minReviews=${typeof minReviewCount==='number'?minReviewCount:''}`;
+      const { data, error } = await withCache(cacheKey, async () => {
+        return supabase.functions.invoke('search_businesses', {
+          body: {
+            type: 'all',
+            term: '',
+            preferredRegionId: effectiveRegionId,
+            preferredRegionName: effectiveRegionName,
+            preferredCityId: effectiveCityId,
+            preferredCityName: effectiveCityName,
+            clientId: user?.id ?? null,
+            page: 1,
+            pageSize: PAGE_SIZE,
+            excludeBusinessIds: [],
+            // Alinear con "Aplicar filtros": incluir filtros si están definidos
+            minRating: typeof minRating === 'number' ? minRating : undefined,
+            minReviewCount: typeof minReviewCount === 'number' ? minReviewCount : undefined,
+          },
+        });
+      }, 120_000);
       if (error) throw error as Error;
       const result = (data as any) || {};
       const cityOnly = (result.businesses || []) as Business[];
@@ -178,6 +198,9 @@ export function BusinessSelection({
       setLocationsCountMap(result.locationsCountMap || {});
       setCityBusinessIds(result.cityBusinessIds || []);
       setCityLocationIds(result.cityLocationIds || []);
+      setCityNameMap(result.cityNameMap || {});
+      setMatchSourcesByBusinessId({});
+      setRatingStatsByBusinessId(result.ratingStatsByBusinessId || {});
 
       setBusinesses(cityOnly);
       setFilteredBusinesses(cityOnly);
@@ -185,6 +208,8 @@ export function BusinessSelection({
       setRemainingBusinessIds([]);
       setCurrentPage(1);
       setTotalResults(result.total || cityOnly.length || 0);
+      // Marcar como filtros aplicados para que la paginación use misma estrategia
+      setFiltersApplied(true);
     } catch {
       setBusinesses([]);
       setFilteredBusinesses([]);
@@ -203,14 +228,24 @@ export function BusinessSelection({
     hookCityData.preferredCityId,
     hookCityData.preferredRegionName,
     hookCityData.preferredCityName,
+    minRating,
+    minReviewCount,
+    PAGE_SIZE,
   ]);
 
   useEffect(() => {
     // Evitar doble llamada en modo Strict de React
     if (hasLoadedRef.current) return;
+    // Solo cargar automáticamente si explícitamente está habilitado
+    if (!autoLoad || (lastSearch && lastSearch.term && lastSearch.term.length >= 2)) return;
+
+    // Esperar a que esté disponible preferredRegionId para incluirlo en la primera solicitud
+    if (!hookCityData.preferredRegionId) return;
+
     hasLoadedRef.current = true;
-    loadBusinesses();
-  }, [loadBusinesses]);
+    setLoading(true);
+    void loadBusinesses();
+  }, [loadBusinesses, autoLoad, lastSearch, hookCityData.preferredRegionId]);
 
   // Si hay una búsqueda previa persistida, aplicarla al montar
   useEffect(() => {
@@ -226,43 +261,34 @@ export function BusinessSelection({
   // Sincronizar estados cuando cambia el conjunto de negocios (paginación servidor)
   useEffect(() => {
     setSearchTerm('');
-    setSearchType('businesses');
+    setSearchType('all');
     setFilteredBusinesses(businesses);
     setDisplayedBusinesses(businesses);
     setRemainingBusinessIds([]);
   }, [businesses]);
 
-  // Pre-cargar nombres de ciudades para IDs presentes en resultados
+  // Los nombres de ciudad llegan desde la Edge Function en cityNameMap
   useEffect(() => {
-    const cityIds = Array.from(
-      new Set(
-        filteredBusinesses
-          .map((b) => b.city)
-          .filter((c): c is string => !!c && isUUID(c))
-      )
-    );
-
-    const fetchCityNames = async () => {
-      if (cityIds.length === 0) return;
-      try {
-        const { data, error } = await supabase
-          .from('cities')
-          .select('id, name')
-          .in('id', cityIds);
-        if (error) return;
-        const map: Record<string, string> = { ...cityNameMap };
-        for (const row of (data || [])) {
-          map[row.id] = row.name;
-        }
-        setCityNameMap(map);
-      } catch {
-        // Silent fail - no bloquear UI por nombres
-      }
-    };
-
-    fetchCityNames();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // no-op: ya usamos cityNameMap de la respuesta
   }, [filteredBusinesses]);
+
+  // Reordenar primeros 12 por mejor calificación si está activado
+  useEffect(() => {
+    if (!orderBestRated) return;
+    if (displayedBusinesses.length === 0) return;
+    const first = displayedBusinesses.slice(0, PAGE_SIZE);
+    const rest = displayedBusinesses.slice(PAGE_SIZE);
+    const sorted = [...first].sort((a, b) => {
+      const rb = ratingStatsByBusinessId[b.id]?.average_rating ?? 0;
+      const ra = ratingStatsByBusinessId[a.id]?.average_rating ?? 0;
+      if (rb !== ra) return rb - ra;
+      const cb = ratingStatsByBusinessId[b.id]?.review_count ?? 0;
+      const ca = ratingStatsByBusinessId[a.id]?.review_count ?? 0;
+      return cb - ca;
+    });
+    setDisplayedBusinesses([...sorted, ...rest]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderBestRated, ratingStatsByBusinessId, PAGE_SIZE]);
 
   // Imagen placeholder para negocios
   const getBusinessImage = (business: Business): string => {
@@ -311,29 +337,39 @@ export function BusinessSelection({
       const effectiveRegionName = propRegionName ?? hookRegionName ?? null;
       const effectiveCityName = propCityName ?? hookCityName ?? null;
 
-      const { data, error } = await supabase.functions.invoke('search_businesses', {
-        body: {
-          type,
-          term,
-          preferredRegionId: effectiveRegionId,
-          preferredRegionName: effectiveRegionName,
-          preferredCityId: effectiveCityId,
-          preferredCityName: effectiveCityName,
-          clientId: user?.id ?? null,
-          page: 1,
-          pageSize: PAGE_SIZE,
-          excludeBusinessIds: [],
-        },
-      });
+      const cacheKeySearch = `search_businesses|type=${type}|term=${termLower}|regionId=${effectiveRegionId}|regionName=${effectiveRegionName}|cityId=${effectiveCityId}|cityName=${effectiveCityName}|client=${user?.id ?? ''}|page=1|size=${PAGE_SIZE}|minRating=${typeof minRating==='number'?minRating:''}|minReviews=${typeof minReviewCount==='number'?minReviewCount:''}`;
+      const { data, error } = await withCache(cacheKeySearch, async () => {
+        return supabase.functions.invoke('search_businesses', {
+          body: {
+            type,
+            term,
+            preferredRegionId: effectiveRegionId,
+            preferredRegionName: effectiveRegionName,
+            preferredCityId: effectiveCityId,
+            preferredCityName: effectiveCityName,
+            clientId: user?.id ?? null,
+            page: 1,
+            pageSize: PAGE_SIZE,
+            excludeBusinessIds: [],
+            // Aplicar filtros también en búsquedas por término/categorías
+            minRating: typeof minRating === 'number' ? minRating : undefined,
+            minReviewCount: typeof minReviewCount === 'number' ? minReviewCount : undefined,
+          },
+        });
+      }, 120_000);
       if (error) throw error as Error;
       const result = (data as any) || {};
       const cityOnly = (result.businesses || []) as Business[];
       setLocationsCountMap(result.locationsCountMap || {});
+      setCityNameMap(result.cityNameMap || {});
+      setMatchSourcesByBusinessId(result.matchSourcesByBusinessId || {});
+      setRatingStatsByBusinessId(result.ratingStatsByBusinessId || {});
       setFilteredBusinesses(cityOnly);
       setDisplayedBusinesses(cityOnly);
       setRemainingBusinessIds([]);
       setCurrentPage(1);
       setTotalResults(result.total || cityOnly.length || 0);
+      setFiltersApplied(false);
     } catch {
       setFilteredBusinesses([]);
       setDisplayedBusinesses([]);
@@ -359,24 +395,39 @@ export function BusinessSelection({
     const excludeIds = displayedBusinesses.map(b => b.id);
 
     try {
-      const { data, error } = await supabase.functions.invoke('search_businesses', {
-        body: {
-          type: (searchTerm && searchTerm.trim().length >= 2) ? searchType : 'initial',
-          term: (searchTerm && searchTerm.trim().length >= 2) ? searchTerm : '',
-          preferredRegionId: effectiveRegionId,
-          preferredRegionName: effectiveRegionName,
-          preferredCityId: effectiveCityId,
-          preferredCityName: effectiveCityName,
-          clientId: user?.id ?? null,
-          page: nextPage,
-          pageSize: PAGE_SIZE,
-          excludeBusinessIds: excludeIds,
-        },
-      });
+      const keyType = (searchTerm && searchTerm.trim().length >= 2) ? searchType : 'all';
+      const keyTerm = (searchTerm && searchTerm.trim().length >= 2) ? searchTerm.toLowerCase() : '';
+      const cacheKeyLoadMore = `search_businesses|type=${keyType}|term=${keyTerm}|regionId=${effectiveRegionId}|regionName=${effectiveRegionName}|cityId=${effectiveCityId}|cityName=${effectiveCityName}|client=${user?.id ?? ''}|page=${nextPage}|size=${PAGE_SIZE}|exclude=${excludeIds.join(',')}|minRating=${typeof minRating==='number'?minRating:''}|minReviews=${typeof minReviewCount==='number'?minReviewCount:''}|filtersApplied=${filtersApplied}`;
+      const { data, error } = await withCache(cacheKeyLoadMore, async () => {
+        return supabase.functions.invoke('search_businesses', {
+          body: {
+            type: keyType,
+            term: (searchTerm && searchTerm.trim().length >= 2) ? searchTerm : '',
+            preferredRegionId: effectiveRegionId,
+            preferredRegionName: effectiveRegionName,
+            preferredCityId: effectiveCityId,
+            preferredCityName: effectiveCityName,
+            clientId: user?.id ?? null,
+            page: nextPage,
+            pageSize: PAGE_SIZE,
+            excludeBusinessIds: excludeIds,
+            // Mantener filtros en páginas siguientes cuando hay búsqueda o filtros aplicados
+            ...((searchTerm && searchTerm.trim().length >= 2) || filtersApplied ? {
+              minRating: typeof minRating === 'number' ? minRating : undefined,
+              minReviewCount: typeof minReviewCount === 'number' ? minReviewCount : undefined,
+            } : {}),
+          },
+        });
+      }, 120_000);
       if (error) throw error as Error;
       const result = (data as any) || {};
       const nextRows = (result.businesses || []) as Business[];
       setLocationsCountMap(result.locationsCountMap || {});
+      setCityNameMap(result.cityNameMap || {});
+      setMatchSourcesByBusinessId(prev => ({
+        ...prev,
+        ...(result.matchSourcesByBusinessId || {})
+      }));
       setDisplayedBusinesses(prev => [...prev, ...nextRows]);
       setCurrentPage(nextPage);
       setTotalResults(result.total || totalResults);
@@ -384,6 +435,65 @@ export function BusinessSelection({
       // No-op: no avanzamos de página si falla
     }
   };
+
+  // Aplicar filtros explícitamente (misma consulta base que inicial + rating/reviews)
+  const handleApplyFilters = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { preferredRegionId, preferredCityId, preferredRegionName: hookRegionName, preferredCityName: hookCityName } = hookCityData;
+      const effectiveRegionId = preferredRegionId || null;
+      const effectiveCityId = preferredCityId || null;
+      const effectiveRegionName = propRegionName ?? hookRegionName ?? null;
+      const effectiveCityName = propCityName ?? hookCityName ?? null;
+
+      const cacheKeyApply = `search_businesses|type=all|term=|regionId=${effectiveRegionId}|regionName=${effectiveRegionName}|cityId=${effectiveCityId}|cityName=${effectiveCityName}|client=${user?.id ?? ''}|page=1|size=${PAGE_SIZE}|minRating=${typeof minRating==='number'?minRating:''}|minReviews=${typeof minReviewCount==='number'?minReviewCount:''}`;
+      const { data, error } = await withCache(cacheKeyApply, async () => {
+        return supabase.functions.invoke('search_businesses', {
+          body: {
+            type: 'all',
+            term: '',
+            preferredRegionId: effectiveRegionId,
+            preferredRegionName: effectiveRegionName,
+            preferredCityId: effectiveCityId,
+            preferredCityName: effectiveCityName,
+            clientId: user?.id ?? null,
+            page: 1,
+            pageSize: PAGE_SIZE,
+            excludeBusinessIds: [],
+            minRating: typeof minRating === 'number' ? minRating : undefined,
+            minReviewCount: typeof minReviewCount === 'number' ? minReviewCount : undefined,
+          },
+        });
+      }, 120_000);
+      if (error) throw error as Error;
+      const result = (data as any) || {};
+      const rows = (result.businesses || []) as Business[];
+      setLocationsCountMap(result.locationsCountMap || {});
+      setCityBusinessIds(result.cityBusinessIds || []);
+      setCityLocationIds(result.cityLocationIds || []);
+      setCityNameMap(result.cityNameMap || {});
+      setMatchSourcesByBusinessId(result.matchSourcesByBusinessId || {});
+      setRatingStatsByBusinessId(result.ratingStatsByBusinessId || {});
+
+      setBusinesses(rows);
+      setFilteredBusinesses(rows);
+      setDisplayedBusinesses(rows);
+      setRemainingBusinessIds([]);
+      setCurrentPage(1);
+      setTotalResults(result.total || rows.length || 0);
+      setFiltersApplied(true);
+    } catch {
+      setBusinesses([]);
+      setFilteredBusinesses([]);
+      setDisplayedBusinesses([]);
+      setRemainingBusinessIds([]);
+      setCurrentPage(1);
+      setTotalResults(0);
+      setFiltersApplied(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [hookCityData, propCityName, propRegionName, user?.id, PAGE_SIZE, minRating, minReviewCount]);
 
   if (loading) {
     return (
@@ -420,6 +530,54 @@ export function BusinessSelection({
               searchType={searchType}
               onSearch={debouncedHandleSearch}
             />
+        </div>
+        {/* Controles de calificación (solo primeros 12) */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground">Calificación mínima</label>
+            <Input
+              type="number"
+              step="0.1"
+              min={0}
+              max={5}
+              value={minRating}
+              onChange={(e) => {
+                const v = e.target.value;
+                setMinRating(v === '' ? '' : Math.max(0, Math.min(5, Number(v))));
+              }}
+              className="h-8 w-24 text-xs"
+              placeholder="e.g. 4.5"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground">Reviews mínimos</label>
+            <Input
+              type="number"
+              step="1"
+              min={0}
+              value={minReviewCount}
+              onChange={(e) => {
+                const v = e.target.value;
+                setMinReviewCount(v === '' ? '' : Math.max(0, Number(v)));
+              }}
+              className="h-8 w-24 text-xs"
+              placeholder="e.g. 10"
+            />
+          </div>
+          <Button
+            variant={orderBestRated ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setOrderBestRated(prev => !prev)}
+          >
+            {orderBestRated ? 'Orden: mejor calificados' : 'Orden: por defecto'}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => { void handleApplyFilters(); }}
+          >
+            Aplicar filtros
+          </Button>
         </div>
       </div>
 
@@ -475,11 +633,31 @@ export function BusinessSelection({
                     {`Sedes en ${preferredCityName ?? hookCityData.preferredCityName ?? 'esta ciudad'}: ${locationsCountMap[business.id] ?? 0}`}
                   </Badge>
                 </div>
+                {/* Rating y reseñas */}
+                {(() => {
+                  const rs = ratingStatsByBusinessId[business.id];
+                  if (!rs) return null;
+                  return (
+                    <div className="mb-2">
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs">
+                        {`⭐ ${Number(rs.average_rating || 0).toFixed(1)} · ${rs.review_count || 0} reseñas`}
+                      </Badge>
+                    </div>
+                  );
+                })()}
                 
                 {business.description && (
                   <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                     {business.description}
                   </p>
+                )}
+
+                {matchSourcesByBusinessId[business.id]?.includes('services') && (
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="text-[11px]">
+                      filtro encontrado en sedes
+                    </Badge>
+                  </div>
                 )}
 
                 <div className="space-y-1">

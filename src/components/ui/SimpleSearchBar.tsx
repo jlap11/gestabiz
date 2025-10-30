@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import { useDebounce } from '@/hooks';
 
-export type SearchType = 'services' | 'businesses' | 'categories' | 'users';
+export type SearchType = 'services' | 'businesses' | 'categories' | 'users' | 'all';
 
 interface SimpleSearchBarProps {
   searchTerm: string;
@@ -12,6 +12,7 @@ interface SimpleSearchBarProps {
 }
 
 const searchTypeOptions = [
+  { value: 'all' as SearchType, label: 'Todos' },
   { value: 'services' as SearchType, label: 'Servicios' },
   { value: 'businesses' as SearchType, label: 'Negocios' },
   { value: 'categories' as SearchType, label: 'Categorías' },

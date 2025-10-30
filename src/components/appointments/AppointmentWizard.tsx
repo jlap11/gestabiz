@@ -196,7 +196,8 @@ export function AppointmentWizard({
   const [hasTrackedStart, setHasTrackedStart] = React.useState(false);
 
   // Hook para crear citas con notificaciones automáticas
-  const { createAppointment: createAppointmentWithNotifications } = useAppointments(userId);
+  // Desactivar auto-fetch y suscripción mientras el wizard/modal está abierto
+  const { createAppointment: createAppointmentWithNotifications } = useAppointments(userId, { autoFetch: false });
 
   // Track booking started (solo una vez cuando se abre el wizard)
   React.useEffect(() => {

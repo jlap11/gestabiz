@@ -6,7 +6,7 @@ const BOGOTA_REGION_ID = 'fc6cc79b-dfd1-42c9-b35d-3d0df51c1c83'
 const BOGOTA_CITY_ID = 'c5861b80-bd05-48a9-9e24-d8c93e0d1d6b'
 const BOGOTA_CITY_NAME = 'Bogotá'
 
-type SearchType = 'initial' | 'businesses' | 'services' | 'categories' | 'users'
+type SearchType = 'initial' | 'businesses' | 'services' | 'categories' | 'users' | 'all'
 
 interface SearchRequest {
   type: SearchType
@@ -19,6 +19,9 @@ interface SearchRequest {
   page?: number
   pageSize?: number
   excludeBusinessIds?: string[]
+  // Filtros de rating solo aplican para la primera página (primeros 12)
+  minRating?: number
+  minReviewCount?: number
 }
 
 serve(async (req) => {
@@ -53,8 +56,10 @@ serve(async (req) => {
       preferredCityName,
       clientId,
       page = 1,
-      pageSize = 50,
-      excludeBusinessIds = []
+      pageSize = 12,
+      excludeBusinessIds = [],
+      minRating,
+      minReviewCount
     } = body
 
     const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -188,6 +193,7 @@ serve(async (req) => {
     // 2) Construir candidatos según tipo de búsqueda
     let candidateBusinessIds: string[] = []
     let businessRows: any[] = []
+    const matchSourcesByBusinessId: Record<string, string[]> = {}
 
     if (type === 'initial') {
       // Listado inicial: traer negocios por ciudad, aplicar disponibilidad y priorizar por citas del cliente en la ciudad
@@ -212,22 +218,58 @@ serve(async (req) => {
       if (error) throw error
       businessRows = (businesses || [])
       candidateBusinessIds = businessRows.map((b) => b.id)
+      for (const b of businessRows) {
+        matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'businesses']
+      }
     } else if (type === 'services') {
-      const { data: services, error } = await supabase
+      // Búsqueda por servicios ofrecidos por sedes de los negocios
+      // 1) Encontrar servicios activos cuyo nombre coincide
+      const { data: svcRows, error: svcErr } = await supabase
         .from('services')
-        .select('business_id')
+        .select('id')
         .ilike('name', `%${term}%`)
         .eq('is_active', true)
-      if (error) throw error
-      candidateBusinessIds = Array.from(new Set((services || []).map((s: any) => s.business_id))).filter(Boolean)
+      if (svcErr) throw svcErr
+      const svcIds = (svcRows || []).map((s: any) => s.id)
+      if (svcIds.length === 0) {
+        return json({ businesses: [], locationsCountMap, total: 0 })
+      }
+      // 2) Tomar ofertas de servicios vinculadas a una sede (employee_services)
+      //    Filtrar por ciudad/región (cityLocationIds) si existen para evitar resultados fuera de contexto
+      let empSvcQuery = supabase
+        .from('employee_services')
+        .select('business_id, service_id, location_id, employee_id, is_active')
+        .in('service_id', svcIds)
+        .eq('is_active', true)
+
+      if (cityLocationIds.length > 0) {
+        // deno-lint-ignore no-explicit-any
+        ;(empSvcQuery as any) = (empSvcQuery as any).in('location_id', cityLocationIds)
+      }
+
+      const { data: empSvcRows, error: esErr } = await empSvcQuery
+      if (esErr) throw esErr
+
+      candidateBusinessIds = Array.from(new Set((empSvcRows || []).map((es: any) => es.business_id))).filter(Boolean)
+      if (candidateBusinessIds.length === 0) {
+        return json({ businesses: [], locationsCountMap, total: 0 })
+      }
+
       const { data: businesses, error: bizErr } = await supabase
         .from('businesses')
         .select('id, name, description, logo_url, address, city, phone, category_id')
         .in('id', candidateBusinessIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .order('name')
       if (bizErr) throw bizErr
       businessRows = (businesses || [])
+      for (const es of empSvcRows || []) {
+        const bid = (es as any).business_id
+        if (bid) {
+          matchSourcesByBusinessId[bid] = [...(matchSourcesByBusinessId[bid] || []), 'services']
+        }
+      }
     } else if (type === 'categories') {
       const { data: cats, error: catErr } = await supabase
         .from('business_categories')
@@ -245,9 +287,13 @@ serve(async (req) => {
         .in('category_id', catIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .order('name')
       if (bizErr) throw bizErr
       businessRows = (businesses || [])
       candidateBusinessIds = businessRows.map(b => b.id)
+      for (const b of businessRows) {
+        matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'categories']
+      }
     } else if (type === 'users') {
       const { data: profiles, error: profErr } = await supabase
         .from('profiles')
@@ -272,8 +318,164 @@ serve(async (req) => {
         .in('id', candidateBusinessIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .order('name')
       if (bizErr) throw bizErr
       businessRows = (businesses || [])
+      for (const b of businessRows) {
+        matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'users']
+      }
+    } else if (type === 'all') {
+      // Buscar en todas las fuentes y unir resultados
+      // 1) Por nombre de negocio
+      const { data: bizByName } = await supabase
+        .from('businesses')
+        .select('id, name, description, logo_url, address, city, phone, category_id')
+        .ilike('name', `%${term}%`)
+        .eq('is_active', true)
+        .eq('is_public', true)
+        .order('name')
+      const setBiz = new Map<string, any>()
+      for (const b of (bizByName || []) as any[]) {
+        setBiz.set(b.id, b)
+        matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'businesses']
+      }
+      // 2) Por servicios ofrecidos en sedes
+      const { data: svcRows } = await supabase
+        .from('services')
+        .select('id')
+        .ilike('name', `%${term}%`)
+        .eq('is_active', true)
+      const svcIds = (svcRows || []).map((s: any) => s.id)
+      if (svcIds.length > 0) {
+        let empSvcQuery = supabase
+          .from('employee_services')
+          .select('business_id, location_id, service_id, employee_id, is_active')
+          .in('service_id', svcIds)
+          .eq('is_active', true)
+        if (cityLocationIds.length > 0) {
+          // deno-lint-ignore no-explicit-any
+          ;(empSvcQuery as any) = (empSvcQuery as any).in('location_id', cityLocationIds)
+        }
+        const { data: empSvcRows } = await empSvcQuery
+        const svcBizIds = Array.from(new Set((empSvcRows || []).map((es: any) => es.business_id))).filter(Boolean)
+        if (svcBizIds.length > 0) {
+          const { data: svcBizRows } = await supabase
+            .from('businesses')
+            .select('id, name, description, logo_url, address, city, phone, category_id')
+            .in('id', svcBizIds)
+            .eq('is_active', true)
+            .eq('is_public', true)
+          for (const b of (svcBizRows || []) as any[]) {
+            setBiz.set(b.id, b)
+            matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'services']
+          }
+        }
+      }
+      // 3) Por categorías
+      const { data: cats } = await supabase
+        .from('business_categories')
+        .select('id')
+        .ilike('name', `%${term}%`)
+        .eq('is_active', true)
+      const catIds = (cats || []).map((c: any) => c.id)
+      if (catIds.length > 0) {
+        const { data: catBizRows } = await supabase
+          .from('businesses')
+          .select('id, name, description, logo_url, address, city, phone, category_id')
+          .in('category_id', catIds)
+          .eq('is_active', true)
+          .eq('is_public', true)
+        for (const b of (catBizRows || []) as any[]) {
+          setBiz.set(b.id, b)
+          matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'categories']
+        }
+      }
+      // 4) Por profesionales
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('full_name', `%${term}%`)
+      const employeeIds = (profiles || []).map((p: any) => p.id)
+      if (employeeIds.length > 0) {
+        const { data: emp } = await supabase
+          .from('business_employees')
+          .select('business_id')
+          .in('employee_id', employeeIds)
+          .eq('status', 'approved')
+          .eq('is_active', true)
+        const empBizIds = Array.from(new Set((emp || []).map((e: any) => e.business_id))).filter(Boolean)
+        if (empBizIds.length > 0) {
+          const { data: empBizRows } = await supabase
+            .from('businesses')
+            .select('id, name, description, logo_url, address, city, phone, category_id')
+            .in('id', empBizIds)
+            .eq('is_active', true)
+            .eq('is_public', true)
+          for (const b of (empBizRows || []) as any[]) {
+            setBiz.set(b.id, b)
+            matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'users']
+          }
+        }
+      }
+      businessRows = Array.from(setBiz.values())
+      candidateBusinessIds = businessRows.map(b => b.id)
+    } else if (type === 'categories') {
+      // ya manejado arriba; esta rama se mantiene para compatibilidad en respuestas simples
+      // se deja tal cual y se agrega orden y anotación
+      const { data: cats2, error: catErr2 } = await supabase
+        .from('business_categories')
+        .select('id')
+        .ilike('name', `%${term}%`)
+        .eq('is_active', true)
+      if (catErr2) throw catErr2
+      const catIds2 = (cats2 || []).map((c: any) => c.id)
+      if (catIds2.length === 0) {
+        return json({ businesses: [], locationsCountMap, total: 0 })
+      }
+      const { data: businesses2, error: bizErr2 } = await supabase
+        .from('businesses')
+        .select('id, name, description, logo_url, address, city, phone, category_id')
+        .in('category_id', catIds2)
+        .eq('is_active', true)
+        .eq('is_public', true)
+        .order('name')
+      if (bizErr2) throw bizErr2
+      businessRows = (businesses2 || [])
+      candidateBusinessIds = businessRows.map(b => b.id)
+      for (const b of businessRows) {
+        matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'categories']
+      }
+    } else if (type === 'users') {
+      // ya se manejó arriba en 'all'; aquí mantenemos la respuesta con anotación
+      const { data: profiles2, error: profErr2 } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('full_name', `%${term}%`)
+      if (profErr2) throw profErr2
+      const employeeIds2 = (profiles2 || []).map((p: any) => p.id)
+      if (employeeIds2.length === 0) {
+        return json({ businesses: [], locationsCountMap, total: 0 })
+      }
+      const { data: emp2, error: empErr2 } = await supabase
+        .from('business_employees')
+        .select('business_id')
+        .in('employee_id', employeeIds2)
+        .eq('status', 'approved')
+        .eq('is_active', true)
+      if (empErr2) throw empErr2
+      candidateBusinessIds = Array.from(new Set((emp2 || []).map((e: any) => e.business_id))).filter(Boolean)
+      const { data: businesses3, error: bizErr3 } = await supabase
+        .from('businesses')
+        .select('id, name, description, logo_url, address, city, phone, category_id')
+        .in('id', candidateBusinessIds)
+        .eq('is_active', true)
+        .eq('is_public', true)
+        .order('name')
+      if (bizErr3) throw bizErr3
+      businessRows = (businesses3 || [])
+      for (const b of businessRows) {
+        matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'users']
+      }
     }
 
     // 3) Aplicar disponibilidad: servicios, ubicaciones y empleados activos asociados
@@ -324,52 +526,49 @@ serve(async (req) => {
       }
     }
 
-    // Fallback para listado inicial: permitir negocios con al menos un servicio activo y una sede activa
-    // aunque no tengan registros de employee_services aún.
-    if (type === 'initial') {
-      for (const bid of businessIds) {
-        const svc = svcByBiz.get(bid)
-        const loc = locByBiz.get(bid)
-        if (svc && svc.size > 0 && loc && loc.size > 0) {
-          allowedBusinessIds.add(bid)
-        }
-      }
-    }
+    // Nota: eliminamos el fallback del listado inicial.
+    // Ahora, SIEMPRE exigimos que el negocio tenga al menos:
+    // - una sede activa,
+    // - un servicio activo,
+    // - y al menos un empleado/profesional asignado a un servicio
+    //   (vía employee_services) en alguna sede.
 
     // 4) Filtrar por ciudad (negocios que tienen sedes en la ciudad/región)
     const citySet = new Set(cityBusinessIds)
     const available = businessRows.filter(b => allowedBusinessIds.has(b.id))
     let cityOnly = available.filter(b => citySet.has(b.id))
 
-    // Priorizar por citas del cliente en sedes de la ciudad
-    if ((type === 'initial' || type === 'businesses') && clientId && cityLocationIds.length > 0) {
-      const { data: appts } = await supabase
-        .from('appointments')
-        .select('business_id, location_id, start_time')
-        .eq('client_id', clientId)
-        .in('location_id', cityLocationIds)
-        .order('start_time', { ascending: false })
-
-      const orderedBizIds: string[] = []
-      const seen = new Set<string>()
-      for (const a of (appts || []) as any[]) {
-        const bid = a.business_id
-        if (bid && !seen.has(bid)) {
-          orderedBizIds.push(bid)
-          seen.add(bid)
+    // Filtros de rating para búsquedas por término/servicios/categorías (aplican a todo el set)
+    if (type !== 'initial' && (typeof minRating === 'number' || typeof minReviewCount === 'number')) {
+      try {
+        const ids = (cityOnly || []).map((b: any) => b.id)
+        if (ids.length > 0) {
+          const { data: statsRows } = await supabase
+            .from('business_ratings_stats')
+            .select('business_id, average_rating, review_count')
+            .in('business_id', ids)
+          const okSet = new Set<string>()
+          for (const row of (statsRows || []) as any[]) {
+            const avg = row.average_rating ?? 0
+            const cnt = row.review_count ?? 0
+            if ((typeof minRating !== 'number' || avg >= minRating) && (typeof minReviewCount !== 'number' || cnt >= minReviewCount)) {
+              okSet.add(row.business_id)
+            }
+          }
+          cityOnly = cityOnly.filter((b: any) => okSet.has(b.id))
         }
+      } catch (_) {
+        // Silencio: si falla stats, no aplicamos filtro adicional
       }
-      const byRecent = orderedBizIds
-        .map(id => cityOnly.find(b => b.id === id))
-        .filter((b): b is any => !!b)
-      const remaining = cityOnly.filter(b => !seen.has(b.id))
-      // Orden determinista: alfabético por nombre (sin aleatoriedad)
-      const orderedRemaining = [...remaining].sort((a: any, b: any) => {
+    }
+
+    // Orden estable por nombre para resultados iniciales sin curación especial
+    if (type === 'initial') {
+      cityOnly = [...cityOnly].sort((a: any, b: any) => {
         const an = (a?.name || '').toLowerCase()
         const bn = (b?.name || '').toLowerCase()
         return an.localeCompare(bn)
       })
-      cityOnly = [...byRecent, ...orderedRemaining]
     }
 
     // Evitar duplicados entre páginas si el cliente envía IDs ya mostrados
@@ -384,7 +583,54 @@ serve(async (req) => {
     const end = start + pageSize
     const paginated = cityOnly.slice(start, end)
 
-    return new Response(JSON.stringify({ businesses: paginated, total: totalOriginal, locationsCountMap, cityBusinessIds, cityLocationIds }), { headers: corsHeaders })
+    // Rating stats para negocios paginados
+    let ratingStatsByBusinessId: Record<string, { average_rating: number; review_count: number }> = {}
+    try {
+      const ids = (paginated || []).map((b: any) => b.id)
+      if (ids.length > 0) {
+        const { data: statsRows } = await supabase
+          .from('business_ratings_stats')
+          .select('business_id, average_rating, review_count')
+          .in('business_id', ids)
+        for (const row of (statsRows || []) as any[]) {
+          ratingStatsByBusinessId[row.business_id] = {
+            average_rating: row.average_rating ?? 0,
+            review_count: row.review_count ?? 0,
+          }
+        }
+      }
+    } catch (_) {
+      ratingStatsByBusinessId = {}
+    }
+
+    // Construir mapa de nombres de ciudad para IDs presentes en los negocios paginados
+    let cityNameMap: Record<string, string> = {}
+    try {
+      const cityIds = Array.from(new Set((paginated || []).map((b: any) => b.city).filter((c: any) => typeof c === 'string')))
+        .filter((cid) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cid))
+      if (cityIds.length > 0) {
+        const { data: cityRows } = await supabase
+          .from('cities')
+          .select('id, name')
+          .in('id', cityIds)
+        for (const row of (cityRows || []) as any[]) {
+          cityNameMap[row.id] = row.name
+        }
+      }
+    } catch (_) {
+      // Silencio: no bloqueamos la respuesta si falla el catálogo
+      cityNameMap = {}
+    }
+
+    // Reducir el mapa de fuentes a solo los negocios paginados (optimiza payload)
+    const matchSourcesReduced: Record<string, string[]> = {}
+    for (const b of paginated as any[]) {
+      if (matchSourcesByBusinessId[b.id]) {
+        matchSourcesReduced[b.id] = Array.from(new Set(matchSourcesByBusinessId[b.id]))
+      }
+    }
+
+    return new Response(JSON.stringify({ businesses: paginated, total: totalOriginal, locationsCountMap, cityBusinessIds, cityLocationIds, cityNameMap, matchSourcesByBusinessId: matchSourcesReduced, ratingStatsByBusinessId }), { headers: corsHeaders })
   } catch (err) {
     console.error('search_businesses error', err)
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500, headers: { 'content-type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'authorization, content-type, x-client-info, apikey' } })
