@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
 import type { Location } from '@/types/types';
+import { LocationAddress } from '@/components/ui/LocationAddress';
 
 interface LocationSelectionProps {
   businessId: string;
@@ -23,12 +24,52 @@ export function LocationSelection({
 }: Readonly<LocationSelectionProps>) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(!preloadedLocations);
+  const [locationBanners, setLocationBanners] = useState<Record<string, string>>({});
+
+  // Carga banners de sedes desde location_media
+  const refreshLocationBanners = async (ids: string[]) => {
+    try {
+      if (!ids || ids.length === 0) {
+        setLocationBanners({});
+        return;
+      }
+      const { data, error } = await supabase
+        .from('location_media')
+        .select('location_id, type, url, is_banner, description, created_at')
+        .in('location_id', ids)
+        .order('created_at', { ascending: false });
+      if (error) return; // silencioso
+      const rows = Array.isArray(data) ? data : [];
+
+      const bannerByLocation = new Map<string, any[]>();
+      rows.forEach((m) => {
+        const cleanUrl = (m.url || '').trim().replace(/^[`'\"]+|[`'\"]+$/g, '');
+        if (m.is_banner && m.type === 'image') {
+          const arr = bannerByLocation.get(m.location_id) || [];
+          arr.push({ ...m, url: cleanUrl });
+          bannerByLocation.set(m.location_id, arr);
+        }
+      });
+
+      const banners: Record<string, string> = {};
+      bannerByLocation.forEach((arr, locId) => {
+        const chosen = arr.find((x) => (x.description || '').trim() !== 'Banner de prueba') || arr[0];
+        if (chosen) banners[locId] = chosen.url;
+      });
+
+      setLocationBanners(banners);
+    } catch {
+      // noop
+    }
+  };
 
   useEffect(() => {
     // Si ya tenemos datos pre-cargados, usarlos directamente (MÁS RÁPIDO)
     if (preloadedLocations) {
       setLocations(preloadedLocations);
       setLoading(false);
+      const ids = preloadedLocations.map(l => l.id);
+      refreshLocationBanners(ids).catch(() => {/* noop */});
       return;
     }
 
@@ -101,6 +142,8 @@ export function LocationSelection({
 
         const filtered = activeLocations.filter(loc => allowedLocationIds.has(loc.id));
         setLocations(filtered);
+        const ids = filtered.map(l => l.id);
+        await refreshLocationBanners(ids);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error inesperado';
         toast.error(`Error: ${message}`);
@@ -154,7 +197,7 @@ export function LocationSelection({
               key={location.id}
               onClick={() => onSelectLocation(location)}
               className={cn(
-                "relative group rounded-xl p-5 text-left transition-all duration-200 border-2",
+                "relative group rounded-xl p-5 text-left transition-all duration-200 border-2 overflow-hidden",
                 "hover:scale-[1.02] hover:shadow-xl",
                 isSelected
                   ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
@@ -162,6 +205,18 @@ export function LocationSelection({
                 wasPreselected && "ring-2 ring-green-500/50"
               )}
             >
+              {locationBanners[location.id] && (
+                <img
+                  src={locationBanners[location.id]}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                  aria-hidden="true"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+              )}
+              {locationBanners[location.id] && (
+                <div className="absolute inset-0 bg-black/40" />
+              )}
               {/* Badge de preselección */}
               {wasPreselected && (
                 <div className="absolute top-3 left-3 z-10">
@@ -174,52 +229,70 @@ export function LocationSelection({
 
               {/* Selected indicator */}
               {isSelected && (
-                <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center z-10">
                   <span className="text-primary-foreground text-xs font-bold">✓</span>
                 </div>
               )}
 
             {/* Location Icon */}
             <div className={cn(
-              "w-12 h-12 rounded-lg flex items-center justify-center mb-4",
+              "relative z-10 w-12 h-12 rounded-lg flex items-center justify-center mb-4",
               selectedLocationId === location.id 
                 ? "bg-primary/30" 
-                : "bg-muted group-hover:bg-muted/80"
+                : locationBanners[location.id] ? "bg-black/30" : "bg-muted group-hover:bg-muted/80"
             )}>
               <MapPin className={cn(
                 "h-6 w-6",
-                selectedLocationId === location.id ? "text-primary" : "text-muted-foreground"
+                selectedLocationId === location.id ? "text-primary" : locationBanners[location.id] ? "text-white/80" : "text-muted-foreground"
               )} />
             </div>
 
             {/* Location Name */}
-            <h4 className="text-lg font-semibold text-foreground mb-3">
+            <h4 className={cn("relative z-10 text-lg font-semibold mb-3",
+              locationBanners[location.id] ? "text-white drop-shadow" : "text-foreground"
+            )}>
               {location.name}
             </h4>
 
             {/* Location Details */}
-            <div className="space-y-2 text-sm">
+            <div className="relative z-10 space-y-2 text-sm">
               {location.address && (
-                <div className="flex items-start gap-2 text-muted-foreground">
-                  <Building2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <span className="line-clamp-2">
-                    {location.address}
-                    {location.city && `, ${location.city}`}
-                    {location.state && `, ${location.state}`}
-                  </span>
+                <div className={cn("flex items-start gap-2",
+                  locationBanners[location.id] ? "text-white/80" : "text-muted-foreground"
+                )}>
+                  <Building2 className={cn("h-4 w-4 mt-0.5 flex-shrink-0",
+                    locationBanners[location.id] ? "text-white/70" : "text-muted-foreground"
+                  )} />
+                  <LocationAddress
+                    address={location.address}
+                    cityId={location.city}
+                    stateId={location.state}
+                    postalCode={location.postal_code}
+                    className={cn("line-clamp-2",
+                      locationBanners[location.id] ? "text-white/80" : "text-muted-foreground"
+                    )}
+                  />
                 </div>
               )}
 
               {location.phone && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4 flex-shrink-0" />
+                <div className={cn("flex items-center gap-2",
+                  locationBanners[location.id] ? "text-white/80" : "text-muted-foreground"
+                )}>
+                  <Phone className={cn("h-4 w-4 flex-shrink-0",
+                    locationBanners[location.id] ? "text-white/70" : "text-muted-foreground"
+                  )} />
                   <span>{location.phone}</span>
                 </div>
               )}
 
               {location.country && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="h-4 w-4 flex-shrink-0" />
+                <div className={cn("flex items-center gap-2",
+                  locationBanners[location.id] ? "text-white/80" : "text-muted-foreground"
+                )}>
+                  <Mail className={cn("h-4 w-4 flex-shrink-0",
+                    locationBanners[location.id] ? "text-white/70" : "text-muted-foreground"
+                  )} />
                   <span className="truncate">{location.country}</span>
                 </div>
               )}
