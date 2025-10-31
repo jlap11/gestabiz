@@ -124,7 +124,7 @@
     "tailwindcss": "^4.1.11",
     "tsx": "^4.20.6",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.38.0",
+    "typescript-eslint": "^8.46.2",
     "vite": "^6.3.5",
     "vitest": "^2.1.9"
   },
