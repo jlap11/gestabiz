@@ -26,6 +26,7 @@ import type { Business, UserRole } from '@/types/types'
 import { NotificationBell } from '@/components/notifications'
 import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
 import { BugReportModal } from '@/components/bug-report/BugReportModal'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 
 interface SearchResult {
@@ -456,20 +457,14 @@ export function UnifiedLayout({
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger className="focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center">
-                  {user.avatar ? (
-                    <img
-                      key={user.avatar}
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-primary/20"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/20">
-                      <span className="text-xs sm:text-sm font-bold text-primary">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                  <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-primary/20">
+                    {user.avatar && (
+                      <AvatarImage src={user.avatar} alt={user.name} className="object-cover" />
+                    )}
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs sm:text-sm font-bold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-card border-border">
                   <div className="px-3 py-2 border-b border-border">

@@ -38,13 +38,17 @@ const buildUserFromSession = (sessionUser: SupabaseUser, profile?: ProfileRow | 
   const baseName = sessionUser.user_metadata?.full_name || profile?.full_name || (baseEmail ? baseEmail.split('@')[0] : 'Usuario')
   const username = sessionUser.user_metadata?.username || baseEmail.split('@')[0] || baseName
   const isActive = profile?.is_active ?? true
+  const metadata = sessionUser.user_metadata || {}
+  const resolvedAvatar = (metadata as Record<string, unknown>)?.['avatar_url']
+    || (profile?.avatar_url as string | undefined)
+    || (metadata as Record<string, unknown>)?.['picture'] as string | undefined
 
   return {
     id: sessionUser.id,
     email: baseEmail,
     name: baseName,
     username,
-    avatar_url: sessionUser.user_metadata?.avatar_url || profile?.avatar_url || undefined,
+    avatar_url: resolvedAvatar || undefined,
     timezone: profile?.timezone || 'America/Bogota',
     roles: [{
       id: profile ? `simple-role-${profile.id}` : 'simple-role-default',
