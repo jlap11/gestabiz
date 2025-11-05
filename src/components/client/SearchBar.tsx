@@ -258,7 +258,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
   }
 
   return (
-    <div ref={searchBarRef} className={cn('relative w-full max-w-full sm:max-w-3xl', className)}>
+    <div ref={searchBarRef} className={cn('relative w-full max-w-none', className)}>
       {/* Unified Search Bar - Mobile Responsive */}
       <div className="relative flex items-center bg-background border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow">
         {/* Search Type Selector - Mobile Optimized */}
@@ -272,7 +272,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
               <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-44 sm:w-48">
+          <DropdownMenuContent align="start" className="w-44 sm:w-48 z-[120]">
             {(Object.keys(searchTypeIconConfig) as SearchType[]).map((type) => {
               const TypeIcon = searchTypeIconConfig[type]
               const isActive = type === searchType

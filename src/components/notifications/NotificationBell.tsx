@@ -108,7 +108,7 @@ export function NotificationBell({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[400px] p-0 bg-card border-border"
+        className="w-[88vw] sm:w-[400px] max-w-[400px] p-0 bg-card border-border"
         align="end"
         sideOffset={8}
       >

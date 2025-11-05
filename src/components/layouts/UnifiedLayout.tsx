@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import { isTouchDevice } from '@/lib/animations'
 import type { Business, UserRole } from '@/types/types'
 import { NotificationBell } from '@/components/notifications'
 import { FloatingChatButton } from '@/components/chat/FloatingChatButton'
@@ -104,7 +105,15 @@ export function UnifiedLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [bugReportOpen, setBugReportOpen] = useState(false)
   const [locationMenuOpen, setLocationMenuOpen] = useState(false)
+  const [mobileHeaderOpen, setMobileHeaderOpen] = useState(false)
   const locationMenuRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const touchRef = useRef({
+    startX: 0,
+    startY: 0,
+    isSwiping: false,
+    edge: null as null | 'left' | 'right',
+  })
   
   // Hook para preferencias de ciudad (solo para cliente)
   const {
@@ -132,12 +141,94 @@ export function UnifiedLayout({
   // Deduplicate available roles
   const uniqueRoles = Array.from(new Set(availableRoles))
 
+  // Swipe gestures to open/close side menus (mobile)
+  useEffect(() => {
+    // Attach on window to ensure gestures are detected across overlays/portals
+    if (!isTouchDevice()) return
+
+    const handleStart = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      touchRef.current.startX = touch.clientX
+      touchRef.current.startY = touch.clientY
+      touchRef.current.isSwiping = false
+      const edgeThreshold = 24
+      const w = window.innerWidth
+      touchRef.current.edge =
+        touch.clientX <= edgeThreshold ? 'left' :
+        touch.clientX >= w - edgeThreshold ? 'right' :
+        null
+    }
+
+    const handleMove = (e: TouchEvent) => {
+      if (!touchRef.current.edge) return
+      const touch = e.touches[0]
+      const dx = touch.clientX - touchRef.current.startX
+      const dy = touch.clientY - touchRef.current.startY
+      if (!touchRef.current.isSwiping) {
+        if (Math.abs(dx) > 15 && Math.abs(dy) < 40) {
+          touchRef.current.isSwiping = true
+        }
+      }
+    }
+
+    const handleEnd = (e: TouchEvent) => {
+      const { edge, startX } = touchRef.current
+      const touch = e.changedTouches[0]
+      const dx = touch.clientX - startX
+      const dy = touch.clientY - touchRef.current.startY
+      const threshold = 60
+      const directionalEnough = Math.abs(dy) < 40
+
+      // Close menus with inverse swipe when already open
+      if (directionalEnough) {
+        // Close left sidebar with swipe left from anywhere (avoid extreme left edge to reduce false positives)
+        if (sidebarOpen && dx < -threshold && startX > 80) {
+          setSidebarOpen(false)
+          touchRef.current.edge = null
+          touchRef.current.isSwiping = false
+          return
+        }
+        // Close right mobile header with swipe right from anywhere (avoid extreme right edge)
+        if (mobileHeaderOpen && dx > threshold && startX < window.innerWidth - 80) {
+          setMobileHeaderOpen(false)
+          touchRef.current.edge = null
+          touchRef.current.isSwiping = false
+          return
+        }
+      }
+
+      // Open menus with edge swipes
+      if (edge) {
+        // Open left menu with swipe from left edge to right
+        if (edge === 'left' && dx > threshold && !sidebarOpen) {
+          setSidebarOpen(true)
+        }
+        // Open right menu with swipe from right edge to left
+        if (edge === 'right' && dx < -threshold && !mobileHeaderOpen) {
+          setMobileHeaderOpen(true)
+        }
+      }
+
+      touchRef.current.edge = null
+      touchRef.current.isSwiping = false
+    }
+
+    window.addEventListener('touchstart', handleStart, { passive: true })
+    window.addEventListener('touchmove', handleMove, { passive: true })
+    window.addEventListener('touchend', handleEnd)
+    return () => {
+      window.removeEventListener('touchstart', handleStart)
+      window.removeEventListener('touchmove', handleMove)
+      window.removeEventListener('touchend', handleEnd)
+    }
+  }, [sidebarOpen, mobileHeaderOpen])
+
   return (
-    <div className="min-h-screen bg-background flex">
+    <div ref={rootRef} className="min-h-screen bg-background flex overflow-x-hidden">
       {/* Sidebar - Full Height & Sticky */}
       <aside
         className={cn(
-          "fixed lg:sticky left-0 top-0 h-screen bg-card border-r border-border z-40 transition-transform duration-300 w-64 flex flex-col",
+          "fixed lg:sticky left-0 top-0 h-screen bg-card border-r border-border z-[100] transition-transform duration-300 w-64 flex flex-col",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -212,7 +303,7 @@ export function UnifiedLayout({
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-[95] lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -221,7 +312,40 @@ export function UnifiedLayout({
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Header - Responsive height */}
         <header className="bg-card border-b border-border sticky top-0 z-20 flex-shrink-0">
-        <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4 h-full min-h-[64px] sm:min-h-[89px]">
+        {/* Mobile top bar: logo abre el menú izquierdo + botón menú derecho */}
+        <div className="px-3 py-3 flex items-center justify-between sm:hidden min-h-[56px]">
+          <div className="flex items-center gap-2">
+            {/* Logo como botón para abrir el menú izquierdo */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1 hover:bg-muted rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Abrir menú izquierdo"
+            >
+              <img src={logoGestabiz} alt="Gestabiz" className="w-8 h-8 rounded-lg object-contain" />
+            </button>
+            <span className="text-sm font-semibold text-foreground">Gestabiz</span>
+          </div>
+          {/* Right area: Notification bell + overlay toggle */}
+          <div className="flex items-center gap-2">
+            {user?.id && (
+              <NotificationBell 
+                userId={user.id}
+                onNavigateToPage={(page, ctx) => onPageChange(page, ctx)}
+                currentRole={currentRole}
+                onRoleSwitch={onRoleChange}
+                availableRoles={availableRoles}
+              />
+            )}
+            <button
+              onClick={() => setMobileHeaderOpen(true)}
+              className="p-2 hover:bg-muted rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Abrir menú derecho"
+            >
+              <Menu className="h-6 w-6 text-foreground" />
+            </button>
+          </div>
+        </div>
+        <div className="hidden sm:grid px-3 sm:px-6 py-3 sm:py-4 grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-2 h-full min-h-[64px] sm:min-h-[89px]">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile menu toggle - Touch optimized */}
             <button
@@ -255,7 +379,7 @@ export function UnifiedLayout({
 
                     <div className="text-left flex items-center gap-2 sm:gap-3 min-w-0">
                       <div className="min-w-0">
-                        <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
+                        <h1 className="text-base sm:text-xl font-bold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-[160px]">
                           {business.name}
                         </h1>
                       </div>
@@ -331,7 +455,7 @@ export function UnifiedLayout({
                       e.stopPropagation()
                       setLocationMenuOpen(!locationMenuOpen)
                     }}
-                    className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 px-2 py-1 hover:bg-muted rounded-md whitespace-nowrap"
+                    className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 px-2 py-1 hover:bg-muted rounded-md min-w-0 max-w-[160px]"
                   >
                     <span>📍</span>
                     <span className="truncate">{preferredLocationName || 'Seleccionar sede'}</span>
@@ -381,11 +505,11 @@ export function UnifiedLayout({
                   preferredCityName={preferredCityName}
                   onCitySelect={setPreferredCity}
                 />
-                {/* Mobile: show compact search inside left area */}
+                {/* Mobile: search moved into right overlay panel */}
                 <SearchBar
                   onResultSelect={(result) => onSearchResultSelect?.(result)}
                   onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                  className="flex-1 max-w-full sm:hidden"
+                  className="hidden"
                 />
               </div>
             ) : (
@@ -395,18 +519,18 @@ export function UnifiedLayout({
                 </h1>
               </div>
             )}
+          </div>
           {/* Center area: search for desktop (hidden on small screens) */}
-          <div className="hidden sm:flex flex-1 justify-center px-2">
+          <div className="hidden sm:block min-w-0 w-full col-start-2 col-end-3">
             {currentRole === 'client' && (
-              <div className="w-full max-w-2xl">
+              <div className="w-full min-w-0">
                 <SearchBar
                   onResultSelect={(result) => onSearchResultSelect?.(result)}
                   onViewMore={(term, type) => onSearchViewMore?.(term, type)}
-                  className="w-full"
+                  className="w-full max-w-none"
                 />
               </div>
             )}
-          </div>
           </div>
 
           {/* Right Side Controls - Responsive */}
@@ -488,12 +612,167 @@ export function UnifiedLayout({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-          </div>
+        </div>
         </div>
       </header>
 
+      {/* Mobile Header Overlay - Right side drawer (animated open/close) */}
+      <div
+        className={cn(
+          "fixed inset-0 z-[100] sm:hidden transition-opacity duration-300",
+          mobileHeaderOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+        aria-hidden={!mobileHeaderOpen}
+      >
+        <div
+          className={cn(
+            "absolute inset-0 bg-black/50 transition-opacity duration-300",
+            mobileHeaderOpen ? "opacity-100" : "opacity-0"
+          )}
+          onClick={() => setMobileHeaderOpen(false)}
+        />
+        <div
+          className={cn(
+            "absolute right-0 top-0 h-full w-[88vw] max-w-[380px] bg-card border-l border-border shadow-xl transform transition-transform duration-300 ease-out",
+            mobileHeaderOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          <div className="h-full overflow-y-auto">
+              {/* Panel header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <span className="text-sm font-semibold text-foreground">Menú</span>
+                <button
+                  onClick={() => setMobileHeaderOpen(false)}
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
+                  aria-label="Cerrar menú"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="p-4 space-y-6">
+                {/* Ubicación */}
+                {currentRole === 'client' && (
+                  <div className="space-y-3 rounded-xl border border-border bg-muted/30 px-3 py-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ubicación</p>
+                    <CitySelector
+                      preferredRegionId={preferredRegionId}
+                      preferredRegionName={preferredRegionName}
+                      preferredCityId={preferredCityId}
+                      preferredCityName={preferredCityName}
+                      onCitySelect={setPreferredCity}
+                    />
+                  </div>
+                )}
+
+                {/* Buscar */}
+                {currentRole === 'client' && (
+                  <div className="space-y-3 rounded-xl border border-border bg-muted/30 px-3 py-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Buscar</p>
+                    <SearchBar
+                      onResultSelect={(result) => {
+                        onSearchResultSelect?.(result)
+                        setMobileHeaderOpen(false)
+                      }}
+                      onViewMore={(term, type) => {
+                        onSearchViewMore?.(term, type)
+                        setMobileHeaderOpen(false)
+                      }}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+
+                {/* Rol y notificaciones */}
+                <div className="space-y-3 rounded-xl border border-border bg-muted/30 px-3 py-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cuenta</p>
+                  <div className="flex items-center gap-3">
+                    {uniqueRoles.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-colors focus:outline-none">
+                          <UserIcon className="h-4 w-4 text-foreground" />
+                          <span className="text-sm font-medium text-foreground">
+                            {roleLabels[currentRole]}
+                          </span>
+                          {uniqueRoles.length > 1 && (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                          )}
+                        </DropdownMenuTrigger>
+                        {uniqueRoles.length > 1 && (
+                          <DropdownMenuContent align="end" className="w-48 bg-card border-border z-[120]">
+                            {uniqueRoles.map((role) => (
+                              <DropdownMenuItem
+                                key={role}
+                                onClick={() => {
+                                  onRoleChange(role)
+                                  setMobileHeaderOpen(false)
+                                }}
+                                className={cn(
+                                  "cursor-pointer",
+                                  role === currentRole && "bg-primary/20 text-foreground font-semibold"
+                                )}
+                              >
+                                {roleLabels[role]}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        )}
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </div>
+
+                {/* Usuario */}
+                {user && (
+                  <div className="space-y-3 rounded-xl border border-border bg-muted/30 px-3 py-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Perfil</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="focus:outline-none min-w-[44px] min-h-[44px] flex items-center gap-3">
+                        <Avatar className="w-10 h-10 border-2 border-primary/20">
+                          {user.avatar && (
+                            <AvatarImage src={user.avatar} alt={user.name} className="object-cover" />
+                          )}
+                          <AvatarFallback className="bg-primary/20 text-primary text-sm font-bold">
+                            {user.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 bg-card border-border z-[120]">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            onPageChange('profile')
+                            setMobileHeaderOpen(false)
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <UserIcon className="h-4 w-4 mr-2" />
+                          Mi Perfil
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            onPageChange('settings')
+                            setMobileHeaderOpen(false)
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Configuración
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Main Content - Scrollable with mobile padding */}
-        <main className="flex-1 overflow-y-auto px-3 sm:px-0">
+        <main className="flex-1 overflow-y-auto px-3 sm:px-0 max-w-[100vw] overflow-x-hidden">
           {children}
         </main>
       </div>
