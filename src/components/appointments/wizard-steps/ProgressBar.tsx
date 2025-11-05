@@ -27,43 +27,44 @@ export function ProgressBar({ currentStep, totalSteps, label, completedSteps = [
         </span>
       </div>
 
-      {/* Indicadores de pasos con check marks */}
-      <div className="flex items-center justify-between mb-3 px-1">
+      {/* Indicadores de pasos con check marks y conectores entre círculos */}
+      <div className="flex items-center mb-3 px-1">
         {allSteps.map((step) => {
           const isCompleted = completedSteps.includes(step);
           const isCurrent = step === currentStep;
           const isPending = step > currentStep;
 
-          return (
-            <div key={step} className="flex flex-col items-center">
-              {/* Círculo del paso */}
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300",
-                  isCompleted && "bg-primary text-primary-foreground shadow-lg shadow-primary/50",
-                  isCurrent && !isCompleted && "bg-primary text-primary-foreground shadow-lg shadow-primary/50 ring-2 ring-primary/30",
-                  isPending && "bg-muted text-muted-foreground"
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  step
-                )}
-              </div>
-
-              {/* Línea conectora (excepto en el último paso) */}
-              {step < totalSteps && (
-                <div className="absolute w-full h-0.5 -z-10" style={{ left: `${(step / totalSteps) * 100}%`, top: '16px' }}>
-                  <div
-                    className={cn(
-                      "h-full transition-all duration-300",
-                      step < currentStep ? "bg-primary" : "bg-muted"
-                    )}
-                  />
-                </div>
+          const circle = (
+            <div
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300",
+                isCompleted && "bg-primary text-primary-foreground shadow-lg shadow-primary/50",
+                isCurrent && !isCompleted && "bg-primary text-primary-foreground shadow-lg shadow-primary/50 ring-2 ring-primary/30",
+                isPending && "bg-muted text-muted-foreground"
+              )}
+            >
+              {isCompleted ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                step
               )}
             </div>
+          );
+
+          const connector = (
+            <div
+              className={cn(
+                "flex-1 h-0.5",
+                step < currentStep ? "bg-primary" : "bg-muted"
+              )}
+            />
+          );
+
+          return (
+            <>
+              {circle}
+              {step < totalSteps && connector}
+            </>
           );
         })}
       </div>

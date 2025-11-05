@@ -75,7 +75,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+        (mobileMenuOpen || scrolled) ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -390,7 +390,7 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <Badge className="bg-purple-100 text-purple-700 border-purple-300">{t('landing.benefits.badge')}</Badge>
-              <h2 className="text-4xl font-bold text-gray-900">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
                 {t('landing.benefits.title')}
               </h2>
               <p className="text-lg text-gray-600">
@@ -420,10 +420,10 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
                     description: t('landing.benefits.stats.roi.description')
                   }
                 ].map((benefit, index) => (
-                  <div key={`benefit-${index}`} className="flex gap-4 items-start">
+                  <div key={`benefit-${index}`} className="flex gap-3 md:gap-4 items-start">
                     <div className="flex-shrink-0">
-                      <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center">
-                        <span className="text-2xl font-bold text-purple-600 leading-tight">{benefit.stat}</span>
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-purple-100 flex items-center justify-center">
+                        <span className="text-xl md:text-2xl font-bold text-purple-600 leading-tight">{benefit.stat}</span>
                       </div>
                     </div>
                     <div className="flex-1 pt-2">
@@ -440,12 +440,12 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
               </Button>
             </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-l from-purple-200 to-purple-100 blur-3xl rounded-full" />
-              <Card className="relative bg-white border-gray-200 shadow-xl">
-                <CardContent className="p-8 space-y-6">
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-l from-purple-200 to-purple-100 blur-3xl rounded-full pointer-events-none" />
+              <Card className="relative bg-white border-gray-200 shadow-xl max-w-md mx-auto md:max-w-none">
+                <CardContent className="p-6 md:p-8 space-y-6">
                   <div className="text-center">
-                    <div className="text-6xl font-bold text-purple-600 mb-2">$1.250.000</div>
+                    <div className="text-5xl md:text-6xl font-bold text-purple-600 mb-2">$1.250.000</div>
                     <div className="text-xl font-semibold text-gray-900 mb-2">{t('landing.benefits.calculator.lost')}</div>
                     <div className="text-sm text-gray-600">
                       {t('landing.benefits.calculator.lostDescription')}

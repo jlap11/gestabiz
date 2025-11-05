@@ -538,23 +538,50 @@ serve(async (req) => {
     const available = businessRows.filter(b => allowedBusinessIds.has(b.id))
     let cityOnly = available.filter(b => citySet.has(b.id))
 
-    // Filtros de rating para búsquedas por término/servicios/categorías (aplican a todo el set)
+    // Filtros de rating basados en las últimas 100 reviews visibles
     if (type !== 'initial' && (typeof minRating === 'number' || typeof minReviewCount === 'number')) {
       try {
         const ids = (cityOnly || []).map((b: any) => b.id)
         if (ids.length > 0) {
-          const { data: statsRows } = await supabase
-            .from('business_ratings_stats')
-            .select('business_id, average_rating, review_count')
+          const { data: reviewsRows } = await supabase
+            .from('reviews')
+            .select('business_id, rating, created_at, is_visible')
             .in('business_id', ids)
+            .eq('is_visible', true)
+            .order('created_at', { ascending: false })
+
+          const grouped: Record<string, number[]> = {}
+          for (const r of (reviewsRows || []) as any[]) {
+            const bid = r.business_id
+            const rating = r.rating as number
+            if (!grouped[bid]) grouped[bid] = []
+            if (grouped[bid].length < 100) grouped[bid].push(rating)
+          }
+
+          const countsMap: Record<string, number> = {}
+          await Promise.all(ids.map(async (id) => {
+            try {
+              const { count } = await supabase
+                .from('reviews')
+                .select('id', { count: 'exact', head: true })
+                .eq('business_id', id)
+                .eq('is_visible', true)
+              countsMap[id] = Number(count || 0)
+            } catch (_) {
+              countsMap[id] = (grouped[id]?.length || 0)
+            }
+          }))
+
           const okSet = new Set<string>()
-          for (const row of (statsRows || []) as any[]) {
-            const avg = row.average_rating ?? 0
-            const cnt = row.review_count ?? 0
-            if ((typeof minRating !== 'number' || avg >= minRating) && (typeof minReviewCount !== 'number' || cnt >= minReviewCount)) {
-              okSet.add(row.business_id)
+          for (const id of ids) {
+            const arr = grouped[id] || []
+            const avg = arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+            const totalCnt = countsMap[id] ?? arr.length
+            if ((typeof minRating !== 'number' || avg >= (minRating as number)) && (typeof minReviewCount !== 'number' || totalCnt >= (minReviewCount as number))) {
+              okSet.add(id)
             }
           }
+
           cityOnly = cityOnly.filter((b: any) => okSet.has(b.id))
         }
       } catch (_) {
@@ -583,19 +610,47 @@ serve(async (req) => {
     const end = start + pageSize
     const paginated = cityOnly.slice(start, end)
 
-    // Rating stats para negocios paginados
+    // Rating stats para negocios paginados basados en últimas 100 reviews
     let ratingStatsByBusinessId: Record<string, { average_rating: number; review_count: number }> = {}
     try {
       const ids = (paginated || []).map((b: any) => b.id)
       if (ids.length > 0) {
-        const { data: statsRows } = await supabase
-          .from('business_ratings_stats')
-          .select('business_id, average_rating, review_count')
+        const { data: reviewsRows } = await supabase
+          .from('reviews')
+          .select('business_id, rating, created_at, is_visible')
           .in('business_id', ids)
-        for (const row of (statsRows || []) as any[]) {
-          ratingStatsByBusinessId[row.business_id] = {
-            average_rating: row.average_rating ?? 0,
-            review_count: row.review_count ?? 0,
+          .eq('is_visible', true)
+          .order('created_at', { ascending: false })
+
+        const grouped: Record<string, number[]> = {}
+        for (const r of (reviewsRows || []) as any[]) {
+          const bid = r.business_id
+          const rating = r.rating as number
+          if (!grouped[bid]) grouped[bid] = []
+          if (grouped[bid].length < 100) grouped[bid].push(rating)
+        }
+
+        const countsMap: Record<string, number> = {}
+        await Promise.all(ids.map(async (id) => {
+          try {
+            const { count } = await supabase
+              .from('reviews')
+              .select('id', { count: 'exact', head: true })
+              .eq('business_id', id)
+              .eq('is_visible', true)
+            countsMap[id] = Number(count || 0)
+          } catch (_) {
+            countsMap[id] = (grouped[id]?.length || 0)
+          }
+        }))
+
+        for (const id of ids) {
+          const arr = grouped[id] || []
+          const avg = arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length) : 0
+          const totalCnt = countsMap[id] ?? arr.length
+          ratingStatsByBusinessId[id] = {
+            average_rating: avg,
+            review_count: totalCnt,
           }
         }
       }

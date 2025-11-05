@@ -309,9 +309,9 @@ export function UnifiedLayout({
       )}
 
       {/* Right Side: Header + Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        {/* Header - Responsive height */}
-        <header className="bg-card border-b border-border sticky top-0 z-20 flex-shrink-0">
+      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+        {/* Header - Responsive height (fixed on mobile, sticky on desktop) */}
+        <header className="bg-card border-b border-border fixed inset-x-0 top-0 z-[90] sm:sticky sm:inset-auto flex-shrink-0">
         {/* Mobile top bar: logo abre el menú izquierdo + botón menú derecho */}
         <div className="px-3 py-3 flex items-center justify-between sm:hidden min-h-[56px]">
           <div className="flex items-center gap-2">
@@ -616,6 +616,11 @@ export function UnifiedLayout({
         </div>
       </header>
 
+      {/* Main Content - Scrollable area (mobile padding to account for fixed header) */}
+      <main className="flex-1 px-3 sm:px-0 max-w-[100vw] overflow-x-hidden pt-[56px] sm:pt-0">
+          {children}
+      </main>
+
       {/* Mobile Header Overlay - Right side drawer (animated open/close) */}
       <div
         className={cn(
@@ -771,10 +776,6 @@ export function UnifiedLayout({
           </div>
         </div>
 
-        {/* Main Content - Scrollable with mobile padding */}
-        <main className="flex-1 overflow-y-auto px-3 sm:px-0 max-w-[100vw] overflow-x-hidden">
-          {children}
-        </main>
       </div>
 
       {/* Floating Chat Button - Visible for all roles */}

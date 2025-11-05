@@ -372,15 +372,6 @@ export function NotificationCenter({
               <CheckCheck className="h-4 w-4" />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0"
-            onClick={onClose}
-            aria-label={t('notifications.closeNotifications')}
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 

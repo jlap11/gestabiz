@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks'
 
 interface AppointmentWithRelations {
   id: string
@@ -57,6 +58,7 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
   const [currentDate, setCurrentDate] = useState(new Date())
   const [view, setView] = useState<CalendarView>('month')
   const [hoveredDay, setHoveredDay] = useState<string | null>(null)
+  const isMobile = useIsMobile()
 
   // Navigation functions
   const navigatePrevious = () => {
@@ -150,6 +152,9 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
     }
     return currentDate.toLocaleDateString('es-MX', options)
   }
+
+  // Posicionar scroll cuando cambiamos a vista Día
+  useScrollToDayAppointments(view, currentDate, getAppointmentsForDate, [appointments])
 
   // Get status badge variant
   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
@@ -266,7 +271,7 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
           const canCreateAppointment = isHourAvailable(hour)
 
           return (
-            <div key={hour} className="relative">
+            <div key={hour} className="relative" id={`day-hour-${hour}`}>
               {/* Línea indicadora de hora actual */}
               {isCurrentHour && (
                 <div className="absolute left-0 right-0 top-0 z-10 flex items-center">
@@ -478,10 +483,23 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
                       "min-h-[120px] border rounded-lg p-2 relative transition-colors",
                       !isCurrentMonth && "bg-muted/30",
                       isToday && "border-primary border-2 bg-primary/5",
-                      canCreateAppointment && "hover:bg-muted/30"
+                      canCreateAppointment && "hover:bg-muted/30",
+                      isMobile && dayAppointments.length === 0 && canCreateAppointment && "cursor-pointer"
                     )}
                     onMouseEnter={() => setHoveredDay(dayKey)}
                     onMouseLeave={() => setHoveredDay(null)}
+                    onClick={() => {
+                      // Si el día tiene citas, navegar a vista de Día y posicionar en el día
+                      if (dayAppointments.length > 0) {
+                        setView('day')
+                        setCurrentDate(new Date(day))
+                        return
+                      }
+                      // En móvil: si no hay citas y está permitido, abrir creación rápida
+                      if (isMobile && dayAppointments.length === 0 && canCreateAppointment && onCreateAppointment) {
+                        onCreateAppointment(day)
+                      }
+                    }}
                   >
                     <div className="flex items-start justify-between mb-1">
                       <div className={cn(
@@ -507,32 +525,43 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
                         </Button>
                       )}
                     </div>
-                    
-                    <div className="space-y-1">
-                      {dayAppointments.slice(0, 2).map(apt => (
-                        <button
-                          key={apt.id}
-                          type="button"
-                          className="text-xs p-1 rounded bg-primary/10 hover:bg-primary/20 cursor-pointer truncate w-full text-left transition-colors"
-                          onClick={() => onAppointmentClick?.(apt)}
-                        >
-                          <div className="font-medium truncate text-foreground">
-                            {new Date(apt.start_time).toLocaleTimeString('es-MX', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </div>
-                          <div className="truncate text-muted-foreground">
-                            {apt.service?.name || apt.title}
-                          </div>
-                        </button>
-                      ))}
-                      {dayAppointments.length > 2 && (
-                        <div className="text-xs text-muted-foreground text-center">
-                          +{dayAppointments.length - 2} más
+
+                    {/* Indicador centrado: círculo con cantidad de citas (solo en móvil) */}
+                    {isMobile && dayAppointments.length > 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center shadow-sm">
+                          {dayAppointments.length}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                    
+                    {!isMobile && (
+                      <div className="space-y-1">
+                        {dayAppointments.slice(0, 2).map(apt => (
+                          <button
+                            key={apt.id}
+                            type="button"
+                            className="text-xs p-1 rounded bg-primary/10 hover:bg-primary/20 cursor-pointer truncate w-full text-left transition-colors"
+                            onClick={() => onAppointmentClick?.(apt)}
+                          >
+                            <div className="font-medium truncate text-foreground">
+                              {new Date(apt.start_time).toLocaleTimeString('es-MX', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            <div className="truncate text-muted-foreground">
+                              {apt.service?.name || apt.title}
+                            </div>
+                          </button>
+                        ))}
+                        {dayAppointments.length > 2 && (
+                          <div className="text-xs text-muted-foreground text-center">
+                            +{dayAppointments.length - 2} más
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -545,8 +574,11 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
 
   return (
     <div className="space-y-4">
-      {/* Header with navigation and view controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Header con navegación y controles (no sticky – solo el header principal del dashboard será pegajoso) */}
+      <div
+        id="calendar-sticky-header"
+        className="border-b border-border py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      >
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
@@ -619,4 +651,66 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
       </div>
     </div>
   )
+}
+
+// Posicionar scroll al entrar en vista Día según citas del día
+export function useScrollToDayAppointments(
+  view: CalendarView,
+  currentDate: Date,
+  getAppointmentsForDate: (date: Date) => AppointmentWithRelations[],
+  deps: any[] = []
+) {
+  useEffect(() => {
+    if (view !== 'day') return
+    const dayAppointments = getAppointmentsForDate(currentDate)
+    if (!dayAppointments || dayAppointments.length === 0) return
+    // Ordenar citas del día por hora
+    const sorted = [...dayAppointments].sort(
+      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    )
+
+    const firstDate = new Date(sorted[0].start_time)
+    const lastDate = new Date(sorted[sorted.length - 1].start_time)
+    const firstHour = firstDate.getHours()
+    const lastHour = lastDate.getHours()
+    const count = sorted.length
+    const spanHours = Math.abs(lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60)
+
+    // Nueva regla de posicionamiento:
+    // - <= 5 citas y diferencia < 6 horas: centrar (buscando un punto medio)
+    // - 1 cita: centrar
+    // - Si no se puede mostrar todo por diferencia >= 6h o más citas: dejar la primera arriba
+    let targetHour = firstHour
+    let mode: 'center' | 'start' = 'start'
+    if (count === 1) {
+      targetHour = firstHour
+      mode = 'center'
+    } else if (count <= 5 && spanHours < 6) {
+      targetHour = Math.floor((firstHour + lastHour) / 2)
+      mode = 'center'
+    } else {
+      targetHour = firstHour
+      mode = 'start'
+    }
+
+    const el = document.getElementById(`day-hour-${targetHour}`)
+    if (!el) return
+
+    // Considerar la altura del header pegajoso para no tapar el objetivo
+    const headerEl = (document.getElementById('dashboard-sticky-header') as HTMLElement | null) 
+      ?? (document.getElementById('calendar-sticky-header') as HTMLElement | null)
+    const offset = headerEl?.offsetHeight ?? 0
+
+    const rect = el.getBoundingClientRect()
+    const elementHeight = rect.height || el.clientHeight || 60
+
+    let targetY: number
+    if (mode === 'center') {
+      targetY = rect.top + window.scrollY - (window.innerHeight / 2) + (elementHeight / 2) - offset
+    } else {
+      targetY = rect.top + window.scrollY - offset
+    }
+    window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, currentDate, ...deps])
 }

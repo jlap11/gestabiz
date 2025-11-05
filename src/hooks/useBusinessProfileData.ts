@@ -251,12 +251,27 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
         }
       }
 
-      // 8. Fetch business rating and review count
-      const { data: statsData } = await supabase
-        .from('business_ratings_stats')
-        .select('average_rating, review_count')
-        .eq('business_id', businessData.id)
-        .single();
+      // 8. Calcular rating del negocio con las últimas 100 reviews visibles
+      let businessAverageRating = 0;
+      let businessTotalReviews = 0;
+      try {
+        const { data: latestReviews, count } = await supabase
+          .from('reviews')
+          .select('rating, created_at', { count: 'exact' })
+          .eq('business_id', businessData.id)
+          .eq('is_visible', true)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        const ratings = (latestReviews || []) as Array<{ rating: number }>;
+        const usedCount = ratings.length;
+        businessAverageRating = usedCount > 0
+          ? ratings.reduce((acc, r) => acc + (r?.rating ?? 0), 0) / usedCount
+          : 0;
+        businessTotalReviews = Number(count || usedCount || 0);
+      } catch (_) {
+        businessAverageRating = 0;
+        businessTotalReviews = 0;
+      }
 
       // 9. Calculate distances if user location is provided
       let locationsWithDistance = locationsData || [];
@@ -309,8 +324,8 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
         logo_url: businessData.logo_url,
         banner_url: businessData.banner_url,
         slug: businessData.slug,
-        rating: statsData?.average_rating || 0,
-        reviewCount: statsData?.review_count || 0,
+        rating: businessAverageRating || 0,
+        reviewCount: businessTotalReviews || 0,
         category: category ? {
           name: category.name,
           icon: category.icon_name

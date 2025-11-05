@@ -765,43 +765,44 @@ export function ClientDashboard({
       case 'appointments':
         return (
           <div className="p-6">
-            {/* Header - Mantener en toda la parte superior */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 w-full min-w-0">
+            {/* Header principal: título y botón en la misma fila (sticky en móvil) */}
+            <div id="dashboard-sticky-header" className="sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 flex items-center justify-between gap-4 w-full min-w-0">
               <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                {/* View Mode Toggle */}
-                <div className="flex items-center gap-1 bg-muted rounded-lg p-1 order-2 w-full sm:order-1 sm:w-auto mt-2 sm:mt-0">
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      "h-8",
-                      viewMode !== 'list' && "hover:bg-primary hover:text-primary-foreground"
-                    )}
-                  >
-                    <List className="h-4 w-4 mr-2" />
-                    Lista
-                  </Button>
-                  <Button
-                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('calendar')}
-                    className={cn(
-                      "h-8",
-                      viewMode !== 'calendar' && "hover:bg-primary hover:text-primary-foreground"
-                    )}
-                  >
-                    <CalendarDays className="h-4 w-4 mr-2" />
-                    Calendario
-                  </Button>
-                </div>
-                <Button 
-                  onClick={() => setShowAppointmentWizard(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground order-1 self-end sm:self-auto ml-auto sm:ml-0 sm:order-2"
+              <Button 
+                onClick={() => setShowAppointmentWizard(true)}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Nueva Cita
+              </Button>
+            </div>
+
+            {/* Controles de vista: debajo del header, mejor para móviles */}
+            <div className="flex items-center gap-2 mb-6 w-full">
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    "h-8",
+                    viewMode !== 'list' && "hover:bg-primary hover:text-primary-foreground"
+                  )}
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Nueva Cita
+                  <List className="h-4 w-4 mr-2" />
+                  Lista
+                </Button>
+                <Button
+                  variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('calendar')}
+                  className={cn(
+                    "h-8",
+                    viewMode !== 'calendar' && "hover:bg-primary hover:text-primary-foreground"
+                  )}
+                >
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Calendario
                 </Button>
               </div>
             </div>

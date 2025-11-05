@@ -10,8 +10,8 @@
     width: 100%;
     max-width: 100%;
     min-height: 100vh;
-    /* Permitir que el contenido gestione su propio overflow sin recortar por defecto */
-    overflow-x: unset;
+    /* Evitar scroll horizontal global y recortes indeseados en páginas públicas */
+    overflow-x: hidden;
   }
 
   #root {

@@ -824,7 +824,7 @@ export function AppointmentWizard({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
         className={cn(
-          "bg-card border-border text-foreground p-0 overflow-hidden border-0",
+          "bg-card text-foreground p-0 overflow-hidden !border-0 !shadow-none",
           "w-[98vw] sm:w-[95vw] md:w-[85vw] lg:w-[75vw]",
           "!max-w-[1200px]",
           "h-[95vh] sm:h-auto", // Full height mobile
@@ -837,7 +837,7 @@ export function AppointmentWizard({
         </DialogTitle>
         {/* Header - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
-          <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border">
+          <div className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4">
             <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
               <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
                 {appointmentToEdit ? 'Editar Cita' : 'Nueva Cita'}
@@ -1045,7 +1045,7 @@ export function AppointmentWizard({
 
         {/* Footer with navigation buttons - Mobile Responsive */}
         {currentStep < getStepNumber('success') && (
-          <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={handleBack}
