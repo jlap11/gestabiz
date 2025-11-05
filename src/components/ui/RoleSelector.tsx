@@ -98,7 +98,7 @@ export function RoleSelector({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="w-64">
+      <DropdownMenuContent align="start" className="w-64 z-[120]">
         <DropdownMenuLabel>{t('roleSelector.label')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 

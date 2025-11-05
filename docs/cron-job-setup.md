@@ -1,4 +1,4 @@
-# Configuración del Cron Job para Confirmación de Citas
+# Configuración del Cron Job para Confirmación y Recordatorios de Citas
 
 Este documento explica cómo configurar y gestionar el cron job que actualiza automáticamente el estado de las citas pendientes de confirmación.
 
@@ -8,6 +8,11 @@ El sistema incluye un cron job que se ejecuta cada 10 minutos para:
 - Verificar citas con estado `pending_confirmation` que han expirado (más de 24 horas sin confirmar)
 - Cambiar automáticamente su estado a `cancelled`
 - Registrar la cancelación automática en el sistema
+
+Adicionalmente, existe un cron job horario para recordatorios de citas (Edge Function `process-reminders`) que:
+- Envía recordatorios 24 horas antes y 1 hora antes de cada cita
+- Usa ventanas móviles de 30 minutos para cubrir citas a la media hora
+- Crea y actualiza registros en `notifications` (sent/failed)
 
 ## Configuración en Desarrollo Local
 
@@ -41,7 +46,7 @@ El sistema incluye un cron job que se ejecuta cada 10 minutos para:
 ### 2. Configurar la Variable de Entorno
 Asegurarse de que la variable `SERVICE_ROLE_KEY` esté configurada en las variables de entorno de las Edge Functions.
 
-### 3. Programar el Cron Job
+### 3. Programar los Cron Jobs
 Ejecutar en el SQL Editor de Supabase:
 
 ```sql
@@ -49,6 +54,13 @@ SELECT cron.schedule(
   'appointment-status-updater',
   '*/10 * * * *',
   'SELECT invoke_appointment_status_updater();'
+);
+
+-- Recordatorios de citas (cada hora)
+SELECT cron.schedule(
+  'process-appointment-reminders-hourly',
+  '0 * * * *',
+  'SELECT public.invoke_process_reminders();'
 );
 ```
 
@@ -122,9 +134,9 @@ curl -X POST 'https://dkancockzvcqorqbwtyh.supabase.co/functions/v1/appointment-
   -d '{"source": "manual_test"}'
 ```
 
-### Logs de la Edge Function
+### Logs de las Edge Functions
 1. Ir al Dashboard de Supabase
-2. Navegar a **Edge Functions > appointment-status-updater**
+2. Navegar a **Edge Functions > appointment-status-updater** y **process-reminders**
 3. Ver la pestaña **Logs** para revisar ejecuciones
 
 ### Problemas Comunes
@@ -164,6 +176,9 @@ curl -X POST 'https://dkancockzvcqorqbwtyh.supabase.co/functions/v1/appointment-
 -- Ejecutar manualmente (para pruebas)
 SELECT invoke_appointment_status_updater();
 
+-- Forzar procesamiento de recordatorios
+SELECT public.invoke_process_reminders();
+
 -- Ver próxima ejecución programada
 SELECT jobname, schedule, 
        CASE 
@@ -173,6 +188,9 @@ SELECT jobname, schedule,
 FROM cron.job 
 WHERE jobname = 'appointment-status-updater';
 
+-- Próxima ejecución de recordatorios
+SELECT jobname, schedule, active FROM cron.job WHERE jobname = 'process-appointment-reminders-hourly';
+
 -- Estadísticas de ejecución
 SELECT 
   COUNT(*) as total_ejecuciones,
@@ -181,5 +199,14 @@ SELECT
   AVG(EXTRACT(EPOCH FROM (end_time - start_time))) as duracion_promedio_segundos
 FROM cron.job_run_details 
 WHERE jobname = 'appointment-status-updater'
+  AND start_time >= NOW() - INTERVAL '7 days';
+
+-- Estadísticas de recordatorios
+SELECT 
+  COUNT(*) as total_ejecuciones,
+  COUNT(CASE WHEN status = 'succeeded' THEN 1 END) as exitosas,
+  COUNT(CASE WHEN status = 'failed' THEN 1 END) as fallidas
+FROM cron.job_run_details 
+WHERE jobname = 'process-appointment-reminders-hourly'
   AND start_time >= NOW() - INTERVAL '7 days';
 ```

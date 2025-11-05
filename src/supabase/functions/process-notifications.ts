@@ -37,6 +37,7 @@ serve(async (req) => {
           id,
           title,
           start_time,
+          business_id,
           user_id,
           users!inner(
             email,
@@ -91,6 +92,39 @@ serve(async (req) => {
           continue
         }
 
+        // Optionally gate against business settings before dispatch
+        let allowChannel = true
+        if (notification.appointments?.business_id) {
+          const { data: bizSettings } = await supabaseClient
+            .from('business_notification_settings')
+            .select('*')
+            .eq('business_id', notification.appointments.business_id)
+            .single()
+
+          if (bizSettings) {
+            const notifTypes = (bizSettings.notification_types ?? {}) as Record<string, { enabled?: boolean; channels?: string[] }>
+            const reminderCfg = notifTypes['appointment_reminder'] || { enabled: true, channels: ['email', 'whatsapp'] }
+            const channels = reminderCfg.channels || []
+            if (notification.delivery_method === 'email') {
+              allowChannel = Boolean(bizSettings.email_enabled) && Boolean(reminderCfg.enabled) && channels.includes('email')
+            } else if (notification.delivery_method === 'sms') {
+              allowChannel = Boolean(bizSettings.sms_enabled) && Boolean(reminderCfg.enabled) && channels.includes('sms')
+            } else if (notification.delivery_method === 'whatsapp') {
+              allowChannel = Boolean(bizSettings.whatsapp_enabled) && Boolean(reminderCfg.enabled) && channels.includes('whatsapp')
+            }
+          }
+        }
+
+        if (!allowChannel) {
+          await supabaseClient
+            .from('notifications')
+            .update({ status: 'cancelled', error_message: 'Channel disabled by business settings' })
+            .eq('id', notification.id)
+
+          results.push({ notificationId: notification.id, status: 'cancelled', method: notification.delivery_method })
+          continue
+        }
+
         // Process based on delivery method
         if (notification.delivery_method === 'email') {
           // Call the email reminder function
@@ -120,6 +154,45 @@ serve(async (req) => {
               method: 'email',
               error: error
             })
+          }
+        } else if (notification.delivery_method === 'whatsapp') {
+          const waResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp-reminder`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              notificationId: notification.id,
+              appointmentId: notification.appointment_id,
+            })
+          })
+
+          if (waResponse.ok) {
+            results.push({ notificationId: notification.id, status: 'sent', method: 'whatsapp' })
+          } else {
+            const error = await waResponse.text()
+            results.push({ notificationId: notification.id, status: 'failed', method: 'whatsapp', error })
+          }
+        } else if (notification.delivery_method === 'sms') {
+          const smsResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-sms-reminder`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              notificationId: notification.id,
+              appointmentId: notification.appointment_id,
+              type: notification.type,
+            })
+          })
+
+          if (smsResponse.ok) {
+            results.push({ notificationId: notification.id, status: 'sent', method: 'sms' })
+          } else {
+            const error = await smsResponse.text()
+            results.push({ notificationId: notification.id, status: 'failed', method: 'sms', error })
           }
         } else if (notification.delivery_method === 'push') {
           // For push notifications, you would integrate with Firebase Cloud Messaging

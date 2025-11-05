@@ -106,6 +106,17 @@ export function useUserRoles(user: User | null) {
         })
       }
 
+      // 1.b. Always add a generic admin role (no business) so everyone can access Admin
+      // Esto permite mostrar el componente de creación de negocios si el usuario no tiene ninguno
+      roleAssignments.push({
+        id: `${user.id}-admin`,
+        user_id: user.id,
+        role: 'admin',
+        business_id: null,
+        is_active: true,
+        created_at: user.created_at,
+      })
+
       // 2. Get businesses where user is employee (approved)
       const { data: employeeRelations, error: employeeError } = await supabase
         .from('business_employees')

@@ -1,9 +1,9 @@
+// Supabase Edge Function: process-reminders
+// Runs hourly to send 24h and 1h appointment reminders.
+// Windowing accounts for half-hour slots: [24h, 24.5h] and [1h, 1.5h].
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { initSentry, captureEdgeFunctionError, flushSentry } from '../_shared/sentry.ts'
-
-// Initialize Sentry
-initSentry('process-reminders')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,198 +16,269 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    // Obtener fecha/hora actual
-    const now = new Date()
-    
-    // Buscar citas que necesitan recordatorios
-    // Buscaremos citas en las próximas 25 horas (para capturar recordatorios de 24h)
-    const futureLimit = new Date(now.getTime() + 25 * 60 * 60 * 1000)
-    
-    const { data: upcomingAppointments, error: appointmentsError } = await supabase
-      .from('appointments')
-      .select(`
-        id,
-        business_id,
-        employee_id,
-        client_id,
-        service_id,
-        location_id,
-        start_time,
-        end_time,
-        status,
-        reminder_sent,
-        notes,
-        business:businesses(id, name),
-        service:services(id, name, duration, price),
-        location:locations(id, name, address),
-        client:profiles!client_id(id, full_name, email, phone, whatsapp),
-        employee:profiles!employee_id(id, full_name, email, phone)
-      `)
-      .in('status', ['pending', 'confirmed'])
-      .gte('start_time', now.toISOString())
-      .lte('start_time', futureLimit.toISOString())
-      .order('start_time', { ascending: true })
-
-    if (appointmentsError) {
-      throw appointmentsError
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
     }
 
-    const results = []
-    let remindersProcessed = 0
-    let remindersSent = 0
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    for (const appointment of upcomingAppointments || []) {
+    const now = new Date()
+    const addMinutes = (d: Date, m: number) => new Date(d.getTime() + m * 60 * 1000)
+
+    // Windows to catch hourly cron and half-hour appointments
+    const windowStart24h = addMinutes(now, 24 * 60)
+    const windowEnd24h = addMinutes(now, 24 * 60 + 30)
+
+    const windowStart1h = addMinutes(now, 60)
+    const windowEnd1h = addMinutes(now, 60 + 30)
+
+    // Fetch appointments in both windows
+    const { data: appts24h, error: err24 } = await supabase
+      .from('appointments')
+      .select('*')
+      .in('status', ['confirmed', 'scheduled'])
+      .gte('start_time', windowStart24h.toISOString())
+      .lte('start_time', windowEnd24h.toISOString())
+
+    if (err24) throw new Error(`Failed to fetch 24h window appointments: ${err24.message}`)
+
+    const { data: appts1h, error: err1 } = await supabase
+      .from('appointments')
+      .select('*')
+      .in('status', ['confirmed', 'scheduled'])
+      .gte('start_time', windowStart1h.toISOString())
+      .lte('start_time', windowEnd1h.toISOString())
+
+    if (err1) throw new Error(`Failed to fetch 1h window appointments: ${err1.message}`)
+
+    const whatsappConfigured = !!(Deno.env.get('TWILIO_ACCOUNT_SID') && Deno.env.get('TWILIO_AUTH_TOKEN') && Deno.env.get('TWILIO_WHATSAPP_NUMBER'))
+    const smsConfigured = !!(Deno.env.get('TWILIO_ACCOUNT_SID') && Deno.env.get('TWILIO_AUTH_TOKEN') && Deno.env.get('TWILIO_SMS_NUMBER'))
+
+    const notificationsToCreate: Array<{
+      appointment_id: string
+      user_id: string | null
+      type: 'reminder_24h' | 'reminder_1h'
+      title: string
+      message: string
+      scheduled_for: string
+      delivery_method: 'email' | 'whatsapp' | 'sms'
+    }> = []
+
+    // Helper to check if notification exists
+    const hasNotification = async (appointmentId: string, type: string, delivery?: 'email' | 'whatsapp' | 'sms') => {
+      let query = supabase
+        .from('notifications')
+        .select('id')
+        .eq('appointment_id', appointmentId)
+        .eq('type', type)
+      if (delivery) {
+        query = query.eq('delivery_method', delivery)
+      }
+      const { data } = await query.limit(1)
+      return (data ?? []).length > 0
+    }
+
+    // Build notifications for 24h window
+    for (const appt of appts24h ?? []) {
+      // Email siempre a 24h
+      const existsEmail24 = await hasNotification(appt.id, 'reminder_24h', 'email')
+      if (!existsEmail24) {
+        notificationsToCreate.push({
+          appointment_id: appt.id,
+          user_id: appt.client_id ?? appt.user_id ?? null,
+          type: 'reminder_24h',
+          title: 'Recordatorio de cita (24h)',
+          message: `Tu cita es mañana: ${appt.title ?? ''}`,
+          scheduled_for: now.toISOString(),
+          delivery_method: 'email',
+        })
+      }
+
+      // WhatsApp opcional a 24h si está configurado
+      if (whatsappConfigured) {
+        const existsWa24 = await hasNotification(appt.id, 'reminder_24h', 'whatsapp')
+        if (!existsWa24) {
+          notificationsToCreate.push({
+            appointment_id: appt.id,
+            user_id: appt.client_id ?? appt.user_id ?? null,
+            type: 'reminder_24h',
+            title: 'Recordatorio de cita (24h)',
+            message: `Tu cita es mañana: ${appt.title ?? ''}`,
+            scheduled_for: now.toISOString(),
+            delivery_method: 'whatsapp',
+          })
+        }
+      }
+
+      // SMS opcional a 24h si está configurado
+      if (smsConfigured) {
+        const existsSms24 = await hasNotification(appt.id, 'reminder_24h', 'sms')
+        if (!existsSms24) {
+          notificationsToCreate.push({
+            appointment_id: appt.id,
+            user_id: appt.client_id ?? appt.user_id ?? null,
+            type: 'reminder_24h',
+            title: 'Recordatorio de cita (24h)',
+            message: `Tu cita es mañana: ${appt.title ?? ''}`,
+            scheduled_for: now.toISOString(),
+            delivery_method: 'sms',
+          })
+        }
+      }
+    }
+
+    // Build notifications for 1h window
+    for (const appt of appts1h ?? []) {
+      // Always schedule email for 1h
+      const existsEmail = await hasNotification(appt.id, 'reminder_1h', 'email')
+      if (!existsEmail) {
+        notificationsToCreate.push({
+          appointment_id: appt.id,
+          user_id: appt.client_id ?? appt.user_id ?? null,
+          type: 'reminder_1h',
+          title: 'Recordatorio de cita (1h)',
+          message: `Tu cita es en 1 hora: ${appt.title ?? ''}`,
+          scheduled_for: now.toISOString(),
+          delivery_method: 'email',
+        })
+      }
+
+      // Schedule WhatsApp only if provider configured
+      if (whatsappConfigured) {
+        const existsWa = await hasNotification(appt.id, 'reminder_1h', 'whatsapp')
+        if (!existsWa) {
+          notificationsToCreate.push({
+            appointment_id: appt.id,
+            user_id: appt.client_id ?? appt.user_id ?? null,
+            type: 'reminder_1h',
+            title: 'Recordatorio de cita (1h)',
+            message: `Tu cita es en 1 hora: ${appt.title ?? ''}`,
+            scheduled_for: now.toISOString(),
+            delivery_method: 'whatsapp',
+          })
+        }
+      }
+
+      // Schedule SMS only if provider configured
+      if (smsConfigured) {
+        const existsSms = await hasNotification(appt.id, 'reminder_1h', 'sms')
+        if (!existsSms) {
+          notificationsToCreate.push({
+            appointment_id: appt.id,
+            user_id: appt.client_id ?? appt.user_id ?? null,
+            type: 'reminder_1h',
+            title: 'Recordatorio de cita (1h)',
+            message: `Tu cita es en 1 hora: ${appt.title ?? ''}`,
+            scheduled_for: now.toISOString(),
+            delivery_method: 'sms',
+          })
+        }
+      }
+    }
+
+    let created: any[] = []
+    if (notificationsToCreate.length > 0) {
+      const { data: inserted, error: insertErr } = await supabase
+        .from('notifications')
+        .insert(
+          notificationsToCreate.map(n => ({
+            ...n,
+            status: 'queued',
+          }))
+        )
+        .select('*')
+      if (insertErr) throw new Error(`Failed to insert notifications: ${insertErr.message}`)
+      created = inserted ?? []
+    }
+
+    // Fire actual senders (dual channel when configured)
+    for (const n of created) {
       try {
-        // Obtener configuración de notificaciones del negocio
-        const { data: businessSettings } = await supabase
-          .from('business_notification_settings')
-          .select('reminder_times, email_enabled, sms_enabled, whatsapp_enabled')
-          .eq('business_id', appointment.business_id)
-          .single()
-
-        const reminderTimes = businessSettings?.reminder_times || [1440, 60] // Default: 24h y 1h
-
-        // Calcular tiempo hasta la cita (en minutos)
-        const appointmentTime = new Date(appointment.start_time)
-        const minutesUntilAppointment = Math.floor((appointmentTime.getTime() - now.getTime()) / (1000 * 60))
-
-        // Verificar si algún tiempo de recordatorio coincide
-        let shouldSendReminder = false
-        let reminderType = ''
-
-        for (const reminderMinutes of reminderTimes) {
-          // Permitir un margen de ±5 minutos
-          if (Math.abs(minutesUntilAppointment - reminderMinutes) <= 5) {
-            shouldSendReminder = true
-            reminderType = reminderMinutes >= 1440 ? '24 horas' : 
-                          reminderMinutes >= 60 ? '1 hora' : 
-                          `${reminderMinutes} minutos`
-            break
+        if (n.type === 'reminder_24h') {
+          if (n.delivery_method === 'whatsapp') {
+            await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-reminder`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ notificationId: n.id, appointmentId: n.appointment_id, type: n.type }),
+            })
+          } else if (n.delivery_method === 'sms') {
+            await fetch(`${supabaseUrl}/functions/v1/send-sms-reminder`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ notificationId: n.id, appointmentId: n.appointment_id, type: n.type }),
+            })
+          } else {
+            await fetch(`${supabaseUrl}/functions/v1/send-email-reminder`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ notificationId: n.id, appointmentId: n.appointment_id, type: n.type }),
+            })
+          }
+        } else if (n.type === 'reminder_1h') {
+          if (n.delivery_method === 'whatsapp') {
+            await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-reminder`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ notificationId: n.id, appointmentId: n.appointment_id, type: n.type }),
+            })
+          } else if (n.delivery_method === 'sms') {
+            await fetch(`${supabaseUrl}/functions/v1/send-sms-reminder`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ notificationId: n.id, appointmentId: n.appointment_id, type: n.type }),
+            })
+          } else {
+            await fetch(`${supabaseUrl}/functions/v1/send-email-reminder`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ notificationId: n.id, appointmentId: n.appointment_id, type: n.type }),
+            })
           }
         }
-
-        if (!shouldSendReminder) {
-          continue
-        }
-
-        // Verificar si ya se envió recordatorio para este intervalo
-        const { data: existingLog } = await supabase
-          .from('notification_log')
-          .select('id')
-          .eq('appointment_id', appointment.id)
-          .eq('notification_type', 'appointment_reminder')
-          .gte('created_at', new Date(now.getTime() - 10 * 60 * 1000).toISOString()) // Últimos 10 minutos
-          .limit(1)
-
-        if (existingLog && existingLog.length > 0) {
-          // Ya se envió un recordatorio recientemente
-          continue
-        }
-
-        remindersProcessed++
-
-        // Enviar notificación al cliente
-        const clientNotificationResult = await supabase.functions.invoke('send-notification', {
-          body: {
-            type: 'appointment_reminder',
-            recipient_user_id: appointment.client_id,
-            recipient_email: appointment.client?.email,
-            recipient_phone: appointment.client?.phone,
-            recipient_whatsapp: appointment.client?.whatsapp,
-            recipient_name: appointment.client?.full_name,
-            business_id: appointment.business_id,
-            appointment_id: appointment.id,
-            data: {
-              name: appointment.client?.full_name,
-              business_name: appointment.business?.name,
-              date: new Date(appointment.start_time).toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }),
-              time: new Date(appointment.start_time).toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit'
-              }),
-              location: appointment.location?.address || appointment.location?.name || 'Por confirmar',
-              service: appointment.service?.name || 'Servicio',
-              reminder_time: reminderType
-            }
-          }
-        })
-
-        if (clientNotificationResult.error) {
-          throw new Error(`Failed to send client reminder: ${clientNotificationResult.error}`)
-        }
-
-        remindersSent++
-
-        // Actualizar appointment para marcar que se envió recordatorio
-        if (minutesUntilAppointment <= 60) {
-          // Solo marcar como enviado si es el recordatorio final (1 hora o menos)
-          await supabase
-            .from('appointments')
-            .update({ reminder_sent: true })
-            .eq('id', appointment.id)
-        }
-
-        results.push({
-          appointment_id: appointment.id,
-          client: appointment.client?.full_name,
-          time_until: `${minutesUntilAppointment} minutos`,
-          reminder_type: reminderType,
-          status: 'sent'
-        })
-
-      } catch (error) {
-        results.push({
-          appointment_id: appointment.id,
-          status: 'failed',
-          error: (error as Error).message
-        })
+      } catch (sendErr) {
+        // Mark notification failed
+        await supabase
+          .from('notifications')
+          .update({ status: 'failed', error_message: `${sendErr}` })
+          .eq('id', n.id)
       }
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        processed_at: now.toISOString(),
-        appointments_checked: upcomingAppointments?.length || 0,
-        reminders_processed: remindersProcessed,
-        reminders_sent: remindersSent,
-        results
+        summary: {
+          window24h: { start: windowStart24h.toISOString(), end: windowEnd24h.toISOString(), count: (appts24h ?? []).length },
+          window1h: { start: windowStart1h.toISOString(), end: windowEnd1h.toISOString(), count: (appts1h ?? []).length },
+          created: created.length,
+        },
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
-
   } catch (error) {
-    console.error('Error in process-reminders:', error)
-    
-    // Capture error to Sentry
-    captureEdgeFunctionError(error as Error, {
-      functionName: 'process-reminders',
-      operation: 'main'
-    })
-    
-    await flushSentry()
-    
     return new Response(
-      JSON.stringify({ 
-        error: (error as Error).message,
-        stack: (error as Error).stack
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      JSON.stringify({ success: false, error: String(error) }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })
