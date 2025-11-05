@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Star, TrendingUp, Calendar, Award, Medal } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -281,19 +282,12 @@ export function TopPerformers({
 
               {/* Avatar */}
               <div className="flex-shrink-0">
-                {performer.avatar_url ? (
-                  <img
-                    src={performer.avatar_url}
-                    alt={performer.full_name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-background"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-background">
-                    <span className="text-lg font-semibold text-primary">
-                      {performer.full_name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                <Avatar className="h-12 w-12 border-2 border-background">
+                  <AvatarImage src={performer.avatar_url || undefined} alt={performer.full_name} />
+                  <AvatarFallback className="text-lg font-semibold text-primary">
+                    {performer.full_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </div>
 
               {/* Info */}

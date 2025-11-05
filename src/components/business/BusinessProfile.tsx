@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, MapPin, Phone, Mail, Globe, Clock, Star, Calendar, ChevronRight, MessageCircle, Heart } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -503,17 +504,12 @@ export default function BusinessProfile({
                             </div>
                             {service.employee && (
                               <div className="flex items-center gap-2">
-                                {service.employee.avatar_url ? (
-                                  <img 
-                                    src={service.employee.avatar_url} 
-                                    alt={service.employee.name}
-                                    className="w-5 h-5 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="text-xs">{service.employee.name[0]}</span>
-                                  </div>
-                                )}
+                                <Avatar className="h-5 w-5">
+                                  <AvatarImage src={service.employee.avatar_url || undefined} alt={service.employee.name} />
+                                  <AvatarFallback className="text-xs">
+                                    {service.employee.name.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <span>{service.employee.name}</span>
                               </div>
                             )}

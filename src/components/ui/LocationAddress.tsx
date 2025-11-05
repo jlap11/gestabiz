@@ -11,6 +11,7 @@ interface LocationAddressProps {
   postalCode?: string;
   className?: string;
   showFullAddress?: boolean;
+  showCountry?: boolean;
 }
 
 export function LocationAddress({
@@ -19,9 +20,10 @@ export function LocationAddress({
   stateId,
   postalCode,
   className = '',
-  showFullAddress = true
+  showFullAddress = true,
+  showCountry = true
 }: LocationAddressProps) {
-  const { regionName, cityName, loading } = useLocationNames(stateId, cityId);
+  const { regionName, cityName, countryName, loading } = useLocationNames(stateId, cityId);
 
   if (loading) {
     return <span className={`text-muted-foreground ${className}`}>Cargando...</span>;
@@ -43,6 +45,10 @@ export function LocationAddress({
   
   if (postalCode) {
     parts.push(postalCode);
+  }
+
+  if (showCountry && countryName) {
+    parts.push(countryName);
   }
 
   const fullAddress = parts.join(', ');

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-// import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Service, Appointment } from '@/types/types';
@@ -535,6 +535,23 @@ export function DateTimeSelection({
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       <h3 className="text-xl font-semibold text-foreground mb-6">Select Date & Time</h3>
+
+      {/* Aviso si la fecha/hora preseleccionada no está disponible */}
+      {selectedDate && selectedTime && (
+        (() => {
+          const matched = timeSlots.find((s) => s.time === selectedTime);
+          const invalid = !matched || (matched && !matched.available);
+          if (!invalid) return null;
+          return (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+              <Badge variant="destructive">No disponible</Badge>
+              <p className="text-sm text-red-800 dark:text-red-200">
+                La fecha y hora preseleccionadas no están disponibles. Por favor selecciona una nueva fecha y hora.
+              </p>
+            </div>
+          );
+        })()
+      )}
 
       {service && (
         <div className="mb-6 p-3 bg-card rounded-lg border border-border">

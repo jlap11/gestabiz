@@ -97,6 +97,40 @@ export function AppointmentWizard({
   appointmentToEdit
 }: Readonly<AppointmentWizardProps>) {
   const { t } = useLanguage()
+
+  // Normaliza horas preseleccionadas a formato de 12h con AM/PM y hora de 2 dígitos ("hh:mm AM/PM")
+  // Ejemplos:
+  // - "13:00" -> "01:00 PM"
+  // - "9:30"  -> "09:30 AM"
+  // - "1:30 PM" -> "01:30 PM" (asegurando el cero a la izquierda)
+  const normalizePreselectedTime = (time?: string | null): string | null => {
+    if (!time) return null;
+    const ampmRegex = /^(\d{1,2}):(\d{2})\s(AM|PM)$/i;
+    const twentyFourRegex = /^(\d{1,2}):(\d{2})$/;
+
+    const ampmMatch = time.match(ampmRegex);
+    if (ampmMatch) {
+      const hourNum = Number.parseInt(ampmMatch[1], 10);
+      const minuteStr = ampmMatch[2];
+      const suffix = ampmMatch[3].toUpperCase();
+      const hourStr = (hourNum === 0 ? 12 : hourNum).toString().padStart(2, '0');
+      return `${hourStr}:${minuteStr} ${suffix}`;
+    }
+
+    const tfMatch = time.match(twentyFourRegex);
+    if (tfMatch) {
+      let hourNum = Number.parseInt(tfMatch[1], 10);
+      const minuteStr = tfMatch[2];
+      const suffix = hourNum >= 12 ? 'PM' : 'AM';
+      let hour12 = hourNum % 12;
+      if (hour12 === 0) hour12 = 12;
+      const hourStr = hour12.toString().padStart(2, '0');
+      return `${hourStr}:${minuteStr} ${suffix}`;
+    }
+
+    // Si ya viene en otro formato, dejarlo tal cual.
+    return time;
+  };
   
   // Determinar el paso inicial basado en preselecciones
   const getInitialStep = () => {
@@ -138,7 +172,7 @@ export function AppointmentWizard({
     employeeBusiness: null,
     resourceId: null,
     date: preselectedDate || null,
-    startTime: preselectedTime || null,
+    startTime: normalizePreselectedTime(preselectedTime) || null,
     endTime: null,
     notes: '',
   });
@@ -173,6 +207,10 @@ export function AppointmentWizard({
 
   // Paso inicial lógico y numérico
   const getInitialStepLogical = () => {
+    // Si hay fecha u hora preseleccionada, iniciar desde el primer paso
+    if (preselectedDate || preselectedTime) {
+      return 'business';
+    }
     if (!businessId) return 'business';
     if (preselectedEmployeeId && preselectedServiceId) return 'dateTime';
     if (preselectedEmployeeId && !preselectedServiceId) return 'service';
@@ -281,16 +319,10 @@ export function AppointmentWizard({
   // Regla de visualización:
   // - Oculta siempre 'success' (pantalla final no cuenta en progreso)
   // - Oculta 'employeeBusiness' (solo información contextual)
-  // - Agrupa 'employee' dentro de 'dateTime' para el conteo visual
   const getDisplaySteps = (): string[] => {
     const order = getStepOrder();
     const filtered = order.filter(step => step !== 'success' && step !== 'employeeBusiness');
-
-    // Si existe el paso de empleado, lo consideramos parte del DateTime en la visualización
-    const hasEmployee = filtered.includes('employee');
-    if (hasEmployee) {
-      return filtered.filter(step => step !== 'employee');
-    }
+    // Ya no agrupamos 'employee' dentro de 'dateTime'; se muestra como paso separado
     return filtered;
   };
 
@@ -310,9 +342,9 @@ export function AppointmentWizard({
   const getEffectiveCurrentStep = (): number => {
     const effectiveSteps = getEffectiveSteps();
     let currentStepName = getStepOrder()[currentStep];
-    // Mapear pasos internos a su representación visual
-    if (currentStepName === 'employee' || currentStepName === 'employeeBusiness') {
-      currentStepName = 'dateTime';
+    // Mapear paso condicional 'employeeBusiness' a 'employee' en la visualización
+    if (currentStepName === 'employeeBusiness') {
+      currentStepName = 'employee';
     }
     return effectiveSteps.indexOf(currentStepName);
   };
@@ -338,8 +370,9 @@ export function AppointmentWizard({
     }
 
     // Paso 3: Employee (completado si employeeId está presente o se omite)
-    // 'employee' se agrupa en 'dateTime' para visualización; no agregar explícito
-    // No hacemos push aquí para evitar doble conteo
+    if (wizardData.employeeId && effectiveSteps.includes('employee')) {
+      completed.push(effectiveSteps.indexOf('employee'));
+    }
 
     // Paso 4: Employee Business (completado si aplica y está seleccionado)
     // 'employeeBusiness' no cuenta en la visualización
@@ -639,6 +672,48 @@ export function AppointmentWizard({
     setWizardData(prev => ({ ...prev, ...data }));
   };
 
+  // Backfill de sede y negocio cuando solo se recibe un servicio
+  React.useEffect(() => {
+    const backfillFromService = async () => {
+      if (!preselectedServiceId) return;
+      // Si ya tenemos business y location, no hacer nada
+      if (wizardData.businessId && wizardData.locationId) return;
+
+      try {
+        // Buscar en tabla de relación dónde se ofrece el servicio
+        const { data, error } = await supabase
+          .from('employee_services')
+          .select('business_id, location_id')
+          .eq('service_id', preselectedServiceId)
+          .eq('is_active', true);
+
+        if (error) throw error;
+        const rows = (data || []) as Array<{ business_id: string | null; location_id: string | null }>;
+        const businessIds = Array.from(new Set(rows.map(r => r.business_id).filter(Boolean))) as string[];
+        const locationIds = Array.from(new Set(rows.map(r => r.location_id).filter(Boolean))) as string[];
+
+        const updates: Partial<WizardData> = {};
+        if (!wizardData.businessId && businessIds.length === 1) {
+          updates.businessId = businessIds[0];
+        }
+        if (!wizardData.locationId && locationIds.length === 1) {
+          updates.locationId = locationIds[0];
+        }
+
+        if (Object.keys(updates).length > 0) {
+          updateWizardData(updates);
+        }
+      } catch (e) {
+        // No bloquear el flujo si falla; sólo log
+        console.warn('Backfill service→business/location failed', e);
+      }
+    };
+
+    backfillFromService();
+    // Solo ejecutar al abrir modal o cambiar preselección
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, preselectedServiceId]);
+
   // Función para crear la cita usando el hook useSupabase
   const createAppointment = async () => {
     if (!wizardData.businessId || !wizardData.serviceId || !wizardData.date || !wizardData.startTime) {
@@ -824,10 +899,10 @@ export function AppointmentWizard({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
         className={cn(
-          "bg-card text-foreground p-0 overflow-hidden !border-0 !shadow-none",
+          "bg-card text-foreground p-0 overflow-hidden !border-0 !shadow-none !flex !flex-col",
           "w-[98vw] sm:w-[95vw] md:w-[85vw] lg:w-[75vw]",
           "!max-w-[1200px]",
-          "h-[95vh] sm:h-auto", // Full height mobile
+          "h-[95vh] sm:min-h-[600px] sm:max-h-[85vh]", // Full height mobile; stable desktop height
           "[&>button]:hidden" // Ocultar el botón de cerrar por defecto del DialogContent
         )}
       >
@@ -861,13 +936,9 @@ export function AppointmentWizard({
           </div>
         )}
 
-        {/* Content Area - Mobile Full Height */}
+        {/* Content Area - fills remaining space; footer stays bottom */}
         <div className={cn(
-          "overflow-y-auto",
-          currentStep === getStepNumber('success') 
-            ? "max-h-[85vh] sm:max-h-[80vh]" 
-            : "max-h-[calc(95vh-200px)] sm:max-h-[calc(80vh-180px)]",
-          "px-3 sm:px-0" // Padding horizontal mobile
+          "flex-1 overflow-y-auto px-3 sm:px-0"
         )}>
           {/* Paso 0: Selección de Negocio */}
           {!businessId && currentStep === getStepNumber('business') && (
@@ -889,8 +960,8 @@ export function AppointmentWizard({
                   employee: null,
                   employeeBusinessId: null,
                   employeeBusiness: null,
-                  date: null,
-                  startTime: null,
+                  date: wizardData.date || preselectedDate || null,
+                  startTime: wizardData.startTime || normalizePreselectedTime(preselectedTime) || null,
                   endTime: null,
                   notes: '',
                 });

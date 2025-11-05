@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Building2, TrendingUp } from 'lucide-react';
+import { Star, MapPin, Building2, TrendingUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface SimpleBusiness {
   id: string;
@@ -27,6 +28,7 @@ interface BusinessSuggestionsProps {
 }
 
 const ITEMS_PER_PAGE = 10;
+const PREV_ITEMS_PER_PAGE = 6;
 
 export function BusinessSuggestions({
   userId,
@@ -37,57 +39,63 @@ export function BusinessSuggestions({
   onBusinessSelect
 }: Readonly<BusinessSuggestionsProps>) {
   const { t } = useLanguage()
-  const [favoriteBusiness, setFavoriteBusiness] = useState<SimpleBusiness | null>(null);
+  // Negocios donde el cliente ya reservó antes (frecuentes)
+  const [allPreviousBusinesses, setAllPreviousBusinesses] = useState<SimpleBusiness[]>([]);
+  const [previousBusinesses, setPreviousBusinesses] = useState<SimpleBusiness[]>([]);
+  const [recentBusinesses, setRecentBusinesses] = useState<SimpleBusiness[]>([]);
   const [allSuggestedBusinesses, setAllSuggestedBusinesses] = useState<SimpleBusiness[]>([]);
   const [displayedBusinesses, setDisplayedBusinesses] = useState<SimpleBusiness[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+  const [prevCurrentPage, setPrevCurrentPage] = useState(0);
+  const [recentOpen, setRecentOpen] = useState(false); // oculto por defecto
 
-  const loadFavoriteBusiness = async (userId: string) => {
-    // Get completed appointments
+  // Cargar múltiples negocios previamente reservados por el cliente (completados)
+  const loadPreviouslyBookedBusinesses = async (userId: string): Promise<SimpleBusiness[]> => {
+    // Traer citas completadas del cliente
     const { data: completed } = await supabase
       .from('appointments')
       .select('id, business_id')
       .eq('client_id', userId)
       .eq('status', 'completed');
 
-    if (!completed || completed.length === 0) return null;
+    if (!completed || completed.length === 0) return [];
 
-    const appointmentIds = completed.map((apt) => apt.id);
-    const { data: reviews } = await supabase
-      .from('reviews')
-      .select('business_id')
-      .in('appointment_id', appointmentIds)
-      .gte('rating', 4);
-
-    if (!reviews || reviews.length === 0) return null;
-
-    // Count reviews per business
-    const counts = new Map<string, number>();
-    for (const r of reviews) {
-      counts.set(r.business_id, (counts.get(r.business_id) || 0) + 1);
+    // Contar por negocio
+    const countByBusiness = new Map<string, number>();
+    for (const a of completed) {
+      if (!a.business_id) continue;
+      countByBusiness.set(a.business_id, (countByBusiness.get(a.business_id) || 0) + 1);
     }
 
-    // Pick random favorite business
-    const bizIds = Array.from(counts.keys());
-    const randomId = bizIds[Math.floor(Math.random() * bizIds.length)];
-    
-    // Get business details
-    const { data: biz } = await supabase
+    const businessIds = Array.from(countByBusiness.keys());
+    if (businessIds.length === 0) return [];
+
+    // Traer datos de negocios activos y públicos
+    const { data: businesses } = await supabase
       .from('businesses')
       .select('id, name, logo_url, average_rating')
-      .eq('id', randomId)
-      .single();
+      .in('id', businessIds)
+      .eq('is_active', true)
+      .eq('is_public', true);
 
-    if (!biz) return null;
+    if (!businesses || businesses.length === 0) return [];
 
-    return {
-      id: biz.id,
-      name: biz.name,
-      logo_url: biz.logo_url,
-      average_rating: biz.average_rating,
-      review_count: counts.get(randomId)
-    };
+    // Ordenar por frecuencia de reservas descendente
+    const sorted = [...businesses].sort((a, b) => {
+      const ca = countByBusiness.get(a.id) || 0;
+      const cb = countByBusiness.get(b.id) || 0;
+      return cb - ca;
+    });
+
+    return sorted.map((b) => ({
+      id: b.id,
+      name: b.name,
+      logo_url: b.logo_url,
+      average_rating: b.average_rating,
+      // Usamos review_count para mostrar la cantidad de reservas como pista visual
+      review_count: countByBusiness.get(b.id),
+    }));
   };
 
   const loadSuggestedBusinesses = async (
@@ -95,7 +103,7 @@ export function BusinessSuggestions({
     cityName: string | null,
     regionId: string | null,
     regionName: string | null,
-    excludeId: string | null
+    excludeIds: string[]
   ) => {
     if (!cityId && !cityName && !regionId && !regionName) return [];
 
@@ -159,10 +167,11 @@ export function BusinessSuggestions({
     if (!locations || locations.length === 0) return [];
 
     // Get unique business IDs
+    const excludeSet = new Set<string>(excludeIds || []);
     const uniqueIds = Array.from(new Set(
       locations
         .map((l) => l.business_id)
-        .filter((id) => id !== excludeId)
+        .filter((id) => id && !excludeSet.has(id))
     ));
 
     if (uniqueIds.length === 0) return [];
@@ -192,24 +201,26 @@ export function BusinessSuggestions({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const favorite = await loadFavoriteBusiness(userId);
-        setFavoriteBusiness(favorite);
+        const prevsAll = await loadPreviouslyBookedBusinesses(userId);
+        setAllPreviousBusinesses(prevsAll);
+        setPrevCurrentPage(0);
+        setPreviousBusinesses(prevsAll.slice(0, PREV_ITEMS_PER_PAGE));
+
+        const recents = await loadRecentlyBookedBusinesses(userId);
+        setRecentBusinesses(recents);
 
         const suggested = await loadSuggestedBusinesses(
           preferredCityId ?? null,
           preferredCityName,
           preferredRegionId ?? null,
           preferredRegionName,
-          favorite?.id || null
+          [...new Set([...(prevsAll.map(p => p.id)), ...(recents.map(r => r.id))])]
         );
         
-        // Filter out duplicate (favorite business if it appears in suggestions)
-        const filtered = suggested.filter(s => s.id !== favorite?.id);
-        
-        setAllSuggestedBusinesses(filtered);
+        setAllSuggestedBusinesses(suggested);
         setCurrentPage(0);
         // Show first 10
-        setDisplayedBusinesses(filtered.slice(0, ITEMS_PER_PAGE));
+        setDisplayedBusinesses(suggested.slice(0, ITEMS_PER_PAGE));
       } finally {
         setLoading(false);
       }
@@ -230,7 +241,19 @@ export function BusinessSuggestions({
     ]);
   };
 
+  const handleLoadMorePrev = () => {
+    const nextPage = prevCurrentPage + 1;
+    const startIndex = nextPage * PREV_ITEMS_PER_PAGE;
+    const endIndex = startIndex + PREV_ITEMS_PER_PAGE;
+    setPrevCurrentPage(nextPage);
+    setPreviousBusinesses([
+      ...previousBusinesses,
+      ...allPreviousBusinesses.slice(startIndex, endIndex)
+    ]);
+  };
+
   const hasMoreBusinesses = (currentPage + 1) * ITEMS_PER_PAGE < allSuggestedBusinesses.length;
+  const hasMorePrev = (prevCurrentPage + 1) * PREV_ITEMS_PER_PAGE < allPreviousBusinesses.length;
 
   const renderBusinessCard = (business: SimpleBusiness, isFavorite: boolean = false) => (
     <Card 
@@ -329,7 +352,7 @@ export function BusinessSuggestions({
     );
   }
 
-  if (!favoriteBusiness && displayedBusinesses.length === 0) {
+  if (previousBusinesses.length === 0 && displayedBusinesses.length === 0) {
     return null; // No mostrar nada si no hay sugerencias
   }
 
@@ -343,13 +366,48 @@ export function BusinessSuggestions({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Negocio favorito */}
-          {favoriteBusiness && (
+          {/* Negocios frecuentes (visitas completadas) */}
+          {previousBusinesses.length > 0 && (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                {t('businessSuggestions.basedOnReviews')}
+                Tus negocios frecuentes
               </h3>
-              {renderBusinessCard(favoriteBusiness, true)}
+              <div className="space-y-3">
+                {previousBusinesses.map((business) => renderBusinessCard(business, true))}
+              </div>
+              {hasMorePrev && (
+                <Button
+                  variant="outline"
+                  className="w-full mt-2"
+                  onClick={handleLoadMorePrev}
+                >
+                  {t('businessSuggestions.viewMore')}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Negocios reservados recientemente (colapsable por defecto) */}
+          {recentBusinesses.length > 0 && (
+            <div className="space-y-2">
+              <Collapsible open={recentOpen} onOpenChange={setRecentOpen}>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    Negocios reservados recientemente
+                  </h3>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      {recentOpen ? 'Ocultar' : 'Mostrar'}
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', recentOpen && 'rotate-180')} />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent>
+                  <div className="space-y-3 mt-2">
+                    {recentBusinesses.map((business) => renderBusinessCard(business, false))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           )}
 
@@ -380,3 +438,40 @@ export function BusinessSuggestions({
     </div>
   );
 }
+  // Cargar negocios reservados recientemente (pendiente/confirmada/en progreso/reprogramada)
+  const loadRecentlyBookedBusinesses = async (userId: string): Promise<SimpleBusiness[]> => {
+    const { data: upcoming } = await supabase
+      .from('appointments')
+      .select('id, business_id, start_time, status')
+      .eq('client_id', userId)
+      .in('status', ['pending', 'pending_confirmation', 'confirmed', 'in_progress', 'rescheduled'])
+      .order('start_time', { ascending: false });
+
+    if (!upcoming || upcoming.length === 0) return [];
+
+    const uniqueIds: string[] = [];
+    const seen = new Set<string>();
+    for (const a of upcoming) {
+      if (!a.business_id) continue;
+      if (!seen.has(a.business_id)) {
+        seen.add(a.business_id);
+        uniqueIds.push(a.business_id);
+      }
+    }
+
+    if (uniqueIds.length === 0) return [];
+
+    const { data: businesses } = await supabase
+      .from('businesses')
+      .select('id, name, logo_url, average_rating')
+      .in('id', uniqueIds)
+      .eq('is_active', true)
+      .eq('is_public', true);
+
+    return (businesses || []).map(b => ({
+      id: b.id,
+      name: b.name,
+      logo_url: b.logo_url,
+      average_rating: b.average_rating,
+    }));
+  };

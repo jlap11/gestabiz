@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle, X, Heart } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +16,7 @@ import ProfessionalProfile from '@/components/user/UserProfile'
 import { BusinessSuggestions } from '@/components/client/BusinessSuggestions'
 import FavoritesList from '@/components/client/FavoritesList'
 import { MandatoryReviewModal } from '@/components/jobs'
+import { LocationAddress } from '@/components/ui/LocationAddress'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useChat } from '@/hooks/useChat'
 import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
@@ -916,17 +918,20 @@ export function ClientDashboard({
                                     const hasBg = !!(svcImg || locImg)
                                     return (
                                       <div className={`flex items-center gap-3 p-2 rounded-lg border ${hasBg ? 'bg-black/30 backdrop-blur-sm border-white/10' : 'bg-card/50 border-border/50'}`}>
-                                      {appointment.employee?.avatar_url ? (
-                                        <img
-                                          src={appointment.employee.avatar_url}
-                                          alt={appointment.employee.full_name}
-                                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                      <Avatar className="h-8 w-8 flex-shrink-0">
+                                        <AvatarImage
+                                          src={appointment.employee?.avatar_url || undefined}
+                                          alt={appointment.employee?.full_name || 'Profesional'}
                                         />
-                                      ) : (
-                                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                        <UserIcon className="h-4 w-4 text-primary" />
-                                      </div>
-                                      )}
+                                        <AvatarFallback className="text-xs">
+                                          {(appointment.employee?.full_name || 'U')
+                                            .split(' ')
+                                            .map(n => n[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 2)}
+                                        </AvatarFallback>
+                                      </Avatar>
                                         <div className="min-w-0 flex-1">
                                           <p className={`text-sm font-medium line-clamp-1 ${hasBg ? 'text-white' : 'text-foreground'}`}>
                                             {appointment.employee.full_name}
@@ -1179,17 +1184,20 @@ export function ClientDashboard({
                     Profesional que te atenderá
                   </h3>
                   <div className="flex items-center gap-3 mt-2 p-3 bg-muted/30 rounded-lg">
-                    {selectedAppointment.employee.avatar_url ? (
-                      <img 
-                        src={selectedAppointment.employee.avatar_url} 
-                        alt={selectedAppointment.employee.full_name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
+                    <Avatar className="h-12 w-12 border-2 border-primary/20">
+                      <AvatarImage
+                        src={selectedAppointment.employee.avatar_url || undefined}
+                        alt={selectedAppointment.employee.full_name || 'Profesional'}
                       />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-primary" />
-                      </div>
-                    )}
+                      <AvatarFallback>
+                        {(selectedAppointment.employee.full_name || 'U')
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1">
                       <p className="text-base font-semibold text-foreground mb-1">
                         {selectedAppointment.employee.full_name}
@@ -1218,26 +1226,25 @@ export function ClientDashboard({
                 </div>
               )}
 
-              {/* Location/Sede with full details */}
-              {selectedAppointment.location && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Sede y Ubicación
-                  </h3>
-                  <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg">
-                    <p className="text-base font-semibold text-foreground">
-                      {selectedAppointment.location.name}
-                    </p>
-                    {selectedAppointment.location.address && (
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {selectedAppointment.location.address}
-                        {selectedAppointment.location.city && `, ${selectedAppointment.location.city}`}
-                        {selectedAppointment.location.state && `, ${selectedAppointment.location.state}`}
-                        {selectedAppointment.location.postal_code && ` ${selectedAppointment.location.postal_code}`}
-                        {selectedAppointment.location.country && `, ${selectedAppointment.location.country}`}
-                      </p>
-                    )}
+  {/* Location/Sede with full details */}
+  {selectedAppointment.location && (
+    <div>
+      <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
+        <MapPin className="h-4 w-4" />
+        Sede y Ubicación
+      </h3>
+      <div className="mt-2 space-y-2 p-3 bg-muted/30 rounded-lg">
+        <p className="text-base font-semibold text-foreground">
+          {selectedAppointment.location.name}
+        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          <LocationAddress
+            address={selectedAppointment.location.address || undefined}
+            cityId={selectedAppointment.location.city || undefined}
+            stateId={selectedAppointment.location.state || undefined}
+            postalCode={selectedAppointment.location.postal_code || undefined}
+          />
+        </p>
                     {(() => {
                       // Generate Google Maps URL: use saved URL or fallback to coordinates
                       const googleMapsUrl = selectedAppointment.location.google_maps_url || 
@@ -1257,9 +1264,9 @@ export function ClientDashboard({
                         </a>
                       ) : null;
                     })()}
-                  </div>
-                </div>
-              )}
+      </div>
+    </div>
+  )}
 
               {/* Description */}
               {selectedAppointment.description && (

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserCircle2, Briefcase, Star, Loader2, Users, Ban, Check } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import supabase from '@/lib/supabase';
@@ -230,30 +231,30 @@ export function EmployeeSelection({
 
             {/* Employee Avatar */}
             <div className="flex flex-col items-center mb-4">
-              {employee.avatar_url ? (
-                <img
-                  src={employee.avatar_url}
-                  alt={employee.full_name || 'Employee'}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-border mb-3"
+              <Avatar
+                className={cn(
+                  "w-20 h-20 mb-3 border-2",
+                  selectedEmployeeId === employee.id ? "border-primary" : "border-border"
+                )}
+              >
+                <AvatarImage
+                  src={employee.avatar_url || undefined}
+                  alt={employee.full_name || 'Profesional'}
                 />
-              ) : (
-                <div className={cn(
-                  "w-20 h-20 rounded-full flex items-center justify-center mb-3 border-2",
-                  selectedEmployeeId === employee.id 
-                    ? "bg-primary/30 border-primary" 
-                    : "bg-muted border-border group-hover:bg-muted/80"
-                )}>
-                  <UserCircle2 className={cn(
-                    "h-12 w-12",
-                    selectedEmployeeId === employee.id ? "text-primary" : "text-muted-foreground"
-                  )} />
-                </div>
-              )}
+                <AvatarFallback>
+                  {(employee.full_name || 'U')
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
 
-              {/* Employee Name */}
-              <h4 className="text-lg font-semibold text-foreground text-center">
-                {employee.full_name || 'Profesional'}
-              </h4>
+            {/* Employee Name */}
+            <h4 className="text-lg font-semibold text-foreground text-center">
+              {employee.full_name || 'Profesional'}
+            </h4>
 
 
             </div>
