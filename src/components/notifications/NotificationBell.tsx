@@ -7,6 +7,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { NotificationCenter } from './NotificationCenter'
 import { NotificationErrorBoundary } from './NotificationErrorBoundary'
 import { useInAppNotifications } from '@/hooks/useInAppNotifications'
@@ -14,6 +19,7 @@ import { trackNotificationEvent, NotificationEvents } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 import { animations } from '@/lib/animations'
 import type { UserRole, RoleSwitchCallback } from '@/lib/notificationRoleMapping'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface NotificationBellProps {
   userId: string
@@ -41,6 +47,7 @@ export function NotificationBell({
   availableRoles
 }: Readonly<NotificationBellProps>) {
   const [open, setOpen] = useState(false)
+  const isMobile = useIsMobile()
   
   // Hook personalizado que excluye notificaciones de chat
   // Usamos limit alto y autoFetch true para sincronizar en tiempo real
@@ -84,22 +91,63 @@ export function NotificationBell({
     }
   }, [open, unreadCount])
 
+  // En móvil usamos Dialog para centrar en la pantalla; en desktop seguimos con Popover
+  if (isMobile) {
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn('relative', className, animations.hoverScale)}
+            aria-label={unreadCount > 0 ? `Notificaciones (${unreadCount} nuevas)` : 'Notificaciones'}
+          >
+            <Bell className={cn("h-5 w-5", unreadCount > 0 && "animate-shake")} />
+            {unreadCount > 0 && (
+              <Badge
+                variant="destructive"
+                className={cn(
+                  "absolute -top-1 -right-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center text-xs",
+                  animations.badgeBounce
+                )}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="p-0 bg-card border-border w-[92vw] max-w-[92vw] sm:max-w-[480px]">
+          <NotificationErrorBoundary>
+            <NotificationCenter
+              userId={userId}
+              onClose={() => setOpen(false)}
+              onNavigateToPage={onNavigateToPage}
+              currentRole={currentRole}
+              onRoleSwitch={onRoleSwitch}
+              availableRoles={availableRoles}
+            />
+          </NotificationErrorBoundary>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          className={cn('relative', className, animations.hoverScale)} // ✨ Hover scale
+          className={cn('relative', className, animations.hoverScale)}
           aria-label={unreadCount > 0 ? `Notificaciones (${unreadCount} nuevas)` : 'Notificaciones'}
         >
-          <Bell className={cn("h-5 w-5", unreadCount > 0 && "animate-shake")} /> {/* ✨ Shake con nuevas notif */}
+          <Bell className={cn("h-5 w-5", unreadCount > 0 && "animate-shake")} />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
               className={cn(
                 "absolute -top-1 -right-1 h-5 min-w-[1.25rem] px-1 flex items-center justify-center text-xs",
-                animations.badgeBounce // ✨ Bounce animation
+                animations.badgeBounce
               )}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -108,13 +156,13 @@ export function NotificationBell({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[88vw] sm:w-[400px] max-w-[400px] p-0 bg-card border-border"
+        className="w-[400px] max-w-[400px] p-0 bg-card border-border"
         align="end"
-        sideOffset={8}
+        sideOffset={10}
       >
         <NotificationErrorBoundary>
-          <NotificationCenter 
-            userId={userId} 
+          <NotificationCenter
+            userId={userId}
             onClose={() => setOpen(false)}
             onNavigateToPage={onNavigateToPage}
             currentRole={currentRole}

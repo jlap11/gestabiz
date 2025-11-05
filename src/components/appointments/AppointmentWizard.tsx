@@ -824,7 +824,7 @@ export function AppointmentWizard({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
         className={cn(
-          "bg-card border-border text-foreground p-0 overflow-hidden",
+          "bg-card border-border text-foreground p-0 overflow-hidden border-0",
           "w-[98vw] sm:w-[95vw] md:w-[85vw] lg:w-[75vw]",
           "!max-w-[1200px]",
           "h-[95vh] sm:h-auto", // Full height mobile

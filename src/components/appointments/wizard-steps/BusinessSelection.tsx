@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Check, Building2 } from 'lucide-react';
+import { Check, Building2, Filter } from 'lucide-react';
 import { SimpleSearchBar, type SearchType } from '@/components/ui/SimpleSearchBar';
 import { cn } from '@/lib/utils';
 import { withCache } from '@/lib/cache';
@@ -70,6 +70,7 @@ export function BusinessSelection({
   const [orderBestRated, setOrderBestRated] = useState<boolean>(false);
   const [ratingStatsByBusinessId, setRatingStatsByBusinessId] = useState<Record<string, { average_rating: number; review_count: number }>>({});
   const [filtersApplied, setFiltersApplied] = useState<boolean>(false);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   
   // Helper para detectar UUID (IDs de ciudad/región)
   const isUUID = (value: string | null): boolean => {
@@ -524,61 +525,85 @@ export function BusinessSelection({
         )}
 
         {/* SearchBar shared component (same dropdown/options as header) - full-bleed */}
-        <div className="-mx-3 sm:mx-0 w-full">
+        <div className="w-full">
             <SimpleSearchBar
               searchTerm={searchTerm}
               searchType={searchType}
               onSearch={debouncedHandleSearch}
+              className="w-full max-w-none"
             />
         </div>
-        {/* Controles de calificación (solo primeros 12) */}
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-muted-foreground">Calificación mínima</label>
-            <Input
-              type="number"
-              step="0.1"
-              min={0}
-              max={5}
-              value={minRating}
-              onChange={(e) => {
-                const v = e.target.value;
-                setMinRating(v === '' ? '' : Math.max(0, Math.min(5, Number(v))));
-              }}
-              className="h-8 w-24 text-xs"
-              placeholder="e.g. 4.5"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-muted-foreground">Reviews mínimos</label>
-            <Input
-              type="number"
-              step="1"
-              min={0}
-              value={minReviewCount}
-              onChange={(e) => {
-                const v = e.target.value;
-                setMinReviewCount(v === '' ? '' : Math.max(0, Number(v)));
-              }}
-              className="h-8 w-24 text-xs"
-              placeholder="e.g. 10"
-            />
-          </div>
+
+        {/* Toggle de filtros (colapsable) - fuera de la barra de búsqueda */}
+        <div className="mt-3 flex items-center justify-between">
           <Button
-            variant={orderBestRated ? 'default' : 'outline'}
+            variant={showFilters ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setOrderBestRated(prev => !prev)}
+            onClick={() => setShowFilters((v) => !v)}
+            className="gap-2"
           >
-            {orderBestRated ? 'Orden: mejor calificados' : 'Orden: por defecto'}
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => { void handleApplyFilters(); }}
-          >
-            Aplicar filtros
+            <Filter className="h-4 w-4" />
+            Filtros
+            {(() => {
+              const activeCount = (typeof minRating === 'number' ? 1 : 0) + (typeof minReviewCount === 'number' ? 1 : 0) + (orderBestRated ? 1 : 0);
+              return activeCount > 0 ? (
+                <span className="ml-1 rounded-full bg-primary-foreground px-2 py-0.5 text-xs">
+                  {activeCount}
+                </span>
+              ) : null;
+            })()}
           </Button>
         </div>
+        {/* Panel de filtros colapsable (oculto por defecto) */}
+        {showFilters && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground">Calificación mínima</label>
+              <Input
+                type="number"
+                step="0.1"
+                min={0}
+                max={5}
+                value={minRating}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setMinRating(v === '' ? '' : Math.max(0, Math.min(5, Number(v))));
+                }}
+                className="h-8 w-24 text-xs"
+                placeholder="e.g. 4.5"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground">Reviews mínimos</label>
+              <Input
+                type="number"
+                step="1"
+                min={0}
+                value={minReviewCount}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setMinReviewCount(v === '' ? '' : Math.max(0, Number(v)));
+                }}
+                className="h-8 w-24 text-xs"
+                placeholder="e.g. 10"
+              />
+            </div>
+            <Button
+              variant={orderBestRated ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setOrderBestRated(prev => !prev)}
+            >
+              {orderBestRated ? 'Orden: mejor calificados' : 'Orden: por defecto'}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => { void handleApplyFilters(); }}
+            >
+              Aplicar filtros
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Resultados */}

@@ -102,7 +102,10 @@ export function UnifiedLayout({
   chatConversationId,
   onChatClose
 }: Readonly<UnifiedLayoutProps>) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth >= 1024
+  })
   const [bugReportOpen, setBugReportOpen] = useState(false)
   const [locationMenuOpen, setLocationMenuOpen] = useState(false)
   const [mobileHeaderOpen, setMobileHeaderOpen] = useState(false)
@@ -151,6 +154,7 @@ export function UnifiedLayout({
       touchRef.current.startX = touch.clientX
       touchRef.current.startY = touch.clientY
       touchRef.current.isSwiping = false
+      // Permitimos gestos desde toda la pantalla; mantenemos detección de borde solo como referencia
       const edgeThreshold = 24
       const w = window.innerWidth
       touchRef.current.edge =
@@ -160,7 +164,6 @@ export function UnifiedLayout({
     }
 
     const handleMove = (e: TouchEvent) => {
-      if (!touchRef.current.edge) return
       const touch = e.touches[0]
       const dx = touch.clientX - touchRef.current.startX
       const dy = touch.clientY - touchRef.current.startY
@@ -197,14 +200,11 @@ export function UnifiedLayout({
         }
       }
 
-      // Open menus with edge swipes
-      if (edge) {
-        // Open left menu with swipe from left edge to right
-        if (edge === 'left' && dx > threshold && !sidebarOpen) {
+      // Open menus with directional swipe from anywhere on the screen
+      if (directionalEnough) {
+        if (!sidebarOpen && dx > threshold) {
           setSidebarOpen(true)
-        }
-        // Open right menu with swipe from right edge to left
-        if (edge === 'right' && dx < -threshold && !mobileHeaderOpen) {
+        } else if (!mobileHeaderOpen && dx < -threshold) {
           setMobileHeaderOpen(true)
         }
       }
