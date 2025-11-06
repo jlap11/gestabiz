@@ -91,25 +91,24 @@ export default function AppointmentCancellation() {
   }
 
   const cancelAppointment = async () => {
-    if (!appointment) return
-
     setCancelling(true)
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({
-          status: 'cancelled',
-          cancelled_at: new Date().toISOString(),
-          cancellation_reason: cancellationReason || 'Cancelado por el cliente',
-          confirmation_token: null
-        })
-        .eq('id', appointment.id)
+      if (!token) {
+        setError('Token de cancelación no válido')
+        return
+      }
+
+      const { data, error } = await supabase.rpc('cancel_appointment_by_token', {
+        p_token: token,
+        p_reason: cancellationReason || 'Cancelado por el cliente'
+      })
 
       if (error) {
         setError('Error al cancelar la cita. Por favor, inténtalo de nuevo.')
         return
       }
 
+      // RPC returns JSON payload; treat success true
       setSuccess(true)
     } catch (err) {
       console.error('Error cancelling appointment:', err)

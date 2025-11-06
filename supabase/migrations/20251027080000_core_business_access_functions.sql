@@ -21,7 +21,6 @@ BEGIN
     $func$;
   END IF;
 END $$;
-
 CREATE OR REPLACE FUNCTION public.can_manage_location_media(p_location_id UUID)
 RETURNS BOOLEAN
 LANGUAGE SQL

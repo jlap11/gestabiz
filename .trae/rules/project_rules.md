@@ -73,6 +73,19 @@ Esta guía establece reglas y convenciones para entender, mantener y evolucionar
 - `npx supabase start` / `npx supabase db push` / `npx supabase db reset` / `npx supabase db lint`.
 - `npm run dev` para desarrollo frontend.
 
+## Operación Supabase CLI (Producción)
+
+- Siempre usar `--dns-resolver https` en comandos que tocan la DB remota: `migration list`, `migration fetch`, `migration repair`, `db push`, `db reset`.
+- Empuje de migraciones con baja frecuencia: máximo 1 intento cada 15–20 minutos. Si falla, esperar antes de reintentar.
+- Si cambiaste de versión del CLI o ves errores de autenticación/timeout: `npx supabase link --project-ref <ref>` para refrescar credenciales.
+- Secuencia recomendada ante desalineación de historial:
+  - `npx supabase migration list --dns-resolver https`
+  - Si aparecen versiones «solo remotas», reparar: `npx supabase migration repair --status reverted <version> --dns-resolver https`
+  - (Opcional) `npx supabase migration fetch --yes --dns-resolver https` para traer stubs remotos.
+  - Luego `npx supabase db push --dns-resolver https` con baja frecuencia.
+- Evitar ráfagas de comandos (rate limit del pooler). Preferir `https` resolver y comandos espaciados.
+- Siempre correr `npx supabase db lint` antes de `db push`.
+
 ## Principios
 
 - Cambios mínimos y precisos; evitar complejidad innecesaria.

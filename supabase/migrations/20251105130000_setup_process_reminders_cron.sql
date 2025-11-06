@@ -2,11 +2,9 @@
 -- Idempotent: enables extensions, creates invoker fn, and schedules if missing
 
 begin;
-
 -- Required extensions
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
-
 -- Function that invokes the Edge Function via HTTP using pg_net
 create or replace function public.invoke_process_reminders()
 returns void
@@ -40,7 +38,6 @@ exception when others then
   raise warning 'Failed to invoke process-reminders: %', sqlerrm;
 end;
 $$;
-
 -- Schedule hourly if not already present
 do $$
 begin
@@ -52,8 +49,5 @@ begin
     );
   end if;
 end; $$;
-
 comment on function public.invoke_process_reminders() is 'Invokes Edge Function process-reminders to send 24h/1h reminders';
-
 commit;
-

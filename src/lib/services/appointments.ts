@@ -163,7 +163,15 @@ export const appointmentsService = {
     }
 
     // Construir payload válido para DB
+    // Generar ID explícito para evitar depender del default en DB
+    const explicitId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+      ? crypto.randomUUID()
+      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}-${Math.random().toString(16).slice(2, 6)}-${Math.random().toString(16).slice(2, 6)}-${Math.random().toString(16).slice(2, 12)}`
+
     const insertRow: Insert<'appointments'> = {
+      // Forzamos id para sortear problemas con uuid_generate_v4/gen_random_uuid en el default
+      // El tipo Insert<'appointments'> permite id opcional; si no, el cast al insertar asegura compatibilidad
+      id: explicitId as unknown as string,
       business_id: payload.business_id,
       location_id: payload.location_id ?? null,
       service_id: payload.service_id!,
@@ -179,7 +187,12 @@ export const appointmentsService = {
       reminder_sent: payload.reminder_sent ?? false,
     }
 
-    const { data, error } = await supabase.from('appointments').insert(insertRow).select().single()
+    const { data, error } = await supabase
+      .from('appointments')
+      // Cast defensivo por si el tipo Insert no incluye id: lo imponemos en tiempo de inserción
+      .insert(insertRow as unknown as Record<string, unknown>)
+      .select()
+      .single()
     if (error) throw error
     
     const appointment = normalizeAppointment(data as Row<'appointments'>)

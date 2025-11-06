@@ -7,19 +7,15 @@ CREATE TABLE IF NOT EXISTS business_users (
     created_at timestamptz NOT NULL DEFAULT now(),
     UNIQUE (business_id, user_id)
 );
-
 -- Índices útiles
 CREATE INDEX IF NOT EXISTS idx_business_users_business_id ON business_users(business_id);
 CREATE INDEX IF NOT EXISTS idx_business_users_user_id ON business_users(user_id);
-
 -- Habilitar RLS
 ALTER TABLE business_users ENABLE ROW LEVEL SECURITY;
-
 -- Políticas RLS para business_users
 -- Los usuarios pueden ver sus propias relaciones con negocios
 CREATE POLICY "Users can view their own business relationships" ON business_users
     FOR SELECT USING (auth.uid() = user_id);
-
 -- Los administradores y propietarios pueden ver todas las relaciones de su negocio
 CREATE POLICY "Business admins can view all business relationships" ON business_users
     FOR SELECT USING (
@@ -30,7 +26,6 @@ CREATE POLICY "Business admins can view all business relationships" ON business_
             AND bu.role IN ('admin', 'owner')
         )
     );
-
 -- Los administradores y propietarios pueden insertar nuevas relaciones en su negocio
 CREATE POLICY "Business admins can insert business relationships" ON business_users
     FOR INSERT WITH CHECK (
@@ -41,7 +36,6 @@ CREATE POLICY "Business admins can insert business relationships" ON business_us
             AND bu.role IN ('admin', 'owner')
         )
     );
-
 -- Los administradores y propietarios pueden actualizar relaciones en su negocio
 CREATE POLICY "Business admins can update business relationships" ON business_users
     FOR UPDATE USING (
@@ -52,7 +46,6 @@ CREATE POLICY "Business admins can update business relationships" ON business_us
             AND bu.role IN ('admin', 'owner')
         )
     );
-
 -- Los administradores y propietarios pueden eliminar relaciones en su negocio
 CREATE POLICY "Business admins can delete business relationships" ON business_users
     FOR DELETE USING (

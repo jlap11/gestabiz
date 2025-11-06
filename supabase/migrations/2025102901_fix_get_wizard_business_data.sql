@@ -59,6 +59,4 @@ as $$
     'services', coalesce((select jsonb_agg(svc) from svc), '[]'::jsonb)
   );
 $$;
-
--- SECURITY INVOKER ensures RLS rules are applied for the caller
-
+-- SECURITY INVOKER ensures RLS rules are applied for the caller;

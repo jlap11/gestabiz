@@ -53,10 +53,13 @@ serve(async (req) => {
       case 'POST':
         // Create new appointment
         const appointmentData = await req.json()
+        // Asegurar UUID explícito para evitar dependencias en defaults de DB
+        const explicitId = (appointmentData && appointmentData.id) ? appointmentData.id : crypto.randomUUID()
         
         const { data: newAppointment, error: createError } = await supabase
           .from('appointments')
           .insert({
+            id: explicitId,
             ...appointmentData,
             user_id: userId
           })

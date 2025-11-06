@@ -12,7 +12,7 @@
  *   4. Si cita es DESPUÉS de fecha efectiva Y sede es la NUEVA → SÍ PERMITIR
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export interface TransferValidationResult {
@@ -26,6 +26,19 @@ export interface TransferValidationResult {
 
 export function useEmployeeTransferAvailability() {
   const [isLoading, setIsLoading] = useState(false);
+  // Cache para evitar múltiples llamadas al mismo endpoint en un mismo render/ciclo
+  const infoCacheRef = useRef<Map<string, {
+    location_id: string | null;
+    transfer_status: 'pending' | 'completed' | 'cancelled' | null;
+    transfer_effective_date: string | null;
+    transfer_to_location_id: string | null;
+  } | null>>(new Map());
+  const pendingRef = useRef<Map<string, Promise<{
+    location_id: string | null;
+    transfer_status: 'pending' | 'completed' | 'cancelled' | null;
+    transfer_effective_date: string | null;
+    transfer_to_location_id: string | null;
+  } | null>>>(new Map());
 
   /**
    * Validar disponibilidad del empleado en fecha y sede
@@ -39,18 +52,40 @@ export function useEmployeeTransferAvailability() {
     ): Promise<TransferValidationResult> => {
       try {
         setIsLoading(true);
-
-        // 1. Obtener datos de traslado del empleado
-        const { data: employeeData, error: employeeError } = await supabase
-          .from('business_employees')
-          .select(
-            'location_id, transfer_status, transfer_effective_date, transfer_to_location_id'
-          )
-          .eq('employee_id', employeeId)
-          .eq('business_id', businessId)
-          .single();
-
-        if (employeeError || !employeeData) {
+        const cacheKey = `${employeeId}|${businessId}`;
+        // 1. Obtener datos de traslado del empleado (con cache para evitar llamadas repetidas)
+        const getInfo = async () => {
+          if (infoCacheRef.current.has(cacheKey)) {
+            return infoCacheRef.current.get(cacheKey) || null;
+          }
+          if (pendingRef.current.has(cacheKey)) {
+            return await pendingRef.current.get(cacheKey)!;
+          }
+          const promise = supabase
+            .from('business_employees')
+            .select(
+              'location_id, transfer_status, transfer_effective_date, transfer_to_location_id'
+            )
+            .eq('employee_id', employeeId)
+            .eq('business_id', businessId)
+            .maybeSingle()
+            .then(({ data }) => {
+              // Guardar en cache y limpiar pending
+              infoCacheRef.current.set(cacheKey, (data as any) || null);
+              pendingRef.current.delete(cacheKey);
+              return (data as any) || null;
+            })
+            .catch(() => {
+              // En caso de error, cachear null para evitar repetición inmediata
+              infoCacheRef.current.set(cacheKey, null);
+              pendingRef.current.delete(cacheKey);
+              return null;
+            });
+          pendingRef.current.set(cacheKey, promise);
+          return await promise;
+        };
+        const employeeData = await getInfo();
+        if (!employeeData) {
           // Sin traslado pendiente, está disponible
           return {
             isAvailable: true,
@@ -67,9 +102,9 @@ export function useEmployeeTransferAvailability() {
         }
 
         // 3. Tiene traslado pendiente, validar reglas
-        const effectiveDate = new Date(employeeData.transfer_effective_date);
-        const currentLocationId = employeeData.location_id;
-        const transferLocationId = employeeData.transfer_to_location_id;
+        const effectiveDate = new Date(employeeData.transfer_effective_date as string);
+        const currentLocationId = employeeData.location_id as string | null;
+        const transferLocationId = employeeData.transfer_to_location_id as string | null;
 
         // Regla 1: Si cita es DESPUÉS de fecha efectiva Y sede es la ANTERIOR
         // → NO PERMITIR (empleado ya no estará aquí)

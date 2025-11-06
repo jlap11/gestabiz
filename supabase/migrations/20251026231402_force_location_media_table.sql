@@ -1,6 +1,5 @@
 -- Drop existing table if it exists (to force cache refresh)
 DROP TABLE IF EXISTS public.location_media CASCADE;
-
 -- Recreate location_media table
 CREATE TABLE public.location_media (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -12,17 +11,13 @@ CREATE TABLE public.location_media (
     is_primary BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
-
 -- Enable RLS
 ALTER TABLE public.location_media ENABLE ROW LEVEL SECURITY;
-
 -- Create RLS policies
 CREATE POLICY "Users can view location media" ON public.location_media
     FOR SELECT USING (true);
-
 CREATE POLICY "Authenticated users can insert location media" ON public.location_media
     FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
 CREATE POLICY "Location owners can update their media" ON public.location_media
     FOR UPDATE USING (
         EXISTS (
@@ -32,7 +27,6 @@ CREATE POLICY "Location owners can update their media" ON public.location_media
             AND b.owner_id = auth.uid()
         )
     );
-
 CREATE POLICY "Location owners can delete their media" ON public.location_media
     FOR DELETE USING (
         EXISTS (
@@ -42,6 +36,5 @@ CREATE POLICY "Location owners can delete their media" ON public.location_media
             AND b.owner_id = auth.uid()
         )
     );
-
 -- Notify PostgREST to reload schema cache
 NOTIFY pgrst, 'reload schema';

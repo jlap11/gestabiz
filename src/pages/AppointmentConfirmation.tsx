@@ -95,24 +95,23 @@ export default function AppointmentConfirmation() {
   }
 
   const confirmAppointment = async () => {
-    if (!appointment) return
-
     setConfirming(true)
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({
-          status: 'confirmed',
-          confirmed_at: new Date().toISOString(),
-          confirmation_token: null
-        })
-        .eq('id', appointment.id)
+      if (!token) {
+        setError('Token de confirmación no válido')
+        return
+      }
+
+      const { data, error } = await supabase.rpc('confirm_appointment_by_token', {
+        p_token: token
+      })
 
       if (error) {
         setError('Error al confirmar la cita. Por favor, inténtalo de nuevo.')
         return
       }
 
+      // RPC returns JSON payload; treat success true
       setSuccess(true)
     } catch (err) {
       console.error('Error confirming appointment:', err)

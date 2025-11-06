@@ -3,7 +3,6 @@
 
 -- Habilitar la extensión pg_cron si no está habilitada
 CREATE EXTENSION IF NOT EXISTS pg_cron;
-
 -- Función que invoca la Edge Function de actualización de estado
 CREATE OR REPLACE FUNCTION invoke_appointment_status_updater()
 RETURNS void
@@ -26,7 +25,6 @@ BEGIN
     );
 END;
 $$;
-
 -- Programar el cron job para ejecutarse cada 10 minutos
 -- Nota: En producción, esto debe configurarse manualmente en el dashboard de Supabase
 -- o usando la API de administración
@@ -51,7 +49,6 @@ BEGIN
   END;
 END;
 $$;
-
 -- Comentarios para configuración manual en producción:
 /*
 Para configurar este cron job en producción de Supabase:
@@ -63,7 +60,8 @@ Para configurar este cron job en producción de Supabase:
 SELECT cron.schedule(
   'appointment-status-updater',
   '*/10 * * * *',
-  'SELECT invoke_appointment_status_updater();'
+  'SELECT invoke_appointment_status_updater();
+'
 );
 
 4. Verificar que el job está programado:
@@ -74,4 +72,4 @@ SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 10;
 
 6. Para desprogramar el job si es necesario:
 SELECT cron.unschedule('appointment-status-updater');
-*/
+*/;

@@ -71,41 +71,7 @@ export function BusinessSelection({
   const [ratingStatsByBusinessId, setRatingStatsByBusinessId] = useState<Record<string, { average_rating: number; review_count: number }>>({});
   const [filtersApplied, setFiltersApplied] = useState<boolean>(false);
   const [showFilters, setShowFilters] = useState<boolean>(false);
-  // Cálculo local de ratings basado en las últimas 100 reviews por negocio
-  const computeLocalRatingsForBusinesses = useCallback(async (bizIds: string[]) => {
-    if (!bizIds || bizIds.length === 0) return;
-    try {
-      const results: Record<string, { average_rating: number; review_count: number }> = {};
-      await Promise.all(
-        bizIds.map(async (id) => {
-          try {
-            const { data, count } = await supabase
-              .from('reviews')
-              .select('rating, created_at', { count: 'exact' })
-              .eq('business_id', id)
-              .eq('is_visible', true)
-              .order('created_at', { ascending: false })
-              .limit(100);
-            const ratings = (data || []) as Array<{ rating: number }>
-            const usedCount = ratings.length;
-            const average = usedCount > 0
-              ? ratings.reduce((acc, r) => acc + (r?.rating ?? 0), 0) / usedCount
-              : 0;
-            results[id] = {
-              average_rating: Number(average || 0),
-              // Mostrar conteo total de reviews visibles para el negocio
-              review_count: Number(count || usedCount || 0),
-            };
-          } catch {
-            // Si falla un negocio, lo omitimos sin romper el resto
-          }
-        })
-      );
-      setRatingStatsByBusinessId((prev) => ({ ...prev, ...results }));
-    } catch {
-      // Silencio: si falla el cálculo global, no bloqueamos la UI
-    }
-  }, []);
+  // Ratings: se consumen desde la Edge Function `search_businesses`.
   
   // Helper para detectar UUID (IDs de ciudad/región)
   const isUUID = (value: string | null): boolean => {
@@ -301,8 +267,6 @@ export function BusinessSelection({
     setFilteredBusinesses(businesses);
     setDisplayedBusinesses(businesses);
     setRemainingBusinessIds([]);
-    // Al refrescar el set de negocios, recalcular ratings locales
-    void computeLocalRatingsForBusinesses(businesses.map(b => b.id));
   }, [businesses]);
 
   // Los nombres de ciudad llegan desde la Edge Function en cityNameMap
@@ -408,8 +372,6 @@ export function BusinessSelection({
       setCurrentPage(1);
       setTotalResults(result.total || cityOnly.length || 0);
       setFiltersApplied(false);
-      // Calcular ratings locales para los negocios resultantes
-      void computeLocalRatingsForBusinesses(cityOnly.map(b => b.id));
     } catch {
       setFilteredBusinesses([]);
       setDisplayedBusinesses([]);
@@ -471,8 +433,6 @@ export function BusinessSelection({
       setDisplayedBusinesses(prev => [...prev, ...nextRows]);
       setCurrentPage(nextPage);
       setTotalResults(result.total || totalResults);
-      // Calcular ratings locales para los nuevos negocios cargados
-      void computeLocalRatingsForBusinesses(nextRows.map(b => b.id));
     } catch {
       // No-op: no avanzamos de página si falla
     }
@@ -524,8 +484,6 @@ export function BusinessSelection({
       setCurrentPage(1);
       setTotalResults(result.total || rows.length || 0);
       setFiltersApplied(true);
-      // Calcular ratings locales para los negocios filtrados
-      void computeLocalRatingsForBusinesses(rows.map(b => b.id));
     } catch {
       setBusinesses([]);
       setFilteredBusinesses([]);

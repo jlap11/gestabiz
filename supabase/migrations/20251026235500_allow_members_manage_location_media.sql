@@ -24,10 +24,8 @@ AS $$
       )
   );
 $$;
-
 -- Update RLS policies on location_media to use the new helper
 ALTER TABLE public.location_media ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Users can view location media" ON public.location_media;
 DROP POLICY IF EXISTS "Location owners can insert media" ON public.location_media;
 DROP POLICY IF EXISTS "Location owners can update their media" ON public.location_media;
@@ -35,18 +33,15 @@ DROP POLICY IF EXISTS "Location owners can delete their media" ON public.locatio
 DROP POLICY IF EXISTS "Members can insert location media" ON public.location_media;
 DROP POLICY IF EXISTS "Members can update their location media" ON public.location_media;
 DROP POLICY IF EXISTS "Members can delete their location media" ON public.location_media;
-
 -- Public read access
 CREATE POLICY "Users can view location media" ON public.location_media
   FOR SELECT USING (true);
-
 -- Insert/update/delete for owners or approved members
 CREATE POLICY "Members can insert location media" ON public.location_media
   FOR INSERT
   WITH CHECK (
     public.can_manage_location_media(location_id)
   );
-
 CREATE POLICY "Members can update their location media" ON public.location_media
   FOR UPDATE
   USING (
@@ -55,7 +50,6 @@ CREATE POLICY "Members can update their location media" ON public.location_media
   WITH CHECK (
     public.can_manage_location_media(location_id)
   );
-
 CREATE POLICY "Members can delete their location media" ON public.location_media
   FOR DELETE
   USING (

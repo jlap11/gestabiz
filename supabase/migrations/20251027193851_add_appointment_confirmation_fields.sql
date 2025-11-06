@@ -4,7 +4,6 @@
 -- 0. Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- 0.1. Fix existing function that uses uuid_generate_v4()
 CREATE OR REPLACE FUNCTION check_appointment_conflict()
 RETURNS TRIGGER AS $$
@@ -27,10 +26,8 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 -- 1. Update appointment_status enum to include 'in_progress'
 ALTER TYPE appointment_status ADD VALUE IF NOT EXISTS 'in_progress';
-
 -- 2. Add confirmation fields to appointments table
 ALTER TABLE appointments 
 ADD COLUMN IF NOT EXISTS confirmed BOOLEAN DEFAULT FALSE,
@@ -38,7 +35,6 @@ ADD COLUMN IF NOT EXISTS confirmation_sent_at TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS confirmation_deadline TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS confirmation_token TEXT UNIQUE,
 ADD COLUMN IF NOT EXISTS auto_no_show_at TIMESTAMPTZ;
-
 -- 3. Create business_confirmation_policies table
 CREATE TABLE IF NOT EXISTS business_confirmation_policies (
     id UUID PRIMARY KEY DEFAULT (md5(random()::text || clock_timestamp()::text))::uuid,
@@ -69,17 +65,14 @@ CREATE TABLE IF NOT EXISTS business_confirmation_policies (
     -- Ensure one policy per business
     UNIQUE(business_id)
 );
-
 -- 4. Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_appointments_confirmed ON appointments(confirmed);
 CREATE INDEX IF NOT EXISTS idx_appointments_confirmation_token ON appointments(confirmation_token) WHERE confirmation_token IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_appointments_confirmation_deadline ON appointments(confirmation_deadline) WHERE confirmation_deadline IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_appointments_auto_no_show_at ON appointments(auto_no_show_at) WHERE auto_no_show_at IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_business_confirmation_policies_business_id ON business_confirmation_policies(business_id);
-
 -- 5. Add RLS policies for business_confirmation_policies
 ALTER TABLE business_confirmation_policies ENABLE ROW LEVEL SECURITY;
-
 -- Policy: Business owners and admins can manage their confirmation policies
 CREATE POLICY "business_confirmation_policies_business_access" ON business_confirmation_policies
     FOR ALL USING (
@@ -91,7 +84,6 @@ CREATE POLICY "business_confirmation_policies_business_access" ON business_confi
             AND status = 'approved'
         )
     );
-
 -- Policy: Business members can read confirmation policies
 CREATE POLICY "business_confirmation_policies_member_read" ON business_confirmation_policies
     FOR SELECT USING (
@@ -102,7 +94,6 @@ CREATE POLICY "business_confirmation_policies_member_read" ON business_confirmat
             AND status = 'approved'
         )
     );
-
 -- 6. Create function to generate secure confirmation tokens
 CREATE OR REPLACE FUNCTION generate_confirmation_token()
 RETURNS TEXT AS $$
@@ -110,7 +101,6 @@ BEGIN
     RETURN md5(random()::text || clock_timestamp()::text || random()::text) || md5(random()::text || clock_timestamp()::text);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- 7. Create function to set confirmation deadline based on business policy
 CREATE OR REPLACE FUNCTION set_appointment_confirmation_deadline(appointment_id UUID)
 RETURNS VOID AS $$
@@ -154,7 +144,6 @@ BEGIN
     WHERE id = appointment_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- 8. Create trigger to automatically set confirmation deadline for new appointments
 CREATE OR REPLACE FUNCTION trigger_set_confirmation_deadline()
 RETURNS TRIGGER AS $$
@@ -167,12 +156,10 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER appointments_set_confirmation_deadline
     AFTER INSERT ON appointments
     FOR EACH ROW
     EXECUTE FUNCTION trigger_set_confirmation_deadline();
-
 -- 9. Create function to confirm appointment via token
 CREATE OR REPLACE FUNCTION confirm_appointment_by_token(token TEXT)
 RETURNS JSON AS $$
@@ -209,7 +196,6 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- 10. Create function to cancel appointment via token
 CREATE OR REPLACE FUNCTION cancel_appointment_by_token(token TEXT, reason TEXT DEFAULT 'Cancelado por el cliente')
 RETURNS JSON AS $$
@@ -248,7 +234,6 @@ BEGIN
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- 11. Insert default confirmation policies for existing businesses
 INSERT INTO business_confirmation_policies (business_id, confirmation_method, email_enabled, email_hours_before)
 SELECT 
@@ -259,7 +244,6 @@ SELECT
 FROM businesses
 WHERE id NOT IN (SELECT business_id FROM business_confirmation_policies)
 ON CONFLICT (business_id) DO NOTHING;
-
 -- 12. Update existing pending appointments to set confirmation deadlines
 UPDATE appointments 
 SET 

@@ -62,6 +62,4 @@ as $$
   )
   select * from combined;
 $$;
-
--- SECURITY INVOKER para respetar RLS al contexto del usuario
-
+-- SECURITY INVOKER para respetar RLS al contexto del usuario;

@@ -6,11 +6,9 @@ DROP POLICY IF EXISTS "Public read access for location images" ON storage.object
 DROP POLICY IF EXISTS "Members can upload location images" ON storage.objects;
 DROP POLICY IF EXISTS "Members can update location images" ON storage.objects;
 DROP POLICY IF EXISTS "Members can delete location images" ON storage.objects;
-
 CREATE POLICY "Public read access for location images"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'location-images');
-
 CREATE POLICY "Members can upload location images"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -18,7 +16,6 @@ WITH CHECK (
   bucket_id = 'location-images'
   AND public.can_manage_location_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Members can update location images"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -30,7 +27,6 @@ WITH CHECK (
   bucket_id = 'location-images'
   AND public.can_manage_location_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Members can delete location images"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -38,17 +34,14 @@ USING (
   bucket_id = 'location-images'
   AND public.can_manage_location_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 -- LOCATION VIDEOS
 DROP POLICY IF EXISTS "Public read access for location videos" ON storage.objects;
 DROP POLICY IF EXISTS "Members can upload location videos" ON storage.objects;
 DROP POLICY IF EXISTS "Members can update location videos" ON storage.objects;
 DROP POLICY IF EXISTS "Members can delete location videos" ON storage.objects;
-
 CREATE POLICY "Public read access for location videos"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'location-videos');
-
 CREATE POLICY "Members can upload location videos"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -56,7 +49,6 @@ WITH CHECK (
   bucket_id = 'location-videos'
   AND public.can_manage_location_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Members can update location videos"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -68,7 +60,6 @@ WITH CHECK (
   bucket_id = 'location-videos'
   AND public.can_manage_location_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Members can delete location videos"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -76,17 +67,14 @@ USING (
   bucket_id = 'location-videos'
   AND public.can_manage_location_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 -- BUSINESS LOGOS
 DROP POLICY IF EXISTS "Public read access for business logos" ON storage.objects;
 DROP POLICY IF EXISTS "Admins can upload business logos" ON storage.objects;
 DROP POLICY IF EXISTS "Admins can update business logos" ON storage.objects;
 DROP POLICY IF EXISTS "Admins can delete business logos" ON storage.objects;
-
 CREATE POLICY "Public read access for business logos"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'business-logos');
-
 CREATE POLICY "Admins can upload business logos"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -94,7 +82,6 @@ WITH CHECK (
   bucket_id = 'business-logos'
   AND public.is_business_admin(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Admins can update business logos"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -106,7 +93,6 @@ WITH CHECK (
   bucket_id = 'business-logos'
   AND public.is_business_admin(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Admins can delete business logos"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -114,17 +100,14 @@ USING (
   bucket_id = 'business-logos'
   AND public.is_business_admin(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 -- USER AVATARS
 DROP POLICY IF EXISTS "Public read access to user avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Users can upload their own avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update their own avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete their own avatars" ON storage.objects;
-
 CREATE POLICY "Public read access to user avatars"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'user-avatars');
-
 CREATE POLICY "Users can upload their own avatars"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -132,7 +115,6 @@ WITH CHECK (
   bucket_id = 'user-avatars'
   AND (storage.foldername(storage.objects.name))[1] = auth.uid()::text
 );
-
 CREATE POLICY "Users can update their own avatars"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -144,7 +126,6 @@ WITH CHECK (
   bucket_id = 'user-avatars'
   AND (storage.foldername(storage.objects.name))[1] = auth.uid()::text
 );
-
 CREATE POLICY "Users can delete their own avatars"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -152,4 +133,3 @@ USING (
   bucket_id = 'user-avatars'
   AND (storage.foldername(storage.objects.name))[1] = auth.uid()::text
 );
-

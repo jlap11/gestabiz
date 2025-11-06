@@ -22,7 +22,12 @@
     "db:clean:dry-run": "tsx scripts/clean-transactional-data.ts --dry-run",
     "db:clean:force": "tsx scripts/clean-transactional-data.ts --force",
     "db:seed": "tsx scripts/generate-demo-data.ts",
-    "db:fix-appointments": "tsx scripts/fix-appointments-ambiguity.ts"
+    "db:fix-appointments": "tsx scripts/fix-appointments-ambiguity.ts",
+    "supabase:lint": "npx supabase db lint",
+    "supabase:list": "npx supabase migration list --dns-resolver https",
+    "supabase:fetch": "npx supabase migration fetch --yes --dns-resolver https",
+    "supabase:repair": "npx supabase migration repair --status reverted",
+    "supabase:push": "npx supabase db push --dns-resolver https"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -121,6 +126,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "jsdom": "^27.0.0",
+    "supabase": "^2.54.11",
     "tailwindcss": "^4.1.11",
     "tsx": "^4.20.6",
     "typescript": "~5.7.2",

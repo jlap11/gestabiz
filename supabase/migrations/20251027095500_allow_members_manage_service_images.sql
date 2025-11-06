@@ -15,7 +15,6 @@ LANGUAGE SQL STABLE SECURITY DEFINER SET search_path = public AS $$
       )
   );
 $$;
-
 -- Drop legacy policies if present
 DROP POLICY IF EXISTS "Public read access for service images" ON storage.objects;
 DROP POLICY IF EXISTS "Business admins can upload service images" ON storage.objects;
@@ -24,12 +23,10 @@ DROP POLICY IF EXISTS "Business admins can delete service images" ON storage.obj
 DROP POLICY IF EXISTS "Owners or members can upload service images" ON storage.objects;
 DROP POLICY IF EXISTS "Owners or members can update service images" ON storage.objects;
 DROP POLICY IF EXISTS "Owners or members can delete service images" ON storage.objects;
-
 -- Recreate policies scoped to service-images bucket using helper
 CREATE POLICY "Public read access for service images"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'service-images');
-
 CREATE POLICY "Owners or members can upload service images"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -37,7 +34,6 @@ WITH CHECK (
   bucket_id = 'service-images'
   AND public.can_manage_service_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Owners or members can update service images"
 ON storage.objects FOR UPDATE
 TO authenticated
@@ -49,7 +45,6 @@ WITH CHECK (
   bucket_id = 'service-images'
   AND public.can_manage_service_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 CREATE POLICY "Owners or members can delete service images"
 ON storage.objects FOR DELETE
 TO authenticated
@@ -57,6 +52,5 @@ USING (
   bucket_id = 'service-images'
   AND public.can_manage_service_media(((storage.foldername(storage.objects.name))[1])::uuid)
 );
-
 -- Notify PostgREST to reload schema cache
 NOTIFY pgrst, 'reload schema';
