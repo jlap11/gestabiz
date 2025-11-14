@@ -14,6 +14,8 @@ import { es } from 'date-fns/locale'
 
 interface ClientHistoryProps {
   readonly userId: string
+  readonly appointments: AppointmentWithRelations[]
+  readonly loading: boolean
 }
 
 interface AppointmentWithRelations {
@@ -88,10 +90,8 @@ interface Employee {
   full_name: string
 }
 
-export function ClientHistory({ userId }: ClientHistoryProps) {
+export function ClientHistory({ userId, appointments, loading }: ClientHistoryProps) {
   const { t } = useLanguage()
-  const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   
   // Filter states - now arrays to support multiple selections
@@ -124,52 +124,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
 
-  // Fetch all appointments
-  useEffect(() => {
-    fetchAppointments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId])
-
-  const fetchAppointments = async () => {
-    try {
-      setLoading(true)
-      // Fetch appointments with related data
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          start_time,
-          end_time,
-          status,
-          notes,
-          business_id,
-          service_id,
-          employee_id,
-          location_id,
-          created_at,
-          updated_at,
-          businesses (
-            id,
-            name
-          ),
-          services (
-            id,
-            name,
-            price
-          )
-        `)
-        .eq('client_id', userId)
-        .order('start_time', { ascending: false })
-
-      if (error) throw error
-      setAppointments(data || [])
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching appointments:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Appointments received via props from parent dashboard
 
   // Extract unique businesses from appointments
   useEffect(() => {
@@ -937,7 +892,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
                     {/* Service */}
                     {appointment.service?.name && (
                       <div className="flex items-center gap-2">
-                        <Briefcase className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                        <Briefcase className="h-5 w-5 text-muted-foreground shrink-0" />
                         <span className="font-semibold text-foreground text-lg">
                           {appointment.service.name}
                         </span>
@@ -963,7 +918,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
                     {/* Location */}
                     {appointment.location?.name && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                        <MapPin className="h-4 w-4 shrink-0" />
                         <span>{appointment.location.name}</span>
                       </div>
                     )}
@@ -971,7 +926,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
                     {/* Employee */}
                     {appointment.employee?.full_name && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-4 w-4 flex-shrink-0" />
+                        <User className="h-4 w-4 shrink-0" />
                         <span>{appointment.employee.full_name}</span>
                       </div>
                     )}

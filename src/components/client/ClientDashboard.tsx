@@ -163,18 +163,8 @@ export function ClientDashboard({
   const completedAppointments = appointments.filter(apt => apt.status === 'completed')
   const suggestions = dashboardData?.suggestions || [] // ✅ Sugerencias consolidadas
 
-  console.log('[ClientDashboard] 📊 Dashboard data:', {
-    dashboardData,
-    suggestionsCount: suggestions.length,
-    appointmentsCount: appointments.length,
-    isDashboardLoading,
-    userId: user?.id
-  });
-
   const [serviceImages, setServiceImages] = useState<Record<string, string>>({})
   const [locationBanners, setLocationBanners] = useState<Record<string, string>>({})
-  // Eliminamos rotación de fondos; solo usamos imagen real del servicio
-  const [showServiceImage, setShowServiceImage] = useState(true)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithRelations | null>(null)
   const [currentUser, setCurrentUser] = useState(user)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
@@ -189,17 +179,14 @@ export function ClientDashboard({
   const [chatConversationId, setChatConversationId] = useState<string | null>(null)
   const [isStartingChat, setIsStartingChat] = useState(false)
   
-  // Chat hook
-  const { createOrGetConversation } = useChat(user.id)
+  // Chat hook - LAZY LOAD: solo inicializar cuando se necesite
+  // Esto evita 3+N queries innecesarias en cada carga del dashboard
+  const { createOrGetConversation } = useChat(chatConversationId ? user.id : null)
 
   // Función para manejar cambios de página con contexto
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {
     setActivePage(page)
-    // Aquí puedes usar el context si necesitas pasarlo a componentes hijos
-    if (context) {
-      // eslint-disable-next-line no-console
-      console.log('Client navigation context:', context)
-    }
+    // Context available for future use if needed
   }
 
   // Hook para procesar navegaciones pendientes después de cambio de rol
@@ -209,6 +196,7 @@ export function ClientDashboard({
   const { 
     shouldShowModal: shouldShowReviewModal,
     pendingReviewsCount,
+    checkPendingReviews,
     remindLater,
     dismissModal: dismissReviewModal
   } = useMandatoryReviews(
@@ -255,8 +243,6 @@ export function ClientDashboard({
     const conversationParam = urlParams.get('conversation')
     
     if (conversationParam) {
-      // eslint-disable-next-line no-console
-      console.log('[ClientDashboard] Opening chat from URL param:', conversationParam)
       setChatConversationId(conversationParam)
       
       // Limpiar URL sin recargar página
@@ -272,8 +258,6 @@ export function ClientDashboard({
     } else if (result.type === 'users') {
       setSelectedUserId(result.id)
     }
-    // eslint-disable-next-line no-console
-    console.log('Selected quick search result:', result)
   }, [])
 
   // Handle "View More" from search bar
@@ -291,8 +275,6 @@ export function ClientDashboard({
     } else if (result.type === 'users') {
       setSelectedUserId(result.id)
     }
-    // eslint-disable-next-line no-console
-    console.log('Selected detailed search result:', result)
   }, [])
 
   // Handle booking from business profile
@@ -309,9 +291,6 @@ export function ClientDashboard({
       setAppointmentWizardBusinessId(businessIdToUse)
     }
     setShowAppointmentWizard(true)
-    
-    // eslint-disable-next-line no-console
-    console.log('Book appointment:', { businessId: businessIdToUse, serviceId, locationId, employeeId })
   }, [selectedBusinessId])
   
   // Handle chat with professional from appointment details
@@ -321,7 +300,6 @@ export function ClientDashboard({
       return
     }
     
-    console.log('[ClientDashboard] Starting chat with professional:', { professionalId, businessId })
     setIsStartingChat(true)
     
     try {
@@ -332,15 +310,12 @@ export function ClientDashboard({
         initial_message: '¡Hola! Tengo algunas preguntas sobre mi cita.'
       })
       
-      console.log('[ClientDashboard] Conversation created/retrieved:', conversationId)
-      
       if (conversationId) {
         // Cerrar modal de detalles
         setSelectedAppointment(null)
         
         // Establecer la conversación activa para abrir el chat
         setChatConversationId(conversationId)
-        console.log('[ClientDashboard] chatConversationId set to:', conversationId)
         
         toast.success('Chat iniciado con el profesional')
       }
@@ -419,7 +394,7 @@ export function ClientDashboard({
   // Listen for avatar updates and refresh user
   useEffect(() => {
     const handleAvatarUpdate = () => {
-      const updatedUserStr = window.localStorage.getItem('current-user')
+      const updatedUserStr = globalThis.localStorage.getItem('current-user')
       if (updatedUserStr) {
         try {
           const updatedUser = JSON.parse(updatedUserStr)
@@ -430,257 +405,70 @@ export function ClientDashboard({
       }
     }
 
-    window.addEventListener('avatar-updated', handleAvatarUpdate)
-    return () => window.removeEventListener('avatar-updated', handleAvatarUpdate)
+    globalThis.addEventListener('avatar-updated', handleAvatarUpdate)
+    return () => globalThis.removeEventListener('avatar-updated', handleAvatarUpdate)
   }, [])
 
   // Update current user when prop changes
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('👤 ClientDashboard: user prop changed', { userId: user?.id, userName: user?.name })
     setCurrentUser(user)
   }, [user])
 
-  // Alternar imagen de fondo (servicio <-> sede) cada 15s con transición suave
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowServiceImage((prev) => !prev)
-    }, 15000)
-    return () => clearInterval(interval)
-  }, [])
-  
-  // ✅ TODO: ELIMINAR fetch_ClientAppointments completo (ya no se usa, reemplazado por useClientDashboard)
-  /*
-  // Fetch client appointments with related data (business, location, employee)
-  const fetchClientAppointments = React.useCallback(async () => {
-    if (!currentUser?.id) {
-      // eslint-disable-next-line no-console
-      console.log('⚠️ No currentUser.id, skipping fetch')
-      return
-    }
-    
-    // eslint-disable-next-line no-console
-    console.log('🔍 Fetching appointments for client:', currentUser.id)
-    
-    try {
-      // Query appointments con JOINs para traer toda la información necesaria
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          created_at,
-          updated_at,
-          business_id,
-          location_id,
-          service_id,
-          client_id,
-          employee_id,
-          start_time,
-          end_time,
-          status,
-          notes,
-          price,
-          currency,
-          businesses!appointments_business_id_fkey (
-            id,
-            name,
-            description
-          ),
-          locations!appointments_location_id_fkey (
-            id,
-            name,
-            address,
-            city,
-            state,
-            postal_code,
-            country,
-            latitude,
-            longitude
-          ),
-          employee:profiles!appointments_employee_id_fkey (
-            id,
-            full_name,
-            email,
-            phone,
-            avatar_url
-          ),
-          client:profiles!appointments_client_id_fkey (
-            id,
-            full_name,
-            email,
-            phone,
-            avatar_url
-          ),
-          services!appointments_service_id_fkey (
-            id,
-            name,
-            description,
-            duration_minutes,
-            price,
-            currency,
-            image_url
-          )
-        `)
-        .eq('client_id', currentUser.id)
-        .order('start_time', { ascending: true })
-      
-      // eslint-disable-next-line no-console
-      console.log('📊 Query result:', { appointmentsCount: data?.length || 0, error })
-      
-      if (error) throw error
-      
-      // eslint-disable-next-line no-console
-      console.log('🔍 Raw appointments data:', data)
-      
-      // Mapear datos para compatibilidad (los JOINs pueden venir como objeto o array)
-      const mappedData = (data || []).map((apt: any) => {
-        const business = Array.isArray(apt.businesses) ? apt.businesses[0] : apt.businesses
-        const location = Array.isArray(apt.locations) ? apt.locations[0] : apt.locations
-        // Usar alias explícito para evitar confusión entre múltiples relaciones a profiles
-        const employeeRel = Array.isArray(apt.employee) ? apt.employee[0] : apt.employee
-        const clientRel = Array.isArray(apt.client) ? apt.client[0] : apt.client
-        const svcRaw = Array.isArray(apt.services) ? apt.services[0] : apt.services
-        const service = svcRaw ? { ...svcRaw, duration: svcRaw.duration_minutes } : undefined
-
-        const mapped = {
-          ...apt,
-          business,
-          location,
-          employee: employeeRel,
-          // Incluimos client (aunque no se muestra) por si se requiere en otros componentes
-          client: clientRel,
-          service,
-        }
-
-        // eslint-disable-next-line no-console
-        console.log('🔍 Mapped appointment:', {
-          id: mapped.id,
-          service: mapped.service,
-          business: mapped.business,
-          location: mapped.location,
-          employee: mapped.employee,
-          price: mapped.price || mapped.service?.price,
-        })
-
-        return mapped
-      })
-      
-      // eslint-disable-next-line no-console
-      console.log('✅ Final mapped data:', mappedData)
-      setAppointments(mappedData)
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('❌ Error final:', err)
-    }
-  }, [currentUser?.id])
-  */
-
-  // ✅ ELIMINADO: fetchClientAppointments + useEffect que lo llamaba
-  // Ahora useClientDashboard fetch automáticamente
-
-  // Sin rotación de fondo: solo imagen real de servicio
-
-  // Al cargar citas, traer imágenes de servicios y banners de sedes
+  // Cargar imágenes de servicios y banners de sedes (OPTIMIZADO - sin cacheBust, queries consolidadas)
   useEffect(() => {
     const loadImages = async () => {
+      if (!appointments || appointments.length === 0) return
+
       try {
-        // Pequeña utilidad para evitar caché del navegador/CDN cuando la URL no cambia
-        const cacheBust = (url: string) => {
-          try {
-            const u = new URL(url)
-            // usamos segundos para que sea estable durante una sesión corta
-            u.searchParams.set('v', String(Math.floor(Date.now() / 1000)))
-            return u.toString()
-          } catch {
-            return `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`
-          }
-        }
+        const uniqueServiceIds = Array.from(new Set(appointments.map(a => a.service?.id).filter(Boolean))) as string[]
+        const uniqueLocationIds = Array.from(new Set(appointments.map(a => a.location?.id).filter(Boolean))) as string[]
 
-        const uniqueServiceIds = Array.from(new Set((appointments || []).map(a => a.service?.id).filter(Boolean))) as string[]
-        const uniqueLocationIds = Array.from(new Set((appointments || []).map(a => a.location?.id).filter(Boolean))) as string[]
-
+        // Cargar imágenes de servicios desde service.image_url
         if (uniqueServiceIds.length > 0) {
           const map: Record<string, string> = {}
-
-          // 1) Preferir la URL oficial guardada en servicios (image_url)
-          for (const apt of appointments || []) {
+          for (const apt of appointments) {
             const sid = apt.service?.id
-            const surl = apt.service?.image_url?.trim().replace(/^[`'\"]+|[`'\"]+$/g, '')
+            const surl = apt.service?.image_url?.trim()
             if (sid && surl && !map[sid]) {
-              map[sid] = cacheBust(surl)
+              map[sid] = surl // SIN cacheBust - permite caché del navegador/CDN
             }
           }
-          // 2) Sin fallback a Storage: evitamos imágenes genéricas/desactualizadas
-
-          // eslint-disable-next-line no-console
-          console.log('🖼️ serviceImages map:', map)
           setServiceImages(map)
         } else {
           setServiceImages({})
         }
 
+        // Cargar banners de ubicaciones (query CONSOLIDADA)
         if (uniqueLocationIds.length > 0) {
           const banners: Record<string, string> = {}
           try {
             const { data: locMedia, error: locErr } = await supabase
               .from('location_media')
-              .select('location_id, type, url, is_banner, created_at')
+              .select('location_id, url')
               .in('location_id', uniqueLocationIds)
+              .eq('is_banner', true)
+              .eq('type', 'image')
               .order('created_at', { ascending: false })
 
-            if (!locErr && Array.isArray(locMedia)) {
-              const byLoc = new Map<string, any[]>()
-              locMedia.forEach((m: any) => {
-                const cleanUrl = (m.url || '').trim().replace(/^[`'\"]+|[`'\"]+$/g, '')
-                if (m.is_banner && m.type === 'image') {
-                  const arr = byLoc.get(m.location_id) || []
-                  arr.push({ ...m, url: cleanUrl })
-                  byLoc.set(m.location_id, arr)
+            if (!locErr && locMedia) {
+              // Tomar primer banner de cada ubicación
+              const seen = new Set<string>()
+              for (const m of locMedia) {
+                if (!seen.has(m.location_id) && m.url) {
+                  banners[m.location_id] = m.url.trim()
+                  seen.add(m.location_id)
                 }
-              })
-              byLoc.forEach((arr, locId) => {
-                const chosen = arr[0]
-                if (chosen) banners[locId] = cacheBust(chosen.url)
-              })
+              }
             }
           } catch {
-            // Ignorar errores de RLS en tabla location_media
+            // Silenciar errores de RLS
           }
-
-          // Fallback: si no hay banner en tabla o RLS lo bloquea, intentar recuperar última imagen de Storage
-          const missingLocIds = uniqueLocationIds.filter((id) => !banners[id])
-          for (const locId of missingLocIds) {
-            try {
-              const { data: files, error: listErr } = await supabase.storage
-                .from('location-images')
-                .list(locId)
-              if (!listErr && Array.isArray(files) && files.length > 0) {
-                // Elegir por timestamp en el nombre (subida usa timestamp.ext)
-                const pick = files.reduce((best: any | null, f: any) => {
-                  const nBest = best ? parseInt(String(best.name).split('.')[0], 10) : -1
-                  const nCur = parseInt(String(f.name).split('.')[0], 10)
-                  if (!isNaN(nCur) && nCur > nBest) return f
-                  return best || f
-                }, null)
-                const chosenName = (pick?.name) || files[files.length - 1].name
-                const { data: pub } = supabase.storage
-                  .from('location-images')
-                  .getPublicUrl(`${locId}/${chosenName}`)
-                if (pub?.publicUrl) banners[locId] = cacheBust(pub.publicUrl)
-              }
-            } catch {
-              // Si Storage list falla, seguimos sin banner
-            }
-          }
-
-          // eslint-disable-next-line no-console
-          console.log('🏙️ locationBanners map (with storage fallback):', banners)
           setLocationBanners(banners)
         } else {
           setLocationBanners({})
         }
       } catch {
-        // Silencio: si hay RLS que bloquea, simplemente no habrá fondos
+        // Silenciar errores
       }
     }
     loadImages()
@@ -715,14 +503,8 @@ export function ClientDashboard({
       })
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
     
-    // Debug: Log appointments data
-    console.log('🔍 Debug - All appointments:', appointments)
-    console.log('🔍 Debug - Filtered upcoming appointments:', filtered)
-    console.log('🔍 Debug - Service images:', serviceImages)
-    console.log('🔍 Debug - Location banners:', locationBanners)
-    
     return filtered
-  }, [appointments, serviceImages, locationBanners])
+  }, [appointments])
 
   // Get status label
   const getStatusLabel = (status: string): string => {
@@ -790,7 +572,7 @@ export function ClientDashboard({
         return (
           <div className="p-6">
             {/* Header principal: título y botón en la misma fila (sticky en móvil) */}
-            <div id="dashboard-sticky-header" className="sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 flex items-center justify-between gap-4 w-full min-w-0">
+            <div id="dashboard-sticky-header" className="sticky top-0 z-20 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 py-3 flex items-center justify-between gap-4 w-full min-w-0">
               <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
               <Button 
                 onClick={() => setShowAppointmentWizard(true)}
@@ -863,40 +645,25 @@ export function ClientDashboard({
                             className="relative overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
                             onClick={() => setSelectedAppointment(appointment)}
                           >
-                            {/* Fondo: alterna entre imagen del servicio y banner de la sede */}
+                            {/* Background image: service image priority, fallback to location banner */}
                             {(() => {
                               const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
                               const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
-                              const showSvc = showServiceImage || !locImg
-                              const showLoc = !showServiceImage || !svcImg
-                              return (
+                              const bgImage = svcImg || locImg
+                              
+                              return bgImage ? (
                                 <>
-                                  {svcImg && (
-                                    <div
-                                      aria-hidden
-                                      className={
-                                        `absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${showSvc ? 'opacity-100' : 'opacity-0'}`
-                                      }
-                                      style={{ backgroundImage: `url(${svcImg})` }}
-                                    />
-                                  )}
-                                  {locImg && (
-                                    <div
-                                      aria-hidden
-                                      className={
-                                        `absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${showLoc ? 'opacity-100' : 'opacity-0'}`
-                                      }
-                                      style={{ backgroundImage: `url(${locImg})` }}
-                                    />
-                                  )}
-                                  {(svcImg || locImg) && (
-                                    <div
-                                      className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"
-                                      aria-hidden
-                                    />
-                                  )}
+                                  <div
+                                    aria-hidden
+                                    className="absolute inset-0 bg-cover bg-center"
+                                    style={{ backgroundImage: `url(${bgImage})` }}
+                                  />
+                                  <div
+                                    className="absolute inset-0 bg-linear-to-b from-black/50 via-black/40 to-black/60"
+                                    aria-hidden
+                                  />
                                 </>
-                              )
+                              ) : null
                             })()}
 
                             <CardContent className="relative z-10 p-4">
@@ -906,7 +673,7 @@ export function ClientDashboard({
                                   <div />
                                   <Badge
                                     variant={getStatusVariant(appointment.status)}
-                                    className="flex-shrink-0 whitespace-nowrap"
+                                    className="shrink-0 whitespace-nowrap"
                                   >
                                     {getStatusLabel(appointment.status)}
                                   </Badge>
@@ -940,7 +707,7 @@ export function ClientDashboard({
                                     const hasBg = !!(svcImg || locImg)
                                     return (
                                       <div className={`flex items-center gap-3 p-2 rounded-lg border ${hasBg ? 'bg-black/30 backdrop-blur-sm border-white/10' : 'bg-card/50 border-border/50'}`}>
-                                      <Avatar className="h-8 w-8 flex-shrink-0">
+                                      <Avatar className="h-8 w-8 shrink-0">
                                         <AvatarImage
                                           src={appointment.employee?.avatar_url || undefined}
                                           alt={appointment.employee?.full_name || 'Profesional'}
@@ -972,7 +739,7 @@ export function ClientDashboard({
                                   const hasBg = !!(svcImg || locImg)
                                   return (
                                     <div className={`flex items-center gap-2 text-sm pt-1 ${hasBg ? 'text-white/90' : 'text-foreground/90'}`}>
-                                      <Clock className="h-4 w-4 flex-shrink-0" />
+                                      <Clock className="h-4 w-4 shrink-0" />
                                       <span className="line-clamp-1">
                                         {new Date(appointment.start_time).toLocaleDateString('es', { day: 'numeric', month: 'short' })}
                                         {' • '}
@@ -990,7 +757,7 @@ export function ClientDashboard({
                                   return (
                                     <div className="flex items-center justify-between gap-3 pt-1">
                                       <div className={`flex items-center gap-2 text-sm min-w-0 ${hasBg ? 'text-white/90' : 'text-muted-foreground'}`}>
-                                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                                        <MapPin className="h-4 w-4 shrink-0" />
                                         <span className="truncate">
                                           {appointment.location?.address || appointment.location?.name || '—'}
                                         </span>
@@ -1041,12 +808,23 @@ export function ClientDashboard({
           </div>
         )
       case 'favorites':
-        return <FavoritesList />
+        return (
+          <FavoritesList 
+            favorites={dashboardData?.favorites || []}
+            loading={isDashboardLoading}
+          />
+        )
       case 'history':
         return (
           <div className="p-6">
             <h2 className="text-2xl font-bold text-foreground mb-6">Historial de Citas</h2>
-            {currentUser && <ClientHistory userId={currentUser.id} />}
+            {currentUser && (
+              <ClientHistory 
+                userId={currentUser.id} 
+                appointments={dashboardData?.appointments || []}
+                loading={isDashboardLoading}
+              />
+            )}
           </div>
         )
       default:
@@ -1420,8 +1198,6 @@ export function ClientDashboard({
             setSelectedUserId(null);
             // TODO: Open AppointmentWizard with preselected service and business
             setShowAppointmentWizard(true);
-            // eslint-disable-next-line no-console
-            console.log('Book with professional:', { serviceId, businessId });
           }}
           userLocation={
             geolocation.hasLocation

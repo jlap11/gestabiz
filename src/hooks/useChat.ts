@@ -1044,18 +1044,10 @@ export function useChat(userId: string | null) {
   // ============================================================================
   
   useEffect(() => {
+    if (!userId) return;
     fetchConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ Solo ejecutar al montar - fetchConversations es estable
-  
-  // Load messages when active conversation changes
-  useEffect(() => {
-    if (activeConversationId) {
-      fetchMessages(activeConversationId);
-      fetchTypingIndicators(activeConversationId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeConversationId]); // ✅ Callbacks excluidos - son estables
+  }, [userId]); // ✅ Solo ejecutar al montar o cuando userId cambie
   
   // ============================================================================
   // COMPUTED VALUES

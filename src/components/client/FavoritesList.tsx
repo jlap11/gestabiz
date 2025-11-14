@@ -1,27 +1,29 @@
 import { useState } from 'react';
-import { useFavorites, FavoriteBusiness } from '@/hooks/useFavorites';
-import { useAuth } from '@/contexts/AuthContext';
+import { FavoriteBusiness } from '@/hooks/useFavorites';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, Star, MapPin, Heart, Loader2 } from 'lucide-react';
 import BusinessProfile from '@/components/business/BusinessProfile';
 
+interface FavoritesListProps {
+  favorites: FavoriteBusiness[];
+  loading: boolean;
+}
+
 /**
  * FavoritesList - Componente para mostrar y gestionar negocios favoritos
+ * OPTIMIZADO: Recibe favorites como prop desde ClientDashboard para evitar query duplicada
  * 
  * Características:
  * - Grid responsive de tarjetas de negocios
  * - Click en tarjeta abre BusinessProfile modal
  * - Botón "Reservar" para agendar cita rápidamente
  * - Empty state cuando no hay favoritos
- * - Loading states y error handling
+ * - Loading states
  */
-export default function FavoritesList() {
-  const { user } = useAuth();
+export default function FavoritesList({ favorites, loading }: FavoritesListProps) {
   const { t } = useLanguage();
-  const { favorites, loading, error } = useFavorites(user?.id);
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
 
   // Loading state
@@ -30,18 +32,6 @@ export default function FavoritesList() {
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
         <p className="text-muted-foreground text-center">{t('favoritesList.loading')}</p>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4">
-        <div className="bg-destructive/10 border border-destructive rounded-lg p-6 max-w-md">
-          <p className="text-destructive font-semibold mb-2">{t('favoritesList.errorTitle')}</p>
-          <p className="text-sm text-muted-foreground">{error.message}</p>
-        </div>
       </div>
     );
   }
@@ -120,7 +110,7 @@ export default function FavoritesList() {
           {/* Ubicación */}
           {business.city && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <MapPin className="h-4 w-4 shrink-0" />
               <span className="truncate">{business.city}</span>
               {business.address && (
                 <span className="text-xs truncate">• {business.address}</span>
