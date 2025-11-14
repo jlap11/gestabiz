@@ -8,6 +8,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { QUERY_CONFIG } from '@/lib/queryConfig';
+import type { FavoriteBusiness } from '@/hooks/useFavorites';
 
 // =====================================================
 // TYPES
@@ -106,7 +107,7 @@ export interface ClientDashboardData {
   appointments: AppointmentWithRelations[];
   reviewedAppointmentIds: string[];
   pendingReviewsCount: number;
-  favorites: string[];
+  favorites: FavoriteBusiness[];
   suggestions: BusinessSuggestion[];
   stats: DashboardStats;
 }

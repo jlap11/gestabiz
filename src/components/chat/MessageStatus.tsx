@@ -52,10 +52,10 @@ export function MessageStatus({ message, currentUserId }: MessageStatusProps) {
     );
   }
 
-  // Estado: leído (double check azul)
+  // Estado: leído (double check blanco para contraste con fondo morado)
   if (status === 'read') {
     return (
-      <span className="text-blue-500 text-xs" title="Leído">
+      <span className="text-white text-xs" title="Leído">
         <CheckCheck className="h-3 w-3" />
       </span>
     );

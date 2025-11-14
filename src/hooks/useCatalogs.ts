@@ -122,6 +122,14 @@ export function useRegions(countryId?: string) {
         return;
       }
 
+      // ✅ FIX: Usar caché si existe para este país
+      const cacheKey = `regions_${countryId}`;
+      if (catalogCache.regions && catalogCache.regions.length > 0 && catalogCache.regions[0]?.country_id === countryId) {
+        setRegions(catalogCache.regions);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const { data, error: fetchError } = await supabase
@@ -132,6 +140,8 @@ export function useRegions(countryId?: string) {
 
         if (fetchError) throw fetchError;
 
+        // ✅ FIX: Guardar en caché
+        catalogCache.regions = data || [];
         setRegions(data || []);
       } catch (err) {
         console.error('Error fetching regions:', err);
@@ -165,6 +175,14 @@ export function useCities(regionId?: string) {
         return;
       }
 
+      // ✅ FIX: Usar caché si existe para esta región
+      const cacheKey = `cities_${regionId}`;
+      if (catalogCache.cities && catalogCache.cities.length > 0 && catalogCache.cities[0]?.region_id === regionId) {
+        setCities(catalogCache.cities);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         const { data, error: fetchError } = await supabase
@@ -175,6 +193,8 @@ export function useCities(regionId?: string) {
 
         if (fetchError) throw fetchError;
 
+        // ✅ FIX: Guardar en caché
+        catalogCache.cities = data || [];
         setCities(data || []);
       } catch (err) {
         console.error('Error fetching cities:', err);

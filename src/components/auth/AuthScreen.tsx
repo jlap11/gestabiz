@@ -12,7 +12,7 @@ import { APP_CONFIG } from '@/constants'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { toast } from 'sonner'
 import { useAnalytics } from '@/hooks/useAnalytics'
-import { ArrowLeft, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void
@@ -20,7 +20,7 @@ interface AuthScreenProps {
 }
 
 export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScreenProps>) {
-  const { signIn, signUp, signInWithGoogle } = useAuth()
+  const { signIn, signUp, signInWithGoogle, signInWithMagicLink } = useAuth() // TODO: REMOVE signInWithMagicLink BEFORE PRODUCTION
   const { t } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -34,6 +34,8 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [inactiveEmail, setInactiveEmail] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  // TODO: REMOVE magicLinkEmail state BEFORE PRODUCTION
+  const [magicLinkEmail, setMagicLinkEmail] = useState('') // DEV ONLY
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -196,6 +198,32 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
     }
   }
 
+  // TODO: REMOVE handleMagicLink BEFORE PRODUCTION - DEV ONLY for testing in DevTools browser
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!magicLinkEmail) {
+      setFormError('Por favor ingresa un email')
+      return
+    }
+    
+    setFormError(null)
+    setIsSigningIn(true)
+    try {
+      const result = await signInWithMagicLink(magicLinkEmail)
+      if (result.success) {
+        // Success toast is already shown by the hook
+        setMagicLinkEmail('')
+      } else if (result.error) {
+        setFormError(result.error)
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Error al enviar Magic Link'
+      setFormError(errorMsg)
+    } finally {
+      setIsSigningIn(false)
+    }
+  }
+
   const handleBackToLanding = () => {
     navigate('/', { replace: true })
   }
@@ -294,7 +322,7 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             {/* Error Banner */}
             {formError && (
               <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                <AlertCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-destructive">
                     {formError}
@@ -429,6 +457,45 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               {t('auth.continueWithGoogle')}
             </Button>
             </form>
+
+            {/* TODO: REMOVE Magic Link section BEFORE PRODUCTION - DEV ONLY */}
+            {import.meta.env.DEV && (
+              <>
+                {/* Magic Link Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-card text-muted-foreground">
+                      🧪 DEV ONLY - Magic Link
+                    </span>
+                  </div>
+                </div>
+
+                {/* Magic Link Form */}
+                <form onSubmit={handleMagicLink} className="space-y-3">
+                  <Input
+                    type="email"
+                    placeholder="Email para Magic Link (solo DEV)"
+                    value={magicLinkEmail}
+                    onChange={(e) => setMagicLinkEmail(e.target.value)}
+                    className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
+                  />
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    disabled={isSigningIn || !magicLinkEmail}
+                    className="w-full bg-background border-border hover:bg-muted text-foreground h-12 rounded-lg transition-colors"
+                  >
+                    📧 Enviar Magic Link (DEV)
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    ⚠️ Esta opción es solo para desarrollo. Recibe un enlace por email.
+                  </p>
+                </form>
+              </>
+            )}
 
             {/* Sign up/Login toggle link */}
             <div className="mt-6 text-center text-sm">

@@ -546,7 +546,7 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`
+          redirectTo: `${globalThis.location.origin}/app`
         }
       })
 
@@ -637,7 +637,7 @@ export function useAuth() {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
+        redirectTo: `${globalThis.location.origin}/auth/reset-password`
       })
 
       if (error) {
@@ -651,6 +651,36 @@ export function useAuth() {
       return { success: true }
   } catch {
       const message = 'Error desconocido'
+      setState(prev => ({ ...prev, loading: false, error: message }))
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }, [])
+
+  // TODO: REMOVE MAGIC LINK BEFORE PRODUCTION - This is ONLY for development testing
+  // Sign in with Magic Link (OTP via email) - DEV ONLY
+  const signInWithMagicLink = useCallback(async (email: string) => {
+    try {
+      setState(prev => ({ ...prev, loading: true, error: null }))
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${globalThis.location.origin}/app`
+        }
+      })
+
+      if (error) {
+        setState(prev => ({ ...prev, loading: false, error: error.message }))
+        toast.error(error.message)
+        return { success: false, error: error.message }
+      }
+
+      setState(prev => ({ ...prev, loading: false }))
+      toast.success('Revisa tu email para el enlace de inicio de sesión')
+      return { success: true }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido'
       setState(prev => ({ ...prev, loading: false, error: message }))
       toast.error(message)
       return { success: false, error: message }
@@ -721,6 +751,7 @@ export function useAuth() {
     signInWithGoogle,
     signOut,
     resetPassword,
+    signInWithMagicLink, // TODO: REMOVE BEFORE PRODUCTION
     updateProfile
   }
 }
