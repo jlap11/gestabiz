@@ -53,7 +53,7 @@ export function useScheduleConflicts() {
         .from('business_employees')
         .select(`
           business_id,
-          business:businesses!inner(name)
+          business:businesses!business_employees_business_id_fkey(name)
         `)
   .eq('employee_id', session.session.user.id)
   .eq('status', 'approved');

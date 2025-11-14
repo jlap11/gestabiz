@@ -79,7 +79,7 @@ export function TopPerformers({
         // Fetch all employees for the business
         let employeeQuery = supabase
           .from('business_employees')
-          .select('employee_id, profiles(id, full_name, avatar_url, email)')
+          .select('employee_id, profiles!business_employees_employee_id_fkey(id, full_name, avatar_url, email)')
           .eq('business_id', businessId);
 
         if (locationId) {

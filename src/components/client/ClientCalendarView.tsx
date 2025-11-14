@@ -15,7 +15,7 @@ interface AppointmentWithRelations {
   employee_id?: string
   start_time: string
   end_time: string
-  status: 'pending' | 'pending_confirmation' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'pending' | 'pending_confirmation' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
   notes?: string
   price?: number
   currency?: string
@@ -184,8 +184,7 @@ export function ClientCalendarView({ appointments, onAppointmentClick, onCreateA
       in_progress: 'En Proceso',
       completed: 'Completada',
       cancelled: 'Cancelada',
-      no_show: 'No Asistió',
-      rescheduled: 'Reagendada'
+      no_show: 'No Asistió'
     }
     return labels[status] || status
   }

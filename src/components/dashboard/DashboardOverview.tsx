@@ -76,10 +76,10 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
     }
 
     const statusData = [
-      { name: t('status.confirmed'), value: statusCounts.confirmed, color: '#3b82f6' },
-      { name: t('status.completed'), value: statusCounts.completed, color: '#10b981' },
-      { name: t('status.cancelled'), value: statusCounts.cancelled, color: '#ef4444' },
-      { name: t('status.noShow'), value: statusCounts.no_show, color: '#6b7280' }
+      { name: t('clientDashboard.status.confirmed'), value: statusCounts.confirmed, color: '#3b82f6' },
+      { name: t('clientDashboard.status.completed'), value: statusCounts.completed, color: '#10b981' },
+      { name: t('clientDashboard.status.cancelled'), value: statusCounts.cancelled, color: '#ef4444' },
+      { name: t('clientDashboard.status.noShow'), value: statusCounts.no_show, color: '#6b7280' }
     ].filter(item => item.value > 0)
 
     // Revenue by week
@@ -165,7 +165,7 @@ export function DashboardOverview(props: Readonly<DashboardOverviewProps>) {
           <CardContent>
             <div className="text-2xl font-bold">{todayAppointments.length}</div>
             <p className="text-xs text-muted-foreground">
-              {todayAppointments.filter(apt => apt.status === 'completed').length} {t('status.completed')}
+              {todayAppointments.filter(apt => apt.status === 'completed').length} {t('clientDashboard.status.completed')}
             </p>
           </CardContent>
         </Card>

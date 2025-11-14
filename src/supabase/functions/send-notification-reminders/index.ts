@@ -155,11 +155,31 @@ async function sendEmailNotification(notification: Notification): Promise<boolea
     // You can integrate with SendGrid, Resend, or any email service
     // This is a basic example using the Fetch API to send to an email service
     
+    // Resolve location/city if UUIDs are present
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    let resolvedNotification = notification
+    if (notification.appointment?.location) {
+      const resolvedLocation = await resolveLocationDisplay(supabase, notification.appointment.location)
+      if (resolvedLocation) {
+        resolvedNotification = {
+          ...notification,
+          appointment: {
+            ...notification.appointment,
+            location: resolvedLocation
+          }
+        }
+      }
+    }
+
     const emailData = {
-      to: notification.profile?.email,
-      subject: notification.title,
-      html: generateEmailHTML(notification),
-      text: generateEmailText(notification)
+      to: resolvedNotification.profile?.email,
+      subject: resolvedNotification.title,
+      html: generateEmailHTML(resolvedNotification),
+      text: generateEmailText(resolvedNotification)
     }
 
     // Example with SendGrid (replace with your preferred email service)
@@ -311,4 +331,35 @@ View your appointment: ${Deno.env.get('APP_URL') || 'https://your-app-url.com'}
 This is an automated reminder from Gestabiz.
 To stop receiving these emails, update your notification preferences in the app.
   `
+}
+
+// Helpers to resolve UUID-based location and city IDs to human-friendly names
+function isUUID(value: any): boolean {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
+async function resolveCityName(supabaseClient: any, cityValue?: string | null): Promise<string | null> {
+  if (!cityValue) return null
+  if (!isUUID(cityValue)) return String(cityValue)
+  const { data: cityRow } = await supabaseClient
+    .from('cities')
+    .select('name')
+    .eq('id', cityValue)
+    .maybeSingle()
+  return cityRow?.name || null
+}
+
+async function resolveLocationDisplay(supabaseClient: any, locationValue?: string | null): Promise<string | null> {
+  if (!locationValue) return null
+  if (!isUUID(locationValue)) return String(locationValue)
+  const { data: locRow } = await supabaseClient
+    .from('locations')
+    .select('name, address, city')
+    .eq('id', locationValue)
+    .maybeSingle()
+  if (!locRow) return String(locationValue)
+  const cityName = await resolveCityName(supabaseClient, (locRow as any).city)
+  const base = (locRow as any).name || (locRow as any).address || ''
+  const composed = base ? `${base}${cityName ? ', ' + cityName : ''}` : (cityName || null)
+  return composed || String(locationValue)
 }

@@ -16,6 +16,8 @@ serve(async (req) => {
   }
 
   try {
+    // Permitir llamadas internas desde cron jobs (sin autenticación externa)
+    // La Edge Function usa sus propias variables de entorno de Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     if (!supabaseUrl || !supabaseKey) {

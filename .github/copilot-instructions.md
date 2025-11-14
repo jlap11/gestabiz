@@ -437,6 +437,7 @@
   - `npm run build` (copia/zip), `npm run dev` para servidor estático local; carga "unpacked" en Chrome.
 - **Supabase**: SOLO en la nube (no hay instancia local). Ver `SUPABASE_INTEGRATION_GUIDE.md`, `src/docs/deployment-guide.md` y `supabase/functions/README.md` para CLI, Edge Functions y cron.
   - **MCP configurado**: Servidor Model Context Protocol disponible para operaciones directas de base de datos.
+  - **Chrome DevTools MCP**: Herramientas de depuración del navegador disponibles vía MCP para inspeccionar requests, console logs, performance y network activity en tiempo real.
 
 Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectura, flujos de desarrollo y convenciones propias del proyecto.
 
@@ -448,6 +449,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - Estado/UI: `src/contexts/AppStateContext.tsx` (loading/error/toasts), i18n `src/contexts/LanguageContext.tsx` con persistencia local (hook `useKV`), estilos con Tailwind y util `cn` (`src/lib/utils.ts`).
   - Integraciones: Google Calendar (`src/lib/googleCalendar.ts`), permisos (`src/lib/permissions.ts`).
   - **MCP de Supabase**: Servidor Model Context Protocol configurado para operaciones directas de base de datos.
+  - **MCP de Chrome DevTools**: Herramientas de depuración del navegador para inspeccionar Network, Console, Performance y elements en tiempo real.
 
 
 ## 🗄️ BASE DE DATOS SUPABASE

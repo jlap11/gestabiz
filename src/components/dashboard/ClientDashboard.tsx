@@ -67,7 +67,7 @@ export default function ClientDashboard({
     return allAppointments
       .filter(apt => {
         const aptDate = new Date(apt.start_time)
-        return aptDate < now || ['completed', 'cancelled', 'no-show'].includes(apt.status)
+        return aptDate < now || ['completed', 'cancelled', 'no_show'].includes(apt.status)
       })
       .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
       .slice(0, 10) // Últimas 10
@@ -121,9 +121,13 @@ export default function ClientDashboard({
         label: t('clientDashboard.status.scheduled'), 
         className: 'bg-primary/20 text-primary border-primary/30 font-medium' 
       },
-      'no-show': { 
+      no_show: { 
         label: t('clientDashboard.status.noShow'), 
         className: 'bg-muted text-muted-foreground border-border font-medium' 
+      },
+      in_progress: {
+        label: t('clientDashboard.status.inProgress'),
+        className: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30 font-medium'
       },
     }
 

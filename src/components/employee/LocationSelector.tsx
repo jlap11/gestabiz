@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Check, AlertCircle, ArrowRightLeft } from 'lucide-react';
+import { MapPin, Check, AlertCircle, ArrowRightLeft, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -271,10 +271,16 @@ export function LocationSelector({
                 <div className="text-sm space-y-1">
                   <p className="font-medium text-muted-foreground">Contacto</p>
                   {location.phone && (
-                    <p className="text-foreground">📞 {location.phone}</p>
+                    <p className="text-foreground flex items-center gap-2">
+                      <Phone className="h-3 w-3" />
+                      <span>{location.phone}</span>
+                    </p>
                   )}
                   {location.email && (
-                    <p className="text-foreground">📧 {location.email}</p>
+                    <p className="text-foreground flex items-center gap-2">
+                      <Mail className="h-3 w-3" />
+                      <span>{location.email}</span>
+                    </p>
                   )}
                 </div>
               )}

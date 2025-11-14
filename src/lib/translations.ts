@@ -1976,6 +1976,7 @@ export const translations = {
         completed: 'Completed',
         cancelled: 'Cancelled',
         scheduled: 'Scheduled',
+        inProgress: 'In Progress',
         noShow: 'No Show',
       },
       table: {
@@ -2160,6 +2161,7 @@ export const translations = {
     // Business Suggestions
     businessSuggestions: {
       title: 'Popular Businesses',
+      titleWithCity: 'Businesses in {city}',
       noSuggestions: 'No suggestions available',
       loading: 'Loading suggestions...',
       viewMore: 'View More',
@@ -4160,6 +4162,7 @@ export const translations = {
         completed: 'Completada',
         cancelled: 'Cancelada',
         scheduled: 'Agendada',
+        inProgress: 'En Curso',
         noShow: 'No Asistió',
       },
       table: {
@@ -4344,6 +4347,7 @@ export const translations = {
     // Business Suggestions
     businessSuggestions: {
       title: 'Negocios Populares',
+      titleWithCity: 'Negocios en {city}',
       noSuggestions: 'Sin sugerencias disponibles',
       loading: 'Cargando sugerencias...',
       viewMore: 'Ver Más',

@@ -1,6 +1,12 @@
+// =====================================================
+// Hook: useMandatoryReviews (REFACTORIZADO v2.0)
+// =====================================================
+// ANTES: Hacía query propia a completed appointments + reviews
+// AHORA: Recibe datos como parámetros (del hook useClientDashboard)
+// Beneficio: Elimina queries duplicadas
+// =====================================================
+
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useCompletedAppointments } from './useCompletedAppointments';
 
 export interface PendingReviewCheck {
   hasPendingReviews: boolean;
@@ -16,51 +22,46 @@ interface RemindLaterEntry {
   timestamp: number;
 }
 
-export function useMandatoryReviews(userId?: string) {
+/**
+ * Hook para gestionar modal de reviews obligatorias
+ * 
+ * @param userId - ID del usuario
+ * @param completedAppointments - Citas completadas (del dashboard hook)
+ * @param reviewedAppointmentIds - IDs de citas con review (del dashboard hook)
+ * @returns Estado del modal y funciones de control
+ */
+export function useMandatoryReviews(
+  userId: string | undefined,
+  completedAppointments: any[] = [],
+  reviewedAppointmentIds: string[] = []
+) {
   const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
   const [shouldShowModal, setShouldShowModal] = useState(false);
-  
-  // ✅ Usar hook compartido en lugar de query directa (OPTIMIZACIÓN)
-  const { appointments: completedAppointments, loading, getIds } = useCompletedAppointments(userId);
 
-  const checkPendingReviews = useCallback(async () => {
-    if (!userId || loading) return;
-
-    try {
-      // Check if user has "remind later" active
-      const remindLater = getRemindLaterStatus(userId);
-      if (remindLater) {
-        setShouldShowModal(false);
-        return;
-      }
-
-      if (completedAppointments.length === 0) {
-        setPendingReviewsCount(0);
-        setShouldShowModal(false);
-        return;
-      }
-
-      // Get appointments that have reviews
-      const appointmentIds = getIds();
-      const { data: reviewedAppointments, error: reviewsError } = await supabase
-        .from('reviews')
-        .select('appointment_id')
-        .in('appointment_id', appointmentIds);
-
-      if (reviewsError) throw reviewsError;
-
-      const reviewedIds = new Set(reviewedAppointments?.map(r => r.appointment_id) || []);
-      const pendingCount = appointmentIds.filter(id => !reviewedIds.has(id)).length;
-
-      setPendingReviewsCount(pendingCount);
-
-      // Show modal if there are pending reviews
-      setShouldShowModal(pendingCount > 0);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error checking pending reviews:', error);
+  // ✅ Calcular pending reviews SIN hacer query adicional
+  const checkPendingReviews = useCallback(() => {
+    if (!userId || completedAppointments.length === 0) {
+      setPendingReviewsCount(0);
+      setShouldShowModal(false);
+      return;
     }
-  }, [userId, loading, completedAppointments, getIds]);
+
+    // Check if user has "remind later" active
+    const remindLater = getRemindLaterStatus(userId);
+    if (remindLater) {
+      setShouldShowModal(false);
+      return;
+    }
+
+    // Calcular pending reviews (completed appointments sin review)
+    const reviewedSet = new Set(reviewedAppointmentIds);
+    const pendingCount = completedAppointments.filter(
+      (apt) => !reviewedSet.has(apt.id)
+    ).length;
+
+    setPendingReviewsCount(pendingCount);
+    setShouldShowModal(pendingCount > 0);
+  }, [userId, completedAppointments, reviewedAppointmentIds]);
 
   useEffect(() => {
     checkPendingReviews();
@@ -120,8 +121,7 @@ export function useMandatoryReviews(userId?: string) {
   return {
     pendingReviewsCount,
     shouldShowModal,
-    loading, // From useCompletedAppointments
-    checkPendingReviews,
+    checkPendingReviews, // Ahora es síncrono (no async)
     dismissModal,
     remindLater,
     clearRemindLater,

@@ -463,7 +463,6 @@ export default function LegacyAppointmentForm({ user, clients, appointment, onSa
                       <SelectItem value="completed">{t('status.completed') || 'Completed'}</SelectItem>
                       <SelectItem value="cancelled">{t('status.cancelled') || 'Cancelled'}</SelectItem>
                       <SelectItem value="no_show">{t('status.noShow') || 'No show'}</SelectItem>
-                      <SelectItem value="rescheduled">{t('status.rescheduled') || 'Rescheduled'}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

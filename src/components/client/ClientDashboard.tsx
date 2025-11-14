@@ -22,6 +22,7 @@ import { useChat } from '@/hooks/useChat'
 import { useMandatoryReviews } from '@/hooks/useMandatoryReviews'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { usePreferredCity } from '@/hooks/usePreferredCity'
+import { useClientDashboard } from '@/hooks/useClientDashboard'
 import type { UserRole, User } from '@/types/types'
 import type { SearchType } from '@/components/client/SearchBar'
 import supabase from '@/lib/supabase'
@@ -73,7 +74,7 @@ interface AppointmentWithRelations {
   employee_id?: string
   start_time: string
   end_time: string
-  status: 'pending' | 'pending_confirmation' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'pending' | 'pending_confirmation' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
   notes?: string
   price?: number
   currency?: string
@@ -143,7 +144,33 @@ export function ClientDashboard({
     locationId?: string
     employeeId?: string
   } | undefined>(undefined)
-  const [appointments, setAppointments] = useState<AppointmentWithRelations[]>([])
+  // ✅ NEW: Hook consolidado que reemplaza fetchClientAppointments + useMandatoryReviews
+  const { 
+    data: dashboardData, 
+    isLoading: isDashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard
+  } = useClientDashboard(user.id)
+
+  // ✅ Memoizar appointments para evitar infinite loops con useEffect
+  // (dashboardData?.appointments puede retornar un nuevo array en cada render)
+  const appointments = React.useMemo(
+    () => dashboardData?.appointments || [],
+    [dashboardData?.appointments]
+  )
+  const reviewedAppointmentIds = dashboardData?.reviewedAppointmentIds || []
+  const pendingReviewsCountFromData = dashboardData?.pendingReviewsCount || 0
+  const completedAppointments = appointments.filter(apt => apt.status === 'completed')
+  const suggestions = dashboardData?.suggestions || [] // ✅ Sugerencias consolidadas
+
+  console.log('[ClientDashboard] 📊 Dashboard data:', {
+    dashboardData,
+    suggestionsCount: suggestions.length,
+    appointmentsCount: appointments.length,
+    isDashboardLoading,
+    userId: user?.id
+  });
+
   const [serviceImages, setServiceImages] = useState<Record<string, string>>({})
   const [locationBanners, setLocationBanners] = useState<Record<string, string>>({})
   // Eliminamos rotación de fondos; solo usamos imagen real del servicio
@@ -178,14 +205,17 @@ export function ClientDashboard({
   // Hook para procesar navegaciones pendientes después de cambio de rol
   usePendingNavigation(handlePageChange)
 
-  // Mandatory reviews hook
+  // ✅ REFACTORED: Mandatory reviews hook ahora recibe datos del hook consolidado
   const { 
-    shouldShowModal: shouldShowReviewModal, 
+    shouldShowModal: shouldShowReviewModal,
     pendingReviewsCount,
-    checkPendingReviews,
     remindLater,
     dismissModal: dismissReviewModal
-  } = useMandatoryReviews(user.id)
+  } = useMandatoryReviews(
+    user.id,
+    completedAppointments,
+    reviewedAppointmentIds
+  )
 
   // Geolocation for proximity-based search
   const geolocation = useGeolocation({
@@ -195,10 +225,7 @@ export function ClientDashboard({
 
   // Hook para preferencias de ciudad (para sugerencias)
   const {
-    preferredCityId,
-    preferredCityName,
-    preferredRegionId,
-    preferredRegionName
+    preferredCityName
   } = usePreferredCity()
 
   // Handle initial booking context from public profile redirect
@@ -347,18 +374,13 @@ export function ClientDashboard({
       toast.success('Cita cancelada exitosamente')
       setSelectedAppointment(null)
       
-      // Refresh appointments list
-      const refreshedAppointments = appointments.map(apt => 
-        apt.id === appointmentId 
-          ? { ...apt, status: 'cancelled' as const }
-          : apt
-      )
-      setAppointments(refreshedAppointments)
+      // ✅ Refetch dashboard data (useClientDashboard automáticamente invalidará cache)
+      refetchDashboard()
     } catch (error) {
       console.error('Error al cancelar cita:', error)
       toast.error('No se pudo cancelar la cita. Intenta de nuevo.')
     }
-  }, [user?.id, appointments])
+  }, [user?.id, refetchDashboard])
 
   // Handle reschedule appointment
   const handleRescheduleAppointment = useCallback((appointment: AppointmentWithRelations) => {
@@ -427,6 +449,8 @@ export function ClientDashboard({
     return () => clearInterval(interval)
   }, [])
   
+  // ✅ TODO: ELIMINAR fetch_ClientAppointments completo (ya no se usa, reemplazado por useClientDashboard)
+  /*
   // Fetch client appointments with related data (business, location, employee)
   const fetchClientAppointments = React.useCallback(async () => {
     if (!currentUser?.id) {
@@ -549,11 +573,10 @@ export function ClientDashboard({
       console.error('❌ Error final:', err)
     }
   }, [currentUser?.id])
+  */
 
-  // Fetch on mount and when user changes
-  React.useEffect(() => {
-    fetchClientAppointments()
-  }, [fetchClientAppointments])
+  // ✅ ELIMINADO: fetchClientAppointments + useEffect que lo llamaba
+  // Ahora useClientDashboard fetch automáticamente
 
   // Sin rotación de fondo: solo imagen real de servicio
 
@@ -711,8 +734,7 @@ export function ClientDashboard({
       in_progress: 'En Proceso',
       completed: 'Completada',
       cancelled: 'Cancelada',
-      no_show: 'No Asistió',
-      rescheduled: 'Reagendada'
+      no_show: 'No Asistió'
     }
     return labels[status] || status
   }
@@ -994,11 +1016,9 @@ export function ClientDashboard({
               {/* Columna derecha: Sugerencias de negocios (1/3 del ancho) */}
               <div className="lg:col-span-1">
                 <BusinessSuggestions
-                  userId={currentUser.id}
-                  preferredCityId={preferredCityId}
+                  suggestions={suggestions}
+                  isLoading={isDashboardLoading}
                   preferredCityName={preferredCityName}
-                  preferredRegionId={preferredRegionId}
-                  preferredRegionName={preferredRegionName}
                   onBusinessSelect={(businessId) => {
                     setSelectedBusinessId(businessId)
                   }}
@@ -1078,7 +1098,7 @@ export function ClientDashboard({
           appointmentToEdit={appointmentToEdit} // Pasar cita a editar
           onSuccess={() => {
             handleCloseWizard()
-            fetchClientAppointments() // Recargar citas después de crear una nueva
+            refetchDashboard() // ✅ Recargar dashboard después de crear cita
           }}
         />
       )}
@@ -1423,7 +1443,7 @@ export function ClientDashboard({
         }}
         onReviewSubmitted={() => {
           checkPendingReviews();
-          fetchClientAppointments();
+          refetchDashboard(); // ✅ Recargar dashboard después de acción
           toast.success('¡Gracias por tu reseña!');
         }}
         userId={user.id}

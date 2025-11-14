@@ -5,7 +5,7 @@ const BOGOTA_REGION_ID = 'fc6cc79b-dfd1-42c9-b35d-3d0df51c1c83';
 const BOGOTA_CITY_ID = 'c5861b80-bd05-48a9-9e24-d8c93e0d1d6b';
 const BOGOTA_CITY_NAME = 'Bogotá';
 const DEFAULT_REGION_ID = BOGOTA_REGION_ID; // Bogotá D.C.
-const DEFAULT_CITY_ID = null; // Opción 1: región sin ciudad explícita
+const DEFAULT_CITY_ID = BOGOTA_CITY_ID; // ✅ FIX: Default debe ser Bogotá cityId, NO null
 
 interface PreferredCityData {
   regionId: string;
@@ -32,18 +32,36 @@ export function usePreferredCity() {
           setPreferredCityId(data.cityId);
           setPreferredCityName(data.cityName);
         } else {
-        // Set default to Bogotá D.C. (sin ciudad explícita)
+          // ✅ FIX: Set default to Bogotá D.C. AND SAVE to localStorage
+          const defaultData: PreferredCityData = {
+            regionId: DEFAULT_REGION_ID,
+            regionName: 'Bogotá D.C.',
+            cityId: DEFAULT_CITY_ID,
+            cityName: BOGOTA_CITY_NAME
+          };
+          localStorage.setItem(STORAGE_KEY_PREFIX, JSON.stringify(defaultData));
           setPreferredRegionId(DEFAULT_REGION_ID);
           setPreferredRegionName('Bogotá D.C.');
           setPreferredCityId(DEFAULT_CITY_ID);
-          setPreferredCityName(null);
+          setPreferredCityName(BOGOTA_CITY_NAME);
         }
       } catch {
-        // Fallback to default on error
+        // Fallback to default on error (and try to save)
+        const defaultData: PreferredCityData = {
+          regionId: DEFAULT_REGION_ID,
+          regionName: 'Bogotá D.C.',
+          cityId: DEFAULT_CITY_ID,
+          cityName: BOGOTA_CITY_NAME
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY_PREFIX, JSON.stringify(defaultData));
+        } catch {
+          // Silent fail if localStorage is not available
+        }
         setPreferredRegionId(DEFAULT_REGION_ID);
         setPreferredRegionName('Bogotá D.C.');
         setPreferredCityId(DEFAULT_CITY_ID);
-        setPreferredCityName(null);
+        setPreferredCityName(BOGOTA_CITY_NAME);
       }
     };
 

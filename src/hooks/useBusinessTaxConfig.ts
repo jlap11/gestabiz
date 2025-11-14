@@ -40,17 +40,13 @@ export function useBusinessTaxConfig(businessId: string): UseBusinessTaxConfigRe
         .from('tax_configurations')
         .select('*')
         .eq('business_id', businessId)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
-        // Si no existe configuración, retornar null en vez de error
-        if (fetchError.code === 'PGRST116') {
-          return null;
-        }
         throw fetchError;
       }
 
-      return data as TaxConfiguration;
+      return (data as TaxConfiguration) ?? null;
     },
     gcTime: CACHE_TIME, // Tiempo que los datos permanecen en caché
     staleTime: STALE_TIME, // Tiempo antes de considerar datos obsoletos
@@ -108,9 +104,9 @@ export function usePrefetchTaxConfig() {
           .from('tax_configurations')
           .select('*')
           .eq('business_id', businessId)
-          .single();
-        
-        return data as TaxConfiguration | null;
+          .maybeSingle();
+
+        return (data as TaxConfiguration | null) ?? null;
       },
       gcTime: CACHE_TIME,
       staleTime: STALE_TIME,

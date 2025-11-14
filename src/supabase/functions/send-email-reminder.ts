@@ -61,6 +61,9 @@ serve(async (req) => {
       minute: '2-digit',
     })
 
+    // Resolve location/city display if appointment.location contains UUIDs
+    const resolvedLocation = await resolveLocationDisplay(supabaseClient, appointment.location)
+
     // Prepare email content
     const emailSubject = `Recordatorio: ${appointment.title}`
     const emailBody = `
@@ -78,7 +81,7 @@ serve(async (req) => {
                 <p style="margin: 0 0 10px 0;"><strong>Título:</strong> ${appointment.title}</p>
                 <p style="margin: 0 0 10px 0;"><strong>Fecha:</strong> ${formattedDate}</p>
                 <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${formattedTime}</p>
-                ${appointment.location ? `<p style="margin: 0 0 10px 0;"><strong>Ubicación:</strong> ${appointment.location}</p>` : ''}
+                ${resolvedLocation ? `<p style=\"margin: 0 0 10px 0;\"><strong>Ubicación:</strong> ${resolvedLocation}</p>` : ''}
                 ${appointment.description ? `<p style="margin: 0 0 10px 0;"><strong>Descripción:</strong> ${appointment.description}</p>` : ''}
               </div>
 
@@ -194,3 +197,34 @@ serve(async (req) => {
     )
   }
 })
+
+// Helpers to resolve UUID-based location and city IDs to human-friendly names
+function isUUID(value: any): boolean {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
+async function resolveCityName(supabaseClient: any, cityValue?: string | null): Promise<string | null> {
+  if (!cityValue) return null
+  if (!isUUID(cityValue)) return String(cityValue)
+  const { data: cityRow } = await supabaseClient
+    .from('cities')
+    .select('name')
+    .eq('id', cityValue)
+    .maybeSingle()
+  return cityRow?.name || null
+}
+
+async function resolveLocationDisplay(supabaseClient: any, locationValue?: string | null): Promise<string | null> {
+  if (!locationValue) return null
+  if (!isUUID(locationValue)) return String(locationValue)
+  const { data: locRow } = await supabaseClient
+    .from('locations')
+    .select('name, address, city')
+    .eq('id', locationValue)
+    .maybeSingle()
+  if (!locRow) return String(locationValue)
+  const cityName = await resolveCityName(supabaseClient, (locRow as any).city)
+  const base = (locRow as any).name || (locRow as any).address || ''
+  const composed = base ? `${base}${cityName ? ', ' + cityName : ''}` : (cityName || null)
+  return composed || String(locationValue)
+}

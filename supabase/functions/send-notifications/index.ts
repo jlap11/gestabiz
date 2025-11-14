@@ -34,6 +34,8 @@ serve(async (req) => {
           title,
           start_datetime,
           location,
+          location_id,
+          locations!appointments_location_id_fkey (name, address, city),
           clients (name, email)
         ),
         users (email, name)
@@ -52,7 +54,7 @@ serve(async (req) => {
         let emailSent = false
 
         if (notification.method === 'email') {
-          const emailData = generateEmailContent(notification)
+          const emailData = await generateEmailContent(notification)
           emailSent = await sendEmail(emailData)
         }
 
@@ -124,10 +126,13 @@ serve(async (req) => {
   }
 })
 
-function generateEmailContent(notification: any): EmailData {
+async function generateEmailContent(notification: any): Promise<EmailData> {
   const appointment = notification.appointments
   const user = notification.users
   const client = appointment.clients
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  const supabase = (supabaseUrl && supabaseServiceKey) ? createClient(supabaseUrl, supabaseServiceKey) : null
   
   const appointmentDate = new Date(appointment.start_datetime)
   const formattedDate = appointmentDate.toLocaleDateString('es-ES', {
@@ -140,6 +145,41 @@ function generateEmailContent(notification: any): EmailData {
     hour: '2-digit',
     minute: '2-digit'
   })
+
+  // Resolver ubicación/dirección y ciudad
+  const isUUID = (s?: string) => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s).trim())
+  const resolveCityName = async (cityOrUuid?: string): Promise<string | undefined> => {
+    const candidate = (cityOrUuid || '').trim()
+    if (!candidate) return undefined
+    if (!isUUID(candidate)) return candidate
+    try {
+      if (!supabase) return candidate
+      const { data: cityRow } = await supabase
+        .from('cities')
+        .select('name')
+        .eq('id', candidate)
+        .single()
+      return cityRow?.name || candidate
+    } catch (_) {
+      return candidate
+    }
+  }
+
+  const locationRel = Array.isArray(appointment.locations) ? appointment.locations[0] : appointment.locations
+  let locationName: string | undefined = locationRel?.name || appointment.location
+  let address: string | undefined = locationRel?.address
+  let city: string | undefined = locationRel?.city
+
+  // Si address contiene UUID como ciudad, separarlo
+  if (address && /,\s*[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(address)) {
+    const match = address.match(/^(.*?),\s*([0-9a-f-]{36})$/i)
+    if (match) {
+      address = match[1]
+      city = city || match[2]
+    }
+  }
+  city = await resolveCityName(city)
+  const addressLine = address ? `${address}${city ? `, ${city}` : ''}` : undefined
 
   switch (notification.type) {
     case 'reminder':
@@ -155,7 +195,8 @@ function generateEmailContent(notification: any): EmailData {
                 <strong>Cliente:</strong> ${client.name}<br>
                 <strong>Fecha:</strong> ${formattedDate}<br>
                 <strong>Hora:</strong> ${formattedTime}
-                ${appointment.location ? `<br><strong>Ubicación:</strong> ${appointment.location}` : ''}
+                ${locationName ? `<br><strong>Ubicación:</strong> ${locationName}` : ''}
+                ${addressLine ? `<br><strong>Dirección:</strong> ${addressLine}` : ''}
               </p>
             </div>
             <p style="color: #64748B; font-size: 14px;">
@@ -163,7 +204,7 @@ function generateEmailContent(notification: any): EmailData {
             </p>
           </div>
         `,
-        text: `Recordatorio: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`
+        text: `Recordatorio: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}${locationName ? ` - Ubicación: ${locationName}` : ''}${addressLine ? ` - Dirección: ${addressLine}` : ''}`
       }
 
     case 'confirmation':
@@ -179,7 +220,8 @@ function generateEmailContent(notification: any): EmailData {
                 <strong>Cliente:</strong> ${client.name}<br>
                 <strong>Fecha:</strong> ${formattedDate}<br>
                 <strong>Hora:</strong> ${formattedTime}
-                ${appointment.location ? `<br><strong>Ubicación:</strong> ${appointment.location}` : ''}
+                ${locationName ? `<br><strong>Ubicación:</strong> ${locationName}` : ''}
+                ${addressLine ? `<br><strong>Dirección:</strong> ${addressLine}` : ''}
               </p>
             </div>
             <p style="color: #64748B; font-size: 14px;">
@@ -187,7 +229,7 @@ function generateEmailContent(notification: any): EmailData {
             </p>
           </div>
         `,
-        text: `Cita confirmada: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}`
+        text: `Cita confirmada: ${appointment.title} con ${client.name} el ${formattedDate} a las ${formattedTime}${locationName ? ` - Ubicación: ${locationName}` : ''}${addressLine ? ` - Dirección: ${addressLine}` : ''}`
       }
 
     case 'cancellation':

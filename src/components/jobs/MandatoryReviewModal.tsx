@@ -21,7 +21,19 @@ interface PendingReview {
   business_name: string;
   service_name: string;
   completed_at: string;
+  employee_id?: string;
   employee_name?: string;
+  // DEBUG fields
+  status: string;
+  start_time: string;
+  end_time: string;
+  payment_status?: string;
+}
+
+interface PreviousRating {
+  rating: number;
+  comment?: string;
+  created_at: string;
 }
 
 interface MandatoryReviewModalProps {
@@ -39,13 +51,28 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
 }) => {
   const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([]);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
+  
+  // Business rating state
+  const [businessRating, setBusinessRating] = useState(0);
+  const [businessHoverRating, setBusinessHoverRating] = useState(0);
+  const [previousBusinessRating, setPreviousBusinessRating] = useState<PreviousRating | null>(null);
+  
+  // Employee rating state
+  const [employeeRating, setEmployeeRating] = useState(0);
+  const [employeeHoverRating, setEmployeeHoverRating] = useState(0);
+  const [previousEmployeeRating, setPreviousEmployeeRating] = useState<PreviousRating | null>(null);
+  
+  // Shared state
   const [comment, setComment] = useState('');
   const [recommend, setRecommend] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [fetchingReviews, setFetchingReviews] = useState(true);
+
+  // Computed values - deben estar antes de los useEffect que los usan
+  const currentReview = pendingReviews[currentReviewIndex];
+  const hasMoreReviews = currentReviewIndex < pendingReviews.length - 1;
+  const isLastReview = currentReviewIndex === pendingReviews.length - 1;
 
   // Fetch pending reviews on mount
   useEffect(() => {
@@ -63,20 +90,39 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
             business_id,
             service_id,
             employee_id,
+            status,
+            start_time,
+            end_time,
             completed_at,
-            business:businesses!inner(name),
-            service:services(name),
-            employee:profiles(full_name)
+            payment_status,
+            business:businesses!appointments_business_id_fkey(name),
+            service:services!appointments_service_id_fkey(name),
+            employee:profiles!appointments_employee_id_fkey(full_name)
           `)
           .eq('client_id', userId)
           .eq('status', 'completed')
-          .is('review_id', null)
           .order('completed_at', { ascending: false })
-          .limit(10);
+          .limit(50);
 
         if (error) throw error;
 
-        const reviews: PendingReview[] = (data || []).map((appointment) => {
+        // Get appointment IDs that already have reviews
+        const appointmentIds = (data || []).map(apt => apt.id);
+        const { data: existingReviews } = await supabase
+          .from('reviews')
+          .select('appointment_id')
+          .in('appointment_id', appointmentIds);
+
+        const reviewedAppointmentIds = new Set(
+          (existingReviews || []).map(r => r.appointment_id)
+        );
+
+        // Filter out appointments that already have reviews
+        const appointmentsWithoutReviews = (data || []).filter(
+          apt => !reviewedAppointmentIds.has(apt.id)
+        );
+
+        const reviews: PendingReview[] = appointmentsWithoutReviews.map((appointment) => {
           const business = Array.isArray(appointment.business) 
             ? appointment.business[0] 
             : appointment.business;
@@ -93,7 +139,13 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
             business_name: business?.name || 'Negocio',
             service_name: service?.name || 'Servicio',
             completed_at: appointment.completed_at,
+            employee_id: appointment.employee_id,
             employee_name: employee?.full_name,
+            // DEBUG fields
+            status: appointment.status,
+            start_time: appointment.start_time,
+            end_time: appointment.end_time,
+            payment_status: appointment.payment_status,
           };
         });
 
@@ -117,18 +169,79 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
     fetchPendingReviews();
   }, [isOpen, userId, onClose]);
 
+  // Load previous ratings when review changes
+  useEffect(() => {
+    const loadPreviousRatings = async () => {
+      if (!currentReview) return;
+
+      try {
+        // Load previous business rating
+        const { data: businessReview } = await supabase
+          .from('reviews')
+          .select('rating, comment, created_at')
+          .eq('business_id', currentReview.business_id)
+          .eq('client_id', userId)
+          .is('employee_id', null) // Solo reviews de negocio
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (businessReview) {
+          setPreviousBusinessRating({
+            rating: businessReview.rating,
+            comment: businessReview.comment || undefined,
+            created_at: businessReview.created_at,
+          });
+          setBusinessRating(businessReview.rating); // Pre-cargar la calificación
+        } else {
+          setPreviousBusinessRating(null);
+          setBusinessRating(0);
+        }
+
+        // Load previous employee rating (if employee exists)
+        if (currentReview.employee_id) {
+          const { data: employeeReview } = await supabase
+            .from('reviews')
+            .select('rating, comment, created_at')
+            .eq('business_id', currentReview.business_id)
+            .eq('employee_id', currentReview.employee_id)
+            .eq('client_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (employeeReview) {
+            setPreviousEmployeeRating({
+              rating: employeeReview.rating,
+              comment: employeeReview.comment || undefined,
+              created_at: employeeReview.created_at,
+            });
+            setEmployeeRating(employeeReview.rating); // Pre-cargar la calificación
+          } else {
+            setPreviousEmployeeRating(null);
+            setEmployeeRating(0);
+          }
+        } else {
+          setPreviousEmployeeRating(null);
+          setEmployeeRating(0);
+        }
+      } catch (err) {
+        console.error('Error loading previous ratings:', err);
+      }
+    };
+
+    loadPreviousRatings();
+  }, [currentReviewIndex, currentReview, userId]);
+
   // Reset form when review changes
   useEffect(() => {
-    setRating(0);
-    setHoverRating(0);
+    // Don't reset ratings - they're loaded from previous ratings
+    setBusinessHoverRating(0);
+    setEmployeeHoverRating(0);
     setComment('');
     setRecommend(null);
     setValidationError(null);
   }, [currentReviewIndex]);
-
-  const currentReview = pendingReviews[currentReviewIndex];
-  const hasMoreReviews = currentReviewIndex < pendingReviews.length - 1;
-  const isLastReview = currentReviewIndex === pendingReviews.length - 1;
 
   const handleSubmitReview = async () => {
     try {
@@ -136,13 +249,16 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
       setValidationError(null);
 
       // Validations
-      if (rating === 0) {
-        setValidationError('Debes seleccionar una calificación');
+      const needsBusinessRating = !previousBusinessRating;
+      const needsEmployeeRating = currentReview.employee_id && !previousEmployeeRating;
+
+      if (needsBusinessRating && businessRating === 0) {
+        setValidationError('Debes calificar el negocio');
         return;
       }
 
-      if (comment.trim().length < 50) {
-        setValidationError('El comentario debe tener al menos 50 caracteres');
+      if (needsEmployeeRating && employeeRating === 0) {
+        setValidationError('Debes calificar al profesional');
         return;
       }
 
@@ -151,29 +267,42 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
         return;
       }
 
-      // Create review
-      const { data: reviewData, error: reviewError } = await supabase
-        .from('reviews')
-        .insert({
-          business_id: currentReview.business_id,
-          user_id: userId,
-          rating,
-          comment: comment.trim(),
-          review_type: 'business',
-          is_visible: true,
-        })
-        .select()
-        .single();
+      // Create business review (solo si no existe preview o si cambió la calificación)
+      if (!previousBusinessRating || businessRating !== previousBusinessRating?.rating) {
+        const { error: businessError } = await supabase
+          .from('reviews')
+          .insert({
+            business_id: currentReview.business_id,
+            // NO incluir appointment_id para review de negocio (evita duplicate key)
+            client_id: userId,
+            rating: businessRating,
+            comment: comment.trim() || null,
+            is_visible: true,
+            is_verified: true,
+          });
 
-      if (reviewError) throw reviewError;
+        if (businessError) throw businessError;
+      }
 
-      // Update appointment with review_id
-      const { error: updateError } = await supabase
-        .from('appointments')
-        .update({ review_id: reviewData.id })
-        .eq('id', currentReview.appointment_id);
+      // Create employee review (solo si hay empleado y no existe previa o cambió)
+      if (currentReview.employee_id) {
+        if (!previousEmployeeRating || employeeRating !== previousEmployeeRating?.rating) {
+          const { error: employeeError } = await supabase
+            .from('reviews')
+            .insert({
+              business_id: currentReview.business_id,
+              appointment_id: currentReview.appointment_id, // Solo la review del empleado tiene appointment_id
+              client_id: userId,
+              employee_id: currentReview.employee_id,
+              rating: employeeRating,
+              comment: comment.trim() || null,
+              is_visible: true,
+              is_verified: true,
+            });
 
-      if (updateError) throw updateError;
+          if (employeeError) throw employeeError;
+        }
+      }
 
       toast.success('Review enviada exitosamente');
 
@@ -234,7 +363,7 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}} modal>
-      <DialogContent className="max-w-2xl" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -251,7 +380,7 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto max-h-[60vh]">
           {/* Review Info */}
           <div className="p-4 bg-muted rounded-lg space-y-2">
             <div className="flex items-center justify-between">
@@ -266,6 +395,58 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
                 Atendido por: {currentReview.employee_name}
               </p>
             )}
+            
+            {/* DEBUG Badge - Detalles de la cita */}
+            <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+              <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🔍 DEBUG - Detalles de la cita:</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Estado:</span>
+                  <span className="ml-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 rounded">
+                    {currentReview.status}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Pago:</span>
+                  <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded">
+                    {currentReview.payment_status || 'N/A'}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Hora inicio:</span>
+                  <span className="ml-1 text-yellow-900 dark:text-yellow-100">
+                    {new Date(currentReview.start_time).toLocaleString('es-CO', {
+                      dateStyle: 'short',
+                      timeStyle: 'short'
+                    })}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Hora fin:</span>
+                  <span className="ml-1 text-yellow-900 dark:text-yellow-100">
+                    {new Date(currentReview.end_time).toLocaleString('es-CO', {
+                      dateStyle: 'short',
+                      timeStyle: 'short'
+                    })}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Completada en:</span>
+                  <span className="ml-1 text-yellow-900 dark:text-yellow-100">
+                    {new Date(currentReview.completed_at).toLocaleString('es-CO', {
+                      dateStyle: 'short',
+                      timeStyle: 'short'
+                    })}
+                  </span>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">ID Cita:</span>
+                  <span className="ml-1 text-yellow-900 dark:text-yellow-100 font-mono text-xs">
+                    {currentReview.appointment_id.slice(0, 8)}...
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Validation Error */}
@@ -276,23 +457,31 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
             </Alert>
           )}
 
-          {/* Star Rating */}
-          <div className="space-y-2">
-            <Label>Calificación *</Label>
+          {/* Business Rating */}
+          <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <Label>Calificación para el negocio {!previousBusinessRating && '*'}</Label>
+              {previousBusinessRating && (
+                <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Calificado anteriormente
+                </span>
+              )}
+            </div>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => setBusinessRating(star)}
+                  onMouseEnter={() => setBusinessHoverRating(star)}
+                  onMouseLeave={() => setBusinessHoverRating(0)}
                   className="transition-transform hover:scale-110 focus:outline-none"
-                  disabled={loading}
+                  disabled={loading || !!previousBusinessRating}
                 >
                   <Star
                     className={`h-10 w-10 transition-colors ${
-                      star <= (hoverRating || rating)
+                      star <= (businessHoverRating || businessRating)
                         ? 'fill-yellow-400 text-yellow-400'
                         : 'text-gray-300'
                     }`}
@@ -300,33 +489,77 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
                 </button>
               ))}
             </div>
-            {rating > 0 && (
+            {businessRating > 0 && (
               <p className="text-sm text-muted-foreground">
-                {rating === 1 && 'Muy insatisfecho'}
-                {rating === 2 && 'Insatisfecho'}
-                {rating === 3 && 'Neutral'}
-                {rating === 4 && 'Satisfecho'}
-                {rating === 5 && 'Muy satisfecho'}
+                {businessRating === 1 && 'Muy insatisfecho'}
+                {businessRating === 2 && 'Insatisfecho'}
+                {businessRating === 3 && 'Neutral'}
+                {businessRating === 4 && 'Satisfecho'}
+                {businessRating === 5 && 'Muy satisfecho'}
               </p>
             )}
           </div>
 
+          {/* Employee Rating (si hay empleado) */}
+          {currentReview.employee_name && (
+            <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <Label>
+                  Calificación para {currentReview.employee_name} {!previousEmployeeRating && '*'}
+                </Label>
+                {previousEmployeeRating && (
+                  <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Calificado anteriormente
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setEmployeeRating(star)}
+                    onMouseEnter={() => setEmployeeHoverRating(star)}
+                    onMouseLeave={() => setEmployeeHoverRating(0)}
+                    className="transition-transform hover:scale-110 focus:outline-none"
+                    disabled={loading || !!previousEmployeeRating}
+                  >
+                    <Star
+                      className={`h-10 w-10 transition-colors ${
+                        star <= (employeeHoverRating || employeeRating)
+                          ? 'fill-blue-400 text-blue-400'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              {employeeRating > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {employeeRating === 1 && 'Muy insatisfecho'}
+                  {employeeRating === 2 && 'Insatisfecho'}
+                  {employeeRating === 3 && 'Neutral'}
+                  {employeeRating === 4 && 'Satisfecho'}
+                  {employeeRating === 5 && 'Muy satisfecho'}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Comment */}
           <div className="space-y-2">
             <Label htmlFor="review-comment">
-              Comentario * <span className="text-xs text-muted-foreground">(mínimo 50 caracteres)</span>
+              Comentario <span className="text-xs text-muted-foreground">(opcional)</span>
             </Label>
             <Textarea
               id="review-comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Cuéntanos sobre tu experiencia con este negocio..."
+              placeholder="Cuéntanos sobre tu experiencia con este negocio... (opcional)"
               className="min-h-[120px] resize-y"
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground">
-              {comment.length} / 50 caracteres
-            </p>
           </div>
 
           {/* Recommendation */}

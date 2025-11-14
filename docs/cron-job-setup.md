@@ -4,7 +4,7 @@ Este documento explica cómo configurar y gestionar el cron job que actualiza au
 
 ## Descripción
 
-El sistema incluye un cron job que se ejecuta cada 10 minutos para:
+El sistema incluye un cron job que se ejecuta cada 30 minutos para:
 - Verificar citas con estado `pending_confirmation` que han expirado (más de 24 horas sin confirmar)
 - Cambiar automáticamente su estado a `cancelled`
 - Registrar la cancelación automática en el sistema
@@ -52,7 +52,7 @@ Ejecutar en el SQL Editor de Supabase:
 ```sql
 SELECT cron.schedule(
   'appointment-status-updater',
-  '*/10 * * * *',
+  '*/30 * * * *',
   'SELECT invoke_appointment_status_updater();'
 );
 
@@ -112,11 +112,8 @@ UPDATE cron.job SET active = true WHERE jobname = 'appointment-status-updater';
 
 ### Cambiar Frecuencia
 ```sql
--- Cambiar a cada 5 minutos
-SELECT cron.alter_job('appointment-status-updater', schedule => '*/5 * * * *');
-
--- Cambiar a cada 15 minutos
-SELECT cron.alter_job('appointment-status-updater', schedule => '*/15 * * * *');
+-- Cambiar a cada 30 minutos
+SELECT cron.alter_job('appointment-status-updater', schedule => '*/30 * * * *');
 ```
 
 ### Eliminar el Job
@@ -158,8 +155,8 @@ curl -X POST 'https://dkancockzvcqorqbwtyh.supabase.co/functions/v1/appointment-
 ## Configuración Recomendada
 
 ### Frecuencia
-- **Desarrollo**: Cada 5 minutos para pruebas rápidas
-- **Producción**: Cada 10 minutos (balance entre responsividad y carga del servidor)
+- **Desarrollo**: Cada 5–15 minutos para pruebas rápidas
+- **Producción**: Cada 30 minutos (balance entre carga y consistencia)
 
 ### Monitoreo
 - Configurar alertas para fallos consecutivos del cron job

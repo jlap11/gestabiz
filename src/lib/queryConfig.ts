@@ -64,6 +64,10 @@ export const QUERY_CONFIG = {
       'completed-appointments',
       clientId,
     ],
+    CLIENT_DASHBOARD: (clientId: string) => [
+      'client-dashboard',
+      clientId,
+    ],
   },
 };
 

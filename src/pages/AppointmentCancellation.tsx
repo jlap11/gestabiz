@@ -19,6 +19,7 @@ interface AppointmentDetails {
   appointment_date: string
   appointment_time: string
   status: string
+  confirmed: boolean
   confirmation_deadline: string
 }
 
@@ -51,14 +52,15 @@ export default function AppointmentCancellation() {
           appointment_date,
           appointment_time,
           status,
+          confirmed,
           confirmation_deadline,
-          clients!inner(name, email),
-          services!inner(name),
-          businesses!inner(name),
-          locations!inner(address)
+          clients!appointments_client_id_fkey(name, email),
+          services!appointments_service_id_fkey(name),
+          businesses!appointments_business_id_fkey(name),
+          locations!appointments_location_id_fkey(address)
         `)
         .eq('confirmation_token', token)
-        .in('status', ['pending_confirmation', 'confirmed'])
+        .in('status', ['pending', 'confirmed'])
         .single()
 
       if (error) {
@@ -80,6 +82,7 @@ export default function AppointmentCancellation() {
         appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
         status: data.status,
+        confirmed: !!data.confirmed,
         confirmation_deadline: data.confirmation_deadline
       })
     } catch (err) {
@@ -226,7 +229,10 @@ export default function AppointmentCancellation() {
               <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                 <p className="font-medium text-yellow-800">Estado actual:</p>
                 <p className="text-yellow-700 capitalize">
-                  {appointment.status === 'pending_confirmation' ? 'Pendiente de confirmación' : 'Confirmada'}
+                  {appointment.status === 'pending' ? 'Pendiente' : 'Confirmada'}
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Confirmación del cliente: {appointment.confirmed ? 'Sí' : 'No'}
                 </p>
               </div>
             </div>

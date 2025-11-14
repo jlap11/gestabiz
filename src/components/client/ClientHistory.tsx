@@ -30,7 +30,7 @@ interface AppointmentWithRelations {
   client_phone?: string
   start_time: string
   end_time: string
-  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled'
+  status: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'
   notes?: string
   price?: number
   currency?: string
@@ -362,17 +362,25 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
     return employees.filter(emp => emp.full_name.toLowerCase().includes(search))
   }, [employees, employeeSearch])
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadgeForAppointment = (appointment: AppointmentWithRelations) => {
+    const rawStatus = appointment.status as unknown as string
+    const now = new Date()
+    const end = new Date(appointment.end_time)
+
+    const isOverduePending = rawStatus === 'pending' && end < now
+
     const statusConfig = {
       completed: { label: 'Asistida', variant: 'default' as const, className: 'bg-green-500 hover:bg-green-600' },
       cancelled: { label: 'Cancelada', variant: 'destructive' as const, className: '' },
       no_show: { label: 'Perdida', variant: 'secondary' as const, className: 'bg-yellow-500 hover:bg-yellow-600' },
       confirmed: { label: 'Confirmada', variant: 'default' as const, className: '' },
       pending: { label: 'Pendiente', variant: 'secondary' as const, className: '' },
-      scheduled: { label: 'Agendada', variant: 'default' as const, className: '' }
+      scheduled: { label: 'Agendada', variant: 'default' as const, className: '' },
+      overdue: { label: 'Vencida', variant: 'secondary' as const, className: 'bg-orange-500 hover:bg-orange-600' }
     }
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+    const key = isOverduePending ? 'overdue' : (rawStatus in statusConfig ? rawStatus : 'pending')
+    const config = statusConfig[key as keyof typeof statusConfig]
     return (
       <Badge variant={config.variant} className={config.className}>
         {config.label}
@@ -917,7 +925,7 @@ export function ClientHistory({ userId }: ClientHistoryProps) {
                   <div className="flex-1 space-y-3">
                     {/* Status and Business */}
                     <div className="flex items-center gap-3 flex-wrap">
-                      {getStatusBadge(appointment.status)}
+                      {getStatusBadgeForAppointment(appointment)}
                       {appointment.business?.name && (
                         <div className="flex items-center gap-2 text-sm font-medium text-primary">
                           <Building2 className="h-4 w-4" />

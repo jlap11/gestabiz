@@ -35,6 +35,64 @@ serve(async (req) => {
       throw new Error('Email service not configured')
     }
 
+    // Helpers para resolver ubicación/dirección y ciudad
+    const isUUID = (s?: string) => !!s && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s).trim())
+
+    const resolveCityName = async (cityOrUuid?: string): Promise<string | undefined> => {
+      const candidate = (cityOrUuid || '').trim()
+      if (!candidate) return undefined
+      if (!isUUID(candidate)) return candidate
+      try {
+        const { data: cityRow } = await supabase
+          .from('cities')
+          .select('name')
+          .eq('id', candidate)
+          .single()
+        return cityRow?.name || candidate
+      } catch (_) {
+        return candidate
+      }
+    }
+
+    const resolveLocationFromAppointment = async (apt: any) => {
+      let locationName: string | undefined = apt?.location_name || apt?.location || undefined
+      let address: string | undefined = apt?.location_address || apt?.address || undefined
+      let city: string | undefined = apt?.location_city || apt?.city || undefined
+
+      // Si tenemos location_id, enriquecer desde locations
+      const locationId: string | undefined = apt?.location_id || apt?.location?.id || undefined
+      if (locationId) {
+        try {
+          const { data: loc } = await supabase
+            .from('locations')
+            .select('name,address,city')
+            .eq('id', locationId)
+            .single()
+          locationName = locationName || loc?.name
+          address = address || loc?.address
+          city = city || loc?.city
+        } catch (_) {}
+      }
+
+      // Si la dirección trae ", <UUID>", separarlo y resolver ciudad
+      if (address && /,\s*[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(address)) {
+        const match = address.match(/^(.*?),\s*([0-9a-f-]{36})$/i)
+        if (match) {
+          address = match[1]
+          city = city || match[2]
+        }
+      }
+
+      // Resolver ciudad si es UUID
+      city = await resolveCityName(city)
+
+      const addressLine = address ? `${address}${city ? `, ${city}` : ''}` : undefined
+      return {
+        locationText: locationName || 'Por confirmar',
+        addressText: addressLine
+      }
+    }
+
     // Build email content based on template
     let emailContent = message
     let emailSubject = subject
@@ -43,35 +101,43 @@ serve(async (req) => {
       switch (template) {
         case 'reminder':
           emailSubject = `Recordatorio: ${appointmentData.title}`
-          emailContent = `
+          {
+            const loc = await resolveLocationFromAppointment(appointmentData)
+            emailContent = `
             Hola ${appointmentData.client_name},
             
             Te recordamos que tienes una cita programada:
             
             📅 Fecha: ${new Date(appointmentData.start_time).toLocaleDateString('es-ES')}
             🕐 Hora: ${new Date(appointmentData.start_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            📍 Lugar: ${appointmentData.location || 'Por confirmar'}
+            📍 Lugar: ${loc.locationText}
+            ${loc.addressText ? `📍 Dirección: ${loc.addressText}` : ''}
             📝 Servicio: ${appointmentData.title}
             
             ${appointmentData.notes ? `Notas: ${appointmentData.notes}` : ''}
             
             ¡Te esperamos!
           `
+          }
           break
         case 'confirmation':
           emailSubject = `Cita Confirmada: ${appointmentData.title}`
-          emailContent = `
+          {
+            const loc = await resolveLocationFromAppointment(appointmentData)
+            emailContent = `
             Hola ${appointmentData.client_name},
             
             Tu cita ha sido confirmada:
             
             📅 Fecha: ${new Date(appointmentData.start_time).toLocaleDateString('es-ES')}
             🕐 Hora: ${new Date(appointmentData.start_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            📍 Lugar: ${appointmentData.location || 'Por confirmar'}
+            📍 Lugar: ${loc.locationText}
+            ${loc.addressText ? `📍 Dirección: ${loc.addressText}` : ''}
             📝 Servicio: ${appointmentData.title}
             
             Si necesitas cancelar o reprogramar, por favor contáctanos lo antes posible.
           `
+          }
           break
         case 'cancellation':
           emailSubject = `Cita Cancelada: ${appointmentData.title}`

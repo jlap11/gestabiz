@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { format, addDays, subDays, parseISO, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { usePreferredLocation } from '@/hooks/usePreferredLocation';
+import { useTaxCalculation } from '@/hooks/useTaxCalculation';
+import type { TaxType } from '@/types/accounting.types';
 
 const DEFAULT_TIME_ZONE = 'America/Bogota';
 const COLOMBIA_UTC_OFFSET = -5; // GMT-5
@@ -158,13 +160,20 @@ interface Appointment {
   start_time: string;
   end_time: string;
   status: string;
+  confirmed?: boolean;
   service_name: string;
   service_price: number;
+  service_tax_type?: TaxType;
   client_name: string;
   employee_id: string;
   employee_name: string;
   location_id?: string;
   notes?: string;
+  payment_status?: string;
+  gross_amount?: number;
+  commission_amount?: number;
+  net_amount?: number;
+  other_deductions?: number;
 }
 
 interface LocationWithHours {
@@ -249,7 +258,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
 
   const isCompleted = appointment.status === 'completed';
   const isCancelled = appointment.status === 'cancelled';
-  const isPendingConfirmation = appointment.status === 'pending_confirmation';
+  const isPendingConfirmation = appointment.status === 'pending';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -290,6 +299,44 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
                 ${appointment.service_price.toLocaleString('es-CO')} COP
               </span>
             </div>
+
+            {/* Desglose de montos si la cita está pagada */}
+            {appointment.payment_status === 'paid' && appointment.gross_amount && (
+              <div className="mt-3 p-3 bg-muted/50 rounded-md border border-border">
+                <h4 className="text-sm font-semibold text-foreground mb-2">💰 Desglose de Pago</h4>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Monto Bruto:</span>
+                    <span className="text-xs font-medium text-foreground">
+                      ${appointment.gross_amount.toLocaleString('es-CO')} COP
+                    </span>
+                  </div>
+                  {appointment.commission_amount! > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-red-600 dark:text-red-400">- Comisión Empleado:</span>
+                      <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                        -${appointment.commission_amount!.toLocaleString('es-CO')} COP
+                      </span>
+                    </div>
+                  )}
+                  {appointment.other_deductions! > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-red-600 dark:text-red-400">- Otras Deducciones:</span>
+                      <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                        -${appointment.other_deductions!.toLocaleString('es-CO')} COP
+                      </span>
+                    </div>
+                  )}
+                  <div className="pt-1.5 border-t border-border flex justify-between items-center">
+                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">= Ingreso Neto:</span>
+                    <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                      ${appointment.net_amount!.toLocaleString('es-CO')} COP
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">Empleado:</span>
@@ -346,6 +393,15 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
               <p className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Pendiente de confirmación
+              </p>
+            </div>
+          )}
+
+          {isPendingConfirmation && appointment.confirmed && (
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-md">
+              <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
+                <Check className="h-4 w-4" />
+                Cliente confirmó
               </p>
             </div>
           )}
@@ -427,7 +483,7 @@ export const AppointmentsCalendar: React.FC = () => {
   const [showFilters, setShowFilters] = useState(true);
 
   // Filter states - now as arrays for multi-select
-  const [filterStatus, setFilterStatus] = useState<string[]>(['confirmed', 'pending_confirmation']);
+  const [filterStatus, setFilterStatus] = useState<string[]>(['confirmed', 'pending']);
   const [filterLocation, setFilterLocation] = useState<string[]>([]);
   const [filterService, setFilterService] = useState<string[]>([]);
   const [filterEmployee, setFilterEmployee] = useState<string[]>([]);
@@ -444,6 +500,13 @@ export const AppointmentsCalendar: React.FC = () => {
   // Obtener la configuración de sede preferida
   const [currentBusinessId, setCurrentBusinessId] = useState<string | undefined>(undefined);
   const { preferredLocationId } = usePreferredLocation(currentBusinessId);
+  const { calculateTaxes } = useTaxCalculation(currentBusinessId || '');
+
+  const formatFiscalPeriod = (date: Date) => {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  };
 
   // Colores pastel para las columnas de empleados
   const employeeColors = [
@@ -546,14 +609,21 @@ export const AppointmentsCalendar: React.FC = () => {
           start_time,
           end_time,
           status,
+          confirmed,
           notes,
           employee_id,
           location_id,
           client_id,
+          payment_status,
+          gross_amount,
+          commission_amount,
+          net_amount,
+          other_deductions,
           services!inner (
             id,
             name,
-            price
+            price,
+            tax_type
           ),
           client:profiles!appointments_client_id_fkey (
             id,
@@ -604,13 +674,20 @@ export const AppointmentsCalendar: React.FC = () => {
         start_time: apt.start_time as string,
         end_time: apt.end_time as string,
         status: apt.status as string,
+        confirmed: (apt.confirmed as boolean) ?? false,
         service_name: (apt.services as Record<string, unknown>)?.name as string || 'Servicio sin nombre',
         service_price: (apt.services as Record<string, unknown>)?.price as number || 0,
+        service_tax_type: ((apt.services as Record<string, unknown>)?.tax_type as TaxType) || 'none',
         client_name: (apt.client as Record<string, unknown>)?.full_name as string || 'Cliente sin nombre',
         employee_id: (apt.employee_id as string) || '',
         employee_name: employeeNames[(apt.employee_id as string)] || 'Sin asignar',
         location_id: (apt.location_id as string) || '',
-        notes: apt.notes as string | undefined
+        notes: apt.notes as string | undefined,
+        payment_status: apt.payment_status as string | undefined,
+        gross_amount: apt.gross_amount as number | undefined,
+        commission_amount: apt.commission_amount as number | undefined,
+        net_amount: apt.net_amount as number | undefined,
+        other_deductions: apt.other_deductions as number | undefined
       }));
 
       if (DEBUG_MODE) {
@@ -650,27 +727,48 @@ export const AppointmentsCalendar: React.FC = () => {
 
       setIsLoading(true);
       try {
-        // Get business owned by user
-        const { data: businesses, error: businessError } = await supabase
-          .from('businesses')
-          .select('id')
-          .eq('owner_id', user.id);
+        // Resolver el negocio actual de forma robusta
+        // 1) Si el usuario tiene contexto de negocio activo, usarlo
+        let resolvedBusinessId = user.activeBusiness?.id;
 
-        if (businessError) throw businessError;
-        
-        if (!businesses || businesses.length === 0) {
-          throw new Error('No se encontraron negocios para este usuario');
+        // 2) Si no hay contexto activo, intentar por owner (admin clásico)
+        if (!resolvedBusinessId) {
+          const { data: businesses, error: businessError } = await supabase
+            .from('businesses')
+            .select('id')
+            .eq('owner_id', user.id);
+
+          if (businessError) throw businessError;
+          if (businesses && businesses.length > 0) {
+            resolvedBusinessId = businesses[0].id;
+          }
         }
 
-        // Use the first business (most common case is one business per admin)
-        const business = businesses[0];
-        setCurrentBusinessId(business.id);
+        // 3) Si sigue sin negocio, intentar como empleado aprobado
+        if (!resolvedBusinessId && user.role === 'employee') {
+          const { data: employeeBiz, error: empErr } = await supabase
+            .from('business_employees')
+            .select('business_id')
+            .eq('employee_id', user.id)
+            .eq('status', 'approved')
+            .limit(1);
+          if (empErr) throw empErr;
+          if (employeeBiz && employeeBiz.length > 0) {
+            resolvedBusinessId = employeeBiz[0].business_id as string;
+          }
+        }
+
+        if (!resolvedBusinessId) {
+          throw new Error('No se pudo determinar el negocio actual para este usuario');
+        }
+
+        setCurrentBusinessId(resolvedBusinessId);
 
         // Get all locations for filter with their hours
         const { data: locationsData, error: locationError } = await supabase
           .from('locations')
           .select('id, name, opens_at, closes_at')
-          .eq('business_id', business.id);
+          .eq('business_id', resolvedBusinessId);
 
         if (locationError) throw locationError;
 
@@ -687,7 +785,7 @@ export const AppointmentsCalendar: React.FC = () => {
         const { data: employeesData, error: employeesError } = await supabase
           .from('business_employees')
           .select('id, employee_id, lunch_break_start, lunch_break_end, has_lunch_break')
-          .eq('business_id', business.id)
+          .eq('business_id', resolvedBusinessId)
           .eq('status', 'approved')
           .eq('is_active', true);
 
@@ -753,7 +851,7 @@ export const AppointmentsCalendar: React.FC = () => {
         const { data: servicesData } = await supabase
           .from('services')
           .select('id, name')
-          .eq('business_id', business.id);
+          .eq('business_id', resolvedBusinessId);
         
         if (servicesData) {
           setServices(servicesData.map(s => ({ id: s.id, name: s.name })));
@@ -797,38 +895,145 @@ export const AppointmentsCalendar: React.FC = () => {
     }
   }, [currentBusinessId, filterStatus, filterLocation, filterService, filterEmployee]);
 
+  // Sincronizar filtros de sede con las sedes disponibles
+  // Evita que IDs obsoletos en localStorage oculten todas las citas
+  useEffect(() => {
+    // Si no hay sedes cargadas, limpiar el filtro de sede para no filtrar todo
+    if (!locations || locations.length === 0) {
+      if (filterLocation.length > 0) {
+        setFilterLocation([]);
+      }
+      return;
+    }
+
+    const availableIds = new Set(locations.map(l => l.id));
+    const validSelected = filterLocation.filter(id => availableIds.has(id));
+    if (validSelected.length !== filterLocation.length) {
+      setFilterLocation(validSelected);
+    }
+  }, [locations]);
+
   const handleCompleteAppointment = async (appointmentId: string, tip: number) => {
     try {
-      // Update appointment status
+      // Get appointment details first
+      const appointment = appointments.find(a => a.id === appointmentId);
+      if (!appointment) return;
+
+      // Get service details including commission
+      const { data: service, error: serviceError } = await supabase
+        .from('services')
+        .select('commission_percentage')
+        .eq('id', appointment.service_id)
+        .single();
+
+      if (serviceError) throw serviceError;
+
+      // Calculate amounts
+      const grossAmount = appointment.service_price;
+      const commissionPercentage = service?.commission_percentage || 0;
+      const commissionAmount = Math.round(grossAmount * (commissionPercentage / 100));
+      const otherDeductions = 0; // Por ahora, se puede expandir después
+      const netAmount = grossAmount - commissionAmount - otherDeductions;
+
+      // Update appointment with payment status and amounts
       const { error: updateError } = await supabase
         .from('appointments')
-        .update({ status: 'completed' })
+        .update({ 
+          status: 'completed', 
+          payment_status: 'paid',
+          gross_amount: grossAmount,
+          commission_amount: commissionAmount,
+          net_amount: netAmount,
+          other_deductions: otherDeductions
+        })
         .eq('id', appointmentId);
 
       if (updateError) throw updateError;
 
-      // Get appointment details
-      const appointment = appointments.find(a => a.id === appointmentId);
-      if (!appointment) return;
+      // Create transactions: income + commission expense + optional tip
+      const nowIso = new Date().toISOString();
+      const nowDate = new Date(nowIso);
+      const fiscalPeriod = formatFiscalPeriod(nowDate);
 
-      // Create transaction (sale)
-      const totalAmount = appointment.service_price + tip;
+      // Calcular impuestos según el tipo del servicio
+      const taxType: TaxType = appointment.service_tax_type || 'none';
+      const taxes = calculateTaxes(grossAmount, taxType);
+      const taxAmount = taxes.total_tax;
+      const taxRate = grossAmount > 0 ? taxAmount / grossAmount : 0;
+      const totalAmount = taxes.total_amount;
+
+      const baseTxn = {
+        business_id: currentBusinessId!,
+        appointment_id: appointment.id,
+        location_id: appointment.location_id ?? null,
+        currency: 'COP',
+        payment_method: 'cash',
+        transaction_date: nowIso,
+      };
+
+      const payload = [
+        // 1. Ingreso bruto del servicio
+        {
+          ...baseTxn,
+          employee_id: appointment.employee_id ?? null,
+          type: 'income' as const,
+          subtotal: grossAmount,
+          tax_type: taxType,
+          tax_rate: taxRate,
+          tax_amount: taxAmount,
+          total_amount: totalAmount,
+          amount: totalAmount,
+          fiscal_period: fiscalPeriod,
+          category: 'appointment_payment',
+          description: `Pago de cita - ${appointment.service_name} (Bruto: ${grossAmount.toLocaleString('es-CO')} COP)`,
+        },
+        // 2. Egreso por comisión del empleado (solo si hay comisión)
+        ...(commissionAmount > 0 && appointment.employee_id
+          ? [{
+              ...baseTxn,
+              employee_id: appointment.employee_id,
+              type: 'expense' as const,
+              subtotal: commissionAmount,
+              tax_type: 'none' as const,
+              tax_rate: 0,
+              tax_amount: 0,
+              total_amount: commissionAmount,
+              amount: commissionAmount,
+              fiscal_period: fiscalPeriod,
+              category: 'commission',
+              description: `Comisión ${commissionPercentage}% - ${appointment.service_name} (Empleado: ${appointment.employee_name || 'Sin nombre'})`,
+            }]
+          : []),
+        // 3. Propina adicional (opcional)
+        ...(tip && tip > 0
+          ? [{
+              ...baseTxn,
+              employee_id: appointment.employee_id ?? null,
+              type: 'income' as const,
+              subtotal: tip,
+              tax_type: 'none' as const,
+              tax_rate: 0,
+              tax_amount: 0,
+              total_amount: tip,
+              amount: tip,
+              fiscal_period: fiscalPeriod,
+              category: 'tip',
+              description: `Propina - ${appointment.service_name}`,
+            }]
+          : []),
+      ];
+
       const { error: transactionError } = await supabase
         .from('transactions')
-        .insert({
-          business_id: currentBusinessId,
-          type: 'income',
-          amount: totalAmount,
-          description: `Cita completada - ${appointment.service_name}`,
-          category: 'service',
-          date: new Date().toISOString(),
-          payment_method: 'cash',
-          notes: tip > 0 ? `Propina: $${tip.toLocaleString('es-CO')}` : undefined
-        });
+        .insert(payload);
 
       if (transactionError) throw transactionError;
 
-      toast.success('Cita completada y venta registrada');
+      const successMsg = commissionAmount > 0 
+        ? `Cita completada. Ingreso bruto: ${grossAmount.toLocaleString('es-CO')} COP, Comisión: ${commissionAmount.toLocaleString('es-CO')} COP, Neto: ${netAmount.toLocaleString('es-CO')} COP`
+        : 'Cita completada y pago registrado';
+      
+      toast.success(successMsg);
       
       // Refresh appointments
       if (currentBusinessId) {
@@ -865,7 +1070,7 @@ export const AppointmentsCalendar: React.FC = () => {
       const { error } = await supabase
         .from('appointments')
         .update({ 
-          status: 'cancelled',
+          status: 'no_show',
           notes: 'Cliente no se presentó'
         })
         .eq('id', appointmentId);
@@ -1209,10 +1414,8 @@ export const AppointmentsCalendar: React.FC = () => {
   // Get appointment status class
   const getAppointmentClass = (status: string): string => {
     if (status === 'pending') {
-      return 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-700 dark:text-yellow-300';
-    }
-    if (status === 'pending_confirmation') {
-      return 'bg-orange-500/20 border border-orange-500/50 text-orange-700 dark:text-orange-300';
+      // Improve contrast in light mode: lighter background, neutral text
+      return 'bg-yellow-50 border border-yellow-400 text-foreground dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-100';
     }
     if (status === 'confirmed') {
       return 'bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300';
@@ -1329,12 +1532,12 @@ export const AppointmentsCalendar: React.FC = () => {
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
-                        onClick={() => setFilterStatus(['pending', 'pending_confirmation', 'confirmed', 'cancelled', 'completed'])}
+                        onClick={() => setFilterStatus(['pending', 'confirmed', 'cancelled', 'completed'])}
                       >
                         Seleccionar Todos
                       </button>
                     </div>
-                    {['pending', 'pending_confirmation', 'confirmed', 'cancelled', 'completed'].map(status => (
+                    {['pending', 'confirmed', 'cancelled', 'completed'].map(status => (
                       <label key={status} className="flex items-center px-3 py-2 hover:bg-muted/50 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1350,7 +1553,6 @@ export const AppointmentsCalendar: React.FC = () => {
                         />
                         <span className="ml-2 text-sm text-foreground">
                           {status === 'pending' && 'Pendiente'}
-                          {status === 'pending_confirmation' && 'Pendiente de Confirmación'}
                           {status === 'confirmed' && 'Confirmada'}
                           {status === 'cancelled' && 'Cancelada'}
                           {status === 'completed' && 'Completada'}
@@ -1634,6 +1836,11 @@ export const AppointmentsCalendar: React.FC = () => {
                                     <div className="text-xs opacity-75">
                                       {formatTimeInColombia(apt.start_time)} - {formatTimeInColombia(apt.end_time)}
                                     </div>
+                                    {apt.status === 'pending' && apt.confirmed && (
+                                      <div className="mt-1 inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-green-600/15 text-green-700 border border-green-600/25 dark:text-green-300">
+                                        <Check className="h-3 w-3" /> Cliente confirmó
+                                      </div>
+                                    )}
                                   </button>
                                 );
                               })}

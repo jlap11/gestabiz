@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, DollarSign, BarChart3, Briefcase } from 'lucide-react';
+import { Building2, MapPin, DollarSign, BarChart3, Briefcase, Star, Mail, Phone, Globe } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -207,8 +207,9 @@ export function EmploymentDetailModal({
                     <div>
                       <p className="font-medium text-muted-foreground mb-1">Calificación del Negocio</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg font-semibold text-foreground">
-                          ⭐ {details.average_rating.toFixed(1)}/5
+                        <span className="text-lg font-semibold text-foreground flex items-center gap-1">
+                          <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                          <span>{details.average_rating.toFixed(1)}/5</span>
                         </span>
                         <span className="text-sm text-muted-foreground">
                           ({details.total_reviews} reviews)
@@ -221,23 +222,31 @@ export function EmploymentDetailModal({
                     <p className="font-medium text-muted-foreground mb-2">Contacto</p>
                     <div className="space-y-2">
                       {details?.email && (
-                        <p className="text-foreground">📧 {details.email}</p>
+                        <p className="text-foreground flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          <span>{details.email}</span>
+                        </p>
                       )}
                       {details?.phone && (
-                        <p className="text-foreground">📞 {details.phone}</p>
+                        <p className="text-foreground flex items-center gap-2">
+                          <Phone className="h-4 w-4" />
+                          <span>{details.phone}</span>
+                        </p>
                       )}
                       {details?.website && (
-                        <p className="text-foreground">
-                          🌐 <a href={details.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <p className="text-foreground flex items-center gap-2">
+                          <Globe className="h-4 w-4" />
+                          <a href={details.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                             {details.website}
                           </a>
                         </p>
                       )}
                       {(details?.address || details?.city || details?.state) && (
-                        <p className="text-foreground">
-                          📍 {[details.address, details.city, details.state, details.country]
+                        <p className="text-foreground flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          <span>{[details.address, details.city, details.state, details.country]
                             .filter(Boolean)
-                            .join(', ')}
+                            .join(', ')}</span>
                         </p>
                       )}
                     </div>
@@ -402,9 +411,14 @@ export function EmploymentDetailModal({
                   <CardContent className="pt-6">
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground mb-1">Calificación Promedio</p>
-                      <p className="text-3xl font-bold text-foreground">
+                      <p className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
                         {details?.employee_avg_rating 
-                          ? `⭐ ${details.employee_avg_rating.toFixed(1)}`
+                          ? (
+                            <>
+                              <Star className="h-8 w-8 text-yellow-400 fill-yellow-400" />
+                              <span>{details.employee_avg_rating.toFixed(1)}</span>
+                            </>
+                          )
                           : 'N/A'
                         }
                       </p>
@@ -445,7 +459,10 @@ export function EmploymentDetailModal({
                           : 0;
                         return (
                           <div key={star} className="flex items-center gap-3">
-                            <span className="text-sm w-12">{star} ⭐</span>
+                            <span className="text-sm w-12 flex items-center gap-1">
+                              <span>{star}</span>
+                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            </span>
                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                               <div 
                                 className="h-full bg-primary rounded-full transition-all"

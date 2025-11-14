@@ -48,26 +48,41 @@ export function usePendingReviews() {
           employee_id,
           service_id,
           updated_at,
-          businesses!inner (
+          businesses!appointments_business_id_fkey (
             id,
             name
           ),
-          business_employees!inner (
+          employee:profiles!appointments_employee_id_fkey (
             id,
             full_name
           ),
-          services!inner (
+          services!appointments_service_id_fkey (
             id,
             name
           )
         `)
         .eq('client_id', session.session.user.id)
         .eq('status', 'completed')
-        .is('review_id', null)
         .order('start_time', { ascending: false })
         .limit(20);
 
       if (fetchError) throw fetchError;
+
+      // Get appointment IDs that already have reviews
+      const appointmentIds = (data || []).map(apt => apt.id);
+      const { data: existingReviews } = await supabase
+        .from('reviews')
+        .select('appointment_id')
+        .in('appointment_id', appointmentIds);
+
+      const reviewedAppointmentIds = new Set(
+        (existingReviews || []).map(r => r.appointment_id)
+      );
+
+      // Filter out appointments that already have reviews
+      const appointmentsWithoutReviews = (data || []).filter(
+        apt => !reviewedAppointmentIds.has(apt.id)
+      );
 
       // Filter out appointments in "remind later" list that haven't expired
       const remindLaterList = getRemindLaterList();
@@ -76,17 +91,17 @@ export function usePendingReviews() {
         entry => now - entry.timestamp < REMIND_LATER_TIMEOUT
       );
 
-      const filtered = (data || [])
+      const filtered = appointmentsWithoutReviews
         .filter(apt => !validRemindLater.some(entry => entry.appointmentId === apt.id))
         .map((apt) => ({
           appointment_id: apt.id,
           appointment_date: apt.start_time?.split(' ')[0],
           appointment_start_time: apt.start_time,
           business_id: apt.business_id,
-          business_name: apt.businesses?.[0]?.name || 'Negocio',
-          service_name: apt.services?.[0]?.name,
+          business_name: apt.businesses?.name || 'Negocio',
+          service_name: apt.services?.name,
           employee_id: apt.employee_id || undefined,
-          employee_name: apt.business_employees?.[0]?.full_name,
+          employee_name: apt.employee?.full_name,
           completed_at: apt.updated_at
         }));
 

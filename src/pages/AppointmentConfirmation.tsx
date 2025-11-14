@@ -17,6 +17,7 @@ interface AppointmentDetails {
   appointment_date: string
   appointment_time: string
   status: string
+  confirmed: boolean
   confirmation_deadline: string
 }
 
@@ -48,14 +49,15 @@ export default function AppointmentConfirmation() {
           appointment_date,
           appointment_time,
           status,
+          confirmed,
           confirmation_deadline,
-          clients!inner(name, email),
-          services!inner(name),
-          businesses!inner(name),
-          locations!inner(address)
+          clients!appointments_client_id_fkey(name, email),
+          services!appointments_service_id_fkey(name),
+          businesses!appointments_business_id_fkey(name),
+          locations!appointments_location_id_fkey(address)
         `)
         .eq('confirmation_token', token)
-        .eq('status', 'pending_confirmation')
+        .eq('status', 'pending')
         .single()
 
       if (error) {
@@ -84,6 +86,7 @@ export default function AppointmentConfirmation() {
         appointment_date: data.appointment_date,
         appointment_time: data.appointment_time,
         status: data.status,
+        confirmed: !!data.confirmed,
         confirmation_deadline: data.confirmation_deadline
       })
     } catch (err) {

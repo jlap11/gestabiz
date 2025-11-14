@@ -8,7 +8,8 @@ import {
   LogOut,
   User as UserIcon,
   Plus,
-  Bug
+  Bug,
+  MapPin
 } from 'lucide-react'
 import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { Badge } from '@/components/ui/badge'
@@ -225,10 +226,10 @@ export function UnifiedLayout({
 
   return (
     <div ref={rootRef} className="min-h-screen bg-background flex overflow-x-hidden">
-      {/* Sidebar - Full Height & Sticky */}
+      {/* Sidebar - Full Height & Fixed */}
       <aside
         className={cn(
-          "fixed lg:sticky left-0 top-0 h-screen bg-card border-r border-border z-[100] transition-transform duration-300 w-64 flex flex-col",
+          "fixed left-0 top-0 h-screen bg-card border-r border-border z-[100] transition-transform duration-300 w-64 flex flex-col",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -309,9 +310,9 @@ export function UnifiedLayout({
       )}
 
       {/* Right Side: Header + Content */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto lg:ml-64">
         {/* Header - Responsive height (fixed on mobile, sticky on desktop) */}
-        <header className="bg-card border-b border-border fixed inset-x-0 top-0 z-[90] sm:sticky sm:inset-auto flex-shrink-0">
+        <header className="bg-card border-b border-border fixed inset-x-0 top-0 z-[90] sm:fixed sm:left-0 sm:right-0 sm:top-0 lg:left-64 shrink-0">
         {/* Mobile top bar: logo abre el menú izquierdo + botón menú derecho */}
         <div className="px-3 py-3 flex items-center justify-between sm:hidden min-h-[56px]">
           <div className="flex items-center gap-2">
@@ -457,9 +458,9 @@ export function UnifiedLayout({
                     }}
                     className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 px-2 py-1 hover:bg-muted rounded-md min-w-0 max-w-[160px]"
                   >
-                    <span>📍</span>
+                    <MapPin className="h-3 w-3 shrink-0" />
                     <span className="truncate">{preferredLocationName || 'Seleccionar sede'}</span>
-                    <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                    <ChevronDown className="h-3 w-3 shrink-0" />
                   </button>
                   {locationMenuOpen && (
                     <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 min-w-[180px]">
@@ -617,7 +618,7 @@ export function UnifiedLayout({
       </header>
 
       {/* Main Content - Scrollable area (mobile padding to account for fixed header) */}
-      <main className="flex-1 px-3 sm:px-0 max-w-[100vw] overflow-x-hidden pt-[56px] sm:pt-0">
+      <main className="flex-1 px-3 sm:px-6 max-w-[100vw] overflow-x-hidden pt-[56px] sm:pt-[64px] lg:pt-[89px]">
           {children}
       </main>
 

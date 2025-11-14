@@ -94,6 +94,12 @@ serve(async (req) => {
             (notification.type.includes('reminder') ? prefs.reminder_24h || prefs.reminder_1h : true)
           
           if (emailEnabled && appointment.client_email) {
+            // Resolve location/city display if it contains UUIDs
+            const resolvedLocation = await resolveLocationDisplay(supabaseClient, appointment.location)
+            const appointmentWithLocation = {
+              ...appointment,
+              location: resolvedLocation || appointment.location
+            }
             // Send email notification
             const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
               method: 'POST',
@@ -104,7 +110,7 @@ serve(async (req) => {
               body: JSON.stringify({
                 to: appointment.client_email,
                 subject: notification.title,
-                html: formatEmailHtml(notification, appointment),
+                html: formatEmailHtml(notification, appointmentWithLocation),
                 text: notification.message
               })
             })
@@ -121,6 +127,11 @@ serve(async (req) => {
             (notification.type.includes('reminder') ? prefs.reminder_24h || prefs.reminder_1h : true)
           
           if (whatsappEnabled && appointment.client_whatsapp) {
+            const resolvedLocation = await resolveLocationDisplay(supabaseClient, appointment.location)
+            const appointmentWithLocation = {
+              ...appointment,
+              location: resolvedLocation || appointment.location
+            }
             // Send WhatsApp notification
             const whatsappResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp`, {
               method: 'POST',
@@ -130,7 +141,7 @@ serve(async (req) => {
               },
               body: JSON.stringify({
                 to: appointment.client_whatsapp,
-                message: formatWhatsAppMessage(notification, appointment)
+                message: formatWhatsAppMessage(notification, appointmentWithLocation)
               })
             })
 
@@ -271,6 +282,37 @@ function formatWhatsAppMessage(notification: any, appointment: any): string {
 ${appointment.location ? `• Ubicación: ${appointment.location}` : ''}
 
 Si necesitas cambios, contáctanos. ¡Te esperamos! 😊`
+}
+
+// Helpers to resolve UUID-based location and city IDs to human-friendly names
+function isUUID(value: any): boolean {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
+async function resolveCityName(supabaseClient: any, cityValue?: string | null): Promise<string | null> {
+  if (!cityValue) return null
+  if (!isUUID(cityValue)) return String(cityValue)
+  const { data: cityRow } = await supabaseClient
+    .from('cities')
+    .select('name')
+    .eq('id', cityValue)
+    .maybeSingle()
+  return cityRow?.name || null
+}
+
+async function resolveLocationDisplay(supabaseClient: any, locationValue?: string | null): Promise<string | null> {
+  if (!locationValue) return null
+  if (!isUUID(locationValue)) return String(locationValue)
+  const { data: locRow } = await supabaseClient
+    .from('locations')
+    .select('name, address, city')
+    .eq('id', locationValue)
+    .maybeSingle()
+  if (!locRow) return String(locationValue)
+  const cityName = await resolveCityName(supabaseClient, (locRow as any).city)
+  const base = (locRow as any).name || (locRow as any).address || ''
+  const composed = base ? `${base}${cityName ? ', ' + cityName : ''}` : (cityName || null)
+  return composed || String(locationValue)
 }
 
 async function generateFollowUpNotifications(supabaseClient: any): Promise<void> {

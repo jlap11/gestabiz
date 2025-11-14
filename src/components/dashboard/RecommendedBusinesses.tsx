@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Scissors, Hospital, Building2, Dumbbell, MapPin, Star, Clock, DollarSign } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/hooks/useAuth'
 import { useCustomAlert } from '@/hooks/useCustomAlert'
@@ -20,17 +21,19 @@ interface BusinessWithServices {
   city: string
 }
 
-function CategoryEmoji({ category }: Readonly<{ category: string }>) {
-  const map: Record<string, string> = {
-    beauty_salon: '💄',
-    barbershop: '✂️',
-    medical: '🏥',
-    dental: '🦷',
-    veterinary: '🐾',
-    fitness: '💪',
-    other: '🏢',
+function CategoryIcon({ category }: Readonly<{ category: string }>) {
+  const iconClass = "h-4 w-4"
+  
+  switch (category) {
+    case 'barbershop':
+      return <Scissors className={iconClass} />
+    case 'medical':
+      return <Hospital className={iconClass} />
+    case 'fitness':
+      return <Dumbbell className={iconClass} />
+    default:
+      return <Building2 className={iconClass} />
   }
-  return <span>{map[category] ?? map.other}</span>
 }
 
 export default function RecommendedBusinesses() {
@@ -201,11 +204,11 @@ export default function RecommendedBusinesses() {
             <div className="relative h-40 w-full bg-zinc-800">
               <img src={b.image} alt={b.name} className="object-cover w-full h-full" />
               <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded bg-card/90 text-foreground border border-border flex items-center gap-1">
-                <CategoryEmoji category={b.category} />
+                <CategoryIcon category={b.category} />
                 <span>{t(`business.categories.${b.category}`, { name: b.category }) || b.category}</span>
               </div>
               <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-emerald-500/80 text-white flex items-center gap-1">
-                <span className="w-3 h-3">📍</span>
+                <MapPin className="h-3 w-3" />
                 <span>{b.distance}</span>
               </div>
             </div>
@@ -214,7 +217,7 @@ export default function RecommendedBusinesses() {
                 <div className="text-lg font-semibold">{b.name}</div>
                 <div className="flex items-center gap-2 text-sm text-zinc-400">
                   <div className="flex items-center">
-                    <span className="w-4 h-4 text-yellow-400">⭐</span>
+                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                     <span className="ml-1">{b.rating}</span>
                   </div>
                   <span>•</span>
@@ -231,11 +234,11 @@ export default function RecommendedBusinesses() {
               </div>
               <div className="space-y-1 text-sm text-zinc-400">
                 <div className="flex items-center gap-2">
-                  <span className="w-4 h-4">⏰</span>
+                  <Clock className="h-4 w-4" />
                   <span>Disponible: {b.nextAvailable}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">💰</span>
+                  <DollarSign className="h-4 w-4 font-medium" />
                   <span>{b.price_range}</span>
                 </div>
               </div>

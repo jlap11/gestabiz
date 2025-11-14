@@ -250,6 +250,9 @@ export function useTransactions(filters?: TransactionFilters) {
     metadata?: Record<string, unknown>;
   }) => {
     try {
+      const effectiveDate = transaction.transaction_date || new Date().toISOString().split('T')[0];
+      const [year, month] = effectiveDate.split('-');
+      const fiscalPeriod = `${year}-${month}`;
       const { data, error: insertError } = await supabase
         .from('transactions')
         .insert({
@@ -267,7 +270,8 @@ export function useTransactions(filters?: TransactionFilters) {
           description: transaction.description,
           appointment_id: transaction.appointment_id,
           employee_id: transaction.employee_id,
-          transaction_date: transaction.transaction_date || new Date().toISOString().split('T')[0],
+          transaction_date: effectiveDate,
+          fiscal_period: fiscalPeriod,
           payment_method: transaction.payment_method,
           reference_number: transaction.reference_number,
           is_tax_deductible: transaction.is_tax_deductible ?? true,

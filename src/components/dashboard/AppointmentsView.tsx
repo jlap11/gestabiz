@@ -54,6 +54,7 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
   const getStatusColor = (status: Appointment['status']) => {
     switch (status) {
       case 'scheduled': return 'bg-blue-500/10 text-blue-700 border-blue-200'
+      case 'in_progress': return 'bg-indigo-500/10 text-indigo-700 border-indigo-200'
       case 'completed': return 'bg-green-500/10 text-green-700 border-green-200'
       case 'cancelled': return 'bg-red-500/10 text-red-700 border-red-200'
       case 'no_show': return 'bg-orange-500/10 text-orange-700 border-orange-200'
@@ -64,6 +65,7 @@ export default function AppointmentsView({ user }: Readonly<AppointmentsViewProp
   const getStatusLabel = (status: Appointment['status']) => {
     switch (status) {
       case 'scheduled': return 'Programada'
+      case 'in_progress': return 'En curso'
       case 'completed': return 'Completada'
       case 'cancelled': return 'Cancelada'
       case 'no_show': return 'No se presentó'

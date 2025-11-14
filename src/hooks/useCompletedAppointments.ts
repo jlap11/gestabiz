@@ -72,11 +72,11 @@ export function useCompletedAppointments(
           location_id,
           created_at,
           updated_at,
-          businesses!inner (
+          businesses!appointments_business_id_fkey (
             id,
             name
           ),
-          services!inner (
+          services!appointments_service_id_fkey (
             id,
             name,
             price
@@ -92,11 +92,11 @@ export function useCompletedAppointments(
         throw queryError;
       }
 
-      // Transform data to match our interface
+      // Transform data to match our interface (businesses and services are already single objects)
       return (data || []).map(apt => ({
         ...apt,
-        businesses: apt.businesses[0] || { id: '', name: '' },
-        services: apt.services[0] || { id: '', name: '', price: 0 },
+        businesses: apt.businesses || { id: '', name: '' },
+        services: apt.services || { id: '', name: '', price: 0 },
       })) as CompletedAppointment[];
     },
     enabled: !!clientId,

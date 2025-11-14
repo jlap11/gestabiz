@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { DollarSign, User, Package, MapPin, CreditCard, Check, X } from 'lucide-react'
+import { DollarSign, User, Package, MapPin, CreditCard, Check, X, Banknote, Landmark } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -396,9 +396,24 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
                   <SelectValue placeholder={t('common.placeholders.selectPaymentMethod')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">💵 Efectivo</SelectItem>
-                  <SelectItem value="card">💳 Tarjeta</SelectItem>
-                  <SelectItem value="transfer">🏦 Transferencia</SelectItem>
+                  <SelectItem value="cash">
+                    <div className="flex items-center gap-2">
+                      <Banknote className="h-4 w-4" />
+                      <span>Efectivo</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="card">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      <span>Tarjeta</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="transfer">
+                    <div className="flex items-center gap-2">
+                      <Landmark className="h-4 w-4" />
+                      <span>Transferencia</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

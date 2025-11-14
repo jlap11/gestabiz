@@ -602,8 +602,27 @@ async function prepareNotificationContent(request: NotificationRequest, supabase
           console.log('✅ [DEBUG] location_address enriquecido:', locRow.address)
         }
         if (locRow?.city) {
-          appointment = { ...(appointment || {}), location_city: locRow.city }
-          console.log('✅ [DEBUG] location_city enriquecido:', locRow.city)
+          // Puede venir como nombre o como UUID; si es UUID, resolver nombre desde cities
+          const cityCandidate = String(locRow.city).trim()
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cityCandidate)
+          if (isUuid) {
+            try {
+              const { data: cityRow } = await supabaseAdmin
+                .from('cities')
+                .select('name')
+                .eq('id', cityCandidate)
+                .single()
+              const cityName = cityRow?.name || cityCandidate
+              appointment = { ...(appointment || {}), location_city: cityName }
+              console.log('✅ [DEBUG] location_city (resuelta por UUID) enriquecido:', cityName)
+            } catch (e) {
+              appointment = { ...(appointment || {}), location_city: cityCandidate }
+              console.log('⚠️ [DEBUG] No se pudo resolver ciudad por UUID, usando valor original:', cityCandidate)
+            }
+          } else {
+            appointment = { ...(appointment || {}), location_city: cityCandidate }
+            console.log('✅ [DEBUG] location_city enriquecido:', cityCandidate)
+          }
         }
       }
 
@@ -680,6 +699,29 @@ async function prepareNotificationContent(request: NotificationRequest, supabase
   )
   
   console.log('🔍 [DEBUG] Variables normalizadas iniciales:', JSON.stringify(vars, null, 2))
+
+  // Si la ciudad aún parece un UUID, resolverla con la tabla cities para mostrar nombre
+  try {
+    const cityCandidate = (vars['city'] || '').trim()
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cityCandidate)
+    if (isUuid) {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      const { data: cityRow } = await supabaseAdmin
+        .from('cities')
+        .select('name')
+        .eq('id', cityCandidate)
+        .single()
+      if (cityRow?.name) {
+        vars['city'] = cityRow.name
+        console.log('✅ [DEBUG] city resuelta por UUID:', cityRow.name)
+      }
+    }
+  } catch (e) {
+    console.log('⚠️ [DEBUG] Falló resolución de city por UUID, se mantiene valor original')
+  }
 
   // Fecha y hora
   const startIso = appointment?.start_time as string | undefined
