@@ -103,12 +103,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
   const [employeeFilters, setEmployeeFilters] = useState<string[]>([])
   const [priceRangeFilter, setPriceRangeFilter] = useState<string>('all')
   
-  // Data for filters
-  const [businesses, setBusinesses] = useState<Business[]>([])
-  const [locations, setLocations] = useState<Location[]>([])
-  const [services, setServices] = useState<Service[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [employees, setEmployees] = useState<Employee[]>([])
+  // Search states for filter popovers
   const [businessSearch, setBusinessSearch] = useState('')
   const [businessPopoverOpen, setBusinessPopoverOpen] = useState(false)
   const [locationSearch, setLocationSearch] = useState('')
@@ -126,75 +121,65 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
 
   // Appointments received via props from parent dashboard
 
-  // Extract unique businesses from appointments
-  useEffect(() => {
-    const uniqueBusinesses = Array.from(
-      new Map(
-        appointments
-          .filter(apt => apt.business)
-          .map(apt => [apt.business?.id, apt.business])
-      ).values()
-    ) as Business[]
-    
-    const sorted = [...uniqueBusinesses].sort((a, b) => a.name.localeCompare(b.name))
-    setBusinesses(sorted)
+  // ✅ OPTIMIZACIÓN: Consolidar 5 useEffect → 1 useMemo para extraer todas las entidades únicas
+  const filterEntities = useMemo(() => {
+    const businessesMap = new Map<string, Business>()
+    const locationsMap = new Map<string, Location>()
+    const servicesMap = new Map<string, Service>()
+    const categoriesMap = new Map<string, Category>()
+    const employeesMap = new Map<string, Employee>()
+
+    for (const apt of appointments) {
+      // Extract businesses
+      if (apt.business) {
+        businessesMap.set(apt.business.id, apt.business)
+      }
+
+      // Extract locations
+      if (apt.location) {
+        locationsMap.set(apt.location.id, {
+          id: apt.location.id,
+          name: apt.location.name,
+          business_id: apt.business_id
+        })
+      }
+
+      // Extract services
+      if (apt.service) {
+        servicesMap.set(apt.service.id, {
+          id: apt.service.id,
+          name: apt.service.name,
+          business_id: apt.business_id
+        })
+      }
+
+      // Extract categories
+      if (apt.service?.category_id) {
+        categoriesMap.set(apt.service.category_id, {
+          id: apt.service.category_id,
+          name: apt.service.name,
+          slug: ''
+        })
+      }
+
+      // Extract employees
+      if (apt.employee) {
+        employeesMap.set(apt.employee.id, apt.employee)
+      }
+    }
+
+    // Sort all entities alphabetically
+    return {
+      businesses: Array.from(businessesMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      locations: Array.from(locationsMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      services: Array.from(servicesMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      categories: Array.from(categoriesMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      employees: Array.from(employeesMap.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
+    }
   }, [appointments])
 
-  // Extract unique locations from appointments
-  useEffect(() => {
-    const uniqueLocations = Array.from(
-      new Map(
-        appointments
-          .filter(apt => apt.location)
-          .map(apt => [apt.location?.id, { id: apt.location?.id || '', name: apt.location?.name || '', business_id: apt.business_id }])
-      ).values()
-    ) as Location[]
-    
-    const sorted = [...uniqueLocations].sort((a, b) => a.name.localeCompare(b.name))
-    setLocations(sorted)
-  }, [appointments])
-
-  // Extract unique services from appointments
-  useEffect(() => {
-    const uniqueServices = Array.from(
-      new Map(
-        appointments
-          .filter(apt => apt.service)
-          .map(apt => [apt.service?.id, { id: apt.service?.id || '', name: apt.service?.name || '', business_id: apt.business_id }])
-      ).values()
-    ) as Service[]
-    
-    const sorted = [...uniqueServices].sort((a, b) => a.name.localeCompare(b.name))
-    setServices(sorted)
-  }, [appointments])
-
-  // Extract unique categories from appointments
-  useEffect(() => {
-    const uniqueCategories = Array.from(
-      new Map(
-        appointments
-          .filter(apt => apt.service?.category_id)
-          .map(apt => [apt.service?.category_id, { id: apt.service?.category_id || '', name: apt.service?.name || '', slug: '' }])
-      ).values()
-    ) as Category[]
-    
-    const sorted = [...uniqueCategories].sort((a, b) => a.name.localeCompare(b.name))
-    setCategories(sorted)
-  }, [appointments])
-
-  // Extract unique employees from appointments
-  useEffect(() => {
-    const uniqueEmployees = Array.from(
-      new Map(
-        appointments
-          .filter(apt => apt.employee)
-          .map(apt => [apt.employee?.id, apt.employee])
-      ).values()
-    ) as Employee[]
-    
-    const sorted = [...uniqueEmployees].sort((a, b) => a.full_name.localeCompare(b.full_name))
-    setEmployees(sorted)
-  }, [appointments])
+  // Destructure memoized entities
+  const { businesses, locations, services, categories, employees } = filterEntities
 
   // Filtered appointments
   // Helper functions for filtering
@@ -334,8 +319,16 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
       overdue: { label: 'Vencida', variant: 'secondary' as const, className: 'bg-orange-500 hover:bg-orange-600' }
     }
 
-    const key = isOverduePending ? 'overdue' : (rawStatus in statusConfig ? rawStatus : 'pending')
-    const config = statusConfig[key as keyof typeof statusConfig]
+    let key: keyof typeof statusConfig
+    if (isOverduePending) {
+      key = 'overdue'
+    } else if (rawStatus in statusConfig) {
+      key = rawStatus as keyof typeof statusConfig
+    } else {
+      key = 'pending'
+    }
+
+    const config = statusConfig[key]
     return (
       <Badge variant={config.variant} className={config.className}>
         {config.label}
@@ -343,7 +336,8 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
     )
   }
 
-  const clearFilters = () => {
+  // ✅ OPTIMIZACIÓN: useCallback para prevenir recreaciones de funciones en cada render
+  const clearFilters = useCallback(() => {
     setStatusFilters([])
     setBusinessFilters([])
     setLocationFilters([])
@@ -353,7 +347,38 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
     setPriceRangeFilter('all')
     setSearchTerm('')
     setCurrentPage(1)
-  }
+  }, [])
+
+  // Reusable toggle filter helpers con useCallback
+  const toggleBusinessFilter = useCallback((businessId: string) => {
+    setBusinessFilters(prev => 
+      prev.includes(businessId) ? prev.filter(id => id !== businessId) : [...prev, businessId]
+    )
+  }, [])
+
+  const toggleLocationFilter = useCallback((locationId: string) => {
+    setLocationFilters(prev => 
+      prev.includes(locationId) ? prev.filter(id => id !== locationId) : [...prev, locationId]
+    )
+  }, [])
+
+  const toggleServiceFilter = useCallback((serviceId: string) => {
+    setServiceFilters(prev => 
+      prev.includes(serviceId) ? prev.filter(id => id !== serviceId) : [...prev, serviceId]
+    )
+  }, [])
+
+  const toggleCategoryFilter = useCallback((categoryId: string) => {
+    setCategoryFilters(prev => 
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
+    )
+  }, [])
+
+  const toggleEmployeeFilter = useCallback((employeeId: string) => {
+    setEmployeeFilters(prev => 
+      prev.includes(employeeId) ? prev.filter(id => id !== employeeId) : [...prev, employeeId]
+    )
+  }, [])
 
   const hasActiveFilters = 
     statusFilters.length > 0 ||
@@ -559,13 +584,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
                         <Checkbox 
                           id={`business-${business.id}`}
                           checked={businessFilters.includes(business.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setBusinessFilters([...businessFilters, business.id])
-                            } else {
-                              setBusinessFilters(businessFilters.filter(id => id !== business.id))
-                            }
-                          }}
+                          onCheckedChange={() => toggleBusinessFilter(business.id)}
                         />
                         <label htmlFor={`business-${business.id}`} className="text-sm cursor-pointer flex-1">
                           {business.name}
@@ -621,13 +640,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
                         <Checkbox 
                           id={`location-${location.id}`}
                           checked={locationFilters.includes(location.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setLocationFilters([...locationFilters, location.id])
-                            } else {
-                              setLocationFilters(locationFilters.filter(id => id !== location.id))
-                            }
-                          }}
+                          onCheckedChange={() => toggleLocationFilter(location.id)}
                         />
                         <label htmlFor={`location-${location.id}`} className="text-sm cursor-pointer flex-1">
                           {location.name}
@@ -683,13 +696,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
                         <Checkbox 
                           id={`service-${service.id}`}
                           checked={serviceFilters.includes(service.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setServiceFilters([...serviceFilters, service.id])
-                            } else {
-                              setServiceFilters(serviceFilters.filter(id => id !== service.id))
-                            }
-                          }}
+                          onCheckedChange={() => toggleServiceFilter(service.id)}
                         />
                         <label htmlFor={`service-${service.id}`} className="text-sm cursor-pointer flex-1">
                           {service.name}
@@ -745,13 +752,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
                         <Checkbox 
                           id={`category-${category.id}`}
                           checked={categoryFilters.includes(category.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setCategoryFilters([...categoryFilters, category.id])
-                            } else {
-                              setCategoryFilters(categoryFilters.filter(id => id !== category.id))
-                            }
-                          }}
+                          onCheckedChange={() => toggleCategoryFilter(category.id)}
                         />
                         <label htmlFor={`category-${category.id}`} className="text-sm cursor-pointer flex-1">
                           {category.name}
@@ -807,13 +808,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
                         <Checkbox 
                           id={`employee-${employee.id}`}
                           checked={employeeFilters.includes(employee.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setEmployeeFilters([...employeeFilters, employee.id])
-                            } else {
-                              setEmployeeFilters(employeeFilters.filter(id => id !== employee.id))
-                            }
-                          }}
+                          onCheckedChange={() => toggleEmployeeFilter(employee.id)}
                         />
                         <label htmlFor={`employee-${employee.id}`} className="text-sm cursor-pointer flex-1">
                           {employee.full_name}

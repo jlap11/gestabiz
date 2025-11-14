@@ -179,9 +179,9 @@ export function ClientDashboard({
   const [chatConversationId, setChatConversationId] = useState<string | null>(null)
   const [isStartingChat, setIsStartingChat] = useState(false)
   
-  // Chat hook - LAZY LOAD: solo inicializar cuando se necesite
-  // Esto evita 3+N queries innecesarias en cada carga del dashboard
-  const { createOrGetConversation } = useChat(chatConversationId ? user.id : null)
+  // ✅ FIX: Chat hook debe recibir SIEMPRE user.id (no condicional)
+  // El lazy loading de queries se maneja internamente en useChat
+  const { createOrGetConversation } = useChat(user.id)
 
   // Función para manejar cambios de página con contexto
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {

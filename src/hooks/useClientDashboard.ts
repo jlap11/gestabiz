@@ -229,18 +229,13 @@ const mergeSuggestions = (
  * @returns Data consolidada con loading, error, refetch
  */
 export function useClientDashboard(clientId: string | null) {
-  console.log('[useClientDashboard] 🔍 Hook called with clientId:', clientId, 'Type:', typeof clientId);
-  
   return useQuery<ClientDashboardData | null, Error>({
     queryKey: QUERY_CONFIG.KEYS.CLIENT_DASHBOARD(clientId || ''),
     queryFn: async () => {
-      console.log('[useClientDashboard] 🚀 queryFn STARTED. clientId:', clientId, 'Type:', typeof clientId);
       if (!clientId) {
-        console.log('[useClientDashboard] ⚠️ queryFn returned NULL (no clientId)');
         return null;
       }
 
-      // ✅ Obtener cityName preferida del localStorage para suggestions
       let preferredCityName: string | null = null;
       try {
         const stored = localStorage.getItem('preferred-city');
@@ -248,19 +243,10 @@ export function useClientDashboard(clientId: string | null) {
           const data = JSON.parse(stored);
           // ✅ CAMBIO: Pasar cityName (TEXT) en vez de cityId (UUID) para matchear con locations.city
           preferredCityName = data.cityName || null;
-          // DEBUG: Ver qué ciudad se está enviando
-          console.log('[useClientDashboard] 🔍 Preferred city from localStorage:', { 
-            cityId: data.cityId,
-            cityName: preferredCityName,
-            regionId: data.regionId,
-            regionName: data.regionName,
-            raw: data 
-          });
-        } else {
-          console.log('[useClientDashboard] ⚠️ No preferred-city in localStorage');
         }
-      } catch (e) {
-        console.error('[useClientDashboard] ❌ Error reading localStorage:', e);
+      } catch {
+        // Silently fail if localStorage read fails
+        preferredCityName = null;
       }
 
       // ✅ Opción 1: Usar Edge Function (si está desplegada)
@@ -271,10 +257,7 @@ export function useClientDashboard(clientId: string | null) {
         },
       });
 
-      console.log('[useClientDashboard] 🔍 Edge Function response:', { data, error, hasError: !!error });
-
       if (error) {
-        console.error('[useClientDashboard] ❌ Edge Function error:', error);
         throw new Error(error.message || 'Failed to fetch dashboard data');
       }
 
@@ -284,15 +267,7 @@ export function useClientDashboard(clientId: string | null) {
       //   p_preferred_city_id: preferredCityId
       // });
 
-      console.log('[useClientDashboard] ✅ Data fetched:', {
-        appointmentsCount: data?.appointments?.length || 0,
-        suggestionsCount: data?.suggestions?.length || 0,
-        favoritesCount: data?.favorites?.length || 0,
-        fullData: data
-      });
-
       if (!data) {
-        console.warn('[useClientDashboard] ⚠️ Function returned null data');
         return null;
       }
 

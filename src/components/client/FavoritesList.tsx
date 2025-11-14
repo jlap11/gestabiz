@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { FavoriteBusiness } from '@/hooks/useFavorites';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,40 +26,8 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
   const { t } = useLanguage();
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4">
-        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-        <p className="text-muted-foreground text-center">{t('favoritesList.loading')}</p>
-      </div>
-    );
-  }
-
-  // Empty state
-  if (favorites.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 px-4">
-        <div className="bg-muted/30 rounded-full p-6 mb-6">
-          <Heart className="h-16 w-16 text-muted-foreground" />
-        </div>
-        <h3 className="text-2xl font-semibold text-foreground mb-2">
-          {t('favoritesList.emptyTitle')}
-        </h3>
-        <p className="text-muted-foreground text-center max-w-md mb-8">
-          {t('favoritesList.emptyDescription')}
-        </p>
-        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-md">
-          <p className="text-sm text-primary font-medium">
-            {t('favoritesList.tipHeader')}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Render business card
-  const renderBusinessCard = (business: FavoriteBusiness) => (
+  // ✅ OPTIMIZACIÓN: Definir useCallback ANTES de early returns (hooks rules)
+  const renderBusinessCard = useCallback((business: FavoriteBusiness) => (
     <Card 
       key={business.id}
       className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-primary/30"
@@ -134,7 +102,39 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
         </div>
       </CardContent>
     </Card>
-  );
+  ), [t]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground text-center">{t('favoritesList.loading')}</p>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (favorites.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4">
+        <div className="bg-muted/30 rounded-full p-6 mb-6">
+          <Heart className="h-16 w-16 text-muted-foreground" />
+        </div>
+        <h3 className="text-2xl font-semibold text-foreground mb-2">
+          {t('favoritesList.emptyTitle')}
+        </h3>
+        <p className="text-muted-foreground text-center max-w-md mb-8">
+          {t('favoritesList.emptyDescription')}
+        </p>
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-md">
+          <p className="text-sm text-primary font-medium">
+            {t('favoritesList.tipHeader')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

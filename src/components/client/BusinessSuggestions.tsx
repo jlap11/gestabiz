@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,12 +56,14 @@ export function BusinessSuggestions({
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(true)
 
-  const handleRebookClick = (event: React.MouseEvent<HTMLButtonElement>, businessId: string) => {
+  // ✅ OPTIMIZACIÓN: Memoizar handler para prevenir recreaciones
+  const handleRebookClick = useCallback((event: React.MouseEvent<HTMLButtonElement>, businessId: string) => {
     event.stopPropagation()
     onBusinessSelect?.(businessId)
-  }
+  }, [onBusinessSelect])
 
-  const renderBusinessCard = (business: SimpleBusiness, options?: { highlight?: boolean }) => (
+  // ✅ OPTIMIZACIÓN: Memoizar renderBusinessCard para evitar recrear función en cada render
+  const renderBusinessCard = useCallback((business: SimpleBusiness, options?: { highlight?: boolean }) => (
     <Card
       key={business.id}
       className={cn(
@@ -153,10 +155,15 @@ export function BusinessSuggestions({
         </div>
       </CardContent>
     </Card>
-  )
+  ), [handleRebookClick, t, onBusinessSelect])
 
-  const frequentBusinesses = suggestions.filter((business) => business.isFrequent)
-  const recommendedBusinesses = suggestions.filter((business) => !business.isFrequent)
+  // ✅ OPTIMIZACIÓN: Memoizar filtros para evitar recalcular en cada render
+  const { frequentBusinesses, recommendedBusinesses } = useMemo(() => {
+    const frequent = suggestions.filter((business) => business.isFrequent)
+    const recommended = suggestions.filter((business) => !business.isFrequent)
+    return { frequentBusinesses: frequent, recommendedBusinesses: recommended }
+  }, [suggestions])
+
   const hasFrequent = frequentBusinesses.length > 0
   const hasSuggestions = recommendedBusinesses.length > 0
   const shouldShowEmptyState = !hasFrequent && !hasSuggestions
@@ -174,9 +181,6 @@ export function BusinessSuggestions({
               }
             </span>
           </div>
-          <Badge variant="secondary" className="ml-2">
-            {suggestions.length}
-          </Badge>
         </CardTitle>
       </CardHeader>
 
