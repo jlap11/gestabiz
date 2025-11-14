@@ -36,6 +36,8 @@ export interface AppointmentWithRelations {
     banner_url: string | null;
     average_rating: number | null;
     total_reviews: number;
+    city: string | null;
+    state: string | null;
   } | null;
   location: {
     id: string;
@@ -85,9 +87,12 @@ export interface BusinessSuggestion {
   banner_url: string | null;
   average_rating: number | null;
   total_reviews: number;
-  city: string;
-  state: string | null;
+  city?: string | null;
+  state?: string | null;
   relevance_score: number;
+  isFrequent?: boolean;
+  visitsCount?: number;
+  lastAppointmentDate?: string;
 }
 
 export interface DashboardStats {
@@ -117,6 +122,94 @@ const normalizeAppointment = (appointment: Record<string, unknown>): Appointment
     location: location ?? null,
     service: service ?? null,
   };
+};
+
+const buildFrequentBusinesses = (appointments: AppointmentWithRelations[]): BusinessSuggestion[] => {
+  const frequencyMap = new Map<
+    string,
+    {
+      business: AppointmentWithRelations['business'];
+      visitsCount: number;
+      lastAppointmentDate: string;
+    }
+  >();
+
+  for (const appointment of appointments) {
+    if (appointment.status !== 'completed') {
+      continue;
+    }
+
+    const business = appointment.business;
+    if (!business?.id) {
+      continue;
+    }
+
+    const existing = frequencyMap.get(business.id);
+    if (existing) {
+      existing.visitsCount += 1;
+      if (new Date(appointment.start_time).getTime() > new Date(existing.lastAppointmentDate).getTime()) {
+        existing.lastAppointmentDate = appointment.start_time;
+      }
+    } else {
+      frequencyMap.set(business.id, {
+        business,
+        visitsCount: 1,
+        lastAppointmentDate: appointment.start_time,
+      });
+    }
+  }
+
+  return Array.from(frequencyMap.values())
+    .sort((a, b) => {
+      if (b.visitsCount !== a.visitsCount) {
+        return b.visitsCount - a.visitsCount;
+      }
+      return new Date(b.lastAppointmentDate).getTime() - new Date(a.lastAppointmentDate).getTime();
+    })
+    .slice(0, 3)
+    .map(({ business, visitsCount, lastAppointmentDate }) => ({
+      id: business?.id || '',
+      name: business?.name || 'Negocio',
+      description: business?.description,
+      logo_url: business?.logo_url || null,
+      banner_url: business?.banner_url || null,
+      average_rating: business?.average_rating ?? null,
+      total_reviews: business?.total_reviews ?? 0,
+      city: business?.city,
+      state: business?.state,
+      relevance_score: visitsCount,
+      isFrequent: true,
+      visitsCount,
+      lastAppointmentDate,
+    }));
+};
+
+const mergeSuggestions = (
+  frequent: BusinessSuggestion[],
+  baseSuggestions: BusinessSuggestion[]
+): BusinessSuggestion[] => {
+  if (!frequent.length) {
+    return baseSuggestions;
+  }
+
+  const frequentIds = new Set(frequent.map((business) => business.id));
+  const mergedFrequent = frequent.map((business) => {
+    const baseMatch = baseSuggestions.find((suggestion) => suggestion.id === business.id);
+    if (!baseMatch) {
+      return business;
+    }
+
+    return {
+      ...baseMatch,
+      isFrequent: true,
+      visitsCount: business.visitsCount,
+      lastAppointmentDate: business.lastAppointmentDate,
+    };
+  });
+
+  const filteredBase = baseSuggestions.filter((suggestion) => !frequentIds.has(suggestion.id));
+
+  return [...mergedFrequent, ...filteredBase];
 };
 
 // =====================================================
@@ -207,9 +300,16 @@ export function useClientDashboard(clientId: string | null) {
         ? data.appointments.map((appointment: Record<string, unknown>) => normalizeAppointment(appointment))
         : [];
 
+      const frequentBusinesses = buildFrequentBusinesses(normalizedAppointments);
+      const baseSuggestions = Array.isArray(data.suggestions)
+        ? (data.suggestions as BusinessSuggestion[])
+        : [];
+      const suggestionsWithFrequent = mergeSuggestions(frequentBusinesses, baseSuggestions);
+
       return {
         ...data,
         appointments: normalizedAppointments,
+        suggestions: suggestionsWithFrequent,
       } as ClientDashboardData;
     },
     enabled: !!clientId, // Solo ejecutar si hay clientId

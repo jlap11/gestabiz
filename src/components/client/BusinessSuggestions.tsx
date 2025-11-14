@@ -16,6 +16,9 @@ interface SimpleBusiness {
   total_reviews?: number;
   city?: string;
   state?: string;
+  isFrequent?: boolean;
+  visitsCount?: number;
+  lastAppointmentDate?: string;
 }
 
 interface BusinessSuggestionsProps {
@@ -32,9 +35,9 @@ interface BusinessSuggestionsProps {
  * CAMBIOS:
  * - ❌ Eliminado: Queries internas a Supabase (loadPreviouslyBookedBusinesses, loadSuggestedBusinesses)
  * - ✅ Agregado: Recibe `suggestions` desde useClientDashboard (datos consolidados)
- * - ✅ Beneficio: -4 queries HTTP (appointments, businesses x2, locations)
+              <div className="flex items-start gap-3">
  * 
- * ANTES (v1.0):
+                  <div className="w-12 h-12 rounded-lg bg-muted shrink-0 overflow-hidden border border-border/50">
  * - 4 queries independientes en useEffect
  * - Lógica compleja de filtrado por ciudad
  * - Paginación manual
@@ -53,16 +56,24 @@ export function BusinessSuggestions({
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(true)
 
-  const renderBusinessCard = (business: SimpleBusiness) => (
+  const handleRebookClick = (event: React.MouseEvent<HTMLButtonElement>, businessId: string) => {
+    event.stopPropagation()
+    onBusinessSelect?.(businessId)
+  }
+
+  const renderBusinessCard = (business: SimpleBusiness, options?: { highlight?: boolean }) => (
     <Card
       key={business.id}
-      className="group cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-primary/50"
+      className={cn(
+        "group cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-primary/50",
+        options?.highlight && "border-primary/60"
+      )}
       onClick={() => onBusinessSelect?.(business.id)}
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Logo */}
-          <div className="w-12 h-12 rounded-lg bg-muted flex-shrink-0 overflow-hidden border border-border/50">
+          <div className="w-12 h-12 rounded-lg bg-muted shrink-0 overflow-hidden border border-border/50">
             {business.logo_url ? (
               <img
                 src={business.logo_url}
@@ -81,6 +92,14 @@ export function BusinessSuggestions({
             <h4 className="font-semibold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
               {business.name}
             </h4>
+
+            {options?.highlight && business.visitsCount ? (
+              <Badge variant="secondary" className="mt-1">
+                {business.visitsCount === 1
+                  ? t('client.businessSuggestions.singleVisit', '1 cita completada')
+                  : t('client.businessSuggestions.multiVisit', '{count} citas completadas', { count: business.visitsCount })}
+              </Badge>
+            ) : null}
             
             {/* Rating */}
             {business.average_rating > 0 && (
@@ -101,14 +120,46 @@ export function BusinessSuggestions({
             {business.city && (
               <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3 shrink-0" />
-                <span className="line-clamp-1">{business.city}</span>
+        const shouldShowEmptyState = !hasFrequent && !hasSuggestions
               </div>
             )}
           </div>
         </div>
+
+        <div className="flex items-center justify-between gap-3 mt-4">
+          {options?.highlight && business.lastAppointmentDate ? (
+            <p className="text-xs text-muted-foreground line-clamp-1">
+              {t('client.businessSuggestions.lastVisit', 'Última cita: {date}', {
+                date: new Date(business.lastAppointmentDate).toLocaleDateString('es-CO', {
+                  day: 'numeric',
+                  month: 'short'
+                })
+              })}
+            </p>
+          ) : (
+            <span className="text-xs text-muted-foreground line-clamp-1">
+              {business.description || t('client.businessSuggestions.genericDescription', 'Negocio recomendado')}
+            </span>
+          )}
+          <Button
+            size="sm"
+            variant={options?.highlight ? 'default' : 'outline'}
+            onClick={(event) => handleRebookClick(event, business.id)}
+          >
+            {options?.highlight
+              ? t('client.businessSuggestions.bookAgain', 'Reservar de nuevo')
+              : t('client.businessSuggestions.bookNow', 'Agendar')}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
+
+  const frequentBusinesses = suggestions.filter((business) => business.isFrequent)
+  const recommendedBusinesses = suggestions.filter((business) => !business.isFrequent)
+  const hasFrequent = frequentBusinesses.length > 0
+  const hasSuggestions = recommendedBusinesses.length > 0
+  const shouldShowEmptyState = !hasFrequent && !hasSuggestions
 
   return (
     <Card className={cn("border-border/50", !isOpen && "shadow-sm")}>
@@ -131,42 +182,68 @@ export function BusinessSuggestions({
 
       {isOpen && (
         <CardContent className="pt-0 pb-4">
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-3 animate-pulse">
-                  <div className="w-12 h-12 rounded-lg bg-muted" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-3 bg-muted rounded w-1/2" />
-                  </div>
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex gap-3 animate-pulse">
+                      <div className="w-12 h-12 rounded-lg bg-muted" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-muted rounded w-3/4" />
+                        <div className="h-3 bg-muted rounded w-1/2" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : suggestions.length === 0 ? (
-            <div className="text-center py-8">
-              <Building2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">
-                {preferredCityName 
-                  ? `No hay negocios recomendados en ${preferredCityName}`
-                  : 'No hay negocios recomendados disponibles'
-                }
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Intenta seleccionar otra ciudad en el header
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {suggestions.map((business) => renderBusinessCard(business))}
-              
-              {suggestions.length >= 6 && (
-                <p className="text-xs text-muted-foreground text-center mt-3">
-                  Mostrando los {suggestions.length} negocios mejor valorados
-                </p>
-              )}
-            </div>
-          )}
+              )
+            }
+
+            if (shouldShowEmptyState) {
+              return (
+                <div className="text-center py-8">
+                  <Building2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">
+                    {preferredCityName 
+                      ? `No hay negocios recomendados en ${preferredCityName}`
+                      : 'No hay negocios recomendados disponibles'
+                    }
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Intenta seleccionar otra ciudad en el header
+                  </p>
+                </div>
+              )
+            }
+
+            return (
+              <div className="space-y-2">
+                {hasFrequent && (
+                  <div className="space-y-2 mb-4">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t('client.businessSuggestions.frequentTitle', 'Tus negocios frecuentes')}
+                    </h4>
+                    {frequentBusinesses.map((business) => renderBusinessCard(business, { highlight: true }))}
+                  </div>
+                )}
+
+                {hasSuggestions && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t('client.businessSuggestions.recommendedTitle', 'Recomendados en tu ciudad')}
+                    </h4>
+                    {recommendedBusinesses.map((business) => renderBusinessCard(business))}
+                  </div>
+                )}
+                
+                {recommendedBusinesses.length >= 6 && (
+                  <p className="text-xs text-muted-foreground text-center mt-3">
+                    Mostrando los {recommendedBusinesses.length} negocios mejor valorados
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         </CardContent>
       )}
     </Card>
