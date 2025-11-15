@@ -189,7 +189,7 @@ export function AdminDashboard({
       case 'overview':
         return <OverviewTab business={business} />
       case 'appointments':
-        return <AppointmentsCalendar />
+        return <AppointmentsCalendar businessId={business.id} />
       case 'absences':
         return <AbsencesTab businessId={business.id} />
       case 'locations':

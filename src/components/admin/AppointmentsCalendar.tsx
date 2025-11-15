@@ -161,6 +161,7 @@ interface Appointment {
   end_time: string;
   status: string;
   confirmed?: boolean;
+  service_id: string; // ✅ Agregado para handleCompleteAppointment
   service_name: string;
   service_price: number;
   service_tax_type?: TaxType;
@@ -463,7 +464,7 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
   );
 });
 
-export const AppointmentsCalendar: React.FC = () => {
+export const AppointmentsCalendar: React.FC<{ businessId?: string }> = ({ businessId: propBusinessId }) => {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const isSelectedDateToday = useMemo(
@@ -675,6 +676,7 @@ export const AppointmentsCalendar: React.FC = () => {
         end_time: apt.end_time as string,
         status: apt.status as string,
         confirmed: (apt.confirmed as boolean) ?? false,
+        service_id: (apt.services as Record<string, unknown>)?.id as string || '', // ✅ Extraído del objeto services
         service_name: (apt.services as Record<string, unknown>)?.name as string || 'Servicio sin nombre',
         service_price: (apt.services as Record<string, unknown>)?.price as number || 0,
         service_tax_type: ((apt.services as Record<string, unknown>)?.tax_type as TaxType) || 'none',
@@ -727,42 +729,44 @@ export const AppointmentsCalendar: React.FC = () => {
 
       setIsLoading(true);
       try {
-        // Resolver el negocio actual de forma robusta
-        // 1) Si el usuario tiene contexto de negocio activo, usarlo
-        let resolvedBusinessId = user.activeBusiness?.id;
-
-        // 2) Si no hay contexto activo, intentar por owner (admin clásico)
+        console.log('🔍 [AppointmentsCalendar] User completo:', user);
+        
+        // Usar businessId de la prop si está disponible (desde AdminDashboard)
+        let resolvedBusinessId = propBusinessId;
+        
+        // Si no viene del prop, resolver el negocio actual de forma robusta
         if (!resolvedBusinessId) {
-          const { data: businesses, error: businessError } = await supabase
-            .from('businesses')
-            .select('id')
-            .eq('owner_id', user.id);
+          // 1) Si el usuario tiene contexto de negocio activo, usarlo
+          resolvedBusinessId = user.activeBusiness?.id;
+          
+          // 2) Si no hay contexto activo, intentar por owner (admin clásico)
+          if (!resolvedBusinessId) {
+            const { data: businesses, error: businessError } = await supabase
+              .from('businesses')
+              .select('id')
+              .eq('owner_id', user.id);
 
-          if (businessError) throw businessError;
-          if (businesses && businesses.length > 0) {
-            resolvedBusinessId = businesses[0].id;
+            if (businessError) throw businessError;
+            if (businesses && businesses.length > 0) {
+              resolvedBusinessId = businesses[0].id;
+            }
           }
         }
-
-        // 3) Si sigue sin negocio, intentar como empleado aprobado
-        if (!resolvedBusinessId && user.role === 'employee') {
-          const { data: employeeBiz, error: empErr } = await supabase
-            .from('business_employees')
-            .select('business_id')
-            .eq('employee_id', user.id)
-            .eq('status', 'approved')
-            .limit(1);
-          if (empErr) throw empErr;
-          if (employeeBiz && employeeBiz.length > 0) {
-            resolvedBusinessId = employeeBiz[0].business_id as string;
-          }
-        }
+        
+        console.log('🔍 [AppointmentsCalendar] Resolviendo business_id:', {
+          'propBusinessId': propBusinessId,
+          'user.activeBusiness?.id': user.activeBusiness?.id,
+          'user.role': user.role,
+          'resolvedBusinessId (final)': resolvedBusinessId
+        });
 
         if (!resolvedBusinessId) {
           throw new Error('No se pudo determinar el negocio actual para este usuario');
         }
 
         setCurrentBusinessId(resolvedBusinessId);
+        
+        console.log('📍 [AppointmentsCalendar] Cargando locations para business:', resolvedBusinessId);
 
         // Get all locations for filter with their hours
         const { data: locationsData, error: locationError } = await supabase
@@ -771,6 +775,8 @@ export const AppointmentsCalendar: React.FC = () => {
           .eq('business_id', resolvedBusinessId);
 
         if (locationError) throw locationError;
+        
+        console.log('📍 [AppointmentsCalendar] Locations cargadas:', locationsData?.length || 0, locationsData);
 
         const formattedLocations: LocationWithHours[] = (locationsData || []).map(loc => ({
           id: loc.id,
@@ -868,7 +874,7 @@ export const AppointmentsCalendar: React.FC = () => {
     };
 
     fetchData();
-  }, [user]); // Solo depende de user, no de fetchAppointments para evitar ciclos
+  }, [user, propBusinessId]); // ✅ Añadido propBusinessId para que se recargue al cambiar de negocio
 
   // Fetch appointments cuando currentBusinessId o selectedDate cambian
   useEffect(() => {
@@ -918,6 +924,11 @@ export const AppointmentsCalendar: React.FC = () => {
       // Get appointment details first
       const appointment = appointments.find(a => a.id === appointmentId);
       if (!appointment) return;
+
+      // ✅ Validar que service_id existe antes de hacer la query
+      if (!appointment.service_id) {
+        throw new Error('La cita no tiene un servicio asociado');
+      }
 
       // Get service details including commission
       const { data: service, error: serviceError } = await supabase
@@ -1222,12 +1233,12 @@ export const AppointmentsCalendar: React.FC = () => {
         return false;
       }
 
-      // Filtro de servicio - si está vacío, mostrar todas
-      if (filterService.length > 0 && !filterService.includes(apt.service_name)) {
+      // ✅ Filtro de servicio - comparar por service_id (no por nombre)
+      if (filterService.length > 0 && !filterService.includes(apt.service_id)) {
         return false;
       }
 
-      // Filtro de empleado - si está vacío, mostrar todas
+      // ✅ Filtro de empleado - si está vacío, mostrar todas
       if (filterEmployee.length > 0 && !filterEmployee.includes(apt.employee_id)) {
         return false;
       }
@@ -1418,12 +1429,15 @@ export const AppointmentsCalendar: React.FC = () => {
       return 'bg-yellow-50 border border-yellow-400 text-foreground dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-100';
     }
     if (status === 'confirmed') {
-      return 'bg-blue-500/20 border border-blue-500/50 text-blue-700 dark:text-blue-300';
+      // ✅ Mejorado para ambos temas: mejor contraste en light mode
+      return 'bg-blue-100 border border-blue-400 text-blue-900 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200';
     }
     if (status === 'completed') {
-      return 'bg-green-500/20 border border-green-500/50 text-green-700 dark:text-green-300';
+      // ✅ Mejorado para ambos temas: mejor contraste en light mode
+      return 'bg-green-100 border border-green-400 text-green-900 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200';
     }
-    return 'bg-red-500/20 border border-red-500/50 text-red-700 dark:text-red-300';
+    // ✅ Mejorado para ambos temas: mejor contraste en light mode (rechazada/cancelada)
+    return 'bg-red-100 border border-red-400 text-red-900 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200';
   };
 
   if (isLoading) {
@@ -1497,7 +1511,7 @@ export const AppointmentsCalendar: React.FC = () => {
             Filtros
           </h3>
           <div className="flex items-center gap-2">
-            <button
+            <div
               onClick={(e) => {
                 e.stopPropagation();
                 setFilterStatus(['confirmed']);
@@ -1505,10 +1519,21 @@ export const AppointmentsCalendar: React.FC = () => {
                 setFilterLocation([]);
                 setFilterEmployee([]);
               }}
-              className="px-3 py-1.5 text-xs bg-background hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors font-medium border border-border"
+              className="px-3 py-1.5 text-xs bg-background hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-colors font-medium border border-border cursor-pointer"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.stopPropagation();
+                  setFilterStatus(['confirmed']);
+                  setFilterService([]);
+                  setFilterLocation([]);
+                  setFilterEmployee([]);
+                }
+              }}
             >
               Limpiar
-            </button>
+            </div>
             <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${showFilters ? 'rotate-90' : ''}`} />
           </div>
         </button>
@@ -1625,7 +1650,7 @@ export const AppointmentsCalendar: React.FC = () => {
                     <div className="px-2 py-2 border-b border-border">
                       <button
                         className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded"
-                        onClick={() => setFilterService(services.map(s => s.name))}
+                        onClick={() => setFilterService(services.map(s => s.id))}
                       >
                         Seleccionar Todos
                       </button>
@@ -1634,12 +1659,12 @@ export const AppointmentsCalendar: React.FC = () => {
                       <label key={service.id} className="flex items-center px-3 py-2 hover:bg-muted/50 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={filterService.includes(service.name)}
+                          checked={filterService.includes(service.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setFilterService([...filterService, service.name]);
+                              setFilterService([...filterService, service.id]);
                             } else {
-                              setFilterService(filterService.filter(s => s !== service.name));
+                              setFilterService(filterService.filter(s => s !== service.id));
                             }
                           }}
                           className="w-4 h-4 rounded border-2 border-muted-foreground/40 bg-background checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
