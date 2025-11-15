@@ -58,6 +58,7 @@ export const businessesService = {
     const insertRow: Insert<'businesses'> = {
       name: payload.name,
       description: payload.description ?? null,
+      resource_model: payload.resource_model ?? 'professional', // ⭐ NUEVO: Soporte para modelo de negocio
       owner_id: payload.owner_id,
       phone: payload.phone ?? null,
       email: payload.email ?? null,

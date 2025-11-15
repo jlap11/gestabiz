@@ -2,20 +2,22 @@
  * @file EmployeeProfileModal.tsx
  * @description Modal que muestra el perfil detallado de un empleado
  * Información: contacto, horarios, servicios, ubicaciones, estadísticas
+ * Tabs: Información (lectura) y Nómina (configuración de salario)
  */
 
 import { useState } from 'react'
-import { X, Mail, Phone, Calendar, MapPin, Star, TrendingUp, Clock } from 'lucide-react'
+import { Mail, Phone, Calendar, MapPin, Star, TrendingUp, Clock } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useLanguage } from '@/contexts/LanguageContext'
+import { EmployeeSalaryConfig } from '@/components/admin/employees/EmployeeSalaryConfig'
 import type { EmployeeHierarchy } from '@/types'
 
 // =====================================================
@@ -56,8 +58,8 @@ export function EmployeeProfileModal({
   employee,
   isOpen,
   onClose,
-}: EmployeeProfileModalProps) {
-  const { t } = useLanguage()
+}: Readonly<EmployeeProfileModalProps>) {
+  const [activeTab, setActiveTab] = useState<'info' | 'payroll'>('info')
 
   if (!employee) return null
 
@@ -70,7 +72,7 @@ export function EmployeeProfileModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+            <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
               {employee.full_name?.[0]?.toUpperCase()}
             </div>
             <div>
@@ -80,7 +82,16 @@ export function EmployeeProfileModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {/* TABS: Información y Nómina */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'info' | 'payroll')}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="info">Información</TabsTrigger>
+            <TabsTrigger value="payroll">Nómina</TabsTrigger>
+          </TabsList>
+
+          {/* TAB 1: INFORMACIÓN (contenido original) */}
+          <TabsContent value="info">
+            <div className="space-y-6">
           {/* NIVEL JERÁRQUICO */}
           <Card className="p-4">
             <div className="flex items-center justify-between">
@@ -160,7 +171,7 @@ export function EmployeeProfileModal({
                 Ubicación Asignada
               </h3>
               <div className="flex items-start gap-3 p-2 bg-secondary rounded">
-                <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium">{employee.location_name}</p>
                 </div>
@@ -255,7 +266,22 @@ export function EmployeeProfileModal({
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </TabsContent>
+
+      {/* TAB 2: NÓMINA */}
+      <TabsContent value="payroll">
+        <div className="space-y-4">
+          <EmployeeSalaryConfig
+            employeeId={employee.employee_id}
+            businessId={employee.business_id}
+            employeeName={employee.full_name}
+            currentSalaryBase={employee.salary_base}
+            currentSalaryType={employee.salary_type}
+          />
+        </div>
+      </TabsContent>
+    </Tabs>
+  </DialogContent>
+</Dialog>
   )
 }

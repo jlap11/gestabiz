@@ -47,7 +47,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE WARNING 'Failed to invoke process-reminders: %', SQLERRM;
 END;
 $$;
-
 -- Función mejorada para invocar appointment-status-updater usando secrets
 CREATE OR REPLACE FUNCTION public.invoke_appointment_status_updater()
 RETURNS void
@@ -93,7 +92,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE WARNING 'Failed to invoke appointment-status-updater: %', SQLERRM;
 END;
 $$;
-
 -- Función helper para configurar secretos desde variables de entorno
 -- Esta función debe ser llamada manualmente por un usuario con permisos adecuados
 CREATE OR REPLACE FUNCTION public.configure_cron_secrets()
@@ -107,16 +105,12 @@ BEGIN
   RETURN 'Ejecuta manualmente: ALTER DATABASE postgres SET app.supabase_url = ''https://dkancockzvcqorqbwtyh.supabase.co''; y ALTER DATABASE postgres SET app.supabase_service_role_key = ''YOUR_KEY_HERE'';';
 END;
 $$;
-
 -- Comentarios de documentación
 COMMENT ON FUNCTION public.invoke_process_reminders() IS 
 'Invokes process-reminders Edge Function using Supabase secrets (app.supabase_service_role_key)';
-
 COMMENT ON FUNCTION public.invoke_appointment_status_updater() IS 
 'Invokes appointment-status-updater Edge Function using Supabase secrets (app.supabase_service_role_key)';
-
 COMMENT ON FUNCTION public.configure_cron_secrets() IS 
 'Returns instructions to configure Supabase secrets manually.';
-
 -- NO ejecutar automáticamente - requiere permisos de superusuario
--- SELECT public.configure_cron_secrets();
+-- SELECT public.configure_cron_secrets();;

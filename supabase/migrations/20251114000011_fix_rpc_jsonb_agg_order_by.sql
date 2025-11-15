@@ -6,7 +6,6 @@
 
 -- Drop old function completely
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, TEXT) CASCADE;
-
 -- Recreate with fixed sorted_businesses CTE
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID,
@@ -233,14 +232,11 @@ EXCEPTION WHEN OTHERS THEN
   );
 END;
 $$;
-
 -- Grants
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) TO authenticated;
-
 -- Comment
 COMMENT ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) IS 
 'Consolidated RPC: Returns all client dashboard data. Uses sorted_businesses CTE to avoid GROUP BY errors with jsonb_agg.';
-
 -- =============================================================================
 -- END OF MIGRATION
--- =============================================================================
+-- =============================================================================;

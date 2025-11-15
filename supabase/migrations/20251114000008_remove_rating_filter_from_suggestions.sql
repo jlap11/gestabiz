@@ -9,7 +9,6 @@
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID);
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, TEXT);
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, UUID);
-
 -- RECREAR función SIN filtro de rating
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID
@@ -137,58 +136,40 @@ BEGIN
 
   -- =====================================================
   -- 5. SUGGESTIONS (negocios recomendados)
-  -- ✅ FIX v5.3: Usar CTE + DISTINCT para deduplicar correctamente
-  -- ✅ FIX: SIN filtro de rating para permitir negocios nuevos (0.0 rating)
+  -- ✅ FIX v5.0 FINAL: SIN filtro de rating (b.average_rating >= 4.0 ELIMINADO)
   -- =====================================================
-  WITH unique_businesses AS (
-    SELECT DISTINCT
+  SELECT COALESCE(json_agg(suggestion_data), '[]'::json)::jsonb
+  INTO v_suggestions
+  FROM (
+    SELECT 
       b.id,
       b.name,
       b.description,
       b.logo_url,
       b.banner_url,
       b.average_rating,
-      b.total_reviews
+      b.total_reviews,
+      l.city,
+      l.state,
+      -- Calcular relevancia: negocios donde ya tiene citas tienen prioridad
+      CASE 
+        WHEN EXISTS (
+          SELECT 1 FROM appointments a 
+          WHERE a.business_id = b.id AND a.client_id = p_client_id
+        ) THEN 10
+        ELSE 0
+      END + COALESCE(b.average_rating, 0) as relevance_score
     FROM businesses b
+    -- INNER JOIN para obtener ubicaciones
+    INNER JOIN locations l ON l.business_id = b.id AND l.is_active = true
     WHERE b.is_active = true
+      -- ✅ ELIMINADO: AND b.average_rating >= 4.0
+      -- ✅ NO hay filtro de ciudad en esta versión (mostrar TODOS los negocios)
       AND NOT EXISTS (
         SELECT 1 FROM business_favorites bf 
         WHERE bf.user_id = p_client_id AND bf.business_id = b.id
       )
-  ),
-  business_locations AS (
-    SELECT DISTINCT ON (business_id)
-      business_id,
-      city,
-      state
-    FROM locations
-    WHERE is_active = true
-    ORDER BY business_id, created_at DESC
-  )
-  SELECT COALESCE(json_agg(suggestion_data), '[]'::json)::jsonb
-  INTO v_suggestions
-  FROM (
-    SELECT 
-      ub.id,
-      ub.name,
-      ub.description,
-      ub.logo_url,
-      ub.banner_url,
-      ub.average_rating,
-      ub.total_reviews,
-      COALESCE(bl.city, 'N/A') as city,
-      COALESCE(bl.state, 'N/A') as state,
-      -- Calcular relevancia
-      CASE 
-        WHEN EXISTS (
-          SELECT 1 FROM appointments a 
-          WHERE a.business_id = ub.id AND a.client_id = p_client_id
-        ) THEN 10
-        ELSE 0
-      END + COALESCE(ub.average_rating, 0) as relevance_score
-    FROM unique_businesses ub
-    LEFT JOIN business_locations bl ON bl.business_id = ub.id
-    ORDER BY relevance_score DESC, ub.total_reviews DESC
+    ORDER BY relevance_score DESC, b.total_reviews DESC
     LIMIT 6
   ) suggestion_data;
 
@@ -241,12 +222,10 @@ EXCEPTION WHEN OTHERS THEN
   );
 END;
 $$;
-
 -- =====================================================
 -- PERMISOS
 -- =====================================================
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID) TO authenticated;
-
 -- =====================================================
 -- COMENTARIOS
 -- =====================================================
@@ -255,7 +234,6 @@ COMMENT ON FUNCTION public.get_client_dashboard_data(UUID) IS
 SIN filtro de rating en suggestions para permitir negocios nuevos (0.0 rating).
 SIN filtro de ciudad para simplificar lógica.
 Incluye: appointments, reviewedIds, pendingReviews, favorites, suggestions, stats.';
-
 -- =====================================================
 -- FIN DE MIGRACIÓN
--- =====================================================
+-- =====================================================;

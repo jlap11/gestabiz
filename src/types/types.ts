@@ -1023,23 +1023,78 @@ export type TransactionCategory =
   // Income categories
   | 'appointment_payment'
   | 'product_sale'
+  | 'service_sale'
   | 'tip'
   | 'membership'
   | 'package'
   | 'other_income'
-  // Expense categories
+  // Expense categories - Payroll
   | 'salary'
+  | 'payroll'
+  | 'bonuses'
   | 'commission'
+  // Expense categories - Rent & Utilities
   | 'rent'
   | 'utilities'
+  | 'electricity'
+  | 'water'
+  | 'gas'
+  | 'internet'
+  | 'phone'
+  // Expense categories - Maintenance & Supplies
   | 'supplies'
+  | 'cleaning'
+  | 'repairs'
+  | 'furniture'
+  | 'tools'
+  | 'software'
   | 'maintenance'
+  // Expense categories - Marketing
   | 'marketing'
+  | 'advertising'
+  | 'social_media'
+  // Expense categories - Taxes
   | 'tax'
+  | 'property_tax'
+  | 'income_tax'
+  | 'vat'
+  | 'withholding'
+  // Expense categories - Insurance
   | 'insurance'
-  | 'equipment'
+  | 'liability_insurance'
+  | 'fire_insurance'
+  | 'theft_insurance'
+  | 'health_insurance'
+  // Expense categories - Training & Equipment
   | 'training'
+  | 'certifications'
+  | 'courses'
+  | 'equipment'
+  // Expense categories - Transportation
+  | 'fuel'
+  | 'parking'
+  | 'public_transport'
+  // Expense categories - Professional Fees
+  | 'accounting_fees'
+  | 'legal_fees'
+  | 'consulting_fees'
+  // Expense categories - Other
+  | 'depreciation'
+  | 'bank_fees'
+  | 'interest'
+  | 'donations'
+  | 'uniforms'
+  | 'security'
+  | 'waste_disposal'
   | 'other_expense';
+
+export type RecurrenceFrequency = 
+  | 'daily'
+  | 'weekly'
+  | 'biweekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'yearly';
 
 // Location Services - Servicios disponibles en cada sede
 export interface LocationService {
@@ -1126,6 +1181,73 @@ export interface Transaction {
   location?: Location;
   appointment?: Appointment;
   employee?: User;
+}
+
+// Recurring Expenses - Egresos Recurrentes
+export interface RecurringExpense {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  business_id: string;
+  location_id?: string;
+  employee_id?: string;
+  created_by?: string;
+  name?: string;
+  description: string;
+  category: TransactionCategory;
+  amount: number;
+  currency: string;
+  recurrence_frequency: RecurrenceFrequency;
+  recurrence_day?: number; // 1-31
+  next_payment_date: string; // DATE format
+  last_payment_date?: string; // DATE format
+  start_date?: string; // DATE format
+  end_date?: string; // DATE format
+  is_active: boolean;
+  is_automated: boolean;
+  payment_method?: string;
+  notes?: string;
+  metadata?: Record<string, unknown>;
+  total_paid: number;
+  payments_count: number;
+  // Populated fields
+  location?: Location;
+  employee?: {
+    id: string;
+    full_name: string;
+  };
+}
+
+// Location Expense Config - Configuración de egresos por sede
+export interface LocationExpenseConfig {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  location_id: string;
+  business_id: string;
+  // Rent
+  rent_amount?: number;
+  rent_due_day?: number; // 1-31
+  landlord_name?: string;
+  landlord_contact?: string;
+  lease_start_date?: string; // DATE format
+  lease_end_date?: string; // DATE format
+  // Utilities averages
+  electricity_avg?: number;
+  water_avg?: number;
+  gas_avg?: number;
+  internet_avg?: number;
+  phone_avg?: number;
+  // Other fixed costs
+  security_amount?: number;
+  cleaning_amount?: number;
+  waste_disposal_amount?: number;
+  // Additional
+  metadata?: Record<string, unknown>;
+  notes?: string;
+  is_active: boolean;
+  // Populated fields
+  location?: Location;
 }
 
 // Employee Performance View
@@ -1702,6 +1824,7 @@ export interface PresenceEvent {
 export interface EmployeeHierarchy {
   employee_id?: string
   user_id: string
+  business_id: string // Agregado para EmployeeSalaryConfig
   full_name: string
   email: string
   phone: string | null
@@ -1716,6 +1839,8 @@ export interface EmployeeHierarchy {
   location_name: string | null
   is_active: boolean
   hired_at: string | null
+  salary_base: number | null // Agregado para sistema de nómina
+  salary_type: string | null // Agregado para sistema de nómina
   total_appointments: number
   completed_appointments: number
   cancelled_appointments: number

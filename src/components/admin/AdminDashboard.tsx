@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff, Box } from 'lucide-react'
+import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff, Box, Wallet } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
@@ -18,6 +18,7 @@ import { QuickSalesPage } from '@/pages/QuickSalesPage'
 import { AppointmentsCalendar } from './AppointmentsCalendar'
 import { AbsencesTab } from './AbsencesTab'
 import { ResourcesManager } from './ResourcesManager'
+import { ExpensesManagementPage } from './expenses/ExpensesManagementPage'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
@@ -189,6 +190,11 @@ export function AdminDashboard({
       label: t('adminDashboard.sidebar.quickSales'),
       icon: <ShoppingCart className="h-5 w-5" />
     },
+    {
+      id: 'expenses',
+      label: 'Egresos',
+      icon: <Wallet className="h-5 w-5" />
+    },
     // {
     //   id: 'accounting',
     //   label: t('adminDashboard.sidebar.accounting'),
@@ -251,6 +257,8 @@ export function AdminDashboard({
         )
       case 'quick-sales':
         return <QuickSalesPage businessId={business.id} />
+      case 'expenses':
+        return <ExpensesManagementPage businessId={business.id} />
       // case 'accounting':
       //   return <AccountingPage businessId={business.id} onUpdate={onUpdate} />
       case 'reports':

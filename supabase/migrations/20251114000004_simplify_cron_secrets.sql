@@ -58,7 +58,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE WARNING 'Failed to invoke process-reminders: %', SQLERRM;
 END;
 $$;
-
 -- Función para appointment-status-updater
 CREATE OR REPLACE FUNCTION public.invoke_appointment_status_updater()
 RETURNS void
@@ -111,9 +110,7 @@ EXCEPTION WHEN OTHERS THEN
   RAISE WARNING 'Failed to invoke appointment-status-updater: %', SQLERRM;
 END;
 $$;
-
 COMMENT ON FUNCTION public.invoke_process_reminders() IS 
 'Invokes process-reminders Edge Function. Edge Function has its own secrets (BREVO_API_KEY, etc.)';
-
 COMMENT ON FUNCTION public.invoke_appointment_status_updater() IS 
 'Invokes appointment-status-updater Edge Function. Only needs service_role_key for auth.';

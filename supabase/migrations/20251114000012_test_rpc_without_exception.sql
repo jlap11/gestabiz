@@ -3,7 +3,6 @@
 -- =============================================================================
 
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, TEXT) CASCADE;
-
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID,
   p_preferred_city_name TEXT DEFAULT NULL
@@ -102,5 +101,4 @@ BEGIN
   -- NO EXCEPTION HANDLER - Queremos ver el error real
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) TO authenticated;

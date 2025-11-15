@@ -24,6 +24,7 @@ export interface HierarchyFilters {
 export interface EmployeeHierarchy {
   user_id: string;
   employee_id?: string;
+  business_id?: string;  // Agregado para EmployeeSalaryConfig
   full_name: string;
   email: string;
   role: string;
@@ -53,6 +54,8 @@ export interface EmployeeHierarchy {
   hired_at: string | null;
   phone: string | null;
   avatar_url: string | null;
+  salary_base: number | null;  // Agregado para sistema de nómina
+  salary_type: string | null;  // Agregado para sistema de nómina
 }
 
 // =====================================================

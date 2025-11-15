@@ -6,7 +6,6 @@
 
 -- 1. Drop existing function
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, TEXT) CASCADE;
-
 -- 2. Recreate with favorites query
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID,
@@ -116,11 +115,13 @@ BEGIN
       'name', b.name,
       'description', b.description,
       'logo_url', b.logo_url,
-      'address', b.address,
-      'city', b.city,
-      'phone', b.phone,
+      'banner_url', b.banner_url,
       'average_rating', b.average_rating,
-      'review_count', b.total_reviews,
+      'total_reviews', b.total_reviews,
+      'city', b.city,
+      'state', b.state,
+      'address', b.address,
+      'phone', b.phone,
       'is_active', b.is_active,
       'favorited_at', bf.created_at
     ) ORDER BY bf.created_at DESC
@@ -229,11 +230,8 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) TO authenticated;
-
 COMMENT ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) IS 'Consolidated client dashboard payload with favorites, city-name filtering and sorted suggestions.';
-
 -- =============================================================================
 -- END OF MIGRATION
--- =============================================================================
+-- =============================================================================;

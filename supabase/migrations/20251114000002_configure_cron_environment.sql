@@ -29,7 +29,6 @@ EXCEPTION WHEN OTHERS THEN
   RETURN NULL;
 END;
 $$;
-
 CREATE OR REPLACE FUNCTION public.get_supabase_url()
 RETURNS text
 LANGUAGE plpgsql
@@ -43,11 +42,9 @@ EXCEPTION WHEN OTHERS THEN
   RETURN 'https://dkancockzvcqorqbwtyh.supabase.co';
 END;
 $$;
-
 -- Comentarios
 COMMENT ON FUNCTION public.get_supabase_service_role_key() IS 'Returns the service role key for Edge Function invocations';
 COMMENT ON FUNCTION public.get_supabase_url() IS 'Returns the Supabase project URL';
-
 -- Crear tabla para logs de cron jobs
 CREATE TABLE IF NOT EXISTS public.cron_execution_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,11 +55,9 @@ CREATE TABLE IF NOT EXISTS public.cron_execution_logs (
   execution_time_ms integer,
   details jsonb
 );
-
 -- Index para consultas eficientes
 CREATE INDEX IF NOT EXISTS idx_cron_logs_job_name_created 
 ON public.cron_execution_logs(job_name, created_at DESC);
-
 -- Trigger para limpiar logs antiguos (mantener solo últimos 30 días)
 CREATE OR REPLACE FUNCTION public.cleanup_old_cron_logs()
 RETURNS trigger
@@ -74,10 +69,8 @@ BEGIN
   RETURN NULL;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_cleanup_cron_logs ON public.cron_execution_logs;
 CREATE TRIGGER trigger_cleanup_cron_logs
   AFTER INSERT ON public.cron_execution_logs
   EXECUTE FUNCTION public.cleanup_old_cron_logs();
-
 COMMENT ON TABLE public.cron_execution_logs IS 'Logs de ejecuciones de cron jobs para debugging';

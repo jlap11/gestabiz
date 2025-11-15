@@ -5,7 +5,6 @@
 
 -- Drop old signature (UUID parameter)
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, UUID);
-
 -- Recreate with TEXT parameter for city name
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID,
@@ -230,14 +229,11 @@ EXCEPTION WHEN OTHERS THEN
   );
 END;
 $$;
-
 -- Grants
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) TO authenticated;
-
 -- Comment
 COMMENT ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) IS 
 'Consolidated RPC: Returns all client dashboard data. NOW accepts preferred_city_name (TEXT) instead of UUID to match locations.city field.';
-
 -- =====================================================
 -- END OF MIGRATION
--- =====================================================
+-- =====================================================;

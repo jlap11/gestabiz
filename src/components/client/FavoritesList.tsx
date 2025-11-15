@@ -138,7 +138,7 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
 
   return (
     <>
-      <div className="space-y-6 p-4">
+      <div className="space-y-6 p-4 pt-8 sm:pt-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

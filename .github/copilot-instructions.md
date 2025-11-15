@@ -20,10 +20,11 @@
 
 ### Principios de Desarrollo
 1. **No generar .md sin solicitud explícita** - Mantener repo limpio
-2. **No usar emojis en UI** - Solo iconos profesionales (Phosphor/Lucide)
-3. **Cliente Supabase singleton** - Un solo export en `src/lib/supabase.ts`
-4. **Roles dinámicos** - Calculados en tiempo real, no persistidos
-5. **TypeScript strict** - Cero `any`, tipado completo
+2. **NUNCA usar emojis en componentes UI** - SIEMPRE usar iconos profesionales (Phosphor Icons o Lucide React)
+3. **Conservar diseño original** - Al agregar campos nuevos, seguir estilos existentes sin eliminar código funcional
+4. **Cliente Supabase singleton** - Un solo export en `src/lib/supabase.ts`
+5. **Roles dinámicos** - Calculados en tiempo real, no persistidos
+6. **TypeScript strict** - Cero `any`, tipado completo
 
 ---
 
@@ -857,6 +858,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
   - Usar el **servidor MCP disponible** para consultas SQL directas, migraciones, y operaciones de base de datos complejas cuando sea más eficiente que el cliente JavaScript.
   - Para código de aplicación: sigue el patrón de `useSupabaseData.fetch*` construyendo la query base (`supabase.from('table')...`), filtra por rol/negocio, ordena, y mapea a los tipos de `src/types`.
   - **MCP Commands ejemplos**: `SELECT * FROM profiles WHERE role = 'client'`, `INSERT INTO businesses (name, owner_id) VALUES (?, ?)`, `UPDATE appointments SET status = ? WHERE id = ?`.
+  - **REGLA CRÍTICA**: Cada vez que hagas un push a Supabase, SIEMPRE agregar la bandera `--yes` al comando para evitar prompts interactivos: `npx supabase db push --yes`
 - Realtime: para colecciones por usuario, suscribe con filtro `filter: user_id=eq.${userId}` y maneja `INSERT/UPDATE/DELETE` actualizando el estado local.
 - UI/estado: para operaciones que muestran feedback, envuelve con `useAsyncOperation().executeAsync(() => ..., 'clave-loading', { successMessage })` en vez de gestionar loading/toasts manualmente.
 - Permisos: valida acciones con `userHasPermission(role, permissions, 'write_appointments')` antes de mutaciones.
@@ -1029,11 +1031,11 @@ npm run ios              # iOS simulator
 npm run web              # Expo web
 ```
 
-**Supabase** (siempre usar `npx supabase`):
+**Supabase** (siempre usar `npx supabase` + agregar `--yes` en push para evitar prompts):
 ```powershell
-npx supabase start                           # Iniciar Supabase local (NO DISPONIBLE)
-npx supabase db push                         # Aplicar migraciones en remoto
-npx supabase functions deploy <function-name> # Desplegar Edge Function
+npx supabase start                                          # Iniciar Supabase local (NO DISPONIBLE)
+npx supabase db push --yes                                 # Aplicar migraciones en remoto (sin confirmar)
+npx supabase functions deploy <function-name>              # Desplegar Edge Function
 npx supabase gen types typescript --project-id <id> > src/types/supabase.ts  # Generar tipos
 ```
 
@@ -1060,7 +1062,7 @@ npm run test:coverage    # Cobertura de tests
 3. **Desplegar cambios en Supabase**:
    - Crear migración: `npx supabase migration new <nombre>`
    - Probar localmente (NO disponible, usar directamente remoto)
-   - Aplicar en producción: `npx supabase db push`
+   - **SIEMPRE agregar `--yes` al push**: `npx supabase db push --yes` (sin confirmar)
    - Actualizar tipos: `npx supabase gen types typescript...`
 
 4. **Agregar Edge Function**:

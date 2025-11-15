@@ -5,7 +5,6 @@
 
 -- Drop old signature (only p_client_id)
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID);
-
 -- Recreate with 2 parameters (p_client_id + p_preferred_city_id optional)
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID,
@@ -128,7 +127,7 @@ BEGIN
         SELECT 1
         FROM locations loc
         WHERE loc.business_id = b.id
-          AND loc.city::TEXT = p_preferred_city_id::TEXT
+          AND loc.city_id::TEXT = p_preferred_city_id::TEXT
       ))
       -- ✅ Client NOT in this business (exclude businesses where client already has appointments)
       AND NOT EXISTS (
@@ -215,14 +214,11 @@ EXCEPTION WHEN OTHERS THEN
   );
 END;
 $$;
-
 -- Grants
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID, UUID) TO authenticated;
-
 -- Comment
 COMMENT ON FUNCTION public.get_client_dashboard_data(UUID, UUID) IS 
 'Consolidated RPC: Returns all client dashboard data (appointments, stats, suggestions, reviews) in a single query. Now supports optional preferred_city_id filter for suggestions.';
-
 -- =====================================================
 -- END OF MIGRATION
--- =====================================================
+-- =====================================================;

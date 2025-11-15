@@ -122,7 +122,43 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           apt => !reviewedAppointmentIds.has(apt.id)
         );
 
-        const reviews: PendingReview[] = appointmentsWithoutReviews.map((appointment) => {
+        // Agrupar por (business_id, employee_id) - mostrar solo una review por esa combinación
+        const groupedByBusinessAndEmployee = new Map<string, typeof appointmentsWithoutReviews[0]>();
+        appointmentsWithoutReviews.forEach(apt => {
+          // Usar employee_id o 'no-employee' si no hay empleado
+          const employeeKey = apt.employee_id || 'no-employee';
+          const key = `${apt.business_id}|${employeeKey}`;
+          
+          // Mantener solo el primer (más reciente) de cada grupo
+          if (!groupedByBusinessAndEmployee.has(key)) {
+            groupedByBusinessAndEmployee.set(key, apt);
+          }
+        });
+
+        // Convertir map a array de appointments únicos
+        const uniqueAppointments = Array.from(groupedByBusinessAndEmployee.values());
+
+        // Cargar todas las reviews previas del usuario para filtrar duplicados
+        const { data: allPreviousReviews } = await supabase
+          .from('reviews')
+          .select('business_id, employee_id')
+          .eq('client_id', userId);
+
+        // Crear set de combinaciones (business_id, employee_id) ya calificadas
+        const ratedCombinations = new Set<string>(
+          (allPreviousReviews || []).map(r => `${r.business_id}|${r.employee_id || 'no-employee'}`)
+        );
+
+        // Filtrar: solo incluir citas donde NO existen ambas calificaciones (negocio y empleado)
+        const reviewsNeedingRating = uniqueAppointments.filter(apt => {
+          const employeeKey = apt.employee_id || 'no-employee';
+          const key = `${apt.business_id}|${employeeKey}`;
+          
+          // Si la combinación ya está calificada, excluirla
+          return !ratedCombinations.has(key);
+        });
+
+        const reviews: PendingReview[] = reviewsNeedingRating.map((appointment) => {
           const business = Array.isArray(appointment.business) 
             ? appointment.business[0] 
             : appointment.business;
@@ -363,7 +399,7 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}} modal>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()} hideClose={true}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
@@ -395,58 +431,6 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
                 Atendido por: {currentReview.employee_name}
               </p>
             )}
-            
-            {/* DEBUG Badge - Detalles de la cita */}
-            <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-              <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🔍 DEBUG - Detalles de la cita:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Estado:</span>
-                  <span className="ml-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200 rounded">
-                    {currentReview.status}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Pago:</span>
-                  <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded">
-                    {currentReview.payment_status || 'N/A'}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Hora inicio:</span>
-                  <span className="ml-1 text-yellow-900 dark:text-yellow-100">
-                    {new Date(currentReview.start_time).toLocaleString('es-CO', {
-                      dateStyle: 'short',
-                      timeStyle: 'short'
-                    })}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Hora fin:</span>
-                  <span className="ml-1 text-yellow-900 dark:text-yellow-100">
-                    {new Date(currentReview.end_time).toLocaleString('es-CO', {
-                      dateStyle: 'short',
-                      timeStyle: 'short'
-                    })}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">Completada en:</span>
-                  <span className="ml-1 text-yellow-900 dark:text-yellow-100">
-                    {new Date(currentReview.completed_at).toLocaleString('es-CO', {
-                      dateStyle: 'short',
-                      timeStyle: 'short'
-                    })}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <span className="font-semibold text-yellow-700 dark:text-yellow-300">ID Cita:</span>
-                  <span className="ml-1 text-yellow-900 dark:text-yellow-100 font-mono text-xs">
-                    {currentReview.appointment_id.slice(0, 8)}...
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Validation Error */}

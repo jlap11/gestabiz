@@ -106,24 +106,28 @@ export function useChartData(
       }));
   }, []);
 
-  // Procesar distribución por categoría
+  // Procesar distribución por categoría (AGRUPADA)
   const processCategoryDistribution = useCallback((transactions: Transaction[]) => {
-    const categoryMap = new Map<TransactionCategory, number>();
+    const groupMap = new Map<string, { amount: number; count: number; categories: Set<TransactionCategory> }>();
     let total = 0;
 
     transactions.forEach(t => {
-      const current = categoryMap.get(t.category) || 0;
-      categoryMap.set(t.category, current + Number(t.amount));
+      const group = getCategoryGroup(t.category);
+      const current = groupMap.get(group) || { amount: 0, count: 0, categories: new Set() };
+      current.amount += Number(t.amount);
+      current.count++;
+      current.categories.add(t.category);
+      groupMap.set(group, current);
       total += Number(t.amount);
     });
 
-    return Array.from(categoryMap.entries())
-      .map(([category, amount]) => ({
-        category: getCategoryLabel(category),
-        amount,
-        percentage: (amount / total) * 100,
-        count: transactions.filter(t => t.category === category).length,
-        color: getCategoryColor(category),
+    return Array.from(groupMap.entries())
+      .map(([group, data]) => ({
+        category: group,
+        amount: data.amount,
+        percentage: (data.amount / total) * 100,
+        count: data.count,
+        color: getGroupColor(group),
       }))
       .sort((a, b) => b.amount - a.amount);
   }, []);
@@ -204,26 +208,41 @@ export function useChartData(
       .sort((a, b) => b.profit - a.profit);
   }, []);
 
-  // Procesar rendimiento de empleados
-  const processEmployeePerformance = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('employee_performance')
-      .select('*')
-      .eq('business_id', businessId);
+  // Procesar rendimiento de empleados (CORREGIDO - usa transactions directamente)
+  const processEmployeePerformance = useCallback((transactions: Transaction[]) => {
+    const employeeMap = new Map<string, {
+      name: string;
+      revenue: number;
+      appointments: number;
+    }>();
 
-    if (error) throw error;
+    transactions
+      .filter(t => t.type === 'income' && t.employee_id && t.employee)
+      .forEach(t => {
+        const empId = t.employee_id!;
+        const current = employeeMap.get(empId) || {
+          name: t.employee!.full_name || 'Sin nombre',
+          revenue: 0,
+          appointments: 0,
+        };
+        current.revenue += Number(t.amount);
+        current.appointments++;
+        employeeMap.set(empId, current);
+      });
 
-    return (data || []).map(emp => ({
-      employee_id: emp.employee_id,
-      employee_name: emp.employee_name,
-      total_revenue: emp.total_revenue,
-      completed_appointments: emp.completed_appointments,
-      average_per_appointment: emp.completed_appointments > 0
-        ? emp.total_revenue / emp.completed_appointments
-        : 0,
-      commission_earned: emp.total_paid || 0,
-    })).sort((a, b) => b.total_revenue - a.total_revenue);
-  }, [businessId]);
+    return Array.from(employeeMap.entries())
+      .map(([employee_id, data]) => ({
+        employee_id,
+        employee_name: data.name,
+        total_revenue: data.revenue,
+        completed_appointments: data.appointments,
+        average_per_appointment: data.appointments > 0
+          ? data.revenue / data.appointments
+          : 0,
+        commission_earned: 0, // Se puede calcular con reglas de comisión
+      }))
+      .sort((a, b) => b.total_revenue - a.total_revenue);
+  }, []);
 
   // Obtener y procesar todos los datos
   const fetchAndProcessData = useCallback(async () => {
@@ -233,16 +252,12 @@ export function useChartData(
 
       const transactions = await fetchTransactions();
 
-      // Procesar todos los datos en paralelo
-      const [employeeData] = await Promise.all([
-        processEmployeePerformance(),
-      ]);
-
+      // Procesar todos los datos (ya no async para employeeData)
       setIncomeVsExpenseData(processIncomeVsExpense(transactions));
       setCategoryDistributionData(processCategoryDistribution(transactions));
       setMonthlyTrendData(processMonthlyTrend(transactions));
       setLocationComparisonData(processLocationComparison(transactions));
-      setEmployeePerformanceData(employeeData);
+      setEmployeePerformanceData(processEmployeePerformance(transactions));
     } catch (err) {
       const error = err as Error;
       setError(error);
@@ -312,7 +327,64 @@ function getCategoryLabel(category: TransactionCategory): string {
   return labels[category] || category;
 }
 
-// Colores para gráficos de categorías
+// Agrupar categorías en grupos lógicos
+function getCategoryGroup(category: TransactionCategory): string {
+  const groups: Record<TransactionCategory, string> = {
+    // INGRESOS
+    appointment_payment: 'Servicios',
+    product_sale: 'Ventas',
+    tip: 'Propinas',
+    membership: 'Membresías',
+    package: 'Paquetes',
+    other_income: 'Otros Ingresos',
+    
+    // EGRESOS RECURRENTES
+    salary: 'Nómina',
+    commission: 'Nómina',
+    rent: 'Arriendos',
+    utilities: 'Servicios Públicos',
+    supplies: 'Insumos',
+    maintenance: 'Mantenimiento',
+    marketing: 'Marketing',
+    tax: 'Impuestos',
+    insurance: 'Seguros',
+    equipment: 'Equipamiento',
+    training: 'Capacitación',
+    other_expense: 'Otros Gastos',
+  };
+
+  return groups[category] || 'Otros';
+}
+
+// Colores para grupos de categorías
+function getGroupColor(group: string): string {
+  const colors: Record<string, string> = {
+    // Ingresos
+    'Servicios': '#10b981',
+    'Ventas': '#3b82f6',
+    'Propinas': '#06b6d4',
+    'Membresías': '#8b5cf6',
+    'Paquetes': '#14b8a6',
+    'Otros Ingresos': '#6366f1',
+    
+    // Egresos
+    'Nómina': '#ef4444',
+    'Arriendos': '#f97316',
+    'Servicios Públicos': '#fb923c',
+    'Insumos': '#fbbf24',
+    'Mantenimiento': '#facc15',
+    'Marketing': '#a855f7',
+    'Impuestos': '#dc2626',
+    'Seguros': '#ea580c',
+    'Equipamiento': '#d97706',
+    'Capacitación': '#c026d3',
+    'Otros Gastos': '#9ca3af',
+  };
+
+  return colors[group] || '#6b7280';
+}
+
+// Colores para gráficos de categorías individuales (LEGACY - mantener para compatibilidad)
 export function getCategoryColor(category: TransactionCategory): string {
   const colors: Record<TransactionCategory, string> = {
     // Ingresos (verdes/azules)

@@ -4,7 +4,6 @@
 -- =============================================================================
 
 DROP FUNCTION IF EXISTS public.get_client_dashboard_data(UUID, TEXT) CASCADE;
-
 CREATE OR REPLACE FUNCTION public.get_client_dashboard_data(
   p_client_id UUID,
   p_preferred_city_name TEXT DEFAULT NULL
@@ -209,11 +208,8 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) TO authenticated;
-
 COMMENT ON FUNCTION public.get_client_dashboard_data(UUID, TEXT) IS 'Consolidated client dashboard payload with city-name filtering and sorted suggestions.';
-
 -- =============================================================================
 -- END OF MIGRATION
--- =============================================================================
+-- =============================================================================;

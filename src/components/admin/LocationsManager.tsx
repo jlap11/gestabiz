@@ -33,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { BusinessHoursPicker, type BusinessHours } from '@/components/ui/BusinessHoursPicker'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { MediaUploader } from '@/components/ui/MediaUploader'
@@ -40,6 +41,7 @@ import { LocationProfileModal } from '@/components/admin/LocationProfileModal'
 import { BannerCropper } from '@/components/settings/BannerCropper'
 import { RegionSelect, CitySelect } from '@/components/catalog'
 import { LocationAddress } from '@/components/ui/LocationAddress'
+import { LocationExpenseConfig } from '@/components/admin/locations/LocationExpenseConfig'
 
 interface Location {
   id: string
@@ -98,6 +100,9 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
   const [isBannerCropperOpen, setIsBannerCropperOpen] = useState(false)
   const [bannerImageToEdit, setBannerImageToEdit] = useState<string | null>(null)
   const [selectedRegionId, setSelectedRegionId] = useState<string>('')
+  
+  // Estado para tabs
+  const [activeTab, setActiveTab] = useState<'info' | 'expenses'>('info')
   
   // Estado para manejar la subida de multimedia
   const [uploadMediaFn, setUploadMediaFn] = useState<(() => Promise<void>) | null>(null)
@@ -915,7 +920,17 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'info' | 'expenses')} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="info">Información</TabsTrigger>
+              <TabsTrigger value="expenses" disabled={!editingLocation}>
+                Egresos
+                {!editingLocation && <span className="ml-2 text-xs">(Guarda primero)</span>}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="info" className="mt-6">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Name */}
             <div>
               <Label htmlFor="name" className="text-sm sm:text-base">Nombre de la Sede *</Label>
@@ -1259,6 +1274,18 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               </Button>
             </DialogFooter>
           </form>
+            </TabsContent>
+
+            <TabsContent value="expenses" className="mt-6">
+              {editingLocation && (
+                <LocationExpenseConfig
+                  locationId={editingLocation.id}
+                  businessId={businessId}
+                  locationName={editingLocation.name}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 

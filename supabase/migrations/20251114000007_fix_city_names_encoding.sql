@@ -128,15 +128,13 @@ UPDATE cities SET name = 'SUPATÁ' WHERE id = 'ebe7f4eb-e7ff-4e57-a240-d0986a46e
 UPDATE cities SET name = 'TÁMESIS' WHERE id = 'af9a2a09-72f2-4b2e-958b-d3d595458a38';
 UPDATE cities SET name = 'CARACOLÍ' WHERE id = 'ebe3fe95-adca-4110-8982-d4212e401ce1';
 UPDATE cities SET name = 'VIGÍA DEL FUERTE' WHERE id = '4646c96e-13bd-42f7-b689-db19b3782959';
-
 -- =====================================================
 -- COMENTARIOS
 -- =====================================================
 COMMENT ON TABLE cities IS 'Tabla de ciudades - Nombres corregidos con encoding UTF-8 apropiado (2025-11-14)';
-
 -- =====================================================
 -- VERIFICACIÓN
 -- =====================================================
 -- Para verificar que los nombres se actualizaron correctamente:
 SELECT id, name FROM cities WHERE name LIKE '%�%' OR name LIKE '%Ã%' OR name LIKE '%Â%';
--- Si retorna 0 filas, la migración fue exitosa
+-- Si retorna 0 filas, la migración fue exitosa;

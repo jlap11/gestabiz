@@ -49,6 +49,7 @@ import type { Business } from '@/types/types'
 import { PhoneInput } from '@/components/ui/PhoneInput'
 import { BusinessNotificationSettings } from '../admin/settings/BusinessNotificationSettings'
 import { NotificationTracking } from '../admin/settings/NotificationTracking'
+import { BusinessRecurringExpenses } from '../admin/settings/BusinessRecurringExpenses'
 import { BusinessBranding } from '../admin/settings/BusinessBranding'
 
 interface CompleteUnifiedSettingsProps {
@@ -614,6 +615,12 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
             </CardContent>
           </Card>
+
+          {/* Egresos Recurrentes del Negocio */}
+          <BusinessRecurringExpenses 
+            businessId={business.id} 
+            businessName={business.name} 
+          />
 
           {/* Save Button */}
           <div className="flex justify-end">

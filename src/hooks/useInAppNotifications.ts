@@ -120,9 +120,11 @@ export function useInAppNotifications(
           filter: `user_id=eq.${userId}`
         },
         () => {
+          // Invalidar Y refetch para que el badge se actualice inmediatamente
           queryClient.invalidateQueries({
             queryKey: QUERY_CONFIG.KEYS.IN_APP_NOTIFICATIONS(userId)
           })
+          refetchQuery() // ⭐ Forzar refetch para actualizar unreadCount
         }
       )
       .subscribe()
@@ -134,7 +136,7 @@ export function useInAppNotifications(
         supabase.removeChannel(channelRef.current)
       }
     }
-  }, [userId, queryClient])
+  }, [userId, queryClient, refetchQuery])
 
   // ✅ Acciones
   const markAsRead = useCallback(async (notificationId: string) => {
