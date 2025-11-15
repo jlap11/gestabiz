@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Calendar, User as UserIcon, Plus, Clock, MapPin, Phone, Mail, FileText, List, CalendarDays, History, MessageCircle, X, Heart } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
@@ -135,7 +136,17 @@ export function ClientDashboard({
   user,
   initialBookingContext
 }: Readonly<ClientDashboardProps>) {
-  const [activePage, setActivePage] = useState('appointments')
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Función para extraer página de la URL
+  const getPageFromUrl = () => {
+    const path = location.pathname
+    const match = path.match(/\/app\/client\/([^/]+)/)
+    return match ? match[1] : 'appointments'
+  }
+  
+  const [activePage, setActivePage] = useState(getPageFromUrl())
   const [showAppointmentWizard, setShowAppointmentWizard] = useState(false)
   const [appointmentWizardBusinessId, setAppointmentWizardBusinessId] = useState<string | undefined>(undefined)
   const [appointmentToEdit, setAppointmentToEdit] = useState<AppointmentWithRelations | null>(null)
@@ -182,10 +193,26 @@ export function ClientDashboard({
   // ✅ FIX: Chat hook debe recibir SIEMPRE user.id (no condicional)
   // El lazy loading de queries se maneja internamente en useChat
   const { createOrGetConversation } = useChat(user.id)
+  
+  // Sincronizar activePage con URL
+  useEffect(() => {
+    const pageFromUrl = getPageFromUrl()
+    if (pageFromUrl !== activePage) {
+      setActivePage(pageFromUrl)
+    }
+  }, [location.pathname])
+  
+  // Redirigir de /app a /app/client/appointments
+  useEffect(() => {
+    if (location.pathname === '/app' || location.pathname === '/app/') {
+      navigate('/app/client/appointments', { replace: true })
+    }
+  }, [location.pathname, navigate])
 
   // Función para manejar cambios de página con contexto
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {
     setActivePage(page)
+    navigate(`/app/client/${page}`, { replace: true })
     // Context available for future use if needed
   }
 

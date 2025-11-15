@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff, Box } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
@@ -47,7 +48,17 @@ export function AdminDashboard({
   user
 }: Readonly<AdminDashboardProps>) {
   const { t } = useLanguage()
-  const [activePage, setActivePage] = useState('overview')
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // ✅ Extraer página activa de la URL (ej: /app/admin/appointments → 'appointments')
+  const getPageFromUrl = () => {
+    const path = location.pathname
+    const match = path.match(/\/app\/admin\/([^/]+)/)
+    return match ? match[1] : 'overview'
+  }
+  
+  const [activePage, setActivePage] = useState(getPageFromUrl())
   const [currentUser, setCurrentUser] = useState(user)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeHierarchy | null>(null)
   const [pageContext, setPageContext] = useState<Record<string, unknown>>({})
@@ -59,6 +70,21 @@ export function AdminDashboard({
   
   // Estado para nombre de la sede
   const [preferredLocationName, setPreferredLocationName] = useState<string | null>(null)
+  
+  // ✅ Sincronizar activePage con la URL
+  useEffect(() => {
+    const pageFromUrl = getPageFromUrl()
+    if (pageFromUrl !== activePage) {
+      setActivePage(pageFromUrl)
+    }
+  }, [location.pathname])
+  
+  // ✅ Redirigir a /app/admin/overview si estamos en /app
+  useEffect(() => {
+    if (location.pathname === '/app' || location.pathname === '/app/') {
+      navigate('/app/admin/overview', { replace: true })
+    }
+  }, [location.pathname, navigate])
   
   // Cargar ubicaciones y obtener nombre de la sede preferida
   useEffect(() => {
@@ -76,9 +102,10 @@ export function AdminDashboard({
     }
   }, [preferredLocationId, locations])
 
-  // Función para manejar cambios de página con contexto
+  // ✅ Función para manejar cambios de página con navegación de URL
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {
     setActivePage(page)
+    navigate(`/app/admin/${page}`, { replace: true })
     if (context) {
       setPageContext(context)
     } else {

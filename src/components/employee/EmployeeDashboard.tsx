@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Calendar, Clock, Briefcase, Search, CalendarOff } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
@@ -48,7 +49,17 @@ export function EmployeeDashboard({
   user,
   businessId
 }: Readonly<EmployeeDashboardProps>) {
-  const [activePage, setActivePage] = useState('employments')
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Función para extraer página de la URL
+  const getPageFromUrl = () => {
+    const path = location.pathname
+    const match = path.match(/\/app\/employee\/([^/]+)/)
+    return match ? match[1] : 'employments'
+  }
+  
+  const [activePage, setActivePage] = useState(getPageFromUrl())
   const [currentUser, setCurrentUser] = useState(user)
   const [showAbsenceModal, setShowAbsenceModal] = useState(false)
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null)
@@ -62,6 +73,21 @@ export function EmployeeDashboard({
   const effectiveBusinessId = selectedBusinessId || businessId || employeeBusinesses[0]?.id
   const { vacationBalance, refresh: refreshAbsences } = useEmployeeAbsences(effectiveBusinessId || '')
 
+  // Sincronizar activePage con URL
+  useEffect(() => {
+    const pageFromUrl = getPageFromUrl()
+    if (pageFromUrl !== activePage) {
+      setActivePage(pageFromUrl)
+    }
+  }, [location.pathname])
+  
+  // Redirigir de /app a /app/employee/employments
+  useEffect(() => {
+    if (location.pathname === '/app' || location.pathname === '/app/') {
+      navigate('/app/employee/employments', { replace: true })
+    }
+  }, [location.pathname, navigate])
+
   // Sincronizar selectedBusinessId cuando cambia businessId (desde MainApp)
   useEffect(() => {
     if (businessId && !selectedBusinessId) {
@@ -72,6 +98,7 @@ export function EmployeeDashboard({
   // Función para manejar cambios de página con contexto
   const handlePageChange = (page: string, context?: Record<string, unknown>) => {
     setActivePage(page)
+    navigate(`/app/employee/${page}`, { replace: true })
     // Aquí puedes usar el context si necesitas pasarlo a componentes hijos
     if (context) {
       // eslint-disable-next-line no-console

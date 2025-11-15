@@ -612,6 +612,7 @@ export const AppointmentsCalendar: React.FC<{ businessId?: string }> = ({ busine
           status,
           confirmed,
           notes,
+          service_id,
           employee_id,
           location_id,
           client_id,
@@ -1223,29 +1224,51 @@ export const AppointmentsCalendar: React.FC<{ businessId?: string }> = ({ busine
   // Filtrar citas según los filtros seleccionados
   const filteredAppointments = useMemo(() => {
     return appointments.filter(apt => {
-      // Filtro de estado - si está vacío, mostrar todas
-      if (filterStatus.length > 0 && !filterStatus.includes(apt.status)) {
+      // ✅ Filtro de estado - si está vacío, NO mostrar nada (requiere selección)
+      if (filterStatus.length === 0) {
+        return false;
+      }
+      if (!filterStatus.includes(apt.status)) {
         return false;
       }
 
-      // Filtro de ubicación - si está vacío, mostrar todas
-      if (filterLocation.length > 0 && !filterLocation.includes(apt.location_id || '')) {
+      // ✅ Filtro de ubicación - si está vacío, NO mostrar nada (requiere selección)
+      if (filterLocation.length === 0) {
+        return false;
+      }
+      if (!filterLocation.includes(apt.location_id || '')) {
         return false;
       }
 
-      // ✅ Filtro de servicio - comparar por service_id (no por nombre)
-      if (filterService.length > 0 && !filterService.includes(apt.service_id)) {
+      // ✅ Filtro de servicio - si está vacío, NO mostrar nada (requiere selección)
+      if (filterService.length === 0) {
+        return false;
+      }
+      if (!filterService.includes(apt.service_id)) {
         return false;
       }
 
-      // ✅ Filtro de empleado - si está vacío, mostrar todas
-      if (filterEmployee.length > 0 && !filterEmployee.includes(apt.employee_id)) {
+      // ✅ Filtro de empleado - si está vacío, NO mostrar nada (requiere selección)
+      if (filterEmployee.length === 0) {
+        return false;
+      }
+      if (!filterEmployee.includes(apt.employee_id)) {
         return false;
       }
 
       return true;
     });
   }, [appointments, filterStatus, filterLocation, filterService, filterEmployee]);
+
+  // ✅ Filtrar empleados a mostrar basado en filterEmployee
+  const employeesToDisplay = useMemo(() => {
+    // Si el filtro está vacío, no mostrar ningún empleado
+    if (filterEmployee.length === 0) {
+      return [];
+    }
+    // Mostrar solo empleados seleccionados en el filtro
+    return employees.filter(emp => filterEmployee.includes(emp.user_id));
+  }, [employees, filterEmployee]);
 
   // Pre-calcular mapa de citas por empleado y hora (OPTIMIZACIÓN: evita 24+ filtros por render)
   const appointmentsBySlot = useMemo(() => {
@@ -1745,13 +1768,24 @@ export const AppointmentsCalendar: React.FC<{ businessId?: string }> = ({ busine
         </div>
 
         <div className="overflow-x-auto">
-          <div className="inline-block min-w-full">
-            {/* Header with employee names */}
-            <div className="flex border-b-2 border-border bg-muted/50 sticky top-0 z-20">
-              <div className="w-20 flex-shrink-0 p-3 font-semibold text-sm text-muted-foreground border-r-2 border-border bg-background">
-                Hora
-              </div>
-              {employees.map((employee, index) => (
+          {employeesToDisplay.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <User className="h-16 w-16 text-muted-foreground/40 mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No hay profesionales seleccionados
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Selecciona al menos un profesional en el filtro "PROFESIONAL" para ver sus citas en el calendario.
+              </p>
+            </div>
+          ) : (
+            <div className="inline-block min-w-full">
+              {/* Header with employee names */}
+              <div className="flex border-b-2 border-border bg-muted/50 sticky top-0 z-20">
+                <div className="w-20 flex-shrink-0 p-3 font-semibold text-sm text-muted-foreground border-r-2 border-border bg-background">
+                  Hora
+                </div>
+                {employeesToDisplay.map((employee, index) => (
                 <div
                   key={employee.id}
                   className={`flex-1 min-w-[280px] p-3 border-r-2 border-border last:border-r-0 ${employeeColors[index % employeeColors.length]}`}
@@ -1823,7 +1857,7 @@ export const AppointmentsCalendar: React.FC<{ businessId?: string }> = ({ busine
                     <div className="w-20 flex-shrink-0 p-2 text-sm text-muted-foreground font-medium border-r-2 border-border bg-background">
                       {hour.toString().padStart(2, '0')}:00
                     </div>
-                    {employees.map((employee, index) => {
+                    {employeesToDisplay.map((employee, index) => {
                       const slotAppointments = getAppointmentsForSlot(employee.user_id, hour);
                       const isLunch = isLunchBreak(hour, employee);
                       
@@ -1879,10 +1913,11 @@ export const AppointmentsCalendar: React.FC<{ businessId?: string }> = ({ busine
               })}
             </div>
           </div>
+          )}
         </div>
       </div>
 
-      {/* Active and Overdue Appointments */}
+      {/* Appointment Modal */}
       {(activeAppointments.length > 0 || overdueAppointments.length > 0) && (
         <div className="grid md:grid-cols-2 gap-6">
           {/* Active Appointments */}
