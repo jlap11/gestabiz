@@ -1,3 +1,23 @@
+/**
+ * @deprecated Sistema LEGACY de permisos (22 permisos básicos)
+ * 
+ * ⚠️ DEPRECADO: Este módulo usa el sistema antiguo de permisos.
+ * Para nuevo código, usar: src/lib/permissions-v2.ts (55+ permisos granulares)
+ * 
+ * Este archivo se mantiene solo para compatibilidad temporal con código existente.
+ * Los componentes deben migrar gradualmente al sistema v2.0.
+ * 
+ * Fecha de deprecación: 16/11/2025
+ * Fecha de eliminación planeada: Q1 2026
+ * 
+ * Migración recomendada:
+ * - Reemplazar: import { hasPermission } from '@/lib/permissions'
+ * - Por: import { usePermissions } from '@/hooks/usePermissions'
+ * 
+ * @see src/lib/permissions-v2.ts - Sistema moderno con 55+ permisos
+ * @see docs/PLAN_ACCION_SISTEMA_PERMISOS.md - Plan de migración completo
+ */
+
 import { UserRole, Permission, RolePermissions } from '@/types'
 
 // Define permissions for each role
