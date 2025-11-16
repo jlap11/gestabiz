@@ -16,6 +16,7 @@ import {
   X,
   Save,
 } from 'lucide-react'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -752,6 +753,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
           <p className="text-muted-foreground text-xs sm:text-sm">Gestiona las ubicaciones de tu negocio</p>
         </div>
         <div className="flex gap-2">
+          <PermissionGate permission="locations.create" businessId={businessId} mode="hide">
           <Button
             onClick={() => handleOpenDialog()}
             className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
@@ -760,6 +762,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
             <span className="hidden sm:inline">Agregar Sede</span>
             <span className="sm:hidden">Nueva Sede</span>
           </Button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -772,6 +775,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
             <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
               Agrega tu primera sede para empezar a recibir citas
             </p>
+            <PermissionGate permission="locations.create" businessId={businessId} mode="hide">
             <Button
               onClick={() => handleOpenDialog()}
               className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
@@ -779,6 +783,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
               <Plus className="h-4 w-4 mr-2" />
               Crear Primera Sede
             </Button>
+            </PermissionGate>
           </CardContent>
         </Card>
       ) : (
@@ -833,6 +838,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                     )}
                   </div>
                   <div className="flex gap-1 sm:gap-2 flex-shrink-0">
+                    <PermissionGate permission="locations.edit" businessId={businessId} mode="hide">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -841,6 +847,8 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
+                    </PermissionGate>
+                    <PermissionGate permission="locations.delete" businessId={businessId} mode="hide">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -849,6 +857,7 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    </PermissionGate>
                   </div>
                 </div>
               </CardHeader>

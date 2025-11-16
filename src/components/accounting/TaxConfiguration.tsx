@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import {
   Select,
   SelectContent,
@@ -131,6 +132,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
             {t('taxConfiguration.subtitle')}
           </p>
         </div>
+        <PermissionGate permission="accounting.tax_config" businessId={businessId} mode="hide">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleReset} disabled={loading || !hasConfig}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -141,6 +143,7 @@ export function TaxConfiguration({ businessId }: TaxConfigurationProps) {
             {hasConfig ? t('common.actions.update') : t('common.actions.save')}
           </Button>
         </div>
+        </PermissionGate>
       </div>
 
       {/* Aviso de régimen simplificado */}

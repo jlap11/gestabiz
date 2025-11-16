@@ -10,6 +10,7 @@ import { Calculator, FileText, Settings } from 'lucide-react';
 import { SuspenseFallback } from '@/components/ui/loading-spinner';
 import { useTransactions } from '@/hooks/useTransactions';
 import { toast } from 'sonner';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 
 // Lazy load componentes pesados
 const TaxConfiguration = lazy(() => 
@@ -34,6 +35,7 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
   const { createFiscalTransaction } = useTransactions();
 
   return (
+    <PermissionGate permission="accounting.view" businessId={businessId} mode="block">
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -164,5 +166,6 @@ export function AccountingPage({ businessId, onUpdate }: AccountingPageProps) {
         </Card>
       </div>
     </div>
+    </PermissionGate>
   );
 }

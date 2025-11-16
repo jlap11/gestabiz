@@ -74,8 +74,8 @@ export function PermissionsManager({
   currentUserId 
 }: PermissionsManagerProps) {
   const { 
-    businessRoles, 
-    userPermissions,
+    businessUsers, // NUEVO: Usuarios con perfiles reales
+    loadingBusinessUsers, // NUEVO: Loading state
     isOwner: currentUserIsOwner,
     checkPermission,
     isLoading,
@@ -93,23 +93,23 @@ export function PermissionsManager({
   // Verificar permisos
   const canManagePermissions = checkPermission('permissions.view').hasPermission
 
-  // Datos simulados de usuarios (en producción vendrían de una query)
+  // FASE 4: Usuarios con datos REALES de profiles
   const users: UserWithRoles[] = useMemo(() => {
-    // Aquí iría la lógica para obtener usuarios del negocio
-    // Por ahora retornamos datos de businessRoles
-    return businessRoles.map(role => ({
-      id: role.user_id,
-      name: 'Usuario Ejemplo', // Obtener de profiles
-      email: 'usuario@ejemplo.com',
-      avatar_url: undefined,
-      role: role.role,
-      employee_type: role.employee_type,
-      is_owner: role.user_id === ownerId,
-      permissions_count: userPermissions.filter(p => p.user_id === role.user_id).length,
-      is_active: role.is_active,
-      assigned_at: role.assigned_at,
+    if (!businessUsers || loadingBusinessUsers) return []
+    
+    return businessUsers.map(user => ({
+      id: user.id,
+      name: user.full_name,
+      email: user.email,
+      avatar_url: user.avatar_url || undefined,
+      role: user.role as 'admin' | 'employee',
+      employee_type: user.employee_type as 'service_provider' | 'support_staff' | undefined,
+      is_owner: user.id === ownerId,
+      permissions_count: user.permissions_count,
+      is_active: user.is_active,
+      assigned_at: user.assigned_at,
     }))
-  }, [businessRoles, ownerId, userPermissions])
+  }, [businessUsers, loadingBusinessUsers, ownerId])
 
   // Filtrar usuarios
   const filteredUsers = useMemo(() => {

@@ -1,9 +1,73 @@
-// =====================================================
-// SISTEMA DE PERMISOS v2.0 - Gestabiz
-// Fecha: 13 de Octubre de 2025
-// =====================================================
-// IMPORTANTE: Solo existe rol 'admin', se diferencia Admin Dueño por user_id === businesses.owner_id
-// =====================================================
+/**
+ * =====================================================
+ * SISTEMA DE PERMISOS v2.0 - Gestabiz
+ * =====================================================
+ * 
+ * ARQUITECTURA DE ROLES (Actualizado: 16/11/2025 - Fase 2 COMPLETADA)
+ * 
+ * Esta arquitectura implementa el principio: "Admin = Employee con más permisos"
+ * 
+ * @version 2.0.0
+ * @date 16/11/2025
+ * 
+ * JERARQUÍA:
+ * 
+ * 1. OWNER (Dueño del Negocio)
+ *    - Usuario que creó el negocio (businesses.owner_id)
+ *    - Bypass TOTAL de permisos (puede hacer TODO)
+ *    - Automáticamente es admin + employee del negocio
+ *    - No requiere registro manual en business_roles o business_employees
+ * 
+ * 2. ADMIN (Administrador)
+ *    - Registrado en business_roles con role = 'admin'
+ *    - Automáticamente registrado en business_employees como 'manager'
+ *    - Trigger: trg_auto_insert_admin_as_employee() ejecuta el registro
+ *    - Tiene permisos elevados según template aplicado (42 permisos típicos)
+ *    - Puede gestionar empleados, finanzas, reportes, etc.
+ *    - 54 admins migrados automáticamente en Fase 2
+ * 
+ * 3. EMPLOYEE (Empleado)
+ *    - Registrado en business_employees (employee_id, business_id)
+ *    - Tiene permisos granulares según su rol/template
+ *    - Puede ofrecer servicios (offers_services = true)
+ *    - Roles típicos: manager, professional, receptionist, accountant
+ * 
+ * 4. CLIENT (Cliente)
+ *    - Usuario que reserva citas pero NO es empleado
+ *    - No tiene entrada en business_roles ni business_employees
+ *    - Permisos limitados: ver citas propias, editar perfil, favoritos
+ * 
+ * FLUJO DE ASIGNACIÓN:
+ * 
+ * 1. Owner contrata empleado:
+ *    INSERT INTO business_employees (employee_id, business_id, role, ...)
+ * 
+ * 2. Owner asigna rol admin a empleado:
+ *    INSERT INTO business_roles (user_id, business_id, role = 'admin', is_active = true)
+ *    → Trigger auto_insert_admin_as_employee() se dispara automáticamente
+ *    → INSERT/UPDATE en business_employees con role = 'manager'
+ * 
+ * 3. Sistema aplica template de permisos (Fase 3 - pendiente):
+ *    → INSERT en user_permissions con permisos del template "Admin Completo"
+ *    → 42 permisos asignados automáticamente
+ * 
+ * QUERIES IMPORTANTES:
+ * 
+ * - Obtener TODOS los empleados (incluyendo admins):
+ *   SELECT * FROM business_employees WHERE business_id = ?
+ * 
+ * - Verificar si usuario es admin:
+ *   SELECT 1 FROM business_roles WHERE user_id = ? AND business_id = ? AND role = 'admin'
+ * 
+ * - Verificar si usuario es owner:
+ *   SELECT 1 FROM businesses WHERE id = ? AND owner_id = ?
+ * 
+ * - Obtener permisos de usuario:
+ *   SELECT permission FROM user_permissions WHERE user_id = ? AND business_id = ?
+ * 
+ * @see docs/FASE_2_ADMIN_EMPLOYEE_PLAN.md
+ * @see docs/ARQUITECTURA_ROLES_Y_PERMISOS.md (pendiente creación)
+ */
 
 import { Permission, BusinessRole, UserPermission } from '@/types/types'
 

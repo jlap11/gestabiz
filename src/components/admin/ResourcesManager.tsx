@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, DollarSign, MapPin, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import {
   Card,
   CardContent,
@@ -217,10 +218,12 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             {t('businessResources.subtitle')}
           </p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('businessResources.addResource')}
-        </Button>
+        <PermissionGate permission="resources.create" businessId={business.id} mode="hide">
+          <Button onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('businessResources.addResource')}
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Filtros */}
@@ -259,12 +262,14 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 {t('businessResources.noResources')}{' '}
-                <button
-                  onClick={handleCreate}
-                  className="text-primary hover:underline"
-                >
-                  {t('common.actions.create')}
-                </button>
+                <PermissionGate permission="resources.create" businessId={business.id} mode="hide">
+                  <button
+                    onClick={handleCreate}
+                    className="text-primary hover:underline"
+                  >
+                    {t('common.actions.create')}
+                  </button>
+                </PermissionGate>
               </p>
             </div>
           )}
@@ -327,20 +332,24 @@ export function ResourcesManager({ business }: Readonly<ResourcesManagerProps>) 
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(resource)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(resource.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <PermissionGate permission="resources.edit" businessId={business.id} mode="hide">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(resource)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </PermissionGate>
+                        <PermissionGate permission="resources.delete" businessId={business.id} mode="hide">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(resource.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </PermissionGate>
                       </div>
                     </TableCell>
                   </TableRow>

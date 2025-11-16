@@ -401,19 +401,32 @@
   - Default → rol CLIENT
 - **⚠️ IMPORTANTE**: Si ves "Multiple GoTrueClient instances detected", algo está llamando `useAuthSimple()` directamente o creando clientes Supabase adicionales. SIEMPRE usar el cliente singleton de `src/lib/supabase.ts`
 
-### Sistema de Roles Dinámicos ⭐ CRÍTICO
-**Los roles NO se guardan en la base de datos - se calculan dinámicamente**
+### Sistema de Roles Dinámicos ⭐ ACTUALIZADO (16/11/2025)
+**Admin = Employee + Permisos (Fase 2 COMPLETADA)**
 
-- **ADMIN**: Usuario es `owner_id` de un negocio en `businesses`
-- **EMPLOYEE**: Siempre disponible (todos pueden solicitar unirse a un negocio)
+- **OWNER**: Usuario es `owner_id` de un negocio en `businesses` (bypass total de permisos)
+- **ADMIN**: 
+  - Registrado en `business_roles` con `role = 'admin'`
+  - **Automáticamente** registrado en `business_employees` como `manager` (trigger: `trg_auto_insert_admin_as_employee`)
+  - Tiene permisos elevados según template aplicado (42 permisos típicos)
+  - ✅ **54 admins migrados** automáticamente en Fase 2
+- **EMPLOYEE**: Registrado en `business_employees` (puede ofrecer servicios)
   - Si existe en `business_employees`: acceso completo
   - Si no existe: verá onboarding para unirse
 - **CLIENT**: Siempre disponible (todos pueden reservar citas)
+  - No tiene entrada en business_roles ni business_employees
 - **Acceso universal**: TODOS los usuarios tienen acceso a los 3 roles
 - **Multi-negocio**: Un usuario puede ser admin de negocio A, employee de negocio B, y client en cualquier negocio
 - **Hook**: `useUserRoles` calcula roles disponibles dinámicamente
 - **Persistencia**: Solo el rol activo se guarda en localStorage
-- **Ver**: `DYNAMIC_ROLES_SYSTEM.md`
+
+**IMPORTANTE - Fase 2**: 
+- Trigger `trg_auto_insert_admin_as_employee` mantiene sincronía business_roles ↔ business_employees
+- NO crear manualmente admins en business_employees (trigger lo hace automáticamente)
+- Query empleados: SIEMPRE desde `business_employees` (incluye admins como 'manager')
+- Backfill histórico: 54 admins migrados exitosamente (0 faltantes)
+
+- **Ver**: `DYNAMIC_ROLES_SYSTEM.md`, `docs/FASE_2_ADMIN_EMPLOYEE_PLAN.md`
 
 ### Cliente Supabase Singleton ⭐ CRÍTICO
 **UN SOLO cliente para toda la aplicación**

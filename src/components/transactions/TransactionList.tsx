@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import {
   Select,
   SelectContent,
@@ -199,6 +200,7 @@ export function TransactionList({
           </Select>
 
           {/* Export Button */}
+          <PermissionGate permission="accounting.export" businessId={businessId} mode="hide">
           <Button 
             variant="outline" 
             onClick={handleExport}
@@ -208,6 +210,7 @@ export function TransactionList({
             <span className="hidden sm:inline">{t('common.export')}</span>
             <span className="sm:hidden">Export</span>
           </Button>
+          </PermissionGate>
         </div>
       </Card>
 

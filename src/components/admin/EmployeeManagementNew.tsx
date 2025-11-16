@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
- 
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
@@ -351,6 +351,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
+                            <PermissionGate permission="employees.delete" mode="hide">
                             <Button
                               size="sm"
                               variant="outline"
@@ -358,6 +359,7 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                             >
                               <Trash className="w-4 h-4" />
                             </Button>
+                            </PermissionGate>
                           </div>
                         </TableCell>
                       </TableRow>

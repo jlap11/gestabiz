@@ -9,6 +9,7 @@ import { SuspenseFallback } from '@/components/ui/loading-spinner';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { usePreferredLocation } from '@/hooks/usePreferredLocation';
 import { Label } from '@/components/ui/label';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import {
   Select,
   SelectContent,
@@ -56,6 +57,7 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
     setSelectedLocationId(value === 'all' ? undefined : value);
   };
   return (
+    <PermissionGate permission="reports.view_financial" businessId={businessId} mode="block">
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -108,5 +110,6 @@ export function ReportsPage({ businessId, locationId: initialLocationId, user }:
         />
       </Suspense>
     </div>
+    </PermissionGate>
   );
 }

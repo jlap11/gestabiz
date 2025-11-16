@@ -70,6 +70,66 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
   })
 
   /**
+   * Obtiene TODOS los usuarios del negocio con sus perfiles (Fase 4: Real Data)
+   * - Incluye nombre, email, avatar desde profiles
+   * - Cuenta permisos activos por usuario
+   */
+  const { data: businessUsers, isLoading: loadingBusinessUsers } = useQuery({
+    queryKey: ['business-users-with-profiles', businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('business_roles')
+        .select(`
+          user_id,
+          role,
+          employee_type,
+          is_active,
+          assigned_at,
+          profiles!business_roles_user_id_fkey (
+            id,
+            full_name,
+            email,
+            avatar_url
+          )
+        `)
+        .eq('business_id', businessId)
+        .eq('is_active', true)
+        .order('assigned_at', { ascending: false })
+
+      if (error) throw error
+
+      // Mapear y agregar conteo de permisos
+      const usersWithProfiles = await Promise.all(
+        (data || []).map(async (role) => {
+          // Contar permisos activos del usuario
+          const { count } = await supabase
+            .from('user_permissions')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', role.user_id)
+            .eq('business_id', businessId)
+            .eq('is_active', true)
+
+          return {
+            id: role.user_id,
+            full_name: role.profiles?.full_name || 'Usuario sin nombre',
+            email: role.profiles?.email || 'sin-email@gestabiz.com',
+            avatar_url: role.profiles?.avatar_url,
+            role: role.role,
+            employee_type: role.employee_type,
+            is_active: role.is_active,
+            assigned_at: role.assigned_at,
+            permissions_count: count || 0,
+          }
+        })
+      )
+
+      return usersWithProfiles
+    },
+    enabled: !!businessId,
+    staleTime: 5 * 60 * 1000, // 5 minutos (estable)
+  })
+
+  /**
    * Obtiene permisos del usuario en el negocio
    */
   const { data: userPermissions, isLoading: loadingPermissions } = useQuery({
@@ -217,6 +277,7 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
 
   /**
    * Asignar rol a usuario
+   * FASE 3: Con auto-aplicación de template
    */
   const assignRole = useMutation({
     mutationFn: async ({
@@ -224,12 +285,15 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
       role,
       employeeType,
       notes,
+      templateId, // NUEVO: ID del template a aplicar automáticamente
     }: {
       targetUserId: string
       role: 'admin' | 'employee'
       employeeType?: 'service_provider' | 'support_staff'
       notes?: string
+      templateId?: string // Opcional: si no se provee, usar template por defecto
     }) => {
+      // Paso 1: Insertar rol en business_roles
       const { data, error } = await supabase
         .from('business_roles')
         .insert({
@@ -244,11 +308,61 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
         .single()
 
       if (error) throw error
+
+      // Paso 2: Auto-aplicar template si se especificó o usar default
+      if (templateId || role === 'admin') {
+        // Si es admin sin template especificado, usar "Admin Completo"
+        let finalTemplateId = templateId
+
+        if (!finalTemplateId && role === 'admin') {
+          // Buscar template "Admin Completo"
+          const { data: adminTemplate } = await supabase
+            .from('permission_templates')
+            .select('id')
+            .eq('name', 'Admin Completo')
+            .eq('is_system_template', true)
+            .single()
+
+          finalTemplateId = adminTemplate?.id
+        }
+
+        // Aplicar template si se encontró
+        if (finalTemplateId) {
+          const { data: template, error: templateError } = await supabase
+            .from('permission_templates')
+            .select('permissions')
+            .eq('id', finalTemplateId)
+            .single()
+
+          if (!templateError && template) {
+            const permissions = template.permissions as string[]
+
+            // Insertar permisos en batch
+            const permissionInserts = permissions.map((permission) => ({
+              user_id: targetUserId,
+              business_id: businessId,
+              permission,
+              granted_by: userId,
+            }))
+
+            const { error: permError } = await supabase
+              .from('user_permissions')
+              .insert(permissionInserts)
+
+            if (permError) {
+              console.warn('Error al aplicar permisos del template:', permError)
+              // No lanzar error, el rol ya fue creado exitosamente
+            }
+          }
+        }
+      }
+
       return data as BusinessRole
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-roles'] })
       queryClient.invalidateQueries({ queryKey: ['permission-audit-log'] })
+      queryClient.invalidateQueries({ queryKey: ['user-permissions'] }) // NUEVO: Invalidar permisos
     },
   })
 
@@ -436,6 +550,12 @@ export function usePermissions({ userId, businessId, ownerId }: UsePermissionsOp
     activePermissions,
     templates: templates || [],
     auditLog: auditLog || [],
+    businessUsers: businessUsers || [], // NUEVO (Fase 4): Usuarios con perfiles
+
+    // Loading states
+    loadingTemplates,
+    loadingAuditLog,
+    loadingBusinessUsers, // NUEVO (Fase 4): Loading de usuarios
 
     // Verificaciones
     checkPermission,

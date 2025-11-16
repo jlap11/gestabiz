@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { Plus, Briefcase, History } from 'lucide-react'
 import { VacancyList } from './VacancyList'
 import { ApplicationsManagement } from './ApplicationsManagement'
@@ -87,10 +88,12 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatS
             Gestiona vacantes y aplicaciones de candidatos
           </p>
         </div>
-        <Button onClick={() => setShowCreateVacancy(true)} size="lg">
-          <Plus className="h-5 w-5 mr-2" />
-          Nueva Vacante
-        </Button>
+        <PermissionGate permission="recruitment.create_vacancy" businessId={businessId} mode="hide">
+          <Button onClick={() => setShowCreateVacancy(true)} size="lg">
+            <Plus className="h-5 w-5 mr-2" />
+            Nueva Vacante
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Tabs */}

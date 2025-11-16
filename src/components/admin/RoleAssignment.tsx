@@ -58,7 +58,7 @@ export function RoleAssignment({
   onClose,
   onSuccess,
 }: RoleAssignmentProps) {
-  const { assignRole, revokeRole, isOwner } = usePermissions({
+  const { assignRole, revokeRole, isOwner, templates, loadingTemplates } = usePermissions({
     userId: currentUserId,
     businessId,
     ownerId,
@@ -67,8 +67,25 @@ export function RoleAssignment({
   // Estados
   const [selectedRole, setSelectedRole] = useState<RoleType>('employee')
   const [employeeType, setEmployeeType] = useState<EmployeeType>('service_provider')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('') // NUEVO: Template seleccionado
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Filtrar templates según el rol seleccionado
+  const availableTemplates = React.useMemo(() => {
+    if (!templates) return []
+    return templates.filter(t => t.role === selectedRole && t.is_system_template)
+  }, [templates, selectedRole])
+
+  // Auto-seleccionar "Admin Completo" cuando se selecciona rol admin
+  useEffect(() => {
+    if (selectedRole === 'admin' && availableTemplates.length > 0 && !selectedTemplateId) {
+      const adminTemplate = availableTemplates.find(t => t.name === 'Admin Completo')
+      if (adminTemplate) {
+        setSelectedTemplateId(adminTemplate.id)
+      }
+    }
+  }, [selectedRole, availableTemplates, selectedTemplateId])
 
   // Inicializar con valores actuales
   useEffect(() => {
@@ -103,6 +120,7 @@ export function RoleAssignment({
                 role: selectedRole,
                 employeeType: selectedRole === 'employee' ? employeeType : undefined,
                 notes,
+                templateId: selectedTemplateId || undefined, // NUEVO: Pasar templateId
               },
               {
                 onSuccess: () => {
@@ -138,6 +156,7 @@ export function RoleAssignment({
           role: selectedRole,
           employeeType: selectedRole === 'employee' ? employeeType : undefined,
           notes,
+          templateId: selectedTemplateId || undefined, // NUEVO: Pasar templateId
         },
         {
           onSuccess: () => {
@@ -255,6 +274,62 @@ export function RoleAssignment({
                 </div>
               </RadioGroup>
             </div>
+
+            {/* NUEVO: Selector de Template de Permisos (solo para admin) */}
+            {selectedRole === 'admin' && (
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">
+                  Template de Permisos
+                  <span className="ml-2 text-xs text-muted-foreground font-normal">
+                    ({availableTemplates.length} disponibles)
+                  </span>
+                </Label>
+                {loadingTemplates ? (
+                  <div className="flex items-center justify-center p-4 border rounded-lg">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-sm text-muted-foreground">Cargando templates...</span>
+                  </div>
+                ) : availableTemplates.length === 0 ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      No hay templates de permisos disponibles. Los permisos deberán asignarse manualmente.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <RadioGroup 
+                    value={selectedTemplateId} 
+                    onValueChange={setSelectedTemplateId}
+                  >
+                    {availableTemplates.map(template => (
+                      <div 
+                        key={template.id}
+                        className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <RadioGroupItem value={template.id} id={`template-${template.id}`} className="mt-1" />
+                        <Label htmlFor={`template-${template.id}`} className="flex-1 cursor-pointer">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold">{template.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {(template.permissions as string[]).length} permisos
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {template.description}
+                          </p>
+                          {template.name === 'Admin Completo' && (
+                            <div className="mt-2 flex items-center gap-1 text-xs text-primary">
+                              <Crown className="h-3 w-3" />
+                              <span className="font-medium">Recomendado para administradores</span>
+                            </div>
+                          )}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
+              </div>
+            )}
 
             {/* Tipo de empleado (solo si rol es employee) */}
             {selectedRole === 'employee' && (

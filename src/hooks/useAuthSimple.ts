@@ -84,6 +84,10 @@ export function useAuthSimple() {
     error: null,
   })
 
+  // Business context for permissions
+  const [currentBusinessId, setCurrentBusinessId] = useState<string | undefined>()
+  const [businessOwnerId, setBusinessOwnerId] = useState<string | undefined>()
+
   debugLog('🔄 useAuthSimple state:', state)
 
   useEffect(() => {
@@ -210,6 +214,60 @@ export function useAuthSimple() {
     }
   }, [])
 
+  // Fetch business context when user changes
+  useEffect(() => {
+    const fetchBusinessContext = async () => {
+      if (!state.user?.id) {
+        setCurrentBusinessId(undefined)
+        setBusinessOwnerId(undefined)
+        return
+      }
+
+      try {
+        // Read active business from localStorage (set by useUserRoles)
+        const ACTIVE_ROLE_KEY = 'user-active-role'
+        const storageKey = `${ACTIVE_ROLE_KEY}:${state.user.id}`
+        const storedContext = localStorage.getItem(storageKey)
+        
+        if (storedContext) {
+          const parsed = JSON.parse(storedContext)
+          const businessId = parsed.businessId
+          
+          if (businessId) {
+            setCurrentBusinessId(businessId)
+
+            // Query owner_id from businesses table
+            const { data: business, error } = await supabase
+              .from('businesses')
+              .select('owner_id')
+              .eq('id', businessId)
+              .single()
+
+            if (!error && business) {
+              setBusinessOwnerId(business.owner_id)
+              debugLog('✅ Business context loaded:', { businessId, ownerId: business.owner_id })
+            } else {
+              debugLog('⚠️ Failed to fetch business owner:', error)
+              setBusinessOwnerId(undefined)
+            }
+          } else {
+            setCurrentBusinessId(undefined)
+            setBusinessOwnerId(undefined)
+          }
+        } else {
+          setCurrentBusinessId(undefined)
+          setBusinessOwnerId(undefined)
+        }
+      } catch (error) {
+        debugLog('💥 Error fetching business context:', error)
+        setCurrentBusinessId(undefined)
+        setBusinessOwnerId(undefined)
+      }
+    }
+
+    void fetchBusinessContext()
+  }, [state.user?.id])
+
   const signOut = async () => {
     debugLog('👋 Signing out...')
     await supabase.auth.signOut()
@@ -217,6 +275,8 @@ export function useAuthSimple() {
 
   return {
     ...state,
-    signOut
+    signOut,
+    currentBusinessId,
+    businessOwnerId
   }
 }

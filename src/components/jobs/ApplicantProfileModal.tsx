@@ -17,7 +17,6 @@ import { CheckCircle } from '@phosphor-icons/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
-  CheckCircle,
   XCircle,
   Mail,
   Phone,

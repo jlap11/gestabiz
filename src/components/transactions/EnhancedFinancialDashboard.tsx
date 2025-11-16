@@ -12,6 +12,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import supabase from '@/lib/supabase';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import {
   Select,
   SelectContent,
@@ -218,6 +219,7 @@ export function EnhancedFinancialDashboard({
               {t('financial.dashboardDescription')}
             </p>
           </div>
+          <PermissionGate permission="accounting.export" businessId={businessId} mode="hide">
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="h-4 w-4 mr-2" />
@@ -232,6 +234,7 @@ export function EnhancedFinancialDashboard({
               PDF
             </Button>
           </div>
+          </PermissionGate>
         </div>
 
         {/* Filters Row */}

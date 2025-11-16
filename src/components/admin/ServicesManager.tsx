@@ -13,6 +13,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
@@ -676,14 +677,16 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
             <Label htmlFor="show-inactive" className="text-xs sm:text-sm">Mostrar inactivos</Label>
             <Switch id="show-inactive" checked={showInactive} onCheckedChange={setShowInactive} />
           </div>
-          <Button
-            onClick={() => handleOpenDialog()}
-            className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Agregar Servicio</span>
-            <span className="sm:hidden">Nuevo Servicio</span>
-          </Button>
+          <PermissionGate permission="services.create" businessId={businessId} mode="hide">
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px]"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Agregar Servicio</span>
+              <span className="sm:hidden">Nuevo Servicio</span>
+            </Button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -697,13 +700,15 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
             <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
               Agrega tu primer servicio para que los clientes puedan reservar citas
             </p>
-            <Button
-              onClick={() => handleOpenDialog()}
-              className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primer Servicio
-            </Button>
+            <PermissionGate permission="services.create" businessId={businessId} mode="hide">
+              <Button
+                onClick={() => handleOpenDialog()}
+                className="bg-primary hover:bg-primary/90 min-h-[44px] w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Crear Primer Servicio
+              </Button>
+            </PermissionGate>
           </CardContent>
         </Card>
         ) : (
@@ -737,15 +742,17 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
 
                 <div className="absolute top-2 right-2 z-20 flex gap-1 sm:gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-white/80 hover:bg-white text-gray-800 hover:text-gray-900 rounded-full shadow"
-                    onClick={(e) => { e.stopPropagation(); handleOpenDialog(service) }}
-                    title="Editar"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
+                  <PermissionGate permission="services.edit" businessId={businessId} mode="hide">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="bg-white/80 hover:bg-white text-gray-800 hover:text-gray-900 rounded-full shadow"
+                      onClick={(e) => { e.stopPropagation(); handleOpenDialog(service) }}
+                      title="Editar"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </PermissionGate>
                   {!service.is_active && (
                     <Button
                       variant="ghost"
@@ -757,15 +764,17 @@ export function ServicesManager({ businessId }: ServicesManagerProps) {
                       <RotateCcw className="h-4 w-4" />
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-white/80 hover:bg-white text-red-600 hover:text-red-700 rounded-full shadow"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(service.id) }}
-                    title="Eliminar"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <PermissionGate permission="services.delete" businessId={businessId} mode="hide">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="bg-white/80 hover:bg-white text-red-600 hover:text-red-700 rounded-full shadow"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(service.id) }}
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </PermissionGate>
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 z-10 p-3 sm:p-4">
