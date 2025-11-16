@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Review } from '@/types/types';
 
 interface ReviewCardProps {
   review: Review;
+  businessId?: string; // Para PermissionGate
   canRespond?: boolean; // Admin/owner can respond
   canModerate?: boolean; // Admin/owner can delete/hide
   onRespond?: (reviewId: string, response: string) => Promise<void>;
@@ -20,6 +22,7 @@ interface ReviewCardProps {
 
 export function ReviewCard({
   review,
+  businessId,
   canRespond = false,
   canModerate = false,
   onRespond,
@@ -105,37 +108,39 @@ export function ReviewCard({
         </div>
 
         {/* Actions for moderators */}
-        {canModerate && (
-          <div className="flex items-center gap-1">
-            {onToggleVisibility && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onToggleVisibility(review.id, !review.is_visible)}
-                title={review.is_visible ? t('reviews.hide') : t('reviews.show')}
-              >
-                {review.is_visible ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (confirm(t('reviews.confirmDelete'))) {
-                    onDelete(review.id);
-                  }
-                }}
-                title={t('reviews.delete')}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            )}
-          </div>
+        {canModerate && businessId && (
+          <PermissionGate permission="reviews.moderate" businessId={businessId} mode="hide">
+            <div className="flex items-center gap-1">
+              {onToggleVisibility && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onToggleVisibility(review.id, !review.is_visible)}
+                  title={review.is_visible ? t('reviews.hide') : t('reviews.show')}
+                >
+                  {review.is_visible ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm(t('reviews.confirmDelete'))) {
+                      onDelete(review.id);
+                    }
+                  }}
+                  title={t('reviews.delete')}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              )}
+            </div>
+          </PermissionGate>
         )}
       </div>
 
@@ -215,15 +220,17 @@ export function ReviewCard({
           )}
         </div>
 
-        {canRespond && !review.response && !isResponding && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsResponding(true)}
-          >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            {t('reviews.respond')}
-          </Button>
+        {canRespond && !review.response && !isResponding && businessId && (
+          <PermissionGate permission="reviews.moderate" businessId={businessId} mode="hide">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsResponding(true)}
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              {t('reviews.respond')}
+            </Button>
+          </PermissionGate>
         )}
       </div>
     </Card>

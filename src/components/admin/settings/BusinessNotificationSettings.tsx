@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { 
   Bell, 
   Clock, 
@@ -602,13 +603,15 @@ export function BusinessNotificationSettings({ businessId }: { businessId: strin
         >
           Descartar cambios
         </Button>
-        <Button 
-          onClick={saveSettings} 
-          disabled={saving}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
-          {saving ? 'Guardando...' : 'Guardar configuración'}
-        </Button>
+        <PermissionGate permission="settings.edit_notifications" businessId={businessId} mode="disable">
+          <Button 
+            onClick={saveSettings} 
+            disabled={saving}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            {saving ? 'Guardando...' : 'Guardar configuración'}
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   )

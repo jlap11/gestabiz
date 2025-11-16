@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Building2, Save, Bell, History } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -266,14 +267,16 @@ export function BusinessSettings({ business, onUpdate }: Readonly<BusinessSettin
 
         {/* Save Button */}
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Guardando...' : 'Guardar Cambios'}
-          </Button>
+          <PermissionGate permission="settings.edit" businessId={business.id} mode="disable">
+            <Button
+              type="submit"
+              disabled={isSaving}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+            </Button>
+          </PermissionGate>
         </div>
       </form>
         </TabsContent>

@@ -210,6 +210,7 @@ export function ReviewList({
           <ReviewCard
             key={review.id}
             review={review}
+            businessId={businessId}
             canRespond={canRespond}
             canModerate={canModerate}
             onRespond={async (reviewId: string, response: string) => {

@@ -41,9 +41,10 @@ interface EmployeeRequest {
 
 interface EmployeeManagementProps {
   user: User
+  businessId?: string
 }
 
-export default function EmployeeManagement({ user }: Readonly<EmployeeManagementProps>) {
+export default function EmployeeManagement({ user, businessId }: Readonly<EmployeeManagementProps>) {
   const { t } = useLanguage()
   const [users] = useKV<User[]>('users', [])
   const [employeeRequests, setEmployeeRequests] = useKV<EmployeeRequest[]>(`employee-requests-${user.business_id || user.id}`, [])
@@ -243,26 +244,31 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleApproveEmployee(request)}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Check className="w-4 h-4 mr-2" />
-                          {t('employee.approve')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedRequest(request)
-                            setShowRejectionDialog(true)
-                          }}
-                          className="border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          {t('employee.reject')}
-                        </Button>
+                        <PermissionGate permission="employees.approve" businessId={businessId || user.business_id || user.id} mode="hide">
+                          <Button
+                            size="sm"
+                            onClick={() => handleApproveEmployee(request)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Check className="w-4 h-4 mr-2" />
+                            {t('employee.approve')}
+                          </Button>
+                        </PermissionGate>
+                        </PermissionGate>
+                        <PermissionGate permission="employees.reject" businessId={businessId || user.business_id || user.id} mode="hide">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedRequest(request)
+                              setShowRejectionDialog(true)
+                            }}
+                            className="border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            {t('employee.reject')}
+                          </Button>
+                        </PermissionGate>
                       </div>
                     </div>
                   ))}
@@ -351,14 +357,14 @@ export default function EmployeeManagement({ user }: Readonly<EmployeeManagement
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <PermissionGate permission="employees.delete" mode="hide">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRemoveEmployee(employee.id)}
-                            >
-                              <Trash className="w-4 h-4" />
-                            </Button>
+                            <PermissionGate permission="employees.delete" businessId={businessId || user.business_id || user.id} mode="hide">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRemoveEmployee(employee.id)}
+                              >
+                                <Trash className="w-4 h-4" />
+                              </Button>
                             </PermissionGate>
                           </div>
                         </TableCell>

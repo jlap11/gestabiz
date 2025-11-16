@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExpenseRegistrationForm } from './ExpenseRegistrationForm';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import { toast } from 'sonner';
 import {
   ArrowDownCircle,
@@ -248,10 +249,12 @@ export const ExpensesManagementPage: React.FC<ExpensesManagementPageProps> = ({ 
             Registra y administra todos los egresos de tu negocio
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Egreso
-        </Button>
+        <PermissionGate permission="accounting.create" businessId={businessId} mode="hide">
+          <Button onClick={() => setShowForm(!showForm)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Egreso
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Stats Cards */}

@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -326,15 +327,19 @@ export function BillingDashboard({ businessId }: Readonly<BillingDashboardProps>
               })}
 
               <div className="pt-4 space-x-2">
-                <Button onClick={() => setShowUpgradeModal(true)}>
-                  Actualizar Plan
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowCancelModal(true)}
-                >
-                  Cancelar Suscripción
-                </Button>
+                <PermissionGate permission="billing.manage" businessId={businessId} mode="hide">
+                  <Button onClick={() => setShowUpgradeModal(true)}>
+                    Actualizar Plan
+                  </Button>
+                </PermissionGate>
+                <PermissionGate permission="billing.manage" businessId={businessId} mode="hide">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowCancelModal(true)}
+                  >
+                    Cancelar Suscripción
+                  </Button>
+                </PermissionGate>
               </div>
             </CardContent>
           </Card>
