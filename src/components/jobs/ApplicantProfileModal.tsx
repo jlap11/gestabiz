@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CheckCircle } from '@phosphor-icons/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -187,8 +188,8 @@ export function ApplicantProfileModal({
                           {workTypeLabels[profile.preferred_work_type]}
                         </Badge>
                         {profile.available_for_hire && (
-                          <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                            ✓ Disponible para contratación
+                          <p className="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-2">
+                            <CheckCircle size={16} weight="fill" /> Disponible para contratación
                           </p>
                         )}
                       </CardContent>

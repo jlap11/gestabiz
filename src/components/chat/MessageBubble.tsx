@@ -2,6 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Pencil, Reply, Trash2, Download } from 'lucide-react';
+import { PushPin, ProhibitInset } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageStatus } from './MessageStatus';
@@ -146,14 +147,15 @@ export function MessageBubble({
           {/* Indicador de mensaje fijado */}
           {message.is_pinned && !isDeleted && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-              <span className="font-medium">📌 Mensaje fijado</span>
+              <PushPin size={14} weight="fill" />
+              <span className="font-medium">Mensaje fijado</span>
             </div>
           )}
 
           {/* Contenido del mensaje con highlight (usa 'body' en vez de 'content') */}
           <p className="text-sm sm:text-base whitespace-pre-wrap break-words">
             {isDeleted 
-              ? '🚫 Mensaje eliminado' 
+              ? <span className="flex items-center gap-1 opacity-50"><ProhibitInset size={16} weight="fill" /> Mensaje eliminado</span>
               : highlightText(message.body || '', searchQuery)
             }
           </p>

@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Star, MapPin, Heart, Loader2 } from 'lucide-react';
+import { Lightbulb } from '@phosphor-icons/react';
 import BusinessProfile from '@/components/business/BusinessProfile';
 
 interface FavoritesListProps {
@@ -159,8 +160,8 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
 
         {/* Info adicional */}
         <div className="bg-muted/50 border border-border rounded-lg p-4 text-sm text-muted-foreground">
-          <p>
-            💡 <strong className="text-foreground">Tip:</strong> {t('favoritesList.tipDescription')}
+          <p className="flex items-center gap-2">
+            <Lightbulb size={18} weight="fill" /> <strong className="text-foreground">Tip:</strong> {t('favoritesList.tipDescription')}
           </p>
         </div>
       </div>

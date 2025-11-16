@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Star, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
@@ -555,18 +556,18 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
                 variant={recommend === true ? 'default' : 'outline'}
                 onClick={() => setRecommend(true)}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 flex items-center gap-2"
               >
-                👍 Sí, lo recomiendo
+                <ThumbsUp size={18} weight="fill" /> Sí, lo recomiendo
               </Button>
               <Button
                 type="button"
                 variant={recommend === false ? 'destructive' : 'outline'}
                 onClick={() => setRecommend(false)}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 flex items-center gap-2"
               >
-                👎 No lo recomiendo
+                <ThumbsDown size={18} weight="fill" /> No lo recomiendo
               </Button>
             </div>
           </div>

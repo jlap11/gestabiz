@@ -133,10 +133,10 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
   }
 
   const formatPaymentMethod = (method: string) => {
-    const methods: Record<string, string> = {
-      cash: '💵 Efectivo',
-      card: '💳 Tarjeta',
-      transfer: '🏦 Transferencia',
+    const paymentMethodLabels: Record<string, React.ReactNode> = {
+      cash: <span className="flex items-center gap-2"><Money size={16} weight="fill" /> Efectivo</span>,
+      card: <span className="flex items-center gap-2"><CreditCard size={16} weight="fill" /> Tarjeta</span>,
+      transfer: <span className="flex items-center gap-2"><Bank size={16} weight="fill" /> Transferencia</span>,
     }
     return methods[method] || method
   }
@@ -225,18 +225,18 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
                         {sale.metadata?.client_name || 'Cliente sin nombre'}
                       </span>
                       {sale.metadata?.client_phone && (
-                        <span className="text-sm text-muted-foreground">
-                          📱 {sale.metadata.client_phone}
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone size={14} weight="fill" /> {sale.metadata.client_phone}
                         </span>
                       )}
                     </div>
                     {(sale.metadata?.client_document || sale.metadata?.client_email) && (
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mb-1">
                         {sale.metadata?.client_document && (
-                          <span>🆔 {sale.metadata.client_document}</span>
+                          <span className="flex items-center gap-1"><IdentificationCard size={14} weight="fill" /> {sale.metadata.client_document}</span>
                         )}
-                        {sale.metadata?.client_email && (
-                          <span>📧 {sale.metadata.client_email}</span>
+                        {sale.metadata.client_email && (
+                          <span className="flex items-center gap-1"><EnvelopeSimple size={14} weight="fill" /> {sale.metadata.client_email}</span>
                         )}
                       </div>
                     )}
@@ -244,8 +244,8 @@ export function QuickSalesPage({ businessId }: QuickSalesPageProps) {
                       {sale.description}
                     </p>
                     {sale.metadata?.notes && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        📝 {sale.metadata.notes}
+                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <NotePencil size={14} weight="fill" /> {sale.metadata.notes}
                       </p>
                     )}
                     {sale.profiles?.full_name && (

@@ -16,6 +16,7 @@ import {
   Trash2,
   CalendarPlus
 } from 'lucide-react'
+import { Check } from '@phosphor-icons/react'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import { toast } from 'sonner'
 
@@ -159,7 +160,9 @@ export default function ClientDashboard({
         return
       }
 
-      toast.success('✅ Cita confirmada exitosamente')
+      toast.success('Cita confirmada exitosamente', {
+        icon: <Check size={20} weight="bold" />,
+      })
       refetch() // Recargar la lista de citas
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado'
@@ -195,7 +198,9 @@ export default function ClientDashboard({
 
       // Abrir en nueva ventana
       window.open(googleCalendarUrl, '_blank')
-      toast.success('📅 Abriendo Google Calendar...')
+      toast.success('Abriendo Google Calendar...', {
+        icon: <Calendar size={20} />,
+      })
     } catch (error) {
       toast.error('Error al abrir Google Calendar')
     }

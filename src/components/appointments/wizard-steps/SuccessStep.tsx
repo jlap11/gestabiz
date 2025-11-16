@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Calendar, Share2, X } from 'lucide-react';
+import { EnvelopeSimple, Phone } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useCustomAlert } from '@/hooks/useCustomAlert';
@@ -140,8 +141,10 @@ export function SuccessStep({ appointmentData, onClose }: SuccessStepProps) {
       {/* Footer info */}
       {status === 'success' && (
         <div className="text-center mt-8 pt-6 border-t border-border">
-          <p className="text-xs text-[#64748b]">
-            📧 Confirmation email sent • 📱 You'll receive a reminder 1 hour before
+          <p className="text-xs text-[#64748b] flex items-center justify-center gap-2">
+            <span className="flex items-center gap-1"><EnvelopeSimple size={14} weight="fill" /> Confirmation email sent</span>
+            <span>•</span>
+            <span className="flex items-center gap-1"><Phone size={14} weight="fill" /> You'll receive a reminder 1 hour before</span>
           </p>
         </div>
       )}

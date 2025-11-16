@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Briefcase, Check, AlertCircle, Save } from 'lucide-react';
+import { Briefcase, AlertCircle, Save } from 'lucide-react';
+import { Clock, Money, Check as CheckIcon } from '@phosphor-icons/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -343,8 +344,8 @@ export function ServiceSelector({
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                      <span>⏱️ {service.duration_minutes} min</span>
-                      <span>💰 ${service.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP</span>
+                      <span className="flex items-center gap-1"><Clock size={14} weight="fill" /> {service.duration_minutes} min</span>
+                      <span className="flex items-center gap-1"><Money size={14} weight="fill" /> ${service.price.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} COP</span>
                       {service.category && <Badge variant="outline">{service.category}</Badge>}
                     </div>
                   </div>

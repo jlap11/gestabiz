@@ -6,6 +6,7 @@
 
 import { useState } from 'react'
 import { useSubscription } from '@/hooks/useSubscription'
+import { Confetti, TrendDown } from '@phosphor-icons/react'
 import {
   Dialog,
   DialogContent,
@@ -206,8 +207,11 @@ export function PlanUpgradeModal({
           {/* Información del cambio */}
           {(selectedPlan !== currentPlan || selectedCycle !== currentCycle) && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-              <p className="font-medium mb-1">
-                {isUpgrade() ? '🎉 Mejorando plan' : '📉 Cambiando plan'}
+              <p className="font-medium mb-1 flex items-center gap-2">
+                {isUpgrade() 
+                  ? <><Confetti size={18} weight="fill" /> Mejorando plan</>
+                  : <><TrendDown size={18} weight="fill" /> Cambiando plan</>
+                }
               </p>
               <p className="text-muted-foreground">
                 {isUpgrade()

@@ -643,7 +643,7 @@ export function SearchResults({
                         {/* Location */}
                         {result.location?.city && (
                           <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
-                            📍 {result.location.city}
+                            <MapPin size={12} weight="fill" /> {result.location.city}
                           </div>
                         )}
 

@@ -204,11 +204,11 @@ export function LocationExpenseConfig({ locationId, businessId, locationName }: 
 
       // 2B. Utilities
       const utilities = [
-        { category: 'electricity', amount: electricityAvg, name: 'Electricidad', icon: '⚡' },
-        { category: 'water', amount: waterAvg, name: 'Agua', icon: '💧' },
-        { category: 'gas', amount: gasAvg, name: 'Gas', icon: '🔥' },
-        { category: 'internet', amount: internetAvg, name: 'Internet', icon: '📡' },
-        { category: 'phone', amount: phoneAvg, name: 'Teléfono', icon: '📞' }
+        { category: 'electricity', amount: electricityAvg, name: 'Electricidad', icon: <Zap size={14} /> },
+        { category: 'water', amount: waterAvg, name: 'Agua', icon: <Droplet size={14} /> },
+        { category: 'gas', amount: gasAvg, name: 'Gas', icon: <Flame size={14} /> },
+        { category: 'internet', amount: internetAvg, name: 'Internet', icon: <Wifi size={14} /> },
+        { category: 'phone', amount: phoneAvg, name: 'Teléfono', icon: <Phone size={14} /> }
       ]
 
       for (const utility of utilities) {

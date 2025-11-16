@@ -172,8 +172,15 @@ export function PricingPage({ businessId: businessIdProp, onClose }: PricingPage
               onClick={handleApplyDiscount}
               disabled={isLoading || !!appliedDiscount || !discountCode.trim()}
               variant="outline"
+              className="flex items-center gap-1"
             >
-              {appliedDiscount ? 'Aplicado ✓' : 'Aplicar'}
+              {appliedDiscount ? (
+                <>
+                  Aplicado <Check size={14} weight="bold" />
+                </>
+              ) : (
+                'Aplicar'
+              )}
             </Button>
           </div>
           {appliedDiscount && (

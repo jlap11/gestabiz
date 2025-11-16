@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Search, Building2, Briefcase, Tag, User, ChevronDown, Loader2 } from 'lucide-react'
+import { MapPin } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -359,7 +360,7 @@ export function SearchBar({ onResultSelect, onViewMore, className }: SearchBarPr
                       )}
                       {result.location && (
                         <p className="text-[10px] sm:text-xs text-muted-foreground truncate mt-1 flex items-center gap-1">
-                          <span>📍</span>
+                          <MapPin size={12} weight="fill" />
                           <span>{result.location}</span>
                         </p>
                       )}

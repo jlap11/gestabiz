@@ -334,8 +334,8 @@ export function EmployeeCalendarView({ appointments, onRefresh }: EmployeeCalend
                               {format(new Date(apt.start_time), 'HH:mm', { locale: es })} - {format(new Date(apt.end_time), 'HH:mm', { locale: es })}
                             </div>
                             {apt.location_name && (
-                              <div className="text-xs opacity-60 truncate mt-1">
-                                📍 {apt.location_name}
+                              <div className="text-xs opacity-60 truncate mt-1 flex items-center gap-1">
+                                <MapPin size={12} weight="fill" /> {apt.location_name}
                               </div>
                             )}
                           </button>

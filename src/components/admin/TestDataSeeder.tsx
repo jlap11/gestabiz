@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Flask, Warning, Rocket } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -89,7 +90,9 @@ export function TestDataSeeder() {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>🧪 Crear Usuarios de Prueba</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Flask size={24} weight="fill" /> Crear Usuarios de Prueba
+        </CardTitle>
         <CardDescription>
           Crea 30 usuarios de ejemplo (10 admin, 10 empleados, 10 clientes) para pruebas
         </CardDescription>
@@ -98,9 +101,12 @@ export function TestDataSeeder() {
         {!isCreating && results.success === 0 && results.errors.length === 0 && (
           <div className="space-y-4">
             <Alert>
-              <AlertDescription>
-                ⚠️ <strong>Importante:</strong> Esta acción requiere permisos de administrador y 
-                creará 30 usuarios reales en tu base de datos de Supabase.
+              <AlertDescription className="flex items-start gap-2">
+                <Warning size={18} weight="fill" className="mt-0.5 shrink-0" />
+                <span>
+                  <strong>Importante:</strong> Esta acción requiere permisos de administrador y 
+                  creará 30 usuarios reales en tu base de datos de Supabase.
+                </span>
               </AlertDescription>
             </Alert>
             
@@ -115,10 +121,10 @@ export function TestDataSeeder() {
 
             <Button 
               onClick={createTestUsers} 
-              className="w-full"
+              className="w-full flex items-center gap-2"
               variant="default"
             >
-              🚀 Crear Usuarios de Prueba
+              <Rocket size={18} weight="fill" /> Crear Usuarios de Prueba
             </Button>
           </div>
         )}

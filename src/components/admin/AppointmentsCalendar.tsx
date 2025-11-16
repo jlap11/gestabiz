@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback } from 'react';
-import { Calendar, Clock, ChevronLeft, ChevronRight, User, DollarSign, X, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Calendar, Clock, ChevronLeft, ChevronRight, User, X, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Money } from '@phosphor-icons/react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -304,7 +305,9 @@ const AppointmentModal = React.memo<AppointmentModalProps>(({
             {/* Desglose de montos si la cita está pagada */}
             {appointment.payment_status === 'paid' && appointment.gross_amount && (
               <div className="mt-3 p-3 bg-muted/50 rounded-md border border-border">
-                <h4 className="text-sm font-semibold text-foreground mb-2">💰 Desglose de Pago</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                  <Money size={16} weight="fill" /> Desglose de Pago
+                </h4>
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-muted-foreground">Monto Bruto:</span>

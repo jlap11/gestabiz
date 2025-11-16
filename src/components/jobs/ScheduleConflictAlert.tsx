@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Calendar, Clock } from 'lucide-react';
+import { Warning } from '@phosphor-icons/react';
 import type { ScheduleConflict } from '@/hooks/useScheduleConflicts';
 
 interface ScheduleConflictAlertProps {
@@ -109,8 +110,8 @@ export const ScheduleConflictAlert: React.FC<ScheduleConflictAlertProps> = ({
         </div>
 
         <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded text-xs">
-          <p className="font-medium text-yellow-800 dark:text-yellow-200">
-            ⚠️ Recomendación
+          <p className="font-medium text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
+            <Warning size={16} weight="fill" /> Recomendación
           </p>
           <p className="text-yellow-700 dark:text-yellow-300 mt-1">
             Considera negociar horarios flexibles con el empleador o asegúrate de que puedes

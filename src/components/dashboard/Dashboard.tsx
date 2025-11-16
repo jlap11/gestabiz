@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calendar, Users, Clock, Plus, TrendingUp } from 'lucide-react'
+import { X as CloseIcon } from '@phosphor-icons/react'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import AppointmentsView from './AppointmentsView'
 import ClientsView from './ClientsView'
@@ -210,7 +211,9 @@ function Dashboard({
           <div className="bg-background rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-auto">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-semibold">{t('business.registration.title') || 'Registrar Negocio'}</h3>
-              <Button variant="ghost" onClick={() => setShowBusinessRegistration(false)}>✕</Button>
+              <Button variant="ghost" onClick={() => setShowBusinessRegistration(false)}>
+                <CloseIcon size={20} weight="bold" />
+              </Button>
             </div>
             <div className="p-4">
               <BusinessRegistration

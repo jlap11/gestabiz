@@ -1649,8 +1649,8 @@ function DangerZone({ user }: DangerZoneProps) {
                   <li>{t('settings.dangerZone.deactivate.consequences.dataPreserved')}</li>
                 </ul>
                 <div className="mt-3 pt-3 border-t border-border">
-                  <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-                    ✓ {t('settings.dangerZone.deactivate.dataNotDeleted')}
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1 flex items-center gap-2">
+                    <CheckIcon size={16} weight="bold" /> {t('settings.dangerZone.deactivate.dataNotDeleted')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t('settings.dangerZone.deactivate.contactSupport')}
@@ -1729,8 +1729,8 @@ function DangerZone({ user }: DangerZoneProps) {
             <div className="space-y-4 py-4">
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm font-semibold">
-                  ⚠️ {t('settings.dangerZone.delete.finalWarning')}
+                <AlertDescription className="text-sm font-semibold flex items-center gap-2">
+                  <WarningIcon size={16} weight="fill" /> {t('settings.dangerZone.delete.finalWarning')}
                 </AlertDescription>
               </Alert>
 
@@ -1753,14 +1753,14 @@ function DangerZone({ user }: DangerZoneProps) {
                   {t('settings.dangerZone.delete.confirmDetails')}:
                 </p>
                 <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>⚠️ {t('settings.dangerZone.delete.accountLabel')}: {user.email}</li>
-                  <li>⚠️ {t('settings.dangerZone.delete.profileLabel')}: {user.name}</li>
-                  <li>⚠️ {t('settings.dangerZone.delete.rolesLabel')}: {user.roles?.length || 0} {t('settings.dangerZone.delete.activeLabel')}</li>
-                  <li>⚠️ {t('settings.dangerZone.delete.appointmentsLabel')}: {t('settings.dangerZone.delete.cancelledAuto')}</li>
+                  <li className="flex items-center gap-2"><WarningIcon size={12} weight="fill" /> {t('settings.dangerZone.delete.accountLabel')}: {user.email}</li>
+                  <li className="flex items-center gap-2"><WarningIcon size={12} weight="fill" /> {t('settings.dangerZone.delete.profileLabel')}: {user.name}</li>
+                  <li className="flex items-center gap-2"><WarningIcon size={12} weight="fill" /> {t('settings.dangerZone.delete.rolesLabel')}: {user.roles?.length || 0} {t('settings.dangerZone.delete.activeLabel')}</li>
+                  <li className="flex items-center gap-2"><WarningIcon size={12} weight="fill" /> {t('settings.dangerZone.delete.appointmentsLabel')}: {t('settings.dangerZone.delete.cancelledAuto')}</li>
                 </ul>
                 <div className="mt-3 pt-3 border-t border-border">
-                  <p className="text-xs font-medium text-green-600 dark:text-green-400">
-                    ✓ {t('settings.dangerZone.delete.dataPreservedNote')}
+                  <p className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-2">
+                    <CheckIcon size={14} weight="bold" /> {t('settings.dangerZone.delete.dataPreservedNote')}
                   </p>
                 </div>
               </div>

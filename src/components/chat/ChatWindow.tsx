@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MoreVertical, Phone, Video, Search as SearchIcon } from 'lucide-react';
+import { ChatCircle, HandWaving, MagnifyingGlass } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -137,7 +138,7 @@ export function ChatWindow({
     return (
       <div className="flex-1 flex items-center justify-center bg-muted/20">
         <div className="text-center">
-          <div className="text-6xl mb-4">💬</div>
+          <ChatCircle size={64} weight="fill" className="mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">Selecciona una conversación</h3>
           <p className="text-muted-foreground">
             Elige una conversación de la lista para empezar a chatear
@@ -281,7 +282,7 @@ export function ChatWindow({
         {!loading && messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="text-4xl mb-2">👋</div>
+              <HandWaving size={48} weight="fill" className="mx-auto mb-2 text-muted-foreground" />
               <p className="text-muted-foreground">
                 No hay mensajes. ¡Envía el primero!
               </p>
@@ -293,7 +294,7 @@ export function ChatWindow({
         {searchQuery && filteredMessages.length === 0 && messages.length > 0 && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="text-4xl mb-2">🔍</div>
+              <MagnifyingGlass size={48} weight="duotone" className="mx-auto mb-2 text-muted-foreground" />
               <p className="text-muted-foreground">
                 No se encontraron mensajes con "{searchQuery}"
               </p>

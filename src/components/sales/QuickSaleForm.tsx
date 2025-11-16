@@ -5,7 +5,8 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { DollarSign, User, Package, MapPin, CreditCard, Check, X, Banknote, Landmark } from 'lucide-react'
+import { DollarSign, User, Package, MapPin, CreditCard, Banknote, Landmark } from 'lucide-react'
+import { Check, X } from '@phosphor-icons/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -214,8 +215,9 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
 
       if (transactionError) throw transactionError
 
-      toast.success('✅ Venta registrada exitosamente', {
+      toast.success('Venta registrada exitosamente', {
         description: `${clientName} - $${Number.parseFloat(amount).toLocaleString('es-CO')}`,
+        icon: <Check size={20} weight="bold" />,
       })
 
       // Reset form (keep location cached)

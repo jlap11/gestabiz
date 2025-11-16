@@ -12,6 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MapPin, AlertTriangle, Check } from 'lucide-react';
+import { Warning } from '@phosphor-icons/react';
 import {
   Dialog,
   DialogContent,
@@ -194,8 +195,8 @@ export function LocationTransferModal({
             </span>
           </div>
           {impact.toCancel > 0 && (
-            <p className="text-xs text-muted-foreground mt-2">
-              ⚠️ Los clientes afectados recibirán notificación por correo y en la
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              <Warning size={14} weight="fill" /> Los clientes afectados recibirán notificación por correo y en la
               aplicación.
             </p>
           )}

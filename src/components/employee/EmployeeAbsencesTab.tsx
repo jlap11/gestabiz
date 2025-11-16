@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, Trash2, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Check } from '@phosphor-icons/react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useEmployeeAbsences, type EmployeeAbsence } from '@/hooks/useEmployeeAbsences';
@@ -143,8 +144,8 @@ function AbsenceCard({ absence, canCancel = false, onCancel }: Readonly<AbsenceC
       )}
 
       {absence.status === 'approved' && absence.approvedAt && (
-        <p className="text-xs text-green-600 dark:text-green-400">
-          ✓ Aprobada el {format(parseISO(absence.approvedAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+        <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+          <Check size={14} weight="bold" /> Aprobada el {format(parseISO(absence.approvedAt), 'dd/MM/yyyy HH:mm', { locale: es })}
         </p>
       )}
     </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { Check, Hourglass } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -1147,15 +1148,17 @@ export function AppointmentWizard({
               >
                 {isSubmitting ? (
                   <>
-                    <span className="animate-spin mr-2">⏳</span>
+                    <Hourglass size={16} weight="fill" className="animate-spin mr-2" />
                     {' '}
                     <span className="hidden sm:inline">Guardando...</span>
                     <span className="sm:hidden">Guardar...</span>
                   </>
                 ) : (
                   <>
-                    <span className="hidden sm:inline">✓ Confirmar y Reservar</span>
-                    <span className="sm:hidden">✓ Confirmar</span>
+                    <Check size={16} weight="bold" className="mr-1" />
+                    <span className="hidden sm:inline">Confirmar y Reservar</span>
+                    <Check size={16} weight="bold" className="mr-1 sm:hidden" />
+                    <span className="sm:hidden">Confirmar</span>
                   </>
                 )}
               </Button>

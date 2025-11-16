@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Circle } from '@phosphor-icons/react'
 import {
   Dialog,
   DialogContent,
@@ -33,25 +34,25 @@ const SEVERITY_CONFIG = {
     label: 'Baja',
     description: 'Problema menor que no afecta el uso',
     color: 'bg-green-500/20 text-green-700 border-green-500/50',
-    icon: '🟢'
+    icon: <Circle size={16} weight="fill" className="text-green-600" />
   },
   medium: {
     label: 'Media',
     description: 'Problema que afecta algunas funciones',
     color: 'bg-yellow-500/20 text-yellow-700 border-yellow-500/50',
-    icon: '🟡'
+    icon: <Circle size={16} weight="fill" className="text-yellow-600" />
   },
   high: {
     label: 'Alta',
     description: 'Problema grave que impide usar funciones importantes',
     color: 'bg-orange-500/20 text-orange-700 border-orange-500/50',
-    icon: '🟠'
+    icon: <Circle size={16} weight="fill" className="text-orange-600" />
   },
   critical: {
     label: 'Crítica',
     description: 'Error bloqueante que impide usar la aplicación',
     color: 'bg-red-500/20 text-red-700 border-red-500/50',
-    icon: '🔴'
+    icon: <Circle size={16} weight="fill" className="text-red-600" />
   }
 }
 

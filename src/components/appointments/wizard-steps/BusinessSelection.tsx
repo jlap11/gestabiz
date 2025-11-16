@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Check, Building2, Filter } from 'lucide-react';
+import { MapPin, Phone } from '@phosphor-icons/react';
 import { SimpleSearchBar, type SearchType } from '@/components/ui/SimpleSearchBar';
 import { cn } from '@/lib/utils';
 import { withCache } from '@/lib/cache';
@@ -689,17 +690,18 @@ export function BusinessSelection({
                 <div className="space-y-1">
                   {business.address && (
                     <p className="text-xs text-[#64748b] flex items-center gap-1">
+                      <MapPin size={12} weight="fill" />
                       {(() => {
                         const cityDisplay = business.city
                           ? (cityNameMap[business.city] || business.city)
                           : '';
-                        return `📍 ${cityDisplay ? `${cityDisplay}, ` : ''}${business.address}`;
+                        return `${cityDisplay ? `${cityDisplay}, ` : ''}${business.address}`;
                       })()}
                     </p>
                   )}
                   {business.phone && (
-                    <p className="text-xs text-[#64748b]">
-                      📞 {business.phone}
+                    <p className="text-xs text-[#64748b] flex items-center gap-1">
+                      <Phone size={12} weight="fill" /> {business.phone}
                     </p>
                   )}
                 </div>

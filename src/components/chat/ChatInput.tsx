@@ -136,7 +136,7 @@ export function ChatInput({
 
       // Enviar mensaje con attachments
       await onSendMessage(
-        trimmedMessage || '📎 Archivo adjunto',
+        trimmedMessage || 'Archivo adjunto',
         replyToMessage?.id,
         attachments.length > 0 ? attachments : undefined
       );

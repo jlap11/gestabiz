@@ -13,6 +13,7 @@ import logoGestabiz from '@/assets/images/logo_gestabiz.png'
 import { toast } from 'sonner'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { AlertCircle } from 'lucide-react'
+import { Flask, EnvelopeSimple, Warning } from '@phosphor-icons/react'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void
@@ -467,8 +468,8 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                     <div className="w-full border-t border-border"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-card text-muted-foreground">
-                      🧪 DEV ONLY - Magic Link
+                    <span className="px-4 bg-card text-muted-foreground flex items-center gap-2">
+                      <Flask size={16} weight="fill" /> DEV ONLY - Magic Link
                     </span>
                   </div>
                 </div>
@@ -486,12 +487,12 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                     type="submit"
                     variant="outline"
                     disabled={isSigningIn || !magicLinkEmail}
-                    className="w-full bg-background border-border hover:bg-muted text-foreground h-12 rounded-lg transition-colors"
+                    className="w-full bg-background border-border hover:bg-muted text-foreground h-12 rounded-lg transition-colors flex items-center gap-2"
                   >
-                    📧 Enviar Magic Link (DEV)
+                    <EnvelopeSimple size={18} weight="fill" /> Enviar Magic Link (DEV)
                   </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    ⚠️ Esta opción es solo para desarrollo. Recibe un enlace por email.
+                  <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+                    <Warning size={14} weight="fill" /> Esta opción es solo para desarrollo. Recibe un enlace por email.
                   </p>
                 </form>
               </>
