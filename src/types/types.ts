@@ -395,6 +395,7 @@ export interface BusinessSubcategory {
 export interface Business {
   id: string
   name: string
+  slug?: string  // URL-friendly unique identifier (autogenerado desde name)
   description?: string
   category_id?: string // FK to business_categories (categoría PRINCIPAL)
   legal_entity_type?: LegalEntityType // Empresa o independiente
@@ -408,6 +409,15 @@ export interface Business {
   website?: string
   phone?: string
   email?: string
+  
+  // ⭐ UBICACIÓN LEGAL DEL NEGOCIO (usando catálogo)
+  // Los negocios NO tienen dirección física - las SEDES sí
+  country_id?: string  // FK to countries (Ej: Colombia)
+  region_id?: string   // FK to regions (Ej: Antioquia, Cundinamarca)
+  city_id?: string     // FK to cities (Ej: Medellín, Bogotá)
+  
+  // ⚠️ DEPRECATED - Usar catálogo arriba (country_id, region_id, city_id)
+  // Estos campos se mantienen por retrocompatibilidad pero NO se usan en nuevos negocios
   address?: string
   city?: string
   state?: string
@@ -415,7 +425,10 @@ export interface Business {
   postal_code?: string
   latitude?: number
   longitude?: number
-  business_hours: {
+  
+  // ⚠️ DEPRECATED - Los negocios NO tienen horarios - las SEDES sí
+  // Este campo se mantiene por retrocompatibilidad pero NO se usa en nuevos negocios
+  business_hours?: {
     monday: { open: string; close: string; closed: boolean }
     tuesday: { open: string; close: string; closed: boolean }
     wednesday: { open: string; close: string; closed: boolean }
@@ -424,7 +437,8 @@ export interface Business {
     saturday: { open: string; close: string; closed: boolean }
     sunday: { open: string; close: string; closed: boolean }
   }
-  timezone?: string
+  
+  timezone?: string  // Zona horaria (Ej: America/Bogota)
   owner_id: string
   settings: {
     appointment_buffer: number

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:owner": "vite --config vite.config.owner.ts",
+    "dev:users": "vite --config vite.config.users.ts",
     "build": "tsc -b --noCheck && vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",

@@ -6,6 +6,7 @@ import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettin
 import { MyEmployments } from '@/components/employee/MyEmploymentsEnhanced'
 import { EmployeeOnboarding } from '@/components/employee/EmployeeOnboarding'
 import { EmployeeAbsencesTab } from '@/components/employee/EmployeeAbsencesTab'
+import { EmployeeAppointmentsPage } from '@/components/employee/EmployeeAppointmentsPage'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
@@ -219,7 +220,7 @@ export function EmployeeDashboard({
               <div className="flex-1">
                 <VacationDaysWidget balance={vacationBalance} />
               </div>
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Button
                   onClick={() => setShowAbsenceModal(true)}
                   className="w-full sm:w-auto"
@@ -240,10 +241,16 @@ export function EmployeeDashboard({
           </div>
         )
       case 'appointments':
-        return (
+        return effectiveBusinessId ? (
+          <EmployeeAppointmentsPage 
+            employeeId={currentUser.id}
+            businessId={effectiveBusinessId}
+          />
+        ) : (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Mis Citas</h2>
-            <p className="text-muted-foreground">Vista de empleado - Próximamente</p>
+            <p className="text-muted-foreground">
+              {loadingBusinesses ? 'Cargando negocios...' : 'No estás vinculado a ningún negocio'}
+            </p>
           </div>
         )
       case 'schedule':
@@ -272,6 +279,11 @@ export function EmployeeDashboard({
     }
   }
 
+  // Handler para cambiar de negocio
+  const handleBusinessSelect = (newBusinessId: string) => {
+    setSelectedBusinessId(newBusinessId)
+  }
+
   return (
     <UnifiedLayout
       currentRole={currentRole}
@@ -281,6 +293,9 @@ export function EmployeeDashboard({
       sidebarItems={sidebarItems}
       activePage={activePage}
       onPageChange={setActivePage}
+      business={employeeBusinesses.find(b => b.id === selectedBusinessId) || employeeBusinesses[0]}
+      businesses={employeeBusinesses}
+      onSelectBusiness={handleBusinessSelect}
       user={currentUser ? {
         id: currentUser.id,
         name: currentUser.name,

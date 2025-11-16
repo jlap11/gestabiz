@@ -59,7 +59,7 @@ export function BusinessSelector({
   return (
     <div className={`${className}`}>
       <Select value={selectedBusinessId} onValueChange={onSelectBusiness}>
-        <SelectTrigger className="w-full bg-card border-border hover:bg-muted transition-colors">
+        <SelectTrigger className="w-full min-w-xs bg-card border-border hover:bg-muted transition-colors">
           <SelectValue>
             {selectedBusiness ? (
               <div className="flex items-center gap-3">

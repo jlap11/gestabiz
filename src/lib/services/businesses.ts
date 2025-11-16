@@ -14,7 +14,11 @@ export const businessesService = {
   _buildDbUpdates(updates: Partial<Business>): Update<'businesses'> {
     const db: Update<'businesses'> = {}
     const nullableScalars: Array<keyof Update<'businesses'> & keyof Business> = [
-      'name','legal_name','description','phone','email','address','city','state','country','postal_code','latitude','longitude','logo_url','website','tax_id','registration_number'
+      'name','legal_name','description','phone','email','logo_url','website','tax_id','registration_number',
+      // ⭐ NUEVO - Campos del catálogo para ubicación legal
+      'country_id','region_id','city_id',
+      // ⚠️ DEPRECATED - Mantener por retrocompatibilidad (no usar en nuevos negocios)
+      'address','city','state','country','postal_code','latitude','longitude'
     ]
     const dbAssign = db as unknown as Record<string, unknown>
     for (const k of nullableScalars) {
@@ -56,8 +60,20 @@ export const businessesService = {
   },
 
   async create(payload: Omit<Business, 'id' | 'created_at' | 'updated_at'>): Promise<Business> {
+    // ⭐ Generar slug único desde el nombre del negocio
+    const generateSlug = (name: string): string => {
+      return name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+        .replace(/[^a-z0-9]+/g, '-')     // Reemplazar no-alfanuméricos con guiones
+        .replace(/^-+|-+$/g, '')         // Remover guiones al inicio/final
+        .substring(0, 100)               // Limitar longitud
+    }
+
     const insertRow: Insert<'businesses'> = {
       name: payload.name,
+      slug: generateSlug(payload.name), // ⭐ REQUERIDO - slug único generado automáticamente
       legal_name: payload.legal_name ?? null,
       description: payload.description ?? null,
       resource_model: payload.resource_model ?? 'professional', // ⭐ Soporte para modelo de negocio
@@ -68,16 +84,12 @@ export const businessesService = {
       owner_id: payload.owner_id,
       phone: payload.phone ?? null,
       email: payload.email ?? null,
-      address: payload.address ?? null,
-      city: payload.city ?? null,
-      state: payload.state ?? null,
-      country: payload.country ?? null,
-      postal_code: payload.postal_code ?? null,
-      latitude: payload.latitude ?? null,
-      longitude: payload.longitude ?? null,
       logo_url: payload.logo_url ?? null,
       website: payload.website ?? null,
-      business_hours: payload.business_hours as unknown as Json,
+      // ⭐ NUEVO - Ubicación legal del negocio (catálogo)
+      country_id: payload.country_id ?? null,
+      region_id: payload.region_id ?? null,
+      city_id: payload.city_id ?? null,
       settings: payload.settings as unknown as Json,
       is_active: payload.is_active ?? true,
     }

@@ -301,7 +301,7 @@ export function OverviewTab({ business }: OverviewTabProps) {
       </div>
 
       {/* Quick Actions or Alerts */}
-      {stats.totalLocations === 0 || stats.totalServices === 0 ? (
+      {stats.totalLocations === 0 || stats.totalServices === 0 || business.is_configured === false ? (
         <Card className="bg-amber-500/10 border-amber-500/20">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
@@ -315,7 +315,9 @@ export function OverviewTab({ business }: OverviewTabProps) {
                     ? 'Necesitas agregar sedes y servicios para empezar a recibir citas.'
                     : stats.totalLocations === 0
                     ? 'Necesitas agregar al menos una sede para tu negocio.'
-                    : 'Necesitas agregar servicios que ofrecer a tus clientes.'}
+                    : stats.totalServices === 0
+                    ? 'Necesitas agregar servicios que ofrecer a tus clientes.'
+                    : 'Verifica que todas las sedes tengan servicios activos y empleados/recursos asignados.'}
                 </p>
                 <div className="flex gap-2 mt-3">
                   {stats.totalLocations === 0 && (
@@ -326,6 +328,11 @@ export function OverviewTab({ business }: OverviewTabProps) {
                   {stats.totalServices === 0 && (
                     <Badge variant="outline" className="border-amber-500/50 text-amber-300">
                       Sin servicios
+                    </Badge>
+                  )}
+                  {business.is_configured === false && (
+                    <Badge variant="destructive" className="bg-red-500 text-white">
+                      🔴 No disponible al público
                     </Badge>
                   )}
                 </div>

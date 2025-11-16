@@ -203,6 +203,7 @@ serve(async (req) => {
         .in('id', cityBusinessIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (error) throw error
       businessRows = (businesses || [])
@@ -214,6 +215,7 @@ serve(async (req) => {
         .ilike('name', `%${term}%`)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (error) throw error
       businessRows = (businesses || [])
@@ -261,6 +263,7 @@ serve(async (req) => {
         .in('id', candidateBusinessIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (bizErr) throw bizErr
       businessRows = (businesses || [])
@@ -287,6 +290,7 @@ serve(async (req) => {
         .in('category_id', catIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (bizErr) throw bizErr
       businessRows = (businesses || [])
@@ -318,6 +322,7 @@ serve(async (req) => {
         .in('id', candidateBusinessIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (bizErr) throw bizErr
       businessRows = (businesses || [])
@@ -333,6 +338,7 @@ serve(async (req) => {
         .ilike('name', `%${term}%`)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       const setBiz = new Map<string, any>()
       for (const b of (bizByName || []) as any[]) {
@@ -365,6 +371,7 @@ serve(async (req) => {
             .in('id', svcBizIds)
             .eq('is_active', true)
             .eq('is_public', true)
+            .eq('is_configured', true)
           for (const b of (svcBizRows || []) as any[]) {
             setBiz.set(b.id, b)
             matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'services']
@@ -385,6 +392,7 @@ serve(async (req) => {
           .in('category_id', catIds)
           .eq('is_active', true)
           .eq('is_public', true)
+          .eq('is_configured', true)
         for (const b of (catBizRows || []) as any[]) {
           setBiz.set(b.id, b)
           matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'categories']
@@ -411,6 +419,7 @@ serve(async (req) => {
             .in('id', empBizIds)
             .eq('is_active', true)
             .eq('is_public', true)
+            .eq('is_configured', true)
           for (const b of (empBizRows || []) as any[]) {
             setBiz.set(b.id, b)
             matchSourcesByBusinessId[b.id] = [...(matchSourcesByBusinessId[b.id] || []), 'users']
@@ -438,6 +447,7 @@ serve(async (req) => {
         .in('category_id', catIds2)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (bizErr2) throw bizErr2
       businessRows = (businesses2 || [])
@@ -470,6 +480,7 @@ serve(async (req) => {
         .in('id', candidateBusinessIds)
         .eq('is_active', true)
         .eq('is_public', true)
+        .eq('is_configured', true)
         .order('name')
       if (bizErr3) throw bizErr3
       businessRows = (businesses3 || [])
