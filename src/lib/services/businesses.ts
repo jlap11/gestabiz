@@ -14,13 +14,14 @@ export const businessesService = {
   _buildDbUpdates(updates: Partial<Business>): Update<'businesses'> {
     const db: Update<'businesses'> = {}
     const nullableScalars: Array<keyof Update<'businesses'> & keyof Business> = [
-      'name','description','phone','email','address','city','state','country','postal_code','latitude','longitude','logo_url','website'
+      'name','legal_name','description','phone','email','address','city','state','country','postal_code','latitude','longitude','logo_url','website','tax_id','registration_number'
     ]
     const dbAssign = db as unknown as Record<string, unknown>
     for (const k of nullableScalars) {
       const v = updates[k]
       if (v !== undefined) dbAssign[k as string] = v ?? null
     }
+    if (updates.legal_entity_type !== undefined) db.legal_entity_type = updates.legal_entity_type
     if (updates.business_hours !== undefined) db.business_hours = updates.business_hours as unknown as Json
     if (updates.settings !== undefined) db.settings = updates.settings as unknown as Json
     if (updates.is_active !== undefined) db.is_active = updates.is_active
@@ -57,8 +58,13 @@ export const businessesService = {
   async create(payload: Omit<Business, 'id' | 'created_at' | 'updated_at'>): Promise<Business> {
     const insertRow: Insert<'businesses'> = {
       name: payload.name,
+      legal_name: payload.legal_name ?? null,
       description: payload.description ?? null,
-      resource_model: payload.resource_model ?? 'professional', // ⭐ NUEVO: Soporte para modelo de negocio
+      resource_model: payload.resource_model ?? 'professional', // ⭐ Soporte para modelo de negocio
+      legal_entity_type: payload.legal_entity_type ?? 'individual',
+      tax_id: payload.tax_id ?? null,
+      registration_number: payload.registration_number ?? null,
+      category_id: payload.category_id ?? null, // ⭐ Categoría principal del negocio
       owner_id: payload.owner_id,
       phone: payload.phone ?? null,
       email: payload.email ?? null,

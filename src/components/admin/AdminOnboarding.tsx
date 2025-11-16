@@ -1,6 +1,7 @@
 ﻿import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
 import BusinessRegistration from '@/components/business/BusinessRegistration'
 import type { User, UserRole, Business } from '@/types/types'
+import { LayoutDashboard, Calendar, CalendarOff, MapPin, Briefcase, Users, BriefcaseBusiness, ShoppingCart, Wallet, FileText, CreditCard, Shield } from 'lucide-react'
 
 interface AdminOnboardingProps {
   user: User
@@ -74,10 +75,64 @@ export function AdminOnboarding({
 
   const sidebarItems = [
     {
-      icon: 'LayoutDashboard',
+      id: 'overview',
       label: 'Resumen',
-      value: 'overview',
-      onClick: () => onNavigateToAdmin?.()
+      icon: <LayoutDashboard className="h-5 w-5" />
+    },
+    {
+      id: 'appointments',
+      label: 'Citas',
+      icon: <Calendar className="h-5 w-5" />
+    },
+    {
+      id: 'absences',
+      label: 'Ausencias',
+      icon: <CalendarOff className="h-5 w-5" />
+    },
+    {
+      id: 'locations',
+      label: 'Ubicaciones',
+      icon: <MapPin className="h-5 w-5" />
+    },
+    {
+      id: 'services',
+      label: 'Servicios',
+      icon: <Briefcase className="h-5 w-5" />
+    },
+    {
+      id: 'employees',
+      label: 'Empleados',
+      icon: <Users className="h-5 w-5" />
+    },
+    {
+      id: 'recruitment',
+      label: 'Reclutamiento',
+      icon: <BriefcaseBusiness className="h-5 w-5" />
+    },
+    {
+      id: 'quick-sales',
+      label: 'Ventas Rápidas',
+      icon: <ShoppingCart className="h-5 w-5" />
+    },
+    {
+      id: 'expenses',
+      label: 'Egresos',
+      icon: <Wallet className="h-5 w-5" />
+    },
+    {
+      id: 'reports',
+      label: 'Reportes',
+      icon: <FileText className="h-5 w-5" />
+    },
+    {
+      id: 'billing',
+      label: 'Facturación',
+      icon: <CreditCard className="h-5 w-5" />
+    },
+    {
+      id: 'permissions',
+      label: 'Permisos',
+      icon: <Shield className="h-5 w-5" />
     }
   ]
 
