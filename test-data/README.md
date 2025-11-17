@@ -1,53 +1,206 @@
-# Test Data CSV Files - Gestabiz
+# Test Data - Gestabiz ⭐ ACTUALIZADO 16 NOV 2025
 
-**Fecha de generación**: 16 de noviembre de 2025  
-**Propósito**: Datos de prueba generados durante el desarrollo y testing del sistema
+**Fecha de actualización**: 16 de noviembre de 2025  
+**Propósito**: Documentación COMPLETA de datos de prueba disponibles en la base de datos  
+**Estado**: ✅ VERIFICADO EN SUPABASE - Data lista para testing
 
 ---
 
-## 📋 Archivos Incluidos
+## 🔑 CREDENCIALES DE PRUEBA
+
+### **Contraseña Universal**: `TestPassword123!`
+
+**Usuarios Principales**:
+
+| Email | Contraseña | Rol Principal | Negocios | Descripción |
+|-------|-----------|---------------|----------|-------------|
+| `jlap-04@hotmail.com` | `TestPassword123!` | **OWNER** ⭐ | **5 negocios** | Usuario IDEAL para pruebas - Data completa |
+| `jlapnnn@gmail.com` | `TestPassword123!` | **OWNER** | 8 negocios | Usuario con múltiples negocios |
+| `jlap.11@hotmail.com` | `TestPassword123!` | **OWNER** | 1 negocio | Sonrisas Dental |
+| `empleado1@gestabiz.test` | `TestPassword123!` | **EMPLOYEE** | 6 negocios | Empleado multi-negocio |
+| `empleado10@gestabiz.test` | `TestPassword123!` | **EMPLOYEE** | 4 negocios | Empleado activo |
+| `empleado11@gestabiz.test` | `TestPassword123!` | **EMPLOYEE** | 6 negocios | Empleado activo |
+| `empleado12@gestabiz.test` | `TestPassword123!` | **EMPLOYEE** | 1 negocio | Yoga Shanti |
+| `cliente1@gestabiz.test` | `TestPassword123!` | **CLIENT** | 2 citas | Cliente con historial |
+| `owner1@gestabiz.test` | `TestPassword123!` | **CLIENT** | 0 negocios | Usuario sin negocios (para testing de registro) |
+
+---
+
+## 🏢 NEGOCIOS DISPONIBLES (Por Owner)
+
+### **👤 jlap-04@hotmail.com** (Jose Avila 2) - ⭐ USUARIO RECOMENDADO PARA PRUEBAS
+
+**5 Negocios Completamente Configurados**:
+
+#### 1️⃣ **English Academy Pro** 🎓
+- **ID**: `1983339a-40f8-43bf-8452-1f23585a433a`
+- **Categoría**: Education
+- **Sedes**: 2 (Sede Centro, Sede Riomar - Barranquilla)
+- **Servicios**: 5 (Beginner 150k, Intermediate 170k, Advanced 190k, IELTS 250k, Conversation 80k)
+- **Empleados**: 4
+  - empleado1@gestabiz.test
+  - empleado10@gestabiz.test
+  - empleado11@gestabiz.test
+  - jlap-04@hotmail.com (owner como manager)
+- **Estado**: ✅ Activo
+- **Citas**: 2 confirmadas (cliente1@gestabiz.test)
+
+#### 2️⃣ **Centro Deportivo Arena** 🏋️
+- **ID**: `53bff38b-cbb5-4fcd-8b2a-e46852c8a253`
+- **Categoría**: Sports
+- **Sedes**: 2 (Complejo Principal, Complejo Playa - Santa Marta)
+- **Servicios**: 5
+- **Empleados**: 3 (empleado1, empleado10, owner)
+- **Estado**: ✅ Activo
+
+#### 3️⃣ **Yoga Shanti** 🧘
+- **ID**: `3d7f7644-726c-46c3-8d29-1396efde0aca`
+- **Categoría**: Wellness
+- **Sedes**: 2 (Sede Principal, Sede Usaquén - Bogotá)
+- **Servicios**: 5
+- **Empleados**: 3 (empleado11, empleado12, owner)
+- **Estado**: ✅ Activo
+
+#### 4️⃣ **FitZone Gym** 💪
+- **ID**: `ebd41f0b-4509-47dc-ad6e-cf8dfd280892`
+- **Categoría**: Fitness
+- **Sedes**: 2 (Sede Principal, Sede Centro Comercial - Cali)
+- **Servicios**: 5
+- **Empleados**: 6 (empleado1, empleado10, empleado11, owner, jlap.11@hotmail.com, jlapnnn@gmail.com)
+- **Estado**: ✅ Activo
+- **Citas**: 1 confirmada (cliente1@gestabiz.test)
+
+#### 5️⃣ **La Mesa de Don Carlos** 🍽️
+- **ID**: `1af876e5-fe6f-478a-83e4-d09a1787830a`
+- **Categoría**: Restaurant
+- **Sedes**: 2
+- **Servicios**: 5
+- **Empleados**: 3 (empleado1, empleado11, owner)
+- **Estado**: ✅ Activo
+
+---
+
+### **👤 jlapnnn@gmail.com** (Jose Luis Avila) - OWNER ALTERNATIVO
+
+**8 Negocios**:
+1. Hotel Boutique Plaza (2 sedes, 5 servicios, 3 empleados) ✅
+2. Spa Zen Wellness S.A.S (1 sede, 5 servicios, 2 empleados) ✅
+3. Estilismo María González (0 sedes, 0 servicios) ⚠️ Sin configurar
+4. Test Business Direct SQL (0 sedes) ⚠️ Sin configurar
+5. Spa Relax Total (0 sedes) ⚠️ Sin configurar
+6. El compa (1 sede, 2 servicios) ✅
+7. Los Narcos (0 sedes) ⚠️ Sin configurar
+8. Bolera la 45 (0 sedes) ⚠️ Sin configurar
+
+---
+
+### **👤 jlap.11@hotmail.com** (Jose Luis Avila) - OWNER SIMPLE
+
+**1 Negocio**:
+1. **Sonrisas Dental** 🦷 (2 sedes, 5 servicios, 3 empleados) ✅
+
+---
+
+## 👥 EMPLEADOS DE PRUEBA
+
+### **empleado1@gestabiz.test** (Empleado Aplicante 1)
+- **ID**: `5ddc3251-1e22-4b86-9bf8-15452f9ec95b`
+- **Negocios**: 6
+  - Centro Deportivo Arena
+  - English Academy Pro
+  - FitZone Gym
+  - Hotel Boutique Plaza
+  - La Mesa de Don Carlos
+  - Sonrisas Dental
+- **Uso**: Empleado multi-negocio ideal para pruebas de asignación de permisos
+
+### **empleado10@gestabiz.test** (Empleado Aplicante 10)
+- **ID**: `ec72b4d1-86e4-4658-b9e4-f3d7e6e79d09`
+- **Negocios**: 4 (Centro Deportivo, English Academy, FitZone, Spa Zen Wellness)
+
+### **empleado11@gestabiz.test** (Empleado Aplicante 11)
+- **ID**: `5ac9c0a1-9e13-4f64-b9fa-811a8a4ed51d`
+- **Negocios**: 6 (English Academy, FitZone, Hotel Boutique, La Mesa, Sonrisas, Yoga Shanti)
+
+### **empleado12@gestabiz.test** (Empleado Aplicante 12)
+- **ID**: `3ff7c626-c0a8-40ce-a8c3-f93df31b9db4`
+- **Negocios**: 1 (Yoga Shanti)
+- **Uso**: Empleado con un solo negocio - ideal para pruebas de mono-negocio
+
+---
+
+## 🧑‍💼 CLIENTES DE PRUEBA
+
+### **cliente1@gestabiz.test** (Cliente Usuario 1)
+- **ID**: `24d00877-685f-448e-9e34-5e362e6a97f8`
+- **Citas**: 2
+  - English Academy Pro (Beginner Level)
+  - FitZone Gym
+- **Uso**: Cliente con historial de citas - ideal para pruebas de reviews, historial
+
+### **owner1@gestabiz.test** (Owner Usuario 1)
+- **ID**: `679644e7-5543-4c28-bec2-86e8cbf7a581`
+- **Citas**: 0
+- **Negocios**: 0
+- **Uso**: Usuario limpio para pruebas de registro de negocio, onboarding
+
+---
+
+## 📊 RESUMEN DE DATA DISPONIBLE
+
+### Por Tipo de Entidad:
+- ✅ **Negocios Activos**: 48 (15 con data completa)
+- ✅ **Sedes Configuradas**: 100+
+- ✅ **Servicios Activos**: 200+
+- ✅ **Empleados Registrados**: 50+
+- ✅ **Citas Confirmadas**: 10+
+
+### Negocios Completos (2 sedes + 5 servicios):
+1. English Academy Pro ⭐ (jlap-04)
+2. Centro Deportivo Arena ⭐ (jlap-04)
+3. Yoga Shanti ⭐ (jlap-04)
+4. FitZone Gym ⭐ (jlap-04)
+5. La Mesa de Don Carlos ⭐ (jlap-04)
+6. Sonrisas Dental (jlap.11)
+7. Hotel Boutique Plaza (jlapnnn)
+
+---
+
+## 🎯 RECOMENDACIONES PARA TESTING
+
+### **PRUEBAS DE PERMISOS (Fase 1)**
+- **Usuario Owner**: `jlap-04@hotmail.com` (5 negocios)
+- **Negocio Principal**: English Academy Pro
+- **Empleado Asignado**: empleado1@gestabiz.test (ya vinculado)
+- **Escenario**: Delegación de permisos específicos
+
+### **PRUEBAS MULTI-NEGOCIO**
+- **Usuario**: `jlap-04@hotmail.com`
+- **Escenarios**:
+  1. Cambio entre negocios (5 opciones)
+  2. Gestión de empleados en múltiples negocios
+  3. Configuraciones por negocio
+
+### **PRUEBAS DE EMPLEADO**
+- **Usuario**: `empleado1@gestabiz.test` (6 negocios)
+- **Escenarios**:
+  1. Ver permisos asignados
+  2. Intentar acciones bloqueadas
+  3. Trabajar en múltiples negocios
+
+### **PRUEBAS DE CLIENTE**
+- **Usuario**: `cliente1@gestabiz.test` (2 citas)
+- **Escenarios**:
+  1. Reservar nueva cita
+  2. Ver historial
+  3. Dejar reviews
+
+---
+
+## 🔧 ARCHIVOS CSV LEGACY (Referencia)
 
 ### 1. `users.csv` (6 registros)
 **Descripción**: Usuarios del sistema (empleados, clientes y owners)
-
-**Campos**:
-- `id`: UUID del usuario
-- `email`: Email de login
-- `name`: Nombre completo
-- `phone`: Teléfono de contacto
-- `created_at`: Fecha de creación
-- `role_type`: Tipo de rol (employee, client, admin)
-
-**Usuarios de Prueba**:
-- `empleado1@gestabiz.test` - Empleado principal de pruebas
-- `cliente1@gestabiz.test` - Cliente 1
-- `cliente10@gestabiz.test` - Cliente 10
-- `owner1@gestabiz.test` - Owner de English Academy Pro
-- `owner2@gestabiz.test` - Owner de Spa Belleza
-- `owner3@gestabiz.test` - Owner de Clínica Dental
-
----
-
-### 2. `businesses.csv` (6 registros)
-**Descripción**: Negocios creados en el sistema
-
-**Campos**:
-- `id`: UUID del negocio
-- `name`: Nombre del negocio
-- `owner_id`: ID del propietario
-- `category`: Categoría del negocio
-- `description`: Descripción breve
-- `phone`, `email`, `website`: Datos de contacto
-- `created_at`: Fecha de creación
-- `is_active`: Estado activo/inactivo
-
-**Negocios**:
-1. **English Academy Pro** (Educación)
-2. **Spa Belleza Total** (Wellness)
-3. **Clínica Dental Sonrisa** (Salud)
-4. **Fitness Center Pro** (Deportes)
-5. **Restaurante El Sabor** (Comida)
-6. **Barbería Moderna** (Grooming)
 
 ---
 
