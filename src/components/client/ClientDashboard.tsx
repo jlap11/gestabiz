@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { ClientCalendarView } from '@/components/client/ClientCalendarView'
@@ -1158,26 +1159,30 @@ export function ClientDashboard({
                 
                 {/* Reschedule button - only if not completed, cancelled or no_show */}
                 {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleRescheduleAppointment(selectedAppointment)}
-                    className="flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Reprogramar
-                  </Button>
+                  <PermissionGate permission="appointments.reschedule_own" businessId={selectedAppointment.business_id} mode="hide">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleRescheduleAppointment(selectedAppointment)}
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Reprogramar
+                    </Button>
+                  </PermissionGate>
                 )}
                 
                 {/* Cancel button - only if not completed, cancelled or no_show */}
                 {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleCancelAppointment(selectedAppointment.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Cancelar Cita
-                  </Button>
+                  <PermissionGate permission="appointments.cancel_own" businessId={selectedAppointment.business_id} mode="hide">
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleCancelAppointment(selectedAppointment.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancelar Cita
+                    </Button>
+                  </PermissionGate>
                 )}
                 
                 <Button 

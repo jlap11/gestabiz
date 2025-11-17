@@ -3,17 +3,19 @@
 ## 📊 Estado General
 
 - **Fecha**: 16 de Noviembre 2025
-- **Progreso**: 17/30 módulos protegidos (57%) ⬆️ +10 módulos desde inicio 🎯 **MITAD SUPERADA**
+- **Progreso**: 20/30 módulos protegidos (67%) ⬆️ +13 módulos desde inicio 🎯 **67% SUPERADO**
 - **Migraciones Aplicadas**: 
   - ✅ 20251116110000_add_phase_5_permissions.sql (811 permisos - 54 × 15)
   - ✅ 20251116120000_add_employee_notification_permissions.sql (162 permisos - 54 × 3)
   - ✅ 20251116130000_add_sales_create_permission.sql (54 permisos - 54 × 1)
-  - ✅ 20251116140000_add_permissions_management_permissions.sql (162 permisos - 54 × 3) ⭐ NUEVO
-- **Total Permisos Insertados**: 1,189 permisos (22 permisos únicos)
+  - ✅ 20251116140000_add_permissions_management_permissions.sql (162 permisos - 54 × 3)
+  - ✅ 20251116150000_add_employee_self_management_permissions.sql (108 permisos - 54 × 2)
+  - ✅ 20251116160000_add_appointments_client_permissions.sql (162 permisos - 54 × 3) ⭐ NUEVO
+- **Total Permisos Insertados**: 1,459 permisos (27 permisos únicos)
 
 ---
 
-## ✅ Módulos Protegidos (17) ⬆️ +10 nuevos 🎯 **57% COMPLETADO**
+## ✅ Módulos Protegidos (20) ⬆️ +13 nuevos 🎯 **67% COMPLETADO**
 
 ### 1. ServicesManager
 **Archivo**: `src/components/admin/services/ServicesManager.tsx`  
@@ -653,19 +655,19 @@ Durante protección de QuickSaleForm se utilizó `sales.create`.
 - ✅ Audit log actualizado
 - ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Permiso sales.create insertado correctamente"
 
-### 5. Permisos permissions.* Agregados ⭐ NUEVO (16/11/2025 - 15:45)
-Durante protección de PermissionsManager se utilizaron 3 permisos de gestión de permisos.
+### 6. Permisos employees.* de autogestión Agregados ⭐ NUEVO (16/11/2025 - 16:15)
+Durante protección de WorkScheduleEditor y TimeOffRequestModal se utilizaron 2 permisos de autogestión de empleados.
 
-**Solución**: Creada y aplicada migración 20251116140000_add_permissions_management_permissions.sql
-- ✅ 162 permisos insertados (54 admin-business × 3 permisos)
-- ✅ Permisos: permissions.assign_role, permissions.edit, permissions.delete
+**Solución**: Creada y aplicada migración 20251116150000_add_employee_self_management_permissions.sql
+- ✅ 108 permisos insertados (54 admin-business × 2 permisos)
+- ✅ Permisos: employees.edit_own_schedule, employees.request_time_off
 - ✅ Audit log actualizado
 - ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Todos los permisos insertados correctamente"
-- ✅ PermissionsManager ahora completamente funcional
+- ✅ WorkScheduleEditor y TimeOffRequestModal ahora completamente funcionales
 
 ---
 
-## ⏳ Módulos Pendientes (13/30) ⬇️ -10 módulos 🎯 **43% RESTANTE**
+## ⏳ Módulos Pendientes (12/30) ⬇️ -11 módulos 🎯 **40% RESTANTE**
 
 ### Administración (5)
 - [ ] NotificationSettings (user-level - settings.edit_own_notifications)

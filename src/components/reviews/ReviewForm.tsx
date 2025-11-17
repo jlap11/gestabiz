@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -140,13 +141,15 @@ export function ReviewForm({
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
-          <Button
-            type="submit"
-            disabled={rating === 0 || isSubmitting}
-            className="flex-1"
-          >
-            {isSubmitting ? t('common.submitting') : t('reviews.submitReview')}
-          </Button>
+          <PermissionGate permission="reviews.create" businessId={businessId} mode="disable">
+            <Button
+              type="submit"
+              disabled={rating === 0 || isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting ? t('common.submitting') : t('reviews.submitReview')}
+            </Button>
+          </PermissionGate>
           {onCancel && (
             <Button
               type="button"

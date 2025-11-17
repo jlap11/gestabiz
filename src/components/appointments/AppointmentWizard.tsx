@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import { X } from 'lucide-react';
 import { Check, Hourglass } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
@@ -1136,32 +1137,34 @@ export function AppointmentWizard({
                 Next Step →
               </Button>
             ) : (
-              <Button
-                onClick={async () => {
-                  const success = await createAppointment();
-                  if (success) {
-                    handleNext();
-                  }
-                }}
-                disabled={isSubmitting}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Hourglass size={16} weight="fill" className="animate-spin mr-2" />
-                    {' '}
-                    <span className="hidden sm:inline">Guardando...</span>
-                    <span className="sm:hidden">Guardar...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check size={16} weight="bold" className="mr-1" />
-                    <span className="hidden sm:inline">Confirmar y Reservar</span>
-                    <Check size={16} weight="bold" className="mr-1 sm:hidden" />
-                    <span className="sm:hidden">Confirmar</span>
-                  </>
-                )}
-              </Button>
+              <PermissionGate permission="appointments.create" businessId={wizardData.businessId || undefined} mode="disable">
+                <Button
+                  onClick={async () => {
+                    const success = await createAppointment();
+                    if (success) {
+                      handleNext();
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Hourglass size={16} weight="fill" className="animate-spin mr-2" />
+                      {' '}
+                      <span className="hidden sm:inline">Guardando...</span>
+                      <span className="sm:hidden">Guardar...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={16} weight="bold" className="mr-1" />
+                      <span className="hidden sm:inline">Confirmar y Reservar</span>
+                      <Check size={16} weight="bold" className="mr-1 sm:hidden" />
+                      <span className="sm:hidden">Confirmar</span>
+                    </>
+                  )}
+                </Button>
+              </PermissionGate>
             )}
           </div>
         )}
