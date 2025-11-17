@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePermissions } from '@/hooks/usePermissions-v2'
 import { OwnerBadge, OwnerListBadge } from '@/components/ui/owner-badge'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { 
   Shield, 
   Search, 
@@ -166,10 +167,12 @@ export function PermissionsManager({
             Administra roles, permisos y accesos de usuarios en tu negocio
           </p>
         </div>
-        <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Asignar Rol
-        </Button>
+        <PermissionGate permission="permissions.assign_role" businessId={businessId} mode="hide">
+          <Button className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Asignar Rol
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Tabs */}
@@ -314,22 +317,26 @@ export function PermissionsManager({
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleSelectUser(user)}
-                                disabled={user.is_owner && user.id !== currentUserId}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              {!user.is_owner && (
+                              <PermissionGate permission="permissions.edit" businessId={businessId} mode="hide">
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => handleSelectUser(user)}
+                                  disabled={user.is_owner && user.id !== currentUserId}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Edit className="h-4 w-4" />
                                 </Button>
+                              </PermissionGate>
+                              {!user.is_owner && (
+                                <PermissionGate permission="permissions.delete" businessId={businessId} mode="hide">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </PermissionGate>
                               )}
                             </div>
                           </TableCell>

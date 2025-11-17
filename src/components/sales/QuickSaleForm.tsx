@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import { usePreferredLocation } from '@/hooks/usePreferredLocation'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 
 interface Service {
   id: string
@@ -435,23 +436,25 @@ export function QuickSaleForm({ businessId, onSuccess }: QuickSaleFormProps) {
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Registrando...
-                </>
-              ) : (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Registrar Venta
-                </>
-              )}
-            </Button>
+            <PermissionGate permission="sales.create" businessId={businessId} mode="hide">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Registrando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Registrar Venta
+                  </>
+                )}
+              </Button>
+            </PermissionGate>
             <Button
               type="button"
               variant="outline"

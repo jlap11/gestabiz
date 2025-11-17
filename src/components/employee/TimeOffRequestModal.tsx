@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CustomDateInput } from '@/components/ui/custom-date-input';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import { TimeOffType } from '@/hooks/useEmployeeTimeOff';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -246,14 +247,16 @@ export function TimeOffRequestModal({
           >
             {t('common.actions.cancel')}
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading || !startDate || !endDate}
-            className="w-full sm:w-auto min-h-[44px]"
-          >
-            {loading ? t('common.actions.send') : t('common.actions.submit')}
-          </Button>
+          <PermissionGate permission="employees.request_time_off" businessId={businessId} mode="disable">
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || !startDate || !endDate}
+              className="w-full sm:w-auto min-h-[44px]"
+            >
+              {loading ? t('common.actions.send') : t('common.actions.submit')}
+            </Button>
+          </PermissionGate>
         </DialogFooter>
       </DialogContent>
     </Dialog>

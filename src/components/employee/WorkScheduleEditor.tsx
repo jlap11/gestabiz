@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -438,19 +439,21 @@ export function WorkScheduleEditor({
 
         {/* Botón Guardar */}
         <div className="flex justify-end pt-4 border-t">
-          <Button onClick={handleSave} disabled={saving} className="min-w-[120px]">
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                {t('common.actions.saving')}
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                {t('common.actions.save')}
-              </>
-            )}
-          </Button>
+          <PermissionGate permission="employees.edit_own_schedule" businessId={businessId} mode="disable">
+            <Button onClick={handleSave} disabled={saving} className="min-w-[120px]">
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  {t('common.actions.saving')}
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  {t('common.actions.save')}
+                </>
+              )}
+            </Button>
+          </PermissionGate>
         </div>
       </CardContent>
     </Card>

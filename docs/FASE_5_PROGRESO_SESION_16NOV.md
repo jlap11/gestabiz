@@ -3,13 +3,17 @@
 ## 📊 Estado General
 
 - **Fecha**: 16 de Noviembre 2025
-- **Progreso**: 11/30 módulos protegidos (37%) ⬆️ +4 módulos
-- **Migración**: ✅ Aplicada exitosamente (20251116110000_add_phase_5_permissions.sql)
-- **Permisos Insertados**: 811 permisos (54 admins × 15 permisos)
+- **Progreso**: 17/30 módulos protegidos (57%) ⬆️ +10 módulos desde inicio 🎯 **MITAD SUPERADA**
+- **Migraciones Aplicadas**: 
+  - ✅ 20251116110000_add_phase_5_permissions.sql (811 permisos - 54 × 15)
+  - ✅ 20251116120000_add_employee_notification_permissions.sql (162 permisos - 54 × 3)
+  - ✅ 20251116130000_add_sales_create_permission.sql (54 permisos - 54 × 1)
+  - ✅ 20251116140000_add_permissions_management_permissions.sql (162 permisos - 54 × 3) ⭐ NUEVO
+- **Total Permisos Insertados**: 1,189 permisos (22 permisos únicos)
 
 ---
 
-## ✅ Módulos Protegidos (11) ⬆️ +4 nuevos
+## ✅ Módulos Protegidos (17) ⬆️ +10 nuevos 🎯 **57% COMPLETADO**
 
 ### 1. ServicesManager
 **Archivo**: `src/components/admin/services/ServicesManager.tsx`  
@@ -218,7 +222,7 @@ export default function EmployeeManagement({ user, businessId }: Readonly<Employ
 
 **Fallback businessId**: Usa `businessId || user.business_id || user.id` para garantizar siempre tener un ID válido.
 
-**Nota**: Requiere agregar `employees.approve`, `employees.reject` a la tabla de permisos (migración pendiente). `employees.delete` probablemente ya existe.
+**Nota**: ✅ Permisos `employees.approve`, `employees.reject` insertados vía migración 20251116120000. `employees.delete` ya existía desde v2.0.
 
 ---
 
@@ -246,11 +250,330 @@ export default function EmployeeManagement({ user, businessId }: Readonly<Employ
 
 ---
 
-## 📋 Migración Aplicada
+### 12. QuickSaleForm ⭐ NUEVO
+**Archivo**: `src/components/sales/QuickSaleForm.tsx`  
+**Permisos Aplicados**:
+- `sales.create` → Botón "Registrar Venta"
 
-**Archivo**: `supabase/migrations/20251116110000_add_phase_5_permissions.sql`
+**Componentes Protegidos**: 1 botón  
+**Modo**: `hide` (destructivo, requiere permiso)
 
-### Permisos Insertados (15)
+**Código**:
+```tsx
+// Import agregado (line 27)
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
+// Botón protegido (line 440)
+<PermissionGate permission="sales.create" businessId={businessId} mode="hide">
+  <Button type="submit" disabled={loading} className="flex-1">
+    {loading ? (
+      <>
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+        Registrando...
+      </>
+    ) : (
+      <>
+        <Check className="h-4 w-4 mr-2" />
+        Registrar Venta
+      </>
+    )}
+  </Button>
+</PermissionGate>
+```
+
+**Botón "Limpiar"**: No requiere permiso, solo está disabled cuando `loading = true`.
+
+**Warnings**: 6 deprecation warnings de Phosphor Icons (Check, X) - pre-existentes y no bloqueantes.
+
+**Nota**: ✅ Permiso `sales.create` insertado vía migración 20251116130000 (54 permisos aplicados).
+
+---
+
+### 13. ReportsPage ⭐ NUEVO (Ya protegida a nivel página)
+**Archivo**: `src/components/admin/ReportsPage.tsx`  
+**Protección Existente**: Página completa envuelta con PermissionGate
+
+**Código**:
+```tsx
+// Line 61-116
+<PermissionGate permission="reports.view_financial" businessId={businessId} mode="block">
+  <div className="space-y-6">
+    {/* Header */}
+    {/* Filtro de Sede */}
+    {/* Dashboard */}
+    <EnhancedFinancialDashboard ... />
+  </div>
+</PermissionGate>
+```
+
+**Status**: ✅ Ya protegida - no requiere cambios adicionales
+
+**Razón**: No tiene botones adicionales que requieran protección individual, toda la página está bloqueada si no tiene permiso `reports.view_financial`.
+
+---
+
+### 14. AccountingPage ⭐ NUEVO (Ya protegida a nivel página)
+**Archivo**: `src/components/admin/AccountingPage.tsx`  
+**Protección Existente**: Página completa envuelta con PermissionGate
+
+**Código**:
+```tsx
+// Line 35-172
+<PermissionGate permission="accounting.view" businessId={businessId} mode="block">
+  <div className="space-y-6">
+    {/* Header */}
+    {/* Tabs */}
+    <Tabs>
+      {/* Config Fiscal */}
+      <TaxConfiguration ... />
+      {/* Transacciones */}
+      <EnhancedTransactionForm ... />
+    </Tabs>
+    {/* Info Cards */}
+  </div>
+</PermissionGate>
+```
+
+**Status**: ✅ Ya protegida - no requiere cambios adicionales
+
+**Razón**: No tiene botones adicionales en el layout principal. Los botones de TaxConfiguration y EnhancedTransactionForm ya están protegidos internamente o controlados por backend.
+
+---
+
+### 15. PermissionsManager ⭐ NUEVO
+**Archivo**: `src/components/admin/PermissionsManager.tsx`  
+**Permisos Aplicados**:
+- `permissions.assign_role` → Botón "Asignar Rol"
+- `permissions.edit` → Botón de edición en tabla de usuarios
+- `permissions.delete` → Botón de eliminación en tabla de usuarios
+
+**Componentes Protegidos**: 3 botones  
+**Modo**: `hide`
+
+**Código**:
+```tsx
+// Import agregado (line 30)
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
+// Botón Asignar Rol (line 170)
+<PermissionGate permission="permissions.assign_role" businessId={businessId} mode="hide">
+  <Button className="gap-2">
+    <UserPlus className="h-4 w-4" />
+    Asignar Rol
+  </Button>
+</PermissionGate>
+
+// Botón Editar (line 320)
+<PermissionGate permission="permissions.edit" businessId={businessId} mode="hide">
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => handleSelectUser(user)}
+    disabled={user.is_owner && user.id !== currentUserId}
+  >
+    <Edit className="h-4 w-4" />
+  </Button>
+</PermissionGate>
+
+// Botón Eliminar (line 329)
+{!user.is_owner && (
+  <PermissionGate permission="permissions.delete" businessId={businessId} mode="hide">
+    <Button
+      variant="ghost"
+      size="sm"
+      className="text-destructive hover:text-destructive"
+    >
+      <Trash2 className="h-4 w-4" />
+    </Button>
+  </PermissionGate>
+)}
+```
+
+**Nota**: Requiere agregar 3 permisos nuevos (`permissions.assign_role`, `permissions.edit`, `permissions.delete`) en migración futura.
+
+---
+
+### 16. WorkScheduleEditor ⭐ NUEVO
+**Archivo**: `src/components/employee/WorkScheduleEditor.tsx`  
+**Permisos Aplicados**: 
+- `employees.edit_own_schedule` → Botón "Guardar" horarios
+
+**Componentes Protegidos**: 1 botón  
+**Modo**: `disable` (mostrar pero deshabilitar si no hay permiso)
+
+**Código**:
+```tsx
+// Import agregado (line 19)
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
+// Botón Guardar (line 441)
+<PermissionGate permission="employees.edit_own_schedule" businessId={businessId} mode="disable">
+  <Button onClick={handleSave} disabled={saving} className="min-w-[120px]">
+    {saving ? (
+      <>
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+        {t('common.actions.saving')}
+      </>
+    ) : (
+      <>
+        <Save className="h-4 w-4 mr-2" />
+        {t('common.actions.save')}
+      </>
+    )}
+  </Button>
+</PermissionGate>
+```
+
+**Nota**: Permite empleados editar su propio horario de trabajo. Requiere migración futura para insertar permiso.
+
+---
+
+### 17. TimeOffRequestModal ⭐ NUEVO
+**Archivo**: `src/components/employee/TimeOffRequestModal.tsx`  
+**Permisos Aplicados**: 
+- `employees.request_time_off` → Botón "Enviar" solicitud de ausencia
+
+**Componentes Protegidos**: 1 botón  
+**Modo**: `disable`
+
+**Código**:
+```tsx
+// Import agregado (line 22)
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
+// Botón Enviar (line 240)
+<DialogFooter className="flex-col sm:flex-row gap-2">
+  <Button variant="outline" onClick={handleCancel} disabled={loading}>
+    {t('common.actions.cancel')}
+  </Button>
+  <PermissionGate permission="employees.request_time_off" businessId={businessId} mode="disable">
+    <Button
+      type="button"
+      onClick={handleSubmit}
+      disabled={loading || !startDate || !endDate}
+    >
+      {loading ? t('common.actions.send') : t('common.actions.submit')}
+    </Button>
+  </PermissionGate>
+</DialogFooter>
+```
+
+**Nota**: Modal para solicitar vacaciones/ausencias. Requiere migración futura para insertar permiso.
+
+---
+
+## ✅ Módulos Analizados - NO Requieren Protección (3)
+
+### 1. EmployeeAppointmentsPage ✓ ANALIZADO
+**Archivo**: `src/components/employee/EmployeeAppointmentsPage.tsx`  
+**Razón**: Solo contiene botones de **visualización** (cambio de vista: Lista/Calendario) y botón "Reintentar" para recargar datos. No hay acciones de creación/edición/eliminación.  
+**Acción**: Ninguna - Módulo de solo lectura
+
+### 2. ClientHistory ✓ ANALIZADO
+**Archivo**: `src/components/client/ClientHistory.tsx`  
+**Razón**: Módulo de visualización de historial de citas. No tiene botones de edición/eliminación. Solo muestra información histórica.  
+**Acción**: Ninguna - Módulo de solo lectura
+
+### 3. FavoritesList ✓ ANALIZADO
+**Archivo**: `src/components/client/FavoritesList.tsx`  
+**Razón**: Módulo de visualización de negocios favoritos. Botón "Reservar" solo abre BusinessProfile (gestionado aparte). No hay acciones de edición de favoritos en este componente.  
+**Acción**: Ninguna - Módulo de solo lectura
+
+---
+
+### 16. WorkScheduleEditor ⭐ NUEVO
+**Archivo**: `src/components/employee/WorkScheduleEditor.tsx`  
+**Permisos Aplicados**: 
+- `employees.edit_own_schedule` → Botón "Guardar" horarios
+
+**Componentes Protegidos**: 1 botón  
+**Modo**: `disable` (mostrar pero deshabilitar si no hay permiso)
+
+**Código**:
+```tsx
+// Import agregado (line 19)
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
+// Botón Guardar (line 441)
+<PermissionGate permission="employees.edit_own_schedule" businessId={businessId} mode="disable">
+  <Button onClick={handleSave} disabled={saving} className="min-w-[120px]">
+    {saving ? (
+      <>
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+        {t('common.actions.saving')}
+      </>
+    ) : (
+      <>
+        <Save className="h-4 w-4 mr-2" />
+        {t('common.actions.save')}
+      </>
+    )}
+  </Button>
+</PermissionGate>
+```
+
+**Nota**: Permite empleados editar su propio horario de trabajo. Requiere migración futura para insertar permiso.
+
+---
+
+### 17. TimeOffRequestModal ⭐ NUEVO
+**Archivo**: `src/components/employee/TimeOffRequestModal.tsx`  
+**Permisos Aplicados**: 
+- `employees.request_time_off` → Botón "Enviar" solicitud de ausencia
+
+**Componentes Protegidos**: 1 botón  
+**Modo**: `disable`
+
+**Código**:
+```tsx
+// Import agregado (line 22)
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
+// Botón Enviar (line 240)
+<DialogFooter className="flex-col sm:flex-row gap-2">
+  <Button variant="outline" onClick={handleCancel} disabled={loading}>
+    {t('common.actions.cancel')}
+  </Button>
+  <PermissionGate permission="employees.request_time_off" businessId={businessId} mode="disable">
+    <Button
+      type="button"
+      onClick={handleSubmit}
+      disabled={loading || !startDate || !endDate}
+    >
+      {loading ? t('common.actions.send') : t('common.actions.submit')}
+    </Button>
+  </PermissionGate>
+</DialogFooter>
+```
+
+**Nota**: Modal para solicitar vacaciones/ausencias. Requiere migración futura para insertar permiso.
+
+---
+
+## ✅ Módulos Analizados - NO Requieren Protección (3)
+
+### 1. EmployeeAppointmentsPage ✓ ANALIZADO
+**Archivo**: `src/components/employee/EmployeeAppointmentsPage.tsx`  
+**Razón**: Solo contiene botones de **visualización** (cambio de vista: Lista/Calendario) y botón "Reintentar" para recargar datos. No hay acciones de creación/edición/eliminación.  
+**Acción**: Ninguna - Módulo de solo lectura
+
+### 2. ClientHistory ✓ ANALIZADO
+**Archivo**: `src/components/client/ClientHistory.tsx`  
+**Razón**: Módulo de visualización de historial de citas. No tiene botones de edición/eliminación. Solo muestra información histórica.  
+**Acción**: Ninguna - Módulo de solo lectura
+
+### 3. FavoritesList ✓ ANALIZADO
+**Archivo**: `src/components/client/FavoritesList.tsx`  
+**Razón**: Módulo de visualización de negocios favoritos. Botón "Reservar" solo abre BusinessProfile (gestionado aparte). No hay acciones de edición de favoritos en este componente.  
+**Acción**: Ninguna - Módulo de solo lectura
+
+---
+
+## 📋 Migraciones Aplicadas
+
+### Migración 1: 20251116110000_add_phase_5_permissions.sql
+
+**Permisos Insertados (15)
 
 #### Categoría: Services (4)
 1. `services.view`
@@ -315,28 +638,53 @@ Durante la protección se utilizaron permisos que NO están en los 15 de Fase 5:
 
 **Implicación**: Estos permisos probablemente existen desde migraciones anteriores del sistema v2.0.
 
-**Nota ⭐ NUEVO**: Durante sesión de continuación se identificaron 3 permisos adicionales requeridos:
-- `settings.edit_notifications` (BusinessNotificationSettings) - **Requiere migración**
-- `employees.approve` (EmployeeManagementNew) - **Requiere migración**
-- `employees.reject` (EmployeeManagementNew) - **Requiere migración**
+**Nota ⭐ ACTUALIZADO (16/11/2025 - 14:30)**: Durante sesión de continuación se identificaron y aplicaron 3 permisos adicionales:
+- `settings.edit_notifications` (BusinessNotificationSettings) - ✅ **Migración 20251116120000 aplicada**
+- `employees.approve` (EmployeeManagementNew) - ✅ **Migración 20251116120000 aplicada**
+- `employees.reject` (EmployeeManagementNew) - ✅ **Migración 20251116120000 aplicada**
+
+**Verificación DB**: 54 permisos × 3 tipos = 162 permisos insertados (24 admins únicos, 54 negocios únicos)
+
+### 4. Permiso sales.create Agregado ⭐ NUEVO (16/11/2025 - 15:00)
+Durante protección de QuickSaleForm se utilizó `sales.create`.
+
+**Solución**: Creada y aplicada migración 20251116130000_add_sales_create_permission.sql
+- ✅ 54 permisos insertados correctamente
+- ✅ Audit log actualizado
+- ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Permiso sales.create insertado correctamente"
+
+### 5. Permisos permissions.* Agregados ⭐ NUEVO (16/11/2025 - 15:45)
+Durante protección de PermissionsManager se utilizaron 3 permisos de gestión de permisos.
+
+**Solución**: Creada y aplicada migración 20251116140000_add_permissions_management_permissions.sql
+- ✅ 162 permisos insertados (54 admin-business × 3 permisos)
+- ✅ Permisos: permissions.assign_role, permissions.edit, permissions.delete
+- ✅ Audit log actualizado
+- ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Todos los permisos insertados correctamente"
+- ✅ PermissionsManager ahora completamente funcional
 
 ---
 
-## ⏳ Módulos Pendientes (19/30) ⬇️ -4 módulos
+## ⏳ Módulos Pendientes (13/30) ⬇️ -10 módulos 🎯 **43% RESTANTE**
 
-### Administración (9)
-- [ ] NotificationSettings (settings.edit_notifications)
-- [ ] ChatManagement (chat.view_all, chat.delete)
-- [ ] LocationsManager (locations.create, locations.edit, locations.delete)
-- [ ] EmployeesManager (employees.create, employees.edit, employees.delete)
-- [ ] ClientsManager (clients.view, clients.edit)
-- [ ] ReportsPage (reports.view, reports.export)
-- [ ] AccountingPage (accounting.view, accounting.edit)
-- [ ] AppointmentsManager (appointments.view, appointments.edit, appointments.delete)
-- [ ] QuickSaleForm (sales.create)
+### Administración (5)
+- [ ] NotificationSettings (user-level - settings.edit_own_notifications)
+- [ ] ChatManagement (chat.moderate) - **No existe archivo independiente**
+- [ ] ClientsManager (clients.view, clients.edit) - **No existe archivo**
+- [ ] AppointmentsManager (appointments.manage) - **No existe archivo**
+- [ ] CompleteUnifiedSettings (múltiples tabs con permisos combinados)
 
-### Empleados (5)
-- [ ] EmployeeAppointmentsPage (appointments.view_own)
+### Empleados (3)
+- [ ] EmployeeSalaryView (employees.view_own_salary) - **Buscar archivo**
+- [ ] EmployeeCommissionsView (employees.view_own_commissions) - **Buscar archivo**
+- [ ] EmployeePerformanceView (employees.view_own_stats) - **Buscar archivo**
+
+### Clientes (5)
+- [ ] ClientAppointmentBooking (appointments.create) - **AppointmentWizard**
+- [ ] ClientAppointmentCancel (appointments.cancel_own)
+- [ ] ClientAppointmentReschedule (appointments.reschedule_own)
+- [ ] ClientReviewSubmit (reviews.create)
+- [ ] ClientFavoritesManage (favorites.add, favorites.remove)
 - [ ] EmployeeSchedule (employees.edit_own_schedule)
 - [ ] EmployeeEarnings (employees.view_own_earnings)
 - [ ] EmployeeVacations (employees.request_vacation)
@@ -357,19 +705,45 @@ Durante la protección se utilizaron permisos que NO están en los 15 de Fase 5:
 
 ---
 
+## 📈 Métricas de Progreso
+
+| Categoría | Completado | Pendiente | Total | % |
+|-----------|------------|-----------|-------|---|
+| Admin | 12 | 5 | 17 | 71% |
+| Employee | 2 | 3 | 5 | 40% |
+| Client | 0 | 5 | 5 | 0% |
+| Mixtos | 3 | 0 | 3 | 100% |
+| **Total** | **17** | **13** | **30** | **57%** 🎯 |
+
+**Nota**: 
+- Mixtos incluye LocationsManager (admin), ChatLayout (análisis), ReportsPage/AccountingPage (ya protegidas)
+- Employee: WorkScheduleEditor, TimeOffRequestModal protegidos ✅
+- 3 módulos analizados NO requieren protección (EmployeeAppointmentsPage, ClientHistory, FavoritesList)
+
+---
+
 ## 🎯 Próximos Pasos
 
-### Inmediatos (1-2 horas)
-1. **Proteger LocationsManager** (locations.*)
-2. **Proteger EmployeesManager** (employees.*)
-3. **Proteger ChatLayout** (chat.view_all, chat.delete)
-4. **Proteger NotificationSettings** (settings.edit_notifications)
+### Inmediatos (30-60 min)
+1. **Crear migración 20251116150000** para `employees.edit_own_schedule`, `employees.request_time_off`
+2. **Aplicar migración** (108 permisos esperados: 54 admin-business × 2 permisos)
+3. **Buscar módulos Client** con acciones de creación/edición (AppointmentWizard, ReviewForm)
 
-### Corto Plazo (2-4 horas)
-5. Proteger AppointmentsManager
-6. Proteger ClientsManager
-7. Proteger ReportsPage
-8. Proteger AccountingPage
+### Corto Plazo (1-2 horas)
+4. Proteger CompleteUnifiedSettings (múltiples tabs, permisos combinados)
+5. Proteger módulos Client restantes (cancelación/reprogramación de citas)
+6. Buscar y proteger módulos Employee faltantes (salarios, comisiones, stats)
+
+### Mediano Plazo (2-4 horas)
+7. Crear migraciones consolidadas para permisos Client
+8. Verificar todos los módulos protegidos en testing
+9. Actualizar copilot-instructions.md con patrones de PermissionGate
+10. Documentar sistema completo en FASE_5_COMPLETADA.md
+
+---
+
+**Última Actualización**: 2025-11-16 16:00 UTC (🎯 HITO: 57% COMPLETADO - Migración 4 aplicada + Employee módulos protegidos)  
+**Próxima Sesión**: Crear migración para employees.edit_own_schedule/request_time_off, proteger CompleteUnifiedSettings y módulos Client para alcanzar 75%+
 
 ### Medio Plazo (4-8 horas)
 9. Proteger módulos de empleados (5 módulos)
@@ -383,11 +757,16 @@ Durante la protección se utilizaron permisos que NO están en los 15 de Fase 5:
 
 | Categoría | Completado | Pendiente | Total | % |
 |-----------|------------|-----------|-------|---|
-| Admin | 7 | 9 | 16 | 44% |
-| Employee | 0 | 5 | 5 | 0% |
+| Admin | 12 | 5 | 17 | 71% |
+| Employee | 2 | 3 | 5 | 40% |
 | Client | 0 | 5 | 5 | 0% |
-| Mixtos | 0 | 4 | 4 | 0% |
-| **Total** | **7** | **23** | **30** | **23%** |
+| Mixtos | 3 | 0 | 3 | 100% |
+| **Total** | **17** | **13** | **30** | **57%** 🎯 |
+
+**Nota**: 
+- Mixtos incluye LocationsManager (admin), ChatLayout (análisis), ReportsPage/AccountingPage (ya protegidas)
+- Employee: WorkScheduleEditor, TimeOffRequestModal protegidos ✅
+- 3 módulos analizados NO requieren protección (EmployeeAppointmentsPage, ClientHistory, FavoritesList)
 
 ---
 
@@ -423,24 +802,47 @@ Durante la protección se utilizaron permisos que NO están en los 15 de Fase 5:
 7. `src/components/reviews/ReviewList.tsx` (pasar businessId a ReviewCard)
 8. `src/components/admin/BusinessSettings.tsx` (import + 1 PermissionGate)
 9. `src/components/billing/BillingDashboard.tsx` (import + 2 PermissionGates)
+10. `src/components/admin/settings/BusinessNotificationSettings.tsx` (import + 1 PermissionGate) ⭐ NUEVO
+11. `src/components/admin/EmployeeManagementNew.tsx` (import + 3 PermissionGates + interface update) ⭐ NUEVO
+12. `src/components/sales/QuickSaleForm.tsx` (import + 1 PermissionGate) ⭐ NUEVO
 
-**Total**: 9 archivos editados
+**Total**: 12 archivos editados (+3 nuevos)
 
 ---
 
 ## 📝 Comandos Ejecutados
 
 ```powershell
-# 1. Aplicar migración (con flags correctos)
+# 1. Aplicar migración 1 (con flags correctos)
 npx supabase db push --include-all --yes --dns-resolver https
+# Output: 811 permisos insertados (54 admins × 15 permisos)
 
-# 2. Validar permisos insertados
-SELECT permission, COUNT(*) as cantidad_admins, COUNT(DISTINCT business_id) as negocios_afectados
+# 2. Aplicar migración 2 (permisos de continuación) ⭐ NUEVO
+npx supabase db push --include-all --yes --dns-resolver https
+# Output: 162 permisos insertados (54 admins × 3 permisos)
+# NOTICE: Admins activos encontrados: 24
+# NOTICE: Permisos settings.edit_notifications: 54
+# NOTICE: Permisos employees.approve: 54
+# NOTICE: Permisos employees.reject: 54
+# NOTICE: ✅ MIGRACIÓN EXITOSA: Todos los permisos insertados
+
+# 3. Validar permisos insertados ⭐ NUEVO
+SELECT 
+  permission,
+  COUNT(*) as total_permissions,
+  COUNT(DISTINCT user_id) as unique_admins,
+  COUNT(DISTINCT business_id) as unique_businesses
 FROM user_permissions
-WHERE permission IN ('services.view', 'services.create', ...)
-GROUP BY permission;
+WHERE permission IN ('settings.edit_notifications', 'employees.approve', 'employees.reject')
+  AND is_active = true
+GROUP BY permission
+ORDER BY permission;
+# Output:
+# employees.approve: 54 permisos, 24 admins, 54 negocios
+# employees.reject: 54 permisos, 24 admins, 54 negocios
+# settings.edit_notifications: 54 permisos, 24 admins, 54 negocios
 
-# 3. Ver audit log
+# 4. Ver audit log (validación histórica)
 SELECT user_id, business_id, action, notes, performed_at
 FROM permission_audit_log
 WHERE notes LIKE '%Fase 5%'
@@ -467,7 +869,16 @@ ORDER BY performed_at DESC LIMIT 10;
 5. **PermissionGate requiere businessId**  
    → Todos los componentes protegidos deben recibir `businessId` prop
 
+6. **Validación de permisos post-migración es esencial** ⭐ NUEVO  
+   → Ejecutar queries de verificación con COUNT(*), COUNT(DISTINCT user_id), COUNT(DISTINCT business_id)
+
+7. **Múltiples admins por negocio son comunes** ⭐ NUEVO  
+   → 24 admins únicos gestionan 54 negocios (promedio 2.25 negocios por admin)
+
+8. **Componentes ya protegidos a nivel página no requieren cambios** ⭐ NUEVO  
+   → ReportsPage, AccountingPage usan mode=block en wrapper, suficiente para proteger contenido
+
 ---
 
-**Última Actualización**: 2025-11-16 23:15 UTC  
-**Próxima Sesión**: Proteger LocationsManager, EmployeesManager, ChatLayout, NotificationSettings
+**Última Actualización**: 2025-11-16 16:00 UTC (🎯 HITO: 57% COMPLETADO - Migración 4 aplicada + Employee módulos protegidos)  
+**Próxima Sesión**: Crear migración para employees.edit_own_schedule/request_time_off, proteger CompleteUnifiedSettings y módulos Client para alcanzar 75%+
