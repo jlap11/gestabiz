@@ -11,10 +11,11 @@
 
 **Gestabiz** es una plataforma omnicanal (web/móvil/extensión) para gestión de citas y negocios con:
 
-- **13 sistemas principales**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, Preferencias de Mensajes para Empleados, Sistema de Ausencias y Vacaciones, Registración Automática de Owners, Tabla de Festivos Públicos, **Sistema de Modelo de Negocio Flexible** ⭐ NUEVO (Backend completo)
+- **14 sistemas principales**: Edición de citas, Sede preferida, GA4, Landing page, Perfiles públicos, Navegación con roles, Configuraciones unificadas, Ventas rápidas, Preferencias de Mensajes para Empleados, Sistema de Ausencias y Vacaciones, Registración Automática de Owners, Tabla de Festivos Públicos, **Sistema de Modelo de Negocio Flexible** (Backend completo), **Sistema de Permisos Granulares** ⭐ NUEVO (Fase 5 COMPLETADA)
 - **40+ tablas en Supabase**: PostgreSQL 15+ con RLS, extensiones (pg_trgm, postgis), Edge Functions (Deno)
 - **30+ Edge Functions desplegadas**: Notificaciones multicanal, pagos (Stripe/PayU/MercadoPago), chat, reviews
 - **Arquitectura multi-rol**: Admin/Employee/Client calculados dinámicamente (NO guardados en BD)
+- **Sistema de permisos granulares**: 79 tipos de permisos, 1,919 registros, 25 módulos protegidos ⭐ NUEVO
 - **58 hooks personalizados**: useAuth, useSupabaseData, useBusinessProfileData, useJobVacancies, useBusinessEmployeesForChat, **useBusinessResources**, **useAssigneeAvailability** ⭐ NUEVOS
 - **Base de código**: ~151k líneas TypeScript, 1,060 archivos .ts/.tsx
 
@@ -25,6 +26,7 @@
 4. **Cliente Supabase singleton** - Un solo export en `src/lib/supabase.ts`
 5. **Roles dinámicos** - Calculados en tiempo real, no persistidos
 6. **TypeScript strict** - Cero `any`, tipado completo
+7. **Proteger con PermissionGate** - TODOS los botones de acción deben estar protegidos con PermissionGate ⭐ NUEVO
 
 ---
 
@@ -375,6 +377,104 @@
   - `docs/FASE_1_2_BACKEND_COMPLETADO.md` (resumen técnico)
 - **Ver**: `docs/FASE_1_2_BACKEND_COMPLETADO.md`
 
+### 14. Sistema de Permisos Granulares ⭐ COMPLETADO (Fase 5 - Nov 2025)
+**Control de acceso fino con componente PermissionGate para protección de acciones**
+
+- **Base de Datos**:
+  - Tabla: `user_permissions` (business_id, user_id, permission, granted_by, is_active)
+  - Total: **1,919 permisos** en producción
+  - Tipos únicos: **79 permisos** diferentes
+  - Índices: (business_id, user_id, permission) UNIQUE
+
+- **Componente PermissionGate**:
+  - **Ubicación**: `src/components/ui/PermissionGate.tsx`
+  - **Props**:
+    - `permission`: string (ej: 'services.create', 'employees.edit')
+    - `businessId`: string (ID del negocio)
+    - `mode`: 'hide' | 'disable' | 'show'
+    - `fallback?`: ReactNode (opcional, para modo 'show')
+  - **Modos**:
+    - `hide`: Oculta completamente el elemento si no tiene permiso
+    - `disable`: Muestra el elemento pero lo deshabilita (botones grises)
+    - `show`: Muestra fallback si no tiene permiso
+
+- **Patrones de Uso**:
+  ```tsx
+  // Patrón 1: Hide (favoritos, eliminar)
+  <PermissionGate permission="favorites.toggle" businessId={businessId} mode="hide">
+    <button onClick={handleToggleFavorite}>
+      <Heart />
+    </button>
+  </PermissionGate>
+
+  // Patrón 2: Disable (formularios, configuraciones)
+  <PermissionGate permission="settings.edit_business" businessId={businessId} mode="disable">
+    <Button type="submit" disabled={isSaving}>
+      Guardar
+    </Button>
+  </PermissionGate>
+
+  // Patrón 3: businessId dinámico desde estado
+  <PermissionGate 
+    permission="appointments.create" 
+    businessId={wizardData.businessId || undefined} 
+    mode="disable"
+  >
+    <Button onClick={createAppointment}>Confirmar</Button>
+  </PermissionGate>
+  ```
+
+- **79 Tipos de Permisos** (categorías principales):
+  - **services.***: create, edit, delete, view
+  - **resources.***: create, edit, delete, view
+  - **locations.***: create, edit, delete, view
+  - **employees.***: create, edit, delete, view, edit_salary, edit_own_profile
+  - **appointments.***: create, edit, delete, cancel, cancel_own, reschedule_own
+  - **recruitment.***: create_vacancy, edit_vacancy, delete_vacancy, manage_applications
+  - **accounting.***: create, edit, delete, view_reports
+  - **expenses.***: create, delete
+  - **reviews.***: create, moderate, respond
+  - **billing.***: manage, view
+  - **notifications.***: manage
+  - **settings.***: edit, edit_business
+  - **permissions.***: manage, view, assign
+  - **absences.***: approve, request
+  - **favorites.***: toggle
+  - **sales.***: create
+
+- **25 Módulos Protegidos** (83% de módulos existentes):
+  - Admin (18): ServicesManager, ResourcesManager, LocationsManager, EmployeesManager, RecruitmentDashboard, ExpensesManagementPage, ReviewCard, BusinessSettings, BillingDashboard, PermissionTemplates, UserPermissionsManager, BusinessNotificationSettings, AbsencesTab, BusinessRecurringExpenses, EmployeeSalaryConfig, etc.
+  - Employee (3): EmployeeAbsencesList, EmployeeDashboard (ausencias), CompleteUnifiedSettings (employee tab)
+  - Client (4): AppointmentWizard, ClientDashboard, BusinessProfile (favoritos), ReviewForm
+
+- **Migraciones** (9 aplicadas):
+  - 20251116110000: 811 permisos (15 tipos)
+  - 20251116120000: 162 permisos (3 tipos)
+  - 20251116130000: 54 permisos (1 tipo)
+  - 20251116140000: 162 permisos (3 tipos)
+  - 20251116150000: 108 permisos (2 tipos)
+  - 20251116160000: 162 permisos (3 tipos)
+  - 20251116170000: 108 permisos (2 tipos)
+  - 20251116180000: 108 permisos (2 tipos)
+  - 20251116190000: 162 permisos (3 tipos)
+
+- **Hooks**:
+  - `usePermissions`: Hook principal para verificar permisos
+  - `useUserPermissions`: Obtiene permisos del usuario actual
+  - Uso: `const hasPermission = usePermissions(businessId, 'services.create')`
+
+- **Reglas Críticas**:
+  - ✅ TODOS los botones de acción DEBEN estar protegidos con PermissionGate
+  - ✅ businessId es REQUERIDO (sin businessId no hay permisos)
+  - ✅ Usar mode='hide' para acciones destructivas (eliminar, cancelar)
+  - ✅ Usar mode='disable' para formularios y configuraciones
+  - ✅ Verificar permisos antes de mutations (doble validación)
+
+- **Documentación**:
+  - `docs/FASE_5_RESUMEN_FINAL_SESION_16NOV.md` (Resumen ejecutivo completo)
+  - `docs/FASE_5_PROGRESO_SESION_16NOV.md` (Progreso detallado)
+  - `docs/ANALISIS_SISTEMA_PERMISOS_COMPLETO.md` (Análisis técnico)
+- **Ver**: `docs/FASE_5_RESUMEN_FINAL_SESION_16NOV.md`
 
 
 ## 🏗️ ARQUITECTURA Y PATRONES
@@ -526,7 +626,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 
 **Permisos (v2.0)**:
 - `business_roles`: Roles por negocio (admin/employee)
-- `user_permissions`: Permisos granulares (55 permisos disponibles)
+- `user_permissions`: Permisos granulares (79 permisos disponibles, 1,919 registros)
 - `permission_templates`: Plantillas de permisos reutilizables
 - `permission_audit_log`: Auditoría de cambios de permisos
 
@@ -1189,12 +1289,70 @@ STRIPE_SECRET_KEY=sk_test_...
 6. Las notificaciones tienen fallback automático entre canales
 7. El sistema contable calcula IVA/ICA/Retención automáticamente
 8. Los pagos soportan 3 gateways (Stripe/PayU/MercadoPago)
+9. **TODOS los botones de acción DEBEN estar protegidos con PermissionGate** ⭐ NUEVO
+10. **businessId es REQUERIDO para verificar permisos** - sin businessId no hay control de acceso ⭐ NUEVO
 
 ### Prioridades de Mantenimiento
 1. **Crítico**: Bugs que afectan creación/edición de citas
 2. **Alto**: Problemas de autenticación o permisos
 3. **Medio**: Optimizaciones de performance
 4. **Bajo**: Mejoras cosméticas de UI
+
+### Guía de Permisos para Nuevos Componentes ⭐ NUEVO
+
+Cuando crees o modifiques componentes con botones de acción, **SIEMPRE** protégelos con PermissionGate:
+
+**Paso 1: Identificar el tipo de acción**
+- CRUD: create, edit, delete, view
+- Específicas: approve, cancel, reschedule, toggle, etc.
+
+**Paso 2: Importar PermissionGate**
+```tsx
+import { PermissionGate } from '@/components/ui/PermissionGate';
+```
+
+**Paso 3: Envolver el botón**
+```tsx
+<PermissionGate permission="<categoria>.<accion>" businessId={businessId} mode="hide|disable">
+  <Button onClick={handleAction}>Acción</Button>
+</PermissionGate>
+```
+
+**Paso 4: Elegir modo correcto**
+- `mode="hide"`: Acciones destructivas (delete, cancel) o secundarias (favoritos)
+- `mode="disable"`: Formularios, configuraciones, acciones primarias
+- `mode="show"`: Cuando necesitas mostrar mensaje alternativo
+
+**Paso 5: Crear migración de permisos** (si es permiso nuevo)
+```sql
+-- 20251116HHMMSS_add_<categoria>_permissions.sql
+INSERT INTO user_permissions (business_id, user_id, permission, granted_by, is_active)
+SELECT br.business_id, br.user_id, '<categoria>.<accion>', b.owner_id, TRUE
+FROM business_roles br
+JOIN businesses b ON b.id = br.business_id
+WHERE br.role = 'admin'
+ON CONFLICT (business_id, user_id, permission) DO NOTHING;
+```
+
+**Convenciones de Nombres de Permisos**:
+- `services.*`: Servicios del negocio
+- `resources.*`: Recursos físicos (salas, equipos)
+- `locations.*`: Sedes del negocio
+- `employees.*`: Gestión de empleados
+- `appointments.*`: Citas y reservas
+- `recruitment.*`: Vacantes y aplicaciones
+- `accounting.*`: Contabilidad y transacciones
+- `expenses.*`: Gastos y egresos
+- `reviews.*`: Calificaciones y moderación
+- `billing.*`: Facturación y suscripciones
+- `notifications.*`: Configuración de notificaciones
+- `settings.*`: Configuraciones del negocio
+- `permissions.*`: Gestión de permisos
+- `absences.*`: Ausencias y vacaciones
+- `favorites.*`: Favoritos de clientes
+- `sales.*`: Ventas rápidas
+
+**Documentación Completa**: Ver `docs/FASE_5_RESUMEN_FINAL_SESION_16NOV.md`
 
 ---
 

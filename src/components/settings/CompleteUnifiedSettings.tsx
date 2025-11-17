@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { User } from '@/types'
 import { useKV } from '@/lib/useKV'
 import { useTheme } from '@/contexts'
@@ -624,14 +625,16 @@ function AdminRolePreferences({ business }: AdminRolePreferencesProps) {
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving ? t('common.actions.saving') : t('common.actions.save')}
-            </Button>
+            <PermissionGate permission="settings.edit_business" businessId={business.id} mode="disable">
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isSaving ? t('common.actions.saving') : t('common.actions.save')}
+              </Button>
+            </PermissionGate>
           </div>
         </form>
       )}
@@ -1392,19 +1395,21 @@ function EmployeeRolePreferences({ userId, businessId }: EmployeeRolePreferences
 
       {/* Save Button */}
       <div className="flex justify-end gap-2">
-        <Button onClick={handleSaveProfile} disabled={saving} size="lg">
-          {saving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('common.actions.saving')}...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              {t('settings.employeePrefs.saveChanges')}
-            </>
-          )}
-        </Button>
+        <PermissionGate permission="employees.edit_own_profile" businessId={businessId} mode="disable">
+          <Button onClick={handleSaveProfile} disabled={saving} size="lg">
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t('common.actions.saving')}...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {t('settings.employeePrefs.saveChanges')}
+              </>
+            )}
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   )

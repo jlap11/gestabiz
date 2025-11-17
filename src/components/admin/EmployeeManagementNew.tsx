@@ -254,7 +254,6 @@ export default function EmployeeManagement({ user, businessId }: Readonly<Employ
                             {t('employee.approve')}
                           </Button>
                         </PermissionGate>
-                        </PermissionGate>
                         <PermissionGate permission="employees.reject" businessId={businessId || user.business_id || user.id} mode="hide">
                           <Button
                             size="sm"

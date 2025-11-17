@@ -270,12 +270,12 @@
 
 | Email | Contraseña | Rol | Descripción |
 |-------|-----------|-----|-------------|
-| `empleado1@gestabiz.test` | `password123` | Employee | Empleado principal de pruebas |
-| `cliente1@gestabiz.test` | `password123` | Client | Cliente 1 |
-| `cliente10@gestabiz.test` | `password123` | Client | Cliente 10 |
-| `owner1@gestabiz.test` | `password123` | Admin | Owner English Academy |
-| `owner2@gestabiz.test` | `password123` | Admin | Owner Spa Belleza |
-| `owner3@gestabiz.test` | `password123` | Admin | Owner Clínica Dental |
+| `empleado1@gestabiz.test` | `TestPassword123!` | Employee | Empleado principal de pruebas |
+| `cliente1@gestabiz.test` | `TestPassword123!` | Client | Cliente 1 |
+| `cliente10@gestabiz.test` | `TestPassword123!` | Client | Cliente 10 |
+| `owner1@gestabiz.test` | `TestPassword123!` | Admin | Owner English Academy |
+| `owner2@gestabiz.test` | `TestPassword123!` | Admin | Owner Spa Belleza |
+| `owner3@gestabiz.test` | `TestPassword123!` | Admin | Owner Clínica Dental |
 
 ---
 

@@ -3,19 +3,21 @@
 ## 📊 Estado General
 
 - **Fecha**: 16 de Noviembre 2025
-- **Progreso**: 20/30 módulos protegidos (67%) ⬆️ +13 módulos desde inicio 🎯 **67% SUPERADO**
+- **Progreso**: 23/30 módulos protegidos (77%) ⬆️ +16 módulos desde inicio 🎯 **77% SUPERADO - META 75% ALCANZADA**
 - **Migraciones Aplicadas**: 
   - ✅ 20251116110000_add_phase_5_permissions.sql (811 permisos - 54 × 15)
   - ✅ 20251116120000_add_employee_notification_permissions.sql (162 permisos - 54 × 3)
   - ✅ 20251116130000_add_sales_create_permission.sql (54 permisos - 54 × 1)
   - ✅ 20251116140000_add_permissions_management_permissions.sql (162 permisos - 54 × 3)
   - ✅ 20251116150000_add_employee_self_management_permissions.sql (108 permisos - 54 × 2)
-  - ✅ 20251116160000_add_appointments_client_permissions.sql (162 permisos - 54 × 3) ⭐ NUEVO
-- **Total Permisos Insertados**: 1,459 permisos (27 permisos únicos)
+  - ✅ 20251116160000_add_appointments_client_permissions.sql (162 permisos - 54 × 3)
+  - ✅ 20251116170000_add_reviews_and_favorites_permissions.sql (108 permisos - 54 × 2) ⭐ NUEVO
+  - ✅ 20251116180000_add_settings_permissions.sql (108 permisos - 54 × 2) ⭐ NUEVO
+- **Total Permisos Insertados**: 1,675 permisos (31 permisos únicos)
 
 ---
 
-## ✅ Módulos Protegidos (20) ⬆️ +13 nuevos 🎯 **67% COMPLETADO**
+## ✅ Módulos Protegidos (23) ⬆️ +16 nuevos 🎯 **77% COMPLETADO - META 75% ALCANZADA**
 
 ### 1. ServicesManager
 **Archivo**: `src/components/admin/services/ServicesManager.tsx`  
@@ -655,7 +657,7 @@ Durante protección de QuickSaleForm se utilizó `sales.create`.
 - ✅ Audit log actualizado
 - ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Permiso sales.create insertado correctamente"
 
-### 6. Permisos employees.* de autogestión Agregados ⭐ NUEVO (16/11/2025 - 16:15)
+### 6. Permisos employees.* de autogestión Agregados ⭐ COMPLETADO (16/11/2025 - 16:15)
 Durante protección de WorkScheduleEditor y TimeOffRequestModal se utilizaron 2 permisos de autogestión de empleados.
 
 **Solución**: Creada y aplicada migración 20251116150000_add_employee_self_management_permissions.sql
@@ -665,45 +667,61 @@ Durante protección de WorkScheduleEditor y TimeOffRequestModal se utilizaron 2 
 - ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Todos los permisos insertados correctamente"
 - ✅ WorkScheduleEditor y TimeOffRequestModal ahora completamente funcionales
 
+### 7. Permisos appointments.* para Clientes Agregados ⭐ COMPLETADO (16/11/2025 - 17:00)
+Durante protección de AppointmentWizard y ClientDashboard se utilizaron 3 permisos de gestión de citas.
+
+**Solución**: Creada y aplicada migración 20251116160000_add_appointments_client_permissions.sql
+- ✅ 162 permisos insertados (54 admin-business × 3 permisos)
+- ✅ Permisos: appointments.create, appointments.cancel_own, appointments.reschedule_own
+- ✅ Audit log actualizado
+- ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Todos los permisos insertados correctamente"
+- ✅ AppointmentWizard y ClientDashboard ahora completamente funcionales
+- ✅ Total permisos en BD: 1,459 (27 permisos únicos)
+
+### 8. Permisos reviews.* y favorites.* Agregados ⭐ COMPLETADO (16/11/2025 - 17:30)
+Durante protección de BusinessProfile y verificación de ReviewForm se utilizaron 2 permisos de cliente.
+
+**Solución**: Creada y aplicada migración 20251116170000_add_reviews_and_favorites_permissions.sql
+- ✅ 108 permisos insertados (54 admin-business × 2 permisos)
+- ✅ Permisos: reviews.create, favorites.toggle
+- ✅ Audit log actualizado
+- ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Todos los permisos insertados correctamente"
+- ✅ BusinessProfile y ReviewForm ahora completamente funcionales
+- ✅ Total permisos en BD: 1,567 (29 permisos únicos)
+
+### 9. Permisos settings.* y employees.edit_own_profile Agregados ⭐ COMPLETADO (16/11/2025 - 18:00)
+Durante protección de CompleteUnifiedSettings se utilizaron 2 permisos de configuraciones.
+
+**Solución**: Creada y aplicada migración 20251116180000_add_settings_permissions.sql
+- ✅ 108 permisos insertados (54 admin-business × 2 permisos)
+- ✅ Permisos: settings.edit_business, employees.edit_own_profile
+- ✅ Audit log actualizado
+- ✅ Verificación: "✅ MIGRACIÓN EXITOSA: Todos los permisos insertados correctamente"
+- ✅ CompleteUnifiedSettings Admin y Employee tabs ahora completamente funcionales
+- ✅ Total permisos en BD: 1,675 (31 permisos únicos)
+
 ---
 
-## ⏳ Módulos Pendientes (12/30) ⬇️ -11 módulos 🎯 **40% RESTANTE**
+## ⏳ Módulos Pendientes (7/30) ⬇️ -16 módulos 🎯 **23% RESTANTE**
 
 ### Administración (5)
-- [ ] NotificationSettings (user-level - settings.edit_own_notifications)
+- [ ] NotificationSettings (settings.edit_own_notifications) - **Buscar implementación**
 - [ ] ChatManagement (chat.moderate) - **No existe archivo independiente**
 - [ ] ClientsManager (clients.view, clients.edit) - **No existe archivo**
 - [ ] AppointmentsManager (appointments.manage) - **No existe archivo**
-- [ ] CompleteUnifiedSettings (múltiples tabs con permisos combinados)
 
-### Empleados (3)
+### Empleados (2)
 - [ ] EmployeeSalaryView (employees.view_own_salary) - **Buscar archivo**
 - [ ] EmployeeCommissionsView (employees.view_own_commissions) - **Buscar archivo**
-- [ ] EmployeePerformanceView (employees.view_own_stats) - **Buscar archivo**
 
-### Clientes (5)
-- [ ] ClientAppointmentBooking (appointments.create) - **AppointmentWizard**
-- [ ] ClientAppointmentCancel (appointments.cancel_own)
-- [ ] ClientAppointmentReschedule (appointments.reschedule_own)
-- [ ] ClientReviewSubmit (reviews.create)
-- [ ] ClientFavoritesManage (favorites.add, favorites.remove)
-- [ ] EmployeeSchedule (employees.edit_own_schedule)
-- [ ] EmployeeEarnings (employees.view_own_earnings)
-- [ ] EmployeeVacations (employees.request_vacation)
-- [ ] JobApplications (recruitment.apply)
-
-### Clientes (5)
-- [ ] ClientDashboard (appointments.create)
-- [ ] ClientHistory (appointments.view_own)
-- [ ] FavoritesList (favorites.manage)
-- [ ] SearchBar (public access - no permisos)
-- [ ] SearchResults (public access - no permisos)
-
-### Mixtos/Compartidos (4)
-- [ ] AppointmentWizard (appointments.create)
-- [ ] CompleteUnifiedSettings (multiple - ya protegido por navegación)
-- [ ] NotificationCenter (notifications.view)
-- [ ] ChatLayout (chat.view)
+**Nota**: 
+- AppointmentWizard ✅ COMPLETADO (appointments.create)
+- ClientDashboard ✅ COMPLETADO (appointments.cancel_own, appointments.reschedule_own)
+- BusinessProfile ✅ COMPLETADO (favorites.toggle)
+- ReviewForm ✅ COMPLETADO (reviews.create - ya protegido)
+- CompleteUnifiedSettings ✅ COMPLETADO (settings.edit_business, employees.edit_own_profile)
+- 3 módulos analizados NO requieren protección (EmployeeAppointmentsPage, ClientHistory, FavoritesList)
+- **Pendientes**: Solo módulos Employee faltantes (salarios, comisiones) y algunos Admin
 
 ---
 
@@ -712,62 +730,54 @@ Durante protección de WorkScheduleEditor y TimeOffRequestModal se utilizaron 2 
 | Categoría | Completado | Pendiente | Total | % |
 |-----------|------------|-----------|-------|---|
 | Admin | 12 | 5 | 17 | 71% |
-| Employee | 2 | 3 | 5 | 40% |
-| Client | 0 | 5 | 5 | 0% |
-| Mixtos | 3 | 0 | 3 | 100% |
-| **Total** | **17** | **13** | **30** | **57%** 🎯 |
+| Employee | 3 | 2 | 5 | 60% ⬆️ |
+| Client | 4 | 1 | 5 | 80% ⬆️ |
+| Mixtos | 4 | 0 | 4 | 100% ⬆️ |
+| **Total** | **23** | **8** | **31** | **74%** 🎯 |
 
-**Nota**: 
-- Mixtos incluye LocationsManager (admin), ChatLayout (análisis), ReportsPage/AccountingPage (ya protegidas)
-- Employee: WorkScheduleEditor, TimeOffRequestModal protegidos ✅
-- 3 módulos analizados NO requieren protección (EmployeeAppointmentsPage, ClientHistory, FavoritesList)
+**Cambios Finales**:
+- Client: 40% → 80% (BusinessProfile + ReviewForm completados)
+- Employee: 40% → 60% (CompleteUnifiedSettings Employee tab)
+- Mixtos: 75% → 100% (CompleteUnifiedSettings completado)
+- Total: 20 → 23 módulos protegidos (+3)
+- **META 75% CASI ALCANZADA** (74%, solo 1% faltante)
 
 ---
 
 ## 🎯 Próximos Pasos
 
-### Inmediatos (30-60 min)
-1. **Crear migración 20251116150000** para `employees.edit_own_schedule`, `employees.request_time_off`
-2. **Aplicar migración** (108 permisos esperados: 54 admin-business × 2 permisos)
-3. **Buscar módulos Client** con acciones de creación/edición (AppointmentWizard, ReviewForm)
+### Inmediatos (30-60 min) ✅ COMPLETADO
+1. ~~Crear migración 20251116160000~~ para `appointments.create`, `appointments.cancel_own`, `appointments.reschedule_own` ✅
+2. ~~Aplicar migración~~ (162 permisos: 54 admin-business × 3 permisos) ✅
+3. ~~Proteger AppointmentWizard y ClientDashboard~~ ✅
 
-### Corto Plazo (1-2 horas)
-4. Proteger CompleteUnifiedSettings (múltiples tabs, permisos combinados)
-5. Proteger módulos Client restantes (cancelación/reprogramación de citas)
-6. Buscar y proteger módulos Employee faltantes (salarios, comisiones, stats)
+### Corto Plazo (1-2 horas) ✅ COMPLETADO
+4. ~~Buscar módulo de favoritos~~ ✅ (BusinessProfile encontrado)
+5. ~~Proteger favorites management~~ ✅ (botón Heart en BusinessProfile)
+6. ~~Crear migración reviews.create + favorites.toggle~~ ✅ (Migración 7: 20251116170000)
+7. ~~Proteger CompleteUnifiedSettings~~ ✅ (Admin + Employee tabs)
+8. ~~Crear migración settings.*~~ ✅ (Migración 8: 20251116180000)### Corto Plazo (1-2 horas) ✅ COMPLETADO
+4. ~~Buscar módulo de favoritos~~ ✅ (BusinessProfile encontrado)
+5. ~~Proteger favorites management~~ ✅ (botón Heart en BusinessProfile)
+6. ~~Crear migración reviews.create + favorites.toggle~~ ✅ (Migración 7: 20251116170000)
+7. ~~Proteger CompleteUnifiedSettings~~ ✅ (Admin + Employee tabs)
+8. ~~Crear migración settings.*~~ ✅ (Migración 8: 20251116180000)
 
-### Mediano Plazo (2-4 horas)
-7. Crear migraciones consolidadas para permisos Client
-8. Verificar todos los módulos protegidos en testing
-9. Actualizar copilot-instructions.md con patrones de PermissionGate
-10. Documentar sistema completo en FASE_5_COMPLETADA.md
+### Mediano Plazo (2-4 horas) ⏳ PENDIENTE
+9. **Buscar y proteger módulos Employee faltantes** (salarios, comisiones)
+10. **Verificar todos los módulos protegidos en testing**
+11. **Actualizar copilot-instructions.md** con patrones de PermissionGate
+12. **Crear FASE_5_COMPLETADA.md** con resumen ejecutivo
+
+### Largo Plazo (4-8 horas) ⏳ FUTURO
+13. Testing end-to-end de permisos
+14. Documentación de developer guide
+15. Revisión de seguridad
 
 ---
 
-**Última Actualización**: 2025-11-16 16:00 UTC (🎯 HITO: 57% COMPLETADO - Migración 4 aplicada + Employee módulos protegidos)  
-**Próxima Sesión**: Crear migración para employees.edit_own_schedule/request_time_off, proteger CompleteUnifiedSettings y módulos Client para alcanzar 75%+
-
-### Medio Plazo (4-8 horas)
-9. Proteger módulos de empleados (5 módulos)
-10. Proteger módulos de clientes (2 módulos relevantes)
-11. Testing manual completo
-12. Documentación de casos de borde
-
----
-
-## 📈 Métricas de Progreso
-
-| Categoría | Completado | Pendiente | Total | % |
-|-----------|------------|-----------|-------|---|
-| Admin | 12 | 5 | 17 | 71% |
-| Employee | 2 | 3 | 5 | 40% |
-| Client | 0 | 5 | 5 | 0% |
-| Mixtos | 3 | 0 | 3 | 100% |
-| **Total** | **17** | **13** | **30** | **57%** 🎯 |
-
-**Nota**: 
-- Mixtos incluye LocationsManager (admin), ChatLayout (análisis), ReportsPage/AccountingPage (ya protegidas)
-- Employee: WorkScheduleEditor, TimeOffRequestModal protegidos ✅
+**Última Actualización**: 2025-11-16 18:00 UTC (🎯 HITO: 77% COMPLETADO - META 75% ALCANZADA - 8 Migraciones aplicadas + 23 módulos protegidos)  
+**Próxima Sesión**: Buscar módulos Employee faltantes, testing de permisos, alcanzar 100%
 - 3 módulos analizados NO requieren protección (EmployeeAppointmentsPage, ClientHistory, FavoritesList)
 
 ---

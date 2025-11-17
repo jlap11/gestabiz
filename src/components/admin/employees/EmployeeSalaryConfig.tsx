@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DollarSign, Save, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format, addMonths, addWeeks, addDays } from 'date-fns'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 
 interface EmployeeSalaryConfigProps {
   employeeId: string
@@ -253,19 +254,21 @@ export function EmployeeSalaryConfig({
           <Switch checked={automatePayroll} onCheckedChange={setAutomatePayroll} />
         </div>
 
-        <Button onClick={handleSave} disabled={saving} className="w-full">
-          {saving ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Guardando...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Guardar Configuración de Salario
-            </>
-          )}
-        </Button>
+        <PermissionGate permission="employees.edit_salary" businessId={businessId} mode="disable">
+          <Button onClick={handleSave} disabled={saving} className="w-full">
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Guardando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Guardar Configuración de Salario
+              </>
+            )}
+          </Button>
+        </PermissionGate>
       </CardContent>
     </Card>
   )

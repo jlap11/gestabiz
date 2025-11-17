@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Trash2, Plus, Loader2, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 
 interface BusinessRecurringExpensesProps {
   businessId: string
@@ -268,9 +269,10 @@ export function BusinessRecurringExpenses({
                     <span>•</span>
                     <span>{getFrequencyLabel(expense.recurrence_frequency)}</span>
                     <span>•</span>
-                    <span>Día {expense.recurrence_day}</span>
-                  </div>
+                  <span>Día {expense.recurrence_day}</span>
                 </div>
+              </div>
+              <PermissionGate permission="expenses.delete" businessId={businessId} mode="hide">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -279,20 +281,21 @@ export function BusinessRecurringExpenses({
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
-              </div>
-            ))}
-          </div>
-        )}
+              </PermissionGate>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {/* BOTÓN AGREGAR */}
-        {!showNewExpenseForm && (
+      {/* BOTÓN AGREGAR */}
+      {!showNewExpenseForm && (
+        <PermissionGate permission="expenses.create" businessId={businessId} mode="hide">
           <Button onClick={() => setShowNewExpenseForm(true)} variant="outline" className="w-full">
             <Plus className="h-4 w-4 mr-2" />
             Agregar Egreso Recurrente
           </Button>
-        )}
-
-        {/* FORMULARIO NUEVO EGRESO */}
+        </PermissionGate>
+      )}        {/* FORMULARIO NUEVO EGRESO */}
         {showNewExpenseForm && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/10">
             <h3 className="text-sm font-medium">Nuevo Egreso Recurrente</h3>

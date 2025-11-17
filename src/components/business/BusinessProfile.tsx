@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { PermissionGate } from '@/components/ui/PermissionGate';
 import { useAuth } from '@/hooks/useAuth';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
@@ -372,18 +373,20 @@ export default function BusinessProfile({
           <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
             {/* Botón favorito */}
             {user && (
-              <button
-                onClick={handleToggleFavorite}
-                className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-              >
-                <Heart 
-                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
-                    isFavorite(businessId) 
-                      ? 'fill-primary text-primary' 
-                      : 'text-foreground'
-                  }`} 
-                />
-              </button>
+              <PermissionGate permission="favorites.toggle" businessId={businessId} mode="hide">
+                <button
+                  onClick={handleToggleFavorite}
+                  className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                >
+                  <Heart 
+                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                      isFavorite(businessId) 
+                        ? 'fill-primary text-primary' 
+                        : 'text-foreground'
+                    }`} 
+                  />
+                </button>
+              </PermissionGate>
             )}
             
             {/* Botón cerrar */}
