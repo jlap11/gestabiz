@@ -1,9 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import { useKV } from '@/lib/useKV'
-import { translations } from '@/lib/translations'
+import { translations as oldTranslations } from '@/lib/translations'
+import { translations as newTranslations } from '@/locales'
 
 export type Language = 'es' | 'en'
+
+// Merge old and new translations (new translations take precedence)
+const mergedTranslations = {
+  en: { ...oldTranslations.en, ...newTranslations.en },
+  es: { ...oldTranslations.es, ...newTranslations.es },
+}
 
 // Helper to get nested translation value with safe typing
 function getNestedValue<T extends Record<string, unknown>>(obj: T, path: string): string | undefined {
@@ -23,7 +30,7 @@ export function LanguageProvider({ children }: Readonly<{ children: React.ReactN
 
   // Translation function with memoization
   const t = useMemo(() => (key: string, params?: Record<string, string>): string => {
-    const translation = getNestedValue(translations[language], key)
+    const translation = getNestedValue(mergedTranslations[language], key)
     
     if (!translation) {
       // Return key instead of logging in production
