@@ -10,11 +10,14 @@ export interface TranslationModule {
 // Type-safe translation object
 export interface Translations {
   common: typeof import('./en/common').common
+  auth: typeof import('./en/auth').auth
+  emailVerification: typeof import('./en/auth').emailVerification
+  accountInactive: typeof import('./en/auth').accountInactive
+  appointments: typeof import('./en/appointments').appointments
+  dashboard: typeof import('./en/dashboard').dashboard
+  calendar: typeof import('./en/dashboard').calendar
+  settings: typeof import('./en/dashboard').settings
   // TODO: Uncomment as modules are migrated
-  // auth: typeof import('./en/auth').auth
-  // appointments: typeof import('./en/appointments').appointments
-  // dashboard: typeof import('./en/dashboard').dashboard
-  // settings: typeof import('./en/settings').settings
   // billing: typeof import('./en/billing').billing
   // accounting: typeof import('./en/accounting').accounting
   // jobs: typeof import('./en/jobs').jobs
@@ -34,5 +37,4 @@ export interface Translations {
   // profile: typeof import('./en/profile').profile
   // ui: typeof import('./en/ui').ui
   // validation: typeof import('./en/validation').validation
-  // calendar: typeof import('./en/calendar').calendar
 }
