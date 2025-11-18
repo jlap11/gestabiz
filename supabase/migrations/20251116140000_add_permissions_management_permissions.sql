@@ -74,7 +74,6 @@ BEGIN
   RAISE NOTICE '=== FINALIZADA INSERCIÓN: Permisos de Gestión ===';
   RAISE NOTICE 'Total de permisos insertados: %', v_total_inserted;
 END $$;
-
 -- =====================================================================================
 -- PART 2: REGISTRAR EN AUDIT LOG
 -- =====================================================================================
@@ -102,7 +101,6 @@ FROM public.business_roles br
 CROSS JOIN LATERAL unnest(ARRAY['permissions.assign_role', 'permissions.edit', 'permissions.delete']) AS unnested_permission
 WHERE br.role = 'admin' 
   AND br.is_active = true;
-
 -- =====================================================================================
 -- PART 3: VERIFICACIÓN Y REPORTE FINAL
 -- =====================================================================================

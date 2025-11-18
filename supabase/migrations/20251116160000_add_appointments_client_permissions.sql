@@ -32,7 +32,6 @@ DO UPDATE SET
     is_active = TRUE,
     granted_by = EXCLUDED.granted_by,
     updated_at = NOW();
-
 -- =====================================================================================
 -- PASO 2: Insertar permisos para CANCELAR CITAS PROPIAS
 -- =====================================================================================
@@ -51,7 +50,6 @@ DO UPDATE SET
     is_active = TRUE,
     granted_by = EXCLUDED.granted_by,
     updated_at = NOW();
-
 -- =====================================================================================
 -- PASO 3: Insertar permisos para REPROGRAMAR CITAS PROPIAS
 -- =====================================================================================
@@ -70,7 +68,6 @@ DO UPDATE SET
     is_active = TRUE,
     granted_by = EXCLUDED.granted_by,
     updated_at = NOW();
-
 -- =====================================================================================
 -- VERIFICACIÓN: Contar permisos insertados
 -- =====================================================================================
@@ -119,10 +116,8 @@ BEGIN
     RAISE NOTICE '========================================';
     RAISE NOTICE '';
 END $$;
-
 -- =====================================================================================
 -- COMENTARIOS FINALES
 -- =====================================================================================
 COMMENT ON TABLE user_permissions IS 'Sistema de permisos granulares v2.0 - Actualizado 2025-11-16';
-
--- Fin de migración 20251116160000
+-- Fin de migración 20251116160000;

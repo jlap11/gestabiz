@@ -8,6 +8,5 @@
 CREATE UNIQUE INDEX IF NOT EXISTS idx_recurring_expenses_employee_category
 ON recurring_expenses (business_id, employee_id, category)
 WHERE employee_id IS NOT NULL AND category = 'payroll';
-
 -- Comentario
 COMMENT ON INDEX idx_recurring_expenses_employee_category IS 'Unique constraint para UPSERT de nómina: un solo registro payroll por empleado por negocio. Creado en migración 20251115000009.';

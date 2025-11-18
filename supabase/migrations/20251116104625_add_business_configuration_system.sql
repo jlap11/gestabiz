@@ -7,19 +7,15 @@
 -- 1. Agregar campo is_configured a businesses
 ALTER TABLE public.businesses 
 ADD COLUMN IF NOT EXISTS is_configured BOOLEAN DEFAULT false NOT NULL;
-
 COMMENT ON COLUMN public.businesses.is_configured IS 
 'TRUE si el negocio está completamente configurado y puede brindar servicios públicamente. 
 Requiere: ≥1 sede activa, ≥1 servicio en sede, ≥1 empleado o recurso asignado al servicio.';
-
 -- 2. Crear índice para búsquedas públicas
 CREATE INDEX IF NOT EXISTS idx_businesses_is_configured 
 ON public.businesses(is_configured) 
 WHERE is_configured = true;
-
 COMMENT ON INDEX idx_businesses_is_configured IS 
 'Optimiza búsquedas de negocios configurados para clientes.';
-
 -- =============================================
 -- 3. FUNCIÓN: Validar configuración completa de negocio
 -- =============================================
@@ -140,11 +136,9 @@ BEGIN
   RETURN v_has_assignees;
 END;
 $$;
-
 COMMENT ON FUNCTION public.validate_business_configuration(UUID) IS 
 'Valida si un negocio está completamente configurado para operar públicamente.
 Retorna TRUE si tiene sedes activas, servicios en sedes, y empleados/recursos asignados según su resource_model.';
-
 -- =============================================
 -- 4. FUNCIÓN: Actualizar campo is_configured
 -- =============================================
@@ -196,11 +190,9 @@ BEGIN
   END IF;
 END;
 $$;
-
 COMMENT ON FUNCTION public.update_business_configuration(UUID) IS 
 'Recalcula y actualiza el campo is_configured de un negocio.
 Si cambia de TRUE → FALSE, crea notificación in-app para el owner.';
-
 -- =============================================
 -- 5. TRIGGERS: Recalcular is_configured automáticamente
 -- =============================================
@@ -220,14 +212,12 @@ BEGIN
   END IF;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_update_business_config_on_location ON public.locations;
 CREATE TRIGGER trg_update_business_config_on_location
 AFTER INSERT OR UPDATE OF is_active OR DELETE
 ON public.locations
 FOR EACH ROW
 EXECUTE FUNCTION public.trigger_update_business_config_on_location();
-
 -- TRIGGER 2: Cuando se crea/elimina un servicio en sede (location_services)
 CREATE OR REPLACE FUNCTION public.trigger_update_business_config_on_location_service()
 RETURNS TRIGGER
@@ -257,14 +247,12 @@ BEGIN
   END IF;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_update_business_config_on_location_service ON public.location_services;
 CREATE TRIGGER trg_update_business_config_on_location_service
 AFTER INSERT OR DELETE
 ON public.location_services
 FOR EACH ROW
 EXECUTE FUNCTION public.trigger_update_business_config_on_location_service();
-
 -- TRIGGER 3: Cuando se vincula/desvincula empleado a servicio (employee_services)
 CREATE OR REPLACE FUNCTION public.trigger_update_business_config_on_employee_service()
 RETURNS TRIGGER
@@ -295,14 +283,12 @@ BEGIN
   END IF;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_update_business_config_on_employee_service ON public.employee_services;
 CREATE TRIGGER trg_update_business_config_on_employee_service
 AFTER INSERT OR DELETE
 ON public.employee_services
 FOR EACH ROW
 EXECUTE FUNCTION public.trigger_update_business_config_on_employee_service();
-
 -- TRIGGER 4: Cuando se vincula/desvincula recurso a servicio (resource_services)
 CREATE OR REPLACE FUNCTION public.trigger_update_business_config_on_resource_service()
 RETURNS TRIGGER
@@ -333,14 +319,12 @@ BEGIN
   END IF;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_update_business_config_on_resource_service ON public.resource_services;
 CREATE TRIGGER trg_update_business_config_on_resource_service
 AFTER INSERT OR DELETE
 ON public.resource_services
 FOR EACH ROW
 EXECUTE FUNCTION public.trigger_update_business_config_on_resource_service();
-
 -- TRIGGER 5: Cuando se activa/desactiva un empleado (business_employees)
 CREATE OR REPLACE FUNCTION public.trigger_update_business_config_on_employee_status()
 RETURNS TRIGGER
@@ -353,14 +337,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_update_business_config_on_employee_status ON public.business_employees;
 CREATE TRIGGER trg_update_business_config_on_employee_status
 AFTER UPDATE OF is_active
 ON public.business_employees
 FOR EACH ROW
 EXECUTE FUNCTION public.trigger_update_business_config_on_employee_status();
-
 -- TRIGGER 6: Cuando se activa/desactiva un recurso físico (business_resources)
 CREATE OR REPLACE FUNCTION public.trigger_update_business_config_on_resource_status()
 RETURNS TRIGGER
@@ -373,14 +355,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_update_business_config_on_resource_status ON public.business_resources;
 CREATE TRIGGER trg_update_business_config_on_resource_status
 AFTER UPDATE OF is_active
 ON public.business_resources
 FOR EACH ROW
 EXECUTE FUNCTION public.trigger_update_business_config_on_resource_status();
-
 -- =============================================
 -- 6. RECALCULAR is_configured para negocios existentes
 -- =============================================
@@ -394,9 +374,8 @@ BEGIN
   END LOOP;
 END;
 $$;
-
 -- =============================================
 -- 7. RLS POLICIES (si aplica)
 -- =============================================
 -- El campo is_configured es público (lectura para todos)
--- No requiere políticas especiales, ya hereda las de businesses
+-- No requiere políticas especiales, ya hereda las de businesses;

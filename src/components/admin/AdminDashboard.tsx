@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { LayoutDashboard, MapPin, Briefcase, Users, Calculator, FileText, Shield, CreditCard, BriefcaseBusiness, ShoppingCart, Calendar, CalendarOff, Box, Wallet } from 'lucide-react'
 import { UnifiedLayout } from '@/components/layouts/UnifiedLayout'
@@ -11,7 +11,6 @@ import { ServicesManager } from './ServicesManager'
 import { EmployeeManagementHierarchy } from './EmployeeManagementHierarchy'
 import { AccountingPage } from './AccountingPage'
 import { ReportsPage } from './ReportsPage'
-import { PermissionsManager } from './PermissionsManager'
 import { BillingDashboard } from '@/components/billing'
 import { RecruitmentDashboard } from '@/components/jobs/RecruitmentDashboard'
 import { QuickSalesPage } from '@/pages/QuickSalesPage'
@@ -22,6 +21,9 @@ import { ExpensesManagementPage } from './expenses/ExpensesManagementPage'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
+
+// Lazy load de componentes pesados (optimización de performance)
+const PermissionsManager = lazy(() => import('./PermissionsManager').then(module => ({ default: module.PermissionsManager })))
 
 interface AdminDashboardProps {
   business: Business
@@ -267,11 +269,13 @@ export function AdminDashboard({
         return <BillingDashboard businessId={business.id} />
       case 'permissions':
         return (
-          <PermissionsManager 
-            businessId={business.id}
-            ownerId={business.owner_id}
-            currentUserId={currentUser.id}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+            <PermissionsManager 
+              businessId={business.id}
+              ownerId={business.owner_id}
+              currentUserId={currentUser.id}
+            />
+          </Suspense>
         )
       case 'settings':
       case 'profile':

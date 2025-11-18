@@ -24,6 +24,5 @@ BEGIN
     RAISE NOTICE 'Columna category_id ya existe en businesses';
   END IF;
 END $$;
-
 -- Comentario
 COMMENT ON COLUMN public.businesses.category_id IS 'Categoría principal del negocio (referencia a business_categories)';

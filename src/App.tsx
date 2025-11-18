@@ -18,6 +18,11 @@ import { hasAnalyticsConsent } from '@/hooks/useAnalytics'
 import { CookieConsent } from '@/components/CookieConsent'
 import { AlertProvider } from '@/components/ui/custom-alert'
 
+// Permission Testing Page (dev only - tree-shaken in production)
+const PermissionTestingPage = import.meta.env.DEV 
+  ? lazy(() => import('@/components/admin/permissions/PermissionTestingPage').then(m => ({ default: m.PermissionTestingPage })))
+  : null
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -114,6 +119,18 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      
+      {/* Ruta de testing de permisos (dev only - excluida en producción) */}
+      {import.meta.env.DEV && PermissionTestingPage && (
+        <Route
+          path="/permission-testing"
+          element={
+            <ProtectedRoute>
+              <PermissionTestingPage />
+            </ProtectedRoute>
+          }
+        />
+      )}
       
       {/* Redirigir rutas no encontradas */}
       <Route path="*" element={<Navigate to="/" replace />} />

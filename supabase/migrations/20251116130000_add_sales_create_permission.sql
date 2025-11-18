@@ -45,7 +45,6 @@ BEGIN
   
   RAISE NOTICE '=== FINALIZADA INSERCIÓN: sales.create ===';
 END $$;
-
 -- PARTE 2: Registrar en audit log
 INSERT INTO public.permission_audit_log (
   business_id,
@@ -68,7 +67,6 @@ SELECT
   'Fase 5 - Migración 20251116130000: Permiso para QuickSaleForm (registro de ventas rápidas)'
 FROM public.business_roles
 WHERE role = 'admin' AND is_active = true;
-
 -- PARTE 3: Verificación final
 DO $$
 DECLARE

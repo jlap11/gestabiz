@@ -58,6 +58,17 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
     }
   }, [redirectUrl, serviceId, locationId, employeeId, t])
 
+  // DEV MODE: Auto-fill password when email is entered
+  useEffect(() => {
+    if (import.meta.env.DEV && formData.email && !formData.password) {
+      // Auto-fill password after a short delay
+      const timer = setTimeout(() => {
+        setFormData(prev => ({ ...prev, password: 'TestPassword123!' }))
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [formData.email, formData.password])
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -96,10 +107,14 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.email || !formData.password) {
+    
+    // En modo desarrollo, la contraseña es opcional
+    const isDev = import.meta.env.DEV
+    if (!formData.email || (!formData.password && !isDev)) {
       setFormError(t('common.messages.requiredFields'))
       return
     }
+    
     setFormError(null)
     setIsSigningIn(true)
     try {
@@ -375,8 +390,14 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-primary"
-                required
+                required={!import.meta.env.DEV}
               />
+              {import.meta.env.DEV && !formData.password && (
+                <p className="text-xs text-yellow-500 flex items-center gap-1">
+                  <Warning size={12} />
+                  Modo DEV: Contraseña opcional (usa TestPassword123!)
+                </p>
+              )}
             </div>
 
             {/* Remember me & Forgot password (only for Login) */}

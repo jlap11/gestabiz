@@ -19,7 +19,6 @@ BEGIN
   
   RAISE NOTICE 'Permisos existentes para expenses/salary: %', existing_count;
 END $$;
-
 -- PERMISO 1: expenses.create (Crear gastos recurrentes)
 -- Componente: BusinessRecurringExpenses - Botón "Agregar Egreso Recurrente"
 INSERT INTO user_permissions (business_id, user_id, permission, granted_by, is_active)
@@ -33,7 +32,6 @@ FROM business_roles br
 JOIN businesses b ON b.id = br.business_id
 WHERE br.role = 'admin'
 ON CONFLICT (business_id, user_id, permission) DO NOTHING;
-
 -- PERMISO 2: expenses.delete (Eliminar gastos recurrentes)
 -- Componente: BusinessRecurringExpenses - Botón eliminar (Trash2)
 INSERT INTO user_permissions (business_id, user_id, permission, granted_by, is_active)
@@ -47,7 +45,6 @@ FROM business_roles br
 JOIN businesses b ON b.id = br.business_id
 WHERE br.role = 'admin'
 ON CONFLICT (business_id, user_id, permission) DO NOTHING;
-
 -- PERMISO 3: employees.edit_salary (Configurar salarios de empleados)
 -- Componente: EmployeeSalaryConfig - Botón "Guardar Configuración de Salario"
 INSERT INTO user_permissions (business_id, user_id, permission, granted_by, is_active)
@@ -61,7 +58,6 @@ FROM business_roles br
 JOIN businesses b ON b.id = br.business_id
 WHERE br.role = 'admin'
 ON CONFLICT (business_id, user_id, permission) DO NOTHING;
-
 -- Verificar permisos insertados
 DO $$
 DECLARE
@@ -81,10 +77,9 @@ BEGIN
   RAISE NOTICE '   - Total permisos en BD: %', total_count;
   RAISE NOTICE '   - Tipos únicos: %', unique_count;
 END $$;
-
 -- COMENTARIOS FINALES:
 -- expenses.create: Permite crear gastos recurrentes del negocio (seguros, software, impuestos, etc.)
 -- expenses.delete: Permite eliminar gastos recurrentes configurados
 -- employees.edit_salary: Permite configurar salarios base y automatización de nómina
 -- Total esperado: 162 permisos (3 × 54 admin-business)
--- Progreso Fase 5: 25/30 módulos protegidos (83%)
+-- Progreso Fase 5: 25/30 módulos protegidos (83%);

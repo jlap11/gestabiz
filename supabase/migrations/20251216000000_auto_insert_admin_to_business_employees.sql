@@ -59,26 +59,21 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- Agregar comentario a la función
 COMMENT ON FUNCTION auto_insert_admin_as_employee() IS 
 'Trigger function: Auto-registra admins en business_employees como managers al asignar rol admin en business_roles';
-
 -- =====================================================================
 -- PASO 2: Crear trigger AFTER INSERT OR UPDATE
 -- =====================================================================
 
 DROP TRIGGER IF EXISTS trg_auto_insert_admin_as_employee ON business_roles;
-
 CREATE TRIGGER trg_auto_insert_admin_as_employee
   AFTER INSERT OR UPDATE OF role, is_active ON business_roles
   FOR EACH ROW
   EXECUTE FUNCTION auto_insert_admin_as_employee();
-
 -- Agregar comentario al trigger
 COMMENT ON TRIGGER trg_auto_insert_admin_as_employee ON business_roles IS 
 'Auto-registra admins en business_employees cuando se les asigna rol admin';
-
 -- =====================================================================
 -- PASO 3: Backfill de admins existentes
 -- =====================================================================
@@ -118,7 +113,6 @@ WHERE br.role = 'admin'
       AND be.business_id = br.business_id
   )
 ON CONFLICT (employee_id, business_id) DO NOTHING;
-
 -- Log de resultados
 DO $$
 DECLARE
@@ -131,7 +125,6 @@ BEGIN
   
   RAISE NOTICE 'Backfill completado: % admins registrados en business_employees', v_count;
 END $$;
-
 -- =====================================================================
 -- PASO 4: Verificación post-migración
 -- =====================================================================

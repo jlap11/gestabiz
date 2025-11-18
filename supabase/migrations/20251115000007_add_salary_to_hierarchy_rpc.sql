@@ -5,7 +5,6 @@
 
 -- DROP existing function (cannot change return type)
 DROP FUNCTION IF EXISTS get_business_hierarchy(UUID, DATE, DATE, JSONB);
-
 -- CREATE new version with salary fields
 CREATE OR REPLACE FUNCTION get_business_hierarchy(
   p_business_id UUID,
@@ -181,6 +180,5 @@ BEGIN
   ORDER BY ed.hierarchy_level ASC, ed.full_name ASC;
 END;
 $$;
-
 -- Comentario de la función
 COMMENT ON FUNCTION get_business_hierarchy IS 'Obtiene jerarquía completa de empleados incluyendo datos de nómina (salary_base, salary_type). Actualizado en migración 20251115000007 para Fase 2.';

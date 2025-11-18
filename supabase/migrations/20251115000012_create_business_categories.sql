@@ -25,15 +25,12 @@ CREATE TABLE IF NOT EXISTS public.business_categories (
   -- Categoría padre (para subcategorías futuras)
   parent_id UUID REFERENCES public.business_categories(id) ON DELETE SET NULL
 );
-
 -- Índices
 CREATE INDEX IF NOT EXISTS idx_business_categories_slug ON business_categories(slug);
 CREATE INDEX IF NOT EXISTS idx_business_categories_parent_id ON business_categories(parent_id);
 CREATE INDEX IF NOT EXISTS idx_business_categories_is_active ON business_categories(is_active);
-
 -- Comentarios
 COMMENT ON TABLE business_categories IS 'Categorías de negocios para clasificación y filtrado';
-
 -- =====================================================
 -- 2. Insertar CATEGORÍAS PRINCIPALES (15)
 -- =====================================================

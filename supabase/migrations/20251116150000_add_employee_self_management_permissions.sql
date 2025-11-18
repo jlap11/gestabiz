@@ -73,7 +73,6 @@ BEGIN
   RAISE NOTICE '=== FINALIZADA INSERCIÓN: Permisos de Autogestión ===';
   RAISE NOTICE 'Total de permisos insertados: %', v_total_inserted;
 END $$;
-
 -- =====================================================================================
 -- PART 2: REGISTRAR EN AUDIT LOG
 -- =====================================================================================
@@ -101,7 +100,6 @@ FROM public.business_roles br
 CROSS JOIN LATERAL unnest(ARRAY['employees.edit_own_schedule', 'employees.request_time_off']) AS unnested_permission
 WHERE br.role = 'admin' 
   AND br.is_active = true;
-
 -- =====================================================================================
 -- PART 3: VERIFICACIÓN Y REPORTE FINAL
 -- =====================================================================================

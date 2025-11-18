@@ -74,7 +74,6 @@ BEGIN
 
   RAISE NOTICE 'Completado: Permisos aplicados a todos los admins activos';
 END $$;
-
 -- =====================================================
 -- AUDITORÍA Y VERIFICACIÓN
 -- =====================================================
@@ -102,7 +101,6 @@ SELECT
 FROM public.business_roles
 WHERE role = 'admin' AND is_active = true
 GROUP BY user_id, business_id;
-
 -- =====================================================
 -- VERIFICACIÓN FINAL
 -- =====================================================
@@ -141,5 +139,4 @@ BEGIN
   END IF;
   RAISE NOTICE '========================================';
 END $$;
-
--- Fin de migración
+-- Fin de migración;

@@ -21,7 +21,7 @@ interface SignUpData {
 
 interface SignInData {
   email: string
-  password: string
+  password?: string // Opcional en modo desarrollo
 }
 
 export function useAuth() {
@@ -449,9 +449,14 @@ export function useAuth() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
+      // DEV MODE: Si la contraseña está vacía, usa la contraseña de prueba
+      const password = import.meta.env.DEV && !data.password 
+        ? 'TestPassword123!' 
+        : data.password
+
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
-        password: data.password
+        password: password
       })
 
       if (error) {

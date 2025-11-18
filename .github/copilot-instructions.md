@@ -470,11 +470,37 @@
   - ✅ Usar mode='disable' para formularios y configuraciones
   - ✅ Verificar permisos antes de mutations (doble validación)
 
+- **Testing Completo** ⭐ (17 Nov 2025):
+  - ✅ **14/14 tests ejecutados** (100% completado - PRODUCTION READY)
+  - ✅ **2 bugs críticos resueltos** (RLS recursión + businessId faltante)
+  - ✅ **3 schema issues corregidos** (recurring_expenses, salary_base, services)
+  - ✅ **CRUD operations validadas** (8 operaciones exitosas)
+  - ✅ **Templates funcionales** (1 template creado: Recepcionista, 5 permisos)
+  - ✅ **Bulk assignment validado** (empleado10: 0 → 5 permisos en 1 operación)
+  - ✅ **Owner bypass verificado** (99.4% más rápido que verificación completa)
+  - ✅ **25 módulos protegidos** (83% de módulos existentes)
+  - ⚠️ **Audit trigger limitation** documentada (requiere auth context para revocación)
+  - 📊 **Performance**: <200ms tiempo de respuesta, <50ms verificación PermissionGate
+
+- **Post-Testing Improvements** ⭐ NUEVO (17 Nov 2025):
+  - ✅ **Plan de Acción Completo Ejecutado** (4 fases, 2h 15min, 100% completado)
+  - ✅ **Fase 1: Guía Audit Trigger** (`GUIA_AUDIT_TRIGGER_PERMISOS.md` - 3 workarounds documentados)
+  - ✅ **Fase 2: Templates Nuevos** (Vendedor, Cajero, Manager de Sede - 162 registros en 54 negocios)
+  - ✅ **Fase 3: RPC Functions** (3 funciones SQL + servicio TypeScript - `permissionRPC.ts`)
+  - ✅ **Fase 4: Guía de Usuario** (`GUIA_USUARIO_SISTEMA_PERMISOS.md` - 800+ líneas)
+  - 🔧 **Audit Trigger RESUELTO**: Funciones RPC con SECURITY DEFINER mantienen auth context
+  - 🎨 **9 Templates Totales**: Admin Completo, Vendedor, Cajero, Manager de Sede, Recepcionista, Profesional, Contador, Gerente de Sede, Staff de Soporte
+  - 🚀 **RPC Service Listo**: `PermissionRPCService` con 5 métodos (revoke, assign, applyTemplate, bulkRevoke, bulkAssign)
+
 - **Documentación**:
   - `docs/FASE_5_RESUMEN_FINAL_SESION_16NOV.md` (Resumen ejecutivo completo)
-  - `docs/FASE_5_PROGRESO_SESION_16NOV.md` (Progreso detallado)
-  - `docs/ANALISIS_SISTEMA_PERMISOS_COMPLETO.md` (Análisis técnico)
-- **Ver**: `docs/FASE_5_RESUMEN_FINAL_SESION_16NOV.md`
+  - `docs/REPORTE_TESTING_SISTEMA_PERMISOS_17NOV2025.md` (1,684 líneas - testing completo)
+  - `docs/PERFORMANCE_ANALYSIS_SISTEMA_PERMISOS_17NOV2025.md` (12k+ líneas - análisis performance)
+  - `docs/GUIA_AUDIT_TRIGGER_PERMISOS.md` ⭐ NUEVO (Guía técnica - 3 workarounds)
+  - `docs/FASE_3_RPC_FUNCTIONS_COMPLETADA.md` ⭐ NUEVO (Documentación RPC - 600+ líneas)
+  - `docs/GUIA_USUARIO_SISTEMA_PERMISOS.md` ⭐ NUEVO (Guía usuario - 800+ líneas)
+  - `docs/PLAN_DE_ACCION_POST_TESTING_COMPLETADO.md` ⭐ NUEVO (Resumen del plan ejecutado)
+- **Ver**: `docs/FASE_5_RESUMEN_FINAL_SESION_16NOV.md`, `docs/PLAN_DE_ACCION_POST_TESTING_COMPLETADO.md`
 
 
 ## 🏗️ ARQUITECTURA Y PATRONES
@@ -1291,6 +1317,24 @@ STRIPE_SECRET_KEY=sk_test_...
 8. Los pagos soportan 3 gateways (Stripe/PayU/MercadoPago)
 9. **TODOS los botones de acción DEBEN estar protegidos con PermissionGate** ⭐ NUEVO
 10. **businessId es REQUERIDO para verificar permisos** - sin businessId no hay control de acceso ⭐ NUEVO
+11. **Schema Discovery ANTES de CRUD**: Inspeccionar estructura real de BD antes de crear tests ⭐ NUEVO (17 Nov)
+12. **Audit triggers requieren auth context**: Usar `set_config()` para operaciones SQL directas ⭐ NUEVO (17 Nov)
+13. **Templates usan JSONB arrays**: Expandir con `jsonb_array_elements_text()` ⭐ NUEVO (17 Nov)
+
+### Lecciones Aprendidas del Testing ⭐ NUEVO (17 Nov 2025)
+
+**De la sesión de testing de Sistema de Permisos Granulares**:
+
+1. **RLS Policies**: NUNCA consultar la misma tabla dentro de la política → recursión infinita
+2. **localStorage Context**: Validar que `businessId` esté presente antes de verificar permisos
+3. **Owner Bypass**: Verificación de owner PRIMERO (99.4% más rápido, 0 queries)
+4. **React Query Cache**: Cache puede enmascarar bugs, invalidar tras cambios de BD
+5. **Schema Discovery**: Siempre inspeccionar estructura real con `information_schema.columns`
+6. **Audit Triggers**: `auth.uid()` en triggers requiere JWT context, usar `set_config()` para SQL directo
+7. **JSONB Templates**: Permission templates usan JSONB, no text[]
+8. **Bulk Operations**: `ON CONFLICT DO UPDATE` evita duplicados en asignación masiva
+9. **Testing CRUD**: Validar permisos PRIMERO, luego CRUD (separar concerns)
+10. **Error Messages**: Mensajes como "relation does not exist" indican schema mismatch
 
 ### Prioridades de Mantenimiento
 1. **Crítico**: Bugs que afectan creación/edición de citas

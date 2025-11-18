@@ -39,11 +39,9 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 COMMENT ON FUNCTION public.trigger_notify_business_unconfigured() IS 
 'Trigger que se ejecuta cuando se crea una notificación in-app de tipo business_unconfigured.
 Debería invocar la Edge Function notify-business-unconfigured para enviar email al owner.';
-
 -- Crear trigger en tabla in_app_notifications
 DROP TRIGGER IF EXISTS trg_notify_business_unconfigured ON public.in_app_notifications;
 CREATE TRIGGER trg_notify_business_unconfigured
@@ -52,10 +50,8 @@ ON public.in_app_notifications
 FOR EACH ROW
 WHEN (NEW.type = 'business_unconfigured')
 EXECUTE FUNCTION public.trigger_notify_business_unconfigured();
-
 COMMENT ON TRIGGER trg_notify_business_unconfigured ON public.in_app_notifications IS 
 'Trigger que llama a notify-business-unconfigured Edge Function cuando se crea notificación de negocio desconfigurado.';
-
 -- =============================================
 -- NOTA IMPORTANTE: 
 -- =============================================
@@ -72,4 +68,4 @@ COMMENT ON TRIGGER trg_notify_business_unconfigured ON public.in_app_notificatio
 -- 4. Filtro: record.type = 'business_unconfigured'
 -- 5. URL: https://[PROJECT_REF].supabase.co/functions/v1/notify-business-unconfigured
 -- 6. Headers: Authorization: Bearer [ANON_KEY]
--- =============================================
+-- =============================================;

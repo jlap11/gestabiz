@@ -4,7 +4,6 @@
 -- Propósito: hired_at es TIMESTAMP no DATE, agregar business_id al resultado
 
 DROP FUNCTION IF EXISTS get_business_hierarchy(UUID, DATE, DATE, JSONB);
-
 CREATE OR REPLACE FUNCTION get_business_hierarchy(
   p_business_id UUID,
   p_start_date DATE DEFAULT CURRENT_DATE - INTERVAL '30 days',
@@ -182,5 +181,4 @@ BEGIN
   ORDER BY ed.hierarchy_level ASC, ed.full_name ASC;
 END;
 $$;
-
 COMMENT ON FUNCTION get_business_hierarchy IS 'Obtiene jerarquía completa de empleados con datos de nómina. Incluye business_id y tipos corregidos (hired_at TIMESTAMP). Actualizado 20251115000008.';

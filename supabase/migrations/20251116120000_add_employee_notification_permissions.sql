@@ -44,7 +44,6 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
-
 -- PARTE 2: Agregar permiso employees.approve
 -- Permite a admins aprobar solicitudes de empleados
 DO $$
@@ -84,7 +83,6 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
-
 -- PARTE 3: Agregar permiso employees.reject
 -- Permite a admins rechazar solicitudes de empleados
 DO $$
@@ -124,7 +122,6 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
-
 -- PARTE 4: Registrar en audit log
 INSERT INTO public.permission_audit_log (
   business_id,
@@ -147,7 +144,6 @@ SELECT
   'Fase 5 - Sesión Continuación: Permisos para BusinessNotificationSettings y EmployeeManagementNew' as notes
 FROM public.business_roles
 WHERE role = 'admin' AND is_active = true;
-
 INSERT INTO public.permission_audit_log (
   business_id,
   user_id,
@@ -169,7 +165,6 @@ SELECT
   'Fase 5 - Sesión Continuación: Permisos para BusinessNotificationSettings y EmployeeManagementNew' as notes
 FROM public.business_roles
 WHERE role = 'admin' AND is_active = true;
-
 INSERT INTO public.permission_audit_log (
   business_id,
   user_id,
@@ -191,7 +186,6 @@ SELECT
   'Fase 5 - Sesión Continuación: Permisos para BusinessNotificationSettings y EmployeeManagementNew' as notes
 FROM public.business_roles
 WHERE role = 'admin' AND is_active = true;
-
 -- PARTE 5: Verificación final
 DO $$
 DECLARE
