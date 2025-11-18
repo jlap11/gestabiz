@@ -51,6 +51,14 @@ Sistema integral de gestión de citas y negocios con roles dinámicos, sistema d
 - Respuestas del negocio
 - Distribución de ratings y estadísticas
 
+### 🌍 Sistema i18n Modular ⭐ NUEVO (Nov 2025)
+- **2 idiomas**: Español (default), Inglés
+- **69 módulos** de traducción organizados en 16 archivos
+- **Type-safe**: Auto-completado con TypeScript
+- **Escalable**: Arquitectura modular fácil de mantener
+- **~2,200 claves** de traducción
+- Ver: `src/locales/README.md` para documentación completa
+
 ### 🏢 Gestión de Negocios
 - Múltiples sedes por negocio
 - Servicios por empleado y sede
@@ -296,6 +304,15 @@ Todas las tablas tienen políticas RLS activas:
 ---
 
 ## 📝 Changelog
+
+### v1.1.0 (Noviembre 2025) ⭐ NUEVO
+- ✅ **Sistema i18n Modular**: Reemplazo de traducciones monolíticas por arquitectura modular
+  - 69 módulos de traducción en 16 archivos consolidados
+  - Soporte completo para Español e Inglés
+  - Type-safe con auto-completado TypeScript
+  - ~2,200 claves de traducción migradas
+  - Backward compatible (merge strategy)
+  - Ver: `src/locales/README.md` para documentación
 
 ### v1.0.0 (Octubre 2025)
 - ✅ Sistema de roles dinámicos

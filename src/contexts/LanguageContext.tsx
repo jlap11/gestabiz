@@ -1,9 +1,57 @@
 /* eslint-disable react-refresh/only-export-components */
+/**
+ * LANGUAGE CONTEXT - i18n System
+ * 
+ * MIGRATION STATUS (Nov 2025): ✅ MODULAR SYSTEM ACTIVE
+ * - Old system: src/lib/translations.ts (monolithic, 4,386 lines) - DEPRECATED
+ * - New system: src/locales/{en,es}/ (modular, 16 files, 69 modules)
+ * 
+ * MERGE STRATEGY:
+ * - Both old and new translations coexist via merge
+ * - New modular translations take precedence when keys overlap
+ * - Zero breaking changes - all existing t() calls continue working
+ * 
+ * USAGE:
+ * ```tsx
+ * const { t, language, setLanguage } = useLanguage()
+ * 
+ * // Access translations with dot notation
+ * t('common.actions.save') // "Guardar" (ES) or "Save" (EN)
+ * t('auth.login.title') // "Iniciar Sesión" (ES)
+ * t('appointments.status.pending') // "Pendiente" (ES)
+ * 
+ * // With parameters
+ * t('common.messages.success', { action: 'Guardado' })
+ * ```
+ * 
+ * MODULAR STRUCTURE:
+ * - common: Actions, states, messages, forms, validation
+ * - auth: Login, register, password reset
+ * - appointments: CRUD, status, wizard
+ * - dashboard, calendar, settings: Dashboard modules
+ * - nav, ui, validation, profile: Navigation & UI
+ * - business, clients, services, locations, employees: Business entities
+ * - notifications, reviews, jobs, absences, sales, billing, accounting: Features
+ * - And 25+ UI components
+ * 
+ * See: src/locales/README.md for complete documentation
+ */
 import React, { createContext, useContext, useEffect, useMemo } from 'react'
 import { useKV } from '@/lib/useKV'
-import { translations } from '@/lib/translations'
+import { translations as oldTranslations } from '@/lib/translations'
+import { translations as newTranslations } from '@/locales'
 
 export type Language = 'es' | 'en'
+
+/**
+ * Merge old monolithic translations with new modular system
+ * New translations take precedence when keys overlap
+ * This ensures backward compatibility during migration
+ */
+const mergedTranslations = {
+  en: { ...oldTranslations.en, ...newTranslations.en },
+  es: { ...oldTranslations.es, ...newTranslations.es },
+}
 
 // Helper to get nested translation value with safe typing
 function getNestedValue<T extends Record<string, unknown>>(obj: T, path: string): string | undefined {
@@ -23,7 +71,7 @@ export function LanguageProvider({ children }: Readonly<{ children: React.ReactN
 
   // Translation function with memoization
   const t = useMemo(() => (key: string, params?: Record<string, string>): string => {
-    const translation = getNestedValue(translations[language], key)
+    const translation = getNestedValue(mergedTranslations[language], key)
     
     if (!translation) {
       // Return key instead of logging in production
