@@ -50,30 +50,38 @@ export interface Translations {
   taxConfiguration: typeof import('./en/admin').taxConfiguration
   userProfile: typeof import('./en/admin').userProfile
   
-  // UI Components (Phase 4)
-  adminDashboard: typeof import('./en/components').adminDashboard
-  employeeDashboard: typeof import('./en/components').employeeDashboard
-  clientDashboard: typeof import('./en/components').clientDashboard
-  imageCropper: typeof import('./en/components').imageCropper
-  bannerCropper: typeof import('./en/components').bannerCropper
-  quickSaleForm: typeof import('./en/components').quickSaleForm
-  reviewForm: typeof import('./en/components').reviewForm
-  reviewCard: typeof import('./en/components').reviewCard
-  reviewList: typeof import('./en/components').reviewList
-  favoritesList: typeof import('./en/components').favoritesList
-  citySelector: typeof import('./en/components').citySelector
-  businessSelector: typeof import('./en/components').businessSelector
-  themeToggle: typeof import('./en/components').themeToggle
-  roleSelector: typeof import('./en/components').roleSelector
-  serviceStatusBadge: typeof import('./en/components').serviceStatusBadge
-  languageToggle: typeof import('./en/components').languageToggle
-  ownerBadge: typeof import('./en/components').ownerBadge
-  businessInvitationCard: typeof import('./en/components').businessInvitationCard
-  profilePage: typeof import('./en/components').profilePage
-  recommendedBusinesses: typeof import('./en/components').recommendedBusinesses
-  businessSuggestions: typeof import('./en/components').businessSuggestions
-  dashboardOverview: typeof import('./en/components').dashboardOverview
-  cookieConsent: typeof import('./en/components').cookieConsent
+  // Dashboard modules (Phase 4)
+  adminDashboard: typeof import('./en/adminDashboard').adminDashboard
+  employeeDashboard: typeof import('./en/employeeDashboard').employeeDashboard
+  clientDashboard: typeof import('./en/clientDashboard').clientDashboard
+  
+  // UI Component modules (Phase 4)
+  imageCropper: typeof import('./en/imageCropper').imageCropper
+  bannerCropper: typeof import('./en/bannerCropper').bannerCropper
+  favoritesList: typeof import('./en/favoritesList').favoritesList
+  citySelector: typeof import('./en/citySelector').citySelector
+  businessSelector: typeof import('./en/businessSelector').businessSelector
+  themeToggle: typeof import('./en/themeToggle').themeToggle
+  roleSelector: typeof import('./en/roleSelector').roleSelector
+  serviceStatusBadge: typeof import('./en/serviceStatusBadge').serviceStatusBadge
+  languageToggle: typeof import('./en/languageToggle').languageToggle
+  ownerBadge: typeof import('./en/ownerBadge').ownerBadge
+  
+  // Business feature modules (Phase 4)
+  businessInvitationCard: typeof import('./en/businessInvitationCard').businessInvitationCard
+  quickSaleForm: typeof import('./en/quickSaleForm').quickSaleForm
+  businessSuggestions: typeof import('./en/businessSuggestions').businessSuggestions
+  recommendedBusinesses: typeof import('./en/recommendedBusinesses').recommendedBusinesses
+  dashboardOverview: typeof import('./en/dashboardOverview').dashboardOverview
+  
+  // Review system modules (Phase 4)
+  reviewForm: typeof import('./en/reviewForm').reviewForm
+  reviewCard: typeof import('./en/reviewCard').reviewCard
+  reviewList: typeof import('./en/reviewList').reviewList
+  
+  // Other modules (Phase 4)
+  profilePage: typeof import('./en/profilePage').profilePage
+  cookieConsent: typeof import('./en/cookieConsent').cookieConsent
   
   // Landing & Employee (Phase 4)
   landing: typeof import('./en/landing').landing

@@ -1,0 +1,6 @@
+export const themeToggle = {
+  label: 'Toggle theme',
+  light: 'Light',
+  dark: 'Dark',
+  system: 'System',
+};
