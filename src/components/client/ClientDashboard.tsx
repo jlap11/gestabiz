@@ -1199,17 +1199,16 @@ export function ClientDashboard({
                 )}
                 
                 {/* Cancel button - only if not completed, cancelled or no_show */}
+                {/* IMPORTANT: Clients should ALWAYS be able to cancel their own appointments */}
                 {!['completed', 'cancelled', 'no_show'].includes(selectedAppointment.status) && (
-                  <PermissionGate permission="appointments.cancel_own" businessId={selectedAppointment.business_id} mode="hide">
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleCancelAppointment(selectedAppointment.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Cancelar Cita
-                    </Button>
-                  </PermissionGate>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleCancelAppointment(selectedAppointment.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancelar Cita
+                  </Button>
                 )}
                 
                 <Button 

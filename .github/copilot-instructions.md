@@ -656,7 +656,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 - `permission_templates`: Plantillas de permisos reutilizables
 - `permission_audit_log`: Auditoría de cambios de permisos
 
-### Migraciones Aplicadas (40+)
+### Migraciones Aplicadas (41+)
 - `20251011000000_database_redesign.sql`: Rediseño completo del modelo
 - `20251012000000_search_optimization.sql`: Índices trigram y full-text search
 - `20251013000000_fiscal_system_colombia.sql`: Sistema contable colombiano
@@ -670,6 +670,7 @@ Objetivo: que un agente pueda contribuir de inmediato entendiendo la arquitectur
 - `20251018000000_create_logging_system.sql`: Sistema de logs centralizado
 - `20251018000001_add_location_hours.sql`: Horarios de apertura/cierre
 - `20251018000002_add_lunch_break_fields.sql`: Horas de almuerzo de empleados
+- `20251119000000_auto_assign_permissions_to_owners.sql`: ⭐ **CRÍTICA** - Auto-asignación de 79 permisos a business owners (Trigger + Backfill de 55 negocios)
 - `executed/20251220000001_notification_system.sql`: Sistema de notificaciones multicanal
 - `executed/EJECUTAR_SOLO_CATEGORIAS.sql`: Sistema de categorías jerárquicas
 

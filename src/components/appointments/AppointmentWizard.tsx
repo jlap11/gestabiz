@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { PermissionGate } from '@/components/ui/PermissionGate';
 import { X } from 'lucide-react';
 import { Check, Hourglass } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
@@ -648,6 +647,9 @@ export function AppointmentWizard({
         });
       }
 
+      // ✅ Resetear el ref de backfill al cerrar
+      hasBackfilledRef.current = false;
+
       setCurrentStep(getStepNumber(getInitialStepLogical()));
       setWizardData({
         businessId: businessId || null,
@@ -670,14 +672,19 @@ export function AppointmentWizard({
     }
   };
 
-  const updateWizardData = (data: Partial<WizardData>) => {
+  const updateWizardData = React.useCallback((data: Partial<WizardData>) => {
     setWizardData(prev => ({ ...prev, ...data }));
-  };
+  }, []);
+
+  // Ref para evitar ejecuciones múltiples del backfill
+  const hasBackfilledRef = React.useRef(false);
 
   // Backfill de sede y negocio cuando solo se recibe un servicio
   React.useEffect(() => {
     const backfillFromService = async () => {
       if (!preselectedServiceId) return;
+      // Si ya ejecutamos el backfill, no hacer nada
+      if (hasBackfilledRef.current) return;
       // Si ya tenemos business y location, no hacer nada
       if (wizardData.businessId && wizardData.locationId) return;
 
@@ -704,6 +711,7 @@ export function AppointmentWizard({
 
         if (Object.keys(updates).length > 0) {
           updateWizardData(updates);
+          hasBackfilledRef.current = true; // ✅ Marcar como ejecutado
         }
       } catch (e) {
         // No bloquear el flujo si falla; sólo log
@@ -1137,34 +1145,32 @@ export function AppointmentWizard({
                 Next Step →
               </Button>
             ) : (
-              <PermissionGate permission="appointments.create" businessId={wizardData.businessId || undefined} mode="disable">
-                <Button
-                  onClick={async () => {
-                    const success = await createAppointment();
-                    if (success) {
-                      handleNext();
-                    }
-                  }}
-                  disabled={isSubmitting}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Hourglass size={16} weight="fill" className="animate-spin mr-2" />
-                      {' '}
-                      <span className="hidden sm:inline">Guardando...</span>
-                      <span className="sm:hidden">Guardar...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check size={16} weight="bold" className="mr-1" />
-                      <span className="hidden sm:inline">Confirmar y Reservar</span>
-                      <Check size={16} weight="bold" className="mr-1 sm:hidden" />
-                      <span className="sm:hidden">Confirmar</span>
-                    </>
-                  )}
-                </Button>
-              </PermissionGate>
+              <Button
+                onClick={async () => {
+                  const success = await createAppointment();
+                  if (success) {
+                    handleNext();
+                  }
+                }}
+                disabled={isSubmitting}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] order-1 sm:order-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Hourglass size={16} weight="fill" className="animate-spin mr-2" />
+                    {' '}
+                    <span className="hidden sm:inline">Guardando...</span>
+                    <span className="sm:hidden">Guardar...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} weight="bold" className="mr-1" />
+                    <span className="hidden sm:inline">Confirmar y Reservar</span>
+                    <Check size={16} weight="bold" className="mr-1 sm:hidden" />
+                    <span className="sm:hidden">Confirmar</span>
+                  </>
+                )}
+              </Button>
             )}
           </div>
         )}
