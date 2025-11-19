@@ -2,8 +2,37 @@
 export const reviews = {
   title: 'Reviews',
   subtitle: 'Client reviews and ratings',
+  leaveReview: 'Leave a Review',
+  reviewDescription: 'Share your experience with others',
+  comment: 'Comment',
+  commentPlaceholder: 'Tell us about your experience...',
+  shareExperience: 'Your review will be posted anonymously',
+  submitReview: 'Submit Review',
+  submitSuccess: 'Review submitted successfully',
+  anonymous: 'Anonymous User',
+  hidden: 'Hidden',
+  hide: 'Hide',
+  show: 'Show',
+  delete: 'Delete',
+  confirmDelete: 'Are you sure you want to delete this review?',
+  employeeLabel: 'Professional',
+  businessResponse: 'Business Response',
+  respond: 'Respond',
+  responsePlaceholder: 'Write your response...',
+  submitResponse: 'Submit Response',
+  helpful: 'Helpful',
+  overallRating: 'Overall Rating',
+  basedOn: 'Based on {{count}} reviews',
+  ratingDistribution: 'Rating Distribution',
+  filterByRating: 'Filter by Rating',
+  allRatings: 'All Ratings',
+  searchReviews: 'Search reviews...',
+  noReviews: 'No reviews yet',
+  noReviewsDescription: 'Be the first to leave a review',
+  review: 'review',
+  reviewsPlural: 'reviews',
   
-  // Rating
+  // Rating structure
   rating: {
     overall: 'Overall Rating',
     stars: '{{count}} stars',
@@ -90,6 +119,15 @@ export const reviews = {
     hide: 'Hide Review',
     show: 'Show Review',
     markHelpful: 'Mark as Helpful'
+  },
+
+  // Ratings descriptions
+  ratings: {
+    poor: 'Poor',
+    fair: 'Fair',
+    good: 'Good',
+    veryGood: 'Very Good',
+    excellent: 'Excellent',
   },
 
   // Messages

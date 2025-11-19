@@ -3,26 +3,37 @@ export const notifications = {
   title: 'Notificaciones',
   subtitle: 'Gestionar preferencias de notificación',
   markAllRead: 'Marcar Todas como Leídas',
+  preferencesSaved: 'Tus preferencias de notificación han sido actualizadas',
+  closeNotifications: 'Cerrar notificaciones',
+  moreActions: 'Más acciones de notificación',
   clearAll: 'Limpiar Todas',
   noNotifications: 'No hay notificaciones',
   viewAll: 'Ver Todas las Notificaciones',
   
   // Channels
   channels: {
+    title: 'Canales de notificación',
     email: 'Email',
     sms: 'SMS',
     push: 'Notificaciones Push',
     whatsapp: 'WhatsApp',
-    inApp: 'Notificaciones en la App'
+    inApp: 'Notificaciones en la App',
+    verified: 'Verificado',
   },
 
   // Notification Types
   types: {
+    title: 'Preferencias por tipo',
     all: 'Todas las Notificaciones',
     appointments: 'Citas',
+    appointmentReminder: 'Recordatorios de citas',
+    appointmentConfirmation: 'Confirmaciones de citas',
+    appointmentCancellation: 'Cancelaciones',
+    appointmentRescheduled: 'Reagendamientos',
     reminders: 'Recordatorios',
     promotions: 'Promociones',
     system: 'Sistema',
+    securityAlert: 'Alertas de seguridad',
     messages: 'Mensajes',
     reviews: 'Reseñas',
     recruitment: 'Reclutamiento',
@@ -42,12 +53,13 @@ export const notifications = {
 
   // Do Not Disturb
   doNotDisturb: {
-    title: 'No Molestar',
+    title: 'No molestar',
     enabled: 'Habilitado',
     disabled: 'Deshabilitado',
     schedule: 'Programar',
     from: 'Desde',
     to: 'Hasta',
+    until: 'Hasta',
     days: 'Días',
     allDays: 'Todos los Días',
     weekdays: 'Días de Semana',
@@ -57,23 +69,27 @@ export const notifications = {
 
   // Email summaries
   summaries: {
-    title: 'Resúmenes por Email',
+    title: 'Resúmenes',
     daily: 'Resumen Diario',
+    dailyDigest: 'Resumen diario',
     weekly: 'Resumen Semanal',
+    weeklyDigest: 'Resumen semanal',
     monthly: 'Resumen Mensual',
     time: 'Enviar a las',
-    dayOfWeek: 'Día de la semana'
+    sendTime: 'Hora de envío',
+    dayOfWeek: 'Día de la semana',
+    sendDay: 'Día de envío',
   },
 
   // Days
   days: {
+    sunday: 'Domingo',
     monday: 'Lunes',
     tuesday: 'Martes',
     wednesday: 'Miércoles',
     thursday: 'Jueves',
     friday: 'Viernes',
     saturday: 'Sábado',
-    sunday: 'Domingo'
   },
 
   // Appointment notifications
@@ -117,6 +133,8 @@ export const notifications = {
 
   // Errors
   errors: {
+    loadError: 'No se pudieron cargar las preferencias',
+    noPreferences: 'No se pudieron cargar las preferencias',
     loadFailed: 'Error al cargar notificaciones',
     updateFailed: 'Error al actualizar preferencias',
     markReadFailed: 'Error al marcar como leído',

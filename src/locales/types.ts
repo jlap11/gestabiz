@@ -33,13 +33,10 @@ export interface Translations {
   employees: typeof import('./en/business').employees
   
   // Secondary features (Phase 4)
-  notifications: typeof import('./en/features').notifications
-  reviews: typeof import('./en/features').reviews
-  jobs: typeof import('./en/features').jobs
-  absences: typeof import('./en/features').absences
-  sales: typeof import('./en/features').sales
-  billing: typeof import('./en/features').billing
-  accounting: typeof import('./en/features').accounting
+  notifications: typeof import('./en/notifications').notifications
+  reviews: typeof import('./en/reviews').reviews
+  jobs: typeof import('./en/jobs').jobs
+  absences: typeof import('./en/absences').absences
   
   // Admin & System (Phase 4)
   businessResources: typeof import('./en/admin').businessResources

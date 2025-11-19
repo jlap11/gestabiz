@@ -7,7 +7,10 @@ import { calendar } from './calendar'
 import { settings } from './settings'
 import { nav, ui, validation, profile } from './navigation'
 import { business, clients, services, locations, employees } from './business'
-import { notifications, reviews, jobs, absences, sales, billing, accounting } from './features'
+import { notifications } from './notifications'
+import { reviews } from './reviews'
+import { jobs } from './jobs'
+import { absences } from './absences'
 import { businessResources, permissions, reports, admin, search, taxConfiguration, userProfile } from './admin'
 import { landing, employee } from './landing'
 
@@ -69,9 +72,6 @@ export const en = {
   reviews,
   jobs,
   absences,
-  sales,
-  billing,
-  accounting,
   // Admin & System
   businessResources,
   permissions,

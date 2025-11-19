@@ -2,6 +2,35 @@
 export const reviews = {
   title: 'Reseñas',
   subtitle: 'Reseñas y calificaciones de clientes',
+  leaveReview: 'Dejar una Reseña',
+  reviewDescription: 'Comparte tu experiencia con otros',
+  comment: 'Comentario',
+  commentPlaceholder: 'Cuéntanos sobre tu experiencia...',
+  shareExperience: 'Tu reseña será publicada de forma anónima',
+  submitReview: 'Enviar Reseña',
+  submitSuccess: 'Reseña enviada exitosamente',
+  anonymous: 'Usuario Anónimo',
+  hidden: 'Oculto',
+  hide: 'Ocultar',
+  show: 'Mostrar',
+  delete: 'Eliminar',
+  confirmDelete: '¿Estás seguro de que quieres eliminar esta reseña?',
+  employeeLabel: 'Profesional',
+  businessResponse: 'Respuesta del Negocio',
+  respond: 'Responder',
+  responsePlaceholder: 'Escribe tu respuesta...',
+  submitResponse: 'Enviar Respuesta',
+  helpful: 'Útil',
+  overallRating: 'Calificación General',
+  basedOn: 'Basado en {{count}} reseñas',
+  ratingDistribution: 'Distribución de Calificaciones',
+  filterByRating: 'Filtrar por Calificación',
+  allRatings: 'Todas las Calificaciones',
+  searchReviews: 'Buscar reseñas...',
+  noReviews: 'No hay reseñas aún',
+  noReviewsDescription: 'Sé el primero en dejar una reseña',
+  review: 'reseña',
+  reviewsPlural: 'reseñas',
   
   // Rating
   rating: {
@@ -80,6 +109,15 @@ export const reviews = {
     tooltip: 'Esta reseña es de un cliente verificado'
   },
 
+  // Ratings descriptions
+  ratings: {
+    poor: 'Deficiente',
+    fair: 'Regular',
+    good: 'Bueno',
+    veryGood: 'Muy Bueno',
+    excellent: 'Excelente',
+  },
+
   // Actions
   actions: {
     view: 'Ver Reseña',
@@ -101,6 +139,13 @@ export const reviews = {
     cannotReview: 'Debes completar una cita para dejar una reseña',
     alreadyReviewed: 'Ya has reseñado este {{type}}',
     confirmDelete: '¿Estás seguro de que deseas eliminar esta reseña?'
+  },
+
+  // Errors
+  errors: {
+    ratingRequired: 'Por favor selecciona una calificación',
+    submitFailed: 'Error al enviar la reseña',
+    loadFailed: 'Error al cargar las reseñas',
   },
 
   // Empty states
