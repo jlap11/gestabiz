@@ -2,6 +2,16 @@
 export const calendar = {
   title: 'Calendar',
   subtitle: 'Manage your appointments',
+  today: 'Today',
+  month: 'Month',
+  week: 'Week',
+  day: 'Day',
+  agenda: 'Agenda',
+  no_appointments: 'No appointments scheduled',
+  time_slot_available: 'Available',
+  time_slot_busy: 'Busy',
+  view_details: 'View Details',
+  book_appointment: 'Book Appointment',
   
   // Views
   views: {

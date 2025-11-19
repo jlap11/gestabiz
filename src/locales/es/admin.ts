@@ -201,15 +201,35 @@ export const admin = {
   clientManagement: {
     title: 'Gestión de Clientes',
     subtitle: 'Ver y gestionar tus clientes',
+    search_placeholder: 'Buscar clientes por nombre, email o teléfono...',
     searchPlaceholder: 'Buscar clientes por nombre, email o teléfono...',
+    filter_by_status: 'Filtrar por estado',
     filterByStatus: 'Filtrar por estado',
+    all_statuses: 'Todos los estados',
     allStatuses: 'Todos los Estados',
     tabs: {
       all: 'Todos',
       active: 'Activos',
       inactive: 'Inactivos',
+      recurring: 'Recurrentes',
+      at_risk: 'En Riesgo',
+      lost: 'Perdidos',
       favorites: 'Favoritos',
       atrisk: 'En Riesgo'
+    },
+    status: {
+      active: 'Activo',
+      inactive: 'Inactivo',
+      blocked: 'Bloqueado',
+      unknown: 'Desconocido',
+      active_plural: 'Activos',
+      inactive_plural: 'Inactivos',
+      blocked_plural: 'Bloqueados'
+    },
+    empty: {
+      title: 'No se encontraron clientes',
+      description_search: 'Intenta con términos de búsqueda diferentes',
+      description_category: 'No hay clientes en esta categoría'
     },
     emptyState: {
       title: 'No hay clientes aún',
@@ -219,15 +239,25 @@ export const admin = {
     badges: {
       new: 'Nuevo',
       vip: 'VIP',
-      atrisk: 'En Riesgo'
+      atrisk: 'En Riesgo',
+      total_appointments: 'Citas Totales',
+      total_value: 'Valor Total'
     },
+    last_appointment_prefix: 'Última cita',
+    never: 'Nunca',
     actions: {
       viewProfile: 'Ver Perfil',
       sendMessage: 'Enviar Mensaje',
       scheduleAppointment: 'Programar Cita',
+      schedule: 'Programar',
+      contact: 'Contactar',
       markAsFavorite: 'Marcar como Favorito',
       markAsVIP: 'Marcar como VIP',
       exportList: 'Exportar Lista'
+    },
+    risk: {
+      at_risk: 'Cliente en riesgo ({{days}} días)',
+      lost: 'Cliente perdido ({{days}} días)'
     },
     riskIndicators: {
       title: 'Cliente en Riesgo',
@@ -240,6 +270,10 @@ export const admin = {
       tooltip: 'Enviar mensaje vía WhatsApp',
       opening: 'Abriendo WhatsApp...',
       defaultMessage: 'Hola {{name}}, queremos ofrecerte...'
+    },
+    whatsapp: {
+      missing: 'El cliente no tiene número de WhatsApp',
+      message_template: 'Hola {{name}}, esperamos que estés bien. ¿Te gustaría reservar tu próxima cita?'
     }
   },
 
@@ -247,8 +281,17 @@ export const admin = {
   comprehensiveReports: {
     title: 'Reportes Completos',
     subtitle: 'Analítica avanzada y métricas',
+    actions: {
+      update: 'Actualizar',
+      updating: 'Actualizando...'
+    },
     metrics: {
       title: 'Métricas Clave',
+      total_appointments: 'Citas Totales',
+      revenue: 'Ingresos',
+      average: 'Promedio',
+      completion_rate: 'Tasa de Completación',
+      new_in_period: 'nuevos en este período',
       totalRevenue: 'Ingresos Totales',
       avgTicket: 'Ticket Promedio',
       conversionRate: 'Tasa de Conversión',
@@ -259,6 +302,7 @@ export const admin = {
       professionalUtilization: 'Utilización de Profesionales'
     },
     tabs: {
+      summary: 'Resumen',
       overview: 'Resumen',
       revenue: 'Ingresos',
       appointments: 'Citas',
@@ -267,6 +311,12 @@ export const admin = {
       services: 'Servicios'
     },
     descriptions: {
+      by_status: 'Distribución por estado en el período seleccionado',
+      client_metrics: 'Métricas de retención y crecimiento',
+      peak_hours: 'Días y horas con más citas programadas',
+      employee_performance: 'Estadísticas de productividad y eficiencia',
+      top_services: 'Servicios más demandados y rentables',
+      recurring_clients: 'Análisis de clientes frecuentes y estado de actividad',
       revenue: 'Análisis de ingresos y pagos',
       appointments: 'Estadísticas y tendencias de citas',
       clients: 'Comportamiento y retención de clientes',

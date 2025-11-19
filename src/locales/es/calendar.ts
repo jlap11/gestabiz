@@ -2,6 +2,16 @@
 export const calendar = {
   title: 'Calendario',
   subtitle: 'Gestiona tus citas',
+  today: 'Hoy',
+  month: 'Mes',
+  week: 'Semana',
+  day: 'Día',
+  agenda: 'Agenda',
+  no_appointments: 'No hay citas programadas',
+  time_slot_available: 'Disponible',
+  time_slot_busy: 'Ocupado',
+  view_details: 'Ver Detalles',
+  book_appointment: 'Reservar Cita',
   
   // Views
   views: {

@@ -201,15 +201,35 @@ export const admin = {
   clientManagement: {
     title: 'Client Management',
     subtitle: 'View and manage your clients',
+    search_placeholder: 'Search clients by name, email or phone...',
     searchPlaceholder: 'Search clients by name, email or phone...',
+    filter_by_status: 'Filter by status',
     filterByStatus: 'Filter by status',
+    all_statuses: 'All statuses',
     allStatuses: 'All Statuses',
     tabs: {
       all: 'All',
       active: 'Active',
       inactive: 'Inactive',
+      recurring: 'Recurring',
+      at_risk: 'At Risk',
+      lost: 'Lost',
       favorites: 'Favorites',
       atrisk: 'At Risk'
+    },
+    status: {
+      active: 'Active',
+      inactive: 'Inactive',
+      blocked: 'Blocked',
+      unknown: 'Unknown',
+      active_plural: 'Active',
+      inactive_plural: 'Inactive',
+      blocked_plural: 'Blocked'
+    },
+    empty: {
+      title: 'No clients found',
+      description_search: 'Try different search terms',
+      description_category: 'There are no clients in this category'
     },
     emptyState: {
       title: 'No clients yet',
@@ -219,15 +239,25 @@ export const admin = {
     badges: {
       new: 'New',
       vip: 'VIP',
-      atrisk: 'At Risk'
+      atrisk: 'At Risk',
+      total_appointments: 'Total Appointments',
+      total_value: 'Total Value'
     },
+    last_appointment_prefix: 'Last appointment',
+    never: 'Never',
     actions: {
       viewProfile: 'View Profile',
       sendMessage: 'Send Message',
       scheduleAppointment: 'Schedule Appointment',
+      schedule: 'Schedule',
+      contact: 'Contact',
       markAsFavorite: 'Mark as Favorite',
       markAsVIP: 'Mark as VIP',
       exportList: 'Export List'
+    },
+    risk: {
+      at_risk: 'Client at risk ({{days}} days)',
+      lost: 'Lost client ({{days}} days)'
     },
     riskIndicators: {
       title: 'Client at Risk',
@@ -240,6 +270,10 @@ export const admin = {
       tooltip: 'Send message via WhatsApp',
       opening: 'Opening WhatsApp...',
       defaultMessage: 'Hello {{name}}, we want to offer you...'
+    },
+    whatsapp: {
+      missing: 'Client has no WhatsApp number',
+      message_template: 'Hi {{name}}, hope you are well. Would you like to book your next appointment?'
     }
   },
 
@@ -247,8 +281,17 @@ export const admin = {
   comprehensiveReports: {
     title: 'Comprehensive Reports',
     subtitle: 'Advanced analytics and metrics',
+    actions: {
+      update: 'Refresh',
+      updating: 'Refreshing...'
+    },
     metrics: {
       title: 'Key Metrics',
+      total_appointments: 'Total Appointments',
+      revenue: 'Revenue',
+      average: 'Average',
+      completion_rate: 'Completion Rate',
+      new_in_period: 'new this period',
       totalRevenue: 'Total Revenue',
       avgTicket: 'Average Ticket',
       conversionRate: 'Conversion Rate',
@@ -259,6 +302,7 @@ export const admin = {
       professionalUtilization: 'Professional Utilization'
     },
     tabs: {
+      summary: 'Summary',
       overview: 'Overview',
       revenue: 'Revenue',
       appointments: 'Appointments',
@@ -267,6 +311,12 @@ export const admin = {
       services: 'Services'
     },
     descriptions: {
+      by_status: 'Distribution by status in the selected period',
+      client_metrics: 'Retention and growth metrics',
+      peak_hours: 'Days and hours with the most appointments scheduled',
+      employee_performance: 'Productivity and efficiency statistics',
+      top_services: 'Most demanded and profitable services',
+      recurring_clients: 'Frequent clients and activity status analysis',
       revenue: 'Income and payment analysis',
       appointments: 'Appointment statistics and trends',
       clients: 'Client behavior and retention',
