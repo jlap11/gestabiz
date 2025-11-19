@@ -1,15 +1,67 @@
-// Navigation translations
+// Navigation - Complete navigation module
 export const nav = {
+  // Main menu
+  home: 'Home',
   dashboard: 'Dashboard',
   calendar: 'Calendar',
   appointments: 'Appointments',
   clients: 'Clients',
   services: 'Services',
+  locations: 'Locations',
+  employees: 'Employees',
   reports: 'Reports',
   settings: 'Settings',
-  profile: 'Profile',
-  business: 'Business',
-  employees: 'Employees',
+  
+  // Admin menu
+  admin: {
+    overview: 'Overview',
+    businessManagement: 'Business Management',
+    clientManagement: 'Client Management',
+    recruitment: 'Recruitment',
+    accounting: 'Accounting',
+    comprehensiveReports: 'Comprehensive Reports',
+    absences: 'Absences',
+    quickSales: 'Quick Sales',
+    resources: 'Resources',
+    permissions: 'Permissions',
+    billing: 'Billing'
+  },
+
+  // Employee menu
+  employee: {
+    mySchedule: 'My Schedule',
+    myAppointments: 'My Appointments',
+    myClients: 'My Clients',
+    myEarnings: 'My Earnings',
+    absences: 'Absences',
+    profile: 'My Profile'
+  },
+
+  // Client menu
+  client: {
+    bookAppointment: 'Book Appointment',
+    myAppointments: 'My Appointments',
+    favorites: 'Favorites',
+    history: 'History',
+    reviews: 'My Reviews',
+    profile: 'My Profile'
+  },
+
+  // Footer
+  footer: {
+    about: 'About',
+    contact: 'Contact',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    help: 'Help Center',
+    legal: 'Legal'
+  },
+
+  // Mobile menu
+  mobile: {
+    menu: 'Menu',
+    close: 'Close'
+  }
 }
 
 // UI components

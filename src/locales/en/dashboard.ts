@@ -1,49 +1,78 @@
-// Dashboard translations
+// Dashboard - Complete with all dashboard views
 export const dashboard = {
   title: 'Dashboard',
   welcome: 'Welcome',
-  overview: 'Overview',
+  welcomeBack: 'Welcome back',
+  todayAppointments: "Today's Appointments",
+  totalClients: 'Total Clients',
+  monthlyRevenue: 'Monthly Revenue',
+  upcomingToday: 'Upcoming Today',
+  quickActions: 'Quick Actions',
+  recentActivity: 'Recent Activity',
+  upcomingWeek: 'Upcoming This Week',
+  todaySchedule: "Today's Schedule",
+  totalRevenue: 'Total Revenue',
+  avgAppointmentValue: 'Avg. Appointment Value',
+  weeklyAppointments: 'Weekly Appointments',
+  appointmentStatus: 'Appointment Status',
+  
+  // Stats
   stats: {
-    total_appointments: 'Total Appointments',
-    pending_appointments: 'Pending',
-    confirmed_appointments: 'Confirmed',
-    completed_appointments: 'Completed',
-    total_clients: 'Total Clients',
-    total_revenue: 'Total Revenue',
-    monthly_revenue: 'Monthly Revenue',
-    weekly_revenue: 'Weekly Revenue',
+    appointments: 'Appointments',
+    revenue: 'Revenue',
+    clients: 'Clients',
+    growth: 'Growth',
+    pending: 'Pending',
+    confirmed: 'Confirmed',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+    todayTotal: 'Today',
+    weekTotal: 'This Week',
+    monthTotal: 'This Month'
   },
-  recent_appointments: 'Recent Appointments',
-  upcoming_appointments: 'Upcoming Appointments',
-  no_upcoming_appointments: 'No upcoming appointments',
-  view_all: 'View All',
-  quick_actions: 'Quick Actions',
-  new_appointment: 'New Appointment',
-  view_calendar: 'View Calendar',
-  view_reports: 'View Reports',
-}
 
-export const calendar = {
-  title: 'Calendar',
-  month_view: 'Month',
-  week_view: 'Week',
-  day_view: 'Day',
-  today: 'Today',
-  previous: 'Previous',
-  next: 'Next',
-  no_events: 'No events for this period',
-}
+  // Widgets
+  widgets: {
+    appointments: {
+      title: 'Appointments',
+      today: 'Today',
+      upcoming: 'Upcoming',
+      viewAll: 'View all'
+    },
+    revenue: {
+      title: 'Revenue',
+      today: 'Today',
+      thisWeek: 'This Week',
+      thisMonth: 'This Month'
+    },
+    clients: {
+      title: 'Clients',
+      total: 'Total',
+      new: 'New',
+      active: 'Active'
+    },
+    schedule: {
+      title: 'My Schedule',
+      next: 'Next Appointment',
+      noAppointments: 'No appointments scheduled',
+      viewCalendar: 'View Calendar'
+    }
+  },
 
-export const settings = {
-  title: 'Settings',
-  general: 'General',
-  profile: 'Profile',
-  account: 'Account',
-  notifications: 'Notifications',
-  security: 'Security',
-  billing: 'Billing',
-  preferences: 'Preferences',
-  save_changes: 'Save Changes',
-  changes_saved: 'Changes saved successfully',
-  cancel: 'Cancel',
+  // Overview section
+  overview: {
+    title: 'Business Overview',
+    summary: 'Summary',
+    performance: 'Performance',
+    trends: 'Trends',
+    comparePeriod: 'Compare with previous period',
+    periodSelector: {
+      today: 'Today',
+      week: 'This Week',
+      month: 'This Month',
+      quarter: 'This Quarter',
+      year: 'This Year',
+      custom: 'Custom Range'
+    }
+  }
 }

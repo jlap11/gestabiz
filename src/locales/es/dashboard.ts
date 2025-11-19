@@ -1,26 +1,80 @@
-// Traducciones del dashboard
+// Dashboard - Completo con todas las vistas del dashboard
 export const dashboard = {
-  title: 'Panel Principal',
+  title: 'Dashboard',
   welcome: 'Bienvenido',
-  overview: 'Resumen',
+  welcomeBack: 'Bienvenido de nuevo',
+  todayAppointments: 'Citas de Hoy',
+  totalClients: 'Clientes Totales',
+  monthlyRevenue: 'Ingresos Mensuales',
+  upcomingToday: 'Próximas Hoy',
+  quickActions: 'Acciones Rápidas',
+  recentActivity: 'Actividad Reciente',
+  upcomingWeek: 'Próximas Esta Semana',
+  todaySchedule: 'Agenda de Hoy',
+  totalRevenue: 'Ingresos Totales',
+  avgAppointmentValue: 'Valor Promedio de Cita',
+  weeklyAppointments: 'Citas Semanales',
+  appointmentStatus: 'Estado de Citas',
+  
+  // Stats
   stats: {
-    total_appointments: 'Total de Citas',
-    pending_appointments: 'Pendientes',
-    confirmed_appointments: 'Confirmadas',
-    completed_appointments: 'Completadas',
-    total_clients: 'Total de Clientes',
-    total_revenue: 'Ingresos Totales',
-    monthly_revenue: 'Ingresos Mensuales',
-    weekly_revenue: 'Ingresos Semanales',
+    appointments: 'Citas',
+    revenue: 'Ingresos',
+    clients: 'Clientes',
+    growth: 'Crecimiento',
+    pending: 'Pendientes',
+    confirmed: 'Confirmadas',
+    completed: 'Completadas',
+    cancelled: 'Canceladas',
+    todayTotal: 'Hoy',
+    weekTotal: 'Esta Semana',
+    monthTotal: 'Este Mes'
   },
-  recent_appointments: 'Citas Recientes',
-  upcoming_appointments: 'Próximas Citas',
-  no_upcoming_appointments: 'No hay citas próximas',
-  view_all: 'Ver Todas',
-  quick_actions: 'Acciones Rápidas',
-  new_appointment: 'Nueva Cita',
-  view_calendar: 'Ver Calendario',
-  view_reports: 'Ver Reportes',
+
+  // Widgets
+  widgets: {
+    appointments: {
+      title: 'Citas',
+      today: 'Hoy',
+      upcoming: 'Próximas',
+      viewAll: 'Ver todas'
+    },
+    revenue: {
+      title: 'Ingresos',
+      today: 'Hoy',
+      thisWeek: 'Esta Semana',
+      thisMonth: 'Este Mes'
+    },
+    clients: {
+      title: 'Clientes',
+      total: 'Total',
+      new: 'Nuevos',
+      active: 'Activos'
+    },
+    schedule: {
+      title: 'Mi Agenda',
+      next: 'Próxima Cita',
+      noAppointments: 'No hay citas programadas',
+      viewCalendar: 'Ver Calendario'
+    }
+  },
+
+  // Overview section
+  overview: {
+    title: 'Resumen del Negocio',
+    summary: 'Resumen',
+    performance: 'Rendimiento',
+    trends: 'Tendencias',
+    comparePeriod: 'Comparar con período anterior',
+    periodSelector: {
+      today: 'Hoy',
+      week: 'Esta Semana',
+      month: 'Este Mes',
+      quarter: 'Este Trimestre',
+      year: 'Este Año',
+      custom: 'Rango Personalizado'
+    }
+  }
 }
 
 export const calendar = {

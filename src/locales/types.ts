@@ -16,8 +16,8 @@ export interface Translations {
   accountInactive: typeof import('./en/auth').accountInactive
   appointments: typeof import('./en/appointments').appointments
   dashboard: typeof import('./en/dashboard').dashboard
-  calendar: typeof import('./en/dashboard').calendar
-  settings: typeof import('./en/dashboard').settings
+  calendar: typeof import('./en/calendar').calendar
+  settings: typeof import('./en/settings').settings
   
   // Navigation group (Phase 4)
   nav: typeof import('./en/navigation').nav
