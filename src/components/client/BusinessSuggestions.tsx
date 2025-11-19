@@ -122,7 +122,7 @@ export function BusinessSuggestions({
             {business.city && (
               <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3 shrink-0" />
-        const shouldShowEmptyState = !hasFrequent && !hasSuggestions
+                <span className="line-clamp-1">{business.city}</span>
               </div>
             )}
           </div>

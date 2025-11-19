@@ -1,9 +1,17 @@
 export const businessSuggestions = {
-  title: 'Negocios Populares',
+  title: 'Negocios Recomendados',
   titleWithCity: 'Negocios en {city}',
+  frequentTitle: 'Tus negocios frecuentes',
+  recommendedTitle: 'Recomendados en tu ciudad',
   noSuggestions: 'Sin sugerencias disponibles',
   loading: 'Cargando sugerencias...',
   viewMore: 'Ver Más',
   basedOnReviews: 'Basado en tus reseñas',
   inCity: 'En',
+  singleVisit: '1 cita completada',
+  multiVisit: '{count} citas completadas',
+  lastVisit: 'Última cita: {date}',
+  genericDescription: 'Negocio recomendado',
+  bookAgain: 'Reservar de nuevo',
+  bookNow: 'Agendar',
 };
