@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { AlertCircle } from 'lucide-react'
 import { Flask, EnvelopeSimple, Warning } from '@phosphor-icons/react'
+import logoTiTuring from '@/assets/images/tt/1.png'
 
 interface AuthScreenProps { 
   onLogin?: (user: User) => void
@@ -534,6 +535,27 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
               >
                 {isSignUpMode ? t('auth.signInHere') : t('auth.signUpHere')}
               </button>
+            </div>
+            
+            {/* Ti Turing Footer Signature */}
+            <div className="mt-8 pt-6 border-t border-border/50 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Desarrollado por</span>
+                <a 
+                  href="https://tituring.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                >
+                  <img 
+                    src={logoTiTuring} 
+                    alt="Ti Turing Logo" 
+                    className="h-4 w-4 object-contain"
+                  />
+                  <span className="font-semibold text-primary">Ti Turing</span>
+                </a>
+              </div>
+              <span className="text-xs text-muted-foreground/70">Versión 1.0.0</span>
             </div>
           </div>
         </div>        {/* Account Inactive Modal */}

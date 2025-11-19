@@ -21,6 +21,7 @@ import { ExpensesManagementPage } from './expenses/ExpensesManagementPage'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import type { Business, UserRole, User, EmployeeHierarchy } from '@/types/types'
+import logoTiTuring from '@/assets/images/tt/1.png'
 
 // Lazy load de componentes pesados (optimización de performance)
 const PermissionsManager = lazy(() => import('./PermissionsManager').then(module => ({ default: module.PermissionsManager })))
@@ -323,8 +324,32 @@ export function AdminDashboard({
         avatar: currentUser.avatar_url
       } : undefined}
     >
-      <div className="p-6">
-        {renderContent()}
+      <div className="flex flex-col min-h-full">
+        <div className="flex-1 p-6">
+          {renderContent()}
+        </div>
+        
+        {/* Ti Turing Footer */}
+        <footer className="border-t border-border/50 py-3 px-6 mt-auto">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <span>Desarrollado por</span>
+            <a 
+              href="https://tituring.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            >
+              <img 
+                src={logoTiTuring} 
+                alt="Ti Turing" 
+                className="h-4 w-4 object-contain"
+              />
+              <span className="font-semibold text-primary">Ti Turing</span>
+            </a>
+            <span className="mx-2">·</span>
+            <span className="text-muted-foreground/70">v1.0.0</span>
+          </div>
+        </footer>
       </div>
     </UnifiedLayout>
   )

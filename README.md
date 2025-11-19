@@ -352,6 +352,23 @@ MIT License - Ver [LICENSE](./LICENSE) para más detalles.
 
 ---
 
+## 🏢 Desarrollado por
+
+<div align="center">
+  <img src="src/assets/images/tt/1.png" alt="Ti Turing Logo" width="80" />
+  <h3>Ti Turing</h3>
+  <p>Soluciones tecnológicas innovadoras</p>
+  <p>
+    <a href="https://tituring.com">🌐 Sitio Web</a> ·
+    <a href="https://github.com/TI-Turing">💻 GitHub</a>
+  </p>
+</div>
+
+**Versión:** 1.0.0  
+**Fecha de Lanzamiento:** Noviembre 2025
+
+---
+
 ## 📞 Soporte
 
 - **Issues**: [GitHub Issues](https://github.com/TI-Turing/Gestabiz/issues)

@@ -184,7 +184,10 @@ export const landing = {
       licenses: 'Licencias'
     },
     copyright: '© 2025 Gestabiz. Todos los derechos reservados.',
-    madeIn: 'Hecho con ❤️ en Colombia 🇨🇴'
+    madeIn: 'Hecho con ❤️ en Colombia 🇨🇴',
+    developedBy: 'Desarrollado por',
+    company: 'Ti Turing',
+    version: 'Versión 1.0.0'
   }
 };
 

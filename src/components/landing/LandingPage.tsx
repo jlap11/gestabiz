@@ -25,6 +25,7 @@ import { useAnalytics } from '@/hooks/useAnalytics'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { LanguageToggle } from '@/components/ui/language-toggle'
+import logoTiTuring from '@/assets/images/tt/1.png'
 
 interface LandingPageProps {
   onNavigateToAuth: () => void
@@ -668,9 +669,34 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
             </div>
           </div>
           
-          <div className="border-t border-gray-200 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
-            <p>{t('landing.footer.copyright')}</p>
-            <p>{t('landing.footer.madeIn')}</p>
+          <div className="border-t border-gray-200 pt-8 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+              <p>{t('landing.footer.copyright')}</p>
+              <p>{t('landing.footer.madeIn')}</p>
+            </div>
+            
+            {/* Ti Turing Signature */}
+            <div className="flex flex-col items-center gap-3 pt-4 border-t border-gray-200">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span>{t('landing.footer.developedBy')}</span>
+                <a 
+                  href="https://tituring.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                >
+                  <img 
+                    src={logoTiTuring} 
+                    alt="Ti Turing Logo" 
+                    className="h-6 w-6 object-contain"
+                  />
+                  <span className="font-semibold text-purple-600">{t('landing.footer.company')}</span>
+                </a>
+              </div>
+              <Badge variant="outline" className="text-xs text-gray-500 border-gray-300">
+                {t('landing.footer.version')}
+              </Badge>
+            </div>
           </div>
         </div>
       </footer>

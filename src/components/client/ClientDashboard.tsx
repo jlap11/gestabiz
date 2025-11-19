@@ -11,6 +11,7 @@ import { PermissionGate } from '@/components/ui/PermissionGate'
 import { AppointmentWizard } from '@/components/appointments/AppointmentWizard'
 import CompleteUnifiedSettings from '@/components/settings/CompleteUnifiedSettings'
 import { ClientCalendarView } from '@/components/client/ClientCalendarView'
+import logoTiTuring from '@/assets/images/tt/1.png'
 import { ClientHistory } from '@/components/client/ClientHistory'
 import { SearchResults } from '@/components/client/SearchResults'
 import BusinessProfile from '@/components/business/BusinessProfile'
@@ -886,7 +887,33 @@ export function ClientDashboard({
         chatConversationId={chatConversationId}
         onChatClose={() => setChatConversationId(null)}
       >
-        {renderContent()}
+        <div className="flex flex-col min-h-full">
+          <div className="flex-1">
+            {renderContent()}
+          </div>
+          
+          {/* Ti Turing Footer */}
+          <footer className="border-t border-border/50 py-3 px-6 mt-auto">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <span>Desarrollado por</span>
+              <a 
+                href="https://tituring.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src={logoTiTuring} 
+                  alt="Ti Turing" 
+                  className="h-4 w-4 object-contain"
+                />
+                <span className="font-semibold text-primary">Ti Turing</span>
+              </a>
+              <span className="mx-2">·</span>
+              <span className="text-muted-foreground/70">v1.0.0</span>
+            </div>
+          </footer>
+        </div>
       </UnifiedLayout>
 
       {/* Appointment Wizard Modal */}
