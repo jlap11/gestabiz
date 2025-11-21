@@ -70,6 +70,9 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
   }, [searchParams, setSearchParams])
 
   // Auto-select business if there's only one or use activeBusiness
+  // FIXED: Use businesses.length as dependency to prevent infinite loop
+  const businessesLength = businesses.length
+  const activeBusinessId = activeBusiness?.id
   React.useEffect(() => {
     if (activeRole === 'admin' && businesses.length > 0 && !isCreatingNewBusiness) {
       if (!selectedBusinessId) {
@@ -78,7 +81,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
         setSelectedBusinessId(initialId)
       }
     }
-  }, [activeRole, businesses, activeBusiness, selectedBusinessId, isCreatingNewBusiness])
+  }, [activeRole, businessesLength, activeBusinessId, selectedBusinessId, isCreatingNewBusiness, businesses, activeBusiness])
   
   // Si no hay usuario autenticado, no renderizar nada (el App.tsx maneja esto)
   if (!user) {
