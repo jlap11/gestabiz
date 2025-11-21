@@ -81,7 +81,7 @@ export function EmployeeDashboard({
     if (pageFromUrl !== activePage) {
       setActivePage(pageFromUrl)
     }
-  }, [location.pathname])
+  }, [location.pathname, activePage])
   
   // Redirigir de /app a /app/employee/employments
   useEffect(() => {

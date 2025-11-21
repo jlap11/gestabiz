@@ -9,7 +9,7 @@
  * @date 2025-10-17
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { playNotificationFeedback, playActiveChatMessageSound } from '@/lib/notificationSound'
@@ -64,6 +64,10 @@ export const NotificationProvider = React.memo<NotificationProviderProps>(functi
     stateRef.current = { activeConversationId, isChatOpen }
   }, [activeConversationId, isChatOpen])
 
+  // ⭐ FIX BUG-020: Guard para prevenir suscripciones duplicadas
+  const hasSubscribedRef = useRef(false)
+  const lastUserIdRef = useRef<string | null>(null)
+
   // Suscripción realtime GLOBAL (siempre activa)
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -72,8 +76,20 @@ export const NotificationProvider = React.memo<NotificationProviderProps>(functi
     
     if (!userId) {
       if (import.meta.env.DEV) console.log('[NotificationContext] ⚠️ No userId, skipping subscription')
+      hasSubscribedRef.current = false
+      lastUserIdRef.current = null
       return
     }
+
+    // ⭐ Guard: Solo suscribir una vez por usuario
+    if (hasSubscribedRef.current && lastUserIdRef.current === userId) {
+      if (import.meta.env.DEV) console.log('[NotificationContext] ⏭️ Already subscribed for this user, skipping')
+      return
+    }
+
+    // ⭐ Marcar como suscrito
+    hasSubscribedRef.current = true
+    lastUserIdRef.current = userId
 
     const channelName = `global_notifications_${userId}`
     
@@ -179,6 +195,9 @@ export const NotificationProvider = React.memo<NotificationProviderProps>(functi
     return () => {
       console.log('[NotificationContext] 🔌 Unsubscribing global channel')
       supabase.removeChannel(channel)
+      // ⭐ Reset guard al desmontar
+      hasSubscribedRef.current = false
+      lastUserIdRef.current = null
     }
   }, [userId])
 
@@ -189,12 +208,13 @@ export const NotificationProvider = React.memo<NotificationProviderProps>(functi
     setActiveConversationId(conversationId)
   }, [])
 
-  const value: NotificationContextValue = {
+  // ⭐ FIX BUG-020: Memoizar value para evitar re-renders
+  const value: NotificationContextValue = useMemo(() => ({
     activeConversationId,
     setActiveConversation,
     isChatOpen,
     setChatOpen
-  }
+  }), [activeConversationId, isChatOpen])
 
   return (
     <NotificationContext.Provider value={value}>

@@ -47,7 +47,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
     console.log('🔍 DEBUG MainApp - isLoadingEmployeeBusinesses:', isLoadingEmployeeBusinesses)
     console.log('🔍 DEBUG MainApp - activeRole:', activeRole)
     console.log('🔍 DEBUG MainApp - needsEmployeeOnboarding:', activeRole === 'employee' && employeeBusinesses.length === 0 && !isLoadingEmployeeBusinesses)
-  }, [employeeBusinessesLength, isLoadingEmployeeBusinesses, activeRole, employeeBusinesses])
+  }, [employeeBusinessesLength, isLoadingEmployeeBusinesses, activeRole])
   
   // Extract booking context from URL params (from public profile redirect)
   React.useEffect(() => {
@@ -81,7 +81,7 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
         setSelectedBusinessId(initialId)
       }
     }
-  }, [activeRole, businessesLength, activeBusinessId, selectedBusinessId, isCreatingNewBusiness, businesses, activeBusiness])
+  }, [activeRole, businessesLength, activeBusinessId, selectedBusinessId, isCreatingNewBusiness])
   
   // Si no hay usuario autenticado, no renderizar nada (el App.tsx maneja esto)
   if (!user) {
