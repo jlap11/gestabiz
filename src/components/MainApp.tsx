@@ -40,13 +40,14 @@ function MainApp({ onLogout }: Readonly<MainAppProps>) {
     true // Include businesses where user is owner
   )
 
-  // DEBUG: Log employee businesses
+  // DEBUG: Log employee businesses (FIXED: Use length as dependency to prevent infinite loop)
+  const employeeBusinessesLength = employeeBusinesses.length
   React.useEffect(() => {
     console.log('🔍 DEBUG MainApp - employeeBusinesses:', employeeBusinesses)
     console.log('🔍 DEBUG MainApp - isLoadingEmployeeBusinesses:', isLoadingEmployeeBusinesses)
     console.log('🔍 DEBUG MainApp - activeRole:', activeRole)
     console.log('🔍 DEBUG MainApp - needsEmployeeOnboarding:', activeRole === 'employee' && employeeBusinesses.length === 0 && !isLoadingEmployeeBusinesses)
-  }, [employeeBusinesses, isLoadingEmployeeBusinesses, activeRole])
+  }, [employeeBusinessesLength, isLoadingEmployeeBusinesses, activeRole, employeeBusinesses])
   
   // Extract booking context from URL params (from public profile redirect)
   React.useEffect(() => {

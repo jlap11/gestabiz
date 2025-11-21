@@ -310,12 +310,13 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
           .from('reviews')
           .insert({
             business_id: currentReview.business_id,
-            // NO incluir appointment_id para review de negocio (evita duplicate key)
+            appointment_id: currentReview.appointment_id, // ⭐ FIX BUG-019: appointment_id es REQUIRED
             client_id: userId,
             rating: businessRating,
             comment: comment.trim() || null,
             is_visible: true,
             is_verified: true,
+            review_type: 'business', // ⭐ FIX BUG-020: Especificar tipo de review
           });
 
         if (businessError) throw businessError;
@@ -328,13 +329,14 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
             .from('reviews')
             .insert({
               business_id: currentReview.business_id,
-              appointment_id: currentReview.appointment_id, // Solo la review del empleado tiene appointment_id
+              appointment_id: currentReview.appointment_id, // appointment_id siempre requerido
               client_id: userId,
               employee_id: currentReview.employee_id,
               rating: employeeRating,
               comment: comment.trim() || null,
               is_visible: true,
               is_verified: true,
+              review_type: 'employee', // ⭐ FIX BUG-020: Review de empleado
             });
 
           if (employeeError) throw employeeError;

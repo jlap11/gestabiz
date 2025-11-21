@@ -295,7 +295,7 @@ export const ExpenseRegistrationForm: React.FC<ExpenseRegistrationFormProps> = (
                 <SelectValue placeholder="Todas las sedes" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las sedes</SelectItem>
+                <SelectItem value="placeholder" disabled>Todas las sedes</SelectItem>
                 {locations.map((loc) => (
                   <SelectItem key={loc.id} value={loc.id}>
                     {loc.name}

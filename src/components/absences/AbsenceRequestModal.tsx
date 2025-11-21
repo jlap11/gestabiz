@@ -40,7 +40,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
   const { t } = useLanguage();
   const { requestAbsence, vacationBalance, loading, validateWorkDays } = useEmployeeAbsences(businessId);
   const { data: businessData } = useBusinessCountry(businessId);
-  const { holidays } = usePublicHolidays(businessData?.country);
+  const { holidays = [] } = usePublicHolidays(businessData?.country);
 
   const [absenceType, setAbsenceType] = useState<AbsenceType>('vacation');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -185,7 +185,7 @@ export function AbsenceRequestModal({ isOpen, onClose, businessId }: Readonly<Ab
             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-blue-900 dark:text-blue-100">{t('absences.vacationBalance')} {vacationBalance.year}</p>
+                  <p className="font-medium text-blue-900 dark:text-blue-100">{t('absences.vacationBalance')} {String(vacationBalance.year)}</p>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     {Math.max(0, vacationBalance.daysRemaining)} {t('absences.daysAvailable')} {Math.max(0, vacationBalance.totalDaysAvailable)}
                   </p>
