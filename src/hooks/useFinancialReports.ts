@@ -289,24 +289,25 @@ export function useFinancialReports(): UseFinancialReportsReturn {
   // Exportar reporte P&L a PDF
   const exportToPDF = useCallback(
     (report: ProfitAndLossReport, businessName: string, filename?: string) => {
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      
-      // Header
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Reporte de Pérdidas y Ganancias', pageWidth / 2, 20, { align: 'center' });
-      
-      // Business info
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text(businessName, pageWidth / 2, 30, { align: 'center' });
-      
-      // Period
-      doc.setFontSize(10);
-      doc.text(`Período: ${report.period}`, pageWidth / 2, 38, { align: 'center' });
-      
-      let yPos = 50;
+      try {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        
+        // Header
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Reporte de Pérdidas y Ganancias', pageWidth / 2, 20, { align: 'center' });
+        
+        // Business info
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(businessName, pageWidth / 2, 30, { align: 'center' });
+        
+        // Period
+        doc.setFontSize(10);
+        doc.text(`Período: ${report.period}`, pageWidth / 2, 38, { align: 'center' });
+        
+        let yPos = 50;
       
       // Income section
       doc.setFontSize(14);
@@ -387,6 +388,10 @@ export function useFinancialReports(): UseFinancialReportsReturn {
       // Save PDF
       const pdfFilename = filename || `reporte-pyg-${Date.now()}.pdf`;
       doc.save(pdfFilename);
+      } catch (error) {
+        // Re-throw error para que handleExportPDF lo capture y muestre toast
+        throw new Error(`Error al generar PDF: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      }
     },
     []
   );

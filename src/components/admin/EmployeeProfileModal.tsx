@@ -277,6 +277,7 @@ export function EmployeeProfileModal({
             employeeName={employee.full_name}
             currentSalaryBase={employee.salary_base}
             currentSalaryType={employee.salary_type}
+            onSaveSuccess={onClose}  // Cerrar modal después de guardar exitosamente
           />
         </div>
       </TabsContent>

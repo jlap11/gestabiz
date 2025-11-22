@@ -17,6 +17,7 @@ interface EmployeeSalaryConfigProps {
   employeeName: string
   currentSalaryBase?: number | null
   currentSalaryType?: string | null
+  onSaveSuccess?: () => void  // Callback opcional para cerrar modal padre
 }
 
 type SalaryType = 'monthly' | 'biweekly' | 'weekly' | 'daily' | 'hourly'
@@ -27,6 +28,7 @@ export function EmployeeSalaryConfig({
   employeeName,
   currentSalaryBase,
   currentSalaryType,
+  onSaveSuccess,
 }: Readonly<EmployeeSalaryConfigProps>) {
   const [saving, setSaving] = useState(false)
 
@@ -143,6 +145,11 @@ export function EmployeeSalaryConfig({
       }
 
       toast.success('Configuración de salario guardada exitosamente')
+      
+      // Cerrar modal padre si callback existe
+      if (onSaveSuccess) {
+        setTimeout(() => onSaveSuccess(), 500)  // Delay 500ms para que usuario vea toast
+      }
     } catch {
       toast.error('Error al guardar configuración de salario')
     } finally {
