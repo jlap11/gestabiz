@@ -39,6 +39,10 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
     name: string;
   } | null>(null);
 
+  // 🔧 FIX BUG-020: Usar primitive dependency para evitar re-renders infinitos
+  const businessesLength = businesses.length
+  const businessIds = businesses.map(b => b.id).join(',')
+
   // Enriquecer negocios con información extendida
   useEffect(() => {
     const enrichBusinesses = async () => {
@@ -135,7 +139,7 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
     };
 
     enrichBusinesses();
-  }, [businesses, employeeId]);
+  }, [businessesLength, businessIds, employeeId]); // 🔧 FIX BUG-020: primitive dependencies
 
   const handleRequestTimeOff = (businessId: string, type: TimeOffType) => {
     const business = enrichedBusinesses.find(b => b.id === businessId);
