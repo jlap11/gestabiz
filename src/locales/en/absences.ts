@@ -161,9 +161,16 @@ export const absences = {
   // Vacation widget
   vacationWidget: {
     title: 'Vacation Days',
+    titleWithYear: 'Vacation Days {year}',
+    totalDays: 'Total Days',
+    daysAvailable: 'Days Available',
+    daysUsed: 'Days Used',
+    daysPending: 'Days Pending',
+    daysFree: 'Free Days',
+    noInfo: 'Vacation information not available',
+    used: 'Used',
+    pending: 'Pending',
     available: '{{days}} available',
-    used: '{{days}} used',
-    pending: '{{days}} pending',
     viewDetails: 'View Details',
     requestVacation: 'Request Vacation'
   }

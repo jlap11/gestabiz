@@ -13,5 +13,5 @@ export const businessSuggestions = {
   lastVisit: 'Última cita: {date}',
   genericDescription: 'Negocio recomendado',
   bookAgain: 'Reservar de nuevo',
-  bookNow: 'Agendar',
+  bookNow: 'Reservar Ahora', // ✅ FIX: Cambiado de 'Agendar' a 'Reservar Ahora' para coincidir con translations.ts
 };

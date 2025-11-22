@@ -98,8 +98,8 @@ export function BusinessSuggestions({
             {options?.highlight && business.visitsCount ? (
               <Badge variant="secondary" className="mt-1">
                 {business.visitsCount === 1
-                  ? t('client.businessSuggestions.singleVisit', '1 cita completada')
-                  : t('client.businessSuggestions.multiVisit', '{count} citas completadas', { count: business.visitsCount })}
+                  ? t('businessSuggestions.singleVisit')
+                  : t('businessSuggestions.multiVisit', { count: business.visitsCount })}
               </Badge>
             ) : null}
             
@@ -131,7 +131,7 @@ export function BusinessSuggestions({
         <div className="flex items-center justify-between gap-3 mt-4">
           {options?.highlight && business.lastAppointmentDate ? (
             <p className="text-xs text-muted-foreground line-clamp-1">
-              {t('client.businessSuggestions.lastVisit', 'Última cita: {date}', {
+              {t('businessSuggestions.lastVisit', {
                 date: new Date(business.lastAppointmentDate).toLocaleDateString('es-CO', {
                   day: 'numeric',
                   month: 'short'
@@ -140,7 +140,7 @@ export function BusinessSuggestions({
             </p>
           ) : (
             <span className="text-xs text-muted-foreground line-clamp-1">
-              {business.description || t('client.businessSuggestions.genericDescription', 'Negocio recomendado')}
+              {business.description || t('businessSuggestions.genericDescription')}
             </span>
           )}
           <Button
@@ -149,8 +149,8 @@ export function BusinessSuggestions({
             onClick={(event) => handleRebookClick(event, business.id)}
           >
             {options?.highlight
-              ? t('client.businessSuggestions.bookAgain', 'Reservar de nuevo')
-              : t('client.businessSuggestions.bookNow', 'Agendar')}
+              ? t('businessSuggestions.bookAgain')
+              : t('businessSuggestions.bookNow')}
           </Button>
         </div>
       </CardContent>
@@ -176,8 +176,8 @@ export function BusinessSuggestions({
             <TrendingUp className="h-5 w-5 text-primary" />
             <span>
               {preferredCityName 
-                ? t('client.businessSuggestions.titleWithCity', { city: preferredCityName })
-                : t('client.businessSuggestions.title', 'Negocios Recomendados')
+                ? t('businessSuggestions.titleWithCity', { city: preferredCityName })
+                : t('businessSuggestions.title')
               }
             </span>
           </div>
@@ -225,7 +225,7 @@ export function BusinessSuggestions({
                 {hasFrequent && (
                   <div className="space-y-2 mb-4">
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {t('client.businessSuggestions.frequentTitle', 'Tus negocios frecuentes')}
+                      {t('businessSuggestions.frequentTitle')}
                     </h4>
                     {frequentBusinesses.map((business) => renderBusinessCard(business, { highlight: true }))}
                   </div>
@@ -234,7 +234,7 @@ export function BusinessSuggestions({
                 {hasSuggestions && (
                   <div className="space-y-2">
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {t('client.businessSuggestions.recommendedTitle', 'Recomendados en tu ciudad')}
+                      {t('businessSuggestions.recommendedTitle')}
                     </h4>
                     {recommendedBusinesses.map((business) => renderBusinessCard(business))}
                   </div>

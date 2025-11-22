@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { businessesService } from '@/lib/services'
-import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +16,7 @@ import { Building2, Briefcase } from 'lucide-react'
 import { toast } from 'sonner'
 import { Business, User } from '@/types'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useBusinessCategories } from '@/hooks/useBusinessCategories'
 
 interface BusinessRegistrationProps {
   user: User
@@ -32,9 +32,8 @@ interface BusinessCategory {
 
 export default function BusinessRegistration({ user, onBusinessCreated, onCancel }: Readonly<BusinessRegistrationProps>) {
   const { t } = useLanguage()
+  const { mainCategories, isLoading: loadingCategories } = useBusinessCategories()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [categories, setCategories] = useState<BusinessCategory[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(true)
   const [phonePrefix, setPhonePrefix] = useState('+57')
   const [subcategories, setSubcategories] = useState<string[]>(['', '', ''])
   
@@ -54,30 +53,6 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
     city_id: '',
     website: ''
   })
-
-  // Cargar categorías desde Supabase
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('business_categories')
-          .select('id, name, slug')
-          .eq('is_active', true)
-          .is('parent_id', null)
-          .order('sort_order', { ascending: true })
-        
-        if (error) throw error
-        setCategories(data || [])
-      } catch (error) {
-        console.error('Error cargando categorías:', error)
-        toast.error('Error al cargar categorías')
-        setCategories([])
-      } finally {
-        setLoadingCategories(false)
-      }
-    }
-    loadCategories()
-  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -201,7 +176,7 @@ export default function BusinessRegistration({ user, onBusinessCreated, onCancel
                         <SelectValue placeholder={loadingCategories ? 'Cargando categorías...' : t('business.registration.placeholders.category')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((cat) => (
+                        {mainCategories.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>
                             {cat.name}
                           </SelectItem>

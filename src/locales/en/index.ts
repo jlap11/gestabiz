@@ -13,6 +13,8 @@ import { jobs } from './jobs'
 import { absences } from './absences'
 import { businessResources, permissions, reports, admin, search, taxConfiguration, userProfile } from './admin'
 import { landing, employee } from './landing'
+import { financial } from './financial'
+import { transactions } from './transactions'
 
 // Dashboard modules
 import { adminDashboard } from './adminDashboard'
@@ -72,6 +74,9 @@ export const en = {
   reviews,
   jobs,
   absences,
+  // Financial & Transactions
+  financial,
+  transactions,
   // Admin & System
   businessResources,
   permissions,

@@ -89,12 +89,11 @@ export function OverviewTab({ business }: OverviewTabProps) {
 
       if (svcError) throw svcError
 
-      // Get employees
+      // Get employees (from business_employees, includes auto-registered owners)
       const { data: employees, error: empError } = await supabase
-        .from('business_roles')
-        .select('user_id')
+        .from('business_employees')
+        .select('employee_id')
         .eq('business_id', business.id)
-        .eq('role', 'employee')
         .eq('is_active', true)
 
       if (empError) throw empError

@@ -2219,11 +2219,19 @@ export const translations = {
     businessSuggestions: {
       title: 'Popular Businesses',
       titleWithCity: 'Businesses in {city}',
+      frequentTitle: 'Your Frequent Businesses',
+      recommendedTitle: 'Recommended in your city',
+      singleVisit: '1 completed appointment',
+      multiVisit: '{count} completed appointments',
+      lastVisit: 'Last visit: {date}',
+      genericDescription: 'Recommended business',
       noSuggestions: 'No suggestions available',
       loading: 'Loading suggestions...',
       viewMore: 'View More',
       basedOnReviews: 'Based on your reviews',
       inCity: 'In',
+      bookNow: 'Book Now',
+      bookAgain: 'Book Again',
     },
 
     // Dashboard Overview
@@ -4405,11 +4413,19 @@ export const translations = {
     businessSuggestions: {
       title: 'Negocios Populares',
       titleWithCity: 'Negocios en {city}',
+      frequentTitle: 'Tus negocios frecuentes',
+      recommendedTitle: 'Recomendados en tu ciudad',
+      singleVisit: '1 cita completada',
+      multiVisit: '{count} citas completadas',
+      lastVisit: 'Última cita: {date}',
+      genericDescription: 'Negocio recomendado',
       noSuggestions: 'Sin sugerencias disponibles',
       loading: 'Cargando sugerencias...',
       viewMore: 'Ver Más',
       basedOnReviews: 'Basado en tus reseñas',
       inCity: 'En',
+      bookNow: 'Reservar Ahora',
+      bookAgain: 'Reservar de nuevo',
     },
 
     // Dashboard Overview

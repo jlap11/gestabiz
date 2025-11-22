@@ -121,6 +121,7 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatS
             <CardContent>
               <VacancyList
                 businessId={businessId}
+                onCreateNew={() => setShowCreateVacancy(true)}
                 onEdit={handleEditVacancy}
                 onViewApplications={handleViewApplications}
                 highlightedVacancyId={highlightedVacancyId}
@@ -142,6 +143,7 @@ export function RecruitmentDashboard({ businessId, highlightedVacancyId, onChatS
               <VacancyList
                 businessId={businessId}
                 statusFilter="closed"
+                onCreateNew={() => setShowCreateVacancy(true)}
                 onEdit={handleEditVacancy}
                 onViewApplications={handleViewApplications}
               />

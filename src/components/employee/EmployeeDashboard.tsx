@@ -10,6 +10,7 @@ import { EmployeeAppointmentsPage } from '@/components/employee/EmployeeAppointm
 import { usePendingNavigation } from '@/hooks/usePendingNavigation'
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences'
 import { useEmployeeBusinesses } from '@/hooks/useEmployeeBusinesses'
+import { useEmployeeRequests } from '@/hooks/useEmployeeRequests'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -74,6 +75,10 @@ export function EmployeeDashboard({
   // Usa el negocio seleccionado, o el primero si hay múltiples, o el que viene por props
   const effectiveBusinessId = selectedBusinessId || businessId || employeeBusinesses[0]?.id
   const { vacationBalance, refresh: refreshAbsences } = useEmployeeAbsences(effectiveBusinessId || '')
+  
+  // Hook para verificar solicitudes pendientes del usuario
+  const { requests: userRequests } = useEmployeeRequests({ userId: user?.id })
+  const hasPendingRequest = userRequests.some(req => req.status === 'pending')
 
   // Sincronizar activePage con URL
   useEffect(() => {
@@ -172,7 +177,11 @@ export function EmployeeDashboard({
         return (
           <div className="space-y-6">
             {/* Lista de empleos */}
-            <MyEmployments employeeId={currentUser.id} onJoinBusiness={handleJoinBusiness} />
+            <MyEmployments 
+              employeeId={currentUser.id} 
+              onJoinBusiness={handleJoinBusiness}
+              hasPendingRequest={hasPendingRequest}
+            />
           </div>
         )
       case 'join-business':

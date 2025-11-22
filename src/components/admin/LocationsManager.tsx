@@ -477,7 +477,20 @@ export function LocationsManager({ businessId }: LocationsManagerProps) {
       handleCloseDialog()
     } catch (err) {
       console.error('Error saving location:', err)
-      toast.error(editingLocation ? 'Error al actualizar la sede' : 'Error al crear la sede')
+      
+      // Mostrar mensaje de error específico
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      const isUpdate = !!editingLocation
+      
+      if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+        toast.error('Ya existe una sede con ese nombre')
+      } else if (errorMessage.includes('not null') || errorMessage.includes('required')) {
+        toast.error('Todos los campos requeridos deben estar completos')
+      } else if (errorMessage.includes('permission') || errorMessage.includes('denied')) {
+        toast.error('No tienes permisos para realizar esta acción')
+      } else {
+        toast.error(`${isUpdate ? 'Error al actualizar' : 'Error al crear'} la sede: ${errorMessage}`)
+      }
     } finally {
       setIsSaving(false)
     }

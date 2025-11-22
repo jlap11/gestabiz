@@ -89,7 +89,10 @@ export function LanguageProvider({ children }: Readonly<{ children: React.ReactN
     // Replace parameters if provided
     if (params) {
       Object.entries(params).forEach(([param, value]) => {
-        text = text.replace(new RegExp(`{{${param}}}`, 'g'), value)
+        // ⭐ FIX BUG-001: Validar que value no sea undefined antes de reemplazar
+        if (value !== undefined && value !== null) {
+          text = text.replace(new RegExp(`\\{${param}\\}`, 'g'), String(value))
+        }
       })
     }
 

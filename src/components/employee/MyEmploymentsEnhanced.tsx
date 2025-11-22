@@ -12,11 +12,12 @@ import supabase from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface MyEmploymentsProps {
-  employeeId: string;
+  employeeId: string
   onJoinBusiness?: () => void;
+  hasPendingRequest?: boolean; // Indica si hay solicitud pendiente
 }
 
-export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps) {
+export function MyEmployments({ employeeId, onJoinBusiness, hasPendingRequest = false }: MyEmploymentsProps) {
   const [showPrevious, setShowPrevious] = useState(false);
   const [enrichedBusinesses, setEnrichedBusinesses] = useState<EnhancedBusiness[]>([]);
   const { businesses, loading, error } = useEmployeeBusinesses(employeeId, true);
@@ -267,15 +268,17 @@ export function MyEmployments({ employeeId, onJoinBusiness }: MyEmploymentsProps
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onJoinBusiness}
-              className="min-h-[44px] bg-primary hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Unirse a Negocio
-            </Button>
+            {!hasPendingRequest && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onJoinBusiness}
+                className="min-h-[44px] bg-primary hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Unirse a Negocio
+              </Button>
+            )}
             {previousEmployments.length > 0 && (
               <Button
                 variant="outline"

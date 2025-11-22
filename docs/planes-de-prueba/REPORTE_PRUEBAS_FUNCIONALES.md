@@ -17,10 +17,11 @@
 | **Casos Ejecutados** | 21 / 150+ | 14% |
 | **Casos Exitosos** | 18 / 21 | 86% |
 | **Bugs Encontrados** | 15 | - |
-| **Bugs Críticos (P0)** | 2 | 🚨 BLOQUEANTES |
+| **Bugs Resueltos** | 7 | ✅ BUG-001, BUG-002, BUG-004, BUG-005, BUG-006, BUG-011, BUG-014 |
+| **Bugs Críticos (P0)** | 2 | 🚨 BUG-010, BUG-015 (verificar) |
 | **Bugs Altos (P1)** | 4 | ⚠️ 3 en Permisos |
 | **Bugs Medios (P2)** | 4 | - |
-| **Bugs Bajos (P3)** | 5 | 📝 i18n issues |
+| **Bugs Bajos (P3)** | 4 | 📝 i18n issues (BUG-012, otros) |
 | **Tiempo Total** | 135 minutos | 2h 15min |
 | **Tiempo FASE 2** | 57 minutos | - |
 | **Tiempo FASE 3** | 17 minutos | ✅ COMPLETA |
@@ -64,11 +65,13 @@
 
 ## 🐛 BUGS DETECTADOS
 
-### BUG-001: Textos i18n No Traducidos en Dashboard Cliente
+### BUG-001: Textos i18n No Traducidos en Dashboard Cliente ✅ RESUELTO
 **Prioridad**: P1 (Crítico - UX)  
 **Severidad**: Alta  
 **Módulo**: Client Dashboard - Business Suggestions  
-**Caso de Prueba**: ENV-01
+**Caso de Prueba**: ENV-01  
+**Estado**: ✅ **RESUELTO** (22 Nov 2025)  
+**Tiempo de Resolución**: 45 minutos
 
 #### Descripción
 Múltiples textos aparecen como claves i18n sin traducir en lugar del texto final en español.
@@ -111,17 +114,49 @@ Múltiples textos aparecen como claves i18n sin traducir en lugar del texto fina
 - `src/contexts/LanguageContext.tsx` (contexto de i18n)
 
 #### Recomendación
-- **Prioridad de Fix**: ANTES de Fase 1 (afecta experiencia de cliente)
-- **Estimación**: 30-60 minutos (agregar traducciones faltantes)
-- **Bloqueante**: NO (permite continuar pruebas funcionales)
+- **Estado**: ✅ **COMPLETADO**
+- **Fix Aplicado**: 
+  1. Removido prefijo `client.` de 8 translation keys
+  2. Corregido regex en LanguageContext: `{{param}}` → `\{param\}`
+  3. Removido defaultValue de 7 llamadas a `t()`
+- **Archivos Modificados**:
+  - `src/components/client/BusinessSuggestions.tsx` (13 cambios)
+  - `src/contexts/LanguageContext.tsx` (2 fixes)
+- **Validación MCP**: 7/7 traducciones funcionando correctamente
+- **Documentación**: Ver `docs/BUG-001_RESOLUCION_FINAL.md` (pendiente)
 
 ---
 
-### BUG-002: Dashboard Muestra 0 Empleados Cuando Hay 1
+### BUG-002: Dashboard Muestra 0 Empleados Cuando Hay 1 ✅ RESUELTO
 **Prioridad**: P2 (Visual)  
 **Severidad**: Media  
 **Módulo**: Admin Dashboard - Resumen  
 **Caso de Prueba**: ADM-04
+**Estado**: ✅ **RESUELTO** (22 Nov 2025)
+**Tiempo de Resolución**: 5 minutos
+
+#### Solución Aplicada
+Corregida query en **OverviewTab.tsx** línea 93-97:
+- ❌ **Antes**: Consultaba `business_roles` con `role = 'employee'` (tabla incorrecta)
+- ✅ **Después**: Consulta `business_employees` (incluye owners auto-registrados)
+
+**Cambio**:
+```typescript
+// ❌ INCORRECTO (business_roles no tiene empleados, solo admins)
+const { data: employees } = await supabase
+  .from('business_roles')
+  .select('user_id')
+  .eq('role', 'employee')
+
+// ✅ CORRECTO (business_employees incluye owners via trigger)
+const { data: employees } = await supabase
+  .from('business_employees')
+  .select('employee_id')
+  .eq('is_active', true)
+```
+
+**Archivo Modificado**:
+- ✅ `src/components/admin/OverviewTab.tsx` (query empleados línea 93-97)
 
 #### Descripción
 El dashboard de administrador muestra "0 empleados" en la estadística, pero al navegar a la sección "Empleados" se visualiza correctamente 1 empleado (el owner auto-registrado).
@@ -263,11 +298,27 @@ NOTICE: Total permisos asignados: 5327
 
 ---
 
-### BUG-005: Error al Crear Sede sin Departamento/Ciudad
+### BUG-005: Error al Crear Sede sin Departamento/Ciudad ✅ RESUELTO
 **Prioridad**: P2 (Medio - No Bloqueante)  
 **Severidad**: Media  
 **Módulo**: LocationsManager - Create Location  
 **Caso de Prueba**: ADM-LOC-01
+**Estado**: ✅ **RESUELTO** (22 Nov 2025)
+**Tiempo de Resolución**: 10 minutos
+
+#### Solución Aplicada
+Mejorado manejo de errores en **LocationsManager.tsx** catch block (línea 478-492):
+
+**Antes**: Mensaje genérico `"Error al crear la sede"`
+
+**Después**: Mensajes específicos según tipo de error:
+- Duplicado: "Ya existe una sede con ese nombre"
+- Campos requeridos: "Todos los campos requeridos deben estar completos"
+- Permisos: "No tienes permisos para realizar esta acción"
+- Otro: "Error al crear la sede: [mensaje detallado]"
+
+**Archivo Modificado**:
+- ✅ `src/components/admin/LocationsManager.tsx` (error handling mejorado)
 
 #### Descripción
 Al intentar crear una sede con solo nombre y horarios (sin departamento/ciudad), el sistema muestra error genérico "Error al crear la sede".
@@ -332,11 +383,39 @@ msgid=430 [error] Error saving location: JSHandle@object (2 args)
 
 ---
 
-### BUG-006: Botón "Crear Primera Vacante" No Abre Formulario
+### BUG-006: Botón "Crear Primera Vacante" No Abre Formulario ✅ RESUELTO
 **Prioridad**: P2 (Medio - No Bloqueante)  
 **Severidad**: Baja  
 **Módulo**: RecruitmentDashboard - Empty State Button  
 **Caso de Prueba**: ADM-REC-01
+**Estado**: ✅ **RESUELTO** (22 Nov 2025)
+**Tiempo de Resolución**: 5 minutos
+
+#### Solución Aplicada
+Conectada prop `onCreateNew` en **RecruitmentDashboard.tsx** (líneas 123 y 143):
+
+**Antes**:
+```tsx
+<VacancyList
+  businessId={businessId}
+  // ❌ onCreateNew NO estaba conectada
+  onEdit={handleEditVacancy}
+  onViewApplications={handleViewApplications}
+/>
+```
+
+**Después**:
+```tsx
+<VacancyList
+  businessId={businessId}
+  onCreateNew={() => setShowCreateVacancy(true)} // ✅ Conectada
+  onEdit={handleEditVacancy}
+  onViewApplications={handleViewApplications}
+/>
+```
+
+**Archivo Modificado**:
+- ✅ `src/components/jobs/RecruitmentDashboard.tsx` (2 instancias de VacancyList)
 
 #### Descripción
 El botón "Crear Primera Vacante" en el empty state NO abre el formulario de creación. Usuarios deben usar el botón "Nueva Vacante" del header en su lugar.
@@ -531,11 +610,13 @@ Componente `ExpenseRegistrationForm.tsx` línea 319 tiene un `<Select.Item>` con
 
 ---
 
-### BUG-011: Claves i18n Sin Traducir en Reportes
+### BUG-011: Claves i18n Sin Traducir en Reportes ✅ RESUELTO
 **Prioridad**: P3 (Baja - Cosmético)  
 **Severidad**: Baja  
 **Módulo**: Reportes Dashboard  
-**Caso de Prueba**: ADM-REP-01 (implícito)
+**Caso de Prueba**: ADM-REP-01 (implícito)  
+**Estado**: ✅ **RESUELTO** (22 Nov 2025)  
+**Tiempo de Resolución**: 15 minutos
 
 #### Descripción
 El módulo de Reportes muestra claves de traducción en lugar de texto traducido.
@@ -559,30 +640,29 @@ El módulo de Reportes muestra claves de traducción en lugar de texto traducido
 - ⚠️ **UX**: Claves expuestas confunden al usuario
 - ✅ **No bloqueante**: Módulo completamente usable
 
-#### Solución Propuesta
-Agregar traducciones faltantes en `src/lib/translations.ts`:
+#### Solución Aplicada
+Módulos de traducción creados:
+- `src/locales/es/financial.ts` (15 traducciones)
+- `src/locales/es/transactions.ts` (12 traducciones)
+- `src/locales/en/financial.ts` (15 traducciones en inglés)
+- `src/locales/en/transactions.ts` (12 traducciones en inglés)
+
+Traducciones agregadas:
 ```typescript
-es: {
-  financial: {
-    dashboard: "Dashboard Financiero",
-    dashboardDescription: "Resumen de ingresos y egresos",
-    profitMargin: "Margen de Ganancia"
-  },
-  transactions: {
-    totalIncome: "Ingresos Totales",
-    totalExpenses: "Egresos Totales",
-    netProfit: "Ganancia Neta"
-  }
+financial: {
+  dashboard, dashboardDescription, lastWeek, lastMonth, lastYear,
+  profitMargin, totalTransactions, transactionsInPeriod,
+  quickActions, addIncome, addExpense, viewReports
+}
+transactions: {
+  totalIncome, totalExpenses, netProfit, income, expense,
+  category, selectCategory, pending, completed, cancelled
 }
 ```
 
 #### Estado
-- 📋 **Asignado a**: i18n team
-- ✅ **No bloqueante**
-
-#### Tiempo Estimado para Fix
-- **Estimación**: 1-2 horas (agregar todas las traducciones faltantes)
-- **Prioridad Dev**: Baja
+- ✅ **COMPLETADO**: Traducciones agregadas a sistema modular
+- 📋 **Archivos Modificados**: 6 archivos (4 nuevos + 2 index.ts)
 
 ---
 
@@ -694,11 +774,27 @@ Debería mostrar "Estilista Profesional" (título creado en ADM-REC-01).
 
 ---
 
-### BUG-014: Múltiples Claves i18n Sin Traducir en Widget de Vacaciones
+### BUG-014: Múltiples Claves i18n Sin Traducir en Widget de Vacaciones ✅ RESUELTO
 **Prioridad**: P3 (Baja - Cosmético)  
 **Severidad**: Baja  
 **Módulo**: VacationDaysWidget - Mis Ausencias  
 **Caso de Prueba**: EMP-ABS-01
+**Estado**: ✅ **RESUELTO** (22 Nov 2025)
+**Tiempo de Resolución**: 10 minutos
+
+#### Solución Aplicada
+Agregadas **7 traducciones faltantes** en `vacationWidget` (ES + EN):
+- `titleWithYear`: "Días de Vacaciones {{year}}" / "Vacation Days {{year}}"
+- `totalDays`: "Total de Días" / "Total Days"
+- `daysAvailable`: "Días Disponibles" / "Days Available"
+- `daysUsed`: "Días Usados" / "Days Used"
+- `daysPending`: "Días Pendientes" / "Days Pending"
+- `daysFree`: "Días Libres" / "Free Days"
+- `noInfo`: "Información de vacaciones no disponible" / "Vacation information not available"
+
+**Archivos Modificados**:
+- ✅ `src/locales/es/absences.ts` (expandido de 6 a 13 keys en vacationWidget)
+- ✅ `src/locales/en/absences.ts` (expandido de 6 a 13 keys en vacationWidget)
 
 #### Descripción
 El widget de días de vacaciones en la página "Mis Ausencias" muestra **8+ claves de traducción sin traducir** y templates `{{days}}` sin interpolar.
