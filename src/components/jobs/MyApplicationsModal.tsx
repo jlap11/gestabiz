@@ -57,6 +57,12 @@ const STATUS_CONFIG = {
     icon: XCircle,
     color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
   },
+  // 🔧 BUG-014: Agregar estado COMPLETED con formato adecuado
+  completed: {
+    label: 'Completada',
+    icon: CheckCircle,
+    color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
+  },
 };
 
 export const MyApplicationsModal: React.FC<MyApplicationsModalProps> = ({

@@ -25,6 +25,7 @@ export interface EnhancedBusiness {
   // Nueva info de empleado
   location_id?: string | null;
   location_name?: string | null;
+  isPreferredLocation?: boolean; // 🔧 BUG-002: Indica si es sede preferida
   employee_avg_rating?: number;
   employee_total_reviews?: number;
   services_count?: number;
@@ -136,10 +137,21 @@ export function BusinessEmploymentCard({
               {/* Sede o Warning */}
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {business.location_id && business.location_name ? (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">{business.location_name}</span>
-                  </div>
+                  <>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{business.location_name}</span>
+                    </div>
+                    {/* 🔧 BUG-002: Badge "Administrada" si es sede preferida */}
+                    {business.isPreferredLocation && (
+                      <Badge 
+                        variant="secondary" 
+                        className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400"
+                      >
+                        ⭐ Administrada
+                      </Badge>
+                    )}
+                  </>
                 ) : (
                   <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400">
                     <AlertTriangle className="h-3 w-3 mr-1" />

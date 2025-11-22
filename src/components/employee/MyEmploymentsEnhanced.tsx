@@ -106,11 +106,18 @@ export function MyEmployments({ employeeId, onJoinBusiness, hasPendingRequest = 
               ? employeeData.locations[0]
               : employeeData?.locations;
 
+            // 🔧 BUG-002: Obtener sede preferida del negocio
+            const preferredLocationId = localStorage.getItem(`preferred-location-${business.id}`);
+            const isPreferredLocation = preferredLocationId && preferredLocationId !== 'all' 
+              ? preferredLocationId === employeeData?.location_id
+              : false;
+
             return {
               ...business,
               isOwner,
               location_id: employeeData?.location_id || null,
               location_name: location?.name || null,
+              isPreferredLocation, // 🔧 BUG-002: Flag si es sede preferida
               employee_avg_rating: avgRating,
               employee_total_reviews: reviewsData?.length || 0,
               services_count: servicesCount || 0,
