@@ -102,7 +102,7 @@ export function CitySelector({
   };
 
   const handleCitySelect = (city: City) => {
-    const region = regionsLocal.find(r => r.id === selectedRegion);
+    const region = regionsLocal?.find(r => r.id === selectedRegion);
     if (region) {
       onCitySelect(region.id, region.name, city.id, city.name);
       setCityMenuOpen(false);
@@ -185,7 +185,7 @@ export function CitySelector({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const region = regionsLocal.find(r => r.id === selectedRegion);
+                      const region = regionsLocal?.find(r => r.id === selectedRegion);
                       if (region) {
                         onCitySelect(region.id, region.name, null, null);
                       }

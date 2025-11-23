@@ -229,32 +229,51 @@ export function useAuthSimple() {
         const storageKey = `${ACTIVE_ROLE_KEY}:${state.user.id}`
         const storedContext = localStorage.getItem(storageKey)
         
+        let businessId: string | undefined
+
         if (storedContext) {
           const parsed = JSON.parse(storedContext)
-          const businessId = parsed.businessId
+          businessId = parsed.businessId
+        }
+        
+        // Si no hay businessId (no hay contexto o está vacío), buscar si el usuario es owner de algún negocio
+        if (!businessId) {
+          debugLog('⚠️ No businessId in context, checking if user owns any business...')
+          const { data: ownedBusinesses, error: ownedError } = await supabase
+            .from('businesses')
+            .select('id, owner_id')
+            .eq('owner_id', state.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+          if (!ownedError && ownedBusinesses) {
+            businessId = ownedBusinesses.id
+            debugLog('✅ Found owned business:', businessId)
+            // Inmediatamente establecer el ownerId ya que lo tenemos
+            setBusinessOwnerId(ownedBusinesses.owner_id)
+          }
+        }
+        
+        if (businessId) {
+          setCurrentBusinessId(businessId)
           
-          if (businessId) {
-            setCurrentBusinessId(businessId)
+          // Query owner_id from businesses table
+          const { data: business, error } = await supabase
+            .from('businesses')
+            .select('owner_id')
+            .eq('id', businessId)
+            .single()
 
-            // Query owner_id from businesses table
-            const { data: business, error } = await supabase
-              .from('businesses')
-              .select('owner_id')
-              .eq('id', businessId)
-              .single()
-
-            if (!error && business) {
-              setBusinessOwnerId(business.owner_id)
-              debugLog('✅ Business context loaded:', { businessId, ownerId: business.owner_id })
-            } else {
-              debugLog('⚠️ Failed to fetch business owner:', error)
-              setBusinessOwnerId(undefined)
-            }
+          if (!error && business) {
+            setBusinessOwnerId(business.owner_id)
+            debugLog('✅ Business context loaded:', { businessId, ownerId: business.owner_id })
           } else {
-            setCurrentBusinessId(undefined)
+            debugLog('⚠️ Failed to fetch business owner:', error)
             setBusinessOwnerId(undefined)
           }
         } else {
+          debugLog('⚠️ No business found for user')
           setCurrentBusinessId(undefined)
           setBusinessOwnerId(undefined)
         }

@@ -49,49 +49,13 @@ export function usePermissions(businessId?: string) {
   const userId = user?.id || ''
   const ownerId = businessOwnerId || ''
   
-  // Hook v2 base (solo si tenemos los datos necesarios)
-  const v2Enabled = !!(userId && finalBusinessId && ownerId)
-  
+  // SIEMPRE llamar al hook v2 (con valores default si no hay datos)
+  // Esto mantiene el orden de hooks consistente
   const v2Hook = usePermissionsV2({
-    userId,
-    businessId: finalBusinessId,
-    ownerId,
+    userId: userId || '',
+    businessId: finalBusinessId || '',
+    ownerId: ownerId || '',
   })
-  
-  // Si no está habilitado o no hay datos, retornar API sin permisos
-  if (!v2Enabled || !user) {
-    return {
-      // API Legacy
-      hasPermission: () => false,
-      
-      // API v2
-      checkPermission: (permission: Permission) => ({
-        hasPermission: false,
-        isOwner: false,
-        reason: 'Usuario no autenticado'
-      }),
-      checkAnyPermission: () => ({ hasPermission: false, isOwner: false }),
-      checkAllPermissions: () => ({ hasPermission: false, isOwner: false }),
-      
-      // Flags
-      isOwner: false,
-      isAdmin: false,
-      isEmployee: false,
-      canProvideServices: false,
-      
-      // Datos
-      userPermissions: [],
-      businessRoles: [],
-      getActivePermissions: () => [],
-      
-      // Loading states
-      isLoading: false,
-      
-      // Contexto
-      businessId: finalBusinessId,
-      userId: userId
-    }
-  }
   
   // Extraer funciones y datos del hook v2
   const {
@@ -120,10 +84,11 @@ export function usePermissions(businessId?: string) {
    * @returns true si tiene el permiso, false en caso contrario
    */
   const hasPermission = useCallback((permission: Permission): boolean => {
+    if (!userId || !finalBusinessId || !ownerId || !user) return false
     if (isOwner) return true
     const result = v2CheckPermission(permission)
     return result.hasPermission
-  }, [v2CheckPermission, isOwner])
+  }, [v2CheckPermission, isOwner, userId, finalBusinessId, ownerId, user])
   
   // ============================================================
   // API V2 (recomendada para nuevo código)
@@ -136,8 +101,18 @@ export function usePermissions(businessId?: string) {
    * @returns Objeto con hasPermission, isOwner, reason
    */
   const checkPermission = useCallback((permission: Permission) => {
+    if (!userId || !finalBusinessId || !ownerId || !user) {
+      return {
+        hasPermission: false,
+        isOwner: false,
+        reason: 'Usuario no autenticado'
+      }
+    }
     return v2CheckPermission(permission)
-  }, [v2CheckPermission])
+  }, [v2CheckPermission, userId, finalBusinessId, ownerId, user])
+  
+  // Hook v2 base habilitado solo si tenemos los datos necesarios
+  const v2Enabled = !!(userId && finalBusinessId && ownerId && user)
   
   return {
     // ========== API Legacy (compatible) ==========
@@ -149,18 +124,18 @@ export function usePermissions(businessId?: string) {
     checkAllPermissions,
     
     // ========== Flags útiles ==========
-    isOwner,
-    isAdmin,
-    isEmployee,
-    canProvideServices,
+    isOwner: v2Enabled ? isOwner : false,
+    isAdmin: v2Enabled ? isAdmin : false,
+    isEmployee: v2Enabled ? isEmployee : false,
+    canProvideServices: v2Enabled ? canProvideServices : false,
     
     // ========== Datos raw ==========
-    userPermissions,
-    businessRoles,
-    getActivePermissions,
+    userPermissions: v2Enabled ? userPermissions : [],
+    businessRoles: v2Enabled ? businessRoles : [],
+    getActivePermissions: v2Enabled ? getActivePermissions : () => [],
     
     // ========== Loading states ==========
-    isLoading,
+    isLoading: v2Enabled ? isLoading : false,
     
     // ========== Contexto ==========
     businessId: finalBusinessId,

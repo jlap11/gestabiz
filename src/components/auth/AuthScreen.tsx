@@ -33,6 +33,8 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
   const [rememberMe, setRememberMe] = useState(false)
   const [showResetForm, setShowResetForm] = useState(false)
   const [isSignUpMode, setIsSignUpMode] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [inactiveEmail, setInactiveEmail] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
@@ -72,6 +74,47 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!resetEmail || !resetEmail.includes('@')) {
+      toast.error('Por favor ingresa un email válido')
+      return
+    }
+
+    setIsResettingPassword(true)
+    
+    try {
+      const { error } = await import('@/lib/supabase').then(m => 
+        m.supabase.auth.resetPasswordForEmail(resetEmail, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        })
+      )
+
+      if (error) throw error
+
+      toast.success('¡Email enviado!', {
+        description: `Revisa tu bandeja de entrada en ${resetEmail}. El enlace expira en 1 hora.`,
+        duration: 6000
+      })
+      
+      // Limpiar y volver al login después de 2 segundos
+      setTimeout(() => {
+        setShowResetForm(false)
+        setResetEmail('')
+      }, 2000)
+      
+    } catch (error: any) {
+      console.error('Error sending reset email:', error)
+      toast.error('Error al enviar email', {
+        description: error.message || 'Por favor intenta nuevamente',
+        duration: 5000
+      })
+    } finally {
+      setIsResettingPassword(false)
+    }
   }
 
   const handlePostLoginNavigation = (user: User) => {
@@ -267,26 +310,35 @@ export default function AuthScreen({ onLogin, onLoginSuccess }: Readonly<AuthScr
             <h2 className="text-2xl font-bold text-foreground mb-2">{t('auth.resetPassword')}</h2>
             <p className="text-muted-foreground text-sm">{t('auth.enterEmailFirst')}</p>
           </div>
-          <form className="space-y-6">
+          <form onSubmit={handlePasswordReset} className="space-y-6">
             <div>
               <Input
                 type="email"
                 placeholder={t('auth.emailPlaceholder')}
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
                 className="w-full bg-background border-0 text-foreground placeholder:text-muted-foreground h-12 rounded-lg px-4"
                 required
+                disabled={isResettingPassword}
+                autoFocus
               />
             </div>
             <Button 
               type="submit"
+              disabled={isResettingPassword || !resetEmail}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 rounded-lg transition-colors"
             >
-              {t('auth.passwordResetSent')}
+              {isResettingPassword ? 'Enviando...' : 'Enviar enlace de recuperación'}
             </Button>
             <Button 
               type="button"
               variant="ghost"
               className="w-full text-muted-foreground hover:text-foreground"
-              onClick={() => setShowResetForm(false)}
+              onClick={() => {
+                setShowResetForm(false)
+                setResetEmail('')
+              }}
+              disabled={isResettingPassword}
             >
               {t('common.actions.back')}
             </Button>

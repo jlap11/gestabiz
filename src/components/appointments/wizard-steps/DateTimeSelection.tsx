@@ -198,8 +198,8 @@ export function DateTimeSelection({
               .from('appointments')
               .select('id, start_time, end_time')
               .eq('employee_id', employeeId)
-              .gte('start_time', dayStart.toISOString())
-              .lte('start_time', dayEnd.toISOString())
+              .gte('end_time', dayStart.toISOString())  // Cita termina después del inicio del día
+              .lte('start_time', dayEnd.toISOString())  // Cita empieza antes del fin del día
               .in('status', ['pending', 'confirmed'])
               .order('start_time');
 
@@ -215,8 +215,8 @@ export function DateTimeSelection({
             .from('appointments')
             .select('id, start_time, end_time')
             .eq('resource_id', resourceId)
-            .gte('start_time', dayStart.toISOString())
-            .lte('start_time', dayEnd.toISOString())
+            .gte('end_time', dayStart.toISOString())  // Reserva termina después del inicio del día
+            .lte('start_time', dayEnd.toISOString())  // Reserva empieza antes del fin del día
             .in('status', ['pending', 'confirmed'])
             .order('start_time');
 
