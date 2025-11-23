@@ -16,6 +16,7 @@ import { COUNTRY_CODES, COUNTRY_PHONE_EXAMPLES } from '@/constants'
 import { useFileUpload } from '@/hooks/useFileUpload'
 import { supabase } from '@/lib/supabase'
 import { ImageCropper } from './ImageCropper'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface UserProfileProps {
   user: UserType
@@ -24,6 +25,7 @@ interface UserProfileProps {
 
 export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfileProps>) {
   const { t, language } = useLanguage()
+  const queryClient = useQueryClient()
   const [, setUsers] = useKV<UserType[]>('users', [])
   const [isUpdating, setIsUpdating] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
@@ -201,6 +203,14 @@ export default function UserProfile({ user, onUserUpdate }: Readonly<UserProfile
       } catch {
         // noop
       }
+      
+      // Invalidar queries para refrescar dashboard automáticamente (Bug #5 fix)
+      await queryClient.invalidateQueries({ 
+        queryKey: ['nearby-businesses'] 
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['client-dashboard-data'] 
+      })
       
       toast.success(t('profile.success'))
     } catch (error) {

@@ -371,9 +371,21 @@ export default function BusinessProfile({
           
           {/* Botones en header - Touch Optimized */}
           <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
-            {/* Botón favorito */}
-            {user && (
-              <PermissionGate permission="favorites.toggle" businessId={businessId} mode="hide">
+            {/* Botón favorito - Bug #6 fix: cambio a mode='show' para que clientes siempre lo vean */}
+            {user ? (
+              <PermissionGate 
+                permission="favorites.toggle" 
+                businessId={businessId} 
+                mode="show"
+                fallback={
+                  <button
+                    onClick={() => toast.info('Inicia sesión para guardar favoritos')}
+                    className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  >
+                    <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                  </button>
+                }
+              >
                 <button
                   onClick={handleToggleFavorite}
                   className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -387,6 +399,13 @@ export default function BusinessProfile({
                   />
                 </button>
               </PermissionGate>
+            ) : (
+              <button
+                onClick={() => toast.info('Inicia sesión para guardar favoritos')}
+                className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              >
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+              </button>
             )}
             
             {/* Botón cerrar */}
