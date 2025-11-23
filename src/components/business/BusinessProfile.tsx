@@ -371,12 +371,12 @@ export default function BusinessProfile({
           
           {/* Botones en header - Touch Optimized */}
           <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
-            {/* Botón favorito - Bug #6 fix: cambio a mode='show' para que clientes siempre lo vean */}
+            {/* Botón favorito - Bug #6 fix: mode='block' muestra fallback cuando no tiene permiso */}
             {user ? (
               <PermissionGate 
                 permission="favorites.toggle" 
                 businessId={businessId} 
-                mode="show"
+                mode="block"
                 fallback={
                   <button
                     onClick={() => toast.info('Inicia sesión para guardar favoritos')}
