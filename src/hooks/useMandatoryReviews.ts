@@ -60,6 +60,7 @@ export function useMandatoryReviews(
     ).length;
 
     setPendingReviewsCount(pendingCount);
+    // Solo mostrar modal si hay reviews pendientes (sin mostrar toast ni nada si no hay)
     setShouldShowModal(pendingCount > 0);
   }, [userId, completedAppointments, reviewedAppointmentIds]);
 

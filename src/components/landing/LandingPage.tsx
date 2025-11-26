@@ -596,8 +596,8 @@ export function LandingPage({ onNavigateToAuth }: LandingPageProps) {
                 </Button>
                 <Button 
                   size="lg" 
-                  variant="outline"
-                  className="border-white text-white hover:bg-white/10 text-lg"
+                  variant="secondary"
+                  className="bg-secondary text-secondary-foreground hover:bg-secondary/90 text-lg border-none shadow-md"
                   onClick={onNavigateToAuth}
                 >
                   {t('landing.cta.buttons.login')}

@@ -78,7 +78,10 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
   // Fetch pending reviews on mount
   useEffect(() => {
     const fetchPendingReviews = async () => {
-      if (!isOpen || !userId) return;
+      if (!isOpen || !userId) {
+        setFetchingReviews(false);
+        return;
+      }
 
       try {
         setFetchingReviews(true);
@@ -188,11 +191,8 @@ export const MandatoryReviewModal: React.FC<MandatoryReviewModalProps> = ({
 
         setPendingReviews(reviews);
 
-        if (reviews.length === 0) {
-          // No pending reviews, close modal
-          onClose();
-          toast.info('No tienes citas pendientes de review');
-        }
+        // Si no hay reviews pendientes, simplemente no mostramos el modal (sin toast ni close)
+        // El modal ya no debería estar abierto si llegamos aquí con 0 reviews
       } catch (err) {
         const error = err as Error;
         toast.error('Error al cargar reviews pendientes', {
