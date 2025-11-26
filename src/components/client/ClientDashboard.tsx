@@ -387,12 +387,6 @@ export function ClientDashboard({
   }, [user?.id, refetchDashboard])
 
   // Handle reschedule appointment
-  // 🔄 TEMP: Force cache invalidation (eliminar después de testing)
-  const handleForceRefresh = () => {
-    void refetchDashboard()
-    toast.success('🔄 Caché invalidado - refrescando datos...')
-  }
-
   const handleRescheduleAppointment = useCallback((appointment: AppointmentWithRelations) => {
     // Close modal
     setSelectedAppointment(null)
@@ -616,23 +610,6 @@ export function ClientDashboard({
                 <Plus className="h-5 w-5 mr-2" />
                 Nueva Cita
               </Button>
-            </div>
-
-            {/* 🔄 TEMP: Botón para invalidar caché (ELIMINAR después de testing) */}
-            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">🧪 Modo Testing</p>
-                  <p className="text-xs text-yellow-600 dark:text-yellow-400">Si el modal no muestra datos completos (empleado, negocio, precio), presiona aquí</p>
-                </div>
-                <Button
-                  onClick={handleForceRefresh}
-                  size="sm"
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white shrink-0"
-                >
-                  🔄 Refrescar Datos
-                </Button>
-              </div>
             </div>
 
             {/* Controles de vista: debajo del header, mejor para móviles */}
