@@ -250,40 +250,64 @@ export function useClientDashboard(clientId: string | null) {
         preferredCityName = null;
       }
 
-      // ✅ Opción 1: Usar Edge Function (si está desplegada)
-      const { data, error } = await supabase.functions.invoke('get-client-dashboard-data', {
-        body: { 
-          client_id: clientId,
-          preferred_city_name: preferredCityName // ✅ CAMBIO: Pasar cityName (TEXT) para filtrar suggestions
-        },
-      });
+      const payload = {
+        client_id: clientId,
+        preferred_city_name: preferredCityName,
+      };
 
-      if (error) {
-        throw new Error(error.message || 'Failed to fetch dashboard data');
+      let dashboardData: ClientDashboardData | null = null;
+      let lastError: Error | null = null;
+
+      // ✅ Intentar primero via Edge Function (si está desplegada y operativa)
+      try {
+        const { data, error } = await supabase.functions.invoke('get-client-dashboard-data', {
+          body: payload,
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Failed to fetch dashboard data from Edge Function');
+        }
+
+        dashboardData = (data as ClientDashboardData | null) ?? null;
+      } catch (edgeFunctionError) {
+        lastError = edgeFunctionError instanceof Error
+          ? edgeFunctionError
+          : new Error(String(edgeFunctionError));
+        console.warn('[useClientDashboard] Edge Function failed, falling back to RPC', lastError);
       }
 
-      // ✅ Opción 2 (Fallback): Usar RPC directamente si Edge Function no está disponible
-      // const { data, error } = await supabase.rpc('get_client_dashboard_data', {
-      //   p_client_id: clientId,
-      //   p_preferred_city_id: preferredCityId
-      // });
+      // ✅ Fallback: Usar RPC directamente si Edge Function falla o no retorna datos
+      if (!dashboardData) {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_client_dashboard_data', {
+          p_client_id: clientId,
+          p_preferred_city_name: preferredCityName,
+        });
 
-      if (!data) {
+        if (rpcError) {
+          throw new Error(rpcError.message || lastError?.message || 'Failed to fetch client dashboard data');
+        }
+
+        dashboardData = (rpcData as ClientDashboardData | null) ?? null;
+      }
+
+      if (!dashboardData) {
         return null;
       }
 
-      const normalizedAppointments = Array.isArray(data.appointments)
-        ? data.appointments.map((appointment: Record<string, unknown>) => normalizeAppointment(appointment))
+      const appointmentsRaw = dashboardData.appointments as unknown;
+      const normalizedAppointments = Array.isArray(appointmentsRaw)
+        ? (appointmentsRaw as Record<string, unknown>[]).map((appointment) => normalizeAppointment(appointment))
         : [];
 
       const frequentBusinesses = buildFrequentBusinesses(normalizedAppointments);
-      const baseSuggestions = Array.isArray(data.suggestions)
-        ? (data.suggestions as BusinessSuggestion[])
+      const suggestionsRaw = dashboardData.suggestions as unknown;
+      const baseSuggestions = Array.isArray(suggestionsRaw)
+        ? (suggestionsRaw as BusinessSuggestion[])
         : [];
       const suggestionsWithFrequent = mergeSuggestions(frequentBusinesses, baseSuggestions);
 
       return {
-        ...data,
+        ...dashboardData,
         appointments: normalizedAppointments,
         suggestions: suggestionsWithFrequent,
       } as ClientDashboardData;
