@@ -643,9 +643,9 @@ export function ClientDashboard({
             </div>
 
             {/* Layout de 2 columnas: Citas (izquierda) + Sugerencias (derecha) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full min-w-0">
-              {/* Columna izquierda: Citas (2/3 del ancho) */}
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full min-w-0">
+              {/* Columna izquierda: Citas (2/3 del ancho en pantallas XL) */}
+              <div className="xl:col-span-2">
                 {/* Calendar View */}
                 {viewMode === 'calendar' ? (
                   <ClientCalendarView
@@ -667,7 +667,7 @@ export function ClientDashboard({
                         </CardContent>
                       </Card>
                     ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))' }}>
                         {upcomingAppointments.map((appointment) => (
                           <Card
                             key={appointment.id}
@@ -809,8 +809,8 @@ export function ClientDashboard({
                 )}
               </div>
 
-              {/* Columna derecha: Sugerencias de negocios (1/3 del ancho) */}
-              <div className="lg:col-span-1">
+              {/* Columna derecha: Sugerencias de negocios (1/3 del ancho en XL) */}
+              <div className="xl:col-span-1">
                 <BusinessSuggestions
                   suggestions={suggestions}
                   isLoading={isDashboardLoading}
