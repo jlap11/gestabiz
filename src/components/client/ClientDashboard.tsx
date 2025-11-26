@@ -953,12 +953,13 @@ export function ClientDashboard({
       {/* Appointment Details Modal */}
       {selectedAppointment && (
         <Dialog open={!!selectedAppointment} onOpenChange={() => setSelectedAppointment(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+            <DialogHeader className="shrink-0">
               <DialogTitle className="text-2xl font-bold">Detalles de la Cita</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-6 pt-4">
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto space-y-6 pt-4 pr-2">{/* Added pr-2 for scrollbar spacing */}
               {/* Status Badge and Business Name */}
               <div className="flex items-center justify-between">
                 <Badge 
@@ -1165,10 +1166,11 @@ export function ClientDashboard({
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-4">
-                {/* Chat button - only show if there's a professional */}
+            {/* Action Buttons - Fixed footer outside scroll */}
+            <div className="shrink-0 flex flex-wrap gap-3 pt-4 border-t border-border mt-4">
+              {/* Chat button - only show if there's a professional */}
                 {selectedAppointment.employee?.id && (
                   <Button
                     variant="default"
@@ -1219,7 +1221,6 @@ export function ClientDashboard({
                   Cerrar
                 </Button>
               </div>
-            </div>
           </DialogContent>
         </Dialog>
       )}
