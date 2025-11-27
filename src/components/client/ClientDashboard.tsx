@@ -762,11 +762,20 @@ export function ClientDashboard({
                                   })()
                                 )}
 
-                                {/* Fecha y Hora (12h) */}
+                                {/* Fecha y Hora (12h) con hora de finalización */}
                                 {(() => {
                                   const svcImg = appointment.service?.id ? serviceImages[appointment.service.id] : undefined
                                   const locImg = appointment.location?.id ? locationBanners[appointment.location.id] : undefined
                                   const hasBg = !!(svcImg || locImg)
+                                  
+                                  // Calcular hora de finalización
+                                  const endTime = appointment.end_time || (() => {
+                                    const duration = appointment.service?.duration || 60
+                                    const startDate = new Date(appointment.start_time)
+                                    startDate.setMinutes(startDate.getMinutes() + duration)
+                                    return startDate.toISOString()
+                                  })()
+                                  
                                   return (
                                     <div className={`flex items-center gap-2 text-sm pt-1 ${hasBg ? 'text-white/90' : 'text-foreground/90'}`}>
                                       <Clock className="h-4 w-4 shrink-0" />
@@ -774,6 +783,8 @@ export function ClientDashboard({
                                         {new Date(appointment.start_time).toLocaleDateString('es', { day: 'numeric', month: 'short' })}
                                         {' • '}
                                         {formatTime12h(appointment.start_time)}
+                                        {' - '}
+                                        {formatTime12h(endTime)}
                                       </span>
                                     </div>
                                   )
