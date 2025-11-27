@@ -3,7 +3,6 @@ import { useChat } from '@/hooks/useChat';
 import { useEmployeeActiveBusiness } from '@/hooks/useEmployeeActiveBusiness';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import { ChatWindow } from './ChatWindow';
-import { ConversationList } from './ConversationList';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ interface SimpleChatLayoutProps {
   businessId?: string;
   initialConversationId?: string | null;
   onMessagesRead?: () => void; // ✨ Callback para notificar cuando se marcan mensajes como leídos
+  hideHeader?: boolean; // ✅ Ocultar header cuando está en modal flotante
 }
 
 /**
@@ -27,7 +27,8 @@ export function SimpleChatLayout({
   userId, 
   businessId,
   initialConversationId,
-  onMessagesRead // ✨ Callback para refrescar badge
+  onMessagesRead, // ✨ Callback para refrescar badge
+  hideHeader = false // ✅ Por defecto muestra el header
 }: SimpleChatLayoutProps) {
   const {
     conversations,
@@ -49,6 +50,7 @@ export function SimpleChatLayout({
   
   // Ref para el contenedor de mensajes (para auto-scroll)
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const autoOpenedRef = useRef(false);
 
   console.log('[SimpleChatLayout] userId:', userId);
   console.log('[SimpleChatLayout] initialConversationId:', initialConversationId);
@@ -73,8 +75,23 @@ export function SimpleChatLayout({
       console.log('[SimpleChatLayout] Setting active conversation:', initialConversationId);
       setActiveConversationId(initialConversationId);
       setShowChat(true);
+      autoOpenedRef.current = true;
     }
   }, [initialConversationId, setActiveConversationId]);
+
+  // Auto abrir primera conversación para evitar estado "vacío"
+  useEffect(() => {
+    if (autoOpenedRef.current) return;
+    if (initialConversationId) return;
+    if (showChat) return;
+    if (conversations.length === 0) return;
+
+    const firstConversation = conversations[0];
+    console.log('[SimpleChatLayout] Auto-opening first conversation:', firstConversation.id);
+    setActiveConversationId(firstConversation.id);
+    setShowChat(true);
+    autoOpenedRef.current = true;
+  }, [conversations, initialConversationId, showChat, setActiveConversationId]);
 
   // Auto-scroll cuando llegan nuevos mensajes
   useEffect(() => {
@@ -182,27 +199,30 @@ export function SimpleChatLayout({
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col h-full w-full max-w-full overflow-hidden">
       {/* Lista de conversaciones - Solo visible cuando !showChat */}
       {!showChat && (
-        <div className="w-full bg-card">
-          <div className="border-b border-border bg-card px-4 py-3">
-            <h2 className="font-semibold text-lg">Conversaciones</h2>
-          </div>
+        <div className="w-full bg-card flex flex-col flex-1 min-h-0">
+          {/* El header de Conversaciones ya NO es necesario porque FloatingChatButton tiene el header "Chat" */}
+          {/* {!hideHeader && (
+            <div className="border-b border-border bg-card px-4 py-3 shrink-0">
+              <h2 className="font-semibold text-lg">Conversaciones</h2>
+            </div>
+          )} */}
 
           {loading && conversations.length === 0 ? (
-            <div className="flex items-center justify-center h-full py-8">
+            <div className="flex items-center justify-center flex-1 py-8">
               <div className="text-muted-foreground">Cargando...</div>
             </div>
           ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full p-8">
+            <div className="flex flex-col items-center justify-center flex-1 p-8">
               <div className="text-muted-foreground text-center">
                 <p className="font-semibold mb-2">No hay conversaciones</p>
                 <p className="text-sm">Aún no tienes conversaciones activas</p>
               </div>
             </div>
           ) : (
-            <div className="overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-0">
               {conversations.map((conv) => {
                 const metadata = conv.metadata as { last_sender_id?: unknown } | undefined;
                 const metadataSenderId = typeof metadata?.last_sender_id === 'string' ? metadata.last_sender_id : undefined;
@@ -242,7 +262,7 @@ export function SimpleChatLayout({
 
       {/* Ventana de chat - Solo visible cuando showChat */}
       {showChat && (
-        <div className="w-full flex flex-col">
+        <div className="w-full max-w-full flex flex-col flex-1 min-h-0">
           {activeConversation ? (
             <>
               {/* Header con botón Back + Avatar + Info */}
@@ -252,7 +272,7 @@ export function SimpleChatLayout({
               />
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {activeMessages.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
                     No hay mensajes. ¡Envía el primero!
@@ -278,7 +298,7 @@ export function SimpleChatLayout({
                               {message.sender.full_name || message.sender.email}
                             </div>
                           )}
-                          <div className="break-words">{message.content}</div>
+                          <div className="wrap-break-word">{message.content}</div>
                           <div className="text-xs opacity-70 mt-1 flex items-center gap-1.5">
                             {new Date(message.sent_at).toLocaleTimeString('es', {
                               hour: '2-digit',
@@ -304,7 +324,7 @@ export function SimpleChatLayout({
               </div>
 
               {/* Input */}
-              <div className="border-t border-border bg-card p-4">
+              <div className="border-t border-border bg-card p-4 shrink-0">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -320,7 +340,7 @@ export function SimpleChatLayout({
                     type="text"
                     name="message"
                     placeholder="Escribe un mensaje..."
-                    className="flex-1 px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="flex-1 min-w-0 px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     autoComplete="off"
                   />
                   <Button
@@ -369,7 +389,7 @@ function ChatHeader({ activeConversation, onBackToList }: ChatHeaderProps) {
   };
 
   return (
-    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3">
+    <div className="border-b border-border bg-card px-4 py-3 flex items-center gap-3 shrink-0">
       {/* Botón Back */}
       <Button
         variant="ghost"

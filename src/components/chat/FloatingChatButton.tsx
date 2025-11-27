@@ -95,7 +95,7 @@ export function FloatingChatButton({
 
       {/* Modal de Chat */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-end p-4 md:p-6">
+        <div className="fixed inset-0 z-140 flex items-start md:items-end justify-end md:p-6">
           {/* Overlay */}
           <div
             role="button"
@@ -111,15 +111,15 @@ export function FloatingChatButton({
             className={cn(
               "relative",
               "w-full h-full",
-              "md:w-[500px] md:h-[700px]",
-              "lg:w-[600px] lg:h-[750px]",
-              "bg-card rounded-lg shadow-2xl",
-              "overflow-hidden",
+              "md:w-[500px] md:max-h-[700px]",
+              "lg:w-[600px] lg:max-h-[750px]",
+              "bg-card rounded-none md:rounded-lg shadow-2xl",
+              "overflow-hidden flex flex-col",
               "animate-in slide-in-from-bottom-4 md:slide-in-from-right-4 duration-300"
             )}
           >
             {/* Header */}
-            <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between border-b">
+            <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between border-b shrink-0">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
                 <h3 className="font-semibold">Chat</h3>
@@ -135,7 +135,7 @@ export function FloatingChatButton({
             </div>
 
             {/* Chat Content */}
-            <div className="h-[calc(100%-56px)]">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <SimpleChatLayout 
                 userId={userId} 
                 businessId={businessId}
