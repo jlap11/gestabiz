@@ -1088,6 +1088,7 @@ export function AppointmentWizard({
               locationId={wizardData.locationId}
               businessId={wizardData.businessId}
               appointmentToEdit={appointmentToEdit}
+              clientId={userId} // NUEVO: Pasar clientId para validar conflictos
               onSelectDate={(date) => {
                 updateWizardData({ date });
                 // eslint-disable-next-line no-console

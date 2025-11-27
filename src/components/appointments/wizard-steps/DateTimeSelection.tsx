@@ -21,6 +21,7 @@ interface DateTimeSelectionProps {
   readonly locationId: string | null;
   readonly businessId: string | null;
   readonly appointmentToEdit?: Appointment | null;
+  readonly clientId?: string | null; // NUEVO: Para validar conflictos del cliente
 }
 
 interface TimeSlot {
@@ -107,11 +108,13 @@ export function DateTimeSelection({
   locationId,
   businessId,
   appointmentToEdit,
+  clientId,
 }: DateTimeSelectionProps) {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [locationSchedule, setLocationSchedule] = useState<LocationSchedule | null>(null);
   const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule | null>(null);
   const [existingAppointments, setExistingAppointments] = useState<ExistingAppointment[]>([]);
+  const [clientAppointments, setClientAppointments] = useState<ExistingAppointment[]>([]); // NUEVO: Citas del cliente
   const [monthAppointmentsMap, setMonthAppointmentsMap] = useState<Record<string, ExistingAppointment[]>>({});
   const [disabledDates, setDisabledDates] = useState<Set<string>>(new Set());
   const [disabledReasons, setDisabledReasons] = useState<Record<string, string>>({});
@@ -177,46 +180,44 @@ export function DateTimeSelection({
           setEmployeeWorkingDays(null);
         }
 
-        // 3. Obtener citas existentes (solo si hay fecha seleccionada)
-        if (selectedDate && employeeId) {
-          const dayStart = new Date(selectedDate);
+        // 3. Definir rango del día si hay fecha seleccionada (usado por empleado/recurso Y cliente)
+        let dayStart: Date | undefined;
+        let dayEnd: Date | undefined;
+        
+        if (selectedDate) {
+          dayStart = new Date(selectedDate);
           dayStart.setHours(0, 0, 0, 0);
 
-          const dayEnd = new Date(selectedDate);
+          dayEnd = new Date(selectedDate);
           dayEnd.setHours(23, 59, 59, 999);
+        }
 
-          // Buscar citas del empleado
-          const { data: employeeRecord } = await supabase
-            .from('business_employees')
-            .select('id')
+        // 4. Obtener citas existentes del empleado/recurso
+        if (selectedDate && dayStart && dayEnd && employeeId) {
+          // Buscar citas del empleado directamente (no requiere business_employees)
+          const { data: appointments } = await supabase
+            .from('appointments')
+            .select('id, start_time, end_time')
             .eq('employee_id', employeeId)
-            .eq('business_id', businessId)
-            .single();
+            .gte('end_time', dayStart.toISOString())
+            .lte('start_time', dayEnd.toISOString())
+            .in('status', ['pending', 'confirmed'])
+            .order('start_time');
 
-          if (employeeRecord) {
-            const { data: appointments } = await supabase
-              .from('appointments')
-              .select('id, start_time, end_time')
-              .eq('employee_id', employeeId)
-              .gte('end_time', dayStart.toISOString())  // Cita termina después del inicio del día
-              .lte('start_time', dayEnd.toISOString())  // Cita empieza antes del fin del día
-              .in('status', ['pending', 'confirmed'])
-              .order('start_time');
+          const filteredAppointments = appointmentToEdit
+            ? (appointments || []).filter((apt) => apt.id !== appointmentToEdit.id)
+            : (appointments || []);
 
-            const filteredAppointments = appointmentToEdit
-              ? (appointments || []).filter((apt) => apt.id !== appointmentToEdit.id)
-              : (appointments || []);
-
-            setExistingAppointments(filteredAppointments);
-          }
-        } else if (selectedDate && resourceId) {
+          console.log(`[DateTimeSelection] Citas del empleado ${employeeId} cargadas (${filteredAppointments.length}):`, filteredAppointments);
+          setExistingAppointments(filteredAppointments);
+        } else if (selectedDate && dayStart && dayEnd && resourceId) {
           // Buscar reservas del recurso físico
           const { data: appointments } = await supabase
             .from('appointments')
             .select('id, start_time, end_time')
             .eq('resource_id', resourceId)
-            .gte('end_time', dayStart.toISOString())  // Reserva termina después del inicio del día
-            .lte('start_time', dayEnd.toISOString())  // Reserva empieza antes del fin del día
+            .gte('end_time', dayStart.toISOString())
+            .lte('start_time', dayEnd.toISOString())
             .in('status', ['pending', 'confirmed'])
             .order('start_time');
 
@@ -225,6 +226,31 @@ export function DateTimeSelection({
             : (appointments || []);
 
           setExistingAppointments(filteredAppointments);
+        } else {
+          // Limpiar citas existentes si no hay empleado ni recurso
+          setExistingAppointments([]);
+        }
+
+        // 5. IMPORTANTE: Obtener citas del cliente en el mismo día (para detectar conflictos)
+        if (selectedDate && dayStart && dayEnd && clientId) {
+          const { data: clientApts } = await supabase
+            .from('appointments')
+            .select('id, start_time, end_time, business_id')
+            .eq('client_id', clientId)
+            .gte('end_time', dayStart.toISOString())
+            .lte('start_time', dayEnd.toISOString())
+            .in('status', ['pending', 'confirmed'])
+            .order('start_time');
+
+          const filteredClientApts = appointmentToEdit
+            ? (clientApts || []).filter((apt) => apt.id !== appointmentToEdit.id)
+            : (clientApts || []);
+
+          console.log(`[DateTimeSelection] Citas del cliente ${clientId} cargadas (${filteredClientApts.length}):`, filteredClientApts);
+          setClientAppointments(filteredClientApts);
+        } else {
+          // Limpiar citas del cliente si no hay fecha o clientId
+          setClientAppointments([]);
         }
       } catch {
         toast.error('No se pudo cargar la disponibilidad');
@@ -234,7 +260,7 @@ export function DateTimeSelection({
     };
 
     loadScheduleData();
-  }, [employeeId, resourceId, locationId, businessId, selectedDate, appointmentToEdit]);
+  }, [employeeId, resourceId, locationId, businessId, selectedDate, appointmentToEdit, clientId]);
 
   const generateTimeSlots = React.useCallback(async () => {
     if (!selectedDate || !employeeId || !locationId || !businessId) return;
@@ -336,6 +362,12 @@ export function DateTimeSelection({
           isAvailable = false;
           // Diferenciar entre recurso y empleado en el mensaje
           unavailableReason = resourceId ? 'Recurso Ocupado' : 'Ocupado';
+          console.log(`[DateTimeSelection] Slot ${time12h} ocupado por empleado/recurso`, { slotStartTime, slotEndTime, existingAppointments });
+        } else if (isSlotOccupied(slotStartTime, slotEndTime, clientAppointments)) {
+          // NUEVO: Validar conflictos con otras citas del cliente
+          isAvailable = false;
+          unavailableReason = 'Ya tienes una cita en este horario';
+          console.log(`[DateTimeSelection] Slot ${time12h} ocupado por cliente`, { slotStartTime, slotEndTime, clientAppointments });
         }
       }
 
@@ -350,7 +382,7 @@ export function DateTimeSelection({
     }
 
     setTimeSlots(slots);
-  }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments, employeeId, resourceId, locationId, businessId, validateAvailability]);
+  }, [selectedDate, service, locationSchedule, employeeSchedule, existingAppointments, clientAppointments, employeeId, resourceId, locationId, businessId, validateAvailability, employeeWorkingDays]);
 
   useEffect(() => {
     if (selectedDate && !isLoadingSchedule) {
@@ -578,7 +610,7 @@ export function DateTimeSelection({
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Calendario */}
-        <div className="bg-card rounded-xl border border-border shadow-sm w-full lg:w-auto lg:flex-shrink-0">
+        <div className="bg-card rounded-xl border border-border shadow-sm w-full lg:w-auto lg:shrink-0">
           <Calendar
             selected={selectedDate || undefined}
             onSelect={(date) => date && onSelectDate(date)}
