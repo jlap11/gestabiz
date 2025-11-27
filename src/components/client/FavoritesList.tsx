@@ -1,11 +1,14 @@
 import { useState, useCallback } from 'react';
-import { FavoriteBusiness } from '@/hooks/useFavorites';
+import { useQueryClient } from '@tanstack/react-query';
+import { FavoriteBusiness, useFavorites } from '@/hooks/useFavorites';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Star, MapPin, Heart, Loader2 } from 'lucide-react';
 import { Lightbulb } from '@phosphor-icons/react';
 import BusinessProfile from '@/components/business/BusinessProfile';
+import { toast } from 'sonner';
 
 interface FavoritesListProps {
   favorites: FavoriteBusiness[];
@@ -25,74 +28,117 @@ interface FavoritesListProps {
  */
 export default function FavoritesList({ favorites, loading }: FavoritesListProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
+  const { toggleFavorite } = useFavorites(user?.id);
+  const queryClient = useQueryClient();
+
+  // Función para remover de favoritos
+  const handleRemoveFavorite = async (businessId: string) => {
+    try {
+      // toggleFavorite retorna true si se agregó, false si se quitó
+      // Como estamos en favoritos, siempre debería quitar (retornar false)
+      await toggleFavorite(businessId);
+      
+      // Invalidar query del dashboard para refrescar la lista
+      // El hook useFavorites ya maneja su propio toast
+      queryClient.invalidateQueries({ queryKey: ['client-dashboard-data'] });
+    } catch (error) {
+      // El error ya se maneja en useFavorites con su propio toast
+      console.error('Error removing favorite:', error);
+    }
+  };
 
   // ✅ OPTIMIZACIÓN: Definir useCallback ANTES de early returns (hooks rules)
   const renderBusinessCard = useCallback((business: FavoriteBusiness) => (
     <Card 
       key={business.id}
-      className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-primary/30"
+      className="group relative overflow-hidden border-border hover:border-primary/50 transition-all duration-200 cursor-pointer hover:shadow-lg"
       onClick={() => setSelectedBusinessId(business.id)}
     >
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          {/* Logo y nombre */}
-          <div className="flex items-start gap-3">
-            {business.logo_url ? (
-              <img
-                src={business.logo_url}
-                alt={business.name}
-                className="w-12 h-12 rounded-lg object-cover border-2 border-primary/50"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border-2 border-primary/30">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-foreground truncate">
-                {business.name}
-              </h4>
-              {business.description && (
-                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                  {business.description}
-                </p>
-              )}
-            </div>
-          </div>
+      {/* Banner de fondo panorámico - Relación 5:2 más rectangular */}
+      <div
+        className="relative w-full h-56"
+        style={{
+          backgroundImage: business.banner_url ? `url(${business.banner_url})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Fallback si no hay banner */}
+        {!business.banner_url && <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-primary/5" />}
+        
+        {/* Gradiente oscuro desvanecido */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/40 to-transparent" />
 
-          {/* Rating */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-sm font-semibold text-foreground">
-                {business.average_rating.toFixed(1)}
-              </span>
-            </div>
-            {business.review_count > 0 && (
-              <span className="text-xs text-muted-foreground">
-                ({business.review_count})
-              </span>
-            )}
-          </div>
-
-          {/* Ubicación */}
-          {business.city && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 shrink-0" />
-              <span className="truncate">{business.city}</span>
-              {business.address && (
-                <span className="text-xs truncate">• {business.address}</span>
-              )}
+        {/* Logo en la esquina superior izquierda */}
+        <div className="absolute top-3 left-3 z-10">
+          {business.logo_url ? (
+            <img
+              src={business.logo_url}
+              alt={business.name}
+              className="w-16 h-16 rounded-lg object-cover border-2 border-white/80 shadow-lg"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-white/90 flex items-center justify-center border-2 border-white/80 shadow-lg">
+              <Building2 className="h-8 w-8 text-primary" />
             </div>
           )}
+        </div>
 
+        {/* Ícono de favorito en la esquina superior derecha */}
+        <div className="absolute top-3 right-3 z-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveFavorite(business.id);
+            }}
+            className="bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110"
+            title={t('favoritesList.removeFavorite')}
+          >
+            <Heart className="h-5 w-5 text-primary fill-primary" />
+          </button>
+        </div>
+
+        {/* Nombre, descripción y ubicación sobre el banner */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 p-4 space-y-2">
+          <h4 className="font-bold text-white text-xl truncate drop-shadow-md">
+            {business.name}
+          </h4>
           
+          {business.description && (
+            <p className="text-sm text-white/90 line-clamp-2 drop-shadow-md">
+              {business.description}
+            </p>
+          )}
 
-          {/* Botón de acción */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-black/30 rounded-full px-2 py-0.5">
+                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                <span className="text-sm font-semibold text-white">
+                  {business.average_rating.toFixed(1)}
+                </span>
+              </div>
+              {business.review_count > 0 && (
+                <span className="text-xs text-white/90 bg-black/30 rounded-full px-2 py-0.5">
+                  ({business.review_count})
+                </span>
+              )}
+            </div>
+
+            {business.city && (
+              <div className="flex items-center gap-1 bg-black/30 rounded-full px-2 py-0.5">
+                <MapPin className="h-3.5 w-3.5 text-white/90" />
+                <span className="text-xs text-white/90 truncate max-w-[120px]">{business.city}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Botón de acción sobre el banner */}
           <Button
             variant="default"
-            className="w-full"
+            className="w-full bg-primary hover:bg-primary/90 shadow-lg"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedBusinessId(business.id);
@@ -101,9 +147,9 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
             {t('favoritesList.bookButton')}
           </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
-  ), [t]);
+  ), [t, handleRemoveFavorite]);
 
   // Loading state
   if (loading) {
@@ -153,8 +199,8 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
           </div>
         </div>
 
-        {/* Grid de tarjetas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Grid de tarjetas - 2 columnas máximo para cards más anchas y mostrar banner completo */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {favorites.map(business => renderBusinessCard(business))}
         </div>
 
@@ -170,6 +216,7 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
       {selectedBusinessId && (
         <BusinessProfile
           businessId={selectedBusinessId}
+          userId={user?.id} // CRITICAL FIX: Pass userId explicitly
           onClose={() => setSelectedBusinessId(null)}
         />
       )}

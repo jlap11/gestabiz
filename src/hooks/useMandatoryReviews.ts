@@ -37,12 +37,14 @@ export function useMandatoryReviews(
 ) {
   const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
   const [shouldShowModal, setShouldShowModal] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // ✅ Calcular pending reviews SIN hacer query adicional
   const checkPendingReviews = useCallback(() => {
     if (!userId || completedAppointments.length === 0) {
       setPendingReviewsCount(0);
       setShouldShowModal(false);
+      setIsInitialized(true);
       return;
     }
 
@@ -50,6 +52,7 @@ export function useMandatoryReviews(
     const remindLater = getRemindLaterStatus(userId);
     if (remindLater) {
       setShouldShowModal(false);
+      setIsInitialized(true);
       return;
     }
 
@@ -60,9 +63,17 @@ export function useMandatoryReviews(
     ).length;
 
     setPendingReviewsCount(pendingCount);
-    // Solo mostrar modal si hay reviews pendientes (sin mostrar toast ni nada si no hay)
-    setShouldShowModal(pendingCount > 0);
-  }, [userId, completedAppointments, reviewedAppointmentIds]);
+    
+    // FIX: Solo mostrar modal si hay reviews pendientes Y ya estamos inicializados
+    // Esto evita el flash del modal durante la carga inicial
+    if (isInitialized) {
+      setShouldShowModal(pendingCount > 0);
+    } else {
+      // Primera vez: mostrar solo si hay pendientes
+      setShouldShowModal(pendingCount > 0);
+      setIsInitialized(true);
+    }
+  }, [userId, completedAppointments, reviewedAppointmentIds, isInitialized]);
 
   useEffect(() => {
     checkPendingReviews();

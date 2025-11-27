@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import supabase from '@/lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 /**
@@ -10,6 +11,7 @@ export interface FavoriteBusiness {
   name: string;
   description: string | null;
   logo_url: string | null;
+  banner_url: string | null;
   address: string | null;
   city: string | null;
   phone: string | null;
@@ -34,6 +36,7 @@ export function useFavorites(userId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient(); // FIX: Agregar queryClient para invalidar cache del dashboard
 
   /**
    * Fetch favorites usando RPC function
@@ -75,10 +78,18 @@ export function useFavorites(userId?: string) {
    * Toggle favorite (marcar/desmarcar) con optimistic update
    */
   const toggleFavorite = useCallback(async (businessId: string, businessName?: string): Promise<boolean> => {
+    console.log('[useFavorites] toggleFavorite called');
+    console.log('[useFavorites] userId:', userId);
+    console.log('[useFavorites] businessId:', businessId);
+    console.log('[useFavorites] businessName:', businessName);
+    
     if (!userId) {
+      console.log('[useFavorites] NO userId - showing error toast');
       toast.error('Debes iniciar sesión para marcar favoritos');
       return false;
     }
+
+    console.log('[useFavorites] userId exists, proceeding...');
 
     // Optimistic update
     const wasAlreadyFavorite = favoriteIds.has(businessId);
@@ -110,6 +121,9 @@ export function useFavorites(userId?: string) {
 
       // Refetch para sincronizar con datos reales
       await fetchFavorites();
+
+      // FIX CRÍTICO: Invalidar query del dashboard para que se actualice la lista de favoritos
+      queryClient.invalidateQueries({ queryKey: ['client-dashboard-data'] });
 
       return isNowFavorite;
 

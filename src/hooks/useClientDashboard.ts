@@ -265,6 +265,8 @@ export function useClientDashboard(clientId: string | null) {
       let dashboardData: ClientDashboardData | null = null;
       let lastError: Error | null = null;
 
+      // ⚠️ TEMPORAL: Deshabilitar Edge Function para depuración
+      /*
       // ✅ Intentar primero via Edge Function (si está desplegada y operativa)
       try {
         const { data, error } = await supabase.functions.invoke('get-client-dashboard-data', {
@@ -282,6 +284,9 @@ export function useClientDashboard(clientId: string | null) {
           : new Error(String(edgeFunctionError));
         console.warn('[useClientDashboard] Edge Function failed, falling back to RPC', lastError);
       }
+      */
+
+      console.log('[useClientDashboard] 🔍 Using RPC directly (Edge Function disabled for debugging)');
 
       // ✅ Fallback: Usar RPC directamente si Edge Function falla o no retorna datos
       if (!dashboardData) {

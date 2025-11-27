@@ -138,6 +138,11 @@ export function ClientDashboard({
   user,
   initialBookingContext
 }: Readonly<ClientDashboardProps>) {
+  // DEBUG: Log user prop at component mount
+  console.log('[ClientDashboard] MOUNT - user:', user);
+  console.log('[ClientDashboard] MOUNT - user?.id:', user?.id);
+  console.log('[ClientDashboard] MOUNT - user object:', JSON.stringify(user, null, 2));
+  
   const navigate = useNavigate()
   const location = useLocation()
   
@@ -1267,6 +1272,7 @@ export function ClientDashboard({
       {selectedBusinessId && (
         <BusinessProfile
           businessId={selectedBusinessId}
+          userId={user?.id} // CRITICAL FIX: Use optional chaining for safety
           onClose={() => setSelectedBusinessId(null)}
           onBookAppointment={handleBookAppointment}
           onChatStarted={(conversationId) => {

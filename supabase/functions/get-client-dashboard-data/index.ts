@@ -39,8 +39,8 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Obtener client_id y preferred_city_name del body
-    const { client_id, preferred_city_name } = await req.json();
+    // Obtener client_id, preferred_city_name y preferred_region_name del body
+    const { client_id, preferred_city_name, preferred_region_name } = await req.json();
 
     if (!client_id) {
       return new Response(
@@ -52,7 +52,9 @@ serve(async (req) => {
     console.log(`[get-client-dashboard-data] 🔍 Request params:`, {
       client_id,
       preferred_city_name,
-      preferred_city_name_type: typeof preferred_city_name
+      preferred_region_name,
+      preferred_city_name_type: typeof preferred_city_name,
+      preferred_region_name_type: typeof preferred_region_name
     });
 
     // =====================================================
@@ -62,7 +64,8 @@ serve(async (req) => {
       'get_client_dashboard_data',
       { 
         p_client_id: client_id,
-        p_preferred_city_name: preferred_city_name || null
+        p_preferred_city_name: preferred_city_name || null,
+        p_preferred_region_name: preferred_region_name || null
       }
     );
 

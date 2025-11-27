@@ -167,13 +167,11 @@ export function useBusinessProfileData({ businessId, slug, userLocation }: UseBu
         `)
         .eq('business_id', businessData.id);
 
-      // 3. Fetch locations
+      // 3. Fetch locations with resolved city names
       const { data: locationsData } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('business_id', businessData.id)
-        .eq('is_active', true)
-        .order('name');
+        .rpc('get_business_locations_with_city_names', {
+          p_business_id: businessData.id
+        });
 
       // 4. Fetch services
       const { data: servicesData } = await supabase

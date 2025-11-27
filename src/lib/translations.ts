@@ -2057,6 +2057,9 @@ export const translations = {
       businessMarked: 'business marked as favorite',
       businessesMarked: 'businesses marked as favorites',
       tipDescription: 'Click on any card to see the complete business profile, its services, locations and reviews. From there you can easily book appointments.',
+      removeFavorite: 'Remove from favorites',
+      removedSuccess: 'Business removed from favorites',
+      removedError: 'Error removing from favorites',
     },
 
     // City Selector
@@ -4251,6 +4254,9 @@ export const translations = {
       businessMarked: 'negocio marcado',
       businessesMarked: 'negocios marcados',
       tipDescription: 'como favorito. Haz clic en cualquier tarjeta para ver el perfil completo del negocio, sus servicios, ubicaciones y reseñas. Desde ahí podrás reservar citas fácilmente.',
+      removeFavorite: 'Quitar de favoritos',
+      removedSuccess: 'Negocio removido de favoritos',
+      removedError: 'Error al remover de favoritos',
     },
 
     // City Selector

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { PermissionGate } from '@/components/ui/PermissionGate';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
 import { useReviews } from '@/hooks/useReviews';
@@ -21,6 +21,7 @@ interface BusinessProfileProps {
   readonly onClose: () => void;
   readonly onBookAppointment?: (serviceId?: string, locationId?: string, employeeId?: string) => void;
   readonly onChatStarted?: (conversationId: string) => void;
+  readonly userId?: string; // NUEVO: Para resolver problema de auth context
   readonly userLocation?: {
     latitude: number;
     longitude: number;
@@ -89,9 +90,17 @@ export default function BusinessProfile({
   onClose, 
   onBookAppointment,
   onChatStarted,
+  userId: propUserId, // Rename prop to avoid conflict
   userLocation 
 }: BusinessProfileProps) {
-  const { user } = useAuth();
+  // Get user AND loading state from Auth context
+  const authContext = useAuth();
+  const user = authContext?.user || null;
+  const authLoading = authContext?.loading || false;
+  
+  // CRITICAL FIX: Use prop userId as fallback if context user is not available
+  const effectiveUserId = user?.id || propUserId;
+  
   const [business, setBusiness] = useState<BusinessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('services');
@@ -100,12 +109,40 @@ export default function BusinessProfile({
   const [eligibleAppointmentId, setEligibleAppointmentId] = useState<string | null>(null);
   const [showChatModal, setShowChatModal] = useState(false);
 
+  // DEBUG: Log auth state
+  console.log('[BusinessProfile] RENDER - propUserId:', propUserId);
+  console.log('[BusinessProfile] RENDER - authContext:', authContext);
+  console.log('[BusinessProfile] RENDER - authLoading:', authLoading);
+  console.log('[BusinessProfile] RENDER - user:', user);
+  console.log('[BusinessProfile] RENDER - user?.id:', user?.id);
+  console.log('[BusinessProfile] RENDER - effectiveUserId:', effectiveUserId);
+  
+  // Use effectiveUserId which can come from context or props
+  const { isFavorite, toggleFavorite: toggleFavoriteFn } = useFavorites(effectiveUserId);
+  
   const { createReview, refetch: refetchReviews } = useReviews({ business_id: businessId });
-  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
 
   const handleToggleFavorite = async () => {
-    if (!business) return;
-    await toggleFavorite(businessId, business.name);
+    console.log('[BusinessProfile] handleToggleFavorite called');
+    console.log('[BusinessProfile] authLoading:', authLoading);
+    console.log('[BusinessProfile] effectiveUserId:', effectiveUserId);
+    console.log('[BusinessProfile] business:', business?.name);
+    
+    // CRITICAL FIX: Check effectiveUserId instead of just user
+    if (!effectiveUserId) {
+      console.log('[BusinessProfile] NO effectiveUserId - showing error toast');
+      toast.error('Inicia sesión para guardar favoritos');
+      return;
+    }
+    
+    if (!business) {
+      console.log('[BusinessProfile] No business, returning');
+      return;
+    }
+    
+    console.log('[BusinessProfile] User verified (effectiveUserId:', effectiveUserId, '), calling toggleFavorite...');
+    await toggleFavoriteFn(businessId, business.name);
+    console.log('[BusinessProfile] toggleFavorite completed');
   };
 
   const formatCurrency = (amount: number, currency: string = 'COP') => {
@@ -371,34 +408,20 @@ export default function BusinessProfile({
           
           {/* Botones en header - Touch Optimized */}
           <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
-            {/* Botón favorito - Bug #6 fix: mode='block' muestra fallback cuando no tiene permiso */}
-            {user ? (
-              <PermissionGate 
-                permission="favorites.toggle" 
-                businessId={businessId} 
-                mode="block"
-                fallback={
-                  <button
-                    onClick={() => toast.info('Inicia sesión para guardar favoritos')}
-                    className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                  >
-                    <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                  </button>
-                }
+            {/* Botón favorito - SIMPLIFICADO: Usar solo effectiveUserId sin PermissionGate */}
+            {effectiveUserId ? (
+              <button
+                onClick={handleToggleFavorite}
+                className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
-                <button
-                  onClick={handleToggleFavorite}
-                  className="p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                >
-                  <Heart 
-                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
-                      isFavorite(businessId) 
-                        ? 'fill-primary text-primary' 
-                        : 'text-foreground'
-                    }`} 
-                  />
-                </button>
-              </PermissionGate>
+                <Heart 
+                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${
+                    isFavorite(businessId) 
+                      ? 'fill-primary text-primary' 
+                      : 'text-foreground'
+                  }`} 
+                />
+              </button>
             ) : (
               <button
                 onClick={() => toast.info('Inicia sesión para guardar favoritos')}
@@ -578,7 +601,7 @@ export default function BusinessProfile({
                               <div className="flex items-start gap-2">
                                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                 <span>
-                                  {location.address}, {location.city}, {location.state} {location.postal_code}
+                                  {location.address}, {location.city_name || location.city}, {location.state} {location.postal_code}
                                 </span>
                               </div>
                               {location.phone && (

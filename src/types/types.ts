@@ -484,6 +484,7 @@ export interface Location {
   name: string
   address: string
   city: string
+  city_name?: string // Resolved city name from cities table
   state: string
   country: string
   postal_code: string

@@ -135,8 +135,8 @@ secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = ""
 url = ""
 
-[edge_functions]
-enabled = true
+# [edge_functions]
+# enabled = true
 
 [analytics]
 enabled = false
