@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 const STORAGE_KEY_PREFIX = 'preferred-city';
 const BOGOTA_REGION_ID = 'fc6cc79b-dfd1-42c9-b35d-3d0df51c1c83';
-const BOGOTA_CITY_ID = 'c5861b80-bd05-48a9-9e24-d8c93e0d1d6b';
-const BOGOTA_CITY_NAME = 'Bogotá';
 const DEFAULT_REGION_ID = BOGOTA_REGION_ID; // Bogotá D.C.
-const DEFAULT_CITY_ID = BOGOTA_CITY_ID; // ✅ FIX: Default debe ser Bogotá cityId, NO null
+// ✅ Default should be NULL to show ALL cities in the region
+const DEFAULT_CITY_ID = null;
+const DEFAULT_CITY_NAME = null;
 
 interface PreferredCityData {
   regionId: string;
@@ -32,26 +32,26 @@ export function usePreferredCity() {
           setPreferredCityId(data.cityId);
           setPreferredCityName(data.cityName);
         } else {
-          // ✅ FIX: Set default to Bogotá D.C. AND SAVE to localStorage
+          // ✅ Default to Bogotá D.C. REGION (all cities), not specific city
           const defaultData: PreferredCityData = {
             regionId: DEFAULT_REGION_ID,
             regionName: 'Bogotá D.C.',
-            cityId: DEFAULT_CITY_ID,
-            cityName: BOGOTA_CITY_NAME
+            cityId: DEFAULT_CITY_ID, // null
+            cityName: DEFAULT_CITY_NAME // null
           };
           localStorage.setItem(STORAGE_KEY_PREFIX, JSON.stringify(defaultData));
           setPreferredRegionId(DEFAULT_REGION_ID);
           setPreferredRegionName('Bogotá D.C.');
           setPreferredCityId(DEFAULT_CITY_ID);
-          setPreferredCityName(BOGOTA_CITY_NAME);
+          setPreferredCityName(DEFAULT_CITY_NAME);
         }
       } catch {
-        // Fallback to default on error (and try to save)
+        // Fallback to default on error (region-level, no specific city)
         const defaultData: PreferredCityData = {
           regionId: DEFAULT_REGION_ID,
           regionName: 'Bogotá D.C.',
-          cityId: DEFAULT_CITY_ID,
-          cityName: BOGOTA_CITY_NAME
+          cityId: DEFAULT_CITY_ID, // null
+          cityName: DEFAULT_CITY_NAME // null
         };
         try {
           localStorage.setItem(STORAGE_KEY_PREFIX, JSON.stringify(defaultData));
@@ -61,7 +61,7 @@ export function usePreferredCity() {
         setPreferredRegionId(DEFAULT_REGION_ID);
         setPreferredRegionName('Bogotá D.C.');
         setPreferredCityId(DEFAULT_CITY_ID);
-        setPreferredCityName(BOGOTA_CITY_NAME);
+        setPreferredCityName(DEFAULT_CITY_NAME);
       }
     };
 
@@ -91,11 +91,10 @@ export function usePreferredCity() {
 
   const setPreferredCity = (regionId: string, regionName: string, cityId: string | null, cityName: string | null) => {
     try {
-      // Opción 2: si región es Bogotá D.C. y no hay ciudad, seleccionar Bogotá en segundo plano
-      if (regionId === BOGOTA_REGION_ID && !cityId) {
-        cityId = BOGOTA_CITY_ID;
-        cityName = BOGOTA_CITY_NAME;
-      }
+      // ❌ REMOVED: Auto-select Bogotá city when region selected
+      // This was causing region-level filtering to fail
+      // Now users must explicitly select a city if they want city-specific filtering
+      
       const data: PreferredCityData = {
         regionId,
         regionName,

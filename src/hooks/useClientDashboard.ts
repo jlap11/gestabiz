@@ -230,29 +230,36 @@ const mergeSuggestions = (
  * @returns Data consolidada con loading, error, refetch
  */
 export function useClientDashboard(clientId: string | null) {
+  // ✅ FIX: Leer preferredCityName Y preferredRegionName FUERA del queryFn para incluir en queryKey
+  // Esto asegura que React Query invalide el cache cuando cambia la ciudad O la región
+  let preferredCityName: string | null = null;
+  let preferredRegionName: string | null = null;
+  try {
+    const stored = localStorage.getItem('preferred-city');
+    if (stored) {
+      const data = JSON.parse(stored);
+      // ✅ CAMBIO: Pasar cityName (TEXT) en vez de cityId (UUID) para matchear con locations.city
+      preferredCityName = data.cityName || null;
+      // ✅ NUEVO: Leer regionName para filtrar por departamento cuando no hay ciudad específica
+      preferredRegionName = data.regionName || null;
+    }
+  } catch {
+    // Silently fail if localStorage read fails
+    preferredCityName = null;
+    preferredRegionName = null;
+  }
+
   return useQuery<ClientDashboardData | null, Error>({
-    queryKey: QUERY_CONFIG.KEYS.CLIENT_DASHBOARD(clientId || ''),
+    queryKey: QUERY_CONFIG.KEYS.CLIENT_DASHBOARD(clientId || '', preferredCityName, preferredRegionName),
     queryFn: async () => {
       if (!clientId) {
         return null;
       }
 
-      let preferredCityName: string | null = null;
-      try {
-        const stored = localStorage.getItem('preferred-city');
-        if (stored) {
-          const data = JSON.parse(stored);
-          // ✅ CAMBIO: Pasar cityName (TEXT) en vez de cityId (UUID) para matchear con locations.city
-          preferredCityName = data.cityName || null;
-        }
-      } catch {
-        // Silently fail if localStorage read fails
-        preferredCityName = null;
-      }
-
       const payload = {
         client_id: clientId,
         preferred_city_name: preferredCityName,
+        preferred_region_name: preferredRegionName,
       };
 
       let dashboardData: ClientDashboardData | null = null;
@@ -281,6 +288,7 @@ export function useClientDashboard(clientId: string | null) {
         const { data: rpcData, error: rpcError } = await supabase.rpc('get_client_dashboard_data', {
           p_client_id: clientId,
           p_preferred_city_name: preferredCityName,
+          p_preferred_region_name: preferredRegionName,
         });
 
         if (rpcError) {

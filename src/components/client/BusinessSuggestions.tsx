@@ -26,6 +26,7 @@ interface BusinessSuggestionsProps {
   suggestions: SimpleBusiness[];
   isLoading: boolean;
   preferredCityName: string | null;
+  preferredRegionName: string | null; // ✅ NEW: For region-level filtering display
   onBusinessSelect?: (businessId: string) => void;
 }
 
@@ -51,10 +52,12 @@ export function BusinessSuggestions({
   suggestions,
   isLoading,
   preferredCityName,
+  preferredRegionName, // ✅ NEW
   onBusinessSelect
 }: Readonly<BusinessSuggestionsProps>) {
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(true)
+  const [isRecommendedOpen, setIsRecommendedOpen] = useState(false) // ✅ NUEVO: Sección RECOMENDADOS colapsada por defecto
 
   // ✅ OPTIMIZACIÓN: Memoizar handler para prevenir recreaciones
   const handleRebookClick = useCallback((event: React.MouseEvent<HTMLButtonElement>, businessId: string) => {
@@ -177,7 +180,9 @@ export function BusinessSuggestions({
             <span>
               {preferredCityName 
                 ? t('businessSuggestions.titleWithCity', { city: preferredCityName })
-                : t('businessSuggestions.title')
+                : preferredRegionName
+                  ? t('businessSuggestions.titleWithCity', { city: preferredRegionName })
+                  : t('businessSuggestions.title')
               }
             </span>
           </div>
@@ -233,10 +238,36 @@ export function BusinessSuggestions({
 
                 {hasSuggestions && (
                   <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {t('businessSuggestions.recommendedTitle')}
-                    </h4>
-                    {recommendedBusinesses.map((business) => renderBusinessCard(business))}
+                    <div
+                      className="flex items-center justify-between cursor-pointer hover:bg-muted/50 -mx-1 px-1 py-1 rounded transition-colors"
+                      onClick={() => setIsRecommendedOpen(!isRecommendedOpen)}
+                    >
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t('businessSuggestions.recommendedTitle')}
+                      </h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsRecommendedOpen(!isRecommendedOpen);
+                        }}
+                      >
+                        <svg
+                          className={cn(
+                            "h-4 w-4 transition-transform duration-200",
+                            isRecommendedOpen && "rotate-180"
+                          )}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </Button>
+                    </div>
+                    {isRecommendedOpen && recommendedBusinesses.map((business) => renderBusinessCard(business))}
                   </div>
                 )}
                 

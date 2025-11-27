@@ -242,7 +242,8 @@ export function ClientDashboard({
 
   // Hook para preferencias de ciudad (para sugerencias)
   const {
-    preferredCityName
+    preferredCityName,
+    preferredRegionName // ✅ NEW: For region-level display
   } = usePreferredCity()
 
   // Handle initial booking context from public profile redirect
@@ -827,6 +828,7 @@ export function ClientDashboard({
                   suggestions={suggestions}
                   isLoading={isDashboardLoading}
                   preferredCityName={preferredCityName}
+                  preferredRegionName={preferredRegionName}
                   onBusinessSelect={(businessId) => {
                     setSelectedBusinessId(businessId)
                   }}

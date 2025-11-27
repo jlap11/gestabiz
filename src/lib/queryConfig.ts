@@ -64,9 +64,11 @@ export const QUERY_CONFIG = {
       'completed-appointments',
       clientId,
     ],
-    CLIENT_DASHBOARD: (clientId: string) => [
+    CLIENT_DASHBOARD: (clientId: string, preferredCityName?: string | null, preferredRegionName?: string | null) => [
       'client-dashboard',
       clientId,
+      preferredCityName || 'all-cities',
+      preferredRegionName || 'all-regions',
     ],
   },
 };
