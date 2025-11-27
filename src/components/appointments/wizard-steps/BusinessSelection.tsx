@@ -3,9 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Check, Building2, Filter } from 'lucide-react';
+import { Check, Building2, Filter, Search } from 'lucide-react';
 import { MapPin, Phone } from '@phosphor-icons/react';
-import { SimpleSearchBar, type SearchType } from '@/components/ui/SimpleSearchBar';
 import { cn } from '@/lib/utils';
 import { withCache } from '@/lib/cache';
 import supabase from '@/lib/supabase';
@@ -526,14 +525,22 @@ export function BusinessSelection({
           </p>
         )}
 
-        {/* SearchBar shared component (same dropdown/options as header) - full-bleed */}
-        <div className="w-full">
-            <SimpleSearchBar
-              searchTerm={searchTerm}
-              searchType={searchType}
-              onSearch={debouncedHandleSearch}
-              className="w-full max-w-none"
-            />
+        {/* Barra de búsqueda simple sin dropdown */}
+        <div className="w-full relative">
+          <div className="flex items-center border border-input rounded-lg overflow-hidden bg-input">
+            <div className="flex-1 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value, searchType)}
+                placeholder="Buscar negocios..."
+                className="w-full pl-10 pr-3 py-2 border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset text-sm"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Toggle de filtros (colapsable) - fuera de la barra de búsqueda */}

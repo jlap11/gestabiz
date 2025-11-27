@@ -981,17 +981,36 @@ export function ClientDashboard({
                 )}
               </div>
 
-              {/* Service Name */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Servicio</h3>
-                <p className="text-lg font-semibold text-foreground">
-                  {selectedAppointment.service?.name || 'Cita'}
-                </p>
-                {selectedAppointment.service?.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedAppointment.service.description}
-                  </p>
+              {/* Service Name with Image */}
+              <div className="flex gap-4">
+                {/* Service Image */}
+                {selectedAppointment.service?.image_url && (
+                  <div className="shrink-0">
+                    <img
+                      src={selectedAppointment.service.image_url}
+                      alt={selectedAppointment.service.name}
+                      className="w-24 h-24 rounded-lg object-cover border-2 border-border"
+                    />
+                  </div>
                 )}
+                
+                {/* Service Info */}
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Servicio</h3>
+                  <p className="text-lg font-semibold text-foreground">
+                    {selectedAppointment.service?.name || 'Cita'}
+                  </p>
+                  {selectedAppointment.service?.description && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedAppointment.service.description}
+                    </p>
+                  )}
+                  {selectedAppointment.service?.price && (
+                    <p className="text-sm font-semibold text-primary mt-2">
+                      ${selectedAppointment.service.price.toLocaleString('es')} {selectedAppointment.service.currency || 'COP'}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Date and Time */}

@@ -59,31 +59,6 @@ export function ServiceSelection({
     loadServices();
   }, [loadServices]);
 
-  // Imágenes placeholder por tipo de servicio
-  const getServiceImage = (serviceName: string): string => {
-    const name = serviceName.toLowerCase();
-    if (name.includes('hair') || name.includes('corte') || name.includes('cabello')) {
-      return 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=400&fit=crop';
-    }
-    if (name.includes('manicure') || name.includes('nail') || name.includes('uña')) {
-      return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400&h=400&fit=crop';
-    }
-    if (name.includes('massage') || name.includes('masaje')) {
-      return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=400&fit=crop';
-    }
-    if (name.includes('facial') || name.includes('cara')) {
-      return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=400&fit=crop';
-    }
-    if (name.includes('color') || name.includes('tinte')) {
-      return 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&h=400&fit=crop';
-    }
-    if (name.includes('style') || name.includes('peinado')) {
-      return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&h=400&fit=crop';
-    }
-    // Default
-    return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop';
-  };
-
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -131,12 +106,13 @@ export function ServiceSelection({
               )}
 
               {/* Imagen fotográfica real del servicio */}
-              <div className="aspect-square w-full relative">
-                <img
-                  src={service.image_url || getServiceImage(service.name)}
-                  alt={service.name}
-                  className="w-full h-full object-cover"
-                />
+              {service.image_url && (
+                <div className="aspect-square w-full relative">
+                  <img
+                    src={service.image_url}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                  />
 
                 {/* Checkmark cuando está seleccionado */}
                 {isSelected && (
@@ -150,7 +126,8 @@ export function ServiceSelection({
                     <Check className="w-5 h-5 text-primary-foreground" />
                   </div>
                 )}
-              </div>
+                </div>
+              )}
 
               {/* Label debajo de la imagen */}
               <div className="p-3 text-center bg-muted/50">
