@@ -36,8 +36,14 @@ export function FloatingChatButton({
   
   // Abrir chat cuando se proporciona conversación inicial
   React.useEffect(() => {
+    console.log('[FloatingChatButton] initialConversationId changed:', initialConversationId);
     if (initialConversationId) {
-      setIsOpen(true)
+      // Pequeño delay para asegurar que el prop se propague correctamente
+      const timer = setTimeout(() => {
+        console.log('[FloatingChatButton] Opening chat with conversation:', initialConversationId);
+        setIsOpen(true)
+      }, 100)
+      return () => clearTimeout(timer)
     }
   }, [initialConversationId])
   

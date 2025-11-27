@@ -71,11 +71,12 @@ export function SimpleChatLayout({
 
   // Set conversación inicial y mostrar chat
   useEffect(() => {
+    console.log('[SimpleChatLayout] initialConversationId:', initialConversationId);
     if (initialConversationId) {
       console.log('[SimpleChatLayout] Setting active conversation:', initialConversationId);
       setActiveConversationId(initialConversationId);
       setShowChat(true);
-      autoOpenedRef.current = true;
+      // NO establecer autoOpenedRef aquí para permitir re-apertura
     }
   }, [initialConversationId, setActiveConversationId]);
 

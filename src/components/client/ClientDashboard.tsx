@@ -344,6 +344,7 @@ export function ClientDashboard({
         setSelectedAppointment(null)
         
         // Establecer la conversación activa para abrir el chat
+        // ✅ FIX: No resetear chatConversationId en onChatClose para evitar perder el estado
         setChatConversationId(conversationId)
         
         toast.success('Chat iniciado con el profesional')
@@ -885,7 +886,12 @@ export function ClientDashboard({
         onSearchResultSelect={handleSearchResultSelect}
         onSearchViewMore={handleSearchViewMore}
         chatConversationId={chatConversationId}
-        onChatClose={() => setChatConversationId(null)}
+        onChatClose={() => {
+          // Delay para permitir que el chat se cierre completamente antes de resetear
+          setTimeout(() => {
+            setChatConversationId(null)
+          }, 300)
+        }}
       >
         <div className="flex flex-col min-h-full">
           <div className="flex-1">
