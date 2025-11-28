@@ -71,20 +71,16 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
         {/* Gradiente oscuro desvanecido */}
         <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/40 to-transparent" />
 
-        {/* Logo en la esquina superior izquierda */}
-        <div className="absolute top-3 left-3 z-10">
-          {business.logo_url ? (
+        {/* Logo en la esquina superior izquierda - Solo si existe */}
+        {business.logo_url && (
+          <div className="absolute top-3 left-3 z-10">
             <img
               src={business.logo_url}
               alt={business.name}
               className="w-16 h-16 rounded-lg object-cover border-2 border-white/80 shadow-lg"
             />
-          ) : (
-            <div className="w-16 h-16 rounded-lg bg-white/90 flex items-center justify-center border-2 border-white/80 shadow-lg">
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Ícono de favorito en la esquina superior derecha */}
         <div className="absolute top-3 right-3 z-10">
