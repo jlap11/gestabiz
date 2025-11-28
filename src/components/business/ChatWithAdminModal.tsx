@@ -60,6 +60,7 @@ export default function ChatWithAdminModal({
 
   const handleStartChat = async (employeeId: string, employeeName: string) => {
     try {
+      console.log('[ChatWithAdminModal] Starting chat with:', { employeeId, employeeName, businessId });
       setCreatingChat(true);
       setSelectedEmployeeId(employeeId);
 
@@ -69,20 +70,28 @@ export default function ChatWithAdminModal({
         initial_message: `Hola ${employeeName}, me interesa conocer más sobre ${businessName}`,
       });
 
+      console.log('[ChatWithAdminModal] Conversation created:', conversationId);
+
       if (conversationId) {
         toast.success(`Chat iniciado con ${employeeName}`);
+        console.log('[ChatWithAdminModal] Closing modals and calling onChatStarted');
         // Cerrar el modal de chat
         onClose();
         // Cerrar el modal padre (BusinessProfile) si se proporcionó
         if (onCloseParent) {
+          console.log('[ChatWithAdminModal] Closing parent modal');
           onCloseParent();
         }
         // Llamar al callback de chat iniciado con la conversationId
         onChatStarted(conversationId);
+        console.log('[ChatWithAdminModal] Chat flow completed successfully');
+      } else {
+        console.error('[ChatWithAdminModal] No conversationId returned');
+        toast.error('No se pudo crear la conversación');
       }
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('Error starting chat:', err);
+      console.error('[ChatWithAdminModal] Error starting chat:', err);
       toast.error('No se pudo iniciar el chat. Intenta nuevamente.');
     } finally {
       setCreatingChat(false);
@@ -91,8 +100,8 @@ export default function ChatWithAdminModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[80vh] flex flex-col bg-background">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-110">
+      <Card className="w-full max-w-2xl max-h-[80vh] flex flex-col bg-background shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
@@ -243,7 +252,7 @@ export default function ChatWithAdminModal({
                           >
                             <div className="flex items-center gap-4">
                               {/* Employee Avatar */}
-                              <Avatar className="h-12 w-12 flex-shrink-0">
+                              <Avatar className="h-12 w-12 shrink-0">
                                 <AvatarImage src={employee.avatar_url || undefined} />
                                 <AvatarFallback>
                                   {employee.full_name
@@ -277,7 +286,7 @@ export default function ChatWithAdminModal({
                                 onClick={() => handleStartChat(employee.employee_id, employee.full_name)}
                                 disabled={creatingChat}
                                 size="sm"
-                                className="flex-shrink-0"
+                                className="shrink-0"
                               >
                                 {isLoading ? (
                                   <>

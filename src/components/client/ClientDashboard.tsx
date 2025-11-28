@@ -1276,10 +1276,15 @@ export function ClientDashboard({
           onClose={() => setSelectedBusinessId(null)}
           onBookAppointment={handleBookAppointment}
           onChatStarted={(conversationId) => {
+            console.log('[ClientDashboard] onChatStarted called with conversationId:', conversationId);
             // Cambiar a la página de chat y establecer la conversación activa
+            console.log('[ClientDashboard] Setting activePage to chat');
             setActivePage('chat');
+            console.log('[ClientDashboard] Setting chatConversationId:', conversationId);
             setChatConversationId(conversationId);
+            console.log('[ClientDashboard] Closing business profile modal');
             setSelectedBusinessId(null); // Cerrar el modal de perfil
+            console.log('[ClientDashboard] Chat flow completed, chat should open automatically');
           }}
           userLocation={
             geolocation.hasLocation

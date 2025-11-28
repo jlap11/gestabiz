@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Phone, Mail, Globe, Star, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Phone, Mail, Globe, Star, Clock, ChevronRight, MessageCircle } from 'lucide-react';
 import { useBusinessProfileData } from '@/hooks/useBusinessProfileData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ReviewList } from '@/components/reviews/ReviewList';
+import ChatWithAdminModal from '@/components/business/ChatWithAdminModal';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface PublicBusinessProfileProps {
   readonly slug?: string;
@@ -24,6 +25,7 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
   const navigate = useNavigate();
   const { user } = useAuth();
   const analytics = useAnalytics();
+  const [showChatModal, setShowChatModal] = useState(false);
   
   // Geolocation for distance calculation
   const geoState = useGeolocation({ requestOnMount: true });
@@ -101,7 +103,7 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
     document.head.appendChild(script);
     
     return () => {
-      if (script.parentNode) script.parentNode.removeChild(script);
+      script.remove();
     };
   }, [business, ogImage, canonicalUrl]);
 
@@ -217,18 +219,18 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
         {/* Header con navegación */}
         {!embedded && (
           <header className="sticky top-0 z-10 bg-card border-b border-border">
-            <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/')}> 
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver
-              </Button>
-              <Button onClick={() => handleBookAppointment()} size="lg">
-                <Calendar className="w-4 h-4 mr-2" />
-                Reservar Ahora
-              </Button>
-            </div>
-          </header>
-        )}
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')}> 
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver
+            </Button>
+            <Button onClick={() => handleBookAppointment()} size="lg">
+              <Calendar className="w-4 h-4 mr-2" />
+              Reservar Ahora
+            </Button>
+          </div>
+        </header>
+      )}
 
         {/* Banner */}
         {business.banner_url && (
@@ -238,7 +240,7 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
               alt={`Banner de ${business.name}`}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
           </div>
         )}
 
@@ -248,7 +250,7 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
           <div className="flex flex-col md:flex-row gap-6 mb-8">
             {/* Logo */}
             {business.logo_url && (
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <img
                   src={business.logo_url}
                   alt={`Logo de ${business.name}`}
@@ -418,7 +420,7 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
                       <h3 className="font-semibold text-lg mb-2">{location.name}</h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-start gap-2 text-muted-foreground">
-                          <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
                           <span>
                             {location.address}, {location.city}, {location.state} {location.postal_code}
                           </span>
@@ -542,12 +544,45 @@ export default function PublicBusinessProfile({ slug: slugProp, embedded = false
         </div>
 
         {/* Footer CTA */}
-        <div className="sticky bottom-0 border-t border-border bg-card/95 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4">
-            
+        <div className="sticky bottom-0 border-t border-border bg-card/95 backdrop-blur-sm z-10">
+          <div className="container mx-auto px-4 py-4 flex gap-3">
+            <Button 
+              onClick={() => handleBookAppointment()}
+              size="lg"
+              className="flex-1"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Reservar Ahora
+            </Button>
+            <Button 
+              onClick={() => setShowChatModal(true)}
+              size="lg"
+              variant="outline"
+              className="flex-1"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Iniciar Chat
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      {showChatModal && business && (
+        <ChatWithAdminModal
+          businessId={business.id}
+          businessName={business.name}
+          userLocation={userLocation}
+          onClose={() => setShowChatModal(false)}
+          onChatStarted={(conversationId) => {
+            setShowChatModal(false);
+            // Navegar al chat si el usuario está autenticado
+            if (user) {
+              navigate(`/app/client/chat?conversation=${conversationId}`);
+            }
+          }}
+        />
+      )}
     </>
   );
 }

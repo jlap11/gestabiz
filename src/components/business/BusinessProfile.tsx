@@ -156,16 +156,47 @@ export default function BusinessProfile({
     try {
       setLoading(true);
 
-      // Fetch business basic info
-      const { data: businessData, error: businessError } = await supabase
-        .from('businesses')
-        .select('id, name, description, phone, email, website, logo_url, banner_url, category_id')
-        .eq('id', businessId)
-        .single();
+      // Fetch ALL data in parallel for better performance
+      const [
+        { data: businessData, error: businessError },
+        { data: locationsData },
+        { data: servicesData },
+        { data: reviewsData },
+        { data: subcategoriesRelData }
+      ] = await Promise.all([
+        supabase
+          .from('businesses')
+          .select('id, name, description, phone, email, website, logo_url, banner_url, category_id')
+          .eq('id', businessId)
+          .single(),
+        supabase
+          .from('locations')
+          .select('*')
+          .eq('business_id', businessId)
+          .eq('is_active', true)
+          .order('name'),
+        supabase
+          .from('services')
+          .select('id, name, description, duration, price, category')
+          .eq('business_id', businessId)
+          .eq('is_active', true)
+          .order('name'),
+        supabase
+          .from('reviews')
+          .select('*')
+          .eq('business_id', businessId)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('business_subcategories')
+          .select('subcategory_id')
+          .eq('business_id', businessId)
+          .limit(3)
+      ]);
 
       if (businessError) throw businessError;
 
-      // Fetch category
+      // Fetch category if exists
       let categoryData: { name: string; icon_name?: string } | null = null;
       if (businessData?.category_id) {
         const { data: catData } = await supabase
@@ -176,13 +207,7 @@ export default function BusinessProfile({
         categoryData = catData;
       }
 
-      // Fetch subcategories
-      const { data: subcategoriesRelData } = await supabase
-        .from('business_subcategories')
-        .select('subcategory_id')
-        .eq('business_id', businessId)
-        .limit(3);
-
+      // Fetch subcategories if exist
       let subcategoriesData: Array<{ name: string }> = [];
       if ((subcategoriesRelData?.length ?? 0) > 0) {
         const subcategoryIds = subcategoriesRelData!.map(rel => rel.subcategory_id);
@@ -192,34 +217,6 @@ export default function BusinessProfile({
           .in('id', subcategoryIds);
         subcategoriesData = subcatsData ?? [];
       }
-
-      // Fetch locations
-      const { data: locationsData } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('business_id', businessId)
-        .eq('is_active', true)
-        .order('name');
-
-      // Fetch services
-      const { data: servicesData } = await supabase
-        .from('services')
-        .select('id, name, description, duration, price, category')
-        .eq('business_id', businessId)
-        .eq('is_active', true)
-        .order('name');
-
-      // Fetch employee profiles
-      // Note: Employee association will be handled in the booking wizard
-      // where users can select specific employees offering the service
-
-      // Fetch reviews
-      const { data: reviewsData } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('business_id', businessId)
-        .order('created_at', { ascending: false })
-        .limit(10);
 
       const rating = ((reviewsData?.length ?? 0) > 0)
         ? reviewsData!.reduce((acc, r) => acc + r.rating, 0) / reviewsData!.length
@@ -410,8 +407,8 @@ export default function BusinessProfile({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-100">
+        <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card shadow-2xl">
           <div className="flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
@@ -422,8 +419,8 @@ export default function BusinessProfile({
 
   if (!business) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-100">
+        <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-card shadow-2xl">
           <div className="p-8 text-center">
             <p className="text-muted-foreground">No se pudo cargar la información del negocio</p>
             <Button onClick={onClose} className="mt-4">Cerrar</Button>
@@ -434,8 +431,8 @@ export default function BusinessProfile({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-100 p-2 sm:p-4">
+      <Card className="w-full max-w-[98vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden bg-card flex flex-col shadow-2xl">
         {/* Header con banner - Mobile Responsive */}
         <div className="relative">
           {business.banner_url ? (
@@ -445,7 +442,7 @@ export default function BusinessProfile({
               className="w-full h-32 sm:h-40 lg:h-48 object-cover"
             />
           ) : (
-            <div className="w-full h-32 sm:h-40 lg:h-48 bg-gradient-to-r from-primary/20 to-secondary/20" />
+            <div className="w-full h-32 sm:h-40 lg:h-48 bg-linear-to-r from-primary/20 to-secondary/20" />
           )}
           
           {/* Botones en header - Touch Optimized */}
@@ -483,7 +480,7 @@ export default function BusinessProfile({
           </div>
 
           {/* Logo y info básica - Mobile Compact */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 sm:p-6">
+          <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-3 sm:p-6">
             <div className="flex items-end gap-2 sm:gap-4">
               {business.logo_url && (
                 <img 
@@ -501,7 +498,7 @@ export default function BusinessProfile({
                     </Badge>
                   )}
                   <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 shrink-0" />
                     <span className="font-medium">{business.rating.toFixed(1)}</span>
                     <span className="text-white/70">({business.reviewCount})</span>
                   </div>
@@ -518,19 +515,19 @@ export default function BusinessProfile({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
               {business.phone && (
                 <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   <span className="truncate">{business.phone}</span>
                 </div>
               )}
               {business.email && (
                 <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   <span className="truncate">{business.email}</span>
                 </div>
               )}
               {business.website && (
                 <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground">
-                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   <a href={business.website} target="_blank" rel="noopener noreferrer" className="hover:text-primary truncate">
                     Sitio web
                   </a>
@@ -641,7 +638,7 @@ export default function BusinessProfile({
                             <h3 className="font-semibold text-lg mb-2">{location.name}</h3>
                             <div className="space-y-2 text-sm text-muted-foreground">
                               <div className="flex items-start gap-2">
-                                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
                                 <span>
                                   {location.address}, {location.city_name || location.city}, {location.state} {location.postal_code}
                                 </span>
