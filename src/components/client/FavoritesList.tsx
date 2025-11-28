@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 interface FavoritesListProps {
   favorites: FavoriteBusiness[];
   loading: boolean;
+  onBookAppointment?: (businessId?: string, serviceId?: string, locationId?: string, employeeId?: string) => void;
 }
 
 /**
@@ -26,7 +27,7 @@ interface FavoritesListProps {
  * - Empty state cuando no hay favoritos
  * - Loading states
  */
-export default function FavoritesList({ favorites, loading }: FavoritesListProps) {
+export default function FavoritesList({ favorites, loading, onBookAppointment }: FavoritesListProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
@@ -214,6 +215,7 @@ export default function FavoritesList({ favorites, loading }: FavoritesListProps
           businessId={selectedBusinessId}
           userId={user?.id} // CRITICAL FIX: Pass userId explicitly
           onClose={() => setSelectedBusinessId(null)}
+          onBookAppointment={onBookAppointment}
         />
       )}
     </>

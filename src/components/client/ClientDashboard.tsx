@@ -313,18 +313,31 @@ export function ClientDashboard({
   }, [])
 
   // Handle booking from business profile
-  const handleBookAppointment = useCallback((serviceId?: string, locationId?: string, employeeId?: string) => {
-    // Guardar el businessId antes de cerrar el modal
-    const businessIdToUse = selectedBusinessId
+  const handleBookAppointment = useCallback((businessId?: string, serviceId?: string, locationId?: string, employeeId?: string) => {
+    console.log('[ClientDashboard] handleBookAppointment called with:', { businessId, serviceId, locationId, employeeId });
+    
+    // Usar el businessId pasado como parámetro o el selectedBusinessId
+    const businessIdToUse = businessId || selectedBusinessId
+    console.log('[ClientDashboard] businessIdToUse:', businessIdToUse);
+    
+    // Guardar preselección de servicio, ubicación y empleado ANTES de abrir el wizard
+    setBookingPreselection({
+      serviceId,
+      locationId,
+      employeeId
+    })
+    console.log('[ClientDashboard] Set bookingPreselection:', { serviceId, locationId, employeeId });
+    
+    // Open appointment wizard with preselected business and location/service/employee
+    console.log('[ClientDashboard] About to setAppointmentWizardBusinessId');
+    if (businessIdToUse) {
+      setAppointmentWizardBusinessId(businessIdToUse)
+    }
     
     // Close profile modal
     setSelectedBusinessId(null)
     setSelectedUserId(null)
-    
-    // Open appointment wizard with preselected business
-    if (businessIdToUse) {
-      setAppointmentWizardBusinessId(businessIdToUse)
-    }
+    console.log('[ClientDashboard] About to setShowAppointmentWizard(true)');
     setShowAppointmentWizard(true)
   }, [selectedBusinessId])
   
@@ -611,7 +624,7 @@ export function ClientDashboard({
             <div id="dashboard-sticky-header" className="sticky top-0 z-20 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 py-3 flex items-center justify-between gap-4 w-full min-w-0">
               <h2 className="text-2xl font-bold text-foreground">Mis Citas</h2>
               <Button 
-                onClick={() => setShowAppointmentWizard(true)}
+                onClick={() => handleBookAppointment()}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 <Plus className="h-5 w-5 mr-2" />
@@ -860,6 +873,7 @@ export function ClientDashboard({
           <FavoritesList 
             favorites={dashboardData?.favorites || []}
             loading={isDashboardLoading}
+            onBookAppointment={handleBookAppointment}
           />
         )
       case 'history':
@@ -941,7 +955,7 @@ export function ClientDashboard({
       </UnifiedLayout>
 
       {/* Appointment Wizard Modal */}
-      {showAppointmentWizard && currentUser && (
+      {showAppointmentWizard && user && (
         <AppointmentWizard
           open={showAppointmentWizard}
           onClose={handleCloseWizard}
@@ -949,7 +963,7 @@ export function ClientDashboard({
           preselectedServiceId={bookingPreselection?.serviceId}
           preselectedLocationId={bookingPreselection?.locationId}
           preselectedEmployeeId={bookingPreselection?.employeeId}
-          userId={currentUser.id}
+          userId={user.id}
           preselectedDate={preselectedDate}
           preselectedTime={preselectedTime}
           appointmentToEdit={appointmentToEdit} // Pasar cita a editar

@@ -604,7 +604,7 @@ export default function BusinessProfile({
                             {formatCurrency(service.price, 'COP')}
                           </p>
                           <Button
-                            onClick={() => onBookAppointment?.(service.id)}
+                            onClick={() => onBookAppointment?.(businessId, service.id)}
                             size="sm"
                           >
                             <Calendar className="h-4 w-4 mr-2" />
@@ -664,7 +664,7 @@ export default function BusinessProfile({
                             </div>
                           </div>
                           <Button
-                            onClick={() => onBookAppointment?.(undefined, location.id)}
+                            onClick={() => onBookAppointment?.(businessId, undefined, location.id)}
                             size="sm"
                           >
                             <Calendar className="h-4 w-4 mr-2" />
@@ -769,7 +769,7 @@ export default function BusinessProfile({
         {/* Footer sticky con botones principales */}
         <div className="border-t border-border p-4 bg-background space-y-3">
           <Button 
-            onClick={() => onBookAppointment?.()}
+            onClick={() => onBookAppointment?.(businessId)}
             className="w-full"
             size="lg"
           >

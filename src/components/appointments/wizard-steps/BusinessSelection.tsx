@@ -239,7 +239,7 @@ export function BusinessSelection({
     // Evitar doble llamada en modo Strict de React
     if (hasLoadedRef.current) return;
     // Solo cargar automáticamente si explícitamente está habilitado
-    if (!autoLoad || (lastSearch && lastSearch.term && lastSearch.term.length >= 2)) return;
+    if (!autoLoad) return;
 
     // Esperar a que esté disponible preferredRegionId para incluirlo en la primera solicitud
     if (!hookCityData.preferredRegionId) return;
@@ -247,7 +247,7 @@ export function BusinessSelection({
     hasLoadedRef.current = true;
     setLoading(true);
     void loadBusinesses();
-  }, [loadBusinesses, autoLoad, lastSearch, hookCityData.preferredRegionId]);
+  }, [loadBusinesses, autoLoad, hookCityData.preferredRegionId]);
 
   // Si hay una búsqueda previa persistida, aplicarla al montar
   useEffect(() => {
