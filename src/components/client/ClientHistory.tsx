@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -93,6 +92,7 @@ interface Employee {
 export function ClientHistory({ userId, appointments, loading }: ClientHistoryProps) {
   const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
   
   // Filter states - now arrays to support multiple selections
   const [statusFilters, setStatusFilters] = useState<string[]>([])
@@ -464,10 +464,14 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <button
+              onClick={() => setFiltersCollapsed(!filtersCollapsed)}
+              className="flex items-center gap-2 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <Filter className="h-5 w-5" />
-              Filtros
-            </CardTitle>
+              <CardTitle>Filtros</CardTitle>
+              <ChevronDown className={`h-5 w-5 transition-transform ${filtersCollapsed ? '' : 'rotate-180'}`} />
+            </button>
             {hasActiveFilters && (
               <Button
                 variant="ghost"
@@ -481,7 +485,8 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        {!filtersCollapsed && (
+          <CardContent className="space-y-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -840,6 +845,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
             </Select>
           </div>
         </CardContent>
+        )}
       </Card>
 
       {/* Results Count */}
