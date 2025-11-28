@@ -1,0 +1,4 @@
+uid=49_0 RootWebArea "Gestabiz" url="http://localhost:5173/app/client"
+  uid=49_1 region "Notifications alt+T"
+  uid=49_2 dialog
+    uid=49_3 button "Close" focusable focused

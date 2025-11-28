@@ -225,11 +225,53 @@ export default function BusinessProfile({
         ? reviewsData!.reduce((acc, r) => acc + r.rating, 0) / reviewsData!.length
         : 0;
 
+      // Process locations to resolve city and state UUIDs to names
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const cityIds = (locationsData || [])
+        .map(loc => loc.city)
+        .filter(city => city && uuidRegex.test(city));
+      const stateIds = (locationsData || [])
+        .map(loc => loc.state)
+        .filter(state => state && uuidRegex.test(state));
+      
+      let cityMap: Record<string, string> = {};
+      let stateMap: Record<string, string> = {};
+      
+      if (cityIds.length > 0) {
+        const { data: citiesData } = await supabase
+          .from('cities')
+          .select('id, name')
+          .in('id', cityIds);
+        
+        cityMap = (citiesData || []).reduce((acc, city) => {
+          acc[city.id] = city.name;
+          return acc;
+        }, {} as Record<string, string>);
+      }
+      
+      if (stateIds.length > 0) {
+        const { data: regionsData } = await supabase
+          .from('regions')
+          .select('id, name')
+          .in('id', stateIds);
+        
+        stateMap = (regionsData || []).reduce((acc, region) => {
+          acc[region.id] = region.name;
+          return acc;
+        }, {} as Record<string, string>);
+      }
+
+      const processedLocations = (locationsData || []).map(loc => ({
+        ...loc,
+        city_name: loc.city && uuidRegex.test(loc.city) ? cityMap[loc.city] || loc.city : loc.city,
+        state: loc.state && uuidRegex.test(loc.state) ? stateMap[loc.state] || loc.state : loc.state
+      }));
+
       setBusiness({
         ...businessData,
         category: categoryData ? { name: categoryData.name, icon: categoryData.icon_name } : undefined,
         subcategories: subcategoriesData,
-        locations: locationsData || [],
+        locations: processedLocations,
         services: (servicesData ?? []).map(s => {
           return {
             ...s,
