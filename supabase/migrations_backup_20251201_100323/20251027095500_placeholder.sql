@@ -1,0 +1,2 @@
+﻿-- Migration 20251027095500 (applied remotely, placeholder for local tracking)
+-- This file is a placeholder to mark that this migration was already applied in production.
