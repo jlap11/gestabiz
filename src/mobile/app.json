@@ -18,7 +18,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.Gestabiz.mobile",
       "infoPlist": {
-        "NSCalendarsUsageDescription": "This app needs access to calendar to sync appointments.",
         "NSRemindersUsageDescription": "This app needs access to reminders to create appointment reminders."
       }
     },
@@ -29,9 +28,6 @@
       },
       "package": "com.Gestabiz.mobile",
       "permissions": [
-        "CALENDAR",
-        "WRITE_CALENDAR",
-        "READ_CALENDAR",
         "VIBRATE",
         "RECEIVE_BOOT_COMPLETED",
         "SCHEDULE_EXACT_ALARM"
@@ -41,13 +37,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-notifications",
-      [
-        "expo-calendar",
-        {
-          "calendarPermission": "The app needs to access your calendar to sync appointments."
-        }
-      ]
+      "expo-notifications"
     ],
     "extra": {
       "eas": {

@@ -10,11 +10,10 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native'
-import { supabase } from '../lib/supabase'
-import { useMobileAlert } from '../../../../components/mobile/useMobileAlert'
+import { supabase, appointmentService, dashboardService } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 
-export default function DashboardScreen({ navigation }) {
-  const { error } = useMobileAlert()
+export default function DashboardScreen({ navigation }: any) {
   const [appointments, setAppointments] = useState([])
   const [stats, setStats] = useState({
     total: 0,
@@ -23,51 +22,39 @@ export default function DashboardScreen({ navigation }) {
     completed: 0,
   })
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [user, setUser] = useState(null)
+  const { user } = useAuth()
 
   useEffect(() => {
-    getUser()
-    loadDashboardData()
-  }, [])
-
-  const getUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    setUser(user)
-  }
+    if (user) {
+      loadDashboardData()
+    }
+  }, [user])
 
   const loadDashboardData = async () => {
+    if (!user) return
+    
     try {
       // Get upcoming appointments
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('status', 'scheduled')
-        .gte('start_time', new Date().toISOString())
-        .order('start_time', { ascending: true })
-        .limit(5)
+      const { data: appointmentsData, error: appointmentsError } = await appointmentService.getUpcomingAppointments(user.id, 5)
 
       if (appointmentsError) throw appointmentsError
 
       setAppointments(appointmentsData || [])
 
       // Get statistics
-      const { data: statsData, error: statsError } = await supabase
-        .rpc('get_dashboard_stats')
-
-      if (statsError) throw statsError
+      const { data: statsData, error: statsError } = await dashboardService.getDashboardStats(user.id)
 
       if (statsData && statsData.length > 0) {
         setStats({
-          total: statsData[0].total_appointments,
-          today: statsData[0].upcoming_today,
-          upcoming: statsData[0].upcoming_week,
-          completed: statsData[0].completed_appointments,
+          total: statsData[0].total_appointments || 0,
+          today: statsData[0].upcoming_today || 0,
+          upcoming: statsData[0].upcoming_week || 0,
+          completed: statsData[0].completed_appointments || 0,
         })
       }
 
     } catch (error) {
       console.error('Error loading dashboard data:', error)
-      error('Failed to load dashboard data', { title: 'Error' })
     }
   }
 
