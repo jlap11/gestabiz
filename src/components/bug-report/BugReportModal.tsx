@@ -214,16 +214,10 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
               <SelectTrigger id="severity">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[250]">
                 {Object.entries(SEVERITY_CONFIG).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
-                    <div className="flex items-center gap-2">
-                      <span>{config.icon}</span>
-                      <div>
-                        <div className="font-semibold">{config.label}</div>
-                        <div className="text-xs text-muted-foreground">{config.description}</div>
-                      </div>
-                    </div>
+                    {config.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -242,9 +236,9 @@ export function BugReportModal({ open, onOpenChange }: BugReportModalProps) {
             </Label>
             <Select value={category || undefined} onValueChange={setCategory}>
               <SelectTrigger id="category">
-                <SelectValue placeholder={t('common.placeholders.selectCategory')} />
+                <SelectValue placeholder="Selecciona una categoría" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[250]">
                 <SelectItem value="citas">Gestión de Citas</SelectItem>
                 <SelectItem value="clientes">Gestión de Clientes</SelectItem>
                 <SelectItem value="servicios">Servicios</SelectItem>
