@@ -63,7 +63,7 @@ export function EmployeeListView({
 
     switch (sortField) {
       case 'name':
-        comparison = a.full_name.localeCompare(b.full_name)
+        comparison = (a.full_name || '').localeCompare(b.full_name || '')
         break
       case 'level':
         comparison = a.hierarchy_level - b.hierarchy_level

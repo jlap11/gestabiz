@@ -39,6 +39,13 @@ export interface AppointmentWithRelations {
     total_reviews: number;
     city: string | null;
     state: string | null;
+    category_id: string | null;
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+      icon_name: string | null;
+    } | null;
   } | null;
   location: {
     id: string;

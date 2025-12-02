@@ -42,7 +42,7 @@ export function DocumentTypeSelect({
   const { documentTypes, loading } = useDocumentTypes(countryId, forCompany);
   // Ensure stable alphabetical order by name (locale 'es')
   const sortedDocumentTypes = documentTypes.slice().sort((a, b) =>
-    a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+    (a.name || '').localeCompare(b.name || '', 'es', { sensitivity: 'base' })
   );
 
   if (!countryId) {

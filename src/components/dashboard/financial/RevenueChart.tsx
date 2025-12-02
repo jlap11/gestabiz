@@ -144,7 +144,7 @@ export function RevenueChart({
             expenses: values.expenses,
             profit: values.income - values.expenses,
           }))
-          .sort((a, b) => a.date.localeCompare(b.date))
+          .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
           .slice(-12); // Show last 12 periods
 
         setData(chartData);

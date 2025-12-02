@@ -623,7 +623,7 @@ export function useAuth() {
 
       toast.success('Sesión cerrada correctamente')
       return { success: true }
-  } catch (error) {
+    } catch (error) {
       logger.error('Unexpected error during sign out', error as Error, {
         component: 'useAuth',
         operation: 'signOut',

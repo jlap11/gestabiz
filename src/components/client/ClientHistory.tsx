@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -40,6 +41,13 @@ interface AppointmentWithRelations {
   business?: {
     id: string
     name: string
+    category_id?: string
+    category?: {
+      id: string
+      name: string
+      slug: string
+      icon_name?: string
+    }
   }
   location?: {
     id: string
@@ -52,7 +60,7 @@ interface AppointmentWithRelations {
     price?: number
     currency?: string
     duration_minutes?: number
-    category_id?: string
+    category?: string  // DEPRECATED: No longer used, use business.category instead
     subcategory_id?: string
   }
   employee?: {
@@ -101,7 +109,8 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
   const [serviceFilters, setServiceFilters] = useState<string[]>([])
   const [categoryFilters, setCategoryFilters] = useState<string[]>([])
   const [employeeFilters, setEmployeeFilters] = useState<string[]>([])
-  const [priceRangeFilter, setPriceRangeFilter] = useState<string>('all')
+  const [minPrice, setMinPrice] = useState<number | null>(null)
+  const [maxPrice, setMaxPrice] = useState<number | null>(null)
   
   // Search states for filter popovers
   const [businessSearch, setBusinessSearch] = useState('')
@@ -153,28 +162,48 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
         })
       }
 
-      // Extract categories
-      if (apt.service?.category_id) {
-        categoriesMap.set(apt.service.category_id, {
-          id: apt.service.category_id,
-          name: apt.service.name,
-          slug: ''
+      // Extract categories from business (not service)
+      if (apt.business?.category?.id && apt.business?.category?.name) {
+        categoriesMap.set(apt.business.category.id, {
+          id: apt.business.category.id,
+          name: apt.business.category.name,
+          slug: apt.business.category.slug || ''
         })
       }
 
-      // Extract employees
-      if (apt.employee) {
+      // Extract employees (skip if id is null - employee not found in business_employees)
+      if (apt.employee?.id) {
         employeesMap.set(apt.employee.id, apt.employee)
       }
     }
 
-    // Sort all entities alphabetically
+    // Sort all entities alphabetically with null safety
     return {
-      businesses: Array.from(businessesMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
-      locations: Array.from(locationsMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
-      services: Array.from(servicesMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
-      categories: Array.from(categoriesMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
-      employees: Array.from(employeesMap.values()).sort((a, b) => a.full_name.localeCompare(b.full_name))
+      businesses: Array.from(businessesMap.values()).sort((a, b) => {
+        const nameA = a.name || ''
+        const nameB = b.name || ''
+        return nameA.localeCompare(nameB)
+      }),
+      locations: Array.from(locationsMap.values()).sort((a, b) => {
+        const nameA = a.name || ''
+        const nameB = b.name || ''
+        return nameA.localeCompare(nameB)
+      }),
+      services: Array.from(servicesMap.values()).sort((a, b) => {
+        const nameA = a.name || ''
+        const nameB = b.name || ''
+        return nameA.localeCompare(nameB)
+      }),
+      categories: Array.from(categoriesMap.values()).sort((a, b) => {
+        const nameA = a.name || ''
+        const nameB = b.name || ''
+        return nameA.localeCompare(nameB)
+      }),
+      employees: Array.from(employeesMap.values()).sort((a, b) => {
+        const nameA = a.full_name || ''
+        const nameB = b.full_name || ''
+        return nameA.localeCompare(nameB)
+      })
     }
   }, [appointments])
 
@@ -197,20 +226,17 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
     if (businessFilters.length > 0 && !businessFilters.includes(apt.business_id)) return false
     if (locationFilters.length > 0 && !locationFilters.includes(apt.location_id ?? '')) return false
     if (serviceFilters.length > 0 && !serviceFilters.includes(apt.service_id ?? '')) return false
-    if (categoryFilters.length > 0 && !categoryFilters.includes(apt.service?.category_id ?? '')) return false
+    if (categoryFilters.length > 0 && !categoryFilters.includes(apt.business?.category?.id ?? '')) return false
     if (employeeFilters.length > 0 && !employeeFilters.includes(apt.employee?.id ?? '')) return false
     return true
   }, [businessFilters, locationFilters, serviceFilters, categoryFilters, employeeFilters])
 
   const matchesPriceRange = useCallback((apt: AppointmentWithRelations): boolean => {
-    if (priceRangeFilter === 'all') return true
     const price = apt.service?.price || apt.price || 0
-    if (priceRangeFilter === '0-500' && price > 500) return false
-    if (priceRangeFilter === '501-1000' && (price <= 500 || price > 1000)) return false
-    if (priceRangeFilter === '1001-2000' && (price <= 1000 || price > 2000)) return false
-    if (priceRangeFilter === '2001+' && price <= 2000) return false
+    if (minPrice !== null && price < minPrice) return false
+    if (maxPrice !== null && price > maxPrice) return false
     return true
-  }, [priceRangeFilter])
+  }, [minPrice, maxPrice])
 
   const matchesSearch = useCallback((apt: AppointmentWithRelations): boolean => {
     if (!searchTerm) return true
@@ -344,7 +370,8 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
     setServiceFilters([])
     setCategoryFilters([])
     setEmployeeFilters([])
-    setPriceRangeFilter('all')
+    setMinPrice(null)
+    setMaxPrice(null)
     setSearchTerm('')
     setCurrentPage(1)
   }, [])
@@ -387,7 +414,8 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
     serviceFilters.length > 0 ||
     categoryFilters.length > 0 ||
     employeeFilters.length > 0 ||
-    priceRangeFilter !== 'all' ||
+    minPrice !== null ||
+    maxPrice !== null ||
     searchTerm !== ''
 
   // Pagination logic
@@ -398,7 +426,7 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [statusFilters, businessFilters, locationFilters, serviceFilters, categoryFilters, employeeFilters, priceRangeFilter, searchTerm])
+  }, [statusFilters, businessFilters, locationFilters, serviceFilters, categoryFilters, employeeFilters, minPrice, maxPrice, searchTerm])
 
   if (loading) {
     return (
@@ -830,19 +858,33 @@ export function ClientHistory({ userId, appointments, loading }: ClientHistoryPr
               </PopoverContent>
             </Popover>
 
-            {/* Price Range */}
-            <Select value={priceRangeFilter} onValueChange={setPriceRangeFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('common.placeholders.priceRange')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los precios</SelectItem>
-                <SelectItem value="0-500">$0 - $500</SelectItem>
-                <SelectItem value="501-1000">$501 - $1,000</SelectItem>
-                <SelectItem value="1001-2000">$1,001 - $2,000</SelectItem>
-                <SelectItem value="2001+">$2,001+</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Price Min */}
+            <Input
+              id="minPrice"
+              type="text"
+              min="0"
+              placeholder="Precio mínimo"
+              value={minPrice !== null ? minPrice.toLocaleString('es-CO') : ''}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\./g, '')
+                setMinPrice(value ? Number(value) : null)
+              }}
+              className="w-full"
+            />
+
+            {/* Price Max */}
+            <Input
+              id="maxPrice"
+              type="text"
+              min="0"
+              placeholder="Precio máximo"
+              value={maxPrice !== null ? maxPrice.toLocaleString('es-CO') : ''}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\./g, '')
+                setMaxPrice(value ? Number(value) : null)
+              }}
+              className="w-full"
+            />
           </div>
         </CardContent>
         )}
